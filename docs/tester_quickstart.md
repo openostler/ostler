@@ -13,9 +13,12 @@ KKL cable. **Read-only** — nothing is written to the car by default.
 This one-minute check tells you if the cable will work on your Mac *before* you install anything.
 Just the cable + Terminal, **no car yet**:
 
+Snapshot the ports **before** plugging in:
 ```bash
-ls /dev/cu.* > /tmp/before.txt          # snapshot BEFORE plugging in
-# --- now plug the cable into a USB port, wait ~3 seconds ---
+ls /dev/cu.* > /tmp/before.txt
+```
+Now **plug the cable into a USB port** (not the car), wait ~3 seconds, then:
+```bash
 ls /dev/cu.* > /tmp/after.txt ; diff /tmp/before.txt /tmp/after.txt
 ```
 - A **new line appears** (e.g. `> /dev/cu.usbserial-1420`, or `cu.wchusbserial…`, or
@@ -42,15 +45,29 @@ git clone https://github.com/Leijoma/discovery2-diag.git
 cd discovery2-diag
 python3 -m venv .venv
 source .venv/bin/activate
+pip install --upgrade pip
 pip install -e ".[dev]"
 ```
+> The `pip install --upgrade pip` line matters: an **old pip** can't install this project
+> (`ERROR: … "setup.py" not found … editable mode requires a setuptools-based build`). Upgrade
+> pip first and it works. If it still refuses, this also works: `pip install pyserial pytest`
+> (then prefix the tool commands below with `PYTHONPATH=src`).
+
+> ⚠️ **Paste one command at a time, and don't paste the grey `# …` notes** — in zsh (the Mac
+> default shell) a `#` on the command line is **not** a comment, so pasting it gives errors like
+> `zsh: no such user or named directory: 300`. Only paste the command itself.
 
 ## 3. Prove it works with NO car
+Run the test suite (~300 tests, no hardware needed — all should pass):
 ```bash
-pytest -q                          # ~300 tests, no hardware needed — all should pass
-python tools/dashboard.py --mock   # then open http://localhost:8080  (Ctrl-C to stop)
+pytest -q
 ```
-You should see a dashboard with mock live data moving. If that works, the software is fine.
+Then start the dashboard with mock data:
+```bash
+python tools/dashboard.py --mock
+```
+Open **http://localhost:8080** in a browser — you should see a dashboard with mock live data
+moving. `Ctrl-C` in the terminal stops it. If that works, the software is fine.
 
 ## 4. Connect to the car
 1. Cable into the car's **OBD socket** (under the dash, driver's side) **and** USB into the Mac.
@@ -86,7 +103,8 @@ Switch **TD5 / SLABS** in the header. (Or `--serial auto` to auto-detect the cab
 | Symptom | Fix |
 |---|---|
 | No `/dev/cu.usbserial-*` | Cable driver not installed / Prolific chip / try another USB port. FTDI is easiest on Mac. |
-| `pip install` fails | Make sure the venv is active (`source .venv/bin/activate`) and Python is 3.9+. |
+| `pip install -e` fails: *"setup.py not found … editable mode requires a setuptools-based build"* | **Old pip.** Run `pip install --upgrade pip`, then re-run the install. (Fallback: `pip install pyserial pytest` and prefix tools with `PYTHONPATH=src`.) |
+| `zsh: no such user or named directory: …` or other errors right after a command | You pasted a grey `# …` note. zsh runs `#` as text, not a comment. **Paste only the command**, one line at a time. |
 | "no valid frame" / can't establish | Ignition on? Right port? Cable fully seated in the OBD socket? Try again — fast-init sometimes needs a second attempt. |
 | Works then stops on SLABS | Normal — SLABS diagnostics die once the car moves; read it stationary. |
 | macOS "driver blocked" | System Settings → Privacy & Security → **Allow**. |
