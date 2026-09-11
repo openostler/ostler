@@ -1,114 +1,134 @@
-# Discovery 2 Td5 diagnostics — Mac tester quickstart
+# Discovery 2 Td5 diagnostics — Mac tester guide
 
-A ~15-minute setup to read your Land Rover **Discovery 2 Td5** (K-line, pre-CAN) with a cheap
-KKL cable. **Read-only** — nothing is written to the car by default.
+Read your Land Rover **Discovery 2 Td5** with a cheap KKL cable. You do **not** need to know
+anything about programming or the Terminal. **Read-only** — nothing is written to the car.
 
-## 0. What you need
-- A **Mac** + a Discovery 2 **Td5** (diesel; this is a K-line, pre-CAN car).
-- A **KKL 409.1 USB–OBD cable**. On a Mac an **FTDI FT232** chip is easiest (driverless);
-  CH340 / CP210x need a small driver; **avoid Prolific PL2303** (flaky on modern macOS).
-- Python 3.9+ (macOS ships `python3`; otherwise `brew install python`).
+You'll do three things: **(A)** plug in the cable and check the Mac sees it, **(B)** paste **one
+line** to install, **(C)** double-click an icon on your Desktop. That's it.
 
-## 1. Cable pre-test — do this FIRST (no install needed)
-This one-minute check tells you if the cable will work on your Mac *before* you install anything.
-Just the cable + Terminal, **no car yet**:
+---
 
-Snapshot the ports **before** plugging in:
-```bash
-ls /dev/cu.* > /tmp/before.txt
+## A. Plug in the cable and check the Mac sees it (2 min, no car)
+
+1. Plug the KKL cable into a **USB port on the Mac** (not the car yet).
+2. Open **Terminal**: press **⌘ (Cmd) + Space**, type `Terminal`, press **Return**.
+   A white or black window with text opens.
+3. Click in that window, type this line exactly, and press **Return**:
+
+   ```
+   ls /dev/cu.*
+   ```
+
+4. Look at the list it prints. If you see something like **`/dev/cu.usbserial-1420`**,
+   **`/dev/cu.wchusbserial…`** or **`/dev/cu.SLAB_USBtoUART`**, the cable works. ✅ Go to step B.
+   - If you only see things like `Bluetooth` and nothing with `usbserial` / `wch` / `SLAB`,
+     the cable needs a driver. See **"Cable not showing up"** at the bottom, then come back.
+
+> Keep the Terminal window open — you'll paste one more line in step B.
+
+---
+
+## B. Install — paste ONE line (2 min)
+
+In that same Terminal window, copy the line below, paste it (**⌘V**), and press **Return**.
+Copy the **whole** line. It downloads the tool and sets everything up for you.
+
 ```
-Now **plug the cable into a USB port** (not the car), wait ~3 seconds, then:
-```bash
-ls /dev/cu.* > /tmp/after.txt ; diff /tmp/before.txt /tmp/after.txt
-```
-- A **new line appears** (e.g. `> /dev/cu.usbserial-1420`, or `cu.wchusbserial…`, or
-  `cu.SLAB_USBtoUART…`) → **the driver works, you're good.** Note that path — you'll use it later.
-- **Nothing new** → the chip has no working driver yet. Identify the chip:
-  ```bash
-  system_profiler SPUSBDataType | grep -iE -A6 "serial|uart|ftdi|prolific|ch340|qinheng|cp210|silicon"
-  ```
-  The vendor tells you the chip → install that driver, then re-run the test:
-  | Vendor in the output | Chip | macOS |
-  |---|---|---|
-  | FTDI (0x0403) | FT232 | works driverless — if not seen, try another USB port/cable |
-  | QinHeng (0x1a86) | CH340 | install the CH340 macOS driver |
-  | Silicon Labs (0x10c4) | CP210x | install the CP210x VCP driver |
-  | Prolific (0x067b) | PL2303 | troublesome on modern macOS — driver often won't stick; consider a different cable |
-- If macOS blocks a driver: **System Settings → Privacy & Security → Allow**, then re-plug.
-- Always use `cu.*`, **never** `tty.*` (tty blocks on the Mac).
-
-**Only proceed to step 2 once a `cu.usbserial-*` (or cu.wch…/cu.SLAB…) device appears.**
-
-## 2. Get the code and install
-```bash
-git clone https://github.com/Leijoma/discovery2-diag.git
-cd discovery2-diag
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -e ".[dev]"
-```
-> The `pip install --upgrade pip` line matters: an **old pip** can't install this project
-> (`ERROR: … "setup.py" not found … editable mode requires a setuptools-based build`). Upgrade
-> pip first and it works. If it still refuses, this also works: `pip install pyserial pytest`
-> (then prefix the tool commands below with `PYTHONPATH=src`).
-
-> ⚠️ **Paste one command at a time, and don't paste the grey `# …` notes** — in zsh (the Mac
-> default shell) a `#` on the command line is **not** a comment, so pasting it gives errors like
-> `zsh: no such user or named directory: 300`. Only paste the command itself.
-
-## 3. Prove it works with NO car
-Run the test suite (~300 tests, no hardware needed — all should pass):
-```bash
-pytest -q
-```
-Then start the dashboard with mock data:
-```bash
-python tools/dashboard.py --mock
-```
-Open **http://localhost:8080** in a browser — you should see a dashboard with mock live data
-moving. `Ctrl-C` in the terminal stops it. If that works, the software is fine.
-
-## 4. Connect to the car
-1. Cable into the car's **OBD socket** (under the dash, driver's side) **and** USB into the Mac.
-2. **Ignition ON** (position II — engine off is fine, or running). Car **stationary**.
-3. Find the port again: `ls /dev/cu.usbserial-*` → e.g. `/dev/cu.usbserial-1420`.
-
-## 5. Read-only sanity check (the engine ECU)
-```bash
-python tools/verify_ecu.py td5 /dev/cu.usbserial-1420
-```
-Expected: `✓ established`, immobiliser status, **fault codes**, and live fuelling values.
-This **writes nothing** to the car.
-
-SLABS (ABS + air suspension) — **only answers while stationary**:
-```bash
-python tools/verify_ecu.py slabs /dev/cu.usbserial-1420
+curl -fsSL https://raw.githubusercontent.com/Leijoma/discovery2-diag/main/mac/install.sh | bash
 ```
 
-## 6. The live dashboard
-```bash
-python tools/dashboard.py --serial /dev/cu.usbserial-1420
-```
-Open **http://localhost:8080** → live tiles + gauges, a **Faults** tab (decoded), Inputs, etc.
-Switch **TD5 / SLABS** in the header. (Or `--serial auto` to auto-detect the cable.)
+Wait until it finishes (about a minute). When it's done it prints **"All set!"** and you'll have
+**three new icons on your Desktop**. You can now close the Terminal.
+
+> If it says **"Python 3 is not installed"**, install Python from
+> <https://www.python.org/downloads/> (click the big macOS download button, run the installer),
+> then paste the line again.
+
+---
+
+## C. Use it — just double-click an icon
+
+On your Desktop you now have:
+
+| Icon | What it does |
+|---|---|
+| **1 TEST WITHOUT CAR** | Proves the software works — **do this first, no car needed.** Opens a dashboard with fake moving data in your browser. |
+| **2 READ THE CAR** | Live dashboard from the real car in your browser. |
+| **3 QUICK FAULT CHECK** | Reads the engine fault codes once and prints them. |
+
+**The first time you double-click one**, macOS may warn it's from an unknown source. Then:
+**right-click the icon → Open → Open**. After that, a normal double-click works.
+
+A small black window opens when you run one — that's normal. **Leave it open while you use the
+tool; close it to stop.**
+
+### Do this first: icon 1 (no car)
+Double-click **1 TEST WITHOUT CAR**. A browser tab opens at `http://localhost:8080` showing a
+dashboard with numbers moving. If you see that, the software is perfect. Close the black window.
+
+### Then the car: icons 2 and 3
+1. Plug the cable into the car's **OBD socket** (under the dash, on the driver's side) **and** the
+   USB end into the Mac.
+2. Turn the **ignition ON** — key to position **II** (dash lights on). Engine off is fine, or
+   running. **Car must be stationary.**
+3. Double-click **2 READ THE CAR** for the live dashboard, or **3 QUICK FAULT CHECK** for a quick
+   fault read. The tool finds the cable by itself — you don't type a port.
+
+> **SLABS (ABS / air suspension) only answers while the car is standing still** — that's normal,
+> not a fault.
+
+---
 
 ## Safety
-- **Read-only by default** — no writes, no clearing, no actuator commands.
-- Ignition on, car **stationary** — especially for SLABS (its diagnostics go silent once you move).
-- The **Outputs** tab (actuator tests) sits behind an explicit confirmation — leave it alone unless
-  you know what a given test does.
+- **Read-only** — the tool does not write, clear, or command anything on the car by default.
+- Ignition on, **car stationary**.
+- Don't go looking for "Outputs" / actuator tests — leave those alone.
 
-## Troubleshooting
-| Symptom | Fix |
-|---|---|
-| No `/dev/cu.usbserial-*` | Cable driver not installed / Prolific chip / try another USB port. FTDI is easiest on Mac. |
-| `pip install -e` fails: *"setup.py not found … editable mode requires a setuptools-based build"* | **Old pip.** Run `pip install --upgrade pip`, then re-run the install. (Fallback: `pip install pyserial pytest` and prefix tools with `PYTHONPATH=src`.) |
-| `zsh: no such user or named directory: …` or other errors right after a command | You pasted a grey `# …` note. zsh runs `#` as text, not a comment. **Paste only the command**, one line at a time. |
-| "no valid frame" / can't establish | Ignition on? Right port? Cable fully seated in the OBD socket? Try again — fast-init sometimes needs a second attempt. |
-| Works then stops on SLABS | Normal — SLABS diagnostics die once the car moves; read it stationary. |
-| macOS "driver blocked" | System Settings → Privacy & Security → **Allow**. |
+## Sending results back
+The whole point is the reverse-engineering. Send back a screenshot of the dashboard or the fault
+list, and say what worked and what didn't. That helps every Discovery 2 owner.
 
-## Feeding results back
-The value is the reverse-engineering: send the maintainer your **fault codes**, what worked/didn't,
-and (if asked) raw captures. That grows the shared knowledge base for every Discovery 2.
+---
+
+## If something goes wrong
+
+**Cable not showing up (step A).**
+Find out which chip the cable uses — in Terminal, paste:
+```
+system_profiler SPUSBDataType | grep -iE -A6 "serial|uart|ftdi|prolific|ch340|qinheng|cp210|silicon"
+```
+Then:
+| What you see | Cable chip | What to do |
+|---|---|---|
+| FTDI (0x0403) | FT232 | Works without a driver — try another USB port or cable. |
+| QinHeng (0x1a86) | CH340 | Install the **CH340** Mac driver, then re-plug. |
+| Silicon Labs (0x10c4) | CP210x | Install the **CP210x VCP** Mac driver, then re-plug. |
+| Prolific (0x067b) | PL2303 | Often won't work on modern Macs — use a different cable. |
+
+If macOS blocks a driver: **System Settings → Privacy & Security → Allow**, then re-plug.
+
+**The install line gave errors.** Make sure you copied the **whole** line and pasted only that one
+line (not any grey notes around it). Paste it again. If it still fails, tell the maintainer what
+the red text said.
+
+**"2 READ THE CAR" / "3 QUICK FAULT CHECK" says it can't find the cable or can't connect.**
+Cable fully pushed into the OBD socket? USB in the Mac? Ignition ON (position II)? Car stationary?
+Try once more — the first connection attempt sometimes needs a second try.
+
+**To update to the newest version later**, just paste the **same install line** from step B again —
+it updates everything and refreshes the Desktop icons.
+
+---
+
+### Appendix — for the technically curious (optional)
+The one-line installer does no magic: it checks for `python3`, installs `pyserial` + `pytest` with
+`python3 -m pip install --user` (no virtualenv), clones/updates the repo to `~/discovery2-diag`,
+and writes the three `.command` launchers to your Desktop. You can read it first at
+[`mac/install.sh`](../mac/install.sh). To run things by hand instead:
+```
+cd ~/discovery2-diag
+PYTHONPATH=src python3 tools/dashboard.py --mock          # test dashboard
+PYTHONPATH=src python3 tools/dashboard.py --serial auto   # live dashboard
+PYTHONPATH=src python3 tools/verify_ecu.py td5 auto       # one-shot fault read
+pytest -q                                                 # run the test suite
+```
