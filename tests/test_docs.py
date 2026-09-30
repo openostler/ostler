@@ -93,3 +93,13 @@ def test_doclibrary_add_dir_exclude_keeps_pinned_file_once(tmp_path: pathlib.Pat
     idx = lib.index()
     assert [x["title"] for x in idx] == ["Test backlog", "SLABS"]  # pinned first
     assert idx[0]["group"] == "Test plan"
+
+
+def test_frontmatter_is_hidden_from_title_and_html(tmp_path):
+    doc = tmp_path / "x.md"
+    doc.write_text("---\ntitle: meta\narea: docs\n---\n\n# Real title\n\nBody.\n", encoding="utf-8")
+    lib = DocLibrary().add_file(doc)
+    (entry,) = lib.index()
+    assert entry["title"] == "Real title"
+    html = lib.html(entry["id"])
+    assert "area: docs" not in html and "<h1>Real title</h1>" in html

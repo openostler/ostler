@@ -14,6 +14,12 @@ from pathlib import Path
 from . import markdown
 
 _H1 = re.compile(r"^#\s+(.*)$", re.MULTILINE)
+# Leading YAML frontmatter (Vibes as Code): metadata for agents, noise for readers.
+_FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+
+
+def strip_frontmatter(text: str) -> str:
+    return _FRONTMATTER.sub("", text, count=1)
 
 
 def _slug(text: str) -> str:
@@ -79,7 +85,7 @@ class DocLibrary:
     @staticmethod
     def _title_of(path: Path) -> str:
         try:
-            m = _H1.search(path.read_text(encoding="utf-8"))
+            m = _H1.search(strip_frontmatter(path.read_text(encoding="utf-8")))
             if m:
                 return m.group(1).strip()
         except OSError:
@@ -103,4 +109,4 @@ class DocLibrary:
             text = doc.path.read_text(encoding="utf-8")
         except OSError:
             return None
-        return markdown.render(text)
+        return markdown.render(strip_frontmatter(text))

@@ -36,6 +36,7 @@ source is always named.
 ```
 docs/
   README.md                 ← you are here (hub + legend + conventions)
+  architecture.md           ← code map + key seams (for contributors and agents)
   discovery-2-td5/
     README.md               ← platform overview + module status
     kline-protocol.md       ← the shared K-line / KWP2000 layer (init, framing, services)

@@ -1,3 +1,13 @@
+---
+title: "Discovery 2 Td5 diagnostics — Mac tester guide"
+area: docs
+status: stable
+version: 1.0
+updated: 2026-09-30
+summary: >
+  Non-programmer guide for a Mac tester: check the KKL cable, one-paste install, desktop launchers. Read-only.
+---
+
 # Discovery 2 Td5 diagnostics — Mac tester guide
 
 Read your Land Rover **Discovery 2 Td5** with a cheap KKL cable. You do **not** need to know

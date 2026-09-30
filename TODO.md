@@ -1,3 +1,13 @@
+---
+title: "TODO — discovery2-diag"
+area: root
+status: draft
+version: 1.0
+updated: 2026-09-30
+summary: >
+  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, Swedish-to-English translation, data-hub ideas.
+---
+
 # TODO — discovery2-diag
 
 Updated 2026-08-25. Check off when done.

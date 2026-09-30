@@ -1,139 +1,32 @@
-# CLAUDE.md
+# CLAUDE.md — Entry Point
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Open diagnostics for the Land Rover Discovery 2 Td5 over **K-line** (pre-CAN), using a
+cheap KKL cable or an ESP32 tap. It is reverse-engineered from sniffed bus traffic. This
+repo follows the [Vibes as Code](https://github.com/JamesWrightDavid/Vibes-as-Code)
+method: orient cheaply, then load on demand.
 
-## Project
+## Read first, every session
 
-Open diagnostics platform for the Land Rover Discovery 2 Td5 over **K-line**
-(pre-CAN), using a cheap KKL 409.1 USB cable. Reverse-engineered from sniffed bus
-traffic; see `README.md` for scope and `references/protocol_state_handoff.md` for
-what is currently **belagt** (proven) vs **kandidat** vs open per module.
+1. **[INDEX.md](INDEX.md)** is the manifest: every doc's path, area, status and
+   ~100-token summary, plus reading paths.
+2. **[CONSTITUTION.md](CONSTITUTION.md)** holds the hard rules (layering, protocol,
+   safety, data honesty). Load it in full and never summarize it.
 
-## Commands
+## Then load on demand
 
-```bash
-python -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"          # only runtime dep is pyserial
+- The code map, commands and key seams: [docs/architecture.md](docs/architecture.md).
+- Mission and layering boundary: [SCOPE.md](SCOPE.md).
+- What is proven, candidate or open per module:
+  [references/protocol_state_handoff.md](references/protocol_state_handoff.md).
+- What to test next in the car: [references/test_plan.md](references/test_plan.md).
+- Why a choice was made: [decisions/](decisions/CLAUDE.md).
+- Designs in progress: [specs/](specs/CLAUDE.md).
 
-pytest -q                        # whole suite (~190 tests, no hardware needed)
-pytest tests/test_slabs.py -q    # one file
-pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
+## Working rules
 
-# Dashboard — mock (no car) / live (ignition on, stationary)
-PYTHONPATH=src python3 tools/dashboard.py --mock
-PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--slabs] [--fault-watch] [--csv]
-
-# Read-only sanity check against a module
-PYTHONPATH=src python3 tools/verify_ecu.py td5|slabs /dev/cu.usbserial-XXXX
-```
-
-There is no linter/formatter config — match surrounding style. `pyproject.toml`
-sets `pythonpath = ["src", "."]`, so `pytest` works without `PYTHONPATH`; the
-`tools/*.py` scripts do need it (or an editable install).
-
-## Architecture
-
-Strict bottom-up stack; **no layer knows anything about the one below it beyond
-its interface**, and each is unit-tested in isolation:
-
-```
-Transport      transport/base.py — raw bytes in/out (SerialTransport, LoggingTransport)
-K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, echo, retries)
-KWP2000        kwp2000/ — service IDs, negative responses (0x7F+NRC), responsePending (0x78)
-EcuSession     session.py — shared lifecycle/keepalive/read_block + tolerant establish retry
-Module layer   td5/ slabs/ airbag/ (+ bcu/ ace/ autobox/ menu stubs)
-Web            web/ — stdlib HTTP + SSE server, single-file dashboard.html (vanilla JS)
-```
-
-Key seams to understand before changing things:
-
-- **Two frame formats.** Addressed (`0x8n`, target+source) only for
-  StartCommunication/fast init; the whole session afterwards is unaddressed
-  length-prefixed frames (`<len> <SID> … <cs>`). `kline.read_frame` sniffs the
-  format byte, so both work transparently. Airbag is the exception — addressed
-  framing throughout at 0x5B.
-- **`EcuSession` is where module layers share behaviour.** Subclasses set `name`
-  and call `_establish(after=…)`: Td5 passes `after=self.connect`
-  (StartDiagnosticSession + SecurityAccess seed→key), SLABS passes `after=None`
-  (no session, no unlock — services work right after fast init). SLABS also
-  overrides `_keepalive_sub = None` because it needs a **bare `3E`**; `3E 01`
-  kills its session.
-- **`EcuSession.read_block(lids) -> {lid_hex: bytes}`** is deliberately the exact
-  shape `sniff/automap.py` consumes — that is what lets a live session feed the
-  differential mapper.
-- **Signal store (`src/d2diag/signals/*.json`) is the single source of truth for
-  LID field mappings.** Decoders, the dashboard and automap all read it, and
-  confirmed mappings are written back with `upsert_field` — never hand-paste
-  `Signal(...)` rows into Python. Every field carries `konfidens`: `belagt`
-  (verified against the car) or `kandidat` (derived/unverified). Keep that
-  distinction honest; it propagates to the UI.
-- **`web/sources.py` is the boundary between the protocol stack and the UI.**
-  Each `DataSource.poll()` returns `{status, signals, faults}`; mock and live
-  sources are interchangeable and switchable at runtime from the header. Adding a
-  module to the dashboard means adding a source pair (mock + live), not touching
-  the server.
-- **Two command paths in `web/server.py`.** `enqueue_command` runs anything in
-  `_INLINE_COMMANDS` (CSV start/stop, fault-watch — server state only) straight on
-  the HTTP thread, and queues everything that touches K-line for the poll thread so
-  bus access stays serialized. Put a new command on the queue only if it talks to
-  the ECU: queued commands wait out the current poll, which during a reconnect can
-  be ~20 s and blows the 8 s HTTP timeout.
-- **`faultscan.py`** reads every module sequentially — K-line is a shared bus, so
-  it is strictly establish → read → close, one module at a time.
-- **`web/docs.py`** serves the canonical markdown files fresh on every request
-  (references/ plus a fault dictionary in a sibling `Discovery 2/` repo). It is a
-  window on the source, never a copy — don't cache or duplicate those docs.
-- **`server/endpoint.py`** is a separate, self-hosted community-contribution
-  service (stdlib + sqlite3), paired with the opt-in client in `community/`.
-  Both are whitelist-based and PII-free by construction — keep it that way.
-
-## Hard-won protocol rules
-
-Violating these produces bugs that only show up against the real car:
-
-- **SLABS must be polled lightly.** ~1 Hz keepalive plus a few reads — the
-  dashboard's `SlabsDataSource.poll` reads only heights (`21 54`) per cycle and
-  faults at most every 10th poll. Block-reading many LIDs each 0.5 s cycle killed
-  the session after ~15 s. Details in `references/slabs_protocol.md`.
-- **A `7F 81 10` (generalReject) on StartCommunication means a link is still open**
-  on the shared bus. Two different teardowns exist and both matter: `20`
-  StopDiagnosticSession ends a *diagnostic session* (Td5 only), `82`
-  StopCommunication ends the *communication link* that fast init created (every
-  module). Always end a module with `EcuSession.release()` — module switch **and**
-  error paths — never bare `close()`. The link outlives the process: a fresh run
-  that only ever talks to SLABS still gets rejected if the previous run died with
-  the link open (proven in the car 2026-08-18), which is why `_establish` sends a
-  best-effort `82` before every init attempt. Don't try to fix this with longer idle.
-- **Keep `tolerant=True`** on KWP2000 for cheap KKL cables: it searches the read
-  burst for a positive/negative SID instead of demanding a checksum-clean frame,
-  which compensates for FTDI latency jitter during fast init.
-- **macOS: always `/dev/cu.*`, never `/dev/tty.*`** (tty blocks on DCD).
-  `resolve_serial_port("auto")` handles detection.
-- **Airbag/SRS is read-only by construction** — no clear, no outputs, no security
-  writes. Actuator tests elsewhere stay behind an explicit confirmation and are
-  documented as stationary-with-ignition-on.
-
-## Conventions
-
-- **Language: English, everywhere.** The repo is public and English-facing, so
-  **all new content is English** — code comments, docstrings, `references/`,
-  `docs/`, `TODO.md`, and commit messages. (This changed 2026-08-21; older Swedish
-  comments/notes remain until translated — when you edit a file, write new content
-  in English and translate the nearby Swedish you're already touching.)
-- **Zero dependencies above pyserial.** The web layer is stdlib HTTP + SSE and the
-  dashboard is a single vanilla-JS HTML file — no frameworks, no build step.
-- **Tests run without hardware** against `tests/fakes.py::FakeKLineEcu`, a
-  half-duplex ECU simulator at the transport level (it echoes frames like the real
-  bus). Responses may be static bytes, a sequence, or a `callable(count)` when a
-  test needs differing values between reads.
-- Comments explain *why* — especially which sniff/log a protocol fact came from.
-  When you learn something from the car or a capture, record it in the relevant
-  `references/*.md` alongside the code change.
-- **`references/test_plan.md` is the living test backlog** — the single reference for
-  what to test next in the car or with a borrowed diagnostic tool. Every open question
-  that needs hardware belongs there, with its procedure and a **decision rule written
-  before the test**. When a result comes in: route it to its permanent home (signal
-  store / `references/` / the sister project for the car's own faults), then move the
-  item to **Resolved** in that file with the date and outcome — including inconclusive
-  ones. Keep it current in the same commit as the finding; `TODO.md` is code and
-  infrastructure only.
+- Design before code: write a spec in `specs/` and get it approved before implementing.
+- Run `pytest -q` before committing code. It needs no hardware.
+- After editing docs, run `python3 skill/scripts/validate_frontmatter.py`, then
+  `python3 skill/scripts/build_index.py`. `INDEX.md` is generated, so never hand-edit it.
+- Record car and capture findings in `references/` and the signal store in the same
+  commit as the code change. Close out the matching `references/test_plan.md` item.
