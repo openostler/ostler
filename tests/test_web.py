@@ -809,3 +809,16 @@ def test_fields_carry_presentation_metadata_and_derived_fields():
     # every stored field has a label and a group — the UI has no fallback table
     assert all(f["label"] and f["group"] for f in motor.values())
     assert all(f["label"] and f["group"] for f in slabs.values())
+
+
+def test_fields_carry_display_span_and_explicit_normal_band():
+    from d2diag.web.server import _fields_list
+
+    motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
+    assert motor["coolant_temp"]["span"] == [-20, 120]
+    assert motor["coolant_temp"]["normal"] == [80, 100]
+    assert motor["speed"]["normal"] is None          # no band unless one is stated
+    assert motor["maf_sensor"]["span"] is None       # no limits, no span → no bar
+    # the numeric multiplier `scale` is untouched by the display span
+    from d2diag.signals import load_signals
+    assert {s.name: s.scale for s in load_signals("td5")}["battery"] == 0.001

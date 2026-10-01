@@ -80,6 +80,10 @@ class Signal:
     label: str = ""
     group: str = ""
     description: str = ""
+    # Display ranges: `span` is what a bar/gauge draws, `normal` the healthy band shaded
+    # on it. Informational only — the low/high status still comes from `limits`.
+    span: "tuple[float, float] | None" = None
+    normal: "tuple[float, float] | None" = None
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -125,6 +129,8 @@ def _record_to_signal(r: dict) -> Signal:
         label=r.get("label", ""),
         group=r.get("group", ""),
         description=r.get("description", ""),
+        span=tuple(r["span"]) if r.get("span") else None,
+        normal=tuple(r["normal"]) if r.get("normal") else None,
     )
 
 

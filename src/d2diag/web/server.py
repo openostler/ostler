@@ -153,17 +153,35 @@ def _fields_list(module: str) -> "dict":
 
     from .sources import DERIVED_FIELDS
 
+    def _span(span, limits):
+        """Display span: explicit, else the limits padded by 10 % each side."""
+        if span:
+            return list(span)
+        if limits:
+            lo, hi = limits
+            pad = (hi - lo) * 0.1
+            return [round(lo - pad, 3), round(hi + pad, 3)]
+        return None
+
     store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
-    fields = [{"name": s.name, "unit": s.unit, "c": s.confidence,
-               "limits": list(s.limits) if s.limits else None,
-               "label": s.label or s.name, "group": s.group or "Other",
-               "description": s.description, "derived": False}
-              for s in load_signals(store_mod)]
+    fields = []
+    for s in load_signals(store_mod):
+        limits = list(s.limits) if s.limits else None
+        fields.append({
+            "name": s.name, "unit": s.unit, "c": s.confidence, "limits": limits,
+            "label": s.label or s.name, "group": s.group or "Other",
+            "description": s.description, "derived": False,
+            "span": _span(s.span, limits),
+            # only an explicit band: falling back to the alarm limits would draw a
+            # meaningless "normal 0–200 km/h" across the whole scale
+            "normal": list(s.normal) if s.normal else None,
+        })
     for name, m in DERIVED_FIELDS.get(module, {}).items():
         fields.append({"name": name, "unit": m.get("unit", ""), "c": m.get("c", "candidate"),
                        "limits": None, "label": m.get("label", name),
                        "group": m.get("group", "Other"),
-                       "description": m.get("description", ""), "derived": True})
+                       "description": m.get("description", ""), "derived": True,
+                       "span": m.get("span"), "normal": m.get("normal")})
     return {"module": module, "fields": fields}
 
 

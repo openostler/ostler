@@ -3,7 +3,7 @@
   "source": "mock",
   "signals": {
     "rpm": {
-      "v": 858.91,
+      "v": 805.3,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
@@ -15,7 +15,7 @@
       "c": "proven"
     },
     "battery": {
-      "v": 14.11,
+      "v": 14.24,
       "u": "V",
       "s": "ok",
       "c": "proven"
@@ -33,13 +33,13 @@
       "c": "proven"
     },
     "fuel_temp": {
-      "v": 13.24,
+      "v": 13.59,
       "u": "°C",
       "s": "ok",
       "c": "proven"
     },
     "manifold_press": {
-      "v": 1.0,
+      "v": 0.99,
       "u": "bar",
       "s": "ok",
       "c": "proven"
@@ -51,55 +51,55 @@
       "c": "proven"
     },
     "economy": {
-      "v": 7.96,
+      "v": 7.89,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "trip_economy": {
-      "v": 7.9,
+      "v": 7.89,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "lifetime_economy": {
-      "v": 8.53,
+      "v": 8.52,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "rpm_error": {
-      "v": -0.15,
+      "v": -6.3,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
     },
     "balance_1": {
-      "v": 3.42,
+      "v": -0.18,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_2": {
-      "v": -2.0,
+      "v": -2.18,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_3": {
-      "v": -3.61,
+      "v": 0.37,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_4": {
-      "v": 3.33,
+      "v": -1.21,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_5": {
-      "v": -1.08,
+      "v": 0.56,
       "u": "",
       "s": "ok",
       "c": "proven"

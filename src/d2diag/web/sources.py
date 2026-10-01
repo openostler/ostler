@@ -79,19 +79,21 @@ _DERIVED_TD5 = {
 # has ONE metadata source per module. Keys are the UI module names.
 DERIVED_FIELDS: "dict[str, dict[str, dict]]" = {
     "motor": {
-        "fuel_rate": {"label": "Fuel rate", "group": "Fuelling",
+        "fuel_rate": {"label": "Fuel rate", "group": "Fuelling", "span": [0, 20],
                       "description": "Fuel flow from injection quantity × rpm (derived, candidate)."},
-        "economy": {"label": "Fuel economy", "group": "Fuelling",
+        "economy": {"span": [0, 25], "label": "Fuel economy", "group": "Fuelling",
                     "description": "Live consumption — only meaningful while moving (derived, candidate)."},
-        "trip_economy": {"label": "Trip economy", "group": "Fuelling",
+        "trip_economy": {"span": [0, 25], "label": "Trip economy", "group": "Fuelling",
                          "description": "Average consumption since the dashboard started (derived, candidate)."},
-        "lifetime_economy": {"label": "Lifetime economy", "group": "Fuelling",
+        "lifetime_economy": {"span": [0, 25], "label": "Lifetime economy", "group": "Fuelling",
                              "description": "Average consumption across all logged driving (derived, candidate)."},
     },
     "slabs": {
         "height_left_mm": {"unit": "mm", "c": "proven", "label": "Height left", "group": "Ride height",
+                           "span": [0, 360], "normal": [154, 189],
                            "description": "Left ride height in mm (derived from the raw sensor)."},
         "height_right_mm": {"unit": "mm", "c": "proven", "label": "Height right", "group": "Ride height",
+                            "span": [0, 360], "normal": [154, 189],
                             "description": "Right ride height in mm (derived from the raw sensor)."},
     },
 }

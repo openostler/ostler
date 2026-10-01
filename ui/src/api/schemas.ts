@@ -56,6 +56,10 @@ export const Field = z.object({
   group: z.string(),
   description: z.string(),
   derived: z.boolean(),
+  /** What a bar or gauge draws, low → high (null: no bar). */
+  span: z.tuple([z.number(), z.number()]).nullable(),
+  /** The healthy band shaded on it (null: no band). Status still comes from `limits`. */
+  normal: z.tuple([z.number(), z.number()]).nullable(),
 });
 export type Field = z.infer<typeof Field>;
 export const FieldsResponse = z.object({ module: z.string(), fields: z.array(Field) });

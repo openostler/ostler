@@ -9,6 +9,7 @@ export default defineConfig({
   testDir: "e2e",
   timeout: 30_000,
   retries: 0,
+  workers: 1, // one shared mock server: tests that switch module must not overlap
   reporter: [["list"]],
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,

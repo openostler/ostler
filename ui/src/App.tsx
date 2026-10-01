@@ -6,6 +6,7 @@ import { Consent } from "./components/Consent";
 import { FaultSheet } from "./components/FaultSheet";
 import { Settings } from "./components/Settings";
 import { moduleName } from "./layout";
+import { clockHHMM } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
 import { screensFor } from "./screens/registry";
 import { AppCtx, type AppContext } from "./state/app";
@@ -21,6 +22,16 @@ function useToast() {
     timer.current = window.setTimeout(() => setToast(null), 3200);
   }, []);
   return [toast, show] as const;
+}
+
+/** The phone's clock (the D2 has no lit clock), refreshed every 10 s. */
+function Clock() {
+  const [now, setNow] = useState(clockHHMM);
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(clockHHMM()), 10_000);
+    return () => window.clearInterval(id);
+  }, []);
+  return <span className="hdr-clock">{now}</span>;
 }
 
 function Pill({ snap, linkUp }: { snap: Snapshot | null; linkUp: boolean }) {
@@ -95,6 +106,7 @@ export function App({ path = window.location.pathname }: { path?: string }) {
             <div className="hsub">{snap ? moduleName(module) : "—"}</div>
           </div>
           <div className="row" style={{ marginLeft: "auto" }}>
+            <Clock />
             <Pill snap={snap} linkUp={linkUp} />
             <button className="chip" aria-label="Settings" onClick={() => setSettingsOpen(true)}>⚙</button>
           </div>

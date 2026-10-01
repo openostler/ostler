@@ -2,7 +2,7 @@
 title: Web UI (Vite + React + TypeScript) — Design
 area: specs
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-01
 depends_on: [decisions/adr-0004-react-typescript-ui.md, decisions/adr-0003-signal-store-source-of-truth.md]
 summary: >
@@ -92,3 +92,12 @@ The data flow is unchanged from v2:
   - The markdown renderer now refuses non-http(s) link schemes, because the UI injects
     its HTML.
   - In admin mode the bottom nav scrolls sideways (9 tabs).
+- 2026-10-01 — Visual redesign ("calm instrument"), following ISA-101 high-performance
+  HMI and automotive HMI guidance:
+  - Neutral greys when healthy; colour only for abnormal states, with an icon and a word.
+  - A range bar against the healthy band and a 60 s sparkline for every value.
+  - A one-line health strip.
+  - 240° gauges with the normal band and a SLABS car diagram.
+  - Severity-first faults and automatic day/night theme.
+  - The signal store gains `span` and `normal`. `normal` is explicit only: it never falls
+    back to the alarm `limits`.

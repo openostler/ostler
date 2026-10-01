@@ -8,7 +8,8 @@ export type Prefs = {
   trust: "trusted" | "experimental";
   consentDone: boolean;
   share: boolean | null;
-  theme: "light" | "dark";
+  /** "auto" follows the phone's day/night setting (prefers-color-scheme). */
+  theme: "auto" | "light" | "dark";
   units: Units;
 };
 
@@ -17,7 +18,7 @@ export const DEFAULT_PREFS: Prefs = {
   trust: "trusted",
   consentDone: false,
   share: null,
-  theme: "dark",
+  theme: "auto",
   units: { temp: "C", dist: "km" },
 };
 
@@ -41,7 +42,9 @@ function savePrefs(p: Prefs): void {
 export function usePrefs() {
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", prefs.theme);
+    const root = document.documentElement;
+    if (prefs.theme === "auto") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", prefs.theme);
   }, [prefs.theme]);
   const update = useCallback((patch: Partial<Prefs>) => {
     setPrefs((p) => {

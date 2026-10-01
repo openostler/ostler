@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { command } from "../api/client";
+import { HealthStrip } from "../components/HealthStrip";
 import { Readout } from "../components/Readout";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatusGate } from "../components/StatusGate";
@@ -35,21 +36,27 @@ function useCsv() {
   return { recording, toggle };
 }
 
+type Filter = "all" | "attention" | "unverified";
+
 export function Inputs() {
   const { snap, module, fields, live } = useApp();
   const [plot, setPlot] = useState<string[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
   const { recording, toggle } = useCsv();
 
   const signals = snap?.signals ?? {};
   // every expected field (placeholders without a cable) plus anything live; the _mm
   // heights duplicate the raw heights on SLABS, so they live on Drive only
-  const names = [...new Set([...Object.keys(fields), ...Object.keys(signals)])].filter((n) => !n.endsWith("_mm"));
+  const all = [...new Set([...Object.keys(fields), ...Object.keys(signals)])].filter((n) => !n.endsWith("_mm"));
+  const needsAttention = (n: string) => ["low", "high", "suspect"].includes(signals[n]?.s ?? "");
+  const unverified = (n: string) => (signals[n]?.c ?? fields[n]?.c) === "candidate";
+  const names = all.filter((n) => filter === "all" || (filter === "attention" ? needsAttention(n) : unverified(n)));
   const groupOf = (n: string) => fields[n]?.group ?? "Other";
   const labelOf = (n: string) => fields[n]?.label ?? n;
   const byGroup = new Map<string, string[]>();
   for (const n of names) byGroup.set(groupOf(n), [...(byGroup.get(groupOf(n)) ?? []), n]);
   const order = [...GROUP_ORDER.filter((g) => byGroup.has(g)), ...[...byGroup.keys()].filter((g) => !GROUP_ORDER.includes(g))];
-  const channels = names.filter((n) => typeof signals[n]?.v === "number").sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
+  const channels = all.filter((n) => typeof signals[n]?.v === "number").sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
   const togglePlot = (n: string) =>
     setPlot((p) => (p.includes(n) ? p.filter((x) => x !== n) : p.length < 3 ? [...p, n] : p));
 
@@ -70,24 +77,34 @@ export function Inputs() {
       {module === "slabs" ? (
         <div className="card warn small">SLABS only communicates while stationary — to log a drive (rpm, boost, temps), switch to TD5.</div>
       ) : null}
+      <HealthStrip />
+      <div className="seg" role="group" aria-label="Show">
+        {([["all", "All"], ["attention", `Attention · ${all.filter(needsAttention).length}`], ["unverified", "Unverified"]] as const).map(([id, text]) => (
+          <button key={id} aria-pressed={filter === id} onClick={() => setFilter(id)}>{text}</button>
+        ))}
+      </div>
       {names.length ? (
-        order.map((g) => (
-          <section key={g}>
-            <div className="kicker group-title">{g}</div>
-            <div className="grid">
-              {(byGroup.get(g) ?? []).sort((a, b) => labelOf(a).localeCompare(labelOf(b))).map((n) => (
-                <Readout key={n} name={n} sig={signals[n]} field={fields[n]} />
-              ))}
-            </div>
-          </section>
-        ))
+        order.map((g) => {
+          const items = (byGroup.get(g) ?? []).sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
+          const bad = items.filter(needsAttention).length;
+          return (
+            <section key={g}>
+              <div className="kicker group-title">{g}{bad ? <span style={{ color: "var(--alarm)" }}> · {bad} need attention</span> : null}</div>
+              <div className="grid">
+                {items.map((n) => <Readout key={n} name={n} sig={signals[n]} field={fields[n]} />)}
+              </div>
+            </section>
+          );
+        })
+      ) : filter !== "all" ? (
+        <div className="empty"><div className="title">{filter === "attention" ? "Nothing needs attention" : "No unverified signals"}</div></div>
       ) : (
         <div className="empty"><div className="title">No live inputs yet</div>
           <div className="pretty">Connect {moduleName(module)} on the Connect tab. The K-line carries one session at a time.</div></div>
       )}
-      {names.length ? (
+      {all.length ? (
         <section>
-          <div className="row group-title"><span className="kicker">Trend · 60 s</span>
+          <div className="row group-title"><span className="kicker">Compare · 60 s</span>
             <span className="small dis" style={{ marginLeft: "auto" }}>tap up to three channels to plot</span></div>
           <Trend channels={plot} history={live.history} labelOf={labelOf} unitOf={(n) => signals[n]?.u ?? ""} />
           <div className="small dis pretty" style={{ margin: "6px 2px 0" }}>

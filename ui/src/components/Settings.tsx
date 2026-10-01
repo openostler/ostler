@@ -67,9 +67,9 @@ export function Settings({ onClose }: { onClose: () => void }) {
       <section>
         <div className="kicker" style={{ marginBottom: 8 }}>Display</div>
         <div className="btn-row">
-          {(["light", "dark"] as const).map((t) => (
+          {(["auto", "light", "dark"] as const).map((t) => (
             <button key={t} className={`btn ${prefs.theme === t ? "accent" : ""}`} aria-pressed={prefs.theme === t}
-              onClick={() => setPrefs({ theme: t })}>{t === "light" ? "Light" : "Dark"}</button>
+              onClick={() => setPrefs({ theme: t })}>{{ auto: "Auto (day/night)", light: "Day", dark: "Night" }[t]}</button>
           ))}
         </div>
       </section>

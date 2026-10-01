@@ -54,7 +54,7 @@ describe("live dashboard", () => {
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Inputs" }));
     expect(await screen.findByText("Temperatures")).toBeInTheDocument();
-    const coolant = (await screen.findAllByText("Coolant")).map((el) => el.closest(".ro")).find(Boolean) as HTMLElement;
+    const coolant = (await screen.findAllByText("Coolant")).map((el) => el.closest(".srow")).find(Boolean) as HTMLElement;
     await user.click(within(coolant).getByRole("button", { name: "About Coolant" }));
     expect(within(coolant).getByText(/Normal 86–95/)).toBeInTheDocument();
   });
@@ -135,5 +135,55 @@ describe("live dashboard", () => {
     await user.click(await screen.findByRole("button", { name: "Utilities" }));
     await user.click(screen.getByRole("button", { name: "Read" }));
     expect(await screen.findByText("02 fa")).toBeInTheDocument();
+  });
+});
+
+describe("calm instrument", () => {
+  beforeEach(() => consented());
+
+  it("leads Drive with a one-line health summary that links to the cause", async () => {
+    const user = userEvent.setup();
+    const faults = ["027: shuttle valve switch — electrical failure (Logged)"];
+    installFakeServer({ snapshot: { ...connected, faults, signals: { battery: { v: 14.1, u: "V", s: "ok", c: "proven" } } } });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Dismiss" }));
+    const strip = await screen.findByRole("button", { name: /Vehicle status: 1 logged fault/ });
+    await user.click(strip);
+    expect(await screen.findByRole("heading", { name: "Faults" })).toBeInTheDocument();
+  });
+
+  it("shows each value against its normal band, and colour only when out of range", async () => {
+    installFakeServer({ snapshot: { ...connected, signals: {
+      battery: { v: 14.1, u: "V", s: "ok", c: "proven" },
+      air_temp: { v: 95, u: "°C", s: "high", c: "proven" },
+    } } });
+    render(<App path="/" />);
+    expect(await screen.findByRole("img", { name: /Battery: 14.1 V, normal 12.4–14.8/ })).toBeInTheDocument();
+    const intake = (await screen.findByText("Intake air")).closest(".tile") as HTMLElement;
+    expect(intake).toHaveClass("alarm");
+    expect(within(intake).getByText("HIGH")).toBeInTheDocument(); // word + icon, never colour alone
+    const battery = screen.getByText("Battery").closest(".tile") as HTMLElement;
+    expect(battery).not.toHaveClass("alarm");
+    expect(within(battery).queryByText("OK")).not.toBeInTheDocument(); // healthy = nothing to see
+  });
+
+  it("filters Inputs to what needs attention", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: { ...connected, signals: {
+      battery: { v: 14.1, u: "V", s: "ok", c: "proven" },
+      air_temp: { v: 95, u: "°C", s: "high", c: "proven" },
+    } } });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    await user.click(await screen.findByRole("button", { name: /Attention · 1/ }));
+    const rows = () => [...document.querySelectorAll(".srow")].map((r) => r.getAttribute("data-signal"));
+    expect(rows()).toEqual(["air_temp"]);
+  });
+
+  it("follows the phone's day/night setting by default", async () => {
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    await screen.findByText("Connected");
+    expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
   });
 });

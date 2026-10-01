@@ -28,29 +28,27 @@ export const MODULES: { id: string; name: string; desc: string; tag: ModuleTag; 
 ];
 
 /**
- * Driver's dashboard: what matters on the move and is NOT already on the cluster (so no
- * speed/rpm). Grid flow on 4 columns, cards span 2; keep gauges paired so rows stay clean.
- * Fuel in L/mil (Swedish litres per 10 km) from the server's L/100km, so ÷10.
+ * Driver's dashboard (TD5): two hero gauges for what moves while driving, then stat
+ * tiles with a range bar and the last minute. Speed and rpm are already on the cluster,
+ * so they are left out. Fuel is shown in L/mil (Swedish litres per 10 km): the server's
+ * L/100km ÷ 10. SLABS uses the car diagram instead (SlabsCar).
  */
 export type DriveTile = {
   label: string;
-  clock?: boolean;
-  signal?: string;
-  gauge?: { min: number; max: number };
+  signal: string;
+  gauge?: boolean;
   dec?: number;
   unit?: string;
   conv?: (v: number) => number;
 };
 const per10km = (v: number) => v / 10;
 export const DRIVE_TILES: DriveTile[] = [
-  { clock: true, label: "Time" },
-  { signal: "battery", label: "Battery" },
-  { signal: "manifold_press", label: "Boost", gauge: { min: 1.0, max: 2.5 }, dec: 1 },
-  { signal: "coolant_temp", label: "Coolant", gauge: { min: 40, max: 120 }, dec: 0 },
-  { signal: "economy", label: "Fuel", conv: per10km, unit: "L/mil", dec: 1 },
-  { signal: "trip_economy", label: "Trip", conv: per10km, unit: "L/mil", dec: 1 },
-  { signal: "air_temp", label: "Intake" },
-  { signal: "lifetime_economy", label: "Lifetime", conv: per10km, unit: "L/mil", dec: 1 },
+  { signal: "manifold_press", label: "Boost", gauge: true, dec: 2 },
+  { signal: "coolant_temp", label: "Coolant", gauge: true, dec: 0 },
+  { signal: "battery", label: "Battery", dec: 1 },
+  { signal: "air_temp", label: "Intake air", dec: 0 },
+  { signal: "economy", label: "Fuel now", conv: per10km, unit: "L/mil", dec: 2 },
+  { signal: "trip_economy", label: "Trip", conv: per10km, unit: "L/mil", dec: 2 },
 ];
 
 /** Actuator tests per module — real /command actions (see web/sources.py). */

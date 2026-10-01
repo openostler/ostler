@@ -19,23 +19,21 @@ function download(name: string, text: string) {
   URL.revokeObjectURL(url);
 }
 
-function FaultGroup({ items, label, edge, dot, note }: {
-  items: ParsedFault[]; label: string; edge: string; dot: string; note: string;
+function FaultGroup({ items, label, kind, note }: {
+  items: ParsedFault[]; label: string; kind: "current" | "logged"; note: string;
 }) {
   if (!items.length) return null;
   return (
     <section>
       <div className="row group-title" style={{ gap: 8 }}>
-        <span className={`pdot ${dot}`} /><span className="kicker">{label}</span>
-        <span className="small dis">{note}</span>
+        <span className="kicker">{label} · {items.length}</span><span className="small dis">{note}</span>
       </div>
-      <div className="grid">
+      <div className="stack">
         {items.map((f) => (
-          <div className={`ro ${edge}`} key={`${f.raw}${f.text}${f.tag}`}>
-            <div className="ro-top"><div className="grow">
-              <div className="ro-title">{f.text}</div>
-              <div className="small dis">{[f.raw, f.tag].filter(Boolean).join(" · ")}</div>
-            </div></div>
+          <div className={`fault ${kind}`} key={`${f.raw}${f.text}${f.tag}`}>
+            <span className="ficon" aria-hidden="true">!</span>
+            <div className="ftext">{f.text}</div>
+            <div className="fmeta">{f.raw ? <span className="code">{f.raw}</span> : null}<span>{f.tag || label}</span></div>
           </div>
         ))}
       </div>
@@ -137,11 +135,11 @@ export function Faults() {
   return (
     <>
       {head}
-      <FaultGroup items={current} label="Current" edge="edge-red" dot="red" note="present now" />
-      <FaultGroup items={logged} label="Logged" edge="edge-yellow" dot="yellow" note="stored history" />
+      <FaultGroup items={current} label="Current" kind="current" note="present now" />
+      <FaultGroup items={logged} label="Logged" kind="logged" note="stored history — not necessarily present now" />
       {!parsed.length ? (
-        <div className="empty"><div className="title">No fault codes</div>
-          <div className="pretty">This module reports a clean fault memory.</div></div>
+        <div className="health ok" role="status"><span className="hi" aria-hidden="true">✓</span>
+          <span>No fault codes — this module reports a clean fault memory.</span></div>
       ) : (
         <div className="card">
           <span className="kicker">Report</span>
