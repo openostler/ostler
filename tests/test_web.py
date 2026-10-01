@@ -334,8 +334,15 @@ def test_server_serves_snapshot_and_html():
         assert snap["status"] == "connected"
         assert "rpm" in snap["signals"]
         html = urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=2).read().decode()
-        assert "<title>" in html and "EventSource" in html
-        assert "D2 Diag" in html  # "/" now serves v2, not v1
+        assert "<title>" in html and "D2 Diag" in html
+        # The app (built React UI, or the legacy v2 fallback) streams /events. In the
+        # built app that code lives in the referenced bundle, which is served too.
+        import re
+        scripts = re.findall(r'src="(/assets/[^"]+\.js)"', html)
+        code = html + "".join(
+            urllib.request.urlopen(f"http://127.0.0.1:{port}{s}", timeout=2).read().decode()
+            for s in scripts)
+        assert "EventSource" in code and "/events" in code
     finally:
         srv.shutdown()
         srv.server_close()
