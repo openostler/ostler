@@ -2,15 +2,15 @@
 title: "TODO — discovery2-diag"
 area: root
 status: draft
-version: 1.0
-updated: 2026-09-30
+version: 1.1
+updated: 2026-10-01
 summary: >
-  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, Swedish-to-English translation, data-hub ideas.
+  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, the React/TS dashboard and NanoCom tooling, data-hub ideas.
 ---
 
 # TODO — discovery2-diag
 
-Updated 2026-08-25. Check off when done.
+Updated 2026-10-01. Check off when done.
 
 > **Scope:** this repo is the tool. The car's actual faults and maintenance
 > work are handled in the sister project `../Discovery 2/` — fault codes we
@@ -21,7 +21,7 @@ Updated 2026-08-25. Check off when done.
 TD5 and SLABS both work reliably since the init pulse was corrected 2026-08-19
 (TiniH was ~32 ms instead of 25 ± 1 — see `references/slabs/init-timing.md`).
 The dashboard connects to both on the first attempt and switches module without
-trouble. 220 tests green.
+trouble. The test suite is green in CI.
 
 ## Next time in the car
 
@@ -53,10 +53,15 @@ infrastructure only.
         LID reads bad, and have the analysis classify junk as comms vs sensor (and
         cross-check the DTC). Stops us mistaking tool noise for a car fault. Belongs
         to the car register only as the *conclusion*, not the mechanism.
+- [ ] **React + TypeScript dashboard** (ADR-0004): write `specs/…-web-ui-design.md`,
+      then replace `dashboard.html` / `dashboard_v2.html` with one typed app.
+- [ ] **NanoCom capture readiness** (ADR-0005): spec, module detection for BCU/airbag/
+      ACE/EAT in `sniff/`, and an importer that feeds `automap` with labelled captures.
 - [ ] **PyInstaller distribution** (.app/.exe) for non-technical users.
 - [ ] **Torque proxy:** find the TD5's fuel quantity/demand LID (mg/stroke = the
       ECU's torque command, in the same session as rpm/temp/throttle).
-- [ ] Translate code comments and docstrings to English (the code is in Swedish).
+- [x] Translate code comments, docstrings, filenames and the confidence values to English
+      (2026-10-01; see ADR-0006 and `specs/2026-10-01-docs-restructure-design.md`).
 - [ ] Possibly reintroduce store-driven SLABS reading — but within the 1 Hz budget,
       which is what makes the session stable.
 

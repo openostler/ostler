@@ -22,7 +22,7 @@ summary: >
 | [CONSTITUTION.md](CONSTITUTION.md) | root | stable | 1.1 | 2026-10-01 | Hard rules for every agent and contributor: the five Vibes as Code operating principles plus this project's protocol, layering, safety and data-honesty invariants. Load in full; never summarize. |
 | [GLOSSARY.md](GLOSSARY.md) | root | stable | 1.0 | 2026-10-01 | Definitions of the domain vocabulary used across code and docs: K-line, KWP2000, SID, LID, NRC, fast/slow init, the Discovery 2 modules, EKA, and the proven/candidate confidence levels. |
 | [SCOPE.md](SCOPE.md) | root | stable | 1.0 | 2026-09-30 | States the project's core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. |
-| [TODO.md](TODO.md) | root | draft | 1.0 | 2026-09-30 | Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, Swedish-to-English translation, data-hub ideas. |
+| [TODO.md](TODO.md) | root | draft | 1.1 | 2026-10-01 | Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, the React/TS dashboard and NanoCom tooling, data-hub ideas. |
 | [docs/architecture.md](docs/architecture.md) | docs | stable | 1.1 | 2026-10-01 | Developer map of the code: the bottom-up protocol stack, the seams to understand before changing things (frame formats, EcuSession, signal store, DataSource boundary, the two command paths) and the dev commands. |
 | [docs/capability-inventory/ace.md](docs/capability-inventory/ace.md) | docs | draft | 1.0 | 2026-10-01 | ACE capability inventory: fault read/clear structure, 15 inputs, 5 outputs, calibration and bleed utilities; raw mapping mostly open. |
 | [docs/capability-inventory/airbag.md](docs/capability-inventory/airbag.md) | docs | draft | 1.0 | 2026-10-01 | Airbag capability inventory: fault record format and clear, 16 identification/configuration fields; read-only in this project. |
@@ -81,7 +81,7 @@ summary: >
 | [decisions/adr-0005-nanocom-sniff-workflow.md](decisions/adr-0005-nanocom-sniff-workflow.md) | decisions | locked | 1.0 | 2026-09-30 | Full-coverage mapping is done by passively sniffing a rented NanoCom with the ESP32 tap, labelling each capture against the tool's screen, and importing results as kandidat only; nothing sniffed is replayed as a write without its own ADR. |
 | [decisions/adr-0006-english-confidence-vocabulary.md](decisions/adr-0006-english-confidence-vocabulary.md) | decisions | locked | 1.0 | 2026-10-01 | The confidence values in the signal store, snapshot and UI are renamed from Swedish belagt/kandidat to proven/candidate; the loader still accepts the old values. |
 | [specs/2026-09-30-vibes-adoption-design.md](specs/2026-09-30-vibes-adoption-design.md) | specs | stable | 1.0 | 2026-09-30 | Design for bringing the fork onto Vibes as Code, docs layer only: what is added, how existing docs are tagged, what is deferred, and how it is verified. |
-| [specs/2026-10-01-docs-restructure-design.md](specs/2026-10-01-docs-restructure-design.md) | specs | stable | 1.0 | 2026-10-01 | Phase A2 of the Vibes as Code migration: split every doc over 300 lines, make docs/ canonical and references/ evidence-only, translate the last Swedish names and rename the confidence values belagt/kandidat to proven/candidate. |
+| [specs/2026-10-01-docs-restructure-design.md](specs/2026-10-01-docs-restructure-design.md) | specs | stable | 1.1 | 2026-10-01 | Phase A2 of the Vibes as Code migration: split every doc over 300 lines, make docs/ canonical and references/ evidence-only, translate the last Swedish names and rename the confidence values belagt/kandidat to proven/candidate. |
 
 ## Reading paths
 
@@ -90,6 +90,8 @@ summary: >
   [docs/architecture.md](docs/architecture.md).
 - **Going to the car?** Read [references/test_plan.md](references/test_plan.md) and
   [references/protocol_state_handoff.md](references/protocol_state_handoff.md).
-- **Sniffing with a NanoCom?** Read [decisions/](decisions/CLAUDE.md) ADR-0005 and
-  [references/reference_tool_sniff_plan.md](references/reference_tool_sniff_plan.md).
+- **Sniffing with a NanoCom?** Read [decisions/](decisions/CLAUDE.md) ADR-0005,
+  [references/reference_tool_sniff_plan.md](references/reference_tool_sniff_plan.md) and
+  [references/menus/overview.md](references/menus/overview.md).
+- **Unfamiliar term?** Read [GLOSSARY.md](GLOSSARY.md).
 - **Want the why behind a choice?** Read [decisions/](decisions/CLAUDE.md).

@@ -27,8 +27,10 @@ READING_PATHS = """\
   [docs/architecture.md](docs/architecture.md).
 - **Going to the car?** Read [references/test_plan.md](references/test_plan.md) and
   [references/protocol_state_handoff.md](references/protocol_state_handoff.md).
-- **Sniffing with a NanoCom?** Read [decisions/](decisions/CLAUDE.md) ADR-0005 and
-  [references/reference_tool_sniff_plan.md](references/reference_tool_sniff_plan.md).
+- **Sniffing with a NanoCom?** Read [decisions/](decisions/CLAUDE.md) ADR-0005,
+  [references/reference_tool_sniff_plan.md](references/reference_tool_sniff_plan.md) and
+  [references/menus/overview.md](references/menus/overview.md).
+- **Unfamiliar term?** Read [GLOSSARY.md](GLOSSARY.md).
 - **Want the why behind a choice?** Read [decisions/](decisions/CLAUDE.md).
 """
 

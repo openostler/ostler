@@ -2,7 +2,7 @@
 title: Docs restructure, translation and confidence vocabulary — Design
 area: specs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-01
 depends_on: [specs/2026-09-30-vibes-adoption-design.md, decisions/adr-0006-english-confidence-vocabulary.md]
 summary: >
@@ -34,12 +34,12 @@ When this is done:
 
 | Old | New |
 | --- | --- |
-| `references/reference_tool_master_menu.md` | `references/menus/{bcu,ace,autobox,airbag,td5}.md` |
-| `docs/Discovery2_Diagnostic_Protocol_Capability_Inventory_MASTER.md` | `docs/capability-inventory/{README,td5,slabs,bcu,ace,autobox,airbag,open-questions}.md` |
+| `references/reference_tool_master_menu.md` | `references/menus/{overview,bcu-inputs,bcu-settings,bcu-outputs-utilities,ace,autobox,airbag,td5}.md` |
+| `docs/Discovery2_Diagnostic_Protocol_Capability_Inventory_MASTER.md` | `docs/capability-inventory/{overview,td5,slabs,bcu,ace,autobox,airbag,open-questions}.md` |
 | `docs/discovery-2-td5/kline-protocol.md` | hub + `docs/discovery-2-td5/kline/{physical-and-init,frames-and-services,session-lifecycle}.md` |
 | `docs/discovery-2-td5/slabs.md` | `slabs.md` + `slabs-actuators-faults.md` |
-| `references/slabs_protocol.md` | `references/slabs/{README,init-timing,services-and-lids}.md` |
-| `references/test_plan.md` | `test_plan.md` (open) + `test_plan_resolved.md` |
+| `references/slabs_protocol.md` | `references/slabs/{overview,init-timing,services-and-lids}.md` |
+| `references/test_plan.md` | `test_plan.md` (open) + `test-plan-resolved.md` |
 | `docs/discovery-2-td5/verification-todo.md` | merged into `references/test_plan.md` |
 | `references/fault_codes.md` | merged into `docs/discovery-2-td5/fault-codes.md` |
 | `references/full_taeckning_och_maf.md` | `references/td5-full-coverage-and-maf.md` |
@@ -73,3 +73,7 @@ When this is done:
 ## Changelog
 
 - 2026-10-01 — Initial design.
+- 2026-10-01 — Implemented. Index pages are `overview.md`, not `README.md`, because
+  READMEs are excluded from the manifest. BCU menus are split three ways to stay under
+  300 lines. `verification-todo.md` items were mapped to test IDs (new T-23) and the
+  file was removed. A pre-existing broken link in `hardware/README.md` was fixed.

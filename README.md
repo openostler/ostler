@@ -185,7 +185,8 @@ read-first and conservative:
 - [x] Raspberry-Pi deployment (systemd autostart) + Linux fast-init fix (`send_break`)
 - [x] Public **[knowledge base](docs/README.md)** — confidence-tagged protocol reference
 
-237 unit tests, all passing, run without hardware.
+The test suite runs without hardware (`pytest -q`); CI runs it on every push, together
+with the documentation checks.
 
 ## Contributing
 
