@@ -185,6 +185,16 @@ def _fields_list(module: str) -> "dict":
     return {"module": module, "fields": fields}
 
 
+def _faults_list(module: str) -> "dict":
+    """The fault-meaning dictionary for a module (the ``dtc`` store) — so the UI can show
+    what a fault code MEANS, not just its name. Keyed by each module's stable fault key
+    (td5 ``offset.bit``, slabs/airbag display number)."""
+    from ..dtc import load_records
+
+    store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
+    return {"module": module, "faults": load_records(store_mod)}
+
+
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:  # silent log
         pass
@@ -246,6 +256,10 @@ class _Handler(BaseHTTPRequestHandler):
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
             self._json(_fields_list((q.get("module", ["motor"])[0]) or "motor"))
+        elif self.path.split("?")[0] == "/faults":
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query)
+            self._json(_faults_list((q.get("module", ["motor"])[0]) or "motor"))
         elif self.path == "/community":
             c = self.server.community
             self._json(c.state() if c is not None else {"consent": None, "endpoint": None})
