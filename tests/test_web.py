@@ -256,7 +256,7 @@ def test_single_source_has_no_mode_toggle():
 def test_slabs_source_light_poll_reads_heights_only():
     # LIGHT baseline poll (sniff 2026-08-07): the SLABS poll reads ONLY heights (21 54).
     # Store-driven block reading of many LIDs destabilised the session (~7×
-    # bus traffic) and has been deliberately removed — see slabs_protocol.md.
+    # bus traffic) and has been deliberately removed — see references/slabs/overview.md.
     from d2diag.kline import KLine, encode
     from d2diag.kwp2000 import KWP2000
     from d2diag.slabs import Slabs

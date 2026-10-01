@@ -103,3 +103,20 @@ def test_frontmatter_is_hidden_from_title_and_html(tmp_path):
     assert entry["title"] == "Real title"
     html = lib.html(entry["id"])
     assert "area: docs" not in html and "<h1>Real title</h1>" in html
+
+
+def test_doclibrary_recursive_add_dir_skips_excluded_names(tmp_path: pathlib.Path):
+    (tmp_path / "top.md").write_text("# Top\n", encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text("# Agent notes\n", encoding="utf-8")
+    sub = tmp_path / "slabs"
+    sub.mkdir()
+    (sub / "overview.md").write_text("# SLABS evidence\n", encoding="utf-8")
+    vendored = tmp_path / "vendor"
+    vendored.mkdir()
+    (vendored / "README.md").write_text("# Vendored\n", encoding="utf-8")
+
+    flat = [x["title"] for x in DocLibrary().add_dir(tmp_path, exclude={"CLAUDE.md"}).index()]
+    assert flat == ["Top"]
+
+    deep = DocLibrary().add_dir(tmp_path, recursive=True, exclude={"CLAUDE.md", "vendor"})
+    assert sorted(x["title"] for x in deep.index()) == ["SLABS evidence", "Top"]

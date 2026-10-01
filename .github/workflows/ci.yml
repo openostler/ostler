@@ -24,6 +24,8 @@ jobs:
           python-version: "3.11"
       - name: Validate frontmatter
         run: python3 skill/scripts/validate_frontmatter.py
+      - name: Links and doc paths resolve
+        run: python3 skill/scripts/check_links.py
       - name: INDEX.md is up to date
         run: |
           python3 skill/scripts/build_index.py

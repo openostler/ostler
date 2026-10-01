@@ -8,7 +8,7 @@ The public, curated knowledge base. Every fact carries a confidence tag
 - `README.md` — hub and legend.
 - `architecture.md` — code map, commands and key seams (for developers and agents).
 - `discovery-2-td5/` — one page per module, plus the shared K-line layer.
-- `Discovery2_Diagnostic_Protocol_Capability_Inventory_MASTER.md` — consolidated inventory.
+- `capability-inventory/` — consolidated per-module inventory (start at `overview.md`).
 - `tester_quickstart.md` — non-programmer Mac guide.
 - `rover-v8/` — roadmap only.
 

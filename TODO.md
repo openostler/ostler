@@ -19,7 +19,7 @@ Updated 2026-08-25. Check off when done.
 ## Status
 
 TD5 and SLABS both work reliably since the init pulse was corrected 2026-08-19
-(TiniH was ~32 ms instead of 25 ± 1 — see `references/slabs_protocol.md`).
+(TiniH was ~32 ms instead of 25 ± 1 — see `references/slabs/init-timing.md`).
 The dashboard connects to both on the first attempt and switches module without
 trouble. 220 tests green.
 

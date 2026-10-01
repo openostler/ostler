@@ -52,7 +52,7 @@ Current. Only factual data (offset/bit → fault text) has been used.
 [k0sci3j/BinOwl_Td5Gauge](https://github.com/k0sci3j/BinOwl_Td5Gauge) — an ESP32 Td5
 gauge, **GPL-3.0**. Reviewed 2026-08-25 as a **reference for protocol facts only**
 (LID -> field offsets and scalings, frame lengths, init/keepalive sequence); see
-`references/td5_externa_fynd.md`. GPL-3.0 is incompatible with this project, so
+`references/td5-external-findings.md`. GPL-3.0 is incompatible with this project, so
 **no source code from there may be copied or ported** — only non-protectable facts
 about the ECU protocol, each of which is verified against our own captures before use.
 

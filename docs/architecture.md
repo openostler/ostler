@@ -88,7 +88,7 @@ Web            web/: stdlib HTTP + SSE server, dashboard UI
 ## Why the protocol rules exist
 
 - **SLABS load.** Block-reading many LIDs every 0.5 s killed the SLABS session after
-  ~15 s ([references/slabs_protocol.md](../references/slabs_protocol.md)).
+  ~15 s ([references/slabs/overview.md](../references/slabs/overview.md)).
 - **What `7F 81 10` means.** A generalReject on StartCommunication means a link is still
   open on the shared bus. There are two teardowns:
   - `20` StopDiagnosticSession ends a Td5 diagnostic session.

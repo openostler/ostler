@@ -8,6 +8,8 @@ for this repo.
 - `scripts/_frontmatter.py` — schema (area enum, exclusions, 300-line soft limit).
 - `scripts/validate_frontmatter.py` — lints every manifest-eligible `.md`. Exits 1 on error.
 - `scripts/build_index.py` — regenerates `INDEX.md` from frontmatter.
+- `scripts/check_links.py` — fails on dangling Markdown links or on `docs/`/`references/`
+  paths named in Python code (project addition, not upstream).
 
 ## Editing rules
 

@@ -39,12 +39,15 @@ docs/
   architecture.md           ← code map + key seams (for contributors and agents)
   discovery-2-td5/
     README.md               ← platform overview + module status
-    kline-protocol.md       ← the shared K-line / KWP2000 layer (init, framing, services)
+    kline-protocol.md       ← the shared K-line / KWP2000 layer (hub)
+    kline/                  ← physical + init · frames + services · session lifecycle
     engine-td5.md           ← Td5 Lucas engine ECU (signals, security, outputs, faults)
     slabs.md                ← SLABS (Wabco ABS + rear self-levelling)
+    slabs-actuators-faults.md ← SLABS fault codes and actuator routines
     bcu.md                  ← BCU (Valeo body control / immobiliser / EKA)
     other-modules.md        ← ACE, EAT autobox, Airbag/SRS
     fault-codes.md          ← fault-code index and raw↔display mapping
+  capability-inventory/     ← consolidated per-module inventory (start at overview.md)
   rover-v8/
     README.md               ← roadmap: 14CUX / GEMS / Thor (not started)
 ```
