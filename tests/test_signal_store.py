@@ -43,8 +43,15 @@ _SPEC = [
     # scale can't drift silently. See references/td5-cross-reference.md.
     ("wastegate_pos", 0x38, 0, "u16", 0.01, 0.0, "%"),
     ("egr_pos", 0x37, 0, "u16", 0.01, 0.0, "%"),
-    ("reference_voltage", 0x10, 2, "u16", 0.001, 0.0, "V"),
     ("driver_demand", 0x1D, 0, "u16", 0.01, 0.0, "mg/stroke"),
+    # Ecosystem pass (2026-10-01): mined from SimonRafferty/Td5-Diagnostic-App.
+    ("battery_direct", 0x10, 2, "u16", 0.001, 0.0, "V"),   # was reference_voltage (mislabelled)
+    ("smoke_limit", 0x1D, 10, "u16", 0.01, 0.0, "mg/stroke"),
+    ("torque_limit", 0x1D, 12, "u16", 0.01, 0.0, "mg/stroke"),
+    ("egr_inlet", 0x45, 0, "u16", 0.01, 0.0, "%"),
+    ("coolant_sensor_v", 0x1A, 2, "u16", 0.001, 0.0, "V"),
+    ("intake_sensor_v", 0x1A, 6, "u16", 0.001, 0.0, "V"),
+    ("fuel_sensor_v", 0x1A, 14, "u16", 0.001, 0.0, "V"),
 ]
 
 _SPEC_LIMITS = {
@@ -62,7 +69,10 @@ _SPEC_LIMITS = {
     "balance_1": (-12, 12), "balance_2": (-12, 12), "balance_3": (-12, 12),
     "balance_4": (-12, 12), "balance_5": (-12, 12),
     "wastegate_pos": (0, 100), "egr_pos": (0, 100),   # native-LID candidates (0x38/0x37)
-    "reference_voltage": (4.5, 5.5), "driver_demand": (0, 90),
+    "driver_demand": (0, 90),
+    "battery_direct": (11.0, 15.5), "smoke_limit": (0, 90), "torque_limit": (0, 90),
+    "egr_inlet": (0, 100),
+    "coolant_sensor_v": (0.0, 5.1), "intake_sensor_v": (0.0, 5.1), "fuel_sensor_v": (0.0, 5.1),
 }
 
 
