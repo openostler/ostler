@@ -120,3 +120,10 @@ def test_doclibrary_recursive_add_dir_skips_excluded_names(tmp_path: pathlib.Pat
 
     deep = DocLibrary().add_dir(tmp_path, recursive=True, exclude={"CLAUDE.md", "vendor"})
     assert sorted(x["title"] for x in deep.index()) == ["SLABS evidence", "Top"]
+
+
+def test_links_only_allow_safe_schemes():
+    out = md.render("[ok](https://x.org) [rel](../a.md) [bad](javascript:alert(1)) [d](data:text/html,x)\n")
+    assert 'href="https://x.org"' in out and 'href="../a.md"' in out
+    assert "javascript:" not in out.replace("[bad](javascript:alert(1", "")
+    assert 'href="javascript' not in out and 'href="data' not in out

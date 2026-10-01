@@ -35,11 +35,12 @@ extend to the Rover V8 platforms over time. Start at
 - **BCU** — connect (5-baud slow init) and read immobiliser status. The EKA
   (emergency key access) code turned out to be **gated behind SecurityAccess**
   (Valeo seed→key unknown), so it can't be read — see the [BCU knowledge-base page](docs/discovery-2-td5/bcu.md).
-- **Mobile-first web dashboard** — a single vanilla-JS app (Connect · Faults ·
-  Inputs · Outputs · Utilities), mock ↔ live switchable at runtime, with a
-  one-click fault scan across every module. A password-gated **`/admin` mapping
-  console** (coverage map, labelled capture) is the *same app* with the
-  reverse-engineering tabs revealed.
+- **Mobile-first web dashboard** — a React + TypeScript app in [`ui/`](ui/)
+  (Drive · Connect · Faults · Inputs · Outputs · Utilities), mock ↔ live switchable at
+  runtime, with a one-click fault scan across every module. A password-gated
+  **`/admin` mapping console** (coverage map with live sniff, labelled capture, docs)
+  is the *same app* with the reverse-engineering tabs revealed. The built app is
+  committed, so running the dashboard needs Python only.
 - **Reverse-engineering tools** — a passive sniff decoder, an active
   differential-mapping harness, full **raw TX/RX logging** of every live session,
   and an offline analyser (`tools/raw_analyze.py`) that surfaces every *unmapped*
@@ -62,7 +63,7 @@ reverse-engineered but not yet decoded in code.
 A strict, bottom-up layer stack — each layer is decoupled and unit-tested:
 
 ```
-Web dashboard   (stdlib HTTP + SSE, vanilla JS, mobile-first, zero deps)
+Web dashboard   (stdlib HTTP + SSE server · React/TS UI, prebuilt — no Node at runtime)
 Module layer    (Td5 · Slabs · Airbag — establish / read faults / live data / actuators)
 KWP2000         (10/27/3E/21/30/31 · negative responses · responsePending · addressed mode)
 K-Line          (framing addressed+unaddressed, checksum, fast + 5-baud slow init, retries)
@@ -109,7 +110,8 @@ PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX
 ```
 
 Then open <http://localhost:8080> — from the same machine, or from your phone on
-the same network. You can switch mock ↔ live from the header. The machine with
+the same network. You can switch mock ↔ live in Settings. To work on the UI itself
+(hot reload against the mock server), see [`ui/CLAUDE.md`](ui/CLAUDE.md). The machine with
 the cable runs the server; the phone is just a browser (it never touches the
 cable).
 

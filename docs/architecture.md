@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-01
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -49,7 +49,8 @@ K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, 
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 Module layer   td5/ slabs/ airbag/ (+ bcu/ ace/ autobox/ menu stubs)
-Web            web/: stdlib HTTP + SSE server, dashboard UI
+Web            web/: stdlib HTTP + SSE server; serves the built UI from web/static
+UI             ui/: Vite + React + TypeScript app → npm run build → web/static (committed)
 ```
 
 ## Key seams
@@ -79,6 +80,11 @@ Web            web/: stdlib HTTP + SSE server, dashboard UI
   - `_INLINE_COMMANDS` (CSV start/stop, fault-watch) run on the HTTP thread.
   - Everything that touches the K-line is queued for the poll thread. Queued commands can
     wait out a ~20 s reconnect, which is longer than the 8 s HTTP timeout.
+- **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
+  `tests/test_ui_contract.py` checks the real server against the fixtures in
+  `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
+  groups and descriptions come from `/fields`, which reads the signal store plus
+  `sources.DERIVED_FIELDS`. The UI never hard-codes them.
 - **`faultscan.py`** reads every module strictly in sequence: establish → read → release.
 - **`web/docs.py`** serves the canonical markdown fresh on every request, with the
   frontmatter stripped. It is a window on the source. Never cache or duplicate it.
@@ -117,3 +123,4 @@ Web            web/: stdlib HTTP + SSE server, dashboard UI
 
 - 2026-09-30 — Extracted from the former root CLAUDE.md during Vibes as Code adoption.
 - 2026-10-01 — Confidence vocabulary is now `proven`/`candidate` (ADR-0006).
+- 2026-10-01 — Added the React/TypeScript UI layer and its contract.

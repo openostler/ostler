@@ -5,7 +5,7 @@ status: draft
 version: 1.1
 updated: 2026-10-01
 summary: >
-  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, the React/TS dashboard and NanoCom tooling, data-hub ideas.
+  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, NanoCom tooling, retiring the legacy dashboard pages, data-hub ideas.
 ---
 
 # TODO — discovery2-diag
@@ -53,8 +53,9 @@ infrastructure only.
         LID reads bad, and have the analysis classify junk as comms vs sensor (and
         cross-check the DTC). Stops us mistaking tool noise for a car fault. Belongs
         to the car register only as the *conclusion*, not the mechanism.
-- [ ] **React + TypeScript dashboard** (ADR-0004): write `specs/…-web-ui-design.md`,
-      then replace `dashboard.html` / `dashboard_v2.html` with one typed app.
+- [x] **React + TypeScript dashboard** (ADR-0004, `specs/2026-10-01-web-ui-design.md`):
+      `ui/` serves `/` and `/admin`. Delete `dashboard.html` / `dashboard_v2.html`
+      (now at `/legacy/*`) once T-24 confirms parity in the car.
 - [ ] **NanoCom capture readiness** (ADR-0005): spec, module detection for BCU/airbag/
       ACE/EAT in `sniff/`, and an importer that feeds `automap` with labelled captures.
 - [ ] **PyInstaller distribution** (.app/.exe) for non-technical users.

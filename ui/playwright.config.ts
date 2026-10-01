@@ -1,0 +1,25 @@
+import { defineConfig, devices } from "@playwright/test";
+
+// Smoke test against the REAL Python server in mock mode (no car), with a replayed sniff
+// log for the admin Map. Uses the venv/python given in PYTHON (default python3).
+const PORT = 8099;
+const python = process.env.PYTHON ?? "python3";
+
+export default defineConfig({
+  testDir: "e2e",
+  timeout: 30_000,
+  retries: 0,
+  reporter: [["list"]],
+  use: {
+    baseURL: `http://127.0.0.1:${PORT}`,
+    ...devices["Pixel 7"],
+    browserName: "chromium",
+  },
+  webServer: {
+    command: `${python} ../tools/dashboard.py --mock --host 127.0.0.1 --port ${PORT} --interval 0.3 --replay e2e/sniff-demo.log --admin-password e2e`,
+    env: { PYTHONPATH: "../src" },
+    url: `http://127.0.0.1:${PORT}/snapshot`,
+    reuseExistingServer: false,
+    timeout: 20_000,
+  },
+});

@@ -2,7 +2,7 @@
 title: Web UI (Vite + React + TypeScript) — Design
 area: specs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-01
 depends_on: [decisions/adr-0004-react-typescript-ui.md, decisions/adr-0003-signal-store-source-of-truth.md]
 summary: >
@@ -82,3 +82,13 @@ The data flow is unchanged from v2:
 ## Changelog
 
 - 2026-10-01 — Initial design.
+- 2026-10-01 — Implemented. Deviations from the design:
+  - React 19, not 18 (the current release). TypeScript is pinned to 5.9, because
+    typescript-eslint does not support 7 yet.
+  - One global `styles.css`, not CSS modules: it is a direct port of v2's tokens and
+    rules.
+  - The all-module fault scan is on Faults for every user. It is read-only and was
+    previously only in v1.
+  - The markdown renderer now refuses non-http(s) link schemes, because the UI injects
+    its HTML.
+  - In admin mode the bottom nav scrolls sideways (9 tabs).

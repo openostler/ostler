@@ -10,7 +10,8 @@ The Python package: comms core → interpretation → web consumer. The map is i
 - `signals/*.json` — single source of truth for LID mappings (use `upsert_field`).
 - `sniff/` — capture parsing, the protocol library, automap and calibration.
 - `faultscan.py`, `menus.py`, `community/` — cross-module helpers and opt-in upload.
-- `web/` — consumer: stdlib HTTP + SSE server, data sources, the dashboard.
+- `web/` — consumer: stdlib HTTP + SSE server, data sources. `web/static/` is the built
+  UI from `ui/` (generated — rebuild, never edit); `dashboard*.html` are legacy references.
 
 ## Editing rules
 

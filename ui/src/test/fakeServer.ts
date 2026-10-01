@@ -36,6 +36,7 @@ export function installFakeServer(opts: {
   snapshot?: unknown;
   commands?: Record<string, unknown>;
   docHtml?: string;
+  automap?: unknown;
 } = {}) {
   const calls: Call[] = [];
   const json = (body: unknown, status = 200) =>
@@ -59,7 +60,7 @@ export function installFakeServer(opts: {
       case "/doc": return new Response(opts.docHtml ?? "<h1>Notes</h1><p>Body.</p>", { headers: { "Content-Type": "text/html" } });
       case "/capture": return json({ ok: true, stored: true });
       case "/signal": return json({ ok: true, module: body?.module, name: body?.record?.name });
-      case "/automap": return json({ ok: false, error: "need more samples" });
+      case "/automap": return json(opts.automap ?? { ok: false, error: "need more samples" });
       case "/command": {
         const reply = commands[body?.action] ?? { ok: true, message: `${body?.action} ok` };
         return json(reply, (reply as { ok: boolean }).ok ? 200 : 400);
