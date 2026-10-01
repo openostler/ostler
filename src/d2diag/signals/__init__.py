@@ -76,6 +76,10 @@ class Signal:
     bit: "int | None" = None                       # for kind="bit"
     states: "dict[int, str] | None" = None          # raw value → label (bit/state)
     source: str = ""
+    # Presentation metadata (the UI reads these via /fields — never hard-code them).
+    label: str = ""
+    group: str = ""
+    description: str = ""
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -118,6 +122,9 @@ def _record_to_signal(r: dict) -> Signal:
         bit=r.get("bit"),
         states=states or None,
         source=r.get("source", ""),
+        label=r.get("label", ""),
+        group=r.get("group", ""),
+        description=r.get("description", ""),
     )
 
 

@@ -74,6 +74,30 @@ _DERIVED_TD5 = {
     "lifetime_economy": ("L/100km", "candidate"),
 }
 
+# Presentation metadata for fields that are computed here rather than read from a LID
+# (so they are not in the signal store). /fields merges these with the store, so the UI
+# has ONE metadata source per module. Keys are the UI module names.
+DERIVED_FIELDS: "dict[str, dict[str, dict]]" = {
+    "motor": {
+        "fuel_rate": {"label": "Fuel rate", "group": "Fuelling",
+                      "description": "Fuel flow from injection quantity × rpm (derived, candidate)."},
+        "economy": {"label": "Fuel economy", "group": "Fuelling",
+                    "description": "Live consumption — only meaningful while moving (derived, candidate)."},
+        "trip_economy": {"label": "Trip economy", "group": "Fuelling",
+                         "description": "Average consumption since the dashboard started (derived, candidate)."},
+        "lifetime_economy": {"label": "Lifetime economy", "group": "Fuelling",
+                             "description": "Average consumption across all logged driving (derived, candidate)."},
+    },
+    "slabs": {
+        "height_left_mm": {"unit": "mm", "c": "proven", "label": "Height left", "group": "Ride height",
+                           "description": "Left ride height in mm (derived from the raw sensor)."},
+        "height_right_mm": {"unit": "mm", "c": "proven", "label": "Height right", "group": "Ride height",
+                            "description": "Right ride height in mm (derived from the raw sensor)."},
+    },
+}
+for _k, (_u, _c) in _DERIVED_TD5.items():
+    DERIVED_FIELDS["motor"][_k].update(unit=_u, c=_c)
+
 
 class _FuelComputer:
     """Instantaneous consumption + trip and lifetime averages from injection quantity
@@ -459,7 +483,7 @@ class Td5DataSource(DataSource):
 
 
 # --- SLABS (Wabco ABS/SLS) ------------------------------------------------ #
-_SLABS_UNITS = {"height_left_mm": "mm", "height_right_mm": "mm"}
+_SLABS_UNITS = {k: m["unit"] for k, m in DERIVED_FIELDS["slabs"].items()}
 
 
 def _slabs_sig(values: "dict[str, float]") -> "dict[str, dict]":

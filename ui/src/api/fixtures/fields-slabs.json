@@ -1,0 +1,173 @@
+{
+  "module": "slabs",
+  "fields": [
+    {
+      "name": "height_left",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Height left (raw)",
+      "group": "Ride height",
+      "description": "Left ride-height sensor (raw 0–255). Normal ~110–135; L≈R on level ground.",
+      "derived": false
+    },
+    {
+      "name": "height_right",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Height right (raw)",
+      "group": "Ride height",
+      "description": "Right ride-height sensor (raw 0–255). Normal ~110–135.",
+      "derived": false
+    },
+    {
+      "name": "any_door",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Door open",
+      "group": "Inputs",
+      "description": "Any door open. SLABS won't adjust suspension with a door open. Normal: closed.",
+      "derived": false
+    },
+    {
+      "name": "battery",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        11.5,
+        15.0
+      ],
+      "label": "Battery",
+      "group": "Electrical",
+      "description": "System voltage. 13.8–14.4 V running; below 13 = charging fault.",
+      "derived": false
+    },
+    {
+      "name": "ecu_supply",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        11.5,
+        15.0
+      ],
+      "label": "ECU supply",
+      "group": "Electrical",
+      "description": "Internal SLABS ECU supply voltage.",
+      "derived": false
+    },
+    {
+      "name": "wheel_speed_fl",
+      "unit": "",
+      "c": "candidate",
+      "limits": null,
+      "label": "Wheel speed FL",
+      "group": "Wheels",
+      "description": "Front-left wheel speed (raw ~124 stationary). ⚠ Wheel order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "wheel_speed_fr",
+      "unit": "",
+      "c": "candidate",
+      "limits": null,
+      "label": "Wheel speed FR",
+      "group": "Wheels",
+      "description": "Front-right wheel speed (raw ~124 stationary). ⚠ Wheel order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "wheel_speed_rl",
+      "unit": "",
+      "c": "candidate",
+      "limits": null,
+      "label": "Wheel speed RL",
+      "group": "Wheels",
+      "description": "Rear-left wheel speed. ⚠ Wheel order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "wheel_speed_rr",
+      "unit": "",
+      "c": "candidate",
+      "limits": null,
+      "label": "Wheel speed RR",
+      "group": "Wheels",
+      "description": "Rear-right wheel speed. ⚠ Wheel order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "abs_sensor_fl",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        1.5,
+        3.0
+      ],
+      "label": "ABS sensor FL",
+      "group": "Wheels",
+      "description": "Front-left ABS sensor voltage (~2.3 V). ⚠ Order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "abs_sensor_fr",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        1.5,
+        3.0
+      ],
+      "label": "ABS sensor FR",
+      "group": "Wheels",
+      "description": "Front-right ABS sensor voltage (~2.3 V). ⚠ Order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "abs_sensor_rl",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        1.5,
+        3.0
+      ],
+      "label": "ABS sensor RL",
+      "group": "Wheels",
+      "description": "Rear-left ABS sensor voltage. ⚠ Order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "abs_sensor_rr",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        1.5,
+        3.0
+      ],
+      "label": "ABS sensor RR",
+      "group": "Wheels",
+      "description": "Rear-right ABS sensor voltage. ⚠ Order unconfirmed.",
+      "derived": false
+    },
+    {
+      "name": "height_left_mm",
+      "unit": "mm",
+      "c": "proven",
+      "limits": null,
+      "label": "Height left",
+      "group": "Ride height",
+      "description": "Left ride height in mm (derived from the raw sensor).",
+      "derived": true
+    },
+    {
+      "name": "height_right_mm",
+      "unit": "mm",
+      "c": "proven",
+      "limits": null,
+      "label": "Height right",
+      "group": "Ride height",
+      "description": "Right ride height in mm (derived from the raw sensor).",
+      "derived": true
+    }
+  ]
+}

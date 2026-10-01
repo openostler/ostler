@@ -1,0 +1,28 @@
+{
+  "module": "td5",
+  "modules": [
+    "td5"
+  ],
+  "lids": [
+    {
+      "lid": "09",
+      "raw": "02 fa",
+      "count": 1,
+      "decode": [
+        {
+          "name": "rpm",
+          "offset": 0,
+          "kind": "u16",
+          "value": 762.0,
+          "unit": "rpm"
+        }
+      ]
+    }
+  ],
+  "status": "starting",
+  "error": null,
+  "source": "test:contract",
+  "frames": 1,
+  "lines": 0,
+  "age": null
+}

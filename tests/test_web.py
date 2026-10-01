@@ -736,3 +736,69 @@ def test_fuel_computer_rate_trip_economy():
     assert abs(r["fuel_rate"] - 7.21) < 0.1        # L/h
     assert 6 < r["economy"] < 10                    # momentary L/100km
     assert 6 < r["trip_economy"] < 10               # trip average
+
+
+def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkeypatch):
+    """The built React app is served from web/static: index at / and /admin, fingerprinted
+    assets with an immutable cache header, and nothing outside the static dir."""
+    import urllib.error
+
+    from d2diag.web import server as srvmod
+
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "index.html").write_text("<title>D2 Diag app</title>", encoding="utf-8")
+    (tmp_path / "assets" / "index-abc123.js").write_text("console.log(1)", encoding="utf-8")
+    (tmp_path / "assets" / "index-abc123.css").write_text("body{}", encoding="utf-8")
+    (tmp_path / "favicon.svg").write_text("<svg/>", encoding="utf-8")
+    (tmp_path.parent / "secret.txt").write_text("nope", encoding="utf-8")
+    monkeypatch.setattr(srvmod, "_STATIC", tmp_path)
+
+    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+                     poll_interval=0.05, stream_interval=0.05)
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        for path in ("/", "/v2", "/admin"):
+            assert "D2 Diag app" in urllib.request.urlopen(base + path, timeout=2).read().decode()
+        js = urllib.request.urlopen(base + "/assets/index-abc123.js", timeout=2)
+        assert js.headers["Content-Type"].startswith("text/javascript")
+        assert "immutable" in js.headers["Cache-Control"]
+        css = urllib.request.urlopen(base + "/assets/index-abc123.css", timeout=2)
+        assert css.headers["Content-Type"].startswith("text/css")
+        svg = urllib.request.urlopen(base + "/favicon.svg", timeout=2)
+        assert svg.headers["Content-Type"] == "image/svg+xml"
+        assert svg.headers["Cache-Control"] == "no-cache"
+        for bad in ("/assets/missing.js", "/../secret.txt", "/assets/../../secret.txt",
+                    "/%2e%2e/secret.txt"):
+            with pytest.raises(urllib.error.HTTPError) as ei:
+                urllib.request.urlopen(base + bad, timeout=2)
+            assert ei.value.code == 404
+        # the legacy pages stay reachable (admin is ungated here: no password set)
+        assert "D2 Diag" in urllib.request.urlopen(base + "/legacy/v2", timeout=2).read().decode()
+        assert "Discovery 2" in urllib.request.urlopen(base + "/legacy/v1", timeout=2).read().decode()
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def test_app_falls_back_to_legacy_v2_without_a_build(tmp_path, monkeypatch):
+    from d2diag.web import server as srvmod
+
+    monkeypatch.setattr(srvmod, "_STATIC", tmp_path / "missing")
+    assert srvmod._app_html() == srvmod._DASHBOARD_V2.read_bytes()
+
+
+def test_fields_carry_presentation_metadata_and_derived_fields():
+    from d2diag.web.server import _fields_list
+
+    motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
+    assert motor["coolant_temp"]["label"] == "Coolant"
+    assert motor["coolant_temp"]["group"] == "Temperatures"
+    assert motor["coolant_temp"]["description"]
+    assert motor["economy"]["derived"] and motor["economy"]["unit"] == "L/100km"
+    assert motor["economy"]["c"] == "candidate"
+    slabs = {f["name"]: f for f in _fields_list("slabs")["fields"]}
+    assert slabs["height_left_mm"]["unit"] == "mm" and slabs["height_left_mm"]["derived"]
+    # every stored field has a label and a group — the UI has no fallback table
+    assert all(f["label"] and f["group"] for f in motor.values())
+    assert all(f["label"] and f["group"] for f in slabs.values())

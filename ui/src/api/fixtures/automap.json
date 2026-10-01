@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "mode": "numeric",
+  "diff": [
+    {
+      "lid": "09",
+      "byte": 0,
+      "values": [
+        2,
+        5,
+        8
+      ]
+    },
+    {
+      "lid": "09",
+      "byte": 1,
+      "values": [
+        250,
+        220,
+        152
+      ]
+    }
+  ],
+  "lid": "09",
+  "offset": 0,
+  "kind": "u16",
+  "scale": 1.0,
+  "bias": 0.0,
+  "r2": 1.0,
+  "how": "fit",
+  "clean": true,
+  "signal": "Signal(\"rpm\", 0x09, 0, unit=\"rpm\")"
+}

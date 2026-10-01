@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import hmac
 import json
+import mimetypes
 import os
 import queue
 import subprocess
@@ -20,8 +21,42 @@ from pathlib import Path
 from .docs import DocLibrary
 from .sources import DataSource
 
-_DASHBOARD = Path(__file__).with_name("dashboard.html")
-_DASHBOARD_V2 = Path(__file__).with_name("dashboard_v2.html")  # new design (proof of concept)
+_DASHBOARD = Path(__file__).with_name("dashboard.html")        # legacy v1 (reference only)
+_DASHBOARD_V2 = Path(__file__).with_name("dashboard_v2.html")  # legacy v2 (fallback + reference)
+# The React/TypeScript app (ui/ in the repo), built ahead of time by `npm run build`.
+# Committed and shipped as package-data so a Pi never needs Node (ADR-0004).
+_STATIC = Path(__file__).with_name("static")
+
+_CONTENT_TYPES = {
+    ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8", ".svg": "image/svg+xml",
+    ".json": "application/json", ".map": "application/json",
+    ".woff2": "font/woff2", ".png": "image/png", ".ico": "image/x-icon",
+}
+
+
+def _app_html() -> bytes:
+    """The built app's index.html, or the legacy v2 page when no build is present
+    (a fresh checkout without `npm run build` still has a working dashboard)."""
+    index = _STATIC / "index.html"
+    return index.read_bytes() if index.is_file() else _DASHBOARD_V2.read_bytes()
+
+
+def _static_file(url_path: str) -> "Path | None":
+    """Resolve a request path to a file inside the static dir, or None.
+
+    Guards against traversal: the resolved path must stay inside ``_STATIC``."""
+    rel = url_path.split("?", 1)[0].lstrip("/")
+    if not rel or rel.endswith("/"):
+        return None
+    root = _STATIC.resolve()
+    try:
+        target = (root / rel).resolve()
+    except (OSError, ValueError):
+        return None
+    if root not in target.parents or not target.is_file():
+        return None
+    return target
 
 
 def _calibrate(req: "dict") -> "dict":
@@ -111,13 +146,24 @@ def _signals_list(module: str) -> "dict":
 
 
 def _fields_list(module: str) -> "dict":
-    """Expected fields for a module (name/unit/confidence) — so the UI can show
-    the layout with empty placeholders even WITHOUT a cable/live data."""
+    """Expected fields for a module — name/unit/confidence/limits plus the presentation
+    metadata (label/group/description) — so the UI can show the layout with empty
+    placeholders even WITHOUT a cable/live data. The UI's only metadata source."""
     from ..signals import load_signals
 
+    from .sources import DERIVED_FIELDS
+
     store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
-    fields = [{"name": s.name, "unit": s.unit, "c": s.confidence, "limits": s.limits}
+    fields = [{"name": s.name, "unit": s.unit, "c": s.confidence,
+               "limits": list(s.limits) if s.limits else None,
+               "label": s.label or s.name, "group": s.group or "Other",
+               "description": s.description, "derived": False}
               for s in load_signals(store_mod)]
+    for name, m in DERIVED_FIELDS.get(module, {}).items():
+        fields.append({"name": name, "unit": m.get("unit", ""), "c": m.get("c", "candidate"),
+                       "limits": None, "label": m.get("label", name),
+                       "group": m.get("group", "Other"),
+                       "description": m.get("description", ""), "derived": True})
     return {"module": module, "fields": fields}
 
 
@@ -126,19 +172,22 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self) -> None:  # noqa: N802
-        # v2 is now the normal UI at "/". "/v2" is kept as an alias for old
-        # bookmarks. The old v1 dashboard is the mapping/admin console and
-        # lives at "/admin" behind a password (it has the Map/Capture/Docs tabs).
+        # The app is served at "/" ("/v2" kept as an alias for old bookmarks). "/admin"
+        # is the same app behind a password: the page detects /admin and shows the
+        # mapping tabs. The hand-written legacy pages stay reachable behind admin as a
+        # reference until the new app has been used in the car (ADR-0004).
         if self.path in ("/", "/index.html", "/v2", "/v2.html"):
-            self._send(_DASHBOARD_V2.read_bytes(), "text/html; charset=utf-8")
-        elif self.path in ("/admin", "/admin.html"):
-            # Same app as "/", but admin mode: the page detects /admin and shows
-            # the mapping tabs. One app, one routing, one UI.
+            self._send(_app_html(), "text/html; charset=utf-8")
+        elif self.path in ("/admin", "/admin/", "/admin.html"):
+            if not self._require_admin():
+                return
+            self._send(_app_html(), "text/html; charset=utf-8")
+        elif self.path in ("/legacy/v2", "/legacy/v2.html"):
             if not self._require_admin():
                 return
             self._send(_DASHBOARD_V2.read_bytes(), "text/html; charset=utf-8")
-        elif self.path in ("/v1", "/v1.html"):
-            if not self._require_admin():  # the old dashboard — kept as a reference
+        elif self.path in ("/v1", "/v1.html", "/legacy/v1", "/legacy/v1.html"):
+            if not self._require_admin():
                 return
             self._html()
         elif self.path == "/events":
@@ -197,7 +246,16 @@ class _Handler(BaseHTTPRequestHandler):
             else:
                 self._send(frag.encode("utf-8"), "text/html; charset=utf-8")
         else:
-            self.send_error(404)
+            f = _static_file(self.path)
+            if f is None or f.name == "index.html":
+                self.send_error(404)
+                return
+            ctype = _CONTENT_TYPES.get(f.suffix) or (
+                mimetypes.guess_type(f.name)[0] or "application/octet-stream")
+            # Vite fingerprints everything under /assets/ → safe to cache forever.
+            cache = ("public, max-age=31536000, immutable"
+                     if self.path.startswith("/assets/") else "no-cache")
+            self._send(f.read_bytes(), ctype, cache=cache)
 
     def do_POST(self) -> None:  # noqa: N802
         if self.path == "/command":
@@ -296,9 +354,12 @@ class _Handler(BaseHTTPRequestHandler):
         return False
 
     # ---- responses ----------------------------------------------------- #
-    def _send(self, body: bytes, content_type: str, code: int = 200) -> None:
+    def _send(self, body: bytes, content_type: str, code: int = 200,
+              cache: "str | None" = None) -> None:
         self.send_response(code)
         self.send_header("Content-Type", content_type)
+        if cache:
+            self.send_header("Cache-Control", cache)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
