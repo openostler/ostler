@@ -17,7 +17,7 @@ export default defineConfig({
     browserName: "chromium",
   },
   webServer: {
-    command: `${python} ../tools/dashboard.py --mock --host 127.0.0.1 --port ${PORT} --interval 0.3 --replay e2e/sniff-demo.log --admin-password e2e`,
+    command: `${python} ../tools/dashboard.py --mock --host 127.0.0.1 --port ${PORT} --interval 0.3 --replay e2e/sniff-demo.txt --admin-password e2e`,
     env: { PYTHONPATH: "../src" },
     url: `http://127.0.0.1:${PORT}/snapshot`,
     reuseExistingServer: false,
