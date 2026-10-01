@@ -10,6 +10,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0004-react-typescript-ui.md` — React + TS dashboard shipped as static assets.
 - `adr-0005-nanocom-sniff-workflow.md` — passive NanoCom capture, candidate-only import.
 - `adr-0006-english-confidence-vocabulary.md` — `proven`/`candidate` replace the Swedish `belagt`/`kandidat`.
+- `adr-0007-bcu-security-access.md` — derive the BCU seed→key offline freely; gate every live SecurityAccess byte.
 
 ## Editing rules
 

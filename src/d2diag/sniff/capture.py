@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import re
 
+from .modules import ModuleTracker
+
 SERVICES = {
     0x10: "StartDiagSession", 0x14: "ClearFaults", 0x18: "ReadDTC",
     0x1A: "ReadEcuId", 0x20: "StopDiagSession", 0x21: "ReadLocalId",
@@ -17,10 +19,6 @@ SERVICES = {
     0x3B: "WriteLocalId", 0x3E: "TesterPresent",
 }
 _LINE = re.compile(r"\[\s*(\d+)\s*\]\s*([0-9a-fA-F ]+)")
-_INIT = {
-    (0x81, 0x13, 0xF7, 0x81): "td5",
-    (0x81, 0x29, 0xF7, 0x81): "slabs",
-}
 
 
 def parse_log(path: str) -> "list[tuple]":
@@ -66,11 +64,6 @@ def split_frames(b: "list[int]") -> "tuple[list, int]":
     return out, i
 
 
-def _contains(seq, sub) -> bool:
-    n = len(sub)
-    return any(tuple(seq[i : i + n]) == sub for i in range(len(seq) - n + 1))
-
-
 def classify_frame(frame: "list[int]") -> "dict":
     """→ {dir, sid, service, lid, payload(hex), cs_ok} for a KWP frame."""
     payload = frame[1:-1]
@@ -97,14 +90,12 @@ def frames_with_context(events) -> "list[dict]":
 
     Also returns the remainder (non-KWP bytes) per line as ``raw`` entries."""
     out: "list[dict]" = []
-    module, mark = None, None
+    tracker, mark = ModuleTracker(), None
     for ms, kind, p in events:
         if kind == "mark":
             mark = p
             continue
-        for sig, name in _INIT.items():
-            if _contains(p, sig):
-                module = name
+        module = tracker.feed(p)
         frames, consumed = split_frames(p)
         for f in frames:
             out.append({"ms": ms, "module": module, "annotation": mark, "kwp": classify_frame(f)})
