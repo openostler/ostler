@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Community, Field, Snapshot } from "../api/schemas";
+import type { Community, FaultMeaning, Field, Snapshot } from "../api/schemas";
 import type { LiveState } from "./live";
 import type { Prefs } from "./prefs";
 
@@ -12,6 +12,8 @@ export type AppContext = {
   module: string;
   /** Field metadata for the active module, by signal name (from /fields). */
   fields: Record<string, Field>;
+  /** Look up a fault code's meaning (from /faults) by the decoder's raw string. */
+  faultMeaning: (raw: string) => FaultMeaning | undefined;
   refresh: () => void;
   prefs: Prefs;
   setPrefs: (patch: Partial<Prefs>) => void;

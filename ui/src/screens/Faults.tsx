@@ -22,6 +22,7 @@ function download(name: string, text: string) {
 function FaultGroup({ items, label, kind, note }: {
   items: ParsedFault[]; label: string; kind: "current" | "logged"; note: string;
 }) {
+  const { faultMeaning } = useApp();
   if (!items.length) return null;
   return (
     <section>
@@ -29,13 +30,23 @@ function FaultGroup({ items, label, kind, note }: {
         <span className="kicker">{label} · {items.length}</span><span className="small dis">{note}</span>
       </div>
       <div className="stack">
-        {items.map((f) => (
-          <div className={`fault ${kind}`} key={`${f.raw}${f.text}${f.tag}`}>
-            <span className="ficon" aria-hidden="true">!</span>
-            <div className="ftext">{f.text}</div>
-            <div className="fmeta">{f.raw ? <span className="code">{f.raw}</span> : null}<span>{f.tag || label}</span></div>
-          </div>
-        ))}
+        {items.map((f) => {
+          const m = faultMeaning(f.orig);
+          return (
+            <div className={`fault ${kind}`} key={`${f.raw}${f.text}${f.tag}`}>
+              <span className="ficon" aria-hidden="true">!</span>
+              <div className="ftext">
+                {f.text}
+                {m?.cause ? <div className="small muted pretty">{m.cause}</div> : null}
+              </div>
+              <div className="fmeta">
+                {f.raw ? <span className="code">{f.raw}</span> : null}
+                {m?.pcode ? <span className="code">{m.pcode}</span> : null}
+                <span>{f.tag || label}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

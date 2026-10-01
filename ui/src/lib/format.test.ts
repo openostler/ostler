@@ -27,6 +27,7 @@ describe("parseFault", () => {
   it("splits a SLABS code, text and tag", () => {
     expect(parseFault("027: shuttle valve switch — electrical failure (Current)")).toEqual({
       raw: "027", text: "shuttle valve switch — electrical failure", tag: "Current", current: true,
+      orig: "027: shuttle valve switch — electrical failure (Current)",
     });
   });
   it("treats Logged as not current", () => {
