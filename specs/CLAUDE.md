@@ -6,6 +6,7 @@ here before implementation starts.
 ## Files
 
 - `2026-09-30-vibes-adoption-design.md` — adopting Vibes as Code (docs layer).
+- `2026-10-01-docs-restructure-design.md` — splitting, de-duplicating and translating the docs.
 
 ## Editing rules
 

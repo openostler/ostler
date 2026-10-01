@@ -9,6 +9,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0003-signal-store-source-of-truth.md` — signals JSON plus confidence tags.
 - `adr-0004-react-typescript-ui.md` — React + TS dashboard shipped as static assets.
 - `adr-0005-nanocom-sniff-workflow.md` — passive NanoCom capture, candidate-only import.
+- `adr-0006-english-confidence-vocabulary.md` — `proven`/`candidate` replace `belagt`/`kandidat`.
 
 ## Editing rules
 
