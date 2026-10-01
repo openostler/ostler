@@ -11,7 +11,7 @@ from .bcu.menu import BCU_MENU
 from .slabs.menu import SLABS_MENU
 from .td5.menu import TD5_MENU
 
-# Ordning = visningsordning i Karta-pickern.
+# Order = display order in the dashboard's coverage-map picker.
 MENUS: "dict[str, list]" = {
     "td5": TD5_MENU,
     "slabs": SLABS_MENU,

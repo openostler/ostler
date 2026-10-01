@@ -77,15 +77,15 @@ def test_read_block_differential_over_scripted_fake():
 def test_build_record_numeric():
     res = {"ok": True, "mode": "numeric", "lid": "1c", "offset": 0,
            "kind": "u16", "scale": 0.0001, "bias": 0.0}
-    rec = dm.build_record(res, "boost", "bar", "kandidat")
+    rec = dm.build_record(res, "boost", "bar", "candidate")
     assert rec["kind"] == "u16" and rec["lid"] == "1c"
-    assert rec["scale"] == 0.0001 and rec["confidence"] == "kandidat" and rec["unit"] == "bar"
+    assert rec["scale"] == 0.0001 and rec["confidence"] == "candidate" and rec["unit"] == "bar"
 
 
 def test_build_record_state_bit_inverts_mapping():
     res = {"ok": True, "mode": "state", "lid": "56", "offset": 0, "bit": 0,
            "mapping": {"open": 1, "closed": 0}}
-    rec = dm.build_record(res, "any_door", "", "kandidat")
+    rec = dm.build_record(res, "any_door", "", "candidate")
     assert rec["kind"] == "bit" and rec["bit"] == 0
     assert rec["states"] == {1: "open", 0: "closed"}
 

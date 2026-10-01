@@ -68,10 +68,10 @@ _SLABS_COVERAGE = frozenset({
 _INJ_PER_REV = 2.5          # 5-cyl 4-stroke: 5/2 injections per crankshaft revolution
 _DIESEL_G_PER_L = 832.0     # diesel density
 _DERIVED_TD5 = {
-    "fuel_rate":        ("L/h", "kandidat"),
-    "economy":          ("L/100km", "kandidat"),
-    "trip_economy":     ("L/100km", "kandidat"),
-    "lifetime_economy": ("L/100km", "kandidat"),
+    "fuel_rate":        ("L/h", "candidate"),
+    "economy":          ("L/100km", "candidate"),
+    "trip_economy":     ("L/100km", "candidate"),
+    "lifetime_economy": ("L/100km", "candidate"),
 }
 
 
@@ -164,10 +164,10 @@ def _conf_of(module: str, name: str, conf: "dict[str, str]") -> str:
         return conf[name]
     if module == "slabs":
         if name.startswith("height_"):
-            return "belagt"          # derived from a proven height
+            return "proven"          # derived from a proven height
         if name.startswith(("wheel_speed_", "abs_sensor_")):
-            return "kandidat"        # wheel speed/voltage: scale not confirmed
-    return "belagt"
+            return "candidate"        # wheel speed/voltage: scale not confirmed
+    return "proven"
 
 
 def _sig(values: "dict[str, float]", module: str = "td5") -> "dict[str, dict]":
@@ -208,7 +208,7 @@ class DataSource(abc.ABC):
         }
 
     Per signal: ``v`` value, ``u`` unit, ``s`` status ("ok"/"low"/"high"/"suspect"/None),
-    ``c`` confidence ("belagt"/"kandidat"). ``menu_map()`` and ``command()`` are the
+    ``c`` confidence ("proven"/"candidate"). ``menu_map()`` and ``command()`` are the
     coverage-map and write-command halves of the same boundary.
     """
 

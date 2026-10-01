@@ -322,7 +322,7 @@ function flagFor(n, s, f){
   if(st==="low") return {cls:"lo",txt:"LOW"};
   if(st==="high") return {cls:"hi",txt:"HIGH"};
   const c = (s&&s.c) || (f&&f.c);
-  if(c==="kandidat") return {cls:"exp",txt:"EXP"};
+  if(c==="candidate") return {cls:"exp",txt:"EXP"};
   return {cls:"ok",txt:"OK"};
 }
 function fmt(v){ return (typeof v==="number") ? (Math.abs(v)>=100?v.toFixed(0):v.toFixed(1)) : "–"; }
@@ -429,7 +429,7 @@ function trendSvg(){
   </div>`;
 }
 function readoutCard(n, s, f){
-  const c = (s&&s.c)||(f&&f.c), dim = (c==="kandidat" && !EXPERIMENTAL);
+  const c = (s&&s.c)||(f&&f.c), dim = (c==="candidate" && !EXPERIMENTAL);
   const flag = flagFor(n,s,f);
   const isDoor = n==="any_door";
   const value = isDoor ? (s ? (s.v?"open":"closed") : "–") : (s ? s.v : null);

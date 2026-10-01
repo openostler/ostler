@@ -144,7 +144,7 @@
   .flog code { background:var(--card2); padding:0 5px; border-radius:4px; font-size:11.5px; }
   section h2 .gcount { color:var(--muted); font-weight:600; font-size:11px; text-transform:none; letter-spacing:0; }
   /* coverage bars (Map picker + map header) */
-  #karta-picker { display:flex; flex-direction:column; gap:7px; }
+  #covmap-picker { display:flex; flex-direction:column; gap:7px; }
   .kmod { display:block; width:100%; text-align:left; padding:9px 11px; border-radius:10px;
     border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; }
   .kmod.active { border-color:var(--accent); }
@@ -299,8 +299,8 @@
   <div class="tab" data-tab="motor">Engine</div>
   <div class="tab" data-tab="slabs">SLABS</div>
   <div class="tab" data-tab="faults">Faults</div>
-  <div class="tab adv" data-tab="fangst">Capture</div>
-  <div class="tab adv" data-tab="karta">Map</div>
+  <div class="tab adv" data-tab="capture">Capture</div>
+  <div class="tab adv" data-tab="covmap">Map</div>
   <div class="tab adv" data-tab="dok">Docs</div>
 </div>
 
@@ -433,11 +433,11 @@
   </div>
 
   <!-- ===================== MAP / COVERAGE ===================== -->
-  <div class="view" id="view-karta">
+  <div class="view" id="view-covmap">
     <section>
       <h2>Coverage — reference tool vs our code</h2>
-      <div id="karta-picker" class="btns" style="margin-bottom:10px"></div>
-      <div id="karta-body"><div class="hint">Loading…</div></div>
+      <div id="covmap-picker" class="btns" style="margin-bottom:10px"></div>
+      <div id="covmap-body"><div class="hint">Loading…</div></div>
     </section>
   </div>
 
@@ -453,17 +453,17 @@
   </div>
 
   <!-- ===================== CAPTURE (label live-streaming codes) ===================== -->
-  <div class="view" id="view-fangst">
+  <div class="view" id="view-capture">
     <section>
       <h2>Capture — label the codes as they stream</h2>
       <div class="hint">Pick a screen on the reference tool. Codes polled over and over show up here. Type what the reference tool shows (values in displayed order) and save.</div>
-      <div id="fangst-badge" style="margin:8px 0"></div>
-      <div class="btns"><button class="btn ok wide" id="fangst-new">⬤ New capture — wait for a read</button></div>
-      <div id="fangst-status" style="margin:10px 0"></div>
-      <div id="fangst-active"></div>
-      <div class="btns" style="margin-top:6px"><button class="btn" id="fangst-reset">↺ Cancel</button></div>
+      <div id="capture-badge" style="margin:8px 0"></div>
+      <div class="btns"><button class="btn ok wide" id="capture-new">⬤ New capture — wait for a read</button></div>
+      <div id="capture-status" style="margin:10px 0"></div>
+      <div id="capture-active"></div>
+      <div class="btns" style="margin-top:6px"><button class="btn" id="capture-reset">↺ Cancel</button></div>
       <h2 style="margin-top:18px">Saved captures</h2>
-      <div id="fangst-log"></div>
+      <div id="capture-log"></div>
     </section>
   </div>
 
@@ -561,7 +561,7 @@
     if(m.d) parts.push(m.d);
     if(lim) parts.push("Normal: "+lim[0]+"–"+lim[1]+((s&&s.u)||(f&&f.u)||""));
     const c = (s&&s.c) || (f&&f.c);
-    if(c) parts.push(c==="kandidat" ? "Experimental (candidate — unverified)" : "Verified against the car");
+    if(c) parts.push(c==="candidate" ? "Experimental (candidate — unverified)" : "Verified against the car");
     return parts.join("\n");
   }
   // Render a grouped list of signal rows. ALL fields are always shown (the layout is
@@ -579,7 +579,7 @@
       const rows = byGroup[g].sort().map(n => {
         const s = sig[n], f = fmap[n]||{}, c = s ? s.c : f.c;
         const reveal = shown(sig[n]||fmap[n]);   // candidate + not experimental → hide the value
-        const badge = c==="kandidat" ? ' <span class="exp">exp</span>' : "";
+        const badge = c==="candidate" ? ' <span class="exp">exp</span>' : "";
         const cls = (reveal && s && (s.s==="low"||s.s==="high")) ? " s-"+s.s : "";
         let val = "–";
         if(reveal && s) val = (n==="any_door") ? (s.v?"open":"closed") : fmt(s.v);
@@ -627,11 +627,11 @@
   document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
     const name = t.dataset.tab;
     _userNav = true;
-    stopKartaSniff(); stopFangst();
+    stopCovMapSniff(); stopCapture();
     if (name === "home") { showTab("home"); renderHome(); }
-    else if (name === "karta") { showTab("karta"); loadMap(); }
+    else if (name === "covmap") { showTab("covmap"); loadMap(); }
     else if (name === "dok") { showTab("dok"); loadDocs(); }
-    else if (name === "fangst") { showTab("fangst"); startFangst(); }
+    else if (name === "capture") { showTab("capture"); startCapture(); }
     else if (name === "faults") { showTab("faults"); }
     else selectModule(name);
   });
@@ -668,9 +668,9 @@
 
   // ---- Map: live sniff integration (lights up when the reference tool polls the field) ----
   let _kSniffTimer=null, _ksniff=null, _kCounts={}, _kActive=new Set(), _kModule=null, _kMeta={}, _kFocus=null, _kBaked=false;
-  function stopKartaSniff(){ if(_kSniffTimer){ clearInterval(_kSniffTimer); _kSniffTimer=null; } }
-  function startKartaSniff(module){
-    stopKartaSniff(); _kModule=module; _kCounts={}; _kMeta={}; _kFocus=null; _kBaked=false;
+  function stopCovMapSniff(){ if(_kSniffTimer){ clearInterval(_kSniffTimer); _kSniffTimer=null; } }
+  function startCovMapSniff(module){
+    stopCovMapSniff(); _kModule=module; _kCounts={}; _kMeta={}; _kFocus=null; _kBaked=false;
     const poll=async()=>{
       try{
         const d=await (await fetch("/sniff"+(module?("?module="+module):""))).json();
@@ -679,8 +679,8 @@
         _ksniff=ns;
         const fps=(_kMeta.lines!=null)?Math.max(0, (d.lines||0)-_kMeta.lines):0;
         _kMeta={status:d.status, age:d.age, frames:d.frames||0, lines:d.lines||0, source:d.source, error:d.error, fps, configured:d.status!=null};
-        if(!_kBaked && (d.lids||[]).length){ _kBaked=true; renderKartaLive(); }  // bake in values once when data has arrived
-        if(document.getElementById("view-karta").classList.contains("active")) updateKartaLive();
+        if(!_kBaked && (d.lids||[]).length){ _kBaked=true; renderCovMapLive(); }  // bake in values once when data has arrived
+        if(document.getElementById("view-covmap").classList.contains("active")) updateCovMapLive();
       }catch(e){ _kMeta={status:"error", error:"no connection to the server", configured:true}; }
     };
     poll(); _kSniffTimer=setInterval(poll,1000);
@@ -704,23 +704,23 @@
     else if((hit.decode||[]).length){ our=hit.decode.map(d=>d.name+"="+d.value+(d.unit||"")).join(", "); }
     return {seen:true,active,our,raw:hit.raw};
   }
-  function updateBadge(){ const s=document.getElementById("karta-live"); if(s) s.innerHTML=sniffBadge(_kMeta, _kActive); }
+  function updateBadge(){ const s=document.getElementById("covmap-live"); if(s) s.innerHTML=sniffBadge(_kMeta, _kActive); }
   function setFocus(row){
-    document.querySelectorAll("#karta-body .mrow.focus").forEach(r=>r.classList.remove("focus"));
+    document.querySelectorAll("#covmap-body .mrow.focus").forEach(r=>r.classList.remove("focus"));
     if(row){ row.classList.add("focus"); _kFocus=row.dataset.name||null; refreshFocus(); row.scrollIntoView({block:"nearest"}); }
     else _kFocus=null;
   }
   function refreshFocus(){
-    const row=document.querySelector("#karta-body .mrow.focus"); if(!row) return;
+    const row=document.querySelector("#covmap-body .mrow.focus"); if(!row) return;
     const lv=liveFor(row.dataset.lid, row.dataset.sig||"");
     const o=row.querySelector(".mour b"); if(o) o.textContent=(lv&&lv.our!=null)?lv.our:"—";
     const r=row.querySelector(".mrawv"); if(r) r.textContent=(lv&&lv.raw)||"";
     const d=row.querySelector(".mlive-dot"); if(d) d.classList.toggle("on", !!(lv&&lv.active));
   }
   // each second: update the badge + the live VALUE on every row (calm: text only, no animation)
-  function updateKartaLive(){
+  function updateCovMapLive(){
     updateBadge();
-    document.querySelectorAll("#karta-body .mrow[data-lid]").forEach(row=>{
+    document.querySelectorAll("#covmap-body .mrow[data-lid]").forEach(row=>{
       const lv=liveFor(row.dataset.lid, row.dataset.sig||"");
       const o=row.querySelector(".mour b"); if(o){ const v=(lv&&lv.our!=null)?lv.our:"—"; if(o.textContent!==v) o.textContent=v; }
       const r=row.querySelector(".mrawv"); if(r){ const rw=(lv&&lv.raw)||""; if(r.textContent!==rw) r.textContent=rw; }
@@ -768,31 +768,31 @@
       const d = await (await fetch(module ? "/map?module=" + module : "/map")).json();
       _kmap = d; _kModule = d.module;
       renderPicker(d.modules || [], d.module, d.coverage || {});
-      renderKartaLive();
-      startKartaSniff(d.module);
-    } catch (e) { $("karta-body").innerHTML = '<div class="hint">Could not load the map.</div>'; }
+      renderCovMapLive();
+      startCovMapSniff(d.module);
+    } catch (e) { $("covmap-body").innerHTML = '<div class="hint">Could not load the map.</div>'; }
   }
   function renderPicker(modules, active, cov) {
-    $("karta-picker").innerHTML = modules.map(m => { const c = cov[m] || {ok:0,maybe:0,total:0};
+    $("covmap-picker").innerHTML = modules.map(m => { const c = cov[m] || {ok:0,maybe:0,total:0};
       return `<button class="kmod${m === active ? " active" : ""}" data-kmod="${m}">` +
         `<span class="kmod-top"><span class="kmod-name">${m.toUpperCase()}</span>` +
         `<span class="kmod-frac">${pctOf(c)}% · ${c.ok}/${c.total}${c.maybe?` <em>+${c.maybe}</em>`:""}</span></span>` +
         bar(c) + `</button>`; }).join("");
-    $("karta-picker").querySelectorAll("[data-kmod]").forEach(b => b.onclick = () => loadMap(b.dataset.kmod));
+    $("covmap-picker").querySelectorAll("[data-kmod]").forEach(b => b.onclick = () => loadMap(b.dataset.kmod));
   }
-  function renderKartaLive(){
+  function renderCovMapLive(){
     if(!_kmap) return;
     const module=_kmap.module||"?", map=_kmap.map||[], cov=(_kmap.coverage||{})[module];
-    if(!map.length){ $("karta-body").innerHTML=`<div class="hint">No map for "${module}" yet.</div>`; return; }
+    if(!map.length){ $("covmap-body").innerHTML=`<div class="hint">No map for "${module}" yet.</div>`; return; }
     let ok=0,mb=0,tot=0;
     map.forEach(g=>g.items.forEach(i=>{tot++;if(i.status==="ok")ok++;else if(i.status==="maybe")mb++;}));
     const c=cov||{ok,maybe:mb,total:tot}, pct=pctOf(c);
-    let html=`<div class="mapsum">Module <b>${module.toUpperCase()}</b> · covered <b>${pct}%</b> — confirmed <b>${ok}/${tot}</b>${mb?` · started <b>${mb}</b>`:""} · <span class="snlive" id="karta-live"></span></div>`+
+    let html=`<div class="mapsum">Module <b>${module.toUpperCase()}</b> · covered <b>${pct}%</b> — confirmed <b>${ok}/${tot}</b>${mb?` · started <b>${mb}</b>`:""} · <span class="snlive" id="covmap-live"></span></div>`+
       `<div class="kbar big"><i class="ok" style="width:${tot?100*ok/tot:0}%"></i><i class="mb" style="width:${tot?100*mb/tot:0}%"></i></div>`;
     html+=map.map(g=>{ let go=0,gt=0; g.items.forEach(i=>{gt++;if(i.status==="ok")go++;});
       return `<h2 style="margin-top:14px">${g.cat} <span class="gcount">${go}/${gt}</span></h2>`+g.items.map(i=>rowHtml(g.cat,i)).join(""); }).join("");
-    $("karta-body").innerHTML=html;
-    bindRowActions(); updateKartaLive();
+    $("covmap-body").innerHTML=html;
+    bindRowActions(); updateCovMapLive();
   }
   function rowHtml(cat,i){
     if(!i.lid) return `<div class="mrow ${i.status}"><div class="mrow-top"><span>${mIcon(i.status)} ${i.name}</span><span class="mref">${i.ref||""}</span></div></div>`;
@@ -810,7 +810,7 @@
   function getReadings(k){ try{ return JSON.parse(localStorage.getItem(k)||"[]"); }catch(_){ return []; } }
   function setReadings(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
   function bindRowActions(){
-    document.querySelectorAll("#karta-body .mrow[data-lid]").forEach(row=>{
+    document.querySelectorAll("#covmap-body .mrow[data-lid]").forEach(row=>{
       const cat=decodeURIComponent(row.dataset.cat), name=decodeURIComponent(row.dataset.name), rk=readingsKey(cat,name);
       const inp=row.querySelector(".mtruth"), rec=row.querySelector(".mrec");
       const top=row.querySelector(".mrow-top"); if(top) top.onclick=()=>setFocus(row.classList.contains("focus")?null:row);
@@ -852,7 +852,7 @@
   }
   // Build a store record from an automap result and write it via POST /signal.
   function recordFromSolve(r, name, unit){
-    const rec={name, lid:r.lid, offset:r.offset, unit:unit||"", confidence:"kandidat",
+    const rec={name, lid:r.lid, offset:r.offset, unit:unit||"", confidence:"candidate",
                source:"Map mapping (differential/plaintext)"};
     if(r.mode==="state"||r.mapping){
       const states={}; Object.keys(r.mapping).forEach(k=>{ states[r.mapping[k]]=k; });
@@ -950,7 +950,7 @@
   // ---- Trust (Verified / Experimental) + Home module grid ----
   let _trust = localStorage.getItem("trust")==="experimental" ? "experimental" : "verified";
   let _last = null;
-  function shown(s){ if(!s) return false; return _trust==="experimental" || s.c!=="kandidat"; }
+  function shown(s){ if(!s) return false; return _trust==="experimental" || s.c!=="candidate"; }
   function renderTrust(){
     const el=$("trust"); if(!el) return;
     el.innerHTML = ["verified","experimental"].map(t=>
@@ -1100,16 +1100,16 @@
   // ---- Capture: batch collection (press "New capture" → read on the reference tool → describe) ----
   let _fTimer=null, _fBase={}, _fBatch=[], _fBatchRaw={}, _fBatchCount={}, _fArmed=false, _fArmStart=0, _fLastData=0,
       _fSnap={}, _fMeta={}, _fStatus="idle", _fSig="";
-  function stopFangst(){ if(_fTimer){ clearInterval(_fTimer); _fTimer=null; } }
-  function armFangst(){
+  function stopCapture(){ if(_fTimer){ clearInterval(_fTimer); _fTimer=null; } }
+  function armCapture(){
     _fBatch=[]; _fBatchRaw={}; _fBatchCount={}; _fArmed=true; _fStatus="armed"; _fArmStart=Date.now(); _fLastData=0;
-    _fBase={}; Object.values(_fSnap).forEach(l=>{ _fBase[l.lid]=l.count; }); _fSig=""; renderFangst();
+    _fBase={}; Object.values(_fSnap).forEach(l=>{ _fBase[l.lid]=l.count; }); _fSig=""; renderCapture();
   }
-  function resetFangst(){ _fArmed=false; _fBatch=[]; _fBatchRaw={}; _fStatus="idle"; _fSig="x"; renderFangst(); }
-  function startFangst(){
-    stopFangst(); renderFangstLog();
-    const nb=document.getElementById("fangst-new"); if(nb) nb.onclick=armFangst;
-    const rs=document.getElementById("fangst-reset"); if(rs) rs.onclick=resetFangst;
+  function resetCapture(){ _fArmed=false; _fBatch=[]; _fBatchRaw={}; _fStatus="idle"; _fSig="x"; renderCapture(); }
+  function startCapture(){
+    stopCapture(); renderCaptureLog();
+    const nb=document.getElementById("capture-new"); if(nb) nb.onclick=armCapture;
+    const rs=document.getElementById("capture-reset"); if(rs) rs.onclick=resetCapture;
     const poll=async()=>{
       try{
         const d=await (await fetch("/sniff")).json();
@@ -1123,15 +1123,15 @@
           if(_fBatch.length && now-_fLastData>4000){ _fArmed=false; _fStatus="done"; _fSig=""; }
           else if(!_fBatch.length && now-_fArmStart>4000){ _fArmed=false; _fStatus="timeout"; _fSig=""; }
         }
-        renderFangst();
+        renderCapture();
       }catch(e){}
     };
     poll(); _fTimer=setInterval(poll,500);
   }
   function fDecodeText(l){ return (l&&l.decode&&l.decode.length)? l.decode.map(s=>s.name+"="+s.value+(s.unit||"")).join(", ") : "(no mapping yet)"; }
-  function renderFangst(){
-    const b=document.getElementById("fangst-badge"); if(b) b.innerHTML=sniffBadge(_fMeta, null);
-    const st=document.getElementById("fangst-status");
+  function renderCapture(){
+    const b=document.getElementById("capture-badge"); if(b) b.innerHTML=sniffBadge(_fMeta, null);
+    const st=document.getElementById("capture-status");
     if(st){
       if(_fStatus==="armed"){ const left=Math.max(0,4-Math.round((Date.now()-(_fLastData||_fArmStart))/1000));
         st.innerHTML='<span class="sniffbad stale">● waiting for a read… press READ on the reference tool ('+left+'s)</span>'; }
@@ -1141,37 +1141,37 @@
     }
     const sig=_fStatus+"|"+_fBatch.join(",");
     if(sig!==_fSig){ _fSig=sig; buildBatchCards(); }
-    _fBatch.forEach(lid=>{ const card=document.querySelector('#fangst-active .fcard[data-lid="'+lid+'"]'); if(!card) return;
+    _fBatch.forEach(lid=>{ const card=document.querySelector('#capture-active .fcard[data-lid="'+lid+'"]'); if(!card) return;
       const raw=card.querySelector(".fraw"); const rw=((_fSnap[lid]||{}).raw)||""; if(raw&&raw.textContent!==rw) raw.textContent=rw;
       const o=card.querySelector(".four"); if(o) o.textContent=fDecodeText(_fSnap[lid]);
       const cnt=card.querySelector(".fcnt"); if(cnt) cnt.textContent="×"+(_fBatchCount[lid]||1); });
-    renderFangstLog();
+    renderCaptureLog();
   }
   function buildBatchCards(){
-    const box=document.getElementById("fangst-active"); if(!box) return;
+    const box=document.getElementById("capture-active"); if(!box) return;
     if(!_fBatch.length){ box.innerHTML=""; return; }
     box.innerHTML=_fBatch.map(lid=>{ const l=_fSnap[lid]||{decode:[]}; const raw=l.raw||"";  // LIVE raw bytes (updated)
       return '<div class="fcard" data-lid="'+lid+'"><div class="fcard-h"><b>21 '+lid+'</b><span class="fdot fcnt">×'+(_fBatchCount[lid]||1)+'</span></div>'+
         '<div class="fraw">'+raw+'</div>'+
         '<div class="fmap">our mapping: <span class="four">'+fDecodeText(l)+'</span></div>'+
         '<div class="frow"><input class="ftext" placeholder="what does the reference tool show? (values in displayed order)"></div></div>'; }).join("")+
-      '<button class="btn ok wide" id="fangst-savebatch">Save batch</button>';
-    const sb=document.getElementById("fangst-savebatch"); if(sb) sb.onclick=saveBatch;
+      '<button class="btn ok wide" id="capture-savebatch">Save batch</button>';
+    const sb=document.getElementById("capture-savebatch"); if(sb) sb.onclick=saveBatch;
   }
   async function saveBatch(){
     let n=0;
-    for(const card of [...document.querySelectorAll('#fangst-active .fcard')]){
+    for(const card of [...document.querySelectorAll('#capture-active .fcard')]){
       const lid=card.dataset.lid, text=(card.querySelector('.ftext').value||"").trim(); if(!text) continue;
       const raw=((_fSnap[lid]||{}).raw)||"";  // capture current live raw bytes on save
       try{ await fetch("/capture",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({module:_fMeta.module,lid:lid,raw:raw,text:text})}); }catch(_){}
-      addFangstLog({lid:lid,raw:raw,text:text}); n++;
+      addCaptureLog({lid:lid,raw:raw,text:text}); n++;
     }
-    _fBatch=[]; _fBatchRaw={}; _fStatus="idle"; _fSig=""; renderFangst(); showCmd(n+" captures saved", true);
+    _fBatch=[]; _fBatchRaw={}; _fStatus="idle"; _fSig=""; renderCapture(); showCmd(n+" captures saved", true);
   }
-  function fLogKey(){ return "fangstlog:"+(_fMeta.module||"?"); }
-  function getFangstLog(){ try{ return JSON.parse(localStorage.getItem(fLogKey())||"[]"); }catch(_){ return []; } }
-  function addFangstLog(rec){ const l=getFangstLog(); l.unshift({lid:rec.lid, raw:rec.raw, text:rec.text, t:new Date().toLocaleTimeString()}); localStorage.setItem(fLogKey(), JSON.stringify(l.slice(0,200))); renderFangstLog(); }
-  function renderFangstLog(){ const box=document.getElementById("fangst-log"); if(!box) return; const l=getFangstLog();
+  function fLogKey(){ return "fangstlog:"+(_fMeta.module||"?"); }  // legacy storage key: kept so saved logs survive
+  function getCaptureLog(){ try{ return JSON.parse(localStorage.getItem(fLogKey())||"[]"); }catch(_){ return []; } }
+  function addCaptureLog(rec){ const l=getCaptureLog(); l.unshift({lid:rec.lid, raw:rec.raw, text:rec.text, t:new Date().toLocaleTimeString()}); localStorage.setItem(fLogKey(), JSON.stringify(l.slice(0,200))); renderCaptureLog(); }
+  function renderCaptureLog(){ const box=document.getElementById("capture-log"); if(!box) return; const l=getCaptureLog();
     box.innerHTML=l.length? l.map(r=>'<div class="flog"><span class="flid">21 '+r.lid+'</span> <code>'+(r.raw||"")+'</code> → '+r.text+' <span class="none">'+(r.t||"")+'</span></div>').join("") : '<div class="hint" style="padding:14px">None saved yet.</div>'; }
 
   $("csvbtn").onclick = toggleCsv;

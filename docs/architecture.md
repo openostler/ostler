@@ -2,8 +2,8 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.0
-updated: 2026-09-30
+version: 1.1
+updated: 2026-10-01
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the code: the bottom-up protocol stack, the seams to understand before
@@ -70,7 +70,7 @@ Web            web/: stdlib HTTP + SSE server, dashboard UI
 - **Signal store (`src/d2diag/signals/*.json`).**
   - Decoders, the dashboard and automap all read it.
   - Confirmed mappings are written back with `upsert_field`.
-  - Each field carries `konfidens`, either `belagt` or `kandidat`.
+  - Each field carries `confidence`, either `proven` or `candidate`.
 - **`web/sources.py` is the protocol/UI boundary.**
   - Each `DataSource.poll()` returns `{status, signals, faults}`.
   - Mock and live sources are interchangeable at runtime.
@@ -116,3 +116,4 @@ Web            web/: stdlib HTTP + SSE server, dashboard UI
 ## Changelog
 
 - 2026-09-30 — Extracted from the former root CLAUDE.md during Vibes as Code adoption.
+- 2026-10-01 — Confidence vocabulary is now `proven`/`candidate` (ADR-0006).

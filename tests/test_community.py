@@ -58,7 +58,7 @@ def test_contribution_payload_is_whitelisted_pii_free(tmp_path):
     c.set_consent(True, vehicle={"model": "D2", "plate": "RDL016"})   # plate must be dropped
     c.contribute({
         "module": "slabs", "lid": "44", "offset": 12, "kind": "u8", "raw": "00 80",
-        "name": "battery", "our_value": 11.3, "confidence": "kandidat",
+        "name": "battery", "our_value": 11.3, "confidence": "candidate",
         "answer": {"type": "correct", "value": 12.1, "unit": "V"},
         "vin": "SALLXXXXXXXXXXXXX",           # must NOT be forwarded
     })

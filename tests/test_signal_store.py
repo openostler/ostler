@@ -45,7 +45,7 @@ _SPEC_LIMITS = {
     "rpm": (0, 4800), "speed": (0, 200), "battery": (11.5, 15.5),
     "coolant_temp": (-40, 105), "air_temp": (-30, 80), "fuel_temp": (-30, 90),
     "ext_temp": (-40, 50),        # ghost: 150°C → suspect (sensor not fitted)
-    "maf": (0, 700),              # kg/hr; u16@4, WOT peak ~667 (kandidat scale)
+    "maf": (0, 700),              # kg/hr; u16@4, WOT peak ~667 (candidate scale)
     "injection_qty": (0, 90),     # mg/stroke (candidate)
     "egr_modulator": (0, 100),        # % duty (candidate, 1D@15)
     "wastegate_modulator": (0, 100),  # % duty (candidate, 1D@17); 1D@16 is a dead/reserved byte
@@ -109,13 +109,13 @@ def test_upsert_field_round_trip(tmp_path, monkeypatch):
     sigs = load_signals("demo")
     assert len(sigs) == 1
     assert sigs[0].name == "boost" and sigs[0].lid == 0x1C
-    assert sigs[0].confidence == "kandidat"  # default when not specified
+    assert sigs[0].confidence == "candidate"  # default when not specified
 
     # same (lid, offset, name) → replaced, not duplicated
     upsert_field("demo", {"name": "boost", "lid": "1C", "offset": 0, "kind": "u16",
-                          "scale": 0.0001, "unit": "bar", "confidence": "belagt"})
+                          "scale": 0.0001, "unit": "bar", "confidence": "proven"})
     sigs = load_signals("demo")
-    assert len(sigs) == 1 and sigs[0].confidence == "belagt"
+    assert len(sigs) == 1 and sigs[0].confidence == "proven"
 
     # new field → append
     upsert_field("demo", {"name": "other", "lid": "0D", "offset": 0, "kind": "u8"})
@@ -150,6 +150,25 @@ def test_remove_field_supports_reassign_and_clear(tmp_path, monkeypatch):
 
 def test_slabs_store_has_belagt_heights_and_door():
     by = {s.name: s for s in load_signals("slabs")}
-    assert by["height_left"].confidence == "belagt"
-    assert by["height_right"].confidence == "belagt"
+    assert by["height_left"].confidence == "proven"
+    assert by["height_right"].confidence == "proven"
     assert by["any_door"].kind == "bit" and by["any_door"].states == {0: "closed", 1: "open"}
+
+
+def test_legacy_swedish_confidence_is_normalised(tmp_path, monkeypatch):
+    import d2diag.signals as store
+    from d2diag.signals import normalize_confidence
+
+    assert normalize_confidence("belagt") == "proven"
+    assert normalize_confidence("kandidat") == "candidate"
+    assert normalize_confidence(None) == "candidate"
+    assert normalize_confidence("proven") == "proven"
+
+    monkeypatch.setattr(store, "_DIR", tmp_path)
+    store._CACHE.clear()
+    (tmp_path / "old.json").write_text(
+        '[{"name": "x", "lid": "09", "offset": 0, "confidence": "belagt"}]', encoding="utf-8")
+    assert store.load_signals("old")[0].confidence == "proven"
+    store.upsert_field("old", {"name": "y", "lid": "09", "offset": 2, "confidence": "kandidat"})
+    assert store.load_records("old")[1]["confidence"] == "candidate"
+    store._CACHE.clear()
