@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "mode": "mock",
+  "report": [
+    {
+      "module": "TD5",
+      "status": "ok",
+      "faults": [],
+      "note": ""
+    },
+    {
+      "module": "SLABS",
+      "status": "faults",
+      "faults": [
+        "020: front right wheel speed sensor — output too low (Logged)",
+        "027: shuttle valve switch — electrical failure (Logged)"
+      ],
+      "note": ""
+    },
+    {
+      "module": "Airbag",
+      "status": "faults",
+      "faults": [
+        "004: airbag warning lamp — open circuit intermittent",
+        "022: open circuit intermittent"
+      ],
+      "note": "experimental"
+    },
+    {
+      "module": "ACE",
+      "status": "unimplemented",
+      "faults": [],
+      "note": "active suspension — proprietary bulk protocol, not read in code yet"
+    },
+    {
+      "module": "Auto Gearbox",
+      "status": "unimplemented",
+      "faults": [],
+      "note": "EAT 72-framed — ECU responds but decoding not finished"
+    },
+    {
+      "module": "BCU",
+      "status": "unimplemented",
+      "faults": [],
+      "note": "Valeo — no fault-code list in code yet"
+    }
+  ]
+}

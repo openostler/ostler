@@ -17,12 +17,12 @@ def test_mock_source_shape():
     assert "rpm" in d["signals"]
     assert set(d["signals"]["rpm"]) == {"v", "u", "s", "c"}   # c = confidence (trust view)
     assert d["signals"]["battery"]["u"] == "V"
-    assert d["signals"]["rpm"]["c"] == "belagt"                # rpm is verified
+    assert d["signals"]["rpm"]["c"] == "proven"                # rpm is verified
     # rpm_error and balance_1..5 were promoted to proven 2026-08-19 (labeled_captures
     # 21/40 = "correct", values vary across captures). The remaining TD5 candidates
     # (maf_raw, accel_way3, ext_temp) are not emitted by the mock, so the confidence
     # filter is tested separately in test_conf_of_reads_store.
-    assert d["signals"]["rpm_error"]["c"] == "belagt"
+    assert d["signals"]["rpm_error"]["c"] == "proven"
     assert isinstance(d["faults"], list) and d["faults"]
 
 
@@ -96,7 +96,7 @@ def test_signal_upsert_and_list_round_trip(tmp_path, monkeypatch):
 
     listing = _signals_list("slabs")
     assert [s["name"] for s in listing["signals"]] == ["transport_mode"]
-    assert listing["signals"][0]["confidence"] == "kandidat"  # default
+    assert listing["signals"][0]["confidence"] == "candidate"  # default
 
 
 def test_fields_list_motor_maps_to_td5():
@@ -106,7 +106,7 @@ def test_fields_list_motor_maps_to_td5():
     assert d["module"] == "motor"
     assert {"rpm", "coolant_temp"} <= names       # lets the UI show the layout with no cable
     rpm = next(f for f in d["fields"] if f["name"] == "rpm")
-    assert rpm["unit"] == "rpm" and rpm["c"] == "belagt"
+    assert rpm["unit"] == "rpm" and rpm["c"] == "proven"
 
 
 def test_signal_upsert_validation():
@@ -155,7 +155,7 @@ def test_slabs_empty_read_grace_keeps_session_then_reconnects(monkeypatch):
     from d2diag.web.sources import SlabsDataSource, _SLABS_EMPTY_GRACE
     src = SlabsDataSource(port="x", read_faults=False)
     src._slabs = _FakeSlabs(b"")           # the bus never responds (21 54 → empty)
-    src._last_signals = {"height_left": {"v": 42, "u": "", "s": "ok", "c": "belagt"}}
+    src._last_signals = {"height_left": {"v": 42, "u": "", "s": "ok", "c": "proven"}}
 
     for _ in range(_SLABS_EMPTY_GRACE - 1):  # grace polls: connected+stale, session kept
         src._last_bus = 0.0                  # open the 1 Hz throttle: we want to reach the bus
@@ -256,7 +256,7 @@ def test_single_source_has_no_mode_toggle():
 def test_slabs_source_light_poll_reads_heights_only():
     # LIGHT baseline poll (sniff 2026-08-07): the SLABS poll reads ONLY heights (21 54).
     # Store-driven block reading of many LIDs destabilised the session (~7×
-    # bus traffic) and has been deliberately removed — see slabs_protocol.md.
+    # bus traffic) and has been deliberately removed — see references/slabs/overview.md.
     from d2diag.kline import KLine, encode
     from d2diag.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
@@ -334,8 +334,15 @@ def test_server_serves_snapshot_and_html():
         assert snap["status"] == "connected"
         assert "rpm" in snap["signals"]
         html = urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=2).read().decode()
-        assert "<title>" in html and "EventSource" in html
-        assert "D2 Diag" in html  # "/" now serves v2, not v1
+        assert "<title>" in html and "D2 Diag" in html
+        # The app (built React UI, or the legacy v2 fallback) streams /events. In the
+        # built app that code lives in the referenced bundle, which is served too.
+        import re
+        scripts = re.findall(r'src="(/assets/[^"]+\.js)"', html)
+        code = html + "".join(
+            urllib.request.urlopen(f"http://127.0.0.1:{port}{s}", timeout=2).read().decode()
+            for s in scripts)
+        assert "EventSource" in code and "/events" in code
     finally:
         srv.shutdown()
         srv.server_close()
@@ -598,8 +605,8 @@ def test_slabs_poll_reads_store_lids_by_rotation():
     assert seen["wheel_speed_fr"]["v"] == 124   # u16le of 7c 00
     assert round(seen["battery"]["v"], 1) == 14.0
     # confidence flows from the store
-    assert seen["height_left"]["c"] == "belagt"
-    assert seen["wheel_speed_fr"]["c"] == "kandidat"
+    assert seen["height_left"]["c"] == "proven"
+    assert seen["wheel_speed_fr"]["c"] == "candidate"
 
 
 def test_slabs_poll_is_throttled_to_one_hz():
@@ -716,9 +723,9 @@ def test_conf_of_reads_store():
     # TD5 candidate — field proven but the kg/hr scale awaits a factory reference.
     from d2diag.web.sources import _conf_map, _conf_of
     conf = _conf_map("td5")
-    assert _conf_of("td5", "rpm_error", conf) == "belagt"
-    assert _conf_of("td5", "balance_3", conf) == "belagt"
-    assert _conf_of("td5", "maf", conf) == "kandidat"
+    assert _conf_of("td5", "rpm_error", conf) == "proven"
+    assert _conf_of("td5", "balance_3", conf) == "proven"
+    assert _conf_of("td5", "maf", conf) == "candidate"
 
 
 def test_fuel_computer_rate_trip_economy():
@@ -736,3 +743,82 @@ def test_fuel_computer_rate_trip_economy():
     assert abs(r["fuel_rate"] - 7.21) < 0.1        # L/h
     assert 6 < r["economy"] < 10                    # momentary L/100km
     assert 6 < r["trip_economy"] < 10               # trip average
+
+
+def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkeypatch):
+    """The built React app is served from web/static: index at / and /admin, fingerprinted
+    assets with an immutable cache header, and nothing outside the static dir."""
+    import urllib.error
+
+    from d2diag.web import server as srvmod
+
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "index.html").write_text("<title>D2 Diag app</title>", encoding="utf-8")
+    (tmp_path / "assets" / "index-abc123.js").write_text("console.log(1)", encoding="utf-8")
+    (tmp_path / "assets" / "index-abc123.css").write_text("body{}", encoding="utf-8")
+    (tmp_path / "favicon.svg").write_text("<svg/>", encoding="utf-8")
+    (tmp_path.parent / "secret.txt").write_text("nope", encoding="utf-8")
+    monkeypatch.setattr(srvmod, "_STATIC", tmp_path)
+
+    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+                     poll_interval=0.05, stream_interval=0.05)
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        for path in ("/", "/v2", "/admin"):
+            assert "D2 Diag app" in urllib.request.urlopen(base + path, timeout=2).read().decode()
+        js = urllib.request.urlopen(base + "/assets/index-abc123.js", timeout=2)
+        assert js.headers["Content-Type"].startswith("text/javascript")
+        assert "immutable" in js.headers["Cache-Control"]
+        css = urllib.request.urlopen(base + "/assets/index-abc123.css", timeout=2)
+        assert css.headers["Content-Type"].startswith("text/css")
+        svg = urllib.request.urlopen(base + "/favicon.svg", timeout=2)
+        assert svg.headers["Content-Type"] == "image/svg+xml"
+        assert svg.headers["Cache-Control"] == "no-cache"
+        for bad in ("/assets/missing.js", "/../secret.txt", "/assets/../../secret.txt",
+                    "/%2e%2e/secret.txt"):
+            with pytest.raises(urllib.error.HTTPError) as ei:
+                urllib.request.urlopen(base + bad, timeout=2)
+            assert ei.value.code == 404
+        # the legacy pages stay reachable (admin is ungated here: no password set)
+        assert "D2 Diag" in urllib.request.urlopen(base + "/legacy/v2", timeout=2).read().decode()
+        assert "Discovery 2" in urllib.request.urlopen(base + "/legacy/v1", timeout=2).read().decode()
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def test_app_falls_back_to_legacy_v2_without_a_build(tmp_path, monkeypatch):
+    from d2diag.web import server as srvmod
+
+    monkeypatch.setattr(srvmod, "_STATIC", tmp_path / "missing")
+    assert srvmod._app_html() == srvmod._DASHBOARD_V2.read_bytes()
+
+
+def test_fields_carry_presentation_metadata_and_derived_fields():
+    from d2diag.web.server import _fields_list
+
+    motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
+    assert motor["coolant_temp"]["label"] == "Coolant"
+    assert motor["coolant_temp"]["group"] == "Temperatures"
+    assert motor["coolant_temp"]["description"]
+    assert motor["economy"]["derived"] and motor["economy"]["unit"] == "L/100km"
+    assert motor["economy"]["c"] == "candidate"
+    slabs = {f["name"]: f for f in _fields_list("slabs")["fields"]}
+    assert slabs["height_left_mm"]["unit"] == "mm" and slabs["height_left_mm"]["derived"]
+    # every stored field has a label and a group — the UI has no fallback table
+    assert all(f["label"] and f["group"] for f in motor.values())
+    assert all(f["label"] and f["group"] for f in slabs.values())
+
+
+def test_fields_carry_display_span_and_explicit_normal_band():
+    from d2diag.web.server import _fields_list
+
+    motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
+    assert motor["coolant_temp"]["span"] == [-20, 120]
+    assert motor["coolant_temp"]["normal"] == [80, 100]
+    assert motor["speed"]["normal"] is None          # no band unless one is stated
+    assert motor["maf_sensor"]["span"] is None       # no limits, no span → no bar
+    # the numeric multiplier `scale` is untouched by the display span
+    from d2diag.signals import load_signals
+    assert {s.name: s.scale for s in load_signals("td5")}["battery"] == 0.001

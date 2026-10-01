@@ -1,3 +1,13 @@
+---
+title: "Scope & architecture"
+area: root
+status: stable
+version: 1.0
+updated: 2026-09-30
+summary: >
+  States the project's core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers.
+---
+
 # Scope & architecture
 
 **The core mission of this project is communication with the car and interpretation of
@@ -61,4 +71,4 @@ is exactly what caused the MAF mis-map (the store and the ESP drifted apart).
 - The car's own faults and maintenance history — those belong in the sister project
   `../Discovery 2/`, not here.
 
-See `CLAUDE.md` for the detailed layer-by-layer stack and the hard-won protocol rules.
+See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack and [CONSTITUTION.md](CONSTITUTION.md) for the hard rules.

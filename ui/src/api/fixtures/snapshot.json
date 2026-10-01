@@ -1,0 +1,123 @@
+{
+  "status": "connected",
+  "source": "mock",
+  "signals": {
+    "rpm": {
+      "v": 805.3,
+      "u": "rpm",
+      "s": "ok",
+      "c": "proven"
+    },
+    "speed": {
+      "v": 0.0,
+      "u": "km/h",
+      "s": "ok",
+      "c": "proven"
+    },
+    "battery": {
+      "v": 14.24,
+      "u": "V",
+      "s": "ok",
+      "c": "proven"
+    },
+    "coolant_temp": {
+      "v": 20.15,
+      "u": "°C",
+      "s": "ok",
+      "c": "proven"
+    },
+    "air_temp": {
+      "v": 120.0,
+      "u": "°C",
+      "s": "high",
+      "c": "proven"
+    },
+    "fuel_temp": {
+      "v": 13.59,
+      "u": "°C",
+      "s": "ok",
+      "c": "proven"
+    },
+    "manifold_press": {
+      "v": 0.99,
+      "u": "bar",
+      "s": "ok",
+      "c": "proven"
+    },
+    "ambient_press_1": {
+      "v": 1.01,
+      "u": "bar",
+      "s": "ok",
+      "c": "proven"
+    },
+    "economy": {
+      "v": 7.89,
+      "u": "L/100km",
+      "s": null,
+      "c": "candidate"
+    },
+    "trip_economy": {
+      "v": 7.89,
+      "u": "L/100km",
+      "s": null,
+      "c": "candidate"
+    },
+    "lifetime_economy": {
+      "v": 8.52,
+      "u": "L/100km",
+      "s": null,
+      "c": "candidate"
+    },
+    "rpm_error": {
+      "v": -6.3,
+      "u": "rpm",
+      "s": "ok",
+      "c": "proven"
+    },
+    "balance_1": {
+      "v": -0.18,
+      "u": "",
+      "s": "ok",
+      "c": "proven"
+    },
+    "balance_2": {
+      "v": -2.18,
+      "u": "",
+      "s": "ok",
+      "c": "proven"
+    },
+    "balance_3": {
+      "v": 0.37,
+      "u": "",
+      "s": "ok",
+      "c": "proven"
+    },
+    "balance_4": {
+      "v": -1.21,
+      "u": "",
+      "s": "ok",
+      "c": "proven"
+    },
+    "balance_5": {
+      "v": 0.56,
+      "u": "",
+      "s": "ok",
+      "c": "proven"
+    }
+  },
+  "faults": [
+    "air flow circuit (Logged Low)",
+    "inlet air temp. circuit (Current)"
+  ],
+  "module": "motor",
+  "mode": "mock",
+  "modes": [
+    "mock"
+  ],
+  "logging": {
+    "recording": false
+  },
+  "public": false,
+  "fault_watch": false,
+  "allow_shutdown": false
+}

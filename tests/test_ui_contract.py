@@ -1,0 +1,166 @@
+"""The HTTP contract between the Python server and the React UI (ADR-0004).
+
+Real responses from a mock ``DiagServer`` are compared, by *shape*, against the JSON
+fixtures committed in ``ui/src/api/fixtures/``. The UI's Vitest suite parses the same
+fixtures with its Zod schemas. A server change that alters a response shape therefore
+fails here until the fixtures are regenerated, and then fails in the UI until the
+schemas follow:
+
+    UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py
+"""
+from __future__ import annotations
+
+import json
+import os
+import threading
+import time
+import urllib.request
+from pathlib import Path
+
+import pytest
+
+from d2diag.community import Community
+from d2diag.menus import MENUS
+from d2diag.web import MockDataSource, MockSlabsDataSource
+from d2diag.web.docs import DocLibrary
+from d2diag.web.server import DiagServer
+from d2diag.web.sniffer import SnifferFeed
+
+FIXTURES = Path(__file__).resolve().parents[1] / "ui" / "src" / "api" / "fixtures"
+UPDATE = os.environ.get("UPDATE_UI_FIXTURES") == "1"
+
+
+def _shape(obj):
+    """A value's structure: dicts by key, lists by their first element, scalars by type."""
+    if isinstance(obj, dict):
+        return {k: _shape(v) for k, v in sorted(obj.items())}
+    if isinstance(obj, list):
+        return [_shape(obj[0])] if obj else []
+    if obj is None:
+        return None
+    if isinstance(obj, bool):
+        return "boolean"
+    if isinstance(obj, (int, float)):
+        return "number"
+    return "string"
+
+
+def _compatible(want, got, path="$"):
+    """Shape equality where null and empty lists act as wildcards (values vary by poll)."""
+    if want is None or got is None or want == [] or got == []:
+        return []
+    if isinstance(want, dict) and isinstance(got, dict):
+        errs = []
+        for k in sorted(set(want) | set(got)):
+            if k not in got:
+                errs.append(f"{path}.{k}: missing from the server response")
+            elif k not in want:
+                errs.append(f"{path}.{k}: new in the server response (regenerate fixtures)")
+            else:
+                errs += _compatible(want[k], got[k], f"{path}.{k}")
+        return errs
+    if isinstance(want, list) and isinstance(got, list):
+        return _compatible(want[0], got[0], f"{path}[]")
+    return [] if want == got else [f"{path}: fixture {want!r} vs server {got!r}"]
+
+
+@pytest.fixture(scope="module")
+def base(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("contract")
+    doc = tmp / "notes.md"
+    doc.write_text("# Notes\n\nA *test* document.\n", encoding="utf-8")
+    sniffer = SnifferFeed(lambda: iter([]), source="test:contract")
+    sniffer.store.ingest_line("[1] 81 13 f7 81 0c")
+    sniffer.store.ingest_line("[2] 02 21 09 2c 04 61 09 02 fa 6a")
+    srv = DiagServer(
+        host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
+        variants={"motor": {"mock": MockDataSource()}, "slabs": {"mock": MockSlabsDataSource()}},
+        mode="mock", active="motor", menus=MENUS, docs=DocLibrary().add_file(doc),
+        sniffer=sniffer, captures_path=str(tmp / "captures.jsonl"), csv_dir=str(tmp),
+        # offline poster: nothing leaves the test; the opt-in is queued, not sent
+        community=Community(config_path=str(tmp / "community.json"),
+                            poster=lambda url, body: {"ok": False, "error": "offline"}),
+    )
+    srv.start_polling()
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{srv.server_address[1]}"
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        snap = json.loads(urllib.request.urlopen(url + "/snapshot", timeout=2).read())
+        if snap.get("status") == "connected" and snap.get("signals"):
+            break
+        time.sleep(0.05)
+    yield url
+    srv.shutdown()
+    srv.server_close()
+    srv.stop()
+
+
+def _get(base, path):
+    return json.loads(urllib.request.urlopen(base + path, timeout=5).read())
+
+
+def _post(base, path, body):
+    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    try:
+        return json.loads(urllib.request.urlopen(req, timeout=50).read())
+    except urllib.error.HTTPError as err:   # /command answers 400 with a JSON body
+        return json.loads(err.read())
+
+
+# name → how to obtain the response. Order matters only for CSV start before stop.
+CASES = {
+    "snapshot": lambda b: _get(b, "/snapshot"),
+    "fields-motor": lambda b: _get(b, "/fields?module=motor"),
+    "fields-slabs": lambda b: _get(b, "/fields?module=slabs"),
+    "map": lambda b: _get(b, "/map?module=td5"),
+    "sniff": lambda b: _get(b, "/sniff?module=td5"),
+    "docs": lambda b: _get(b, "/docs"),
+    "community": lambda b: _get(b, "/community"),
+    "community-consent": lambda b: _post(b, "/community/consent", {"consent": False}),
+    "command-ok": lambda b: _post(b, "/command", {"action": "set_fault_watch",
+                                                  "params": {"on": False}}),
+    "command-error": lambda b: _post(b, "/command", {"action": "no_such_command"}),
+    "csv-start": lambda b: _post(b, "/command", {"action": "start_csv"}),
+    "csv-stop": lambda b: _post(b, "/command", {"action": "stop_csv"}),
+    "read-all-faults": lambda b: _post(b, "/command", {"action": "read_all_faults"}),
+    "automap": lambda b: _post(b, "/automap", {
+        "samples": [{"text": "762", "raws": {"09": "02fa"}},
+                    {"text": "1500", "raws": {"09": "05dc"}},
+                    {"text": "2200", "raws": {"09": "0898"}}],
+        "candidate_lids": ["09"], "name": "rpm", "unit": "rpm"}),
+    "capture": lambda b: _post(b, "/capture", {"module": "td5", "lid": "09",
+                                               "raw": "02 fa", "text": "762 rpm"}),
+}
+
+
+def base_tmp(got):
+    """The pytest tmp dir a response may embed (CSV path) — scrubbed from fixtures."""
+    path = got.get("path") if isinstance(got, dict) else None
+    return str(Path(path).parent) if path else None
+
+
+@pytest.mark.parametrize("name", list(CASES))
+def test_response_matches_ui_fixture(base, name):
+    got = CASES[name](base)
+    path = FIXTURES / f"{name}.json"
+    if UPDATE or not path.exists():
+        if not UPDATE:
+            pytest.fail(f"missing fixture {path.name}: run UPDATE_UI_FIXTURES=1 pytest {__file__}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(got, indent=2, ensure_ascii=False)
+        tmp = str(Path(base_tmp(got) or "/nonexistent"))
+        path.write_text(text.replace(tmp, "/tmp/d2diag-test") + "\n", encoding="utf-8")
+        return
+    want = json.loads(path.read_text(encoding="utf-8"))
+    errs = _compatible(_shape(want), _shape(got))
+    assert not errs, f"{name}: the server no longer matches the UI contract:\n  " + \
+        "\n  ".join(errs) + "\nRegenerate: UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py"
+
+
+def test_shape_comparison_catches_drift():
+    assert _compatible(_shape({"a": 1, "b": [1]}), _shape({"a": 2.5, "b": []})) == []
+    assert _compatible(_shape({"a": 1}), _shape({"a": "x"}))
+    assert _compatible(_shape({"a": 1}), _shape({"a": 1, "new": True}))
+    assert _compatible(_shape({"a": None}), _shape({"a": "anything"})) == []

@@ -5,7 +5,7 @@ confidence, limits, optional bit/state). Both the **decoders** (Td5/Slabs/UI) an
 **automap** read the same file, and a confirmed mapping is written back with
 :func:`upsert_field` — so the hand-pasting of ``Signal(...)`` rows goes away.
 
-Confidence: ``belagt`` (verified against the car) vs ``kandidat`` (derived/unverified).
+Confidence: ``proven`` (verified against the car) vs ``candidate`` (derived/unverified).
 Keep them apart (cf. the project convention "distinguish proven from inferred").
 """
 from __future__ import annotations
@@ -17,6 +17,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 _DIR = Path(__file__).resolve().parent
+
+PROVEN = "proven"
+CANDIDATE = "candidate"
+# Pre-ADR-0006 Swedish values, still found in old captures and community uploads.
+_LEGACY_CONFIDENCE = {"belagt": PROVEN, "kandidat": CANDIDATE}
+
+
+def normalize_confidence(value: "str | None", default: str = CANDIDATE) -> str:
+    """Map a stored confidence value to ``proven``/``candidate`` (legacy-tolerant)."""
+    if not value:
+        return default
+    return _LEGACY_CONFIDENCE.get(value, value)
 
 
 # ---- byte readers ------------------------------------------------------- #
@@ -59,11 +71,19 @@ class Signal:
     scale: float = 1.0
     bias: float = 0.0
     unit: str = ""
-    confidence: str = "belagt"
+    confidence: str = PROVEN
     limits: "tuple[float, float] | None" = None
     bit: "int | None" = None                       # for kind="bit"
     states: "dict[int, str] | None" = None          # raw value → label (bit/state)
     source: str = ""
+    # Presentation metadata (the UI reads these via /fields — never hard-code them).
+    label: str = ""
+    group: str = ""
+    description: str = ""
+    # Display ranges: `span` is what a bar/gauge draws, `normal` the healthy band shaded
+    # on it. Informational only — the low/high status still comes from `limits`.
+    span: "tuple[float, float] | None" = None
+    normal: "tuple[float, float] | None" = None
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -101,11 +121,16 @@ def _record_to_signal(r: dict) -> Signal:
         scale=float(r.get("scale", 1.0)),
         bias=float(r.get("bias", 0.0)),
         unit=r.get("unit", ""),
-        confidence=r.get("confidence", "kandidat"),
+        confidence=normalize_confidence(r.get("confidence")),
         limits=tuple(limits) if limits else None,
         bit=r.get("bit"),
         states=states or None,
         source=r.get("source", ""),
+        label=r.get("label", ""),
+        group=r.get("group", ""),
+        description=r.get("description", ""),
+        span=tuple(r["span"]) if r.get("span") else None,
+        normal=tuple(r["normal"]) if r.get("normal") else None,
     )
 
 
@@ -137,13 +162,13 @@ def upsert_field(module: str, record: dict) -> None:
     """Write a confirmed/candidate mapping to the store (write-back).
 
     Replaces an existing record with the same ``(lid, offset, name)``, otherwise appends.
-    Default ``confidence="kandidat"``. Atomic rewrite (temp + rename) so the file
+    Default ``confidence="candidate"``; legacy values are normalised. Atomic rewrite (temp + rename) so the file
     never ends up half-written."""
     def _norm_lid(v) -> str:
         return f"{(int(v, 16) if isinstance(v, str) else int(v)):02X}"
 
     rec = dict(record)
-    rec.setdefault("confidence", "kandidat")
+    rec["confidence"] = normalize_confidence(rec.get("confidence"))
     rec["lid"] = _norm_lid(rec["lid"])
     key = (rec["lid"], int(rec["offset"]), rec["name"])
     rows = load_records(module)

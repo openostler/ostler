@@ -1,0 +1,563 @@
+{
+  "module": "motor",
+  "fields": [
+    {
+      "name": "rpm",
+      "unit": "rpm",
+      "c": "proven",
+      "limits": [
+        0,
+        4800
+      ],
+      "label": "RPM",
+      "group": "Engine",
+      "description": "Engine speed.",
+      "derived": false,
+      "span": [
+        0,
+        4800
+      ],
+      "normal": [
+        650,
+        4200
+      ]
+    },
+    {
+      "name": "speed",
+      "unit": "km/h",
+      "c": "proven",
+      "limits": [
+        0,
+        200
+      ],
+      "label": "Speed",
+      "group": "Engine",
+      "description": "Road speed from the ECU.",
+      "derived": false,
+      "span": [
+        0,
+        180
+      ],
+      "normal": null
+    },
+    {
+      "name": "battery",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        11.5,
+        15.5
+      ],
+      "label": "Battery",
+      "group": "Electrical",
+      "description": "System voltage. 13.8–14.4 V running; below 13 = charging fault.",
+      "derived": false,
+      "span": [
+        10,
+        16
+      ],
+      "normal": [
+        12.4,
+        14.8
+      ]
+    },
+    {
+      "name": "coolant_temp",
+      "unit": "°C",
+      "c": "proven",
+      "limits": [
+        -40,
+        105
+      ],
+      "label": "Coolant",
+      "group": "Temperatures",
+      "description": "Coolant temperature. Normal 86–95 °C; above 105 = overheating.",
+      "derived": false,
+      "span": [
+        -20,
+        120
+      ],
+      "normal": [
+        80,
+        100
+      ]
+    },
+    {
+      "name": "air_temp",
+      "unit": "°C",
+      "c": "proven",
+      "limits": [
+        -30,
+        80
+      ],
+      "label": "Intake air",
+      "group": "Temperatures",
+      "description": "Intake air temperature.",
+      "derived": false,
+      "span": [
+        -20,
+        80
+      ],
+      "normal": [
+        -10,
+        50
+      ]
+    },
+    {
+      "name": "ext_temp",
+      "unit": "°C",
+      "c": "candidate",
+      "limits": [
+        -40,
+        50
+      ],
+      "label": "External temp",
+      "group": "Temperatures",
+      "description": "External temp sensor — not fitted; phantom constant. Ignore.",
+      "derived": false,
+      "span": [
+        -49.0,
+        59.0
+      ],
+      "normal": null
+    },
+    {
+      "name": "fuel_temp",
+      "unit": "°C",
+      "c": "proven",
+      "limits": [
+        -30,
+        90
+      ],
+      "label": "Fuel",
+      "group": "Temperatures",
+      "description": "Fuel temperature — ~70–80 °C warm, 10–15 below coolant.",
+      "derived": false,
+      "span": [
+        -20,
+        100
+      ],
+      "normal": [
+        0,
+        85
+      ]
+    },
+    {
+      "name": "accel_way1",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Pedal track 1",
+      "group": "Accelerator",
+      "description": "Pedal track 1: ~0.3 V idle → ~4.7 V full.",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": [
+        0.2,
+        4.8
+      ]
+    },
+    {
+      "name": "accel_way2",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Pedal track 2",
+      "group": "Accelerator",
+      "description": "Pedal track 2: mirror of track 1 — ~4.7 V idle → ~0.3 V full.",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": [
+        0.2,
+        4.8
+      ]
+    },
+    {
+      "name": "accel_way3",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Pedal track 3",
+      "group": "Accelerator",
+      "description": "Pedal track 3 — Euro 3 only; reads 0 on Euro 2.",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": [
+        0.0,
+        4.8
+      ]
+    },
+    {
+      "name": "accel_supply",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        4.9,
+        5.1
+      ],
+      "label": "Pedal supply",
+      "group": "Accelerator",
+      "description": "5 V reference — rock-solid 5.0 V ±0.1.",
+      "derived": false,
+      "span": [
+        4.8,
+        5.2
+      ],
+      "normal": [
+        4.9,
+        5.1
+      ]
+    },
+    {
+      "name": "manifold_press",
+      "unit": "bar",
+      "c": "proven",
+      "limits": [
+        0.8,
+        2.6
+      ],
+      "label": "Turbo pressure",
+      "group": "Pressures",
+      "description": "Turbo / boost pressure. Idle ~1.0 bar; full load 2.0–2.2; overboost-cut >2.42.",
+      "derived": false,
+      "span": [
+        0.8,
+        2.6
+      ],
+      "normal": [
+        0.9,
+        2.3
+      ]
+    },
+    {
+      "name": "rpm_error",
+      "unit": "rpm",
+      "c": "proven",
+      "limits": [
+        -300,
+        300
+      ],
+      "label": "RPM error",
+      "group": "Engine",
+      "description": "Idle-speed error: target minus actual idle rpm.",
+      "derived": false,
+      "span": [
+        -300,
+        300
+      ],
+      "normal": [
+        -50,
+        50
+      ]
+    },
+    {
+      "name": "ambient_press_1",
+      "unit": "bar",
+      "c": "proven",
+      "limits": [
+        0.8,
+        1.1
+      ],
+      "label": "Ambient pressure",
+      "group": "Pressures",
+      "description": "Atmospheric pressure — ~1.0 bar at sea level.",
+      "derived": false,
+      "span": [
+        0.7,
+        1.1
+      ],
+      "normal": [
+        0.85,
+        1.05
+      ]
+    },
+    {
+      "name": "ambient_press_2",
+      "unit": "bar",
+      "c": "proven",
+      "limits": [
+        0.8,
+        1.1
+      ],
+      "label": "Ambient pressure 2",
+      "group": "Pressures",
+      "description": "Atmospheric pressure (second reading).",
+      "derived": false,
+      "span": [
+        0.7,
+        1.1
+      ],
+      "normal": [
+        0.85,
+        1.05
+      ]
+    },
+    {
+      "name": "balance_1",
+      "unit": "",
+      "c": "proven",
+      "limits": [
+        -12,
+        12
+      ],
+      "label": "Injector 1",
+      "group": "Fuelling",
+      "description": "Cylinder 1 fuelling correction. ±4 healthy; +6…+15 = weak cylinder.",
+      "derived": false,
+      "span": [
+        -15,
+        15
+      ],
+      "normal": [
+        -4,
+        4
+      ]
+    },
+    {
+      "name": "balance_2",
+      "unit": "",
+      "c": "proven",
+      "limits": [
+        -12,
+        12
+      ],
+      "label": "Injector 2",
+      "group": "Fuelling",
+      "description": "Cylinder 2 fuelling correction. ±4 healthy.",
+      "derived": false,
+      "span": [
+        -15,
+        15
+      ],
+      "normal": [
+        -4,
+        4
+      ]
+    },
+    {
+      "name": "balance_3",
+      "unit": "",
+      "c": "proven",
+      "limits": [
+        -12,
+        12
+      ],
+      "label": "Injector 3",
+      "group": "Fuelling",
+      "description": "Cylinder 3 fuelling correction. ±4 healthy.",
+      "derived": false,
+      "span": [
+        -15,
+        15
+      ],
+      "normal": [
+        -4,
+        4
+      ]
+    },
+    {
+      "name": "balance_4",
+      "unit": "",
+      "c": "proven",
+      "limits": [
+        -12,
+        12
+      ],
+      "label": "Injector 4",
+      "group": "Fuelling",
+      "description": "Cylinder 4 fuelling correction. ±4 healthy.",
+      "derived": false,
+      "span": [
+        -15,
+        15
+      ],
+      "normal": [
+        -4,
+        4
+      ]
+    },
+    {
+      "name": "balance_5",
+      "unit": "",
+      "c": "proven",
+      "limits": [
+        -12,
+        12
+      ],
+      "label": "Injector 5",
+      "group": "Fuelling",
+      "description": "Cylinder 5 fuelling correction. ±4 healthy.",
+      "derived": false,
+      "span": [
+        -15,
+        15
+      ],
+      "normal": [
+        -4,
+        4
+      ]
+    },
+    {
+      "name": "injection_qty",
+      "unit": "mg/stroke",
+      "c": "proven",
+      "limits": [
+        0,
+        90
+      ],
+      "label": "Injection",
+      "group": "Fuelling",
+      "description": "Injection quantity (mg/stroke). Idle ~6–10; rises with load.",
+      "derived": false,
+      "span": [
+        0,
+        80
+      ],
+      "normal": null
+    },
+    {
+      "name": "egr_modulator",
+      "unit": "%",
+      "c": "candidate",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "EGR",
+      "group": "Engine",
+      "description": "EGR modulator duty % (1D@15, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        100
+      ],
+      "normal": null
+    },
+    {
+      "name": "wastegate_modulator",
+      "unit": "%",
+      "c": "candidate",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "Wastegate",
+      "group": "Engine",
+      "description": "Wastegate modulator duty % (1D@17, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        100
+      ],
+      "normal": null
+    },
+    {
+      "name": "maf",
+      "unit": "kg/hr",
+      "c": "candidate",
+      "limits": [
+        0,
+        700
+      ],
+      "label": "Air flow",
+      "group": "Engine",
+      "description": "Air mass (1D u16@4) — likely a MODELLED value, not the sensor. RDL016's physical MAF (1C@4) reads 0 (air-flow-circuit fault), so this is the ECU's speed-density estimate. Candidate scale; see test T-01.",
+      "derived": false,
+      "span": [
+        0,
+        700
+      ],
+      "normal": null
+    },
+    {
+      "name": "maf_sensor",
+      "unit": "raw",
+      "c": "candidate",
+      "limits": null,
+      "label": "Air flow sensor (raw)",
+      "group": "Engine",
+      "description": "Physical MAF sensor, raw (1C@4). Faulted on RDL016 — logged to see whether it ever responds to airflow. See test T-01.",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "fuel_rate",
+      "unit": "L/h",
+      "c": "candidate",
+      "limits": null,
+      "label": "Fuel rate",
+      "group": "Fuelling",
+      "description": "Fuel flow from injection quantity × rpm (derived, candidate).",
+      "derived": true,
+      "span": [
+        0,
+        20
+      ],
+      "normal": null
+    },
+    {
+      "name": "economy",
+      "unit": "L/100km",
+      "c": "candidate",
+      "limits": null,
+      "label": "Fuel economy",
+      "group": "Fuelling",
+      "description": "Live consumption — only meaningful while moving (derived, candidate).",
+      "derived": true,
+      "span": [
+        0,
+        25
+      ],
+      "normal": null
+    },
+    {
+      "name": "trip_economy",
+      "unit": "L/100km",
+      "c": "candidate",
+      "limits": null,
+      "label": "Trip economy",
+      "group": "Fuelling",
+      "description": "Average consumption since the dashboard started (derived, candidate).",
+      "derived": true,
+      "span": [
+        0,
+        25
+      ],
+      "normal": null
+    },
+    {
+      "name": "lifetime_economy",
+      "unit": "L/100km",
+      "c": "candidate",
+      "limits": null,
+      "label": "Lifetime economy",
+      "group": "Fuelling",
+      "description": "Average consumption across all logged driving (derived, candidate).",
+      "derived": true,
+      "span": [
+        0,
+        25
+      ],
+      "normal": null
+    }
+  ]
+}

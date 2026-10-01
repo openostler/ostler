@@ -46,7 +46,7 @@ def test_contribution_whitelists_fields():
         "raw": "00 80 01 02",
         "our_name": "battery",
         "our_value": 11.3,
-        "our_confidence": "kandidat",
+        "our_confidence": "candidate",
         "answer": {"type": "correct", "value": 12.1, "unit": "V"},
         "secret_owner_name": "should be ignored",   # not a PII key, just dropped
     })
@@ -69,7 +69,7 @@ def test_store_counts_installs_and_contributions(tmp_path):
     for val in (11.3, 12.1):
         st.add_contribution(validate_contribution({
             "install_id": "inst-one-xxxx", "module": "slabs", "lid": "44",
-            "our_confidence": "kandidat",
+            "our_confidence": "candidate",
             "answer": {"type": "correct", "value": val, "unit": "V"}}))
 
     s = st.stats()
@@ -97,3 +97,9 @@ def test_admin_renders_without_crash(tmp_path):
     assert "community contributions" in html and "td5" in html
     # anonymous install shown truncated, never the full id in a table cell
     assert "some-install-1" not in html
+
+
+def test_legacy_swedish_confidence_is_stored_in_english():
+    rec = validate_contribution({"install_id": "aaaaaaaa-bbbb", "module": "td5",
+                                 "our_confidence": "kandidat"})
+    assert rec["our_confidence"] == "candidate"

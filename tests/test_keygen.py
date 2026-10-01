@@ -24,7 +24,7 @@ def _reference_plus(seed: int) -> int:
 
 def test_matches_reference_over_all_seeds():
     for s in range(0x10000):
-        assert key_from_seed(s) == _reference_plus(s), f"skillnad vid seed {s:#06x}"
+        assert key_from_seed(s) == _reference_plus(s), f"mismatch at seed {s:#06x}"
 
 
 def test_seed_range_is_validated():

@@ -175,7 +175,7 @@ def search_state(samples, candidate_lids):
     if best is None:
         return None
     where = f"21 {best['lid']} byte{best['offset']}"
-    where += f" bit{best['bit']}" if best["bit"] is not None else " (hel byte)"
+    where += f" bit{best['bit']}" if best["bit"] is not None else " (whole byte)"
     best["rule"] = where + ": " + ", ".join(f"{k}={v}" for k, v in best["mapping"].items())
     best.pop("rank")
     return best

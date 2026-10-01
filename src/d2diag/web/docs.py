@@ -14,6 +14,12 @@ from pathlib import Path
 from . import markdown
 
 _H1 = re.compile(r"^#\s+(.*)$", re.MULTILINE)
+# Leading YAML frontmatter (Vibes as Code): metadata for agents, noise for readers.
+_FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+
+
+def strip_frontmatter(text: str) -> str:
+    return _FRONTMATTER.sub("", text, count=1)
 
 
 def _slug(text: str) -> str:
@@ -63,15 +69,18 @@ class DocLibrary:
         group: str = "Reference",
         pattern: str = "*.md",
         exclude: "set[str] | None" = None,
+        recursive: bool = False,
     ) -> "DocLibrary":
-        """Add every matching file in ``path``. ``exclude`` holds file *names*
-        already registered explicitly (e.g. the test plan, pinned to its own group)
-        so they are not listed twice."""
+        """Add every matching file in ``path`` (and its subdirectories if
+        ``recursive``). ``exclude`` holds file or directory *names* to skip: files
+        already registered explicitly (e.g. the test plan, pinned to its own group, so
+        it is not listed twice), agent-only CLAUDE.md files, or vendored folders."""
         d = Path(path).expanduser()
         skip = exclude or set()
         if d.is_dir():
-            for f in sorted(d.glob(pattern)):
-                if f.name in skip:
+            found = d.rglob(pattern) if recursive else d.glob(pattern)
+            for f in sorted(found):
+                if skip.intersection(f.relative_to(d).parts):
                     continue
                 self.add_file(f, group=group)
         return self
@@ -79,7 +88,7 @@ class DocLibrary:
     @staticmethod
     def _title_of(path: Path) -> str:
         try:
-            m = _H1.search(path.read_text(encoding="utf-8"))
+            m = _H1.search(strip_frontmatter(path.read_text(encoding="utf-8")))
             if m:
                 return m.group(1).strip()
         except OSError:
@@ -103,4 +112,4 @@ class DocLibrary:
             text = doc.path.read_text(encoding="utf-8")
         except OSError:
             return None
-        return markdown.render(text)
+        return markdown.render(strip_frontmatter(text))

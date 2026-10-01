@@ -32,6 +32,18 @@ _ITAL = re.compile(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])")
 _ITAL_U = re.compile(r"(?<![\w_])_(?!\s)(.+?)(?<!\s)_(?![\w_])")
 
 
+_SAFE_SCHEME = re.compile(r"^(https?:|mailto:|#|/|\.|[^:]*$)", re.IGNORECASE)
+
+
+def _link(m: "re.Match") -> str:
+    """An anchor for http(s)/mailto/relative URLs. Anything else (javascript:, data:, …)
+    stays plain text: the dashboard injects this HTML, so no script URL may get through."""
+    url = m.group(2)
+    if not _SAFE_SCHEME.match(url):
+        return m.group(0)
+    return f'<a href="{url.replace(chr(34), "&quot;")}" rel="noopener">{m.group(1)}</a>'
+
+
 def _inline(text: str) -> str:
     """Render inline markup in an already HTML-escaped line of text."""
     # Protect inline code first so its contents aren't formatted further.
@@ -45,11 +57,7 @@ def _inline(text: str) -> str:
     text = html.escape(text, quote=False)
     # The URL is already escaped by the line above (& → &amp;); don't escape again,
     # only quotes so the attribute isn't broken.
-    text = _LINK.sub(
-        lambda m: f'<a href="{m.group(2).replace(chr(34), "&quot;")}" '
-        f'rel="noopener">{m.group(1)}</a>',
-        text,
-    )
+    text = _LINK.sub(_link, text)
     text = _BOLD.sub(r"<strong>\1</strong>", text)
     text = _ITAL.sub(r"<em>\1</em>", text)
     text = _ITAL_U.sub(r"<em>\1</em>", text)

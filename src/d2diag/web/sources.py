@@ -68,11 +68,37 @@ _SLABS_COVERAGE = frozenset({
 _INJ_PER_REV = 2.5          # 5-cyl 4-stroke: 5/2 injections per crankshaft revolution
 _DIESEL_G_PER_L = 832.0     # diesel density
 _DERIVED_TD5 = {
-    "fuel_rate":        ("L/h", "kandidat"),
-    "economy":          ("L/100km", "kandidat"),
-    "trip_economy":     ("L/100km", "kandidat"),
-    "lifetime_economy": ("L/100km", "kandidat"),
+    "fuel_rate":        ("L/h", "candidate"),
+    "economy":          ("L/100km", "candidate"),
+    "trip_economy":     ("L/100km", "candidate"),
+    "lifetime_economy": ("L/100km", "candidate"),
 }
+
+# Presentation metadata for fields that are computed here rather than read from a LID
+# (so they are not in the signal store). /fields merges these with the store, so the UI
+# has ONE metadata source per module. Keys are the UI module names.
+DERIVED_FIELDS: "dict[str, dict[str, dict]]" = {
+    "motor": {
+        "fuel_rate": {"label": "Fuel rate", "group": "Fuelling", "span": [0, 20],
+                      "description": "Fuel flow from injection quantity × rpm (derived, candidate)."},
+        "economy": {"span": [0, 25], "label": "Fuel economy", "group": "Fuelling",
+                    "description": "Live consumption — only meaningful while moving (derived, candidate)."},
+        "trip_economy": {"span": [0, 25], "label": "Trip economy", "group": "Fuelling",
+                         "description": "Average consumption since the dashboard started (derived, candidate)."},
+        "lifetime_economy": {"span": [0, 25], "label": "Lifetime economy", "group": "Fuelling",
+                             "description": "Average consumption across all logged driving (derived, candidate)."},
+    },
+    "slabs": {
+        "height_left_mm": {"unit": "mm", "c": "proven", "label": "Height left", "group": "Ride height",
+                           "span": [0, 360], "normal": [154, 189],
+                           "description": "Left ride height in mm (derived from the raw sensor)."},
+        "height_right_mm": {"unit": "mm", "c": "proven", "label": "Height right", "group": "Ride height",
+                            "span": [0, 360], "normal": [154, 189],
+                            "description": "Right ride height in mm (derived from the raw sensor)."},
+    },
+}
+for _k, (_u, _c) in _DERIVED_TD5.items():
+    DERIVED_FIELDS["motor"][_k].update(unit=_u, c=_c)
 
 
 class _FuelComputer:
@@ -164,10 +190,10 @@ def _conf_of(module: str, name: str, conf: "dict[str, str]") -> str:
         return conf[name]
     if module == "slabs":
         if name.startswith("height_"):
-            return "belagt"          # derived from a proven height
+            return "proven"          # derived from a proven height
         if name.startswith(("wheel_speed_", "abs_sensor_")):
-            return "kandidat"        # wheel speed/voltage: scale not confirmed
-    return "belagt"
+            return "candidate"        # wheel speed/voltage: scale not confirmed
+    return "proven"
 
 
 def _sig(values: "dict[str, float]", module: str = "td5") -> "dict[str, dict]":
@@ -208,7 +234,7 @@ class DataSource(abc.ABC):
         }
 
     Per signal: ``v`` value, ``u`` unit, ``s`` status ("ok"/"low"/"high"/"suspect"/None),
-    ``c`` confidence ("belagt"/"kandidat"). ``menu_map()`` and ``command()`` are the
+    ``c`` confidence ("proven"/"candidate"). ``menu_map()`` and ``command()`` are the
     coverage-map and write-command halves of the same boundary.
     """
 
@@ -459,7 +485,7 @@ class Td5DataSource(DataSource):
 
 
 # --- SLABS (Wabco ABS/SLS) ------------------------------------------------ #
-_SLABS_UNITS = {"height_left_mm": "mm", "height_right_mm": "mm"}
+_SLABS_UNITS = {k: m["unit"] for k, m in DERIVED_FIELDS["slabs"].items()}
 
 
 def _slabs_sig(values: "dict[str, float]") -> "dict[str, dict]":

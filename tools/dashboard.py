@@ -106,7 +106,7 @@ def main() -> int:
 
     # The Docs tab mirrors the CANONICAL source files (not a copy):
     #   Answer key = the fault-code dictionary in the register repo (sibling folder 'Discovery 2/')
-    #   Reference = the diag repo's references/*.md
+    #   Docs = the curated knowledge base docs/**.md; Reference = references/**.md
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     dict_path = args.dict_path or os.path.join(
         os.path.dirname(repo_root), "Discovery 2", "discovery2_reference tool_fault_dictionary.md")
@@ -114,8 +114,11 @@ def main() -> int:
     # The test backlog first: it is what you read on the phone while sitting in the car.
     docs.add_file(os.path.join(repo_root, "references", "test_plan.md"), group="Test plan")
     docs.add_file(dict_path, title="reference tool fault-code dictionary (answer key)", group="Answer key")
-    docs.add_dir(os.path.join(repo_root, "references"), group="Reference",
-                 exclude={"test_plan.md"})
+    agent_only = {"CLAUDE.md", "muki01_OBD2_K-line_Reader"}
+    docs.add_dir(os.path.join(repo_root, "docs"), group="Docs", recursive=True,
+                 exclude=agent_only)
+    docs.add_dir(os.path.join(repo_root, "references"), group="Reference", recursive=True,
+                 exclude={"test_plan.md"} | agent_only)
     for extra in args.docs:
         docs.add_dir(extra, group="Extra")
 

@@ -1,0 +1,6 @@
+=== synthetic replay for the e2e test: Td5 fast init, then rpm (21 09) and battery (21 10) reads ===
+[    100] 81 13 f7 81 0c
+[    200] 02 21 09 2c 04 61 09 02 fa 6a
+[    300] 02 21 10 33 04 61 10 36 b0 5b
+[    400] 02 21 09 2c 04 61 09 03 0c 7d
+[    500] 02 21 10 33 04 61 10 36 a6 51
