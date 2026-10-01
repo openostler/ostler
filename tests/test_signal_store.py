@@ -39,6 +39,12 @@ _SPEC = [
     ("balance_3", 0x40, 4, "s16", 1.0, 0.0, ""),
     ("balance_4", 0x40, 6, "s16", 1.0, 0.0, ""),
     ("balance_5", 0x40, 8, "s16", 1.0, 0.0, ""),
+    # Candidates ported from external repos (2026-10-01) — guarded here too so their
+    # scale can't drift silently. See references/td5-cross-reference.md.
+    ("wastegate_pos", 0x38, 0, "u16", 0.01, 0.0, "%"),
+    ("egr_pos", 0x37, 0, "u16", 0.01, 0.0, "%"),
+    ("reference_voltage", 0x10, 2, "u16", 0.001, 0.0, "V"),
+    ("driver_demand", 0x1D, 0, "u16", 0.01, 0.0, "mg/stroke"),
 ]
 
 _SPEC_LIMITS = {
@@ -55,6 +61,8 @@ _SPEC_LIMITS = {
     "accel_supply": (4.9, 5.1),   # reference tool: 5.0 V ±0.1 rock-solid (2026-08-19)
     "balance_1": (-12, 12), "balance_2": (-12, 12), "balance_3": (-12, 12),
     "balance_4": (-12, 12), "balance_5": (-12, 12),
+    "wastegate_pos": (0, 100), "egr_pos": (0, 100),   # native-LID candidates (0x38/0x37)
+    "reference_voltage": (4.5, 5.5), "driver_demand": (0, 90),
 }
 
 
