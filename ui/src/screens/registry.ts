@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { Capabilities } from "./Capabilities";
 import { Capture } from "./Capture";
 import { Connect } from "./Connect";
 import { CoverageMap } from "./CoverageMap";
@@ -17,6 +18,7 @@ export const SCREENS: Screen[] = [
   { id: "drive", label: "Drive", component: Drive },
   { id: "connect", label: "Connect", component: Connect },
   { id: "faults", label: "Faults", component: Faults },
+  { id: "caps", label: "Capabilities", component: Capabilities },
   { id: "inputs", label: "Inputs", component: Inputs },
   { id: "outputs", label: "Outputs", component: Outputs },
   { id: "utils", label: "Utilities", component: Utilities },
