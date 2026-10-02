@@ -114,6 +114,7 @@ CASES = {
     "snapshot": lambda b: _get(b, "/snapshot"),
     "fields-motor": lambda b: _get(b, "/fields?module=motor"),
     "fields-slabs": lambda b: _get(b, "/fields?module=slabs"),
+    "faults-airbag": lambda b: _get(b, "/faults?module=airbag"),
     "map": lambda b: _get(b, "/map?module=td5"),
     "sniff": lambda b: _get(b, "/sniff?module=td5"),
     "docs": lambda b: _get(b, "/docs"),

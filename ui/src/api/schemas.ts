@@ -64,6 +64,21 @@ export const Field = z.object({
 export type Field = z.infer<typeof Field>;
 export const FieldsResponse = z.object({ module: z.string(), fields: z.array(Field) });
 
+/** One fault code's meaning (the `dtc` store) — served by /faults. Open fields default
+ * to "" because the store omits empty ones. */
+export const FaultMeaning = z.object({
+  key: z.string(),
+  name: z.string(),
+  description: z.string().default(""),
+  cause: z.string().default(""),
+  severity: z.string().default(""),
+  system: z.string().default(""),
+  pcode: z.string().default(""),
+  source: z.string().default(""),
+});
+export type FaultMeaning = z.infer<typeof FaultMeaning>;
+export const FaultsResponse = z.object({ module: z.string(), faults: z.array(FaultMeaning) });
+
 export const MapItem = z.object({
   name: z.string(),
   status: z.string(), // "ok" | "maybe" | "todo"

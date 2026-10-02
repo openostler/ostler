@@ -52,6 +52,7 @@ export function installFakeServer(opts: {
     switch (url.pathname) {
       case "/snapshot": return json(opts.snapshot ?? snapshotFx);
       case "/fields": return json(url.searchParams.get("module") === "slabs" ? fieldsSlabs : fieldsMotor);
+      case "/faults": return json({ module: url.searchParams.get("module"), faults: [] });
       case "/community": return json(communityFx);
       case "/community/consent": return json({ ok: true, consent: !!body?.consent });
       case "/map": return json(mapFx);

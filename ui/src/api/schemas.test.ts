@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import {
-  AutomapReply, CommandReply, Community, DocsResponse, FieldsResponse, MapResponse, OkReply,
-  Snapshot, SniffResponse,
+  AutomapReply, CommandReply, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
+  OkReply, Snapshot, SniffResponse,
 } from "./schemas";
 
 /**
@@ -15,6 +15,7 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   snapshot: Snapshot,
   "fields-motor": FieldsResponse,
   "fields-slabs": FieldsResponse,
+  "faults-airbag": FaultsResponse,
   map: MapResponse,
   sniff: SniffResponse,
   docs: DocsResponse,

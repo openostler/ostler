@@ -9,6 +9,7 @@ import {
   CommandReply,
   Community,
   DocsResponse,
+  FaultsResponse,
   FieldsResponse,
   MapResponse,
   OkReply,
@@ -66,6 +67,7 @@ export function command(action: string, params?: Record<string, unknown>) {
 export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
   fields: (module: string) => getJson(`/fields?module=${encodeURIComponent(module)}`, FieldsResponse),
+  faults: (module: string) => getJson(`/faults?module=${encodeURIComponent(module)}`, FaultsResponse),
   map: (module: string) => getJson(`/map?module=${encodeURIComponent(module)}`, MapResponse),
   sniff: (module?: string) =>
     getJson(module ? `/sniff?module=${encodeURIComponent(module)}` : "/sniff", SniffResponse),

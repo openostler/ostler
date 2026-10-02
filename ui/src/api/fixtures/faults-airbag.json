@@ -1,0 +1,23 @@
+{
+  "module": "airbag",
+  "faults": [
+    {
+      "key": "004",
+      "name": "SRS fault 004",
+      "description": "Airbag (TRW SPS) fault 004, seen on RDL016 with status 0x90 (open-circuit intermittent).",
+      "cause": "Circuit meaning not yet mapped — needs the RAVE SRS fault table or a labelled capture. Airbag is read-only; investigate, never actuate.",
+      "severity": "logged",
+      "system": "airbag (SRS)",
+      "source": "airbag/faults.py sniff 2026-08-10 (RDL016); number→circuit text not yet mapped"
+    },
+    {
+      "key": "022",
+      "name": "SRS fault 022",
+      "description": "Airbag (TRW SPS) fault 022, seen on RDL016 with status 0x90 (open-circuit intermittent).",
+      "cause": "Circuit meaning not yet mapped — needs the RAVE SRS fault table or a labelled capture. Airbag is read-only; investigate, never actuate.",
+      "severity": "logged",
+      "system": "airbag (SRS)",
+      "source": "airbag/faults.py sniff 2026-08-10 (RDL016); number→circuit text not yet mapped"
+    }
+  ]
+}

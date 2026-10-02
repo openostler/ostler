@@ -1,0 +1,15 @@
+.git
+.github
+.pytest_cache
+__pycache__
+*.pyc
+.venv
+venv
+# UI build deps (the built app is committed to src/d2diag/web/static; node_modules is huge)
+ui/node_modules
+ui/dist
+# Private car data — never into the image (gitignored too)
+logs
+captures
+*.log
+fuel_totals.json

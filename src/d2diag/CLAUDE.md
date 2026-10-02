@@ -8,8 +8,10 @@ The Python package: comms core → interpretation → web consumer. The map is i
 - `transport/`, `kline/`, `kwp2000/`, `session.py`, `ports.py` — the comms core.
 - `td5/`, `slabs/`, `bcu/`, `airbag/`, `ace/`, `autobox/` — module layers and menus.
 - `signals/*.json` — single source of truth for LID mappings (use `upsert_field`).
-- `sniff/` — capture parsing, the protocol library, automap and calibration.
-- `faultscan.py`, `menus.py`, `community/` — cross-module helpers and opt-in upload.
+- `sniff/` — capture parsing, module detection (`modules.py`), the protocol library,
+  automap, calibration and the NanoCom capture importer (`importer.py`).
+- `faultscan.py`, `modscan.py`, `menus.py`, `community/` — cross-module helpers
+  (`modscan.py` = the read-only address scan) and opt-in upload.
 - `web/` — consumer: stdlib HTTP + SSE server, data sources. `web/static/` is the built
   UI from `ui/` (generated — rebuild, never edit); `dashboard*.html` are legacy references.
 

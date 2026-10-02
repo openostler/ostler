@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api } from "./api/client";
-import type { Community, Field, Snapshot } from "./api/schemas";
+import type { Community, FaultMeaning, Field, Snapshot } from "./api/schemas";
 import { useSnapshot } from "./api/useSnapshot";
 import { Consent } from "./components/Consent";
 import { FaultSheet } from "./components/FaultSheet";
 import { Settings } from "./components/Settings";
 import { moduleName } from "./layout";
-import { clockHHMM } from "./lib/format";
+import { clockHHMM, faultLookup } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
 import { screensFor } from "./screens/registry";
 import { AppCtx, type AppContext } from "./state/app";
@@ -55,6 +55,7 @@ export function App({ path = window.location.pathname }: { path?: string }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [community, setCommunity] = useState<Community | null>(null);
   const [fieldsByModule, setFieldsByModule] = useState<Record<string, Record<string, Field>>>({});
+  const [faultsByModule, setFaultsByModule] = useState<Record<string, FaultMeaning[]>>({});
   const [live, dispatch] = useReducer(
     (s: LiveState, snap: Snapshot) => reduceSnapshot(s, snap, Date.now()),
     initialLive,
@@ -79,6 +80,16 @@ export function App({ path = window.location.pathname }: { path?: string }) {
     );
   }, [module, fieldsByModule]);
 
+  // fault-code meanings per module, fetched once per module (the /faults dictionary)
+  useEffect(() => {
+    if (faultsByModule[module]) return;
+    api.faults(module).then(
+      (r) => setFaultsByModule((m) => ({ ...m, [module]: r.faults })),
+      () => undefined,
+    );
+  }, [module, faultsByModule]);
+  const faultMeaning = useMemo(() => faultLookup(faultsByModule[module] ?? []), [faultsByModule, module]);
+
   // Faults pop up once when connected; dismissing acknowledges them, so afterwards only
   // NEW faults alert. Derived from the snapshot (no effect); the Drive tile can also
   // open the sheet on demand.
@@ -91,7 +102,7 @@ export function App({ path = window.location.pathname }: { path?: string }) {
 
   const experimental = prefs.trust === "experimental";
   const ctx: AppContext = {
-    snap, live, module, fields: fieldsByModule[module] ?? {}, refresh, prefs, setPrefs, experimental,
+    snap, live, module, fields: fieldsByModule[module] ?? {}, faultMeaning, refresh, prefs, setPrefs, experimental,
     admin, community, reloadCommunity, goTo: setTab, toast: showToast, ackedFaults,
     showFaultSheet: setManualFaults,
   };

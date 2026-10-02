@@ -10,12 +10,7 @@ from __future__ import annotations
 import re
 
 from ..signals import load_signals
-
-# Fast-init signatures → module (so we know which ECU the LIDs belong to).
-_INIT_SIGS = {
-    (0x81, 0x13, 0xF7, 0x81): "td5",
-    (0x81, 0x29, 0xF7, 0x81): "slabs",
-}
+from .modules import ModuleTracker
 
 _HEX_AFTER_BRACKET = re.compile(r"\]\s*([0-9a-fA-F ]+)")
 
@@ -53,11 +48,6 @@ def _frames(b: "list[int]") -> "list[list[int]]":
     return out
 
 
-def _contains(seq: "list[int]", sub: "tuple[int, ...]") -> bool:
-    n = len(sub)
-    return any(tuple(seq[i : i + n]) == sub for i in range(len(seq) - n + 1))
-
-
 def decode_known(module: str, lid: int, data: bytes) -> "list[dict]":
     """Our current decoding of a LID (for comparison against the reference tool screen).
 
@@ -84,6 +74,7 @@ class LidStore:
 
     def __init__(self) -> None:
         self.module: "str | None" = None
+        self._tracker = ModuleTracker()
         self.frames = 0  # total number of decoded response frames (for freshness measurement)
         self._data: "dict[str, dict[int, dict]]" = {}
 
@@ -93,9 +84,7 @@ class LidStore:
             self.ingest_bytes(b)
 
     def ingest_bytes(self, b: "list[int]") -> None:
-        for sig, name in _INIT_SIGS.items():
-            if _contains(b, sig):
-                self.module = name
+        self.module = self._tracker.feed(b)
         for fr in _frames(b):
             payload = fr[1 : 1 + fr[0]]
             # ReadDataByLocalId response: 61 <lid> <data…>

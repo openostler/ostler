@@ -26,7 +26,7 @@ export function clockHHMM(d: Date = new Date()): string {
 export const spacedHex = (h: string | null | undefined): string =>
   (h ?? "").replace(/\s+/g, "").replace(/(..)/g, "$1 ").trim();
 
-export type ParsedFault = { text: string; tag: string; raw: string; current: boolean };
+export type ParsedFault = { text: string; tag: string; raw: string; current: boolean; orig: string };
 
 /** "027: shuttle valve switch — electrical failure (Current)" → {raw:"027", text, tag:"Current"}. */
 export function parseFault(str: string): ParsedFault {
@@ -41,7 +41,22 @@ export function parseFault(str: string): ParsedFault {
     raw = mcode[1];
     text = text.replace(/^\d{3}:\s*/, "");
   }
-  return { text, tag, raw, current: /current/i.test(tag) };
+  return { text, tag, raw, current: /current/i.test(tag), orig: str };
+}
+
+/** Build a fault-meaning lookup from a /faults list: match the decoder's raw string by
+ * full name, or map a generic `byte<off>.bit<n>` back to its `off.bit` key. */
+export function faultLookup<M extends { key: string; name: string }>(
+  meanings: M[],
+): (raw: string) => M | undefined {
+  const byName = new Map(meanings.map((m) => [m.name, m]));
+  const byKey = new Map(meanings.map((m) => [m.key, m]));
+  return (raw: string) => {
+    const hit = byName.get(raw);
+    if (hit) return hit;
+    const mb = raw.match(/^byte(\d+)\.bit(\d+)/);
+    return mb ? byKey.get(`${mb[1]}.${mb[2]}`) : undefined;
+  };
 }
 
 export type FlagKind = "ok" | "exp" | "lo" | "hi" | "sus";
