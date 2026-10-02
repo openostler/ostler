@@ -822,3 +822,48 @@ def test_fields_carry_display_span_and_explicit_normal_band():
     # the numeric multiplier `scale` is untouched by the display span
     from d2diag.signals import load_signals
     assert {s.name: s.scale for s in load_signals("td5")}["battery"] == 0.001
+
+
+def test_info_source_mock_shows_seeded_faults_and_clears():
+    from d2diag.web import InfoDataSource
+
+    src = InfoDataSource("airbag", mock=True, faults=["004: lamp open circuit"])
+    d = src.poll()
+    assert d["status"] == "connected" and d["source"] == "airbag"
+    assert d["signals"] == {} and d["faults"] == ["004: lamp open circuit"]
+    # mock clear empties the list for a few polls, then the seed returns
+    assert src.command("clear_faults")["ok"]
+    assert src.poll()["faults"] == []
+    for _ in range(4):
+        last = src.poll()["faults"]
+    assert last == ["004: lamp open circuit"]
+
+
+def test_info_source_live_is_honest_not_fabricated():
+    from d2diag.web import InfoDataSource
+
+    src = InfoDataSource("bcu", mock=False, live_message="no fault memory")
+    d = src.poll()
+    assert d["status"] == "error" and d["signals"] == {} and d["faults"] == []
+    assert d["error"] == "no fault memory"
+    # no write command is accepted on a live info source
+    assert not src.command("clear_faults")["ok"]
+
+
+def test_select_info_module_connects_in_mock():
+    from d2diag.web import InfoDataSource, MockDataSource
+    from d2diag.web.server import DiagServer
+
+    variants = {
+        "motor": {"mock": MockDataSource(), "live": MockDataSource()},
+        "bcu": {"mock": InfoDataSource("bcu", mock=True, faults=[]),
+                "live": InfoDataSource("bcu", mock=False)},
+    }
+    srv = DiagServer(host="127.0.0.1", port=0, variants=variants, mode="mock", active="motor")
+    try:
+        assert srv._select("bcu")["ok"]           # selectable now (was rejected before)
+        assert srv._active == "bcu"
+        assert srv.source.poll()["status"] == "connected"
+        assert not srv._select("nope")["ok"]      # unknown module still rejected
+    finally:
+        srv.server_close()

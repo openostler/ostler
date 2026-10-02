@@ -5,6 +5,7 @@ serves the dashboard and streams snapshots via Server-Sent Events.
 """
 from .sources import (
     DataSource,
+    InfoDataSource,
     MockDataSource,
     MockSlabsDataSource,
     SlabsDataSource,
@@ -13,5 +14,5 @@ from .sources import (
 
 __all__ = [
     "DataSource", "MockDataSource", "Td5DataSource",
-    "SlabsDataSource", "MockSlabsDataSource",
+    "SlabsDataSource", "MockSlabsDataSource", "InfoDataSource",
 ]

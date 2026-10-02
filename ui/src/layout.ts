@@ -8,6 +8,10 @@
 export const MODULE_NAME: Record<string, string> = {
   motor: "TD5 (engine)",
   slabs: "SLABS (ABS + air suspension)",
+  airbag: "Airbag / SRS",
+  ace: "ACE (active cornering)",
+  autobox: "Auto gearbox (EAT)",
+  bcu: "BCU (body control)",
 };
 export const moduleName = (m: string): string => MODULE_NAME[m] ?? m;
 
@@ -21,10 +25,10 @@ export type ModuleTag = "verified" | "experimental" | "partial";
 export const MODULES: { id: string; name: string; desc: string; tag: ModuleTag; connectable: boolean }[] = [
   { id: "motor", name: "TD5 — Engine ECU", desc: "Faults, inputs, outputs. Validated on the car.", tag: "verified", connectable: true },
   { id: "slabs", name: "SLABS — ABS + Air Suspension", desc: "Faults, heights, actuator tests, ABS bleed.", tag: "verified", connectable: true },
-  { id: "airbag", name: "Airbag / SRS", desc: "Read-only by construction. Faults only.", tag: "experimental", connectable: false },
-  { id: "ace", name: "ACE — Active Cornering", desc: "Fault block isolated, decoding in progress.", tag: "partial", connectable: false },
-  { id: "autobox", name: "Auto gearbox (EAT)", desc: "ReadFaults confirmed, payload undecoded.", tag: "partial", connectable: false },
-  { id: "bcu", name: "BCU — Body Control", desc: "EKA read. No conventional fault memory.", tag: "partial", connectable: false },
+  { id: "airbag", name: "Airbag / SRS", desc: "Read-only by construction. Faults (demo); live read experimental.", tag: "experimental", connectable: true },
+  { id: "ace", name: "ACE — Active Cornering", desc: "Fault block isolated, decoding in progress. Demo only on live.", tag: "partial", connectable: true },
+  { id: "autobox", name: "Auto gearbox (EAT)", desc: "ReadFaults confirmed, payload undecoded. Demo only on live.", tag: "partial", connectable: true },
+  { id: "bcu", name: "BCU — Body Control", desc: "EKA read. No conventional fault memory. Demo only on live.", tag: "partial", connectable: true },
 ];
 
 /**
