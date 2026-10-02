@@ -339,6 +339,48 @@ class MockDataSource(DataSource):
         return TD5_MENU
 
 
+class InfoDataSource(DataSource):
+    """A module that has no live-signal reader yet (airbag/ACE/EAT/BCU).
+
+    The UI already lists these modules; this source makes them *selectable* without
+    pretending they stream live data. In **mock** mode it reports ``connected`` with a
+    seeded fault list so the demo is browsable (Faults, clear-and-return). In **live**
+    mode it reports honestly that the module is not readable on the car yet — no
+    fabricated data (data-honesty rule). It carries no signals, so the Drive/Inputs/
+    Outputs tabs fall back to their empty/"Coming" state.
+    """
+
+    def __init__(self, module: str, *, mock: bool, faults: "list[str] | None" = None,
+                 live_message: "str | None" = None) -> None:
+        self.name = module
+        self._mock = mock
+        self._seed = list(faults or [])
+        self._faults = list(self._seed)
+        self._cleared = 0
+        self._live_message = live_message or (
+            f"{module} is not readable on the car yet — selectable in mock/demo only.")
+
+    def poll(self) -> "dict":
+        if not self._mock:
+            return {"status": "error", "source": self.name, "signals": {},
+                    "faults": [], "error": self._live_message}
+        # After a mock clear, the list is empty for a few polls, then the seed returns
+        # (mirrors "clear and see if it comes back", like the other mock sources).
+        if self._cleared > 0:
+            self._cleared -= 1
+            if self._cleared == 0:
+                self._faults = list(self._seed)
+        return {"status": "connected", "source": self.name, "signals": {},
+                "faults": list(self._faults)}
+
+    def command(self, action: str, params: "dict | None" = None) -> "dict":
+        if self._mock and action == "clear_faults":
+            self._faults = []
+            self._cleared = 4
+            return {"ok": True, "message": f"Fault codes cleared (mock {self.name})"}
+        return {"ok": False, "error": f"unknown command: {action}"}
+
+
 def _read_block_cmd(session, params: "dict | None") -> "dict":
     """Read a set of LIDs via a live session → {ok, raws:{lidhex:hex}}.
 

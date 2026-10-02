@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 from d2diag.web import (  # noqa: E402
+    InfoDataSource,
     MockDataSource,
     MockSlabsDataSource,
     SlabsDataSource,
@@ -80,6 +81,35 @@ def main() -> int:
         "motor": {"mock": MockDataSource(),
                   "live": Td5DataSource(port, raw_log_dir=raw_log_dir, fuel_state_path=fuel_state_path)},
         "slabs": {"mock": MockSlabsDataSource(), "live": SlabsDataSource(port, raw_log_dir=raw_log_dir)},
+        # Modules with no live-signal reader yet (faults/info only). Selectable so the demo
+        # is browsable; live mode reports honestly that they aren't readable on the car yet.
+        # No live DataSource is fabricated — see InfoDataSource and the system-map confidence.
+        "airbag": {
+            "mock": InfoDataSource("airbag", mock=True, faults=[
+                "004: airbag warning lamp — open circuit intermittent",
+                "022: open circuit intermittent"]),
+            "live": InfoDataSource("airbag", mock=False, live_message=(
+                "Airbag/SRS is read-only by construction; live fault read is experimental "
+                "and not wired into the dashboard yet. Use 'Scan all modules'.")),
+        },
+        "ace": {
+            "mock": InfoDataSource("ace", mock=True),
+            "live": InfoDataSource("ace", mock=False, live_message=(
+                "ACE uses a proprietary bulk protocol that isn't decoded yet — "
+                "selectable in mock/demo only.")),
+        },
+        "autobox": {
+            "mock": InfoDataSource("autobox", mock=True),
+            "live": InfoDataSource("autobox", mock=False, live_message=(
+                "The EAT gearbox answers but its fault payload isn't decoded yet — "
+                "selectable in mock/demo only.")),
+        },
+        "bcu": {
+            "mock": InfoDataSource("bcu", mock=True),
+            "live": InfoDataSource("bcu", mock=False, live_message=(
+                "The BCU has no conventional fault memory; its inputs/outputs aren't "
+                "wired into the dashboard yet — selectable in mock/demo only.")),
+        },
     }
     # Public build is LIVE-only (a real user plugs in the cable). --mock forces mock
     # (dev/preview). Otherwise --serial or --public → live, else mock.
