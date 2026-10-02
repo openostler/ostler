@@ -11,6 +11,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Unbuffered stdout/stderr so the startup banner and any print() reach `docker logs`
+# immediately (Python block-buffers stdout when it is not a TTY, which otherwise hides
+# the banner behind a never-flushed buffer).
+ENV PYTHONUNBUFFERED=1
+
 # Dependency layer first, for build-cache reuse across source changes.
 RUN pip install --no-cache-dir "pyserial>=3.5"
 
