@@ -1,19 +1,22 @@
 # Dokploy git-source stack for the Pineshouse homelab.
 #
-# Routing: the container joins the external `dokploy-network` and publishes NO host port.
-# Dokploy injects the Traefik labels (websecure + wildcard TLS) from the domain configured
-# in its UI/API (d2.pineshouse.co.uk → container port 8080). Cloudflare Tunnel's
-# *.pineshouse.co.uk wildcard already forwards to Traefik, and Cloudflare Access gates it.
+# Routing: the container publishes host port 9110 (→ container 8080) on swarm-node1, and a
+# Traefik file-provider route (traefik_route_upsert: d2.pineshouse.co.uk → http://192.168.0.170:9110)
+# forwards to it. Cloudflare Tunnel's *.pineshouse.co.uk wildcard already reaches Traefik,
+# and Cloudflare Access gates the hostname. 9110 is an unused port (>9100 per the registry);
+# the container's own 8080 is never published directly.
 #
 # Secret: D2DIAG_ADMIN_PW gates the /admin mapping endpoints — set it in the Dokploy stack
-# env (sourced from 1Password), never hardcoded here. logs/ is a writable private volume
-# (the app creates logs/ at startup; may hold VIN/EKA data in live mode — keep it private).
+# env, never hardcoded here. logs/ is a writable private volume (the app creates logs/ at
+# startup; may hold VIN/EKA data in live mode — keep it private).
 services:
   d2diag:
     build: .
     restart: unless-stopped
     networks:
       - dokploy-network
+    ports:
+      - "9110:8080"
     environment:
       D2DIAG_ADMIN_PW: "${D2DIAG_ADMIN_PW}"
     volumes:
