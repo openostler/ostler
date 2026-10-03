@@ -400,6 +400,37 @@ nav.tabs .nd { width: 5px; height: 5px; border-radius: 9999px; background: curre
 .car .sub { fill: var(--text-3); font-size: 10px; font-weight: 600; text-anchor: middle; }
 .car .lbl { fill: var(--text-2); font-size: 10px; font-weight: 700; text-anchor: middle; letter-spacing: 0.5px; }
 
+/* Vehicle view (shared base + overlays) */
+.vehicle { width: 100%; max-width: 280px; margin: 0 auto 2px; display: block; }
+.vehicle .v-wheel { fill: var(--band); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .v-body { fill: var(--sunken); stroke: var(--line-strong); stroke-width: 1.5; }
+.vehicle .v-roof { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .v-glass { fill: var(--band); stroke: var(--line-strong); stroke-width: 1; opacity: 0.55; }
+.vehicle .v-trim { fill: var(--band); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .v-grille { fill: var(--line-strong); stroke: none; opacity: 0.7; }
+.vehicle .v-line { stroke: var(--line-strong); stroke-width: 1; opacity: 0.6; fill: none; }
+.vehicle .v-crease { stroke: var(--line-strong); stroke-width: 1; opacity: 0.35; fill: none; }
+.vehicle .v-dir { fill: var(--text-3); font-size: 9px; font-weight: 700; text-anchor: middle; letter-spacing: 1px; }
+/* light zones: off (dim body colour) · absent (dashed) · on (tone, optionally faded) */
+.vehicle .lz { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .lz.absent { fill: none; stroke: var(--fg-dis); stroke-dasharray: 2 2; }
+.vehicle .lz.on { stroke: none; }
+.vehicle .lz.on.accent { fill: var(--accent); }
+.vehicle .lz.on.amber { fill: var(--warn); }
+.vehicle .lz.on.red { fill: var(--alarm); }
+.vehicle .lz.on.white { fill: var(--fg); }
+.vehicle .lz.on.dim { opacity: 0.45; }
+/* doors: closed (panel) · open (accent) · absent (dashed) */
+.vehicle .door2 { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .door2.open { fill: var(--accent); stroke: var(--accent); }
+.vehicle .door2.absent { fill: none; stroke: var(--fg-dis); stroke-dasharray: 2 2; }
+/* category-grouped readouts, two per row on wide screens */
+.ro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+@media (max-width: 460px) { .ro-grid { grid-template-columns: 1fr; } }
+.ro-line { display: flex; gap: 8px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--fg); }
+.ro-line .ok { color: var(--ok); font-weight: 700; }
+.ro-line .dis { color: var(--fg-dis); }
+
 /* Faults v2 */
 .fault { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
 .fault.current { border-color: var(--alarm); }

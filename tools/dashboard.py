@@ -21,6 +21,7 @@ from d2diag.web import (  # noqa: E402
     MockSlabsDataSource,
     SlabsDataSource,
     Td5DataSource,
+    mock_bcu_signals,
 )
 from d2diag.web.server import DiagServer  # noqa: E402
 
@@ -105,7 +106,7 @@ def main() -> int:
                 "selectable in mock/demo only.")),
         },
         "bcu": {
-            "mock": InfoDataSource("bcu", mock=True),
+            "mock": InfoDataSource("bcu", mock=True, signal_gen=mock_bcu_signals),
             "live": InfoDataSource("bcu", mock=False, live_message=(
                 "The BCU has no conventional fault memory; its inputs/outputs aren't "
                 "wired into the dashboard yet — selectable in mock/demo only.")),

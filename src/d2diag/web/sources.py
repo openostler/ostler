@@ -351,7 +351,8 @@ class InfoDataSource(DataSource):
     """
 
     def __init__(self, module: str, *, mock: bool, faults: "list[str] | None" = None,
-                 live_message: "str | None" = None) -> None:
+                 live_message: "str | None" = None,
+                 signal_gen: "Callable[[int], dict] | None" = None) -> None:
         self.name = module
         self._mock = mock
         self._seed = list(faults or [])
@@ -359,6 +360,11 @@ class InfoDataSource(DataSource):
         self._cleared = 0
         self._live_message = live_message or (
             f"{module} is not readable on the car yet — selectable in mock/demo only.")
+        # Optional demo-only signal generator (mock mode): tick -> {name: {v,u,s,c}}.
+        # Lets the vehicle-view pages animate without claiming decoded data; every signal it
+        # emits is tagged confidence "candidate" so it is never mistaken for a proven reading.
+        self._signal_gen = signal_gen
+        self._tick = 0
 
     def poll(self) -> "dict":
         if not self._mock:
@@ -370,7 +376,9 @@ class InfoDataSource(DataSource):
             self._cleared -= 1
             if self._cleared == 0:
                 self._faults = list(self._seed)
-        return {"status": "connected", "source": self.name, "signals": {},
+        self._tick += 1
+        signals = self._signal_gen(self._tick) if self._signal_gen else {}
+        return {"status": "connected", "source": self.name, "signals": signals,
                 "faults": list(self._faults)}
 
     def command(self, action: str, params: "dict | None" = None) -> "dict":
@@ -379,6 +387,52 @@ class InfoDataSource(DataSource):
             self._cleared = 4
             return {"ok": True, "message": f"Fault codes cleared (mock {self.name})"}
         return {"ok": False, "error": f"unknown command: {action}"}
+
+
+def _flag(v: bool) -> "dict":
+    """A boolean body state as a snapshot signal. Confidence is always 'candidate' — these
+    are demo/mock states or NanoCom-known fields, never a proven decode."""
+    return {"v": 1 if v else 0, "u": "", "s": None, "c": "candidate"}
+
+
+def mock_bcu_signals(tick: int) -> "dict":
+    """Demo-only BCU body states for the vehicle-view Body page (mock mode).
+
+    A gentle scripted scene: ignition on, dipped beams, indicators blinking, a door that opens
+    now and then, wipers sweeping. Names match the Body page's zone→signal map in the UI's
+    layout.ts. Every value is tagged 'candidate' so it is never read as a proven measurement.
+    """
+    blink = (tick // 2) % 2 == 0          # ~1 Hz indicator blink
+    door_open = (tick % 40) in range(6, 14)  # driver door opens briefly, periodically
+    wiping = (tick % 20) < 6
+    sig = {
+        # doors / openings
+        "door_driver": _flag(door_open),
+        "door_passenger": _flag(False),
+        "bonnet": _flag(False),
+        "tailgate": _flag(False),
+        # lamps
+        "side_lights": _flag(True),
+        "dipped": _flag(True),
+        "main_beam": _flag(False),
+        "front_fog": _flag(False),
+        "rear_fog": _flag(False),
+        "indicator_left": _flag(blink),
+        "indicator_right": _flag(False),
+        "hazard": _flag(False),
+        "brake_light": _flag((tick % 16) < 3),
+        "reverse_light": _flag(False),
+        # windows / wash-wipe / heated screen
+        "window_front_left": _flag(False),
+        "window_front_right": _flag(False),
+        "wiper_front": _flag(wiping),
+        "wiper_rear": _flag(False),
+        "heated_screen": _flag(False),
+        # supply (numeric)
+        "battery": {"v": round(12.6 + 0.1 * math.sin(tick / 9), 2), "u": "V", "s": "ok", "c": "candidate"},
+        "ignition_pos": {"v": 2, "u": "", "s": None, "c": "candidate"},
+    }
+    return sig
 
 
 def _read_block_cmd(session, params: "dict | None") -> "dict":
