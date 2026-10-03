@@ -867,3 +867,27 @@ def test_select_info_module_connects_in_mock():
         assert not srv._select("nope")["ok"]      # unknown module still rejected
     finally:
         srv.server_close()
+
+
+def test_info_source_mock_signal_gen_emits_body_states():
+    from d2diag.web import InfoDataSource, mock_bcu_signals
+
+    src = InfoDataSource("bcu", mock=True, signal_gen=mock_bcu_signals)
+    d = src.poll()
+    assert d["status"] == "connected"
+    sig = d["signals"]
+    # a representative spread of body zones is present, tagged candidate (never proven)
+    for name in ("door_driver", "side_lights", "indicator_left", "battery", "ignition_pos"):
+        assert name in sig, name
+        assert sig[name]["c"] == "candidate"
+    assert sig["battery"]["u"] == "V"
+    # booleans are 0/1
+    assert sig["side_lights"]["v"] in (0, 1)
+
+
+def test_info_source_live_still_has_no_signals_even_with_gen():
+    from d2diag.web import InfoDataSource, mock_bcu_signals
+
+    src = InfoDataSource("bcu", mock=False, signal_gen=mock_bcu_signals)
+    d = src.poll()
+    assert d["status"] == "error" and d["signals"] == {}

@@ -10,9 +10,11 @@ from .sources import (
     MockSlabsDataSource,
     SlabsDataSource,
     Td5DataSource,
+    mock_bcu_signals,
 )
 
 __all__ = [
     "DataSource", "MockDataSource", "Td5DataSource",
     "SlabsDataSource", "MockSlabsDataSource", "InfoDataSource",
+    "mock_bcu_signals",
 ]

@@ -102,6 +102,46 @@ export const OUTPUTS: Record<string, OutputDef[]> = {
   ],
 };
 
+/**
+ * Body (BCU) vehicle-view zones. `signal` is the snapshot signal name (from the BCU
+ * read-inputs). When a signal is absent from the snapshot the zone renders "awaiting
+ * mapping" (neutral/dashed) — never a fabricated state. Positions are in the VehicleBase
+ * top-down viewBox (0 0 300 460); FRONT is at the top. RHD: driver = right side.
+ */
+export type LampTone = "accent" | "amber" | "red";
+export type BodyLamp = { id: string; signal: string; label: string; x: number; y: number; tone: LampTone };
+export const BODY_LAMPS: BodyLamp[] = [
+  { id: "ind_fl", signal: "indicator_left", label: "Ind L", x: 56, y: 60, tone: "amber" },
+  { id: "side_l", signal: "side_lights", label: "Side", x: 92, y: 50, tone: "accent" },
+  { id: "dipped", signal: "dipped", label: "Dipped", x: 150, y: 44, tone: "accent" },
+  { id: "main", signal: "main_beam", label: "Main", x: 208, y: 50, tone: "accent" },
+  { id: "ind_fr", signal: "indicator_right", label: "Ind R", x: 244, y: 60, tone: "amber" },
+  { id: "fog_f", signal: "front_fog", label: "Fog F", x: 150, y: 66, tone: "accent" },
+  { id: "brake", signal: "brake_light", label: "Brake", x: 150, y: 414, tone: "red" },
+  { id: "reverse", signal: "reverse_light", label: "Rev", x: 108, y: 420, tone: "accent" },
+  { id: "fog_r", signal: "rear_fog", label: "Fog R", x: 192, y: 420, tone: "red" },
+  { id: "ind_rl", signal: "indicator_left", label: "Ind L", x: 60, y: 420, tone: "amber" },
+  { id: "ind_rr", signal: "indicator_right", label: "Ind R", x: 240, y: 420, tone: "amber" },
+];
+export type BodyDoor = { id: string; signal: string; label: string; place: "frontL" | "frontR" | "front" | "rear" };
+export const BODY_DOORS: BodyDoor[] = [
+  { id: "driver", signal: "door_driver", label: "Driver", place: "frontR" },
+  { id: "passenger", signal: "door_passenger", label: "Passenger", place: "frontL" },
+  { id: "bonnet", signal: "bonnet", label: "Bonnet", place: "front" },
+  { id: "tailgate", signal: "tailgate", label: "Tailgate", place: "rear" },
+];
+/** Secondary body states shown as a readout list beside the car. kind: flag | numeric. */
+export type BodyReadout = { signal: string; label: string; kind: "flag" | "numeric"; unit?: string; dec?: number };
+export const BODY_READOUTS: BodyReadout[] = [
+  { signal: "ignition_pos", label: "Ignition pos", kind: "numeric", dec: 0 },
+  { signal: "battery", label: "Battery", kind: "numeric", unit: "V", dec: 1 },
+  { signal: "heated_screen", label: "Heated screen", kind: "flag" },
+  { signal: "wiper_front", label: "Front wiper", kind: "flag" },
+  { signal: "wiper_rear", label: "Rear wiper", kind: "flag" },
+  { signal: "window_front_left", label: "Window FL", kind: "flag" },
+  { signal: "window_front_right", label: "Window FR", kind: "flag" },
+];
+
 /** Utilities → raw LID dump: a sensible default request per module. */
 export const UTIL_LIDS: Record<string, { example: string; note: string }> = {
   motor: { example: "09 0D 10 1A 1B 1C 40", note: "09 rpm · 1A temps · 1B pedal · 1C boost · 40 injector balance" },

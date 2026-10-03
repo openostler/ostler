@@ -400,6 +400,29 @@ nav.tabs .nd { width: 5px; height: 5px; border-radius: 9999px; background: curre
 .car .sub { fill: var(--text-3); font-size: 10px; font-weight: 600; text-anchor: middle; }
 .car .lbl { fill: var(--text-2); font-size: 10px; font-weight: 700; text-anchor: middle; letter-spacing: 0.5px; }
 
+/* Vehicle view (shared base + Body overlay) */
+.vehicle { width: 100%; max-width: 300px; margin: 0 auto; display: block; }
+.vehicle .v-wheel { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1.5; }
+.vehicle .v-body { fill: var(--sunken); stroke: var(--line-strong); stroke-width: 1.5; }
+.vehicle .v-roof { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1; opacity: 0.85; }
+.vehicle .v-glass { fill: var(--sunken); stroke: var(--line-strong); stroke-width: 1; opacity: 0.6; }
+.vehicle .v-line { stroke: var(--line-strong); stroke-width: 1; opacity: 0.5; fill: none; }
+.vehicle .v-dir { fill: var(--text-2); font-size: 10px; font-weight: 700; text-anchor: middle; letter-spacing: 0.5px; }
+.vehicle .v-zlbl { fill: var(--text-3); font-size: 9px; font-weight: 600; text-anchor: middle; }
+.vehicle .v-llbl { fill: var(--text-3); font-size: 8px; font-weight: 600; text-anchor: middle; }
+.vehicle .lamp { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1.5; }
+.vehicle .lamp.off { fill: var(--raised); stroke: var(--line-strong); }
+.vehicle .lamp.absent { fill: none; stroke: var(--fg-dis); stroke-dasharray: 2 2; }
+.vehicle .lamp.on.tone-accent { fill: var(--accent); stroke: var(--accent); }
+.vehicle .lamp.on.tone-amber { fill: var(--warn); stroke: var(--warn); }
+.vehicle .lamp.on.tone-red { fill: var(--alarm); stroke: var(--alarm); }
+.vehicle .door { fill: var(--raised); stroke: var(--line-strong); stroke-width: 1; }
+.vehicle .door.open { fill: var(--accent); stroke: var(--accent); }
+.vehicle .door.absent { fill: none; stroke: var(--fg-dis); stroke-dasharray: 2 2; }
+.ro-line { display: flex; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--fg); }
+.ro-line .ok { color: var(--ok); font-weight: 700; }
+.ro-line .dis { color: var(--fg-dis); }
+
 /* Faults v2 */
 .fault { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
 .fault.current { border-color: var(--alarm); }
