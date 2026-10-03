@@ -103,43 +103,64 @@ export const OUTPUTS: Record<string, OutputDef[]> = {
 };
 
 /**
- * Body (BCU) vehicle-view zones. `signal` is the snapshot signal name (from the BCU
- * read-inputs). When a signal is absent from the snapshot the zone renders "awaiting
- * mapping" (neutral/dashed) — never a fabricated state. Positions are in the VehicleBase
- * top-down viewBox (0 0 300 460); FRONT is at the top. RHD: driver = right side.
+ * Body (BCU) vehicle view. `BODY_SIGNALS` is the only place the UI names the BCU read-input
+ * signals; the SVG overlay (BodyCar) reads them to light the car's own lamp clusters, and
+ * `BODY_GROUPS` drives the category-grouped readout list below. A signal absent from the
+ * snapshot renders "awaiting mapping" — never a fabricated state. RHD: driver = right side.
  */
-export type LampTone = "accent" | "amber" | "red";
-export type BodyLamp = { id: string; signal: string; label: string; x: number; y: number; tone: LampTone };
-export const BODY_LAMPS: BodyLamp[] = [
-  { id: "ind_fl", signal: "indicator_left", label: "Ind L", x: 56, y: 60, tone: "amber" },
-  { id: "side_l", signal: "side_lights", label: "Side", x: 92, y: 50, tone: "accent" },
-  { id: "dipped", signal: "dipped", label: "Dipped", x: 150, y: 44, tone: "accent" },
-  { id: "main", signal: "main_beam", label: "Main", x: 208, y: 50, tone: "accent" },
-  { id: "ind_fr", signal: "indicator_right", label: "Ind R", x: 244, y: 60, tone: "amber" },
-  { id: "fog_f", signal: "front_fog", label: "Fog F", x: 150, y: 66, tone: "accent" },
-  { id: "brake", signal: "brake_light", label: "Brake", x: 150, y: 414, tone: "red" },
-  { id: "reverse", signal: "reverse_light", label: "Rev", x: 108, y: 420, tone: "accent" },
-  { id: "fog_r", signal: "rear_fog", label: "Fog R", x: 192, y: 420, tone: "red" },
-  { id: "ind_rl", signal: "indicator_left", label: "Ind L", x: 60, y: 420, tone: "amber" },
-  { id: "ind_rr", signal: "indicator_right", label: "Ind R", x: 240, y: 420, tone: "amber" },
-];
-export type BodyDoor = { id: string; signal: string; label: string; place: "frontL" | "frontR" | "front" | "rear" };
-export const BODY_DOORS: BodyDoor[] = [
-  { id: "driver", signal: "door_driver", label: "Driver", place: "frontR" },
-  { id: "passenger", signal: "door_passenger", label: "Passenger", place: "frontL" },
-  { id: "bonnet", signal: "bonnet", label: "Bonnet", place: "front" },
-  { id: "tailgate", signal: "tailgate", label: "Tailgate", place: "rear" },
-];
-/** Secondary body states shown as a readout list beside the car. kind: flag | numeric. */
-export type BodyReadout = { signal: string; label: string; kind: "flag" | "numeric"; unit?: string; dec?: number };
-export const BODY_READOUTS: BodyReadout[] = [
-  { signal: "ignition_pos", label: "Ignition pos", kind: "numeric", dec: 0 },
-  { signal: "battery", label: "Battery", kind: "numeric", unit: "V", dec: 1 },
-  { signal: "heated_screen", label: "Heated screen", kind: "flag" },
-  { signal: "wiper_front", label: "Front wiper", kind: "flag" },
-  { signal: "wiper_rear", label: "Rear wiper", kind: "flag" },
-  { signal: "window_front_left", label: "Window FL", kind: "flag" },
-  { signal: "window_front_right", label: "Window FR", kind: "flag" },
+export const BODY_SIGNALS = {
+  side: "side_lights", dipped: "dipped", main: "main_beam", frontFog: "front_fog", rearFog: "rear_fog",
+  indL: "indicator_left", indR: "indicator_right", hazard: "hazard", brake: "brake_light", reverse: "reverse_light",
+  doorDriver: "door_driver", doorPassenger: "door_passenger", bonnet: "bonnet", tailgate: "tailgate",
+  winFL: "window_front_left", winFR: "window_front_right",
+  wiperF: "wiper_front", wiperR: "wiper_rear", heated: "heated_screen",
+  ignition: "ignition_pos", battery: "battery",
+} as const;
+
+export type BodyRow = { signal: string; label: string; kind: "flag" | "num"; unit?: string; dec?: number };
+export type BodyGroup = { title: string; items: BodyRow[] };
+export const BODY_GROUPS: BodyGroup[] = [
+  {
+    title: "Lighting", items: [
+      { signal: "side_lights", label: "Side lights", kind: "flag" },
+      { signal: "dipped", label: "Dipped beam", kind: "flag" },
+      { signal: "main_beam", label: "Main beam", kind: "flag" },
+      { signal: "front_fog", label: "Front fog", kind: "flag" },
+      { signal: "rear_fog", label: "Rear fog", kind: "flag" },
+      { signal: "indicator_left", label: "Left indicator", kind: "flag" },
+      { signal: "indicator_right", label: "Right indicator", kind: "flag" },
+      { signal: "hazard", label: "Hazard", kind: "flag" },
+      { signal: "brake_light", label: "Brake lights", kind: "flag" },
+      { signal: "reverse_light", label: "Reverse light", kind: "flag" },
+    ],
+  },
+  {
+    title: "Doors & openings", items: [
+      { signal: "door_driver", label: "Driver door", kind: "flag" },
+      { signal: "door_passenger", label: "Passenger door", kind: "flag" },
+      { signal: "bonnet", label: "Bonnet", kind: "flag" },
+      { signal: "tailgate", label: "Tailgate", kind: "flag" },
+    ],
+  },
+  {
+    title: "Windows", items: [
+      { signal: "window_front_left", label: "Front left", kind: "flag" },
+      { signal: "window_front_right", label: "Front right", kind: "flag" },
+    ],
+  },
+  {
+    title: "Wash / wipe", items: [
+      { signal: "wiper_front", label: "Front wiper", kind: "flag" },
+      { signal: "wiper_rear", label: "Rear wiper", kind: "flag" },
+    ],
+  },
+  { title: "Climate", items: [{ signal: "heated_screen", label: "Heated screen", kind: "flag" }] },
+  {
+    title: "Power", items: [
+      { signal: "ignition_pos", label: "Ignition position", kind: "num", dec: 0 },
+      { signal: "battery", label: "Battery", kind: "num", unit: "V", dec: 1 },
+    ],
+  },
 ];
 
 /** Utilities → raw LID dump: a sensible default request per module. */
