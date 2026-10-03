@@ -3,7 +3,7 @@ title: Index
 area: root
 status: stable
 version: 1.0
-updated: 2026-10-03
+updated: 2026-10-04
 summary: >
   Generated manifest of every document in this repo — path, area,
   status, version, updated date, and a ~100-token summary — plus reading paths.
