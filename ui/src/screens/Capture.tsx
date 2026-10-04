@@ -165,7 +165,7 @@ function DirectCapture({ onSaved }: { onSaved: (module: string, e: Omit<LogEntry
   return (
     <div className="card">
       <div className="kicker" style={{ marginBottom: 8 }}>Read a LID directly · {moduleName(module)}</div>
-      {!connected ? <div className="small" style={{ color: "var(--ic-yellow)", marginBottom: 8 }}>Connect {moduleName(module)} on the Connect tab to read live values.</div> : null}
+      {!connected ? <div className="small" style={{ color: "var(--ic-yellow)", marginBottom: 8 }}>Connect {moduleName(module)} (connection pill in the header) to read live values.</div> : null}
       <form className="row" style={{ gap: 8 }} onSubmit={(e) => { e.preventDefault(); void read(); }}>
         <input className="input mono" style={{ width: 160 }} aria-label="LID to read" placeholder="LID hex — e.g. 23"
           value={lid} onChange={(e) => setLid(e.target.value)} />

@@ -2,38 +2,111 @@
   "module": "motor",
   "store_module": "td5",
   "coverage": {
-    "verified": 2,
-    "candidate": 2,
-    "sniff": 1,
+    "verified": 34,
+    "candidate": 30,
+    "sniff": 35,
     "untranscribed": 0,
-    "total": 5
+    "total": 99
   },
   "pages": [
     {
       "id": "faults",
       "title": "Faults",
       "coverage": {
-        "verified": 1,
+        "verified": 6,
         "candidate": 0,
         "sniff": 0,
         "untranscribed": 0,
-        "total": 1
+        "total": 6
       },
       "groups": [
         {
+          "id": "session",
+          "title": "Connection (requires unlock)",
+          "parent": null,
+          "nanocom": null,
+          "items": [
+            {
+              "id": "fast-init",
+              "name": "Fast init (StartCommunication)",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "tolerant, searches for C1",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "start-session",
+              "name": "StartDiagnosticSession",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "0xA0",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "security-access",
+              "name": "SecurityAccess (seed→key)",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "keygen; Ekaitza-confirmed",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        },
+        {
           "id": "faults",
-          "title": "Faults",
+          "title": "Fault codes",
           "parent": null,
           "nanocom": "td5_engine/faults",
           "items": [
             {
               "id": "read-faults",
-              "name": "Read faults",
+              "name": "Read faults (211 bits raw-mapped, 3 candidate)",
               "status": "verified",
               "safety": "read",
               "sig": null,
               "lid": null,
-              "ref": "21 3B",
+              "ref": "21 3B, byte*8+bit; PROVEN Ekaitza + reference tool v1.12",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "clear-faults",
+              "name": "Clear faults",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "StartRoutine 0xDD + 18×00",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "fault-reference",
+              "name": "Reference (display codes + causes)",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "the dictionary TD5 + Kelvin list",
               "note": "",
               "placeholder": false,
               "pages": null,
@@ -47,11 +120,11 @@
       "id": "inputs",
       "title": "Inputs",
       "coverage": {
-        "verified": 1,
-        "candidate": 0,
-        "sniff": 0,
+        "verified": 28,
+        "candidate": 14,
+        "sniff": 7,
         "untranscribed": 0,
-        "total": 1
+        "total": 49
       },
       "groups": [
         {
@@ -61,13 +134,653 @@
           "nanocom": "td5_engine/inputs_fuelling",
           "items": [
             {
+              "id": "engine-speed",
+              "name": "1. Engine Speed (rpm)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "rpm",
+              "lid": "09",
+              "ref": "21 09",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "idle-speed-error",
+              "name": "2. Idle Speed Error (rpm)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "rpm_error",
+              "lid": "21",
+              "ref": "21 21 (s16)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "road-speed",
+              "name": "3. Road Speed (km/h)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "speed",
+              "lid": "0d",
+              "ref": "21 0D",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "battery",
+              "name": "4. Battery (V)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "battery",
+              "lid": "10",
+              "ref": "21 10 (u16/1000)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "accel-way-1",
+              "name": "5. Accel. Way 1 (V)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "accel_way1",
+              "lid": "1b",
+              "ref": "21 1B@0",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "accel-way-2",
+              "name": "6. Accel. Way 2 (V)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "accel_way2",
+              "lid": "1b",
+              "ref": "21 1B@2",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "accel-way-3",
+              "name": "7. Accel. Way 3 (V)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "accel_way3",
+              "lid": "1b",
+              "ref": "21 1B@4 (long 10-byte form; Euro 3)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "accel-supply",
+              "name": "8. Accel. Supply (V)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "accel_supply",
+              "lid": "1b",
+              "ref": "21 1B@8 long form (D2-JW); @6 in the short 8-byte form",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "coolant-temp",
+              "name": "9. Coolant Temp (°C)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "coolant_temp",
+              "lid": "1a",
+              "ref": "21 1A@0",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "fuel-temp",
+              "name": "10. Fuel Temp (°C)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "fuel_temp",
+              "lid": "1a",
+              "ref": "21 1A@12",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "air-inlet-temp",
+              "name": "11. Air Inlet Temp (°C)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "air_temp",
+              "lid": "1a",
+              "ref": "21 1A@4",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
               "id": "air-flow",
               "name": "12. Air Flow (kg/hr)",
               "status": "verified",
               "safety": "read",
               "sig": "maf_sensor",
               "lid": "1c",
-              "ref": "21 1C@4",
+              "ref": "21 1C@4 ×0.1 kg/h (physical MAF sensor)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ambient-pressure",
+              "name": "13. Ambient Pressure (kPa)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "ambient_press_1",
+              "lid": "23",
+              "ref": "21 23@0",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "manifold-pressure",
+              "name": "14. Manifold Turbo Pressure (kPa)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "manifold_press",
+              "lid": "1c",
+              "ref": "21 1C@0",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "egr-modulator",
+              "name": "15. EGR Modulator (%)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "egr_modulator",
+              "lid": "1d",
+              "ref": "21 1D@15 u8 (native 21 37 is the alternative, T-02)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "egr-inlet",
+              "name": "16. EGR Inlet (%)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "egr_inlet",
+              "lid": "45",
+              "ref": "21 45@0 ×0.01 % (1D@16 was a dead byte)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "wastegate-modulator",
+              "name": "17. Wastegate Modulator (%)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "wastegate_modulator",
+              "lid": "1d",
+              "ref": "21 1D@17 u8 (native 21 38 is the alternative, T-02)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cylinder-1",
+              "name": "18. Cylinder 1 (balance)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "balance_1",
+              "lid": "40",
+              "ref": "21 40@0 (s16)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cylinder-2",
+              "name": "19. Cylinder 2 (balance)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "balance_2",
+              "lid": "40",
+              "ref": "21 40@2",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cylinder-3",
+              "name": "20. Cylinder 3 (balance)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "balance_3",
+              "lid": "40",
+              "ref": "21 40@4",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cylinder-4",
+              "name": "21. Cylinder 4 (balance)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "balance_4",
+              "lid": "40",
+              "ref": "21 40@6",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cylinder-5",
+              "name": "22. Cylinder 5 (balance)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "balance_5",
+              "lid": "40",
+              "ref": "21 40@8",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        },
+        {
+          "id": "inputs-switches",
+          "title": "Inputs — switches (12)",
+          "parent": null,
+          "nanocom": "td5_engine/inputs_switch",
+          "items": [
+            {
+              "id": "brake-switch-1",
+              "name": "1. Brake Switch 1",
+              "status": "verified",
+              "safety": "read",
+              "sig": "brake_main",
+              "lid": "1e",
+              "ref": "21 1E byte1 bit7 (active-low)",
+              "note": "Main brake switch; Brake 1 ↔ main is by inference.",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "brake-switch-2",
+              "name": "2. Brake Switch 2",
+              "status": "verified",
+              "safety": "read",
+              "sig": "brake_switch_2",
+              "lid": "1e",
+              "ref": "21 1E byte0 bit0 (complementary to Brake 1)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "clutch-switch",
+              "name": "3. Clutch Switch",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e",
+              "ref": "SR-App hint: 21 1E@0 bit1 (not stored)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "transfer-ratio",
+              "name": "4. Transfer Ratio (HIGH/LOW)",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e",
+              "ref": "SR-App hint: 21 1E@1 bit6 (not stored)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "gear-box",
+              "name": "5. Gear Box (P/N…)",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e 36",
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cruise-control",
+              "name": "6. Cruise Control",
+              "status": "verified",
+              "safety": "read",
+              "sig": "cruise_master",
+              "lid": "1e",
+              "ref": "21 1E byte0 bit2 (master)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "cruise-resume",
+              "name": "7. Cruise Resume",
+              "status": "verified",
+              "safety": "read",
+              "sig": "cruise_resume",
+              "lid": "1e",
+              "ref": "21 1E byte0 bit4",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "set-accelerate",
+              "name": "8. Set Accelerate",
+              "status": "verified",
+              "safety": "read",
+              "sig": "cruise_set",
+              "lid": "1e",
+              "ref": "21 1E byte0 bit3 (SET)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ac-clutch-request",
+              "name": "9. AC Clutch Request",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e",
+              "ref": "SR-App hint: 21 1E@1 bit3 (not stored)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ac-clutch-drive",
+              "name": "10. AC Clutch Drive",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "36",
+              "ref": "SR-App hint: 21 36 relay block (not stored)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ac-fan-request",
+              "name": "11. AC Fan Request",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e 36",
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ac-fan-drive",
+              "name": "12. AC Fan Drive",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "1e 36",
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        },
+        {
+          "id": "inputs-extra",
+          "title": "Inputs — extra live data (not on the NanoCom)",
+          "parent": null,
+          "nanocom": null,
+          "items": [
+            {
+              "id": "accel-pedal-pct",
+              "name": "Accelerator pedal (%)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "accel_pedal_pct",
+              "lid": "1b",
+              "ref": "21 1B@6 ×0.01 % (long form); @4 short form",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "air-mass-modelled",
+              "name": "Air mass (modelled)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "maf",
+              "lid": "1d",
+              "ref": "21 1D@4 — likely the ECU's model, T-01",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "maf-sensor-v",
+              "name": "Air flow sensor voltage (V)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "maf_sensor_v",
+              "lid": "1c",
+              "ref": "21 1C@6",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "coolant-sensor-v",
+              "name": "Coolant sensor voltage (V)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "coolant_sensor_v",
+              "lid": "1a",
+              "ref": "21 1A@2",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "intake-sensor-v",
+              "name": "Intake air sensor voltage (V)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "intake_sensor_v",
+              "lid": "1a",
+              "ref": "21 1A@6",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "fuel-sensor-v",
+              "name": "Fuel temp sensor voltage (V)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "fuel_sensor_v",
+              "lid": "1a",
+              "ref": "21 1A@14",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ambient-pressure-2",
+              "name": "Ambient pressure 2 (kPa)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "ambient_press_2",
+              "lid": "23",
+              "ref": "21 23@2",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "battery-direct",
+              "name": "Battery direct (V)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "battery_direct",
+              "lid": "10",
+              "ref": "21 10@2",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "injection-qty",
+              "name": "Injection quantity",
+              "status": "verified",
+              "safety": "read",
+              "sig": "injection_qty",
+              "lid": "1d",
+              "ref": "21 1D@6",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "driver-demand",
+              "name": "Driver demand",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "driver_demand",
+              "lid": "1d",
+              "ref": "21 1D@0 (T-03)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "smoke-limit",
+              "name": "Smoke limit",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "smoke_limit",
+              "lid": "1d",
+              "ref": "21 1D@10",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "torque-limit",
+              "name": "Torque limit",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "torque_limit",
+              "lid": "1d",
+              "ref": "21 1D@12",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "egr-pos-native",
+              "name": "EGR modulator (native 0x37, %)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "egr_pos",
+              "lid": "37",
+              "ref": "21 37@0 (T-02)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "wastegate-pos-native",
+              "name": "Wastegate modulator (native 0x38, %)",
+              "status": "candidate",
+              "safety": "read",
+              "sig": "wastegate_pos",
+              "lid": "38",
+              "ref": "21 38@0 (T-02)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "fuel-pump-relay",
+              "name": "Fuel pump relay",
+              "status": "verified",
+              "safety": "read",
+              "sig": "fuel_pump_relay",
+              "lid": "36",
+              "ref": "21 36 byte1 bit2",
               "note": "",
               "placeholder": false,
               "pages": null,
@@ -82,26 +795,110 @@
       "title": "Outputs",
       "coverage": {
         "verified": 0,
-        "candidate": 1,
+        "candidate": 14,
         "sniff": 0,
         "untranscribed": 0,
-        "total": 1
+        "total": 14
       },
       "groups": [
         {
-          "id": "outputs",
-          "title": "Outputs",
+          "id": "outputs-tests",
+          "title": "Outputs — tests ⚠️ (14)",
           "parent": null,
           "nanocom": "td5_engine/outputs",
           "items": [
             {
-              "id": "fuel-pump",
-              "name": "Fuel pump",
+              "id": "ac-clutch",
+              "name": "1. A/C Clutch (pulse)",
               "status": "candidate",
               "safety": "actuator",
               "sig": null,
               "lid": null,
-              "ref": "",
+              "ref": "30 A3 FF",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_ac_clutch",
+                  "label": "A/C clutch",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 A3 FF"
+                }
+              ]
+            },
+            {
+              "id": "ac-fan",
+              "name": "2. A/C Fan (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 A4 FF",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_ac_fan",
+                  "label": "A/C fan",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 A4 FF"
+                }
+              ]
+            },
+            {
+              "id": "mil-lamp",
+              "name": "3. MIL Lamp (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 A2 FF",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_mil_lamp",
+                  "label": "MIL lamp",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "none",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 A2 FF"
+                }
+              ]
+            },
+            {
+              "id": "fuel-pump",
+              "name": "4. Fuel Pump (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 A1 FF",
               "note": "",
               "placeholder": false,
               "pages": null,
@@ -121,6 +918,286 @@
                   "ref": "30 A1 FF"
                 }
               ]
+            },
+            {
+              "id": "glow-plugs",
+              "name": "5. Glow Plugs (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 B3 FF",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_glow_plugs",
+                  "label": "Glow plugs",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 B3 FF"
+                }
+              ]
+            },
+            {
+              "id": "rev-counter",
+              "name": "6. Pulse Rev Counter",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 B7 FF (tacho needle)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_rev_counter",
+                  "label": "Rev counter",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "none",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 B7 FF"
+                }
+              ]
+            },
+            {
+              "id": "wastegate-test",
+              "name": "7. Wastegate Modul. (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 BE FF 00 0A 13 88 (PWM)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_wastegate",
+                  "label": "Wastegate modulator",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 BE FF 00 0A 13 88"
+                }
+              ]
+            },
+            {
+              "id": "temp-gauge",
+              "name": "8. Temp Gauge (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 BA FF",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_temp_gauge",
+                  "label": "Temp gauge",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "none",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 BA FF"
+                }
+              ]
+            },
+            {
+              "id": "egr-throttle",
+              "name": "9. EGR Throttle (pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "30 BD FF 00 FA 13 88 (PWM)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_egr_throttle",
+                  "label": "EGR throttle",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 BD FF 00 FA 13 88"
+                }
+              ]
+            },
+            {
+              "id": "injector-1",
+              "name": "10. Injector 1 (single pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "31 C2 01",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "injector_1",
+                  "label": "Injector 1 click",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "31 C2 01"
+                }
+              ]
+            },
+            {
+              "id": "injector-2",
+              "name": "11. Injector 2 (single pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "31 C2 02",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "injector_2",
+                  "label": "Injector 2 click",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "31 C2 02"
+                }
+              ]
+            },
+            {
+              "id": "injector-3",
+              "name": "12. Injector 3 (single pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "31 C2 03",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "injector_3",
+                  "label": "Injector 3 click",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "31 C2 03"
+                }
+              ]
+            },
+            {
+              "id": "injector-4",
+              "name": "13. Injector 4 (single pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "31 C2 04",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "injector_4",
+                  "label": "Injector 4 click",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "31 C2 04"
+                }
+              ]
+            },
+            {
+              "id": "injector-5",
+              "name": "14. Injector 5 (single pulse)",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "31 C2 05",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "injector_5",
+                  "label": "Injector 5 click",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "31 C2 05"
+                }
+              ]
             }
           ]
         }
@@ -131,26 +1208,403 @@
       "title": "Settings",
       "coverage": {
         "verified": 0,
-        "candidate": 0,
-        "sniff": 1,
+        "candidate": 1,
+        "sniff": 27,
         "untranscribed": 0,
-        "total": 1
+        "total": 28
       },
       "groups": [
         {
-          "id": "settings-identity",
-          "title": "Identity",
+          "id": "settings-injectors",
+          "title": "Settings — injector codes (6)",
           "parent": null,
-          "nanocom": "td5_engine/settings",
+          "nanocom": "td5_engine/settings/injectors",
           "items": [
             {
-              "id": "ecu-part",
-              "name": "ECU part number",
+              "id": "injector-codes",
+              "name": "Injector 1–5 (5-character code)",
               "status": "sniff",
               "safety": "read",
               "sig": null,
-              "lid": "87",
-              "ref": "1A 87",
+              "lid": null,
+              "ref": "docx baseline 'ABNFE' (not RDL 016)",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "injector-type",
+              "name": "INJ. TYPE (read/identify)",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "UI action, separate from the code fields",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        },
+        {
+          "id": "settings-identity",
+          "title": "Settings — read-only ID (5)",
+          "parent": null,
+          "nanocom": "td5_engine/settings/info",
+          "items": [
+            {
+              "id": "config-tune-id",
+              "name": "Config Tune ID",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "docx: 'svtnp006'; not in the 1A 87/9A/9B/9C blocks",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "fuel-tune-id",
+              "name": "Fuel Tune ID",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "docx: 'svdhg003'; not in the 1A blocks",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "ecu-part-number",
+              "name": "ECU Part Number",
+              "status": "candidate",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "1A 9A: 'NNN' + BCD (D2-JW NNN000130); 1A 87 adds VIN, date, NNW software no.",
+              "note": "Read ECU identity reads all 1A blocks; the VIN is masked and never logged.",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "read_identity",
+                  "label": "Read ECU identity",
+                  "status": "experimental",
+                  "safety": "read",
+                  "confirm": "none",
+                  "preconditions": [],
+                  "ref": "1A 87 / 1A 9A / 1A 9B / 1A 9C (VIN never logged)"
+                }
+              ]
+            },
+            {
+              "id": "homologation",
+              "name": "Homologation",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "docx: '4213'; not in the 1A blocks",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "get-vin",
+              "name": "GET VIN",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "1A 87@0-10 ASCII (first 11 VIN chars) + BCD serial; returned masked by Read ECU identity",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        },
+        {
+          "id": "settings-features",
+          "title": "Settings — feature/config (21)",
+          "parent": null,
+          "nanocom": "td5_engine/settings/info",
+          "items": [
+            {
+              "id": "feature-temperature-gauge",
+              "name": "Temperature Gauge",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-tachometer",
+              "name": "Tachometer",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-slabs",
+              "name": "SLABS",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-road-speed",
+              "name": "Road Speed",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-radiator-fan",
+              "name": "Radiator Fan",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-mil-lamp",
+              "name": "MIL Lamp",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-fuel-used",
+              "name": "Fuel Used",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-fuel-temperature",
+              "name": "Fuel Temperature",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-egr-modulator",
+              "name": "EGR Modulator",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-egr-inlet",
+              "name": "EGR Inlet",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-cruise-lamp",
+              "name": "Cruise Lamp",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-cruise-control",
+              "name": "Cruise Control",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-clutch-switch",
+              "name": "Clutch Switch",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-can-bus",
+              "name": "CAN Bus",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-auxiliary-fan",
+              "name": "Auxiliary Fan",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-auto-gearbox",
+              "name": "Auto Gearbox",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-air-conditioning",
+              "name": "Air Conditioning",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-active-engine-mount",
+              "name": "Active Engine mount",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-ambient-sensor",
+              "name": "Ambient Sensor",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-wastegate-modulator",
+              "name": "Wastegate Modulator",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "ENABLED/DISABLED flag",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            },
+            {
+              "id": "feature-ecu-status",
+              "name": "ECU Status",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "enum, docx baseline 'ROBUST'",
               "note": "",
               "placeholder": false,
               "pages": null,
@@ -166,25 +1620,25 @@
       "coverage": {
         "verified": 0,
         "candidate": 1,
-        "sniff": 0,
+        "sniff": 1,
         "untranscribed": 0,
-        "total": 1
+        "total": 2
       },
       "groups": [
         {
-          "id": "util-security",
-          "title": "Security",
+          "id": "utilities-security",
+          "title": "Utilities — security ⚠️ (2)",
           "parent": null,
-          "nanocom": "td5_engine/utilities",
+          "nanocom": "td5_engine/utility",
           "items": [
             {
               "id": "security-status",
-              "name": "Get security status",
+              "name": "GET SECURITY STATUS",
               "status": "candidate",
               "safety": "read",
               "sig": null,
               "lid": null,
-              "ref": "",
+              "ref": "31 C0 + 33 C0 → 03 = not immobilised (read-only)",
               "note": "",
               "placeholder": false,
               "pages": null,
@@ -203,13 +1657,13 @@
               ]
             },
             {
-              "id": "learn-security",
-              "name": "Learn security code",
+              "id": "learn-security-code",
+              "name": "LEARN SECURITY CODE",
               "status": "sniff",
               "safety": "gated",
               "sig": null,
               "lid": null,
-              "ref": "",
+              "ref": "🔴 can change immobiliser state — never sent",
               "note": "",
               "placeholder": false,
               "pages": null,

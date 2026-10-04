@@ -1,5 +1,4 @@
 import { BodyCar } from "../components/BodyCar";
-import { ComingCard } from "../components/Coming";
 import { HealthStrip } from "../components/HealthStrip";
 import { ScreenHead } from "../components/ScreenHead";
 import { SlabsCar } from "../components/SlabsCar";
@@ -33,6 +32,11 @@ export function Drive() {
       </>
     );
   }
-  return <>{head}<ComingCard title="Vehicle view"
-    items={[{ name: "No vehicle view for this module yet — see Faults / Capabilities", tag: "—" }]} /></>;
+  return (
+    <>
+      {head}
+      <div className="empty"><div className="title">No vehicle view for this module yet</div>
+        <div className="pretty">Its faults, inputs and settings are on the other tabs.</div></div>
+    </>
+  );
 }

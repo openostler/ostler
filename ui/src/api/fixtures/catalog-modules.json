@@ -3,25 +3,73 @@
     {
       "module": "motor",
       "store_module": "td5",
-      "name": "Td5 engine",
+      "name": "TD5 (engine)",
       "coverage": {
-        "verified": 2,
-        "candidate": 2,
-        "sniff": 1,
+        "verified": 34,
+        "candidate": 30,
+        "sniff": 35,
         "untranscribed": 0,
-        "total": 5
+        "total": 99
+      }
+    },
+    {
+      "module": "slabs",
+      "store_module": "slabs",
+      "name": "SLABS (ABS + air suspension)",
+      "coverage": {
+        "verified": 21,
+        "candidate": 25,
+        "sniff": 27,
+        "untranscribed": 0,
+        "total": 73
       }
     },
     {
       "module": "bcu",
       "store_module": "bcu",
-      "name": "Body control unit",
+      "name": "BCU (body control)",
       "coverage": {
         "verified": 0,
-        "candidate": 0,
-        "sniff": 1,
-        "untranscribed": 1,
-        "total": 2
+        "candidate": 1,
+        "sniff": 179,
+        "untranscribed": 0,
+        "total": 180
+      }
+    },
+    {
+      "module": "ace",
+      "store_module": "ace",
+      "name": "ACE (active cornering)",
+      "coverage": {
+        "verified": 0,
+        "candidate": 1,
+        "sniff": 27,
+        "untranscribed": 0,
+        "total": 28
+      }
+    },
+    {
+      "module": "autobox",
+      "store_module": "autobox",
+      "name": "Auto gearbox (EAT)",
+      "coverage": {
+        "verified": 0,
+        "candidate": 2,
+        "sniff": 27,
+        "untranscribed": 2,
+        "total": 31
+      }
+    },
+    {
+      "module": "airbag",
+      "store_module": "airbag",
+      "name": "Airbag / SRS",
+      "coverage": {
+        "verified": 0,
+        "candidate": 1,
+        "sniff": 18,
+        "untranscribed": 0,
+        "total": 19
       }
     }
   ]

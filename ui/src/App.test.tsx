@@ -5,6 +5,16 @@ import { App } from "./App";
 import { baseSnapshot, consented, installFakeServer, pushSnapshot } from "./test/fakeServer";
 
 const connected = { ...baseSnapshot, faults: [] };
+const cov = (verified: number, candidate = 0, sniff = 0, untranscribed = 0) =>
+  ({ verified, candidate, sniff, untranscribed, total: verified + candidate + sniff + untranscribed });
+const slabsCatalog = {
+  module: "slabs", store_module: "slabs", coverage: cov(1),
+  pages: [{ id: "outputs", title: "Outputs", coverage: cov(1), groups: [{ id: "out-air", title: "Air suspension", items: [{
+    id: "compressor", name: "Compressor test", status: "verified", safety: "actuator", ref: "31 30 28",
+    actions: [{ action: "compressor", label: "Compressor", status: "verified", safety: "actuator", confirm: "preconditions",
+      preconditions: ["Vehicle stationary"], ref: "31 30 28" }],
+  }] }] }],
+};
 
 beforeEach(() => {
   vi.spyOn(window, "confirm").mockReturnValue(true);
@@ -84,26 +94,44 @@ describe("live dashboard", () => {
     await waitFor(() => expect(server.commandsSent()).toContain("clear_faults"));
   });
 
-  it("keeps experimental outputs locked in Trusted mode", async () => {
+  it("hides candidate outputs in Stable mode", async () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Outputs" }));
-    expect((await screen.findAllByText("enable Experimental")).length).toBeGreaterThan(0);
-    expect(screen.queryByRole("button", { name: "Run" })).not.toBeInTheDocument();
+    expect(await screen.findByText(/Nothing verified here yet — switch to Experimental/)).toBeInTheDocument();
+    expect(screen.queryByText("Fuel pump")).not.toBeInTheDocument();
     expect(server.commandsSent()).toEqual([]);
   });
 
-  it("runs a verified SLABS actuator after confirmation", async () => {
+  it("runs a verified SLABS actuator after its precondition checklist", async () => {
     const user = userEvent.setup();
     const slabs = { ...connected, module: "slabs", source: "mock-slabs", signals: {} };
-    const server = installFakeServer({ snapshot: slabs });
+    const server = installFakeServer({ snapshot: slabs, catalogs: { slabs: slabsCatalog } });
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Outputs" }));
     const card = (await screen.findByText("Compressor test")).closest(".card") as HTMLElement;
-    await user.click(within(card).getByRole("button", { name: "Run" }));
-    expect(window.confirm).toHaveBeenCalled();
-    await waitFor(() => expect(server.commandsSent()).toContain("compressor"));
+    await user.click(within(card).getByRole("button", { name: "Compressor" }));
+    const run = within(card).getByRole("button", { name: "Compressor" });
+    expect(run).toBeDisabled();
+    await user.click(within(card).getByRole("checkbox", { name: "Vehicle stationary" }));
+    await user.click(run);
+    await waitFor(() => expect(server.commandBodies()).toEqual([{ action: "compressor" }])); // Stable: no trust param
+  });
+
+  it("sends trust=experimental with module actions in Experimental mode", async () => {
+    consented({ trust: "experimental" });
+    const user = userEvent.setup();
+    const server = installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    expect(await screen.findByText(/Experimental mode/)).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Outputs" }));
+    const card = (await screen.findByText("4. Fuel Pump (pulse)", { selector: ".item-name" })).closest(".card") as HTMLElement;
+    expect(within(card).getByText("Candidate")).toBeInTheDocument(); // status chip shown in Experimental
+    await user.click(within(card).getByRole("button", { name: "Fuel pump" }));
+    for (const c of within(card).getAllByRole("checkbox")) await user.click(c);
+    await user.click(within(card).getByRole("button", { name: "Fuel pump" }));
+    await waitFor(() => expect(server.commandBodies()).toEqual([{ action: "output_fuel_pump", params: { trust: "experimental" } }]));
   });
 
   it("starts CSV logging from Inputs", async () => {
@@ -116,23 +144,30 @@ describe("live dashboard", () => {
     expect(await screen.findByText(/recording · livedata.csv/)).toBeInTheDocument();
   });
 
-  it("switches temperature units in Settings", async () => {
+  it("switches temperature units in Preferences", async () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await screen.findByText("Connected");
-    await user.click(screen.getByRole("button", { name: "Settings" }));
+    await user.click(screen.getByRole("button", { name: "Preferences" }));
     await user.click(screen.getByRole("button", { name: "°F" }));
     await user.click(screen.getByRole("button", { name: "Done" }));
     expect(JSON.parse(localStorage.getItem("d2diag.v2")!).units.temp).toBe("F");
     expect(screen.getAllByText("°F").length).toBeGreaterThan(0);
   });
 
-  it("reads a raw LID block in Utilities", async () => {
+  it("reads a raw LID block under Utilities → Advanced, in Experimental only", async () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected, commands: { read_block: { ok: true, raws: { "09": "02fa" } } } });
+    const { unmount } = render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Utilities" }));
+    expect(await screen.findByText(/Nothing verified here yet/)).toBeInTheDocument();
+    expect(screen.queryByText("Advanced")).not.toBeInTheDocument();
+    unmount();
+    consented({ trust: "experimental" });
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Utilities" }));
+    await user.click(await screen.findByRole("button", { name: /Advanced/ }));
     await user.click(screen.getByRole("button", { name: "Read" }));
     expect(await screen.findByText("02 fa")).toBeInTheDocument();
   });
@@ -185,5 +220,122 @@ describe("calm instrument", () => {
     render(<App path="/" />);
     await screen.findByText("Connected");
     expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
+  });
+});
+
+describe("overhaul navigation", () => {
+  beforeEach(() => consented());
+
+  it("has the six module tabs and no Connect or Capabilities tab", async () => {
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    const nav = await screen.findByRole("navigation", { name: "Screens" });
+    expect(within(nav).getAllByRole("button").map((b) => b.getAttribute("aria-label")))
+      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities"]);
+    expect(screen.queryByRole("button", { name: "Connect" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Capabilities" })).not.toBeInTheDocument();
+  });
+
+  it("switches module from the header and keeps the current tab", async () => {
+    const user = userEvent.setup();
+    consented({ trust: "experimental" });
+    const server = installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    const select = screen.getByRole("combobox", { name: "Module" });
+    await waitFor(() => expect(within(select).getByRole("option", { name: "BCU (body control) · 0%" })).toBeInTheDocument());
+    await user.selectOptions(select, "bcu");
+    await waitFor(() => expect(server.commandBodies()).toContainEqual({ action: "select_module", params: { module: "bcu" } }));
+    expect(screen.getByRole("heading", { name: "Inputs" })).toBeInTheDocument();
+  });
+
+  it("lists only modules with something verified in Stable", async () => {
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    const select = await screen.findByRole("combobox", { name: "Module" });
+    await waitFor(() => expect(within(select).getByRole("option", { name: "TD5 (engine)" })).toBeInTheDocument());
+    expect(within(select).queryByRole("option", { name: /Body control/ })).not.toBeInTheDocument();
+  });
+
+  it("shows the car battery and opens the connection sheet from the pill", async () => {
+    const user = userEvent.setup();
+    const server = installFakeServer({ snapshot: { ...connected, conn: "connected", battery_v: 12.64,
+      port: { spec: "auto", resolved: "/dev/ttyUSB0", candidates: ["/dev/ttyUSB0", "/dev/ttyUSB1"] } } });
+    render(<App path="/" />);
+    expect(await screen.findByLabelText("Car battery 12.6 V")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Connected" }));
+    const sheet = await screen.findByRole("dialog");
+    expect(within(sheet).getByText("Connection")).toBeInTheDocument();
+    await user.click(within(sheet).getByRole("radio", { name: "/dev/ttyUSB1" }));
+    await user.click(within(sheet).getByRole("button", { name: "Disconnect" }));
+    await waitFor(() => expect(server.commandBodies()).toEqual([
+      { action: "set_port", params: { port: "/dev/ttyUSB1" } }, { action: "disconnect" },
+    ]));
+  });
+
+  it("shows a latched test with Stop on every screen", async () => {
+    const user = userEvent.setup();
+    const server = installFakeServer({ snapshot: { ...connected,
+      active_test: { action: "bleed_power_on", label: "Power bleed", since: 0, stop: "bleed_power_off" } } });
+    render(<App path="/" />);
+    const banner = await screen.findByRole("alert");
+    expect(banner).toHaveTextContent("Power bleed is running");
+    await user.click(within(banner).getByRole("button", { name: "Stop" }));
+    await waitFor(() => expect(server.commandsSent()).toEqual(["bleed_power_off"]));
+  });
+
+  it("Stable hides status chips, coverage bars and placeholders; Experimental shows them", async () => {
+    const user = userEvent.setup();
+    const bcu = { ...connected, module: "bcu", signals: {} };
+    installFakeServer({ snapshot: bcu });
+    const { unmount } = render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    expect(await screen.findByText(/Nothing verified here yet/)).toBeInTheDocument();
+    expect(document.querySelector(".stag, .placeholder, [data-testid=coverage-bar]")).toBeNull();
+    expect(screen.queryByText(/Experimental mode/)).not.toBeInTheDocument();
+    unmount();
+    consented({ trust: "experimental" });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    expect((await screen.findAllByText("sniff target")).length).toBeGreaterThan(0);
+    expect(screen.getByTestId("coverage-bar")).toBeInTheDocument();
+  });
+
+  it("reads the ECU identity on Settings and shows only the masked VIN", async () => {
+    const user = userEvent.setup();
+    const identityCatalog = {
+      module: "motor", store_module: "td5", coverage: cov(1),
+      pages: [{ id: "settings", title: "Settings", coverage: cov(1), groups: [{ id: "settings-identity", title: "Identity", items: [{
+        id: "identity", name: "ECU identity", status: "verified", safety: "read",
+        actions: [{ action: "read_identity", label: "Read", status: "verified", safety: "read", confirm: "none" }],
+      }] }] }],
+    };
+    installFakeServer({ snapshot: connected, catalogs: { motor: identityCatalog }, commands: {
+      read_identity: { ok: true, identity: { part_no: "NNN500250", vin: "SALLTGM88XA123456", vin_masked: "SALLT********3456" } },
+    } });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await user.click(await screen.findByRole("button", { name: "Read" }));
+    const region = await screen.findByRole("region", { name: "Identity" });
+    expect(within(region).getByText("SALLT********3456")).toBeInTheDocument();
+    expect(within(region).getByText("NNN500250")).toBeInTheDocument();
+    expect(screen.queryByText("SALLTGM88XA123456")).not.toBeInTheDocument();
+  });
+
+  it("shows NanoCom fields not yet decoded on Inputs, in Experimental only", async () => {
+    const user = userEvent.setup();
+    consented({ trust: "experimental" });
+    const inputsCatalog = {
+      module: "motor", store_module: "td5", coverage: cov(0, 0, 1),
+      pages: [{ id: "inputs", title: "Inputs", coverage: cov(0, 0, 1), groups: [{ id: "inputs-x", title: "Inputs — Switches", items: [{
+        id: "brake-sw", name: "Brake switch", status: "sniff", safety: "read",
+      }] }] }],
+    };
+    installFakeServer({ snapshot: connected, catalogs: { motor: inputsCatalog } });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    const section = await screen.findByRole("region", { name: "From NanoCom — not yet decoded" });
+    expect(within(section).getByText("Brake switch")).toBeInTheDocument();
+    expect(within(section).getByText("sniff target")).toBeInTheDocument();
   });
 });

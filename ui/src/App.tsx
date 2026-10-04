@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api } from "./api/client";
 import type { Community, FaultMeaning, Field, Snapshot } from "./api/schemas";
+import { useCatalog } from "./api/useCatalog";
 import { useSnapshot } from "./api/useSnapshot";
+import { ActiveTestBanner } from "./components/ActiveTestBanner";
+import { ConnectionPill } from "./components/ConnectionPill";
+import { ConnectionSheet } from "./components/ConnectionSheet";
 import { Consent } from "./components/Consent";
 import { FaultSheet } from "./components/FaultSheet";
-import { Settings } from "./components/Settings";
-import { moduleName } from "./layout";
-import { clockHHMM, faultLookup } from "./lib/format";
+import { ModuleSelect } from "./components/ModuleSelect";
+import { Preferences } from "./components/Preferences";
+import { clockHHMM, faultLookup, fmt } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
+import { connOf } from "./lib/connection";
+import { useConnectionSheet } from "./state/connection";
 import { screensFor } from "./screens/registry";
 import { AppCtx, type AppContext } from "./state/app";
 import { initialLive, reduceSnapshot, type LiveState } from "./state/live";
@@ -34,25 +40,13 @@ function Clock() {
   return <span className="hdr-clock">{now}</span>;
 }
 
-function Pill({ snap, linkUp }: { snap: Snapshot | null; linkUp: boolean }) {
-  const st = snap?.status;
-  const [cls, label] = !linkUp && snap
-    ? ["yellow blink", "Reconnecting"]
-    : st === "connected" ? ["green", "Connected"]
-    : st === "error" ? ["red", "No cable"]
-    : ["yellow blink", "Connecting"];
-  return (
-    <div className="pill" role="status" aria-live="polite"><span className={`pdot ${cls}`} />{label}</div>
-  );
-}
-
 export function App({ path = window.location.pathname }: { path?: string }) {
   const admin = isAdminPath(path);
   const screens = useMemo(() => screensFor(admin), [admin]);
   const [tab, setTab] = useState(admin ? "map" : "drive");
   const [prefs, setPrefs] = usePrefs();
   const [toast, showToast] = useToast();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const [community, setCommunity] = useState<Community | null>(null);
   const [fieldsByModule, setFieldsByModule] = useState<Record<string, Record<string, Field>>>({});
   const [faultsByModule, setFaultsByModule] = useState<Record<string, FaultMeaning[]>>({});
@@ -65,6 +59,9 @@ export function App({ path = window.location.pathname }: { path?: string }) {
 
   const { snap, linkUp, refresh } = useSnapshot(dispatch);
   const module = snap?.module ?? live.module;
+  const { catalog } = useCatalog(module);
+  const conn = connOf(snap);
+  const connSheet = useConnectionSheet(conn, !prefs.consentDone);
 
   const reloadCommunity = useCallback(() => {
     api.community().then(setCommunity, () => undefined);
@@ -102,9 +99,9 @@ export function App({ path = window.location.pathname }: { path?: string }) {
 
   const experimental = prefs.trust === "experimental";
   const ctx: AppContext = {
-    snap, live, module, fields: fieldsByModule[module] ?? {}, faultMeaning, refresh, prefs, setPrefs, experimental,
-    admin, community, reloadCommunity, goTo: setTab, toast: showToast, ackedFaults,
-    showFaultSheet: setManualFaults,
+    snap, live, linkUp, module, catalog, fields: fieldsByModule[module] ?? {}, faultMeaning, refresh, prefs, setPrefs,
+    experimental, admin, community, reloadCommunity, goTo: setTab, toast: showToast, ackedFaults,
+    showFaultSheet: setManualFaults, openConnection: connSheet.show,
   };
   const Current = (screens.find((s) => s.id === tab) ?? screens[0])!.component;
 
@@ -112,29 +109,38 @@ export function App({ path = window.location.pathname }: { path?: string }) {
     <AppCtx.Provider value={ctx}>
       <div className="app">
         <header>
-          <div style={{ minWidth: 0 }}>
+          <div className="hmod">
             <div className="htitle">D2 Diag{admin ? " · admin" : ""}</div>
-            <div className="hsub">{snap ? moduleName(module) : "—"}</div>
+            <ModuleSelect />
           </div>
-          <div className="row" style={{ marginLeft: "auto" }}>
+          <div className="hright">
             <Clock />
-            <Pill snap={snap} linkUp={linkUp} />
-            <button className="chip" aria-label="Settings" onClick={() => setSettingsOpen(true)}>⚙</button>
+            {typeof snap?.battery_v === "number" ? (
+              <span className="hbatt" aria-label={`Car battery ${fmt(snap.battery_v, 1)} V`}>
+                <span aria-hidden="true">⚡</span>{fmt(snap.battery_v, 1)}<span className="u">V</span>
+              </span>
+            ) : null}
+            <ConnectionPill />
+            <button className="chip" aria-label="Preferences" onClick={() => setPrefsOpen(true)}>⚙</button>
           </div>
         </header>
+        <ActiveTestBanner />
         {experimental ? (
-          <div className="expbanner"><span className="pdot yellow" />Experimental mode — unverified routines enabled</div>
+          <div className="expbanner"><span className="pdot yellow" />Experimental mode — unverified items and tests shown</div>
         ) : null}
         <main id="view"><Current /></main>
-        <nav className="tabs" aria-label="Screens">
+        <nav className={`tabs${screens.length > 6 ? " many" : ""}`} aria-label="Screens">
           {screens.map((s) => (
-            <button key={s.id} aria-current={s.id === tab ? "page" : undefined} onClick={() => setTab(s.id)}>
-              <span className="nd" />{s.label}
+            <button key={s.id} aria-label={s.label} aria-current={s.id === tab ? "page" : undefined} onClick={() => setTab(s.id)}>
+              <span className="ti" aria-hidden="true">{s.icon}</span>
+              <span className="tl" aria-hidden="true">{s.label}</span>
+              <span className="ts" aria-hidden="true">{s.short ?? s.label}</span>
             </button>
           ))}
         </nav>
-        {sheetFaults && !settingsOpen && prefs.consentDone ? <FaultSheet faults={sheetFaults} onDismiss={dismissFaults} /> : null}
-        {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : null}
+        {sheetFaults && !prefsOpen && !connSheet.open && prefs.consentDone ? <FaultSheet faults={sheetFaults} onDismiss={dismissFaults} /> : null}
+        {connSheet.open && !prefsOpen ? <ConnectionSheet onClose={connSheet.dismiss} /> : null}
+        {prefsOpen ? <Preferences onClose={() => setPrefsOpen(false)} /> : null}
         {!prefs.consentDone ? <Consent /> : null}
         {toast ? <div className={`toast${toast.bad ? " bad" : ""}`} role="status">{toast.msg}</div> : null}
       </div>

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Community, FaultMeaning, Field, Snapshot } from "../api/schemas";
+import type { Catalog, Community, FaultMeaning, Field, Snapshot } from "../api/schemas";
 import type { LiveState } from "./live";
 import type { Prefs } from "./prefs";
 
@@ -9,7 +9,11 @@ export type Toast = (msg: string, bad?: boolean) => void;
 export type AppContext = {
   snap: Snapshot | null;
   live: LiveState;
+  /** False while the dashboard's own SSE stream is down (values are then stale). */
+  linkUp: boolean;
   module: string;
+  /** /catalog for the active module (null while loading or unavailable). */
+  catalog: Catalog | null;
   /** Field metadata for the active module, by signal name (from /fields). */
   fields: Record<string, Field>;
   /** Look up a fault code's meaning (from /faults) by the decoder's raw string. */
@@ -25,6 +29,8 @@ export type AppContext = {
   toast: Toast;
   ackedFaults: Set<string>;
   showFaultSheet: (faults: string[]) => void;
+  /** Open the ConnectionSheet (from the pill, or a "not connected" gate). */
+  openConnection: () => void;
 };
 
 export const AppCtx = createContext<AppContext | null>(null);

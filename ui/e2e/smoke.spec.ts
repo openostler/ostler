@@ -22,7 +22,7 @@ test("first start asks for consent before anything else", async ({ page }) => {
 test("live mock data streams into Drive and Inputs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
-  await expect(page.getByRole("status").filter({ hasText: "Connected" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
   await expect(page.locator('[data-signal="battery"]')).toContainText("V");
   await page.screenshot({ path: "test-results/drive.png", fullPage: true });
 
@@ -34,18 +34,65 @@ test("live mock data streams into Drive and Inputs", async ({ page }) => {
   await page.screenshot({ path: "test-results/inputs.png", fullPage: true });
 });
 
-test("switching to SLABS and reading faults", async ({ page }) => {
+/** Pick a module in the header dropdown and wait for the server to switch. */
+async function switchModule(page: Page, id: string) {
+  const select = page.getByRole("combobox", { name: "Module" });
+  await expect(select.locator(`option[value="${id}"]`)).toHaveCount(1);
+  await select.selectOption(id);
+  await expect(select).toHaveValue(id);
+}
+
+test("the six module tabs, no Connect or Capabilities", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Connect" }).click();
-  await page.getByRole("button", { name: /SLABS — ABS/ }).click();
+  const tabs = page.getByRole("navigation", { name: "Screens" }).getByRole("button");
+  await expect(tabs).toHaveCount(6);
+  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities"]) {
+    await expect(page.getByRole("navigation").getByRole("button", { name: t, exact: true })).toBeVisible();
+  }
+  await expect(page.getByRole("button", { name: "Connect", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Capabilities" })).toHaveCount(0);
+});
+
+test("switching to SLABS from the header keeps the tab", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: "Faults", exact: true }).click();
+  await switchModule(page, "slabs");
   await expect(page.getByRole("heading", { name: "Faults" })).toBeVisible();
-  await expect(page.locator("header")).toContainText("SLABS");
+  await expect(page.locator(".screen-head")).toContainText("SLABS");
   await page.screenshot({ path: "test-results/faults-slabs.png", fullPage: true });
   // restore TD5: the mock server is shared by every test
-  await page.getByRole("navigation").getByRole("button", { name: "Connect", exact: true }).click();
-  await page.getByRole("button", { name: /TD5 — Engine/ }).click();
-  await expect(page.locator("header")).toContainText("TD5");
+  await switchModule(page, "motor");
+  await expect(page.locator(".screen-head")).toContainText("TD5");
+});
+
+test("the connection pill opens the connection sheet", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Connected" }).click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.getByText("Connection", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("10 400 baud · 8N1 · half duplex")).toBeVisible();
+  await page.screenshot({ path: "test-results/connection-sheet.png" });
+  await sheet.getByRole("button", { name: "Done" }).click();
+  await expect(sheet).toBeHidden();
+});
+
+test("Stable hides status chips and coverage; Experimental shows them", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: "Outputs", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Outputs" })).toBeVisible();
+  await expect(page.locator(".stag")).toHaveCount(0);
+  await expect(page.getByTestId("coverage-bar")).toHaveCount(0);
+  await page.getByRole("button", { name: "Preferences" }).click();
+  await page.getByRole("radio", { name: /Experimental/ }).click();
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByText(/Experimental mode/)).toBeVisible();
+  await expect(page.getByTestId("coverage-bar")).toBeVisible();
+  await expect(page.locator(".stag").first()).toBeVisible();
+  await page.screenshot({ path: "test-results/outputs-experimental.png", fullPage: true });
 });
 
 test("admin mode shows coverage with the live sniff, and the docs", async ({ browser }) => {
@@ -95,20 +142,17 @@ for (const scheme of ["dark", "light"] as const) {
     await page.screenshot({ path: `test-results/${scheme}-inputs.png` });
     await nav(page, "Faults").click();
     await page.screenshot({ path: `test-results/${scheme}-faults.png` });
-    await nav(page, "Connect").click();
-    await page.getByRole("button", { name: /SLABS — ABS/ }).click();
-    await expect(page.getByRole("heading", { name: "Faults" })).toBeVisible(); // lands on Faults after a switch
-    await dismissIfShown(page); // SLABS has its own stored faults
     await nav(page, "Drive").click();
+    await switchModule(page, "slabs"); // the tab stays on Drive
+    await dismissIfShown(page); // SLABS has its own stored faults
     await expect(page.getByRole("img", { name: /Wheel speeds/ })).toBeVisible();
     await page.waitForTimeout(1500);
     await dismissIfShown(page);
     await page.screenshot({ path: `test-results/${scheme}-drive-slabs.png`, fullPage: true });
     // leave the shared mock server on TD5 for other tests
     await dismissIfShown(page);
-    await nav(page, "Connect").click();
-    await page.getByRole("button", { name: /TD5 — Engine/ }).click();
-    await expect(page.getByRole("heading", { name: "Faults" })).toBeVisible();
+    await switchModule(page, "motor");
+    await expect(page.getByRole("heading", { name: "Drive" })).toBeVisible();
     await context.close();
   });
 }

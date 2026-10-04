@@ -3,7 +3,7 @@ import { useApp } from "../state/app";
 
 /** Shown instead of live content while not connected. Null when connected. */
 export function StatusGate() {
-  const { snap, module, live, goTo } = useApp();
+  const { snap, module, live, openConnection } = useApp();
   const st = snap?.status;
   if (st === "connected") return null;
   if (st === "error") {
@@ -13,8 +13,8 @@ export function StatusGate() {
         <div className="small muted pretty" style={{ marginTop: 4 }}>
           {snap?.error || "The module did not answer."}
         </div>
-        <button className="btn accent" style={{ marginTop: 10 }} onClick={() => goTo("connect")}>
-          Go to Connect
+        <button className="btn accent" style={{ marginTop: 10 }} onClick={openConnection}>
+          Open connection
         </button>
       </div>
     );
