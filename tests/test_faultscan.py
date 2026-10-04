@@ -142,3 +142,24 @@ def test_live_stops_td5_session_before_next_module_inits(monkeypatch):
     # order: TD5 transport → … → td5-stop → SLABS transport
     assert "td5-stop" in events
     assert events.index("td5-stop") < events.index("new-transport", 1)
+
+
+def test_live_td5_reports_undecoded_fault_bits(monkeypatch):
+    # The scan must list byte<off>.bit<n> faults, not drop them (2026-10-03 clear wiped them).
+    import d2diag.ports as ports
+    import d2diag.td5 as td5_pkg
+    import d2diag.transport as transport_pkg
+
+    class _Td5:
+        def __init__(self, kwp): pass
+        def open(self): pass
+        def establish(self, **kw): pass
+        def read_faults(self): return ["byte25.bit3"]
+        def release(self): pass
+
+    monkeypatch.setattr(td5_pkg, "Td5", _Td5)
+    monkeypatch.setattr(transport_pkg, "SerialTransport", lambda port, timeout=1.0: None)
+    monkeypatch.setattr(ports, "resolve_serial_port", lambda spec: "FAKE")
+    rows = fs.read_all("live", "auto", sleep=lambda *_: None)
+    td5 = next(r for r in rows if r["module"] == "TD5")
+    assert td5["status"] == "faults" and td5["faults"] == ["byte25.bit3"]

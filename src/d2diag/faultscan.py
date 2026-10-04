@@ -70,7 +70,7 @@ def _live_report(port: str, sleep: "Callable[[float], None]") -> "list[dict]":
         t.open()
         try:
             t.establish()
-            faults = [f for f in t.read_faults() if not f.startswith("byte")]
+            faults = list(t.read_faults())  # undecoded byte<off>.bit<n> faults included
             rows.append(_row("TD5", faults))
         finally:
             t.release()  # close the session cleanly — the next module inits on the same bus

@@ -891,3 +891,21 @@ def test_info_source_live_still_has_no_signals_even_with_gen():
     src = InfoDataSource("bcu", mock=False, signal_gen=mock_bcu_signals)
     d = src.poll()
     assert d["status"] == "error" and d["signals"] == {}
+
+
+class _FaultyTd5:
+    """Stub Td5 session reporting a decoded fault plus two undecoded bits (as on the car)."""
+    def read_all(self): return {"rpm": 800.0}
+    def read_block(self, lids): return {}
+    def read_faults(self): return ["byte25.bit3", "byte25.bit5"]
+    def release(self): pass
+
+
+def test_td5_source_shows_undecoded_fault_bits():
+    # Hidden byte<off>.bit<n> faults let a clear wipe faults nobody saw (2026-10-03).
+    from d2diag.web.sources import Td5DataSource
+    src = Td5DataSource(port="x", read_faults=True)
+    src._td5 = _FaultyTd5()
+    snap = src.poll()
+    assert snap["status"] == "connected"
+    assert snap["faults"] == ["byte25.bit3", "byte25.bit5"]
