@@ -84,6 +84,10 @@ class Signal:
     # on it. Informational only — the low/high status still comes from `limits`.
     span: "tuple[float, float] | None" = None
     normal: "tuple[float, float] | None" = None
+    # Reply-length layouts: when set, the record applies only to a data field of exactly
+    # this many bytes (a LID whose layout differs by ECU variant, e.g. Td5 21 1B 8 vs 10).
+    # One record per length may share a name. See specs/2026-10-04-reply-length-layouts-design.md.
+    length: "int | None" = None
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -104,6 +108,8 @@ class Signal:
         return self.states.get(raw)
 
     def fits(self, data: bytes) -> bool:
+        if self.length is not None and len(data) != self.length:
+            return False
         return len(data) >= self.offset + _WIDTH.get(self.kind, 2)
 
 
@@ -131,6 +137,7 @@ def _record_to_signal(r: dict) -> Signal:
         description=r.get("description", ""),
         span=tuple(r["span"]) if r.get("span") else None,
         normal=tuple(r["normal"]) if r.get("normal") else None,
+        length=int(r["length"]) if r.get("length") is not None else None,
     )
 
 

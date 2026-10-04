@@ -18,6 +18,7 @@ here before implementation starts.
 - `2026-10-03-vehicle-view-suite-design.md` — per-module vehicle-view pages on one shared silhouette.
 - `2026-10-04-dtc-coverage-design.md` — filling the fault-meaning store from forum lists, with confidence.
 - `2026-10-04-fault-screen-import-design.md` — pairing labelled NanoCom fault screens with raw fault frames (T-30).
+- `2026-10-04-reply-length-layouts-design.md` — store records restricted to one reply length (Td5 `21 1B` short/long).
 
 ## Editing rules
 

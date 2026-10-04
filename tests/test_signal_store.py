@@ -25,7 +25,10 @@ _SPEC = [
     ("accel_way2", 0x1B, 2, "u16", 0.001, 0.0, "V"),
     ("accel_way3", 0x1B, 4, "u16", 0.001, 0.0, "V"),
     ("accel_supply", 0x1B, 8, "u16", 0.001, 0.0, "V"),  # long 21 1B form (2026-10-04)
-    ("accel_pedal_pct", 0x1B, 6, "u16", 0.01, 0.0, "%"),  # T-31 2026-10-04
+    ("accel_pedal_pct", 0x1B, 6, "u16", 0.01, 0.0, "%"),  # T-31 2026-10-04 (long form)
+    # short 21 1B form (RDL 016) — reply-length variants of the same names
+    ("accel_supply", 0x1B, 6, "u16", 0.001, 0.0, "V"),
+    ("accel_pedal_pct", 0x1B, 4, "u16", 0.01, 0.0, "%"),
     ("manifold_press", 0x1C, 0, "u16", 0.0001, 0.0, "bar"),
     ("maf_sensor", 0x1C, 4, "u16", 0.1, 0.0, "kg/hr"),
     ("maf_sensor_v", 0x1C, 6, "u16", 0.001, 0.0, "V"),
@@ -90,10 +93,11 @@ _SPEC_LIMITS = {
 
 
 def test_td5_store_reproduces_literal_exactly():
-    loaded = {s.name: s for s in load_signals("td5")}
-    assert set(loaded) == {r[0] for r in _SPEC}
+    # keyed by (name, offset): a name may have one record per reply length (21 1B)
+    loaded = {(s.name, s.offset): s for s in load_signals("td5")}
+    assert set(loaded) == {(r[0], r[2]) for r in _SPEC}
     for name, lid, off, kind, scale, bias, unit in _SPEC:
-        s = loaded[name]
+        s = loaded[(name, off)]
         assert (s.lid, s.offset, s.kind, s.scale, s.bias, s.unit) == (lid, off, kind, scale, bias, unit), name
 
 
@@ -203,3 +207,37 @@ def test_legacy_swedish_confidence_is_normalised(tmp_path, monkeypatch):
     store.upsert_field("old", {"name": "y", "lid": "09", "offset": 2, "confidence": "kandidat"})
     assert store.load_records("old")[1]["confidence"] == "candidate"
     store._CACHE.clear()
+
+
+# --------------------------------------------------------------------------- #
+# Reply-length layouts (specs/2026-10-04-reply-length-layouts-design.md)
+# --------------------------------------------------------------------------- #
+def test_length_restricts_fits():
+    sig = Signal("x", 0x1B, 4, length=10)
+    assert sig.fits(bytes(10)) and not sig.fits(bytes(8)) and not sig.fits(bytes(12))
+    assert Signal("y", 0x1B, 4).fits(bytes(8))  # no length → any long-enough reply
+
+
+def test_length_variants_agree_on_unit_limits_and_labels():
+    by: "dict[str, list[Signal]]" = {}
+    for s in load_signals("td5"):
+        by.setdefault(s.name, []).append(s)
+    for name, sigs in by.items():
+        if len(sigs) == 1:
+            continue
+        assert all(s.length is not None for s in sigs), f"{name}: duplicate without length"
+        assert len({s.length for s in sigs}) == len(sigs), f"{name}: two records, same length"
+        keys = {(s.unit, s.limits, s.label, s.group, s.kind, s.scale, s.bias) for s in sigs}
+        assert len(keys) == 1, f"{name}: variants disagree {keys}"
+
+
+def test_fields_list_each_name_once():
+    from d2diag.web.server import _fields_list
+    names = [f["name"] for f in _fields_list("motor")["fields"]]
+    assert len(names) == len(set(names))
+    assert "accel_supply" in names
+
+
+def test_esp_header_skips_length_variants():
+    import tools.gen_signal_header as g
+    assert "accel_supply" not in g.build_header() and "accel_pedal" not in g.build_header()

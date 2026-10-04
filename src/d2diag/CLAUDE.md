@@ -7,7 +7,8 @@ The Python package: comms core → interpretation → web consumer. The map is i
 
 - `transport/`, `kline/`, `kwp2000/`, `session.py`, `ports.py` — the comms core.
 - `td5/`, `slabs/`, `bcu/`, `airbag/`, `ace/`, `autobox/` — module layers and menus.
-- `signals/*.json` — single source of truth for LID mappings (use `upsert_field`).
+- `signals/*.json` — single source of truth for LID mappings (use `upsert_field`). A record may
+  carry `length` to apply only to replies of that many data bytes (variants share a name).
 - `sniff/` — capture parsing, module detection (`modules.py`), the protocol library,
   automap, calibration, the NanoCom capture importer (`importer.py`) and the fault-screen
   importer (`fault_import.py`, T-30).
