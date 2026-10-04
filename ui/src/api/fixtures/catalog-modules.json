@@ -1,0 +1,28 @@
+{
+  "modules": [
+    {
+      "module": "motor",
+      "store_module": "td5",
+      "name": "Td5 engine",
+      "coverage": {
+        "verified": 2,
+        "candidate": 2,
+        "sniff": 1,
+        "untranscribed": 0,
+        "total": 5
+      }
+    },
+    {
+      "module": "bcu",
+      "store_module": "bcu",
+      "name": "Body control unit",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 1,
+        "untranscribed": 1,
+        "total": 2
+      }
+    }
+  ]
+}

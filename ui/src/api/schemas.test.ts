@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import {
-  AutomapReply, CommandReply, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
+  AutomapReply, Catalog, CatalogModules, CommandReply, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
   OkReply, Snapshot, SniffResponse,
 } from "./schemas";
 
@@ -28,6 +28,9 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   "read-all-faults": CommandReply,
   automap: AutomapReply,
   capture: OkReply,
+  "catalog-motor": Catalog,
+  "catalog-bcu": Catalog,
+  "catalog-modules": CatalogModules,
 };
 
 describe("API contract fixtures", () => {

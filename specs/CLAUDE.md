@@ -19,6 +19,7 @@ here before implementation starts.
 - `2026-10-04-dtc-coverage-design.md` — filling the fault-meaning store from forum lists, with confidence.
 - `2026-10-04-fault-screen-import-design.md` — pairing labelled NanoCom fault screens with raw fault frames (T-30).
 - `2026-10-04-reply-length-layouts-design.md` — store records restricted to one reply length (Td5 `21 1B` short/long).
+- `2026-10-05-ui-overhaul-design.md` — every NanoCom function per module in place, one derived status, header module select + connection sheet (ADR-0008).
 
 ## Editing rules
 

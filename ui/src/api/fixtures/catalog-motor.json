@@ -1,0 +1,237 @@
+{
+  "module": "motor",
+  "store_module": "td5",
+  "coverage": {
+    "verified": 2,
+    "candidate": 2,
+    "sniff": 1,
+    "untranscribed": 0,
+    "total": 5
+  },
+  "pages": [
+    {
+      "id": "faults",
+      "title": "Faults",
+      "coverage": {
+        "verified": 1,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "faults",
+          "title": "Faults",
+          "parent": null,
+          "nanocom": "td5_engine/faults",
+          "items": [
+            {
+              "id": "read-faults",
+              "name": "Read faults",
+              "status": "verified",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "21 3B",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inputs",
+      "title": "Inputs",
+      "coverage": {
+        "verified": 1,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "inputs-fuelling",
+          "title": "Inputs — Fuelling / live (22)",
+          "parent": null,
+          "nanocom": "td5_engine/inputs_fuelling",
+          "items": [
+            {
+              "id": "air-flow",
+              "name": "12. Air Flow (kg/hr)",
+              "status": "verified",
+              "safety": "read",
+              "sig": "maf_sensor",
+              "lid": "1c",
+              "ref": "21 1C@4",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outputs",
+      "title": "Outputs",
+      "coverage": {
+        "verified": 0,
+        "candidate": 1,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "outputs",
+          "title": "Outputs",
+          "parent": null,
+          "nanocom": "td5_engine/outputs",
+          "items": [
+            {
+              "id": "fuel-pump",
+              "name": "Fuel pump",
+              "status": "candidate",
+              "safety": "actuator",
+              "sig": null,
+              "lid": null,
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "output_fuel_pump",
+                  "label": "Fuel pump",
+                  "status": "experimental",
+                  "safety": "actuator",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car",
+                    "Engine off"
+                  ],
+                  "ref": "30 A1 FF"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 1,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "settings-identity",
+          "title": "Identity",
+          "parent": null,
+          "nanocom": "td5_engine/settings",
+          "items": [
+            {
+              "id": "ecu-part",
+              "name": "ECU part number",
+              "status": "sniff",
+              "safety": "read",
+              "sig": null,
+              "lid": "87",
+              "ref": "1A 87",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "title": "Utilities",
+      "coverage": {
+        "verified": 0,
+        "candidate": 1,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "util-security",
+          "title": "Security",
+          "parent": null,
+          "nanocom": "td5_engine/utilities",
+          "items": [
+            {
+              "id": "security-status",
+              "name": "Get security status",
+              "status": "candidate",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "security_status",
+                  "label": "Get security status",
+                  "status": "experimental",
+                  "safety": "read",
+                  "confirm": "preconditions",
+                  "preconditions": [
+                    "Ignition on"
+                  ],
+                  "ref": "31 C0 → 33 C0 (read-only)"
+                }
+              ]
+            },
+            {
+              "id": "learn-security",
+              "name": "Learn security code",
+              "status": "sniff",
+              "safety": "gated",
+              "sig": null,
+              "lid": null,
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "learn_security_code",
+                  "label": "Learn security code",
+                  "status": "planned",
+                  "safety": "gated",
+                  "confirm": "typed",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car"
+                  ],
+                  "ref": "never sent (immobiliser state change)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

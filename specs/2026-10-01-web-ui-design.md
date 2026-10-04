@@ -2,8 +2,8 @@
 title: Web UI (Vite + React + TypeScript) — Design
 area: specs
 status: stable
-version: 1.2
-updated: 2026-10-01
+version: 1.3
+updated: 2026-10-05
 depends_on: [decisions/adr-0004-react-typescript-ui.md, decisions/adr-0003-signal-store-source-of-truth.md]
 summary: >
   Design for replacing the two hand-written dashboard pages with one Vite + React +
@@ -101,3 +101,11 @@ The data flow is unchanged from v2:
   - Severity-first faults and automatic day/night theme.
   - The signal store gains `span` and `normal`. `normal` is explicit only: it never falls
     back to the alarm `limits`.
+- 2026-10-05: amended by [2026-10-05-ui-overhaul-design.md](2026-10-05-ui-overhaul-design.md)
+  (ADR-0008):
+  - The Connect and Capabilities pages are removed.
+  - The module is chosen in the header, and the connection lives in a sheet.
+  - New Settings and Utilities pages; coverage is shown in place on every page.
+  - New public `GET /catalog`.
+  - `/command` is gated server-side by the command registry.
+  - The snapshot gains `conn`, `ts`, `battery_v`, `port` and `active_test`.

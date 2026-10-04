@@ -1,0 +1,138 @@
+{
+  "module": "bcu",
+  "store_module": "bcu",
+  "coverage": {
+    "verified": 0,
+    "candidate": 0,
+    "sniff": 1,
+    "untranscribed": 1,
+    "total": 2
+  },
+  "pages": [
+    {
+      "id": "faults",
+      "title": "Faults",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 0
+      },
+      "groups": []
+    },
+    {
+      "id": "inputs",
+      "title": "Inputs",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 0
+      },
+      "groups": []
+    },
+    {
+      "id": "outputs",
+      "title": "Outputs",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 0,
+        "total": 0
+      },
+      "groups": []
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 0,
+        "untranscribed": 1,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "settings-info",
+          "title": "INFO",
+          "parent": null,
+          "nanocom": "bcu/info",
+          "items": [
+            {
+              "id": "info",
+              "name": "INFO (6 fields)",
+              "status": "untranscribed",
+              "safety": "read",
+              "sig": null,
+              "lid": null,
+              "ref": "",
+              "note": "",
+              "placeholder": true,
+              "pages": 1,
+              "actions": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "title": "Utilities",
+      "coverage": {
+        "verified": 0,
+        "candidate": 0,
+        "sniff": 1,
+        "untranscribed": 0,
+        "total": 1
+      },
+      "groups": [
+        {
+          "id": "util-keys",
+          "title": "Key programming",
+          "parent": null,
+          "nanocom": "bcu/utilities",
+          "items": []
+        },
+        {
+          "id": "util-keys-codes",
+          "title": "Key codes / UPDATE",
+          "parent": "util-keys",
+          "nanocom": "bcu/utilities",
+          "items": [
+            {
+              "id": "key-program",
+              "name": "Key programming",
+              "status": "sniff",
+              "safety": "gated",
+              "sig": null,
+              "lid": null,
+              "ref": "",
+              "note": "",
+              "placeholder": false,
+              "pages": null,
+              "actions": [
+                {
+                  "action": "key_program",
+                  "label": "Key programming",
+                  "status": "planned",
+                  "safety": "gated",
+                  "confirm": "typed",
+                  "preconditions": [
+                    "Vehicle stationary, handbrake on",
+                    "Ignition on",
+                    "Nobody under or beside the car"
+                  ],
+                  "ref": "never sent"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

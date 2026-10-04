@@ -11,6 +11,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0005-nanocom-sniff-workflow.md` — passive NanoCom capture, candidate-only import.
 - `adr-0006-english-confidence-vocabulary.md` — `proven`/`candidate` replace the Swedish `belagt`/`kandidat`.
 - `adr-0007-bcu-security-access.md` — derive the BCU seed→key offline freely; gate every live SecurityAccess byte.
+- `adr-0008-unified-status-vocabulary.md` — one derived item status (verified/candidate/sniff/untranscribed) + safety class, server-enforced.
 
 ## Editing rules
 
