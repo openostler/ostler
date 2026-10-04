@@ -24,7 +24,7 @@ _SPEC = [
     ("accel_way1", 0x1B, 0, "u16", 0.001, 0.0, "V"),
     ("accel_way2", 0x1B, 2, "u16", 0.001, 0.0, "V"),
     ("accel_way3", 0x1B, 4, "u16", 0.001, 0.0, "V"),
-    ("accel_supply", 0x1B, 6, "u16", 0.001, 0.0, "V"),
+    ("accel_supply", 0x1B, 8, "u16", 0.001, 0.0, "V"),  # long 21 1B form (2026-10-04)
     ("manifold_press", 0x1C, 0, "u16", 0.0001, 0.0, "bar"),
     ("maf_sensor", 0x1C, 4, "u16", 0.1, 0.0, "kg/hr"),
     ("maf_sensor_v", 0x1C, 6, "u16", 0.001, 0.0, "V"),
