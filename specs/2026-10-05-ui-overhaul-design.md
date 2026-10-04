@@ -2,7 +2,7 @@
 title: "UI overhaul — every NanoCom function per module, in situ, one status system — design"
 area: specs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-05
 depends_on: [specs/2026-10-01-web-ui-design.md, decisions/adr-0008-unified-status-vocabulary.md, decisions/adr-0007-bcu-security-access.md]
 summary: >
@@ -238,3 +238,8 @@ When it opens:
 ## Changelog
 
 - 2026-10-05: v1.0, approved and implemented.
+- 2026-10-05: v1.1. The header and connection changes are specified in
+  [2026-10-05-session-logbook-design.md](2026-10-05-session-logbook-design.md) (Part A):
+  - no "D2 Diag" title, a labelled module control and a "% mapped" pill;
+  - `ConnectionNotice` on every module page;
+  - a 60 s re-prompt.

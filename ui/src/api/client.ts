@@ -15,6 +15,9 @@ import {
   FieldsResponse,
   MapResponse,
   OkReply,
+  SessionData,
+  SessionList,
+  SessionMeta,
   Snapshot,
   SniffResponse,
 } from "./schemas";
@@ -70,6 +73,13 @@ export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
   catalog: (module: string) => getJson(`/catalog?module=${encodeURIComponent(module)}`, Catalog),
   catalogModules: () => getJson("/catalog", CatalogModules),
+  sessions: () => getJson("/sessions", SessionList),
+  session: (id: string) => getJson(`/sessions/${encodeURIComponent(id)}`, SessionMeta),
+  sessionData: (id: string, channels: string[], max = 2000) =>
+    getJson(`/sessions/${encodeURIComponent(id)}/data?ch=${encodeURIComponent(channels.join(","))}&max=${max}`, SessionData),
+  /** A download URL (the browser fetches it; not JSON). */
+  sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx") =>
+    `/sessions/${encodeURIComponent(id)}/export?fmt=${fmt}`,
   fields: (module: string) => getJson(`/fields?module=${encodeURIComponent(module)}`, FieldsResponse),
   faults: (module: string) => getJson(`/faults?module=${encodeURIComponent(module)}`, FaultsResponse),
   map: (module: string) => getJson(`/map?module=${encodeURIComponent(module)}`, MapResponse),

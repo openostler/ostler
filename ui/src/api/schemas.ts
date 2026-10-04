@@ -42,6 +42,24 @@ export const ActiveTest = z.object({
 });
 export type ActiveTest = z.infer<typeof ActiveTest>;
 
+/** Latest GPS fix (null when there is no GPS source). ADR-0009. */
+export const GpsFix = z.object({
+  fix: z.boolean(),
+  lat: z.number().nullable(),
+  lon: z.number().nullable(),
+  speed_kmh: z.number().nullable(),
+  heading: z.number().nullable(),
+  sats: z.number().nullable(),
+  hdop: z.number().nullable(),
+  src: z.string(), // "usb" | "mock" | "replay"
+  age_s: z.number().nullable(),
+});
+export type GpsFix = z.infer<typeof GpsFix>;
+
+/** The session being recorded right now (null when idle). */
+export const Recording = z.object({ session: z.string(), since: z.number(), rows: z.number() });
+export type Recording = z.infer<typeof Recording>;
+
 /** The snapshot pushed over /events every poll (and returned by /snapshot). */
 export const Snapshot = z.object({
   status: z.string(), // "connected" | "connecting" | "error" | "no-cable"
@@ -67,6 +85,8 @@ export const Snapshot = z.object({
   port: PortInfo.optional(),
   /** A latched test that is still on (ActiveTestBanner), else null. */
   active_test: ActiveTest.nullable().optional(),
+  gps: GpsFix.nullable().optional(),
+  recording: Recording.nullable().optional(),
 });
 export type Snapshot = z.infer<typeof Snapshot>;
 
@@ -300,3 +320,42 @@ export const CatalogModule = z.object({
 });
 export type CatalogModule = z.infer<typeof CatalogModule>;
 export const CatalogModules = z.object({ modules: z.array(CatalogModule) });
+
+/* ---- /sessions (ADR-0009, specs/2026-10-05-session-logbook-design.md) ---- */
+
+export const SessionChannel = z.object({ name: z.string(), units: z.string().default(""), group: z.string().default("") });
+export type SessionChannel = z.infer<typeof SessionChannel>;
+const LonLat = z.tuple([z.number(), z.number()]);
+
+export const SessionMeta = z.object({
+  id: z.string(),
+  start_utc: z.string(),
+  end_utc: z.string().nullable(),
+  duration_s: z.number(),
+  rows: z.number(),
+  parts: z.array(z.string()).default([]),
+  modules: z.array(z.string()).default([]),
+  channels: z.array(SessionChannel).default([]),
+  has_gps: z.boolean(),
+  distance_km: z.number(),
+  max_speed_kmh: z.number().nullable(),
+  bbox: z.tuple([z.number(), z.number(), z.number(), z.number()]).nullable(),
+  start_pos: LonLat.nullable(),
+  end_pos: LonLat.nullable(),
+  synthetic: z.boolean(),
+  recording: z.boolean(),
+  source: z.string(), // "mock" | "live" | "demo"
+});
+export type SessionMeta = z.infer<typeof SessionMeta>;
+export const SessionList = z.object({ sessions: z.array(SessionMeta) });
+
+/** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; track = [lon, lat, t_ms]. */
+export const SessionData = z.object({
+  id: z.string(),
+  t: z.array(z.number()),
+  utc: z.array(z.number().nullable()),
+  ch: z.record(z.string(), z.array(z.number().nullable())),
+  track: z.array(z.tuple([z.number(), z.number(), z.number()])),
+  decimated: z.boolean(),
+});
+export type SessionData = z.infer<typeof SessionData>;

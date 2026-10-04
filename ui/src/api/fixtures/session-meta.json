@@ -1,0 +1,45 @@
+{
+  "id": "20261005T090000Z",
+  "start_utc": "2026-10-05T09:00:00.000Z",
+  "end_utc": "2026-10-05T09:12:00.000Z",
+  "duration_s": 720,
+  "rows": 3600,
+  "parts": [
+    "data.csv"
+  ],
+  "modules": [
+    "motor"
+  ],
+  "channels": [
+    {
+      "name": "GPS_Speed",
+      "units": "km/h",
+      "group": "gps"
+    },
+    {
+      "name": "rpm",
+      "units": "rpm",
+      "group": "engine"
+    }
+  ],
+  "has_gps": true,
+  "distance_km": 9.4,
+  "max_speed_kmh": 96.0,
+  "bbox": [
+    -1.21,
+    52.01,
+    -1.17,
+    52.03
+  ],
+  "start_pos": [
+    -1.2,
+    52.02
+  ],
+  "end_pos": [
+    -1.2,
+    52.02
+  ],
+  "synthetic": true,
+  "recording": false,
+  "source": "demo"
+}
