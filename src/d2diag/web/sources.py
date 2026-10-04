@@ -529,7 +529,9 @@ class Td5DataSource(DataSource):
             # read fault codes less often (expensive); every ~10th poll
             if self._read_faults and self._fault_tick % self.fault_every == 0:
                 try:
-                    self._faults = [f for f in self._td5.read_faults() if not f.startswith("byte")]
+                    # keep undecoded byte<off>.bit<n> faults: hiding them let a clear wipe faults
+                    # nobody saw (2026-10-03). The UI shows them by their raw position.
+                    self._faults = list(self._td5.read_faults())
                 except Exception:  # noqa: BLE001
                     pass
             self._fault_tick += 1

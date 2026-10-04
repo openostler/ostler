@@ -121,3 +121,44 @@ def test_read_real_recorded_lid_1a_decodes_temps():
     with Td5(KWP2000(KLine(ecu), tolerant=True)) as td5:
         vals = td5.read_lid(0x1A)
     assert round(vals["coolant_temp"], 1) == 59.2
+
+
+# --------------------------------------------------------------------------- #
+# Tolerant reply is cut to its header length — the checksum no longer leaks
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("burst, service, payload, data", [
+    # Td5, unaddressed `fmt` header (car 2026-10-03): echo 02 21 09 2c, reply 04 61 09 00 00 | 6e
+    ("02 21 09 2c 04 61 09 00 00 6e", 0x21, b"\x09", "61 09 00 00"),
+    # SLABS: glitch 00 between echo and reply, still trimmed (car 2026-10-03)
+    ("02 21 54 77 00 06 61 54 92 88 0f 0f f3", 0x21, b"\x54", "61 54 92 88 0f 0f"),
+    # Airbag, addressed `fmt tgt src` header (car 2026-10-04): checksum 65 must go
+    ("82 5b f7 21 02 f7 8c f7 5b 61 02 90 04 90 00 00 00 00 00 00 00 65",
+     0x21, b"\x02", "61 02 90 04 90 00 00 00 00 00 00 00"),
+    # `fmt len` header (length byte, 48-byte style replies use it): 00 03 61 1e 00 | cs
+    ("02 21 1e 41 00 03 61 1e 82 04", 0x21, b"\x1e", "61 1e 82"),
+    # Negative response is trimmed too
+    ("02 10 a0 b2 03 7f 10 10 a2", 0x10, b"\xa0", "7f 10 10"),
+])
+def test_tolerant_reply_trimmed_to_header_length(burst, service, payload, data):
+    out = KWP2000._extract_response(bytes.fromhex(burst), service, payload)
+    assert out == bytes.fromhex(data)
+
+
+def test_tolerant_reply_trimmed_by_length_when_checksum_is_bad():
+    # A flipped checksum still trims by the header length (glitch byte f8 after it too).
+    out = KWP2000._extract_response(bytes.fromhex("02 21 09 2c 04 61 09 00 00 99 f8"),
+                                    0x21, b"\x09")
+    assert out == bytes.fromhex("61 09 00 00")
+
+
+def test_tolerant_reply_without_plausible_header_is_untrimmed():
+    # No header before the SID (shredded): fall back to everything after it.
+    out = KWP2000._extract_response(bytes.fromhex("61 09 00 00 6e"), 0x21, b"\x09")
+    assert out == bytes.fromhex("61 09 00 00 6e")
+
+
+def test_tolerant_read_lid_has_no_checksum_byte():
+    req = _sess(b"\x21\x1e")
+    ecu = FakeKLineEcu({req: _sess(b"\x61\x1e\x00\x82")})
+    with KWP2000(KLine(ecu), tolerant=True) as kwp:
+        assert kwp.read_local_identifier(0x1E) == b"\x00\x82"
