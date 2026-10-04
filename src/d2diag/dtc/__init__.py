@@ -11,13 +11,18 @@ fault key:
 
 * **td5** — ``"offset.bit"`` (matches ``td5/faultmap.json`` and the generic
   ``byte<off>.bit<n>`` the decoder emits for unmapped bits).
-* **slabs** — the reference-tool display number (``"020"``).
-* **airbag** — the fault number.
+* **slabs** — the reference-tool display number (``"020"``). The rswsolutions list uses a
+  different numbering (it contradicts both car-proven anchors), so its entries are keyed
+  ``"rsw-NNN"`` and never collide with a tool number.
+* **airbag** — the 3-digit fault number (``"008"``), as the decoder yields it.
+* **autobox** (EAT) — the P-code the tools display (``"P1884"``).
+* **ace** — the NanoCom ``"XX-YY"`` code, or ``"dtcNN"`` for the Hawkeye/Testbook DTC
+  number. The two schemes are kept apart: nothing links them yet.
 
 Meanings are documented facts (factory/community/vendor sources), carried with a
-``source`` note. They are NOT gated by the signal store's ``proven``/``candidate`` rule —
-that rule governs whether a *bit→fault mapping* is verified on the car, which lives with the
-decoder. A meaning can be refined freely as better descriptions are found.
+``source`` note and a ``confidence``: ``proven`` when the code→meaning pairing was seen on
+this car (or the reference tool's screen against a raw capture), ``candidate`` when it comes
+from a forum or vendor list. Nothing from a forum is ever ``proven``.
 
 This is what Land Rover's RAVE fault-finding section gave, rebuilt as a searchable store:
 ``tools/gen_fault_docs.py`` renders it to a browsable doc, and the web ``/faults`` endpoint
@@ -38,7 +43,7 @@ _DIR = Path(__file__).resolve().parent
 class FaultMeaning:
     """The meaning of one fault code."""
 
-    key: str                 # module-stable key: "offset.bit" (td5) / number (slabs/airbag)
+    key: str                 # module-stable key: "offset.bit" (td5) / display code (others)
     name: str                # short fault name (matches the decoder's output)
     description: str = ""     # what the fault means, plain English
     cause: str = ""           # likely cause / what to check
@@ -46,6 +51,7 @@ class FaultMeaning:
     system: str = ""          # engine / fuelling / brakes / body / comms …
     pcode: str = ""           # inferred OBD-II P-code, where one applies ("" = none)
     source: str = ""          # provenance of the meaning text
+    confidence: str = ""      # "proven" | "candidate" (blank = unspecified, legacy)
 
     def as_dict(self) -> "dict":
         return {k: v for k, v in self.__dict__.items() if v != ""}
@@ -74,6 +80,7 @@ def load_meanings(module: str) -> "dict[str, FaultMeaning]":
                 key=r["key"], name=r.get("name", ""), description=r.get("description", ""),
                 cause=r.get("cause", ""), severity=r.get("severity", ""),
                 system=r.get("system", ""), pcode=r.get("pcode", ""), source=r.get("source", ""),
+                confidence=r.get("confidence", ""),
             )
             for r in load_records(module)
         }
@@ -116,7 +123,7 @@ def enrich(module: str, decoded: "list[str]") -> "list[dict]":
     ``decoded`` is what a module's ``decode_faults`` returns — for td5 a list of names
     (and ``byte<off>.bit<n>`` for unmapped bits); for slabs ``"<nr>: <text>"`` strings.
     Returns one dict per fault: ``{raw, key, name, description, cause, severity, system,
-    pcode}`` with meaning fields filled where known, so an unmapped or meaning-less fault is
+    pcode, confidence}`` with meaning fields filled where known, so an unmapped or meaning-less fault is
     still passed through (never dropped).
     """
     meanings = load_meanings(module)
@@ -126,7 +133,7 @@ def enrich(module: str, decoded: "list[str]") -> "list[dict]":
         m = _match(raw, module, meanings, by_name)
         row = {"raw": raw, "key": m.key if m else "", "name": m.name if m else raw}
         if m:
-            for fld in ("description", "cause", "severity", "system", "pcode"):
+            for fld in ("description", "cause", "severity", "system", "pcode", "confidence"):
                 val = getattr(m, fld)
                 if val:
                     row[fld] = val
@@ -147,4 +154,6 @@ def _match(raw, module, meanings, by_name) -> "FaultMeaning | None":
             return None
     if ":" in raw:                           # slabs: "<nr>: <text>" → number key
         return meanings.get(raw.split(":", 1)[0].strip())
+    if raw.isdigit():                        # airbag: decoder number 8 / "8" → "008"
+        return meanings.get(raw.zfill(3)) or meanings.get(raw)
     return meanings.get(raw)                  # fall back to a direct key hit

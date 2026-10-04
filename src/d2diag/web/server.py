@@ -188,10 +188,11 @@ def _fields_list(module: str) -> "dict":
 def _faults_list(module: str) -> "dict":
     """The fault-meaning dictionary for a module (the ``dtc`` store) — so the UI can show
     what a fault code MEANS, not just its name. Keyed by each module's stable fault key
-    (td5 ``offset.bit``, slabs/airbag display number)."""
+    (td5 ``offset.bit``, slabs/airbag display number, autobox ``P-code-NN``, ace ``XX-YY``)."""
     from ..dtc import load_records
 
-    store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
+    # UI module name → store module ("motor" is the Td5; the EAT has two common names)
+    store_mod = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}.get(module, module)
     return {"module": module, "faults": load_records(store_mod)}
 
 

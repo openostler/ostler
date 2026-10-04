@@ -43,7 +43,8 @@ def test_td5_store_covers_every_decoder_bit():
 
 def test_slabs_meanings_load():
     m = dtc.load_meanings("slabs")
-    assert m and "012" in m and m["012"].system.startswith("brakes")
+    assert m and "rsw-012" in m and m["rsw-012"].system.startswith("brakes")
+    assert "012" not in m  # rsw numbering is not the reference tool's — never a bare number
 
 
 def test_seed_store_is_in_sync():
@@ -59,3 +60,60 @@ def test_fault_dictionary_docs_are_fresh():
     for path, text in docs._targets().items():
         assert path.read_text(encoding="utf-8") == text, (
             f"{path.name} is stale — run tools/gen_fault_docs.py")
+
+
+# --- coverage + confidence (specs/2026-10-04-dtc-coverage-design.md) ---------------
+
+_MODULES = ("td5", "slabs", "airbag", "autobox", "ace")
+
+
+def test_every_record_has_honest_confidence():
+    """Every meaning says how sure it is; nothing sourced from a forum/vendor list is proven."""
+    for module in _MODULES:
+        rows = dtc.load_records(module)
+        assert rows, f"{module} store is empty"
+        for r in rows:
+            assert r.get("confidence") in ("proven", "candidate"), (module, r["key"])
+            assert r.get("source"), (module, r["key"])
+            src = r["source"].lower()
+            if "http" in src or "rswsolutions" in src or "forum" in src:
+                assert r["confidence"] == "candidate", (module, r["key"], "forum ≠ proven")
+
+
+def test_new_module_stores_load_with_expected_keys():
+    assert dtc.meaning("airbag", "008").name.lower().startswith("driver")
+    assert dtc.meaning("autobox", "P1884-33") and "torque" in dtc.meaning("autobox", "P1884-33").name
+    assert dtc.meaning("ace", "20-04") and dtc.meaning("ace", "dtc33")
+    # the two ACE display schemes stay apart: no key is both
+    keys = set(dtc.load_meanings("ace"))
+    assert all(k.startswith("dtc") or "-" in k for k in keys)
+
+
+def test_airbag_decoder_number_resolves():
+    from d2diag.airbag.faults import decode_faults
+    nums = [str(f["number"]) for f in decode_faults(bytes.fromhex("9004901600 00".replace(" ", "")))]
+    rows = dtc.enrich("airbag", nums)  # 4 → "004", 22 → "022"
+    assert [r["key"] for r in rows] == ["004", "022"]
+    assert all(r["confidence"] == "candidate" for r in rows)
+
+
+def test_slabs_car_anchors_resolve_to_proven_tool_meaning():
+    """The decoder's car-proven 020/027 must not resolve to the rsw list's different numbering."""
+    from d2diag.slabs.faults import decode_fault_block
+    block = bytes.fromhex("00000010000000000000100000000000")  # sniff 2026-08-07
+    rows = dtc.enrich("slabs", decode_fault_block(block))
+    assert [r["key"] for r in rows] == ["020", "027"]
+    assert "wheel speed" in rows[0]["name"].lower() and rows[0]["confidence"] == "proven"
+    assert "shuttle valve" in rows[1]["name"].lower() and rows[1]["confidence"] == "proven"
+    assert all(k == "020" or k == "027" or k.startswith("rsw-") for k in dtc.load_meanings("slabs"))
+
+
+def test_td5_candidate_bit_and_unknowns_stay_generic():
+    from d2diag.td5.faults import FAULTS, decode_faults
+    cand = [f"{f.offset}.{f.mask.bit_length() - 1}" for f in FAULTS if f.confidence != "proven"]
+    assert cand == ["20.7"] and dtc.meaning("td5", "20.7").confidence == "candidate"
+    block = bytearray(35)
+    block[20] |= 0x80   # 20.7 candidate → named
+    block[15] |= 0x80   # 15.7 seen on the car, no public name → stays generic
+    out = decode_faults(bytes(block))
+    assert "injector trim data corrupted (Logged)" in out and "byte15.bit7" in out
