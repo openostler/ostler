@@ -35,11 +35,11 @@ def test_capture_frames_are_wellformed():
 
 # ---- READ: fault block decoded against the baseline --------------------- #
 def test_decode_logged_fault_block_matches_baseline():
-    # 21 11 before clear: byte3.bit4 + byte10.bit4 = fault 020 (RF sensor) + 027 (shuttle)
+    # 21 11 before clear: byte3.bit4 (RF sensor) + byte10.bit4 (shuttle); tool showed 020/027-05
     block = bytes.fromhex("00 00 00 10 00 00 00 00 00 00 10 00 00 00 00 00".replace(" ", ""))
     faults = decode_fault_block(block)
-    assert any(f.startswith("020:") for f in faults)
-    assert any(f.startswith("027:") for f in faults)
+    assert "right front wheel speed sensor — output too low" in faults
+    assert "shuttle valve switch — electrical failure" in faults
     assert len(faults) == 2
 
 

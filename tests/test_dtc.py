@@ -1,4 +1,6 @@
 """The fault-meaning store (d2diag.dtc): loader, enrich join, and freshness guards."""
+import re
+
 import tools.gen_dtc_seed as seed
 import tools.gen_fault_docs as docs
 from d2diag import dtc
@@ -83,10 +85,13 @@ def test_every_record_has_honest_confidence():
 def test_new_module_stores_load_with_expected_keys():
     assert dtc.meaning("airbag", "008").name.lower().startswith("driver")
     assert dtc.meaning("autobox", "P1884-33") and "torque" in dtc.meaning("autobox", "P1884-33").name
-    assert dtc.meaning("ace", "20-04") and dtc.meaning("ace", "dtc33")
-    # the two ACE display schemes stay apart: no key is both
-    keys = set(dtc.load_meanings("ace"))
-    assert all(k.startswith("dtc") or "-" in k for k in keys)
+    assert dtc.meaning("ace", "flat-20-04") and dtc.meaning("ace", "dtc33")
+    # this car's NanoCom family owns the plain XX-YY keys (04-02 and 06-01 were seen on RDL 016)
+    assert "direction control valve 2" in dtc.meaning("ace", "04-02").name.lower()
+    assert "pressure too low" in dtc.meaning("ace", "06-01").name.lower()
+    # the three ACE display schemes stay apart: every key belongs to exactly one
+    for k in dtc.load_meanings("ace"):
+        assert re.fullmatch(r"\d{2}-\d{2}|flat-\d{2}-\d{2}|dtc\d{1,2}", k), k
 
 
 def test_airbag_decoder_number_resolves():
@@ -98,20 +103,27 @@ def test_airbag_decoder_number_resolves():
 
 
 def test_slabs_car_anchors_resolve_to_proven_tool_meaning():
-    """The decoder's car-proven 020/027 must not resolve to the rsw list's different numbering."""
+    """The car-proven anchors resolve by raw bit / decoder text, never via a display number."""
     from d2diag.slabs.faults import decode_fault_block
     block = bytes.fromhex("00000010000000000000100000000000")  # sniff 2026-08-07
     rows = dtc.enrich("slabs", decode_fault_block(block))
-    assert [r["key"] for r in rows] == ["020", "027"]
+    assert [r["key"] for r in rows] == ["3.4", "10.4"]
     assert "wheel speed" in rows[0]["name"].lower() and rows[0]["confidence"] == "proven"
     assert "shuttle valve" in rows[1]["name"].lower() and rows[1]["confidence"] == "proven"
-    assert all(k == "020" or k == "027" or k.startswith("rsw-") for k in dtc.load_meanings("slabs"))
+    assert all(k in ("3.4", "10.4") or k.startswith("rsw-") for k in dtc.load_meanings("slabs"))
+    [unk] = dtc.enrich("slabs", ["unknown (byte 3, bit 4)"])  # generic form resolves by bit
+    assert unk["key"] == "3.4"
 
 
 def test_td5_candidate_bit_and_unknowns_stay_generic():
     from d2diag.td5.faults import FAULTS, decode_faults
     cand = [f"{f.offset}.{f.mask.bit_length() - 1}" for f in FAULTS if f.confidence != "proven"]
-    assert cand == ["20.7"] and dtc.meaning("td5", "20.7").confidence == "candidate"
+    assert sorted(cand) == ["11.6", "13.6", "20.7"]
+    assert all(dtc.meaning("td5", k).confidence == "candidate" for k in cand)
+    # 11.6 / 13.6 corrected from NanoCom screens: the glow-plug LAMP, not a second "relay"
+    for k in ("11.6", "13.6"):
+        assert dtc.meaning("td5", k).name == "glowplug lamp drive open load (Current)"
+        assert not dtc.meaning("td5", k).pcode
     block = bytearray(35)
     block[20] |= 0x80   # 20.7 candidate → named
     block[15] |= 0x80   # 15.7 seen on the car, no public name → stays generic

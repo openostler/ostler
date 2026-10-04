@@ -43,8 +43,8 @@ def _mock_report() -> "list[dict]":
     """The RDL 016 baseline (proven) as demo data without a car."""
     return [
         _row("TD5", []),
-        _row("SLABS", ["020: front right wheel speed sensor — output too low (Logged)",
-                       "027: shuttle valve switch — electrical failure (Logged)"]),
+        _row("SLABS", ["right front wheel speed sensor — output too low (Logged)",
+                       "shuttle valve switch — electrical failure (Logged)"]),
         _row("Airbag", ["004: airbag warning lamp — open circuit intermittent",
                         "022: open circuit intermittent"], note="experimental"),
     ]
