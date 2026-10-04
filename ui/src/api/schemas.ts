@@ -27,6 +27,21 @@ export const Logging = z.object({
   rows: z.number().optional(),
 });
 
+export const PortInfo = z.object({
+  spec: z.string(),
+  resolved: z.string().nullable(),
+  candidates: z.array(z.string()).default([]),
+});
+export type PortInfo = z.infer<typeof PortInfo>;
+
+export const ActiveTest = z.object({
+  action: z.string(),
+  label: z.string(),
+  since: z.number(),
+  stop: z.string(),
+});
+export type ActiveTest = z.infer<typeof ActiveTest>;
+
 /** The snapshot pushed over /events every poll (and returned by /snapshot). */
 export const Snapshot = z.object({
   status: z.string(), // "connected" | "connecting" | "error" | "no-cable"
@@ -43,6 +58,15 @@ export const Snapshot = z.object({
   error: z.string().optional(),
   stale: z.boolean().optional(),
   connect_phase: z.string().nullable().optional(),
+  /** Connection state (ADR-0008 spec): disconnected|connecting|connected|lost|reconnecting|error. */
+  conn: z.string().optional(),
+  /** Server epoch seconds of this snapshot. */
+  ts: z.number().optional(),
+  /** Car battery in volts, or null when unknown. */
+  battery_v: z.number().nullable().optional(),
+  port: PortInfo.optional(),
+  /** A latched test that is still on (ActiveTestBanner), else null. */
+  active_test: ActiveTest.nullable().optional(),
 });
 export type Snapshot = z.infer<typeof Snapshot>;
 
@@ -198,3 +222,81 @@ export const OkReply = z.looseObject({
   queued: z.boolean().optional(),
 });
 export type OkReply = z.infer<typeof OkReply>;
+
+/* ---- /catalog (ADR-0008, specs/2026-10-05-ui-overhaul-design.md) ---- */
+
+/** Item status: verified | candidate | sniff | untranscribed (open: a new level must not crash). */
+export const ItemStatus = z.string();
+/** Safety class: read | actuator | service | gated. */
+export const Safety = z.string();
+
+export const CatalogCoverage = z.object({
+  verified: z.number(),
+  candidate: z.number(),
+  sniff: z.number(),
+  untranscribed: z.number(),
+  total: z.number(),
+});
+export type CatalogCoverage = z.infer<typeof CatalogCoverage>;
+
+/** One runnable (or planned/gated) action from the command registry (src/d2diag/commands.py). */
+export const CatalogAction = z.object({
+  action: z.string(),
+  label: z.string(),
+  status: z.string(), // "verified" | "experimental" | "planned"
+  safety: Safety,
+  confirm: z.string(), // "none" | "preconditions" | "typed"
+  preconditions: z.array(z.string()).default([]),
+  stop: z.string().optional(),
+  ref: z.string().default(""),
+});
+export type CatalogAction = z.infer<typeof CatalogAction>;
+
+export const CatalogItem = z.object({
+  id: z.string(),
+  name: z.string(),
+  status: ItemStatus,
+  safety: Safety,
+  sig: z.string().nullable().optional(),
+  lid: z.string().nullable().optional(),
+  ref: z.string().default(""),
+  note: z.string().default(""),
+  placeholder: z.boolean().default(false),
+  pages: z.number().nullable().optional(),
+  actions: z.array(CatalogAction).default([]),
+});
+export type CatalogItem = z.infer<typeof CatalogItem>;
+
+export const CatalogGroup = z.object({
+  id: z.string(),
+  title: z.string(),
+  parent: z.string().nullable().optional(),
+  nanocom: z.string().nullable().optional(),
+  items: z.array(CatalogItem),
+});
+export type CatalogGroup = z.infer<typeof CatalogGroup>;
+
+export const CatalogPage = z.object({
+  id: z.string(), // "faults" | "inputs" | "outputs" | "settings" | "utilities"
+  title: z.string(),
+  coverage: CatalogCoverage,
+  groups: z.array(CatalogGroup),
+});
+export type CatalogPage = z.infer<typeof CatalogPage>;
+
+export const Catalog = z.object({
+  module: z.string(),
+  store_module: z.string(),
+  coverage: CatalogCoverage,
+  pages: z.array(CatalogPage),
+});
+export type Catalog = z.infer<typeof Catalog>;
+
+export const CatalogModule = z.object({
+  module: z.string(),
+  store_module: z.string(),
+  name: z.string(),
+  coverage: CatalogCoverage,
+});
+export type CatalogModule = z.infer<typeof CatalogModule>;
+export const CatalogModules = z.object({ modules: z.array(CatalogModule) });

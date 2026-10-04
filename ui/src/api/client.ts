@@ -6,6 +6,8 @@
 import type { z } from "zod";
 import {
   AutomapReply,
+  Catalog,
+  CatalogModules,
   CommandReply,
   Community,
   DocsResponse,
@@ -66,6 +68,8 @@ export function command(action: string, params?: Record<string, unknown>) {
 
 export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
+  catalog: (module: string) => getJson(`/catalog?module=${encodeURIComponent(module)}`, Catalog),
+  catalogModules: () => getJson("/catalog", CatalogModules),
   fields: (module: string) => getJson(`/fields?module=${encodeURIComponent(module)}`, FieldsResponse),
   faults: (module: string) => getJson(`/faults?module=${encodeURIComponent(module)}`, FaultsResponse),
   map: (module: string) => getJson(`/map?module=${encodeURIComponent(module)}`, MapResponse),
