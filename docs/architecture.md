@@ -2,8 +2,8 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.2
-updated: 2026-10-01
+version: 1.3
+updated: 2026-10-05
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the code: the bottom-up protocol stack, the seams to understand before
@@ -49,6 +49,7 @@ K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, 
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 Module layer   td5/ slabs/ airbag/ (+ bcu/ ace/ autobox/ menu stubs)
+Side inputs    gps/ (NMEA fixes) → logbook/ (session recorder + store + exports, ADR-0009)
 Web            web/: stdlib HTTP + SSE server; serves the built UI from web/static
 UI             ui/: Vite + React + TypeScript app → npm run build → web/static (committed)
 ```
@@ -124,3 +125,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-09-30 — Extracted from the former root CLAUDE.md during Vibes as Code adoption.
 - 2026-10-01 — Confidence vocabulary is now `proven`/`candidate` (ADR-0006).
 - 2026-10-01 — Added the React/TypeScript UI layer and its contract.
+- 2026-10-05 — Added `gps/` and `logbook/`: the server feeds every poll and the latest GPS fix
+  to the session recorder; `/sessions*` serves replay data (ADR-0009).

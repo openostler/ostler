@@ -42,16 +42,39 @@ async function switchModule(page: Page, id: string) {
   await expect(select).toHaveValue(id);
 }
 
-test("the six module tabs, no Connect or Capabilities", async ({ page }) => {
+test("the seven tabs, no Connect or Capabilities", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   const tabs = page.getByRole("navigation", { name: "Screens" }).getByRole("button");
-  await expect(tabs).toHaveCount(6);
-  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities"]) {
+  await expect(tabs).toHaveCount(7);
+  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs"]) {
     await expect(page.getByRole("navigation").getByRole("button", { name: t, exact: true })).toBeVisible();
   }
   await expect(page.getByRole("button", { name: "Connect", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Capabilities" })).toHaveCount(0);
+});
+
+test("header: no title, one Module control, % mapped only in Experimental, fits 360 px", async ({ page }) => {
+  await returningUser(page);
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.goto("/");
+  const header = page.locator("header");
+  await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
+  await expect(header.getByText("D2 Diag")).toHaveCount(0);
+  await expect(header.getByRole("combobox", { name: "Module" })).toBeVisible();
+  await expect(header.locator(".modctl-v")).toHaveText("TD5 (engine)");
+  await expect(header.locator(".mappct")).toHaveCount(0);
+  const fits = async () => header.evaluate((h) => h.scrollWidth <= h.clientWidth);
+  expect(await fits()).toBe(true);
+  // seven tabs fit without scrolling
+  expect(await page.locator("nav.tabs").evaluate((n) => n.scrollWidth <= n.clientWidth)).toBe(true);
+
+  await page.addInitScript(() => localStorage.setItem("d2diag.v2",
+    JSON.stringify({ consentDone: true, share: false, trust: "experimental" })));
+  await page.reload();
+  await expect(header.locator(".mappct")).toHaveText(/^\d+% mapped$/);
+  expect(await fits()).toBe(true);
+  await page.screenshot({ path: "test-results/header-360.png" });
 });
 
 test("switching to SLABS from the header keeps the tab", async ({ page }) => {

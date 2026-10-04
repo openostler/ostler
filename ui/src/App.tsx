@@ -109,10 +109,8 @@ export function App({ path = window.location.pathname }: { path?: string }) {
     <AppCtx.Provider value={ctx}>
       <div className="app">
         <header>
-          <div className="hmod">
-            <div className="htitle">D2 Diag{admin ? " · admin" : ""}</div>
-            <ModuleSelect />
-          </div>
+          {admin ? <span className="hadmin">admin</span> : null}
+          <ModuleSelect />
           <div className="hright">
             <Clock />
             {typeof snap?.battery_v === "number" ? (
@@ -139,7 +137,7 @@ export function App({ path = window.location.pathname }: { path?: string }) {
           ))}
         </nav>
         {sheetFaults && !prefsOpen && !connSheet.open && prefs.consentDone ? <FaultSheet faults={sheetFaults} onDismiss={dismissFaults} /> : null}
-        {connSheet.open && !prefsOpen ? <ConnectionSheet onClose={connSheet.dismiss} /> : null}
+        {connSheet.open && !prefsOpen ? <ConnectionSheet onClose={connSheet.dismiss} downSince={connSheet.downSince} /> : null}
         {prefsOpen ? <Preferences onClose={() => setPrefsOpen(false)} /> : null}
         {!prefs.consentDone ? <Consent /> : null}
         {toast ? <div className={`toast${toast.bad ? " bad" : ""}`} role="status">{toast.msg}</div> : null}

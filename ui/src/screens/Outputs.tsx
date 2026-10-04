@@ -1,3 +1,4 @@
+import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ItemCard } from "../components/ItemCard";
 import { ScreenHead } from "../components/ScreenHead";
@@ -16,8 +17,9 @@ export function Outputs() {
   return (
     <>
       <ScreenHead title="Outputs" />
+      <ConnectionNotice />
       {experimental && page ? <CoverageBar coverage={page.coverage} label="Outputs coverage" /> : null}
-      {!connected ? <StatusGate /> : null}
+      {!connected ? <StatusGate withNotice /> : null}
       {!catalog ? <div className="empty">Loading…</div> : !groups.length ? (
         <div className="empty"><div className="pretty">{experimental ? "No output tests catalogued for this module yet." : STABLE_EMPTY}</div></div>
       ) : (

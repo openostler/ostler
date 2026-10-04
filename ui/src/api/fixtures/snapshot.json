@@ -3,7 +3,7 @@
   "source": "mock",
   "signals": {
     "rpm": {
-      "v": 811.67,
+      "v": 842.66,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
@@ -15,7 +15,7 @@
       "c": "proven"
     },
     "battery": {
-      "v": 14.2,
+      "v": 14.13,
       "u": "V",
       "s": "ok",
       "c": "proven"
@@ -33,7 +33,7 @@
       "c": "proven"
     },
     "fuel_temp": {
-      "v": 14.53,
+      "v": 13.66,
       "u": "°C",
       "s": "ok",
       "c": "proven"
@@ -51,55 +51,55 @@
       "c": "proven"
     },
     "economy": {
-      "v": 7.89,
+      "v": 8.08,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "trip_economy": {
-      "v": 7.83,
+      "v": 7.87,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "lifetime_economy": {
-      "v": 8.49,
+      "v": 8.47,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "rpm_error": {
-      "v": 1.69,
+      "v": 0.5,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
     },
     "balance_1": {
-      "v": 2.11,
+      "v": 1.56,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_2": {
-      "v": -3.98,
+      "v": -2.71,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_3": {
-      "v": -3.0,
+      "v": 0.32,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_4": {
-      "v": -1.84,
+      "v": 0.06,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_5": {
-      "v": -2.35,
+      "v": 2.77,
       "u": "",
       "s": "ok",
       "c": "proven"
@@ -121,12 +121,14 @@
   "fault_watch": false,
   "allow_shutdown": false,
   "conn": "connected",
-  "ts": 1791148687.8451114,
-  "battery_v": 14.2,
+  "ts": 1791155742.5190892,
+  "battery_v": 14.13,
   "port": {
     "spec": "auto",
     "resolved": null,
     "candidates": []
   },
-  "active_test": null
+  "active_test": null,
+  "gps": null,
+  "recording": null
 }

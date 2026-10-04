@@ -6,6 +6,14 @@
     # real Td5 against the car:
     PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-12345678
 
+    # GPS for the session logbook: mock route (default with --mock), USB receiver
+    # (default otherwise: auto-probe, none when absent), off, or replay an .nmea file:
+    PYTHONPATH=src python3 tools/dashboard.py --mock --gps none
+    PYTHONPATH=src python3 tools/dashboard.py --serial /dev/ttyUSB0 --gps /dev/ttyACM0
+
+Every connected period is recorded to --sessions-dir (default logs/sessions) and browsed
+in the Logs tab (specs/2026-10-05-session-logbook-design.md).
+
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """
 import argparse
@@ -64,6 +72,13 @@ def main() -> int:
     ap.add_argument("--allow-shutdown", action="store_true",
                     help="expose a 'Shut down Pi' button in Settings (set on the Pi's "
                          "systemd unit; needs passwordless sudo for shutdown)")
+    ap.add_argument("--gps", default=None, metavar="auto|none|mock|PATH",
+                    help="GPS source for the session logbook: auto (probe a USB NMEA "
+                         "receiver; none if absent), none, mock (synthetic demo route), or "
+                         "a serial port / .nmea replay file. Default: mock with --mock, "
+                         "auto otherwise")
+    ap.add_argument("--sessions-dir", default=None,
+                    help="where recorded sessions go (default: <repo>/logs/sessions)")
     args = ap.parse_args()
 
     # Raw bus log (TX/RX) for mapping — off by default, on with --raw-log.
@@ -78,10 +93,17 @@ def main() -> int:
     # flags only set the START mode. Multi-module: only ONE module active at a time
     # (K-line = shared bus).
     port = args.serial or "auto"
+    gps_spec = args.gps or ("mock" if args.mock else "auto")
+    gps = None
+    try:
+        from d2diag.gps.reader import open_gps
+        gps = open_gps(gps_spec)
+    except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
+        print(f"GPS: unavailable for {gps_spec!r} ({type(exc).__name__}: {exc}) — continuing without")
     variants = {
-        "motor": {"mock": MockDataSource(),
+        "motor": {"mock": MockDataSource(gps=gps),
                   "live": Td5DataSource(port, raw_log_dir=raw_log_dir, fuel_state_path=fuel_state_path)},
-        "slabs": {"mock": MockSlabsDataSource(), "live": SlabsDataSource(port, raw_log_dir=raw_log_dir)},
+        "slabs": {"mock": MockSlabsDataSource(gps=gps), "live": SlabsDataSource(port, raw_log_dir=raw_log_dir)},
         # Modules with no live-signal reader yet (faults/info only). Selectable so the demo
         # is browsable; live mode reports honestly that they aren't readable on the car yet.
         # No live DataSource is fabricated — see InfoDataSource and the system-map confidence.
@@ -170,6 +192,7 @@ def main() -> int:
     os.makedirs(os.path.dirname(captures_path), exist_ok=True)
 
     csv_dir = os.path.join(repo_root, "logs")
+    sessions_dir = args.sessions_dir or os.path.join(csv_dir, "sessions")
     from d2diag.community import Community  # opt-in community sharing (default OFF)
     community = Community()
     srv = DiagServer(
@@ -180,6 +203,7 @@ def main() -> int:
         public=args.public, fault_watch=args.fault_watch,
         admin_password=args.admin_password,
         allow_shutdown=args.allow_shutdown,
+        gps=gps, sessions_dir=sessions_dir,
     )
     if raw_log_dir:
         print(f"Raw TX/RX log → {raw_log_dir}/raw-<module>-<time>.log")
@@ -191,11 +215,24 @@ def main() -> int:
     print(f"Captures → {captures_path}")
     print(f"Dashboard: http://localhost:{args.port}   (modules: {', '.join(variants)} · active: {active} · mode: {mode})")
     print(f"Live port: {port}  (switch mock/live in the UI)")
+    print(f"GPS: {gps_spec} → {getattr(gps, 'src', None) or 'none'} · sessions → {sessions_dir}"
+          f"{'' if srv._recorder is not None else ' (recording unavailable)'}")
     if log_path:
         print(f"Logging data → {log_path}")
     if args.csv:
         print(f"CSV live log → {srv.start_csv().get('path')}")
     print("Ctrl-C to quit.")
+    # `docker stop` / systemd send SIGTERM: treat it like Ctrl-C so the open logbook
+    # session is closed (meta.json end_utc) instead of being left "recording".
+    import signal
+
+    def _term(_signum, _frame):
+        raise KeyboardInterrupt
+
+    try:
+        signal.signal(signal.SIGTERM, _term)
+    except ValueError:  # not on the main thread (e.g. embedded) — keep the default
+        pass
     try:
         srv.serve()
     except KeyboardInterrupt:

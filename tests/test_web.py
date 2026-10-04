@@ -10,6 +10,19 @@ from d2diag.web import MockDataSource
 from d2diag.web.server import DiagServer
 
 
+@pytest.fixture(autouse=True)
+def _server_files_in_tmp(tmp_path, monkeypatch):
+    """Servers built here without a csv_dir write their logs (connection.log, the always-on
+    session logbook) under tmp_path instead of the repo's logs/."""
+    real_init = DiagServer.__init__
+
+    def init(self, *a, **kw):
+        kw.setdefault("csv_dir", str(tmp_path))
+        real_init(self, *a, **kw)
+
+    monkeypatch.setattr(DiagServer, "__init__", init)
+
+
 def test_mock_source_shape():
     d = MockDataSource().poll()
     assert d["status"] == "connected"
@@ -1159,3 +1172,31 @@ def test_read_identity_not_connected_and_mock():
     r = MockDataSource().command("read_identity", {})
     assert r["ok"] and set(r["identity"]) >= {"part_no", "vin_masked"}
     assert MockDataSource().command("security_status", {})["status"] == 3
+
+
+def test_snapshot_has_logbook_fields_and_sessions_default_under_csv_dir(tmp_path):
+    """Session logbook (ADR-0009): sessions live under <csv_dir>/sessions by default
+    (logs/sessions in production) and every snapshot carries `gps` and `recording`."""
+    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    try:
+        assert srv._sessions_dir == str(tmp_path / "sessions")
+        assert {"gps", "recording"} <= set(srv.latest)
+        srv.poll_once()
+        srv.record_poll()
+        assert srv.latest["gps"] is None  # no GPS source → null
+        assert srv.latest["recording"]["session"]
+    finally:
+        srv.stop()
+        srv.server_close()
+    srv2 = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                      sessions_dir=str(tmp_path / "elsewhere"))
+    try:
+        assert srv2._sessions_dir == str(tmp_path / "elsewhere")
+    finally:
+        srv2.stop()
+        srv2.server_close()
+
+
+def test_delete_session_is_an_inline_server_command():
+    from d2diag.web.server import _INLINE_COMMANDS
+    assert "delete_session" in _INLINE_COMMANDS  # never queued behind a K-line establishment

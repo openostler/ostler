@@ -9,7 +9,7 @@ import { defineConfig } from "vite";
 const API = process.env.D2DIAG_API ?? "http://localhost:8080";
 const API_ROUTES = [
   "/events", "/snapshot", "/command", "/fields", "/map", "/sniff", "/signals",
-  "/docs", "/doc", "/capture", "/automap", "/signal", "/calib", "/community", "/catalog",
+  "/docs", "/doc", "/capture", "/automap", "/signal", "/calib", "/community", "/catalog", "/sessions",
 ];
 
 export default defineConfig({
@@ -19,7 +19,12 @@ export default defineConfig({
     outDir: fileURLToPath(new URL("../src/d2diag/web/static", import.meta.url)),
     emptyOutDir: true,
     sourcemap: false,
+    // MapLibre is reached only through `import("./components/replay/maplibre")`, so Rollup
+    // splits it (and its CSS) into a lazy chunk; its worker is a separate `?worker&url`
+    // bundle. maplibreChunk.test.ts guards that nothing imports it statically.
+    chunkSizeWarningLimit: 1200,
   },
+  worker: { format: "es" },
   server: {
     proxy: Object.fromEntries(API_ROUTES.map((r) => [r, { target: API, changeOrigin: true }])),
   },

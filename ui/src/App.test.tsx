@@ -226,12 +226,12 @@ describe("calm instrument", () => {
 describe("overhaul navigation", () => {
   beforeEach(() => consented());
 
-  it("has the six module tabs and no Connect or Capabilities tab", async () => {
+  it("has the seven tabs (Logs last) and no Connect or Capabilities tab", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     const nav = await screen.findByRole("navigation", { name: "Screens" });
     expect(within(nav).getAllByRole("button").map((b) => b.getAttribute("aria-label")))
-      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities"]);
+      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs"]);
     expect(screen.queryByRole("button", { name: "Connect" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capabilities" })).not.toBeInTheDocument();
   });
@@ -243,10 +243,58 @@ describe("overhaul navigation", () => {
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Inputs" }));
     const select = screen.getByRole("combobox", { name: "Module" });
-    await waitFor(() => expect(within(select).getByRole("option", { name: "BCU (body control) · 0%" })).toBeInTheDocument());
+    await waitFor(() => expect(within(select).getByRole("option", { name: "BCU (body control)" })).toBeInTheDocument());
     await user.selectOptions(select, "bcu");
     await waitFor(() => expect(server.commandBodies()).toContainEqual({ action: "select_module", params: { module: "bcu" } }));
     expect(screen.getByRole("heading", { name: "Inputs" })).toBeInTheDocument();
+  });
+
+  it("has no title; the module control and, in Experimental only, the % mapped pill", async () => {
+    installFakeServer({ snapshot: connected });
+    const { unmount } = render(<App path="/" />);
+    const header = document.querySelector("header") as HTMLElement;
+    expect(await within(header).findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+    await waitFor(() => expect(header.querySelector(".modctl-v")).toHaveTextContent("TD5 (engine)"));
+    expect(within(header).getByText("Module")).toBeInTheDocument();
+    expect(within(header).queryByText(/D2 Diag/)).not.toBeInTheDocument();
+    expect(header.querySelector(".mappct")).toBeNull();
+    expect(within(header).queryByText("admin")).not.toBeInTheDocument();
+    unmount();
+    consented({ trust: "experimental" });
+    render(<App path="/" />);
+    const header2 = document.querySelector("header") as HTMLElement;
+    await waitFor(() => expect(header2.querySelector(".mappct")).toHaveTextContent("34% mapped")); // motor: 34 of 99 verified
+  });
+
+  it("shows a small admin chip instead of a title on /admin", async () => {
+    installFakeServer({ snapshot: connected });
+    render(<App path="/admin" />);
+    const header = document.querySelector("header") as HTMLElement;
+    expect(await within(header).findByText("admin")).toHaveClass("hadmin");
+  });
+
+  it("shows a non-blocking connection notice on Settings and Utilities", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: { ...connected, status: "error", conn: "error", error: "no answer" } });
+    render(<App path="/" />);
+    for (const tab of ["Settings", "Utilities"]) {
+      await user.click(await screen.findByRole("button", { name: tab }));
+      expect(await screen.findByRole("heading", { name: tab })).toBeInTheDocument();
+      const notice = document.querySelector(".connnotice") as HTMLElement;
+      expect(notice).toHaveTextContent("No connection");
+      expect(within(notice).getByRole("button", { name: "Open connection" })).toBeInTheDocument();
+    }
+    await user.click(screen.getByRole("button", { name: "Open connection" }));
+    expect(within(await screen.findByRole("dialog")).getByText("Connection")).toBeInTheDocument();
+  });
+
+  it("shows no connection notice while connected", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await screen.findByRole("heading", { name: "Settings" });
+    expect(document.querySelector(".connnotice")).toBeNull();
   });
 
   it("lists only modules with something verified in Stable", async () => {

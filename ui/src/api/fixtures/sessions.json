@@ -14,36 +14,117 @@
       ],
       "channels": [
         {
+          "name": "GPS_Latitude",
+          "units": "deg",
+          "group": "gps"
+        },
+        {
+          "name": "GPS_Longitude",
+          "units": "deg",
+          "group": "gps"
+        },
+        {
           "name": "GPS_Speed",
           "units": "km/h",
+          "group": "gps"
+        },
+        {
+          "name": "GPS_Heading",
+          "units": "deg",
+          "group": "gps"
+        },
+        {
+          "name": "GPS_Altitude",
+          "units": "m",
+          "group": "gps"
+        },
+        {
+          "name": "GPS_Nsat",
+          "units": "",
+          "group": "gps"
+        },
+        {
+          "name": "GPS_HDOP",
+          "units": "",
           "group": "gps"
         },
         {
           "name": "rpm",
           "units": "rpm",
           "group": "engine"
+        },
+        {
+          "name": "speed",
+          "units": "km/h",
+          "group": "engine"
+        },
+        {
+          "name": "coolant_temp",
+          "units": "°C",
+          "group": "temperatures"
+        },
+        {
+          "name": "air_temp",
+          "units": "°C",
+          "group": "temperatures"
+        },
+        {
+          "name": "battery",
+          "units": "V",
+          "group": "electrical"
+        },
+        {
+          "name": "manifold_press",
+          "units": "bar",
+          "group": "pressures"
+        },
+        {
+          "name": "accel_pedal_pct",
+          "units": "%",
+          "group": "engine"
         }
       ],
       "has_gps": true,
-      "distance_km": 9.4,
-      "max_speed_kmh": 96.0,
+      "distance_km": 11.21,
+      "max_speed_kmh": 92.0,
       "bbox": [
-        -1.21,
-        52.01,
-        -1.17,
-        52.03
+        -4.70945,
+        56.60844,
+        -4.63899,
+        56.63306
       ],
       "start_pos": [
-        -1.2,
-        52.02
+        -4.639,
+        56.623
       ],
       "end_pos": [
-        -1.2,
-        52.02
+        -4.639,
+        56.623
       ],
       "synthetic": true,
       "recording": false,
       "source": "demo"
+    },
+    {
+      "id": "20261004T231542Z",
+      "start_utc": "2026-10-04T23:15:42.519Z",
+      "end_utc": null,
+      "duration_s": 0,
+      "rows": 0,
+      "parts": [
+        "data.csv"
+      ],
+      "modules": [],
+      "channels": [],
+      "has_gps": false,
+      "distance_km": 0.0,
+      "max_speed_kmh": null,
+      "bbox": null,
+      "start_pos": null,
+      "end_pos": null,
+      "synthetic": false,
+      "recording": true,
+      "source": "mock"
     }
   ]
 }

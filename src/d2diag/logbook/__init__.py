@@ -14,4 +14,9 @@ Contract (specs/2026-10-05-session-logbook-design.md):
 * ``export.to_csv / to_vbo / to_gpx(rows, meta) -> str``.
 * ``demo.DEMO_ROOT`` — the committed synthetic session(s), built by
   ``tools/make_demo_session.py``.
+* Extensions: ``SessionRecorder(..., source=, synthetic=, poll_hz=, trust_clock=,
+  min_free_bytes=, fsync=)``; ``SessionStore.data/export/rows(..., public=False)``;
+  ``delete`` raises ``PermissionError`` for demo/synthetic/live sessions and ``KeyError``
+  for unknown ids; ``recorder.rotate_sessions(root, min_free_bytes)``;
+  ``synth.generate(root)`` builds the demo session.
 """

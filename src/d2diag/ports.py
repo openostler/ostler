@@ -12,6 +12,15 @@ import glob
 # Chip hints for recognising a KKL/OBD cable among several USB serial devices.
 _KKL_HINTS = ("ft232", "ftdi", "ch340", "cp210", "usb-serial", "usb_uart", "obd", "kkl")
 
+# GPS receivers (u-blox USB, VID 1546) are never the K-line cable (ADR-0009).
+_NOT_KKL = ("u-blox", "ublox", "gnss", "gps")
+_UBLOX_VID = 0x1546
+
+
+def _not_gps(paths: "list[str]") -> "list[str]":
+    return [p for p in paths if not any(h in p.lower() for h in _NOT_KKL)]
+
+
 # macOS call-out ports (use cu.*, NEVER tty.* — tty blocks on DCD).
 _MAC_GLOBS = (
     "/dev/cu.usbserial-*", "/dev/cu.usbmodem*",
@@ -31,8 +40,8 @@ def resolve_serial_port(spec: "str | None") -> str:
     """
     if spec and spec != "auto":
         return spec
-    by_id = sorted(glob.glob("/dev/serial/by-id/*"))
-    mac = sorted(p for pat in _MAC_GLOBS for p in glob.glob(pat))
+    by_id = _not_gps(sorted(glob.glob("/dev/serial/by-id/*")))
+    mac = _not_gps(sorted(p for pat in _MAC_GLOBS for p in glob.glob(pat)))
     preferred_id = [p for p in by_id if any(h in p.lower() for h in _KKL_HINTS)]
     preferred_mac = [p for p in mac if any(h in p.lower() for h in _KKL_HINTS)]
     for candidates in (preferred_id, by_id, preferred_mac, mac,
@@ -52,8 +61,8 @@ def list_serial_ports() -> "list[str]":
     dozens of legacy ``/dev/ttyS*`` never show). macOS ``/dev/tty.*`` is never offered
     (it blocks on DCD). Never raises: an empty list means no cable is plugged in.
     """
-    by_id = sorted(glob.glob("/dev/serial/by-id/*"))
-    mac = sorted(p for pat in _MAC_GLOBS for p in glob.glob(pat))
+    by_id = _not_gps(sorted(glob.glob("/dev/serial/by-id/*")))
+    mac = _not_gps(sorted(p for pat in _MAC_GLOBS for p in glob.glob(pat)))
     groups = [
         [p for p in by_id if any(h in p.lower() for h in _KKL_HINTS)], by_id,
         [p for p in mac if any(h in p.lower() for h in _KKL_HINTS)], mac,
@@ -63,7 +72,7 @@ def list_serial_ports() -> "list[str]":
         from serial.tools import list_ports  # type: ignore[import-not-found]
 
         groups.append(sorted(p.device for p in list_ports.comports()
-                             if getattr(p, "vid", None) is not None))
+                             if getattr(p, "vid", None) not in (None, _UBLOX_VID)))
     except Exception:  # noqa: BLE001 — no pyserial, or enumeration failed: globs suffice
         pass
     out: "list[str]" = []

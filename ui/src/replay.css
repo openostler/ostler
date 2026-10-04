@@ -1,0 +1,128 @@
+/* Logs tab: session browser + map replay (specs/2026-10-05-session-logbook-design.md).
+   Uses the styles.css tokens. Chart series = dataviz reference categorical slots 1-3, validated
+   with validate_palette.js against --surface in both modes (light aqua < 3:1 → every lane is
+   direct-labelled). Replay values never use the live/stale Readout styling. */
+
+.logs, .replay {
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+  --chart-grid: var(--line); --chart-cursor: var(--text-1); --chart-select: rgba(31, 111, 224, 0.16);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logs, :root:not([data-theme="light"]) .replay {
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-select: rgba(79, 140, 232, 0.22);
+  }
+}
+:root[data-theme="dark"] .logs, :root[data-theme="dark"] .replay {
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-select: rgba(79, 140, 232, 0.22);
+}
+
+.replay { gap: 12px; }
+.rchip {
+  min-height: 36px; min-width: 36px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--border-emph); border-radius: 10px; background: var(--bg-surface);
+  color: var(--fg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.rchip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.rchip:disabled { opacity: 0.5; cursor: not-allowed; }
+.replay-chip-demo, .replay-chip-live {
+  display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 9999px; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--border-emph); color: var(--fg2); vertical-align: middle;
+}
+.replay-chip-live { border-color: var(--accent); color: var(--accent); }
+
+/* ---- session browser ---- */
+.replay-sessions { gap: 16px; }
+.replay-day h3 { margin: 0 0 6px; }
+.replay-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.replay-row {
+  width: 100%; text-align: left; display: flex; flex-direction: column; gap: 4px; padding: 12px 16px;
+  border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card); color: var(--fg);
+  font: inherit; cursor: pointer;
+}
+.replay-row-main, .replay-row-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.replay-row-time { font-size: 16px; font-variant-numeric: tabular-nums; }
+.replay-rec {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; color: var(--fg); font: inherit;
+  border-color: var(--accent); cursor: pointer;
+}
+.replay-rec-dot { width: 10px; height: 10px; border-radius: 9999px; background: var(--accent); animation: blink 1.2s infinite; }
+.replay-rec .small { margin-left: auto; }
+
+/* ---- replay header + actions ---- */
+.replay-head { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.replay-title { flex: 1; min-width: 140px; }
+.replay-title h2 { font-size: 18px; line-height: 24px; }
+.replay-actions { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; position: relative; }
+.replay-menu { position: relative; }
+.replay-menu > summary { list-style: none; }
+.replay-menu > summary::-webkit-details-marker { display: none; }
+.replay-menu-body {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; min-width: 160px;
+  display: flex; flex-direction: column; gap: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+.replay-lanes .replay-menu-body { left: 0; right: auto; }
+.replay-lanes { align-self: flex-start; }
+.replay-confirm { flex-basis: 100%; }
+.replay-delete { color: var(--ic-red); border-color: var(--bd-red); }
+
+/* ---- map ---- */
+.card.replay-mapcard { padding: 0; overflow: hidden; }
+.replay-map { position: relative; height: clamp(220px, 42vh, 420px); background: #eef0f2; }
+.replay-map-gl { width: 100%; height: 100%; }
+.replay-map-note {
+  position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+  background: rgba(255, 255, 255, 0.9); color: #444c55;
+}
+.replay-map-empty { display: grid; place-items: center; height: 100%; color: #444c55; }
+.replay-svg { width: 100%; height: 100%; display: block; }
+/* white arrow, dark outline: distinct from every step of the blue trace ramp */
+.replay-svg-cursor path, .replay-arrow path { fill: #ffffff; stroke: #101317; stroke-width: 2; stroke-linejoin: round; }
+.replay-arrow { width: 26px; height: 26px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35)); }
+.replay-arrow.no-heading svg { transform: scale(0.8); }
+.replay-legend { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; padding: 10px 16px 12px; }
+.replay-legend-pick { display: flex; flex-direction: column; gap: 4px; }
+.replay-legend-pick .input { min-width: 140px; }
+.replay-legend-key { flex: 1; min-width: 160px; }
+.replay-legend-bar { height: 10px; border-radius: 4px; }
+.replay-legend-ends { display: flex; justify-content: space-between; margin-top: 3px; color: var(--fg2); font-variant-numeric: tabular-nums; }
+
+/* ---- readouts (replay styling: neutral, no live/stale cue) ---- */
+.replay-readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.replay-readout {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-emph); background: var(--bg-card);
+}
+.replay-readout-label { color: var(--fg2); }
+.replay-readout-value b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.replay-readout-value .u { color: var(--fg2); font-size: 12px; }
+
+/* ---- chart ---- */
+.replay-chart { padding: 10px 12px; }
+.replay-chart-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.replay-chart-tools { margin-left: auto; display: flex; gap: 6px; }
+.replay-chart-plot { position: relative; }
+.replay-canvas { position: absolute; left: 0; top: 0; width: 100%; display: block; }
+.replay-canvas-over { touch-action: pan-y; cursor: crosshair; }
+.replay-lane-label {
+  position: absolute; left: 4px; display: flex; align-items: center; gap: 5px; pointer-events: none;
+  color: var(--fg); line-height: 18px;
+}
+.replay-swatch { width: 10px; height: 3px; border-radius: 2px; }
+.replay-chart-axis { display: flex; justify-content: space-between; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* ---- transport: pinned to the bottom of the Logs screen, just above the tab bar ---- */
+.replay-transport {
+  position: sticky; bottom: -16px; z-index: 4; margin: 0 -16px -16px; padding: 8px 16px 10px;
+  background: var(--bg-surface); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;
+}
+.replay-scrub { display: flex; align-items: center; gap: 8px; }
+.replay-range { flex: 1; min-width: 0; accent-color: var(--accent); height: 28px; }
+.replay-clock { font-variant-numeric: tabular-nums; }
+.replay-buttons { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.replay-play { min-width: 48px; }
+.replay-now { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 64px; text-align: center; }
+.replay-speeds { display: flex; gap: 4px; margin-left: auto; }
+.replay-speeds .rchip { padding: 0 8px; }
+@media (max-width: 400px) {
+  .replay-speeds { margin-left: 0; }
+}

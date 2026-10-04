@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CommandReply } from "../api/schemas";
+import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ItemCard } from "../components/ItemCard";
 import { PlaceholderReadout } from "../components/PlaceholderReadout";
@@ -24,6 +25,7 @@ export function ModuleSettings() {
   return (
     <>
       <ScreenHead title="Settings" />
+      <ConnectionNotice />
       {experimental && page ? <CoverageBar coverage={page.coverage} label="Settings coverage" /> : null}
       {!catalog ? <div className="empty">Loading…</div> : !groups.length ? (
         <div className="empty"><div className="pretty">{experimental ? "Nothing catalogued here yet." : STABLE_EMPTY}</div></div>
