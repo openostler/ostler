@@ -73,3 +73,18 @@ def test_decode_real_sniff_fault_block():
     assert len(named) == 32  # the whole block → 32 named faults
     # undefined bits are not dropped silently
     assert any(f.startswith("byte") for f in faults)
+
+
+def test_unknown_bit_takes_its_bytes_current_or_logged_tag():
+    # On the car 2026-10-04: byte 25 is a Current byte, 21 its Logged twin; bits 3/5 unnamed.
+    # Untagged, the UI filed byte25.bit5 under Logged. Byte 17 (no named bits) stays untagged.
+    block = bytearray(35)
+    block[21] = 0x28
+    block[25] = 0x20
+    block[17] = 0x01
+    raw = decode_faults(bytes(block))
+    assert "byte25.bit5" in raw  # the shared decoder stays tag-free (ESP32 JSON parity)
+    out = faults_mod.tag_unknown(raw)
+    assert {"byte21.bit3 (Logged)", "byte21.bit5 (Logged)", "byte25.bit5 (Current)",
+            "byte17.bit0"} <= set(out)
+    assert faults_mod.tag_unknown(out) == out  # idempotent

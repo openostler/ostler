@@ -151,7 +151,7 @@ def _match(raw, module, meanings, by_name) -> "FaultMeaning | None":
     if raw.startswith("byte") and "." in raw:  # td5 generic: byte<off>.bit<n> → "off.bit"
         try:
             off = int(raw[4:raw.index(".bit")])
-            bit = int(raw[raw.index(".bit") + 4:])
+            bit = int(raw[raw.index(".bit") + 4:].split(" ", 1)[0])  # drop a " (Current)" tag
             return meanings.get(f"{off}.{bit}")
         except ValueError:
             return None

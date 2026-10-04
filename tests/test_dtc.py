@@ -129,3 +129,9 @@ def test_td5_candidate_bit_and_unknowns_stay_generic():
     block[15] |= 0x80   # 15.7 seen on the car, no public name → stays generic
     out = decode_faults(bytes(block))
     assert "injector trim data corrupted (Logged)" in out and "byte15.bit7" in out
+
+
+def test_enrich_resolves_a_tagged_generic_td5_bit():
+    # The decoder tags unknown bits with their byte's group: "byte18.bit1 (Logged)".
+    [row] = dtc.enrich("td5", ["byte18.bit1 (Logged)"])
+    assert row["key"] == "18.1"
