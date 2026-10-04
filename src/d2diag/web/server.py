@@ -165,7 +165,11 @@ def _fields_list(module: str) -> "dict":
 
     store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
     fields = []
+    seen: "set[str]" = set()
     for s in load_signals(store_mod):
+        if s.name in seen:  # a reply-length variant of a field already listed
+            continue
+        seen.add(s.name)
         limits = list(s.limits) if s.limits else None
         fields.append({
             "name": s.name, "unit": s.unit, "c": s.confidence, "limits": limits,

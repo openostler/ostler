@@ -180,7 +180,10 @@ UNITS = {name: sig.unit for name, sig in BY_NAME.items()}
 
 def _conf_map(module: str) -> "dict[str, str]":
     """{signal name → confidence} from the signal store (proven/candidate)."""
-    return {s.name: s.confidence for s in load_signals(module)}
+    out: "dict[str, str]" = {}
+    for s in load_signals(module):
+        out.setdefault(s.name, s.confidence)  # first record of a length-variant name wins
+    return out
 
 
 def _conf_of(module: str, name: str, conf: "dict[str, str]") -> str:
