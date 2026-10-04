@@ -52,6 +52,9 @@ _SPEC = [
     ("coolant_sensor_v", 0x1A, 2, "u16", 0.001, 0.0, "V"),
     ("intake_sensor_v", 0x1A, 6, "u16", 0.001, 0.0, "V"),
     ("fuel_sensor_v", 0x1A, 14, "u16", 0.001, 0.0, "V"),
+    # brake switches, 21 1E bits — proven on the car 2026-10-03 (brake_main active-low)
+    ("brake_switch_2", 0x1E, 0, "bit", 1.0, 0.0, ""),
+    ("brake_main", 0x1E, 1, "bit", 1.0, 0.0, ""),
 ]
 
 _SPEC_LIMITS = {

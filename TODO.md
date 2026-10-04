@@ -111,3 +111,10 @@ Discipline: borrow SignalK's ideas, don't rebuild it; each node must earn its pl
 - **Measure what you claim to measure.** Several hypotheses fell because the measured
   value contained something else (the echo in the burst, the burst read in `to_frame_ms`,
   `sleep` overshoot in P4).
+
+- **Checksum leaks into returned data (seen 2026-10-04).** `read_block` / `read_local_identifier`
+  return the trailing frame checksum as a data byte (Td5 `21 1E` -> `00 82 05`, airbag `21 02` ->
+  `... 65`). Harmless for stored offsets so far, but automap must strip it by hand and a decoder
+  reading the last byte would read the checksum.
+- **Dashboard hides unknown fault bits.** `Td5DataSource` drops `byteN.bitN` faults, so a clear can
+  wipe undecoded faults the user never saw (happened 2026-10-03). Show them, flagged as unknown.
