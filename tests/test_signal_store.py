@@ -25,6 +25,7 @@ _SPEC = [
     ("accel_way2", 0x1B, 2, "u16", 0.001, 0.0, "V"),
     ("accel_way3", 0x1B, 4, "u16", 0.001, 0.0, "V"),
     ("accel_supply", 0x1B, 8, "u16", 0.001, 0.0, "V"),  # long 21 1B form (2026-10-04)
+    ("accel_pedal_pct", 0x1B, 6, "u16", 0.01, 0.0, "%"),  # T-31 2026-10-04
     ("manifold_press", 0x1C, 0, "u16", 0.0001, 0.0, "bar"),
     ("maf_sensor", 0x1C, 4, "u16", 0.1, 0.0, "kg/hr"),
     ("maf_sensor_v", 0x1C, 6, "u16", 0.001, 0.0, "V"),
@@ -70,6 +71,7 @@ _SPEC_LIMITS = {
     "maf": (0, 700),              # kg/hr; u16@4, WOT peak ~667 (candidate scale)
     "maf_sensor": (0, 700),       # kg/hr; measured MAF 1C@4 (live since 2026-10-04)
     "maf_sensor_v": (0, 5),       # V; MAF signal 1C@6 (candidate)
+    "accel_pedal_pct": (0, 100),  # % pedal (T-31)
     "injection_qty": (0, 90),     # mg/stroke (candidate)
     "egr_modulator": (0, 100),        # % duty (candidate, 1D@15)
     "wastegate_modulator": (0, 100),  # % duty (candidate, 1D@17); 1D@16 is a dead/reserved byte
