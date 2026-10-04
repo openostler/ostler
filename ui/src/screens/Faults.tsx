@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { command } from "../api/client";
 import type { FaultScanEntry } from "../api/schemas";
+import { useAction } from "../api/useAction";
 import { confirmAction } from "../components/confirm";
+import { CoverageBar } from "../components/CoverageBar";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatusGate } from "../components/StatusGate";
 import { moduleName } from "../layout";
+import { pageOf } from "../lib/catalog";
 import { parseFault, type ParsedFault } from "../lib/format";
 import { useApp } from "../state/app";
 
@@ -99,7 +102,10 @@ function FaultScan() {
 }
 
 export function Faults() {
-  const { snap, module, refresh, toast } = useApp();
+  const { snap, module, refresh, toast, catalog, experimental } = useApp();
+  const run = useAction();
+  const page = pageOf(catalog, "faults");
+  const coverage = experimental && page ? <CoverageBar coverage={page.coverage} label="Faults coverage" /> : null;
   const faults = snap?.faults ?? [];
   const parsed = faults.map(parseFault);
   const current = parsed.filter((f) => f.current);
@@ -116,12 +122,7 @@ export function Faults() {
     if (!confirmAction(`Clear ${faults.length} fault code(s) from ${moduleName(module)}?`,
       "Writes to the ECU and cannot be undone. Ignition on, engine off.")) return;
     toast("clearing…");
-    try {
-      const r = await command("clear_faults");
-      toast(r.ok ? r.message ?? "clear sent — re-reading…" : r.error ?? "clear failed", !r.ok);
-    } catch (e) {
-      toast((e as Error).message, true);
-    }
+    await run("clear_faults");
     window.setTimeout(refresh, 1500);
   };
   const writeFile = () => {
@@ -142,10 +143,11 @@ export function Faults() {
       <button className="iconbtn" onClick={refresh}><span className="d" />Read</button>
     </ScreenHead>
   );
-  if (snap?.status !== "connected") return <>{head}<StatusGate /><FaultScan /></>;
+  if (snap?.status !== "connected") return <>{head}{coverage}<StatusGate /><FaultScan /></>;
   return (
     <>
       {head}
+      {coverage}
       <FaultGroup items={current} label="Current" kind="current" note="present now" />
       <FaultGroup items={logged} label="Logged" kind="logged" note="stored history — not necessarily present now" />
       {!parsed.length ? (

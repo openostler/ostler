@@ -4,24 +4,15 @@ import { confirmAction } from "./confirm";
 import { RadioOpt } from "./RadioOpt";
 import { Sheet } from "./Sheet";
 
-export function Settings({ onClose }: { onClose: () => void }) {
+/** ⚙ Preferences (per device): trust mode, sharing, display, units, admin link, power.
+ * Mock/live and the serial port live in the ConnectionSheet. */
+export function Preferences({ onClose }: { onClose: () => void }) {
   const { prefs, setPrefs, snap, community, reloadCommunity, toast, admin } = useApp();
   const share = community ? !!community.consent : prefs.share === true;
-  const mode = snap?.mode ?? "mock";
-  const modes = snap?.modes ?? [];
 
   const setShare = (v: boolean) => {
     setPrefs({ share: v });
     api.setConsent(v).then(reloadCommunity, () => toast("could not save the sharing choice", true));
-  };
-  const setMode = async (v: string) => {
-    onClose();
-    try {
-      const r = await command("set_mode", { mode: v });
-      toast(r.ok ? r.message ?? `mode: ${v}` : r.error ?? "could not switch", !r.ok);
-    } catch (e) {
-      toast(String((e as Error).message), true);
-    }
   };
   const shutdown = async () => {
     if (!confirmAction("Shut down the Pi now?", "The dashboard goes offline. Wait for the green LED to stop before cutting power.")) return;
@@ -34,25 +25,16 @@ export function Settings({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Sheet title="Settings" onClose={onClose}>
+    <Sheet title="Preferences" onClose={onClose}>
       <section role="radiogroup" aria-label="Trust">
         <div className="kicker" style={{ marginBottom: 8 }}>Trust</div>
         <div className="stack">
-          <RadioOpt name="Trusted" desc="Only routines proven on the car. Unverified stays hidden."
+          <RadioOpt name="Stable" desc="Only what is verified on a car. Everything in progress stays hidden."
             on={prefs.trust === "trusted"} onSelect={() => setPrefs({ trust: "trusted" })} />
-          <RadioOpt name="Experimental" desc="Exposes partial modules and unverified tests. They can misbehave."
+          <RadioOpt name="Experimental" desc="Shows every item with its status and coverage, and enables candidate tests. They can misbehave."
             on={prefs.trust === "experimental"} onSelect={() => setPrefs({ trust: "experimental" })} />
         </div>
       </section>
-      {modes.length >= 2 && !snap?.public ? (
-        <section>
-          <div className="kicker" style={{ marginBottom: 8 }}>Data source</div>
-          <div className="btn-row">
-            <button className={`btn ${mode === "mock" ? "accent" : ""}`} aria-pressed={mode === "mock"} onClick={() => setMode("mock")}>Mock</button>
-            <button className={`btn ${mode === "live" ? "accent" : ""}`} aria-pressed={mode === "live"} onClick={() => setMode("live")}>Live vehicle</button>
-          </div>
-        </section>
-      ) : null}
       <section>
         <div className="kicker" style={{ marginBottom: 8 }}>Data sharing</div>
         <div className="row card">

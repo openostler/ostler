@@ -1,6 +1,7 @@
-"""Tests for the module maps (Map tab) and the coverage calculation."""
+"""Tests for the module maps (Map tab) and the coverage calculation (legacy shape)."""
 from __future__ import annotations
 
+from d2diag import catalog
 from d2diag.menus import MENUS
 from d2diag.web.server import DiagServer
 from d2diag.web.sources import MockDataSource, MockSlabsDataSource
@@ -11,7 +12,12 @@ def test_all_modules_have_populated_maps():
         menu = MENUS[name]
         assert menu, f"{name} has an empty map"
         for group in menu:
-            assert group["items"], f"{name}/{group['cat']} is missing items"
+            # a Utilities parent (e.g. BCU key programming) may hold only sub-groups
+            has_children = any(g.get("parent") == group["id"] for g in menu)
+            assert group["items"] or has_children, f"{name}/{group['cat']} is missing items"
+            for item in group["items"]:
+                assert {"id", "name"} <= set(item)
+        for group in catalog.legacy_menu(name):
             for item in group["items"]:
                 assert set(item) >= {"name", "status", "ref"}
                 assert item["status"] in {"ok", "maybe", "todo"}
@@ -25,7 +31,8 @@ def test_coverage_counts_match_maps():
     try:
         cov = srv.coverage()
         assert set(cov) == set(MENUS)
-        for name, menu in MENUS.items():
+        for name in MENUS:
+            menu = catalog.legacy_menu(name)
             tot = sum(len(g["items"]) for g in menu)
             ok = sum(1 for g in menu for i in g["items"] if i["status"] == "ok")
             mb = sum(1 for g in menu for i in g["items"] if i["status"] == "maybe")
@@ -36,8 +43,9 @@ def test_coverage_counts_match_maps():
 
 
 def test_airbag_has_no_output_actuators():
-    """SRS is pyrotechnic — the map must not list activatable outputs as todo/ok tests."""
+    """SRS is pyrotechnic — the map must not list activatable outputs as tests."""
     names = [i["name"].lower() for g in MENUS["airbag"] for i in g["items"]]
     # the only output row should be the confirmed 'no output page'
     assert any("no output" in n for n in names)
     assert not any("force on" in n or "activate" in n for n in names)
+    assert not any(i.get("actions") for g in MENUS["airbag"] for i in g["items"])

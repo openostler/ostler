@@ -1,8 +1,9 @@
 """HTTP + SSE server for the dashboard (stdlib, no external dependencies).
 
 A background thread polls the data source and updates ``latest``; ``/events``
-streams it via Server-Sent Events. ``/command`` is a hook for future write/clear
-commands (not implemented yet).
+streams it via Server-Sent Events. ``/command`` runs server commands and module actions;
+every module action passes the command gate (:func:`d2diag.commands.refusal`, ADR-0008)
+first. ``/catalog`` serves the per-module UI catalog (specs/2026-10-05-ui-overhaul-design.md).
 """
 from __future__ import annotations
 
@@ -18,8 +19,39 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from ..ports import list_serial_ports, resolve_serial_port
 from .docs import DocLibrary
 from .sources import DataSource
+
+# UI module id → store module, used when d2diag.catalog is not importable.
+_UI_TO_STORE = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}
+
+
+def _store_module_for(ui_id: "str | None") -> str:
+    """UI module id → signal-store/registry module (``motor`` → ``td5``)."""
+    ui_id = ui_id or ""
+    try:
+        from .. import catalog
+        return catalog.store_module_for(ui_id) or ui_id
+    except (ImportError, AttributeError, KeyError, ValueError):
+        return _UI_TO_STORE.get(ui_id, ui_id)
+
+
+def _catalog_response(module: "str | None") -> "tuple[dict, int]":
+    """``GET /catalog[?module=]`` → (body, HTTP code). Public: read-only metadata."""
+    from .. import catalog
+
+    if not module:
+        return {"modules": catalog.module_summary()}, 200
+    store = _store_module_for(module)
+    known = {m.get("store_module") for m in catalog.module_summary()}
+    if store not in known:
+        return {"ok": False, "error": f"unknown module: {module}"}, 404
+    try:
+        body = catalog.build_catalog(store)
+    except (KeyError, ValueError) as exc:
+        return {"ok": False, "error": f"unknown module: {module} ({exc})"}, 404
+    return {"module": module, **body}, 200
 
 _DASHBOARD = Path(__file__).with_name("dashboard.html")        # legacy v1 (reference only)
 _DASHBOARD_V2 = Path(__file__).with_name("dashboard_v2.html")  # legacy v2 (fallback + reference)
@@ -233,9 +265,8 @@ class _Handler(BaseHTTPRequestHandler):
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
             mod = (q.get("module", [None])[0]) or self.server._active
-            if mod in self.server._menus:
-                mp = self.server._menus[mod]
-            else:
+            mp = self.server.legacy_menu(_store_module_for(mod))
+            if mp is None:
                 mp = self.server.source.menu_map()
             self._json({
                 "module": mod, "map": mp,
@@ -265,6 +296,15 @@ class _Handler(BaseHTTPRequestHandler):
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
             self._json(_faults_list((q.get("module", ["motor"])[0]) or "motor"))
+        elif self.path.split("?")[0] == "/catalog":
+            # Public (also in public mode): read-only item metadata for the module pages.
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query)
+            try:
+                body, code = _catalog_response(q.get("module", [None])[0])
+            except ImportError:
+                body, code = {"ok": False, "error": "catalog not available"}, 503
+            self._json(body, code=code)
         elif self.path == "/community":
             c = self.server.community
             self._json(c.state() if c is not None else {"consent": None, "endpoint": None})
@@ -435,6 +475,29 @@ class _Handler(BaseHTTPRequestHandler):
 # touch the server's own state (CsvLogger object, fault_every attribute).
 _INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutdown"})
 
+# Server-level commands handled on the poll thread (they release/establish sessions or
+# switch sources). Not module commands: the registry gate does not apply to them.
+_SERVER_COMMANDS = frozenset({"select_module", "set_mode", "read_all_faults",
+                              "connect", "disconnect", "set_port"})
+# Generic per-source commands every module offers (not in the command registry).
+_GENERIC_SOURCE_COMMANDS = frozenset({"clear_faults", "read_block"})
+# Prefixes of module-command families: an action like these that is NOT registered for
+# the active module is refused as unknown instead of reaching a source.
+_MODULE_COMMAND_PREFIXES = ("output_", "injector_", "raise_", "lower_", "wheel_",
+                            "bleed_", "pump_")
+
+# Snapshot `conn` values (spec: Connection UX).
+CONN_STATES = ("disconnected", "connecting", "connected", "lost", "reconnecting", "error")
+_PORT_INFO_TTL = 2.0  # seconds between serial-port rescans for the snapshot
+
+
+def _looks_like_module_command(action: str) -> bool:
+    from .. import commands
+
+    if action.startswith(_MODULE_COMMAND_PREFIXES):
+        return True
+    return any(c.action == action for c in commands.REGISTRY.values())
+
 
 class ConnectAborted(Exception):
     """Establishment aborted because a command is waiting (e.g. module switch)."""
@@ -511,13 +574,17 @@ class DiagServer(ThreadingHTTPServer):
         self.poll_interval = poll_interval
         self.stream_interval = stream_interval
         self.logger = logger  # optional SnapshotLogger → logs every poll to file
-        self.latest: "dict" = {
+        # Connection state machine (snapshot `conn`): see _next_conn.
+        self._conn = "connecting"
+        self._ever_connected = False  # since the last (re)start: module/mode/port switch, connect
+        self._paused = False          # True after `disconnect` until `connect`/`set_port`
+        # A latched test that is on ({action,label,since,stop}), or None.
+        self._active_test: "dict | None" = None
+        self._port_cache: "tuple[float, dict] | None" = None
+        self.latest: "dict" = self._decorate({
             "status": "connecting", "source": self.source.name,
-            "module": self._active, "mode": self._mode, "modes": self._modes,
-            "signals": {}, "faults": [], "logging": {"recording": False},
-            "public": self._public, "fault_watch": self._fault_watch,
-            "allow_shutdown": self._allow_shutdown,
-        }
+            "signals": {}, "faults": [],
+        }, module=self._active)
         self._apply_fault_watch()  # set the fault-polling cadence on all sources
         for s in self._all_sources():  # live feedback during blocking establishment
             s.on_progress = self._connect_progress
@@ -614,12 +681,15 @@ class DiagServer(ThreadingHTTPServer):
             ctx = self._engine_note() if phase.startswith("sending init") else ""
             self._conn_log(f"establish: {phase}{ctx}")
             self._last_phase_logged = phase
+        self._conn = self._next_conn("connecting")
         self.latest = {
             **self.latest,
             "status": "connecting",
             "module": self._active,
             "source": self.source.name,
             "connect_phase": phase,
+            "conn": self._conn,
+            "ts": time.time(),
         }
 
     def _all_sources(self) -> list:
@@ -684,6 +754,9 @@ class DiagServer(ThreadingHTTPServer):
                 return self._run_inline(action, cmd.get("params") or {})
             except Exception as exc:  # noqa: BLE001
                 return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        why = self.refusal(action, cmd.get("params") or {})
+        if why:
+            return {"ok": False, "error": why}
         holder = {"result": None, "event": threading.Event()}
         self._commands.put((cmd, holder))
         if holder["event"].wait(timeout):
@@ -701,10 +774,204 @@ class DiagServer(ThreadingHTTPServer):
     def modules(self) -> "list[str]":
         return list(self._modules)
 
+    def legacy_menu(self, store_module: str) -> "list | None":
+        """The admin Map view of a module (items with ok/maybe/todo), derived by
+        :func:`d2diag.catalog.legacy_menu`; the raw menu while the catalog is missing.
+        None = no menu known for this module."""
+        if store_module not in self._menus:
+            return None
+        try:
+            from .. import catalog
+        except ImportError:
+            return self._menus.get(store_module)
+        try:
+            return catalog.legacy_menu(store_module)
+        except (KeyError, ValueError):
+            return self._menus.get(store_module)
+
+    # ---- command gate (ADR-0008) -------------------------------------- #
+    def store_module(self) -> str:
+        """The registry/store module of the active source (``td5`` for the motor tab)."""
+        return getattr(self.source, "store_module", None) or _store_module_for(self._active)
+
+    def refusal(self, action: str, params: "dict | None" = None) -> "str | None":
+        """Why ``action`` must not run now (None = allowed).
+
+        Server commands and the generic ``clear_faults``/``read_block`` are not module
+        commands. Everything else that is registered goes through
+        :func:`d2diag.commands.refusal`; an unregistered action that looks like a module
+        command (``output_*``, ``injector_*``, a SLABS actuator name …) is refused as unknown.
+        While disconnected, no source command runs.
+        """
+        from .. import commands
+
+        if action in _SERVER_COMMANDS or action in _INLINE_COMMANDS:
+            return None
+        store = self.store_module()
+        if action not in _GENERIC_SOURCE_COMMANDS:
+            if commands.get(store, action) is None:
+                if _looks_like_module_command(action):
+                    return f"unknown action for {store}: {action}"
+            else:
+                why = commands.refusal(store, action, trust=str((params or {}).get("trust", "")),
+                                       public=self._public)
+                if why:
+                    return why
+        if self._paused:
+            return "disconnected — connect first"
+        return None
+
+    # ---- connection state ---------------------------------------------- #
+    def _next_conn(self, status: "str | None") -> str:
+        """Next snapshot `conn` from the current one and a poll/establish ``status``.
+
+        * ``connected`` → connected (and remembered: this target has worked).
+        * a failed poll: ``error`` if this target never connected (no cable, no answer),
+          ``lost`` on the first failure after ``connected``, then ``reconnecting`` while
+          the poll loop keeps retrying.
+        * establishing (``connecting``): ``reconnecting`` after a loss, stays ``error`` while
+          retrying a target that never answered, else ``connecting``.
+        """
+        if self._paused:
+            return "disconnected"
+        if status == "connected":
+            self._ever_connected = True
+            return "connected"
+        if status == "connecting":
+            if self._ever_connected:
+                return "reconnecting"
+            return "error" if self._conn == "error" else "connecting"
+        if not self._ever_connected:
+            return "error"
+        return "lost" if self._conn == "connected" else "reconnecting"
+
+    def _restart_conn(self) -> None:
+        """A new target (module, mode or port) or a manual connect: start over."""
+        self._ever_connected = False
+        self._conn = "disconnected" if self._paused else "connecting"
+
+    def _port_info(self) -> "dict":
+        """``{spec, resolved, candidates}`` for the snapshot; rescanned every couple of s."""
+        now = time.monotonic()
+        if self._port_cache is not None and now - self._port_cache[0] < _PORT_INFO_TTL:
+            return self._port_cache[1]
+        spec = self._scan_port or "auto"
+        try:
+            resolved: "str | None" = resolve_serial_port(spec)
+        except (FileNotFoundError, OSError):
+            resolved = None
+        try:
+            candidates = list_serial_ports()
+        except Exception:  # noqa: BLE001 — never fell the poll loop over a port listing
+            candidates = []
+        info = {"spec": spec, "resolved": resolved, "candidates": candidates}
+        self._port_cache = (now, info)
+        return info
+
+    def _decorate(self, snap: "dict", module: "str | None" = None) -> "dict":
+        """Add the server-level snapshot fields (module/mode/…, conn, ts, battery_v, port,
+        active_test) to a source snapshot."""
+        snap["module"] = module or self._active  # which tab the data belongs to
+        snap["mode"] = self._mode  # active data-source mode (mock/live)
+        snap["modes"] = self._modes  # selectable modes (for the UI toggle)
+        snap["logging"] = self._csv.status() if self._csv is not None else {"recording": False}
+        snap["public"] = self._public  # the UI is simplified in public mode
+        snap["fault_watch"] = self._fault_watch  # fast fault-polling on/off
+        snap["allow_shutdown"] = self._allow_shutdown  # Settings "Shut down Pi" button
+        snap["conn"] = self._conn
+        snap["ts"] = time.time()
+        bat = (snap.get("signals") or {}).get("battery")
+        v = bat.get("v") if isinstance(bat, dict) else None
+        snap["battery_v"] = (float(v) if isinstance(v, (int, float)) and not isinstance(v, bool)
+                             else None)
+        snap["port"] = self._port_info()
+        snap["active_test"] = dict(self._active_test) if self._active_test else None
+        return snap
+
+    # ---- latched tests ------------------------------------------------- #
+    def _note_command_result(self, action: str, result: "dict") -> None:
+        """Set/clear ``active_test`` after a module action ran on the active source."""
+        from .. import commands
+
+        if not result.get("ok"):
+            return
+        if self._active_test and action == self._active_test["stop"]:
+            self._active_test = None
+        else:
+            c = commands.get(self.store_module(), action)
+            if c is not None and c.stop:
+                self._active_test = {"action": c.action, "label": c.label,
+                                     "since": time.time(), "stop": c.stop}
+        self.latest = {**self.latest,
+                       "active_test": dict(self._active_test) if self._active_test else None}
+
+    def _stop_active_test(self) -> None:
+        """Send the stop action of a latched test before the session goes away (module or
+        mode switch, disconnect, port change). Best effort; the banner clears either way."""
+        test = self._active_test
+        if not test:
+            return
+        try:
+            self.source.command(test["stop"], {})
+        except Exception:  # noqa: BLE001
+            pass
+        self._active_test = None
+
+    def _release_source(self) -> None:
+        """Stop any latched test, then release the session (``disconnect`` → ``release()``)."""
+        self._stop_active_test()
+        try:
+            self.source.disconnect()
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _disconnect(self) -> "dict":
+        """Release the session and pause polling until ``connect``."""
+        self._release_source()
+        self._paused = True
+        self._restart_conn()
+        self.latest = self._decorate({"status": "disconnected", "source": self.source.name,
+                                      "signals": {}, "faults": [], "connect_phase": None,
+                                      "error": ""})
+        return {"ok": True, "message": "disconnected", "conn": self._conn}
+
+    def _connect(self) -> "dict":
+        """Resume polling; the next poll establishes the session."""
+        self._paused = False
+        self._restart_conn()
+        self.latest = self._decorate({**self.latest, "status": "connecting",
+                                      "source": self.source.name, "connect_phase": None,
+                                      "error": ""})
+        return {"ok": True, "message": "connecting", "conn": self._conn}
+
+    def _set_port(self, port: "str | None") -> "dict":
+        """Use ``port`` (``auto`` or a device path) for every live source: release the
+        session and reconnect with it."""
+        spec = port.strip() if isinstance(port, str) else ""
+        if not spec:
+            return {"ok": False, "error": "port required ('auto' or a device path)"}
+        if spec.startswith("/dev/tty."):
+            return {"ok": False, "error": "macOS: use the /dev/cu.* port, never /dev/tty.*"}
+        self._release_source()
+        for src in self._all_sources():
+            try:
+                src.set_port(spec)
+            except Exception:  # noqa: BLE001
+                pass
+        self._scan_port = spec
+        self._port_cache = None
+        self._paused = False
+        self._restart_conn()
+        self.latest = self._decorate({**self.latest, "status": "connecting", "signals": {},
+                                      "faults": [], "connect_phase": None, "error": ""})
+        return {"ok": True, "message": f"port: {spec}", "port": spec}
+
     def coverage(self) -> "dict":
-        """Coverage per module: {module: {ok, maybe, total}} — drives the Map picker."""
+        """Coverage per module: {module: {ok, maybe, total}} — drives the Map picker.
+        Counted from :meth:`legacy_menu` (derived statuses, ADR-0008)."""
         cov: "dict[str, dict]" = {}
-        for name, menu in self._menus.items():
+        for name in self._menus:
+            menu = self.legacy_menu(name) or []
             ok = mb = tot = 0
             for group in menu:
                 for item in group.get("items", []):
@@ -723,16 +990,15 @@ class DiagServer(ThreadingHTTPServer):
         if name not in self._modules:
             return {"ok": False, "error": f"unknown module: {name}"}
         if name != self._active:
-            try:
-                self.source.disconnect()  # release the K-line port/session
-            except Exception:  # noqa: BLE001
-                pass
+            self._release_source()  # stop a latched test, then release the K-line session
             self._active = name
             self.source = self._modules[name]
+            self._restart_conn()
             # preserve public/fault_watch/logging/modes — otherwise the UI loses public mode
-            self.latest = {**self.latest, "status": "connecting", "source": self.source.name,
-                           "module": name, "signals": {}, "faults": [], "connect_phase": None,
-                           "error": ""}
+            self.latest = self._decorate({**self.latest, "status": "connecting",
+                                          "source": self.source.name, "signals": {},
+                                          "faults": [], "connect_phase": None, "error": ""},
+                                         module=name)
         return {"ok": True, "message": f"module: {name}", "module": name}
 
     def _set_mode(self, mode: "str | None") -> "dict":
@@ -741,27 +1007,22 @@ class DiagServer(ThreadingHTTPServer):
         if not self._variants or mode not in self._modes:
             return {"ok": False, "error": f"unknown mode: {mode}"}
         if mode != self._mode:
-            try:
-                self.source.disconnect()  # release any K-line session before switching
-            except Exception:  # noqa: BLE001
-                pass
+            self._release_source()  # stop a latched test, release the session, then switch
             self._mode = mode
             self._modules = {n: (v.get(mode) or next(iter(v.values())))
                              for n, v in self._variants.items()}
             self.source = self._modules[self._active]
-            self.latest = {**self.latest, "status": "connecting", "source": self.source.name,
-                           "module": self._active, "mode": mode, "signals": {}, "faults": [],
-                           "connect_phase": None, "error": ""}
+            self._restart_conn()
+            self.latest = self._decorate({**self.latest, "status": "connecting",
+                                          "source": self.source.name, "signals": {},
+                                          "faults": [], "connect_phase": None, "error": ""})
         return {"ok": True, "message": f"mode: {mode}", "mode": mode}
 
     def _read_all_faults(self) -> "dict":
         """Basic mode: read fault codes from all modules sequentially. Releases the
         active session first (frees the K-line port), scans, then lets normal
         polling reconnect. Runs on the poller thread → serialized with the bus."""
-        try:
-            self.source.disconnect()  # free the port before the sequential scan
-        except Exception:  # noqa: BLE001
-            pass
+        self._release_source()  # stop a latched test, free the port before the scan
         from ..faultscan import read_all
         try:
             report = read_all(self._mode or "mock", self._scan_port)
@@ -808,10 +1069,24 @@ class DiagServer(ThreadingHTTPServer):
                     holder["result"] = self._set_mode(params.get("mode") or cmd.get("mode"))
                 elif action == "read_all_faults":
                     holder["result"] = self._read_all_faults()
+                elif action == "disconnect":
+                    holder["result"] = self._disconnect()
+                elif action == "connect":
+                    holder["result"] = self._connect()
+                elif action == "set_port":
+                    params = cmd.get("params") or {}
+                    holder["result"] = self._set_port(params.get("port") or cmd.get("port"))
                 elif action in _INLINE_COMMANDS:
                     holder["result"] = self._run_inline(action, cmd.get("params") or {})
                 else:
-                    holder["result"] = self.source.command(action, cmd.get("params"))
+                    # re-check on the poll thread: the module may have switched since queuing
+                    why = self.refusal(action, cmd.get("params") or {})
+                    if why:
+                        holder["result"] = {"ok": False, "error": why}
+                    else:
+                        res = self.source.command(action, cmd.get("params"))
+                        self._note_command_result(action, res)
+                        holder["result"] = res
             except Exception as exc:  # noqa: BLE001
                 holder["result"] = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
             holder["event"].set()
@@ -845,27 +1120,40 @@ class DiagServer(ThreadingHTTPServer):
         self._last_conn_error = err
         self._last_phase_logged = None  # new status → the next establishment phase is logged again
 
+    def poll_once(self) -> "dict":
+        """One poll of the active source → decorated snapshot in ``latest``, stepping the
+        connection state machine. While disconnected, the source is not touched."""
+        active = self._active
+        if self._paused:
+            self._conn = "disconnected"
+            snap = self._decorate({"status": "disconnected", "source": self.source.name,
+                                   "signals": {}, "faults": [], "connect_phase": None}, active)
+            self.latest = snap
+            return snap
+        try:
+            snap = self.source.poll()
+        except Exception as exc:  # noqa: BLE001
+            snap = {
+                "status": "error", "source": self.source.name,
+                "signals": {}, "faults": [], "error": f"{type(exc).__name__}: {exc}",
+            }
+        # An establishment aborted for a queued command (module switch …) says nothing
+        # about the link: keep the current conn and let the command restart it.
+        if "ConnectAborted" not in (snap.get("error") or ""):
+            self._conn = self._next_conn(snap.get("status"))
+        self._decorate(snap, active)
+        self._remember_engine(snap)      # save engine context for the SLABS log
+        self._log_conn_transition(snap)  # log connected/error transitions
+        self.latest = snap
+        return snap
+
     def _poll_loop(self) -> None:
         while not self._stop.is_set():
             self._drain_commands()  # writes first, serialized with poll
-            active = self._active
-            try:
-                snap = self.source.poll()
-            except Exception as exc:  # noqa: BLE001
-                snap = {
-                    "status": "error", "source": self.source.name,
-                    "signals": {}, "faults": [], "error": f"{type(exc).__name__}: {exc}",
-                }
-            snap["module"] = active  # which tab the data belongs to
-            snap["mode"] = self._mode  # active data-source mode (mock/live)
-            snap["modes"] = self._modes  # selectable modes (for the UI toggle)
-            snap["logging"] = self._csv.status() if self._csv is not None else {"recording": False}
-            snap["public"] = self._public  # the UI is simplified in public mode
-            snap["fault_watch"] = self._fault_watch  # fast fault-polling on/off
-            snap["allow_shutdown"] = self._allow_shutdown  # Settings "Shut down Pi" button
-            self._remember_engine(snap)      # save engine context for the SLABS log
-            self._log_conn_transition(snap)  # log connected/error transitions
-            self.latest = snap
+            self.poll_once()
+            if self._paused:
+                self._stop.wait(self.poll_interval)
+                continue
             if self.logger is not None:
                 try:
                     self.logger.log(self.latest)

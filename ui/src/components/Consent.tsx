@@ -23,13 +23,13 @@ export function Consent() {
         </div>
         <div className="muted pretty">
           This tool writes to real ECUs over the K-line. Two choices decide what it may do. Both
-          change later in Settings.
+          change later in Preferences (⚙).
         </div>
         <section role="radiogroup" aria-label="Trust">
           <div className="kicker" style={{ marginBottom: 8 }}>Trust</div>
           <div className="stack">
-            <RadioOpt name="Trusted" desc="Only routines proven on the car." on={trust === "trusted"} onSelect={() => setTrust("trusted")} />
-            <RadioOpt name="Experimental" desc="Exposes partial modules and unverified tests." on={trust === "experimental"} onSelect={() => setTrust("experimental")} />
+            <RadioOpt name="Stable" desc="Only what is verified on a car." on={trust === "trusted"} onSelect={() => setTrust("trusted")} />
+            <RadioOpt name="Experimental" desc="Shows work in progress and enables unverified tests." on={trust === "experimental"} onSelect={() => setTrust("experimental")} />
           </div>
         </section>
         <section role="radiogroup" aria-label="Data sharing">
@@ -46,7 +46,7 @@ export function Consent() {
       <div style={{ padding: 16, borderTop: "1px solid var(--border)", background: "var(--bg-surface)", display: "flex", flexDirection: "column", gap: 8 }}>
         <button className={`btn ${ready ? "accent" : ""}`} disabled={!ready} onClick={accept}>Continue</button>
         <div className="small dis" style={{ textAlign: "center" }}>
-          {ready ? `Trust ${trust} · sharing ${share ? "on" : "off"} · changeable in Settings.` : "Answer data sharing to continue."}
+          {ready ? `${trust === "trusted" ? "Stable" : "Experimental"} · sharing ${share ? "on" : "off"} · changeable in Preferences (⚙).` : "Answer data sharing to continue."}
         </div>
       </div>
     </div>

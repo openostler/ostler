@@ -48,6 +48,15 @@ describe("admin mode", () => {
     expect(JSON.parse(localStorage.getItem(key!)!)).toEqual([{ text: "762", raws: { "09": "02 fa" } }]);
   });
 
+  it("shows the derived catalog status on the Map, not the legacy ok/maybe/todo", async () => {
+    installFakeServer({ snapshot: connected });
+    render(<App path="/admin" />);
+    // /map says "maybe"; /catalog derives verified from the signal store
+    const row = (await screen.findByText("12. Air Flow (kg/hr)")).closest(".ro") as HTMLElement;
+    expect(await within(row).findByText("Verified")).toBeInTheDocument();
+    expect(row).toHaveClass("edge-green");
+  });
+
   it("captures a directly read LID with a label", async () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: connected, commands: { read_block: { ok: true, raws: { "23": "2710" } } } });

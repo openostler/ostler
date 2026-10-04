@@ -17,6 +17,55 @@ import time
 from ..ports import resolve_serial_port  # re-exported: core port resolver (moved out of web)
 from ..signals import load_signals
 from ..td5.identifiers import BY_NAME, signal_status
+from ..td5.td5 import INJECTOR_CYLINDERS, OUTPUT_NAMES
+
+# Td5 module actions the sources dispatch (live and mock). Must match the td5 entries of
+# ``d2diag.commands.REGISTRY`` that are not planned — tests/test_commands.py checks both ways.
+TD5_ACTIONS: "frozenset[str]" = frozenset(
+    [f"output_{n}" for n in OUTPUT_NAMES]
+    + [f"injector_{n}" for n in INJECTOR_CYLINDERS]
+    + ["security_status", "read_identity"])
+
+
+def _security_message(status: "int | None") -> str:
+    """Plain-language immobiliser status. Only ``03`` is proven (RDL 016)."""
+    if status is None:
+        return "No status byte in the reply"
+    if status == 0x03:
+        return "Not immobilised (status 03)"
+    return f"Immobiliser status 0x{status:02X} — meaning not confirmed"
+
+
+class _RawLogPaused:
+    """Suspend a LoggingTransport's raw TX/RX file for one read (the VIN block).
+
+    The raw bus log is for mapping; the ``1A 87`` reply carries the VIN and must never be
+    written anywhere. Walks ``session._kwp._k._t`` and, if it is a logging wrapper, swaps
+    its file handle out for the duration and writes a redaction marker instead."""
+
+    def __init__(self, session) -> None:
+        kwp = getattr(session, "_kwp", None)
+        kline = getattr(kwp, "_k", None)
+        self._t = getattr(kline, "_t", None)
+        self._fh = None
+        self._echo = False
+
+    def __enter__(self):
+        t = self._t
+        if t is not None and hasattr(t, "_fh") and hasattr(t, "_log"):
+            self._fh, self._echo = t._fh, getattr(t, "_echo", False)
+            if self._fh is not None:
+                try:
+                    self._fh.write("# 1A identity read — raw bytes redacted (VIN)\n")
+                except Exception:  # noqa: BLE001
+                    pass
+            t._fh, t._echo = None, False
+        return self
+
+    def __exit__(self, *exc) -> None:
+        t = self._t
+        if t is not None and hasattr(t, "_fh") and hasattr(t, "_log"):
+            t._fh, t._echo = self._fh, self._echo
 
 
 def _raw_log_path(module: str, raw_log_dir: "str | None") -> "str | None":
@@ -242,6 +291,9 @@ class DataSource(abc.ABC):
     """
 
     name: str = "source"
+    # The signal-store / command-registry module this source talks to (td5, slabs, …);
+    # the server uses it for the command gate (d2diag.commands.refusal).
+    store_module: "str | None" = None
     on_progress = None  # callback(str): live status during blocking establishment (base: none)
     # sleep hook for the establishment's wait times (the SLABS quiet period is 28 s). The server
     # sets an interruptible variant so a module switch doesn't have to wait it out.
@@ -258,6 +310,10 @@ class DataSource(abc.ABC):
 
     def disconnect(self) -> None:
         """Release any K-line session/port (on module switch). Base: nothing to do."""
+
+    def set_port(self, spec: str) -> None:
+        """Use this serial port spec (``auto`` or a device path) from the next connect.
+        Base: no port (mock/info sources)."""
 
     def menu_map(self) -> "list":
         """Reference/coverage map (reference tool menu + our status). Base: empty."""
@@ -277,6 +333,7 @@ class MockDataSource(DataSource):
     """Simulated car for UI dev: reasonable, moving values + one active fault."""
 
     name = "mock"
+    store_module = "td5"
 
     _ACTIVE_FAULT = "inlet air temp. circuit (Current)"
     _LOGGED_FAULT = "air flow circuit (Logged Low)"
@@ -335,11 +392,30 @@ class MockDataSource(DataSource):
             self._faults = []
             self._cleared_ticks = 4  # empty for ~4 polls, then the active fault returns
             return {"ok": True, "message": "Fault codes cleared (mock)"}
+        if action in TD5_ACTIONS:
+            return _mock_td5_action(action)
         return {"ok": False, "error": f"unknown command: {action}"}
 
     def menu_map(self) -> "list":
         from ..td5.menu import TD5_MENU
         return TD5_MENU
+
+
+def _mock_td5_action(action: str) -> "dict":
+    """Demo replies for the Td5 module actions (never touches a bus)."""
+    if action == "security_status":
+        return {"ok": True, "message": _security_message(0x03) + " (mock)",
+                "raw": "c0 03", "status": 0x03}
+    if action == "read_identity":
+        # Synthetic values only: no real VIN exists in mock mode either.
+        return {"ok": True, "message": "ECU identity (mock)", "identity": {
+            "part_no": "NNN000130", "vin_masked": "*************0000",
+            "build_date": "2002-11-14", "software_no": "NNW500140",
+            "id_9b": "01", "id_9c": "01",
+            "candidate_fields": ["vin_masked", "build_date", "software_no"]}}
+    if action.startswith("injector_"):
+        return {"ok": True, "message": f"Injector {action[len('injector_'):]} pulse (mock)"}
+    return {"ok": True, "message": f"Output test: {action[len('output_'):]} (mock)"}
 
 
 class InfoDataSource(DataSource):
@@ -357,6 +433,7 @@ class InfoDataSource(DataSource):
                  live_message: "str | None" = None,
                  signal_gen: "Callable[[int], dict] | None" = None) -> None:
         self.name = module
+        self.store_module = module
         self._mock = mock
         self._seed = list(faults or [])
         self._faults = list(self._seed)
@@ -464,6 +541,7 @@ class Td5DataSource(DataSource):
     """
 
     name = "td5"
+    store_module = "td5"
 
     def __init__(self, port: str, read_faults: bool = True,
                  raw_log_dir: "str | None" = None,
@@ -504,6 +582,9 @@ class Td5DataSource(DataSource):
             pass
         self._td5 = None
         self._fuel.pause()  # zero the fuel computer's clock so the reconnect gap isn't counted
+
+    def set_port(self, spec: str) -> None:
+        self._port = spec
 
     def menu_map(self) -> "list":
         from ..td5.menu import TD5_MENU
@@ -568,10 +649,19 @@ class Td5DataSource(DataSource):
                 return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
         # Output tests (IOControl) + injector pulse. Proven from sniff 2026-08-08 but
         # NEVER run from our code against the car → experimental until verified.
-        # Hardware writes: the UI gates them behind a confirmation.
+        # The server gates every one through d2diag.commands.refusal() before it gets here.
+        if action not in TD5_ACTIONS:
+            return {"ok": False, "error": f"unknown command: {action}"}
         if self._td5 is None:
             return {"ok": False, "error": "not connected to the ECU"}
+        if action == "read_identity":
+            return self._read_identity()
         try:
+            if action == "security_status":
+                raw = bytes(self._td5.security_status_raw())
+                status = raw[1] if len(raw) >= 2 else None
+                return {"ok": True, "message": _security_message(status),
+                        "raw": raw.hex(" "), "status": status}
             if action.startswith("output_"):
                 name = action[len("output_"):]
                 self._td5.output_test(name)
@@ -583,6 +673,19 @@ class Td5DataSource(DataSource):
         except Exception as exc:  # noqa: BLE001
             return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
         return {"ok": False, "error": f"unknown command: {action}"}
+
+    def _read_identity(self) -> "dict":
+        """``1A 87/9A/9B/9C`` → {ok, identity}. The VIN is masked in the Td5 layer, and the
+        raw bus log is paused for the read so the VIN block never reaches a file. Errors
+        carry the exception type only (a message could quote raw reply bytes)."""
+        try:
+            with _RawLogPaused(self._td5):
+                ident = self._td5.read_identity()
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": f"identity read failed ({type(exc).__name__})"}
+        if not any(ident.get(k) for k in ("part_no", "vin_masked")):
+            return {"ok": False, "error": "no identity block answered", "identity": ident}
+        return {"ok": True, "message": "ECU identity", "identity": ident}
 
 
 # --- SLABS (Wabco ABS/SLS) ------------------------------------------------ #
@@ -667,6 +770,7 @@ class MockSlabsDataSource(DataSource):
     """Simulated SLABS for UI dev: moving heights + the baseline's two logged faults."""
 
     name = "slabs"
+    store_module = "slabs"
 
     def __init__(self) -> None:
         self._t = 0.0
@@ -730,6 +834,7 @@ class SlabsDataSource(DataSource):
     """
 
     name = "slabs"
+    store_module = "slabs"
 
     def __init__(self, port: str, read_faults: bool = True,
                  raw_log_dir: "str | None" = None) -> None:
@@ -783,6 +888,9 @@ class SlabsDataSource(DataSource):
         except Exception:  # noqa: BLE001
             pass
         self._slabs = None
+
+    def set_port(self, spec: str) -> None:
+        self._port = spec
 
     def poll(self) -> "dict":
         try:

@@ -1,8 +1,10 @@
-"""Module menu registry — drives the dashboard's Map/coverage tab.
+"""Module menu registry: every NanoCom function per module (ADR-0008).
 
-Each module has a menu list (reference tool menu + our status), the same format as
-:data:`d2diag.slabs.menu.SLABS_MENU`. Empty lists = not yet documented (roadmap).
-Update the respective ``*/menu.py`` while sniffing → the Map tab mirrors it.
+Each module's ``*/menu.py`` lists groups (``id``, ``page``, ``cat``, optional ``parent`` and
+``nanocom``) of items that link a signal-store field (``sig``), registry actions
+(``actions``) or, when unlinked, carry a hand ``status``. :mod:`d2diag.catalog` derives
+each item's status and safety from those links and serves ``/catalog``; the admin Map tab
+keeps its legacy shape through :func:`d2diag.catalog.legacy_menu`.
 """
 from .ace.menu import ACE_MENU
 from .airbag.menu import AIRBAG_MENU

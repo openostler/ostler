@@ -1,5 +1,8 @@
 import { act } from "@testing-library/react";
 import { vi } from "vitest";
+import catalogBcu from "../api/fixtures/catalog-bcu.json";
+import catalogModulesFx from "../api/fixtures/catalog-modules.json";
+import catalogMotor from "../api/fixtures/catalog-motor.json";
 import communityFx from "../api/fixtures/community.json";
 import docsFx from "../api/fixtures/docs.json";
 import fieldsMotor from "../api/fixtures/fields-motor.json";
@@ -37,11 +40,22 @@ export function installFakeServer(opts: {
   commands?: Record<string, unknown>;
   docHtml?: string;
   automap?: unknown;
+  /** /catalog?module=… replies by UI module (default: the contract fixtures). */
+  catalogs?: Record<string, unknown>;
+  /** /catalog (no module) reply. */
+  catalogModules?: unknown;
 } = {}) {
   const calls: Call[] = [];
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
   const commands: Record<string, unknown> = { ...opts.commands };
+  const catalogs: Record<string, unknown> = { motor: catalogMotor, bcu: catalogBcu, ...opts.catalogs };
+  const emptyCatalog = (module: string) => ({
+    module, store_module: module, coverage: { verified: 0, candidate: 0, sniff: 0, untranscribed: 0, total: 0 },
+    pages: ["faults", "inputs", "outputs", "settings", "utilities"].map((id) => ({
+      id, title: id, coverage: { verified: 0, candidate: 0, sniff: 0, untranscribed: 0, total: 0 }, groups: [],
+    })),
+  });
 
   vi.stubGlobal("EventSource", FakeEventSource);
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
@@ -56,6 +70,11 @@ export function installFakeServer(opts: {
       case "/community": return json(communityFx);
       case "/community/consent": return json({ ok: true, consent: !!body?.consent });
       case "/map": return json(mapFx);
+      case "/catalog": {
+        const m = url.searchParams.get("module");
+        if (!m) return json(opts.catalogModules ?? catalogModulesFx);
+        return json(catalogs[m] ?? emptyCatalog(m));
+      }
       case "/sniff": return json(sniffFx);
       case "/docs": return json(docsFx);
       case "/doc": return new Response(opts.docHtml ?? "<h1>Notes</h1><p>Body.</p>", { headers: { "Content-Type": "text/html" } });
@@ -69,7 +88,8 @@ export function installFakeServer(opts: {
       default: return new Response("not found", { status: 404 });
     }
   }));
-  return { calls, commandsSent: () => calls.filter((c) => c.path === "/command").map((c) => (c.body as { action: string }).action) };
+  const sent = () => calls.filter((c) => c.path === "/command").map((c) => c.body as { action: string; params?: Record<string, unknown> });
+  return { calls, commandsSent: () => sent().map((b) => b.action), commandBodies: sent };
 }
 
 /** Skip the first-start consent screen. */

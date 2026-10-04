@@ -12,6 +12,10 @@ The Python package: comms core → interpretation → web consumer. The map is i
 - `sniff/` — capture parsing, module detection (`modules.py`), the protocol library,
   automap, calibration, the NanoCom capture importer (`importer.py`) and the fault-screen
   importer (`fault_import.py`, T-30).
+- `commands.py` — the command registry: every module action's status, safety class and confirm
+  level (ADR-0008); the server's `/command` gate (`refusal()`).
+- `catalog.py` — per-module pages (faults/inputs/outputs/settings/utilities) built from the
+  menus, with each item's status derived from the signal store or the registry (`/catalog`).
 - `faultscan.py`, `modscan.py`, `menus.py`, `community/` — cross-module helpers
   (`modscan.py` = the read-only address scan) and opt-in upload.
 - `web/` — consumer: stdlib HTTP + SSE server, data sources. `web/static/` is the built

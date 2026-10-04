@@ -918,3 +918,244 @@ def test_faults_endpoint_serves_new_module_stores():
                          ("airbag", "008")):
         d = _faults_list(ui_name)
         assert key in {r["key"] for r in d["faults"]}, ui_name
+
+
+# ---- UI overhaul (specs/2026-10-05-ui-overhaul-design.md) ------------------ #
+def _post(base, action, **params):
+    import urllib.error
+    req = urllib.request.Request(
+        base + "/command", data=json.dumps({"action": action, "params": params}).encode(),
+        headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        resp = urllib.request.urlopen(req, timeout=5)
+        return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read())
+
+
+def _get(base, path):
+    import urllib.error
+    try:
+        resp = urllib.request.urlopen(base + path, timeout=5)
+        return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read() or b"{}")
+
+
+def test_catalog_is_public_even_with_admin_password_and_public_mode():
+    from d2diag.web.sources import MockSlabsDataSource
+    srv = DiagServer({"motor": MockDataSource(), "slabs": MockSlabsDataSource()},
+                     host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
+                     public=True, admin_password="hemligt")
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        code, body = _get(base, "/catalog")
+        assert code == 200
+        mods = {m["module"]: m for m in body["modules"]}
+        assert mods["motor"]["store_module"] == "td5" and "coverage" in mods["motor"]
+        code, body = _get(base, "/catalog?module=motor")
+        assert code == 200 and body["module"] == "motor" and body["store_module"] == "td5"
+        assert [p["id"] for p in body["pages"]] == ["faults", "inputs", "outputs",
+                                                     "settings", "utilities"]
+        code, body = _get(base, "/catalog?module=slabs")
+        assert code == 200 and body["module"] == "slabs"
+        code, body = _get(base, "/catalog?module=nope")
+        assert code == 404 and body["ok"] is False
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def test_map_and_coverage_keep_their_legacy_shape():
+    from d2diag.menus import MENUS
+    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, menus=MENUS,
+                     poll_interval=0.05, stream_interval=0.05)
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        code, body = _get(base, "/map?module=td5")
+        assert code == 200 and set(body) == {"module", "map", "modules", "coverage"}
+        assert body["module"] == "td5" and body["modules"] == list(MENUS)
+        for group in body["map"]:
+            assert "cat" in group
+            for item in group["items"]:
+                assert item["status"] in {"ok", "maybe", "todo"}
+        for name, cov in body["coverage"].items():
+            assert set(cov) == {"ok", "maybe", "total"}
+            assert cov["ok"] + cov["maybe"] <= cov["total"]
+        # motor (UI id) resolves to the td5 map
+        code, motor = _get(base, "/map?module=motor")
+        assert motor["map"] == body["map"]
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def test_coverage_counts_the_derived_legacy_statuses():
+    from d2diag import catalog
+    from d2diag.menus import MENUS
+    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, menus=MENUS)
+    try:
+        cov = srv.coverage()
+        for name in MENUS:
+            items = [i for g in catalog.legacy_menu(name) for i in g["items"]]
+            assert cov[name] == {"ok": sum(i["status"] == "ok" for i in items),
+                                 "maybe": sum(i["status"] == "maybe" for i in items),
+                                 "total": len(items)}
+    finally:
+        srv.server_close()
+
+
+def test_command_gate_refusals_over_http():
+    from d2diag.web.sources import MockSlabsDataSource
+    srv = DiagServer({"motor": MockDataSource(), "slabs": MockSlabsDataSource()},
+                     host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
+                     active="motor")
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        # experimental without trust → 400; with trust → runs (mock)
+        code, body = _post(base, "output_fuel_pump")
+        assert code == 400 and "experimental" in body["error"].lower()
+        code, body = _post(base, "output_fuel_pump", trust="experimental")
+        assert code == 200 and body["ok"]
+        # gated → always refused, trust or not
+        code, body = _post(base, "learn_security_code", trust="experimental")
+        assert code == 400 and "gated" in body["error"]
+        # unknown output_* / another module's actuator → refused as unknown
+        code, body = _post(base, "output_frobnicate", trust="experimental")
+        assert code == 400 and "unknown" in body["error"]
+        code, body = _post(base, "buzzer")
+        assert code == 400 and "unknown" in body["error"]
+        # server-level and generic commands are not registry commands
+        assert _post(base, "clear_faults")[0] == 200
+        assert _post(base, "select_module", module="slabs")[0] == 200
+        assert _post(base, "buzzer")[0] == 200          # verified SLABS actuator
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def test_public_server_refuses_actuators_but_not_reads():
+    from d2diag.web.sources import MockSlabsDataSource
+    srv = DiagServer({"slabs": MockSlabsDataSource(), "motor": MockDataSource()},
+                     host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
+                     active="slabs", public=True)
+    base = f"http://127.0.0.1:{_serve(srv)}"
+    try:
+        code, body = _post(base, "buzzer")
+        assert code == 400 and "public" in body["error"]
+        code, body = _post(base, "bleed_power_on")
+        assert code == 400 and "public" in body["error"]
+        assert _post(base, "select_module", module="motor")[0] == 200
+        code, body = _post(base, "output_mil_lamp", trust="experimental")
+        assert code == 400 and "public" in body["error"]
+        code, body = _post(base, "read_identity", trust="experimental")   # read-only: allowed
+        assert code == 200 and body["identity"]["vin_masked"].endswith("0000")
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+# ---- Td5 security status + identity against the fake ECU ------------------- #
+_FAKE_VIN_HEAD = b"SALLTGM88XA"    # synthetic, not a real car
+_IDENT_87 = (_FAKE_VIN_HEAD + b"\x12\x34\x56" + b"\x00" + b"\x14\x11\x20\x02" + b"\x00"
+             + b"NNW" + b"\x50\x01\x40" + bytes([0, 0, 0, 0, 0x41, 0x90, 0, 0x58, 0, 0x40])
+             + bytes(4) + b"\xff" * 6)
+
+
+def _td5_ecu_responses():
+    from d2diag.kline import encode
+
+    def _f(d):
+        return encode(d, addressed=False)
+
+    return {
+        _f(b"\x31\xc0"): _f(b"\x71\xc0"),
+        _f(b"\x33\xc0"): _f(b"\x73\xc0\x03"),
+        _f(b"\x1a\x87"): _f(b"\x5a\x87" + _IDENT_87),
+        _f(b"\x1a\x9a"): _f(b"\x5a\x9a" + b"NNN" + b"\x00\x01\x30"),
+        _f(b"\x1a\x9b"): _f(b"\x5a\x9b\x01"),
+        _f(b"\x1a\x9c"): _f(b"\x5a\x9c\x01"),
+    }
+
+
+def _td5_source_on_fake(transport):
+    from d2diag.kline import KLine
+    from d2diag.kwp2000 import KWP2000
+    from d2diag.td5 import Td5
+    from d2diag.web.sources import Td5DataSource
+
+    src = Td5DataSource(port="x", read_faults=False)
+    src._td5 = Td5(KWP2000(KLine(transport)))
+    src._td5.open()
+    return src
+
+
+def test_identity_block_layout_is_decoded():
+    assert len(_IDENT_87) == 46
+    from d2diag.td5.td5 import decode_identity
+    ident = decode_identity({0x87: _IDENT_87, 0x9A: b"NNN\x00\x01\x30",
+                             0x9B: b"\x01", 0x9C: b"\x01"})
+    assert ident["part_no"] == "NNN000130"
+    assert ident["vin_masked"] == "*************3456"
+    assert ident["build_date"] == "2002-11-14"
+    assert ident["software_no"] == "NNW500140"
+    assert ident["id_9b"] == "01" and ident["id_9c"] == "01"
+    assert "SALL" not in json.dumps(ident)
+
+
+def test_security_status_reads_31_then_33_c0():
+    from tests.fakes import FakeKLineEcu
+    ecu = FakeKLineEcu(_td5_ecu_responses())
+    src = _td5_source_on_fake(ecu)
+    r = src.command("security_status", {})
+    assert r["ok"] and r["status"] == 3 and "Not immobilised" in r["message"]
+    assert r["raw"] == "c0 03"
+    sent = [f[1:-1] for f in ecu.sent]     # strip length + checksum
+    assert sent.index(b"\x31\xc0") < sent.index(b"\x33\xc0")
+
+
+def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
+    import logging
+
+    from d2diag.transport import LoggingTransport
+    from tests.fakes import FakeKLineEcu
+
+    caplog.set_level(logging.DEBUG)
+    raw_log = tmp_path / "raw-td5.log"
+    src = _td5_source_on_fake(LoggingTransport(FakeKLineEcu(_td5_ecu_responses()),
+                                               logfile=str(raw_log), echo=True))
+    srv = DiagServer(src, host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    try:
+        srv._mode = "live"
+        holder = {"result": None, "event": threading.Event()}
+        srv._commands.put(({"action": "read_identity",
+                            "params": {"trust": "experimental"}}, holder))
+        srv._drain_commands()
+        r = holder["result"]
+        srv._log_conn_transition({"module": "td5", "status": "connected", "signals": {}})
+    finally:
+        srv.server_close()
+    assert r["ok"]
+    ident = r["identity"]
+    assert ident["part_no"] == "NNN000130" and ident["vin_masked"] == "*************3456"
+    vin_hex = " ".join(f"{b:02X}" for b in _FAKE_VIN_HEAD)
+    out = capsys.readouterr()
+    for text in (json.dumps(r), caplog.text, out.out, out.err, raw_log.read_text(),
+                 *(p.read_text() for p in tmp_path.glob("*.log"))):
+        assert "SALLTGM88XA" not in text and vin_hex not in text
+    assert "redacted" in raw_log.read_text()              # the gap in the raw log is marked
+    # the raw log still records the rest of the session
+    src.command("security_status", {})
+    assert "33 C0" in raw_log.read_text()
+
+
+def test_read_identity_not_connected_and_mock():
+    from d2diag.web.sources import Td5DataSource
+    assert not Td5DataSource(port="x").command("read_identity", {})["ok"]
+    r = MockDataSource().command("read_identity", {})
+    assert r["ok"] and set(r["identity"]) >= {"part_no", "vin_masked"}
+    assert MockDataSource().command("security_status", {})["status"] == 3

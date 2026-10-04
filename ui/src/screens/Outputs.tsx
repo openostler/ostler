@@ -1,64 +1,43 @@
-import { command } from "../api/client";
-import { ComingCard } from "../components/Coming";
-import { confirmAction } from "../components/confirm";
+import { CoverageBar } from "../components/CoverageBar";
+import { ItemCard } from "../components/ItemCard";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatusGate } from "../components/StatusGate";
-import { OUTPUTS, type OutputButton, type OutputDef } from "../layout";
+import { pageOf, STABLE_EMPTY, visibleGroups } from "../lib/catalog";
 import { useApp } from "../state/app";
 
+/** Simple on/off/pulse actuator tests (catalog page "outputs"). Multi-step and latched
+ * procedures live under Utilities. Every action confirms per the command registry. */
 export function Outputs() {
-  const { snap, module, experimental, toast } = useApp();
-  const list = OUTPUTS[module];
+  const { snap, catalog, experimental } = useApp();
+  const page = pageOf(catalog, "outputs");
+  const groups = visibleGroups(page, experimental);
+  const connected = snap?.status === "connected";
 
-  const run = async (o: OutputDef, b: OutputButton) => {
-    const what = `${o.name} — ${b.label}`;
-    if (b.warn && !confirmAction(what, "Drives real hardware. Vehicle stationary, handbrake on, nobody under the car.")) return;
-    toast(`${what}…`);
-    try {
-      const r = await command(b.action);
-      toast(r.ok ? r.message ?? "ok" : `Error: ${r.error ?? "unknown"}`, !r.ok);
-    } catch (e) {
-      toast((e as Error).message, true);
-    }
-  };
-
-  const head = <ScreenHead title="Outputs" />;
-  if (!list) return <>{head}<ComingCard title="Actuator tests" items={[{ name: "No output tests mapped for this module yet", tag: "—" }]} /></>;
-  if (snap?.status !== "connected") return <>{head}<StatusGate /></>;
-  const groups = [...new Set(list.map((o) => o.group))];
   return (
     <>
-      {head}
-      <div className="card warn">
-        <div style={{ fontWeight: 700 }}>Actuator tests drive real hardware</div>
-        <div className="small pretty" style={{ marginTop: 2 }}>
-          Vehicle stationary, handbrake on, nobody under the car. Each test pulses a moment — it does not latch on.
-        </div>
-      </div>
-      {groups.map((g) => (
-        <section key={g}>
-          <div className="kicker group-title">{g}</div>
-          <div className="grid">
-            {list.filter((o) => o.group === g).map((o) => {
-              const locked = o.tag === "experimental" && !experimental;
-              return (
-                <div className="card" key={o.name} style={locked ? { opacity: 0.55 } : undefined}>
-                  <div className="row" style={{ gap: 8 }}>
-                    <span style={{ fontWeight: 700 }}>{o.name}</span>
-                    <span className={`mtag ${o.tag}`}>{o.tag}</span>
-                  </div>
-                  <div className="row" style={{ gap: 8, marginTop: 8 }}>
-                    <span className="grow small dis mono">{o.cmd}</span>
-                    {locked ? <span className="small dis">enable Experimental</span> : o.buttons.map((b) => (
-                      <button key={b.action} className={`btn ${b.warn ? "danger" : ""}`} onClick={() => run(o, b)}>{b.label}</button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+      <ScreenHead title="Outputs" />
+      {experimental && page ? <CoverageBar coverage={page.coverage} label="Outputs coverage" /> : null}
+      {!connected ? <StatusGate /> : null}
+      {!catalog ? <div className="empty">Loading…</div> : !groups.length ? (
+        <div className="empty"><div className="pretty">{experimental ? "No output tests catalogued for this module yet." : STABLE_EMPTY}</div></div>
+      ) : (
+        <>
+          <div className="card warn">
+            <div style={{ fontWeight: 700 }}>Actuator tests drive real hardware</div>
+            <div className="small pretty" style={{ marginTop: 2 }}>
+              Vehicle stationary, handbrake on, nobody under the car. Each test pulses a moment — it does not latch on.
+            </div>
           </div>
-        </section>
-      ))}
+          {groups.map(({ group, items }) => (
+            <section key={group.id}>
+              <div className="kicker group-title">{group.title}</div>
+              <div className="grid">
+                {items.map((i) => <ItemCard key={i.id} item={i} disabled={!connected} />)}
+              </div>
+            </section>
+          ))}
+        </>
+      )}
     </>
   );
 }

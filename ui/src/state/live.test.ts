@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Snapshot } from "../api/schemas";
-import { HISTORY_LEN, initialLive, reduceSnapshot } from "./live";
+import { HISTORY_LEN, initialLive, reduceSnapshot, staleAge } from "./live";
 
 const snap = (over: Partial<Snapshot>): Snapshot => ({ status: "connected", signals: {}, faults: [], ...over });
 
@@ -29,5 +29,23 @@ describe("reduceSnapshot", () => {
     s = reduceSnapshot(s, snap({ module: "slabs", signals: { height_left: { v: 120, u: "" } } }), 1);
     expect(s.module).toBe("slabs");
     expect(Object.keys(s.history)).toEqual(["height_left"]);
+  });
+});
+
+describe("staleness", () => {
+  it("records when each signal last updated, but not from a lost link", () => {
+    let s = reduceSnapshot(initialLive, snap({ signals: { rpm: { v: 800, u: "rpm" } } }), 1000);
+    expect(s.seen.rpm).toBe(1000);
+    s = reduceSnapshot(s, snap({ conn: "lost", signals: { rpm: { v: 800, u: "rpm" } } }), 9000);
+    expect(s.seen.rpm).toBe(1000);
+    s = reduceSnapshot(s, snap({ stale: true, signals: { rpm: { v: 800, u: "rpm" } } }), 9500);
+    expect(s.seen.rpm).toBe(1000);
+  });
+
+  it("is stale after 5 s or when the SSE link is down", () => {
+    expect(staleAge(undefined, 10_000, true)).toBeNull();
+    expect(staleAge(8_000, 10_000, true)).toBeNull();
+    expect(staleAge(4_000, 10_000, true)).toBe(6);
+    expect(staleAge(9_000, 10_000, false)).toBe(1);
   });
 });

@@ -41,3 +41,34 @@ def resolve_serial_port(spec: "str | None") -> str:
         if candidates:
             return candidates[0]
     raise FileNotFoundError("no USB serial device found (KKL not connected?)")
+
+
+def list_serial_ports() -> "list[str]":
+    """Every plausible KKL/OBD serial device, best candidates first (for a port picker).
+
+    Stdlib globs: ``/dev/serial/by-id/*`` (stable Linux links), the macOS ``/dev/cu.*``
+    call-out ports, then ``/dev/ttyUSB*`` and ``/dev/ttyACM*``. When pyserial is installed
+    its ``list_ports`` adds USB devices the globs miss (only ones with a USB VID, so the
+    dozens of legacy ``/dev/ttyS*`` never show). macOS ``/dev/tty.*`` is never offered
+    (it blocks on DCD). Never raises: an empty list means no cable is plugged in.
+    """
+    by_id = sorted(glob.glob("/dev/serial/by-id/*"))
+    mac = sorted(p for pat in _MAC_GLOBS for p in glob.glob(pat))
+    groups = [
+        [p for p in by_id if any(h in p.lower() for h in _KKL_HINTS)], by_id,
+        [p for p in mac if any(h in p.lower() for h in _KKL_HINTS)], mac,
+        sorted(glob.glob("/dev/ttyUSB*")), sorted(glob.glob("/dev/ttyACM*")),
+    ]
+    try:  # optional: pyserial is the one allowed runtime dependency, but not required here
+        from serial.tools import list_ports  # type: ignore[import-not-found]
+
+        groups.append(sorted(p.device for p in list_ports.comports()
+                             if getattr(p, "vid", None) is not None))
+    except Exception:  # noqa: BLE001 — no pyserial, or enumeration failed: globs suffice
+        pass
+    out: "list[str]" = []
+    for group in groups:
+        for p in group:
+            if p not in out and not p.startswith("/dev/tty."):
+                out.append(p)
+    return out

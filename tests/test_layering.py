@@ -15,7 +15,8 @@ _SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "d2diag"
 # Everything that is CORE (comms + interpretation). Excludes web/ (consumer) and
 # community/ (opt-in upload client — consumer side).
 _CORE = [
-    "transport", "kline", "kwp2000", "session.py", "ports.py", "signals", "menus.py",
+    "transport", "kline", "kwp2000", "session.py", "ports.py", "signals", "menus.py", "catalog.py",
+    "commands.py",
     "faultscan.py", "sniff", "td5", "slabs", "airbag", "bcu", "ace", "autobox",
 ]
 _FORBIDDEN = {"web", "apps"}
