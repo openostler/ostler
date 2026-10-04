@@ -137,10 +137,40 @@ class KWP2000:
             pos = raw.find(bytes([sid]))
         neg = raw.find(bytes([NEGATIVE_RESPONSE, service]))
         if pos >= 0 and (neg < 0 or pos <= neg):
-            return raw[pos:]
+            return KWP2000._trim_to_header(raw, pos)
         if neg >= 0:
-            return raw[neg:]
+            return KWP2000._trim_to_header(raw, neg)
         return b""
+
+    @staticmethod
+    def _trim_to_header(raw: bytes, pos: int) -> bytes:
+        """Cut the reply at ``pos`` to the length its frame header states.
+
+        Without this the trailing checksum (and any glitch after it) leaks into the
+        returned data. The header sits just before the SID in one of four layouts:
+        ``fmt`` / ``fmt len`` (unaddressed) or ``fmt tgt src`` / ``fmt tgt src len``
+        (addressed). A layout whose checksum verifies wins; otherwise the first whose
+        length fits the burst (a noisy cable can flip the checksum but rarely the
+        length). No plausible header → the old untrimmed behaviour.
+        """
+        fits: "list[int]" = []
+        for hdr, addressed, len_byte in ((1, False, False), (2, False, True),
+                                         (3, True, False), (4, True, True)):
+            start = pos - hdr
+            if start < 0:
+                continue
+            fmt = raw[start]
+            mode = fmt >> 6
+            if addressed != (mode in (0b10, 0b11)) or (not addressed and mode != 0b00):
+                continue
+            length = raw[pos - 1] if len_byte else fmt & 0x3F
+            if len_byte != ((fmt & 0x3F) == 0) or length == 0 or pos + length > len(raw):
+                continue
+            end = pos + length
+            if end < len(raw) and raw[end] == sum(raw[start:end]) & 0xFF:
+                return raw[pos:end]
+            fits.append(end)
+        return raw[pos:fits[0]] if fits else raw[pos:]
 
     def _resolve_pending(self, resp: bytes) -> bytes:
         pending = 0
