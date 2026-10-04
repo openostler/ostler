@@ -116,7 +116,11 @@ def test_slabs_car_anchors_resolve_to_proven_tool_meaning():
 def test_td5_candidate_bit_and_unknowns_stay_generic():
     from d2diag.td5.faults import FAULTS, decode_faults
     cand = [f"{f.offset}.{f.mask.bit_length() - 1}" for f in FAULTS if f.confidence != "proven"]
-    assert cand == ["20.7"] and dtc.meaning("td5", "20.7").confidence == "candidate"
+    assert sorted(cand) == ["11.6", "13.6", "20.7"]
+    assert all(dtc.meaning("td5", k).confidence == "candidate" for k in cand)
+    # 13.6 corrected from a NanoCom screen: the glow-plug LAMP, not a second "relay"
+    assert dtc.meaning("td5", "13.6").name == "glowplug lamp drive open load (Current)"
+    assert not dtc.meaning("td5", "13.6").pcode
     block = bytearray(35)
     block[20] |= 0x80   # 20.7 candidate → named
     block[15] |= 0x80   # 15.7 seen on the car, no public name → stays generic
