@@ -71,9 +71,9 @@ def test_running_injector_balance_40():
 # 4 voltage fields (foot of the pedal → way3 = 0 V). SNIFFED 2026-08-08.
 # --------------------------------------------------------------------------- #
 def test_accel_1b_four_voltage_ways():
-    # SHORT form (RDL016, 2026-08): way1 / way2 / way3 / supply at @0/@2/@4/@6.
-    # Since 2026-10-03 the ECU sends the LONG form (extra value at @4, supply at @8) and the
-    # store follows it (T-31), so the short frame no longer carries a supply at the mapped @8.
+    # SHORT form (RDL 016 — the original author's car, 2026-08): way1 / way2 / way3 / supply at @0/@2/@4/@6.
+    # D2-JW (this fork's car, NNN000130) sends the LONG form (track 3 @4, pedal % @6, supply @8)
+    # and the store follows it (T-31), so RDL 016's short frame has no supply at the mapped @8.
     v = decode_lid(0x1B, _d("02 86 11 1c 00 00 13 92"))
     assert round(v["accel_way1"], 3) == 0.646
     assert round(v["accel_way2"], 3) == 4.380
@@ -81,6 +81,6 @@ def test_accel_1b_four_voltage_ways():
 
 
 def test_accel_1b_long_form_supply_at_8():
-    # LONG form recorded on RDL016 2026-10-04 at idle: 02ac 10e3 1219 0000 1372.
+    # LONG form recorded on D2-JW 2026-10-04 at idle: 02ac 10e3 1219 0000 1372.
     v = decode_lid(0x1B, _d("02 ac 10 e3 12 19 00 00 13 72"))
     assert round(v["accel_supply"], 2) == 4.98  # the 5 V reference, not the 0 at @6

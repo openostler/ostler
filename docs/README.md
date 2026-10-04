@@ -7,7 +7,13 @@ from**. The goal is a single place where the community can compile — and corre
 what is actually known about these buses, module by module.
 
 This started as the diagnostics platform for a **Discovery 2 Td5** (reg. RDL 016),
-reverse-engineered from sniffed bus traffic and verified against the real car. It
+reverse-engineered from sniffed bus traffic and verified against the real car.
+
+> **Two cars — keep their evidence apart.** **RDL 016** is the original author's Discovery 2
+> Td5 (all car work July–September 2026). This fork adds **D2-JW**: the fork owner's 2003
+> model-year Discovery 2 Td5, automatic, Td5 ECU part `NNN000130`, worked on from 2026-10-03.
+> The ECUs differ — RDL 016 returns the short `21 1B` pedal reply, D2-JW the long (NNN) one — so
+> every car finding must name which car it came from. It
 is being written to extend to the **Rover V8** platforms (14CUX / GEMS / Thor) over
 time.
 
