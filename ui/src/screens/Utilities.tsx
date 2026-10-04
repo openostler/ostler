@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAction } from "../api/useAction";
+import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ProcedureSheet } from "../components/ProcedureSheet";
 import { ScreenHead } from "../components/ScreenHead";
@@ -97,6 +98,7 @@ export function Utilities() {
   return (
     <>
       <ScreenHead title="Utilities" />
+      <ConnectionNotice />
       {experimental && page ? <CoverageBar coverage={page.coverage} label="Utilities coverage" /> : null}
       {!catalog && !experimental ? <div className="empty">Loading…</div> : !tree.length && !experimental ? (
         <div className="empty"><div className="pretty">{STABLE_EMPTY}</div></div>

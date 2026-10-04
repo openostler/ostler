@@ -90,7 +90,6 @@ header {
   padding-top: max(8px, env(safe-area-inset-top)); min-height: 56px;
   background: var(--bg-surface); border-bottom: 1px solid var(--border);
 }
-.htitle { font-size: 12px; font-weight: 700; }
 .pill {
   display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 10px;
   border: 1px solid var(--border-emph); background: var(--bg-surface); font-size: 12px; font-weight: 700;
@@ -229,7 +228,7 @@ nav.tabs button {
   align-items: center; gap: 3px; padding: 6px 0;
 }
 nav.tabs button[aria-current="page"] { color: var(--fg); }
-nav.tabs.many button { min-width: 56px; }
+nav.tabs.many button { min-width: 48px; }
 nav.tabs .ti { font-size: 16px; line-height: 18px; }
 nav.tabs .ts { display: none; }
 nav.tabs .tl, nav.tabs .ts { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
@@ -441,22 +440,72 @@ nav.tabs button[aria-current="page"] .ti { color: var(--accent); }
 
 /* ---- UI overhaul (ADR-0008): header, connection, status, coverage ---------------- */
 header { gap: 8px; }
-.hmod { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-.modsel {
-  min-width: 0; max-width: 100%; height: 32px; padding: 0 28px 0 8px; margin-left: -8px; border: 1px solid transparent;
-  border-radius: 8px; background: transparent; color: var(--text-1); font: inherit; font-size: 14px; font-weight: 700;
-  text-overflow: ellipsis; cursor: pointer;
+/* admin: a small chip where the title used to be */
+.hadmin {
+  flex: 0 0 auto; height: 20px; padding: 0 6px; border-radius: 6px; display: inline-flex; align-items: center;
+  background: var(--sunken); color: var(--text-2); font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
 }
-.modsel:hover, .modsel:focus-visible { border-color: var(--line-strong); background: var(--surface); }
+/* module selector: one bordered control — muted "Module", the name (ellipsis), ▾. The
+   native <select> sits transparently on top, so the whole control is the tap target and
+   the platform picker opens. */
+.hmod { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1 1 auto; }
+.modctl {
+  position: relative; display: flex; align-items: center; gap: 6px; min-width: 0; flex: 0 1 auto;
+  height: 36px; padding: 0 8px 0 10px; border: 1px solid var(--line-strong); border-radius: 10px;
+  background: var(--surface); color: var(--text-1);
+}
+.modctl:hover, .modctl:focus-within { border-color: var(--text-3); }
+.modctl:has(.modsel:focus-visible) { outline: 2px solid var(--ic-blue); outline-offset: 2px; }
+.modctl-txt { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.modctl-k { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--text-3); }
+.modctl-v { min-width: 2ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
+.modctl-chev { flex: 0 0 auto; font-size: 11px; color: var(--text-2); }
+.modsel {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0;
+  opacity: 0; cursor: pointer; font: inherit; font-size: 16px; /* 16px: no iOS zoom on focus */
+}
+.modsel:focus-visible { outline: none; }
 .modsel option { color: var(--text-1); background: var(--surface); }
+/* Experimental only: verified share of the module — accent, not a status hue */
+.mappct {
+  flex: 0 0 auto; display: inline-block; height: 24px; line-height: 22px; padding: 0 8px; border-radius: 9999px;
+  border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 700; white-space: nowrap;
+}
 .hright { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .hbatt { font-size: 13px; font-weight: 700; color: var(--text-1); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hbatt .u { font-size: 11px; color: var(--text-2); margin-left: 1px; }
 .hbatt span[aria-hidden] { color: var(--text-3); margin-right: 2px; }
 button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 0 10px; }
 .pill-word { white-space: nowrap; }
-@media (max-width: 480px) { .hdr-clock { display: none; } }
+/* phones: no clock; "Module" stacks above the name, and the % pill keeps its word for
+   screen readers only — the module name gets the room */
+@media (max-width: 480px) {
+  .hdr-clock { display: none; }
+  .modctl { padding: 0 6px 0 8px; gap: 4px; }
+  .modctl-txt { flex-direction: column; align-items: flex-start; gap: 0; }
+  .modctl-k { font-size: 10px; line-height: 12px; }
+  .modctl-v { max-width: 100%; font-size: 13px; line-height: 16px; }
+  .mappct { padding: 0 6px; }
+  .mappct-w { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (max-width: 400px) {
+  header { gap: 6px; padding-left: 12px; padding-right: 12px; }
+  .hright { gap: 6px; }
+  button.pill { padding: 0 8px; gap: 6px; }
+}
 @media (max-width: 360px) { .hbatt span[aria-hidden] { display: none; } }
+
+/* Not live, on the module pages: a compact strip, never blocking the page */
+.connnotice {
+  display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 4px 4px 12px;
+  border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface);
+  font-size: 13px; font-weight: 600; color: var(--text-1);
+}
+.connnotice-btn {
+  min-height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent;
+  color: var(--accent); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.connnotice-btn:hover { background: var(--sunken); }
 
 .testbanner {
   display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: var(--warn-bg);

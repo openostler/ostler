@@ -18,6 +18,7 @@ _CORE = [
     "transport", "kline", "kwp2000", "session.py", "ports.py", "signals", "menus.py", "catalog.py",
     "commands.py",
     "faultscan.py", "sniff", "td5", "slabs", "airbag", "bcu", "ace", "autobox",
+    "gps", "logbook",  # ADR-0009: session logbook + GPS are core (stdlib + pyserial)
 ]
 _FORBIDDEN = {"web", "apps"}
 
@@ -56,3 +57,9 @@ def test_core_file_list_is_present():
     # Guard against the scan silently matching nothing (e.g. a path rename).
     files = _core_files()
     assert len(files) > 15
+
+
+def test_logbook_and_gps_are_scanned():
+    # ADR-0009: the new core packages must be part of the scan, not silently skipped.
+    names = {p.relative_to(_SRC).parts[0] for p in _core_files()}
+    assert {"gps", "logbook"} <= names

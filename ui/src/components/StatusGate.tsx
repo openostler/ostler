@@ -1,11 +1,15 @@
 import { moduleName } from "../layout";
+import { connOf, isNotLive } from "../lib/connection";
 import { useApp } from "../state/app";
 
-/** Shown instead of live content while not connected. Null when connected. */
-export function StatusGate() {
+/** Shown instead of live content while not connected. Null when connected.
+ * `withNotice`: the page also shows a ConnectionNotice, so only the "Connecting…" card is
+ * drawn here (the notice covers the not-live states). Drive uses the full gate. */
+export function StatusGate({ withNotice = false }: { withNotice?: boolean }) {
   const { snap, module, live, openConnection } = useApp();
   const st = snap?.status;
   if (st === "connected") return null;
+  if (withNotice && isNotLive(connOf(snap))) return null;
   if (st === "error") {
     return (
       <div className="card bad">
@@ -32,4 +36,3 @@ export function StatusGate() {
     </div>
   );
 }
-

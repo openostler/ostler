@@ -1,14 +1,17 @@
 import { command } from "../api/client";
 import { moduleName } from "../layout";
-import { connOf, pillFor } from "../lib/connection";
+import { connOf, fmtDown, pillFor } from "../lib/connection";
 import { useApp } from "../state/app";
+import { useNow } from "../state/useNow";
 import { Sheet } from "./Sheet";
 
 /** Connection: state and the connect phases, mock/live source, the serial port (auto or
- * an override), and Retry / Connect / Disconnect. Opens from the pill, and by itself
- * after 3 s without a connection (see state/connection.ts). */
-export function ConnectionSheet({ onClose }: { onClose: () => void }) {
+ * an override), and Retry / Connect / Disconnect. Opens from the pill, by itself after 3 s
+ * without a connection, and again 60 s after a dismissal while still down (see
+ * state/connection.ts). `downSince` (ms epoch) drives "No connection for 1 m 20 s". */
+export function ConnectionSheet({ onClose, downSince = null }: { onClose: () => void; downSince?: number | null }) {
   const { snap, live, linkUp, module, refresh, toast } = useApp();
+  const now = useNow(1000);
   const conn = connOf(snap);
   const [dot, word] = pillFor(conn, linkUp);
   const mode = snap?.mode ?? "mock";
@@ -35,6 +38,9 @@ export function ConnectionSheet({ onClose }: { onClose: () => void }) {
           <span className={`pdot ${dot}`} />
           <span className="grow" style={{ fontWeight: 700 }}>{moduleName(module)} — {word}</span>
         </div>
+        {downSince !== null && conn !== "connected" ? (
+          <div className="small muted" style={{ marginTop: 4 }}>No connection for {fmtDown(now - downSince)}</div>
+        ) : null}
         {down ? (
           <>
             <div className="small muted pretty" style={{ marginTop: 4 }}>{snap?.error || "The module did not answer."}</div>

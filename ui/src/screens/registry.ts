@@ -5,13 +5,14 @@ import { Docs } from "./Docs";
 import { Drive } from "./Drive";
 import { Faults } from "./Faults";
 import { Inputs } from "./Inputs";
+import { Logs } from "./Logs";
 import { ModuleSettings } from "./ModuleSettings";
 import { Outputs } from "./Outputs";
 import { Utilities } from "./Utilities";
 
 /** The screen registry: one entry per tab. Add a tab = add one row here.
  * `admin` screens appear only on /admin (password protected by the server).
- * `icon` + `short` keep six tabs on a phone (the short label shows on narrow screens). */
+ * `icon` + `short` keep seven tabs on a phone (the short label shows on narrow screens). */
 export type Screen = {
   id: string;
   label: string;
@@ -28,6 +29,7 @@ export const SCREENS: Screen[] = [
   { id: "outputs", label: "Outputs", icon: "↗", component: Outputs },
   { id: "settings", label: "Settings", short: "Setup", icon: "≡", component: ModuleSettings },
   { id: "utils", label: "Utilities", short: "Utils", icon: "⚒", component: Utilities },
+  { id: "logs", label: "Logs", short: "Logs", icon: "◷", component: Logs },
   { id: "map", label: "Map", icon: "▦", component: CoverageMap, admin: true },
   { id: "capture", label: "Capture", icon: "◉", component: Capture, admin: true },
   { id: "docs", label: "Docs", icon: "▤", component: Docs, admin: true },

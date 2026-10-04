@@ -20,6 +20,20 @@ export const AUTO_OPEN_MS = 3000;
 /** States in which values in the snapshot are not fresh readings from the car. */
 export const NOT_LIVE: readonly Conn[] = ["lost", "reconnecting", "error", "disconnected"];
 
+/** True when `conn` is a NOT_LIVE state (null = no snapshot yet, not counted). */
+export const isNotLive = (conn: Conn | null): boolean => !!conn && NOT_LIVE.includes(conn);
+
+/** After the sheet is dismissed, it re-opens if the connection is still not live this long later. */
+export const REPROMPT_MS = 60_000;
+
+/** "45 s", "1 m 20 s", "2 h 5 m" — how long the link has been down. */
+export function fmtDown(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s} s`;
+  if (s < 3600) return `${Math.floor(s / 60)} m ${s % 60} s`;
+  return `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} m`;
+}
+
 /** Pill: dot class + word. `linkUp` false = the dashboard's own SSE stream dropped. */
 export function pillFor(conn: Conn | null, linkUp: boolean): [string, string] {
   if (conn && !linkUp) return ["yellow blink", "Reconnecting"];

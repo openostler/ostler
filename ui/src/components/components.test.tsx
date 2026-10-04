@@ -6,6 +6,8 @@ import { initialLive } from "../state/live";
 import { installFakeServer } from "../test/fakeServer";
 import { renderWithApp } from "../test/renderWithApp";
 import { ActionButton } from "./ActionButton";
+import { ConnectionNotice } from "./ConnectionNotice";
+import { ConnectionSheet } from "./ConnectionSheet";
 import { confirmReady } from "./confirm";
 import { CoverageBar } from "./CoverageBar";
 import { PlaceholderReadout } from "./PlaceholderReadout";
@@ -141,5 +143,26 @@ describe("ActionButton confirm levels", () => {
     const { ctx } = renderWithApp(<ActionButton action={act({})} itemName="X" />);
     await userEvent.click(screen.getByRole("button", { name: "Compressor" }));
     await waitFor(() => expect(ctx.toast).toHaveBeenCalledWith("refused: experimental action needs Experimental mode", true));
+  });
+});
+
+describe("ConnectionNotice", () => {
+  it("shows a strip with Open connection only while not live", async () => {
+    const user = userEvent.setup();
+    const { ctx, unmount } = renderWithApp(<ConnectionNotice />, { snap: { status: "connected", conn: "lost", signals: {}, faults: [] } });
+    expect(screen.getByText("No connection")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Open connection" }));
+    expect(ctx.openConnection).toHaveBeenCalled();
+    unmount();
+    renderWithApp(<ConnectionNotice />, { snap: { status: "connecting", conn: "connecting", signals: {}, faults: [] } });
+    expect(screen.queryByText("No connection")).not.toBeInTheDocument();
+  });
+});
+
+describe("ConnectionSheet", () => {
+  it("says how long the link has been down", () => {
+    renderWithApp(<ConnectionSheet onClose={vi.fn()} downSince={Date.now() - 80_000} />,
+      { snap: { status: "error", conn: "error", signals: {}, faults: [] } });
+    expect(screen.getByText("No connection for 1 m 20 s")).toBeInTheDocument();
   });
 });

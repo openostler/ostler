@@ -4,6 +4,8 @@ A background thread polls the data source and updates ``latest``; ``/events``
 streams it via Server-Sent Events. ``/command`` runs server commands and module actions;
 every module action passes the command gate (:func:`d2diag.commands.refusal`, ADR-0008)
 first. ``/catalog`` serves the per-module UI catalog (specs/2026-10-05-ui-overhaul-design.md).
+``/sessions*`` serves the always-on session logbook (specs/2026-10-05-session-logbook-design.md,
+ADR-0009); the poll loop feeds every snapshot (plus the GPS fix) to the ``SessionRecorder``.
 """
 from __future__ import annotations
 
@@ -13,6 +15,7 @@ import json
 import mimetypes
 import os
 import queue
+import re
 import subprocess
 import threading
 import time
@@ -25,6 +28,13 @@ from .sources import DataSource
 
 # UI module id → store module, used when d2diag.catalog is not importable.
 _UI_TO_STORE = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}
+
+
+# Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
+# is answered 404 before it reaches the store (no path traversal through the URL).
+_SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$")
+_EXPORT_FORMATS = ("csv", "vbo", "gpx")
+_DEFAULT_MAX_POINTS = 2000
 
 
 def _store_module_for(ui_id: "str | None") -> str:
@@ -305,6 +315,8 @@ class _Handler(BaseHTTPRequestHandler):
             except ImportError:
                 body, code = {"ok": False, "error": "catalog not available"}, 503
             self._json(body, code=code)
+        elif self.path.split("?")[0] == "/sessions" or self.path.startswith("/sessions/"):
+            self._sessions_get()
         elif self.path == "/community":
             c = self.server.community
             self._json(c.state() if c is not None else {"consent": None, "endpoint": None})
@@ -392,6 +404,75 @@ class _Handler(BaseHTTPRequestHandler):
         else:
             self.send_error(404)
 
+    # ---- session logbook (public, filtered in public mode) ------------- #
+    def _sessions_get(self) -> None:
+        """``/sessions``, ``/sessions/<id>``, ``/sessions/<id>/data``, ``/sessions/<id>/export``.
+
+        Public routes; in public mode the store only exposes synthetic sessions, so a real
+        (location-bearing) session answers 404 exactly like an unknown id (ADR-0009)."""
+        from urllib.parse import parse_qs, urlparse
+
+        url = urlparse(self.path)
+        q = parse_qs(url.query)
+        parts = [p for p in url.path.split("/") if p][1:]  # drop "sessions"
+        store = self.server.session_store
+        public = self.server._public
+        if store is None:
+            if not parts:
+                self._json({"sessions": []})
+            else:
+                self._json({"ok": False, "error": "session logbook not available"}, 404)
+            return
+        if not parts:
+            try:
+                self._json({"sessions": store.list(public=public)})
+            except Exception as exc:  # noqa: BLE001
+                self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 500)
+            return
+        sid, rest = parts[0], parts[1:]
+        if not _SESSION_ID.match(sid) or len(rest) > 1 or (
+                rest and rest[0] not in ("data", "export")):
+            self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+            return
+        try:
+            meta = store.meta(sid, public=public)  # KeyError → 404 (incl. filtered in public)
+            if not rest:
+                self._json(meta)
+            elif rest[0] == "data":
+                ch_arg = (q.get("ch", [""])[0] or "").strip()
+                channels = [c for c in (x.strip() for x in ch_arg.split(",")) if c]
+                try:
+                    max_points = int(q.get("max", [_DEFAULT_MAX_POINTS])[0])
+                except (TypeError, ValueError):
+                    self._json({"ok": False, "error": "max must be an integer"}, 400)
+                    return
+                if max_points < 2:
+                    self._json({"ok": False, "error": "max must be ≥ 2"}, 400)
+                    return
+                self._json(store.data(sid, channels, max_points=max_points, public=public))
+            else:
+                fmt = (q.get("fmt", ["csv"])[0] or "").lower()
+                if fmt not in _EXPORT_FORMATS:
+                    self._json({"ok": False, "error": f"unknown export format: {fmt!r} "
+                                f"(csv|vbo|gpx)"}, 400)
+                    return
+                filename, ctype, body = store.export(sid, fmt, public=public)
+                self._send_download(body, ctype, filename)
+        except KeyError:
+            self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+        except (ValueError, OSError) as exc:
+            self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 400)
+
+    def _send_download(self, body: bytes, content_type: str, filename: str) -> None:
+        safe = re.sub(r'[^A-Za-z0-9_.-]', "_", os.path.basename(filename or "session"))
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Disposition", f'attachment; filename="{safe}"')
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _body(self) -> "dict":
         length = int(self.headers.get("Content-Length", 0) or 0)
         raw = self.rfile.read(length) if length else b"{}"
@@ -473,7 +554,8 @@ class _Handler(BaseHTTPRequestHandler):
 # establishment (SLABS: bus-idle + 3 attempts × 5 s retry ≈ 20 s) and then time out
 # at 8 s in the UI — even though they later succeed once the queue drains. They only
 # touch the server's own state (CsvLogger object, fault_every attribute).
-_INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutdown"})
+_INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutdown",
+                              "delete_session"})
 
 # Server-level commands handled on the poll thread (they release/establish sessions or
 # switch sources). Not module commands: the registry gate does not apply to them.
@@ -529,6 +611,9 @@ class DiagServer(ThreadingHTTPServer):
         fault_watch: bool = False,
         admin_password: "str | None" = None,
         allow_shutdown: bool = False,
+        gps=None,
+        sessions_dir: "str | None" = None,
+        record_sessions: bool = True,
     ) -> None:
         super().__init__((host, port), _Handler)
         # None/"" = admin ungated (local dev). Set = /admin + mapping endpoints
@@ -581,6 +666,16 @@ class DiagServer(ThreadingHTTPServer):
         # A latched test that is on ({action,label,since,stop}), or None.
         self._active_test: "dict | None" = None
         self._port_cache: "tuple[float, dict] | None" = None
+        # Session logbook (ADR-0009): the GPS source (gps.reader.open_gps(...) or None) and
+        # the always-on recorder + store under ``sessions_dir`` (default <csv_dir>/sessions,
+        # i.e. logs/sessions). ``record_sessions=False`` keeps the store but never records.
+        self.gps = gps
+        self._sessions_dir = sessions_dir or os.path.join(self._csv_dir, "sessions")
+        self._recorder = None
+        self.session_store = None
+        self._rec_lock = threading.Lock()  # feed() on the poller vs close() on shutdown
+        self._rec_closed = False
+        self._init_logbook(record_sessions)
         self.latest: "dict" = self._decorate({
             "status": "connecting", "source": self.source.name,
             "signals": {}, "faults": [],
@@ -604,6 +699,122 @@ class DiagServer(ThreadingHTTPServer):
         self._stop = threading.Event()
         self._commands: "queue.Queue" = queue.Queue()
         self._poller = threading.Thread(target=self._poll_loop, daemon=True)
+
+    # ---- session logbook --------------------------------------------- #
+    def _init_logbook(self, record: bool) -> None:
+        """Build the SessionStore (+ SessionRecorder). Lazy import: a missing/broken
+        logbook package must never stop the dashboard from serving live data."""
+        try:
+            from ..logbook.store import SessionStore
+            self.session_store = SessionStore(self._sessions_dir)
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log_early(f"logbook: store unavailable ({type(exc).__name__}: {exc})")
+            return
+        if not record:
+            return
+        try:
+            from ..logbook.recorder import SessionRecorder
+            self._recorder = SessionRecorder(self._sessions_dir)
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log_early(f"logbook: recorder unavailable ({type(exc).__name__}: {exc})")
+
+    @staticmethod
+    def _conn_log_early(msg: str) -> None:
+        try:
+            print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {msg}", flush=True)
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _gps_fix(self):
+        """The GPS source's latest Fix, or None (never raises)."""
+        if self.gps is None:
+            return None
+        try:
+            return self.gps.latest()
+        except Exception:  # noqa: BLE001
+            return None
+
+    def _gps_snapshot(self) -> "dict | None":
+        """Snapshot ``gps``: ``Fix.snapshot()``; a no-fix dict while a source has no fix
+        yet; null when there is no source."""
+        if self.gps is None:
+            return None
+        fix = self._gps_fix()
+        if fix is not None:
+            try:
+                return fix.snapshot()
+            except Exception:  # noqa: BLE001
+                pass
+        return {"fix": False, "lat": None, "lon": None, "speed_kmh": None, "heading": None,
+                "sats": None, "hdop": None, "src": getattr(self.gps, "src", None),
+                "age_s": None}
+
+    def _recording_status(self) -> "dict | None":
+        rec = self._recorder
+        if rec is None or self._rec_closed:
+            return None
+        try:
+            return rec.status()
+        except Exception:  # noqa: BLE001
+            return None
+
+    def record_poll(self) -> None:
+        """Feed the latest snapshot + GPS fix to the recorder (once per poll, also while
+        disconnected so the idle timer runs) and refresh ``recording`` in ``latest``.
+        Only signals/faults/module/GPS reach a session — the recorder ignores the rest,
+        and identity reads never enter a snapshot. Free-space rotation of old sessions is
+        the recorder's job (on session start). Never fells the poll loop."""
+        rec = self._recorder
+        if rec is None:
+            return
+        with self._rec_lock:
+            if self._rec_closed:
+                return
+            try:
+                rec.feed(self.latest, self._gps_fix())
+            except Exception as exc:  # noqa: BLE001
+                self._conn_log(f"logbook: feed failed ({type(exc).__name__}: {exc})")
+            status = self._recording_status()
+        self.latest = {**self.latest, "recording": status}
+
+    def close_recorder(self) -> None:
+        """End the open session (server shutdown). Idempotent."""
+        with self._rec_lock:
+            if self._rec_closed:
+                return
+            self._rec_closed = True
+            if self._recorder is not None:
+                try:
+                    self._recorder.close()
+                except Exception:  # noqa: BLE001
+                    pass
+
+    def delete_session(self, params: "dict | None") -> "dict":
+        """``delete_session {id}``: refused in public mode, for synthetic (demo) sessions
+        and for the session being recorded right now."""
+        if self._public:
+            return {"ok": False, "error": "deleting sessions is not available in public mode"}
+        sid = str((params or {}).get("id") or "")
+        store = self.session_store
+        if store is None:
+            return {"ok": False, "error": "session logbook not available"}
+        if not _SESSION_ID.match(sid):
+            return {"ok": False, "error": f"unknown session: {sid}"}
+        try:
+            meta = store.meta(sid)
+        except KeyError:
+            return {"ok": False, "error": f"unknown session: {sid}"}
+        if meta.get("synthetic"):
+            return {"ok": False, "error": "synthetic sessions are read-only"}
+        if (self._recording_status() or {}).get("session") == sid:
+            return {"ok": False, "error": "session is being recorded"}
+        try:
+            store.delete(sid)
+        except KeyError:
+            return {"ok": False, "error": f"unknown session: {sid}"}
+        except (ValueError, PermissionError) as exc:
+            return {"ok": False, "error": str(exc)}
+        return {"ok": True, "deleted": sid}
 
     def _remember_engine(self, snap: "dict") -> None:
         """Save rpm/speed/battery from a TD5 snapshot (for _engine_note)."""
@@ -721,6 +932,8 @@ class DiagServer(ThreadingHTTPServer):
             return self.set_fault_watch(params.get("on"))
         if action == "shutdown":
             return self.shutdown_host(params)
+        if action == "delete_session":
+            return self.delete_session(params)
         return {"ok": False, "error": f"unknown command: {action}"}
 
     def _spawn_poweroff(self) -> None:
@@ -886,6 +1099,8 @@ class DiagServer(ThreadingHTTPServer):
                              else None)
         snap["port"] = self._port_info()
         snap["active_test"] = dict(self._active_test) if self._active_test else None
+        snap["gps"] = self._gps_snapshot()
+        snap["recording"] = self._recording_status()
         return snap
 
     # ---- latched tests ------------------------------------------------- #
@@ -1151,6 +1366,7 @@ class DiagServer(ThreadingHTTPServer):
         while not self._stop.is_set():
             self._drain_commands()  # writes first, serialized with poll
             self.poll_once()
+            self.record_poll()  # always-on session logbook (also while paused: idle timer)
             if self._paused:
                 self._stop.wait(self.poll_interval)
                 continue
@@ -1169,13 +1385,28 @@ class DiagServer(ThreadingHTTPServer):
                 except Exception:  # noqa: BLE001 — a CSV error must never fell the poll loop
                     pass
             self._stop.wait(self.poll_interval)
+        self.close_recorder()
 
     def start_polling(self) -> None:
+        if self.gps is not None:
+            try:
+                self.gps.start()
+            except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
+                self._conn_log(f"gps: start failed ({type(exc).__name__}: {exc})")
         if not self._poller.is_alive():
             self._poller.start()
 
     def stop(self) -> None:
+        """Stop polling, end the open session and stop the GPS source."""
         self._stop.set()
+        if self._poller.is_alive() and self._poller is not threading.current_thread():
+            self._poller.join(timeout=self.poll_interval + 2.0)
+        self.close_recorder()  # idempotent; also covers a poller stuck in establishment
+        if self.gps is not None:
+            try:
+                self.gps.stop()
+            except Exception:  # noqa: BLE001
+                pass
 
     def serve(self) -> None:
         self.start_polling()

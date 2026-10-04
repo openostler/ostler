@@ -329,6 +329,21 @@ class DataSource(abc.ABC):
         return {"ok": False, "error": f"unknown command: {action}"}
 
 
+def _mock_gps_speed(gps) -> "float | None":
+    """Speed (km/h) of an optional GPS source's latest fix, for the mock sources to follow.
+    None when there is no source, no fix yet, or the source misbehaves (never fails a poll)."""
+    if gps is None:
+        return None
+    try:
+        fix = gps.latest()
+    except Exception:  # noqa: BLE001
+        return None
+    v = getattr(fix, "speed_kmh", None) if fix is not None else None
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return max(0.0, float(v))
+
+
 class MockDataSource(DataSource):
     """Simulated car for UI dev: reasonable, moving values + one active fault."""
 
@@ -338,19 +353,30 @@ class MockDataSource(DataSource):
     _ACTIVE_FAULT = "inlet air temp. circuit (Current)"
     _LOGGED_FAULT = "air flow circuit (Logged Low)"
 
-    def __init__(self) -> None:
+    def __init__(self, gps=None) -> None:
         self._t = 0.0
         self._coolant = 20.0  # cold start, warming up
         self._faults = [self._LOGGED_FAULT, self._ACTIVE_FAULT]
         self._cleared_ticks = 0  # >0 = just cleared, faults temporarily gone
+        # Optional GPS source (gps.reader.MockGps …): when it has a speed, the mock
+        # "drives" along with it so mock `speed` ≈ GPS speed in recorded sessions.
+        self._gps = gps
 
     def poll(self) -> "dict":
         self._t += 1
-        # idle with a little variation, and a "throttle blip" pulse now and then
-        revving = (int(self._t) % 30) in (10, 11, 12, 13)
-        base = 2200 if revving else 800
-        rpm = base + random.uniform(-40, 60)
-        speed = max(0.0, (rpm - 800) / 45) if revving else 0.0
+        gps_speed = _mock_gps_speed(self._gps)
+        if gps_speed is not None:
+            # follow the GPS: a plausible rpm for the speed (≈ 4th/5th gear), boost on load
+            speed = gps_speed
+            rpm = 780 + speed * 24 + random.uniform(-30, 30) if speed > 1 else (
+                800 + random.uniform(-40, 60))
+            revving = speed > 1
+        else:
+            # idle with a little variation, and a "throttle blip" pulse now and then
+            revving = (int(self._t) % 30) in (10, 11, 12, 13)
+            base = 2200 if revving else 800
+            rpm = base + random.uniform(-40, 60)
+            speed = max(0.0, (rpm - 800) / 45) if revving else 0.0
         self._coolant = min(88.0, self._coolant + 0.15)  # creeps towards working temp
         manifold = 1.0 + (0.25 if revving else 0.0) + random.uniform(-0.01, 0.01)
         signals = {
@@ -772,8 +798,9 @@ class MockSlabsDataSource(DataSource):
     name = "slabs"
     store_module = "slabs"
 
-    def __init__(self) -> None:
+    def __init__(self, gps=None) -> None:
         self._t = 0.0
+        self._gps = gps  # optional GPS source: wheel speeds follow its speed (see poll)
         self._faults = {
             "loggade": [
                 "right front wheel speed sensor — output too low",
@@ -791,8 +818,11 @@ class MockSlabsDataSource(DataSource):
             "height_left": hl, "height_right": hr,
             "height_left_mm": hl * 1.4, "height_right_mm": hr * 1.4,
         }
-        for w in ("fl", "fr", "rl", "rr"):  # wheel: speed (~124 raw value at rest) + sensor voltage
-            vals[f"wheel_speed_{w}"] = 124.0
+        # Wheel speed raw (~124 at rest, scale unknown on the car). With a GPS the mock
+        # adds the GPS km/h so the wheels visibly move with the drive — illustrative only.
+        moving = _mock_gps_speed(self._gps) or 0.0
+        for w in ("fl", "fr", "rl", "rr"):  # wheel: speed + sensor voltage
+            vals[f"wheel_speed_{w}"] = 124.0 + moving
             vals[f"abs_sensor_{w}"] = round(2.3 + random.uniform(-0.05, 0.05), 2)
         signals = _slabs_sig(vals)
         if self._cleared > 0:

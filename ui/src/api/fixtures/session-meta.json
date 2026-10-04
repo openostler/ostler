@@ -1,0 +1,105 @@
+{
+  "id": "20261005T090000Z",
+  "start_utc": "2026-10-05T09:00:00.000Z",
+  "end_utc": "2026-10-05T09:12:00.000Z",
+  "duration_s": 720,
+  "rows": 3600,
+  "parts": [
+    "data.csv"
+  ],
+  "modules": [
+    "motor"
+  ],
+  "channels": [
+    {
+      "name": "GPS_Latitude",
+      "units": "deg",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_Longitude",
+      "units": "deg",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_Speed",
+      "units": "km/h",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_Heading",
+      "units": "deg",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_Altitude",
+      "units": "m",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_Nsat",
+      "units": "",
+      "group": "gps"
+    },
+    {
+      "name": "GPS_HDOP",
+      "units": "",
+      "group": "gps"
+    },
+    {
+      "name": "rpm",
+      "units": "rpm",
+      "group": "engine"
+    },
+    {
+      "name": "speed",
+      "units": "km/h",
+      "group": "engine"
+    },
+    {
+      "name": "coolant_temp",
+      "units": "°C",
+      "group": "temperatures"
+    },
+    {
+      "name": "air_temp",
+      "units": "°C",
+      "group": "temperatures"
+    },
+    {
+      "name": "battery",
+      "units": "V",
+      "group": "electrical"
+    },
+    {
+      "name": "manifold_press",
+      "units": "bar",
+      "group": "pressures"
+    },
+    {
+      "name": "accel_pedal_pct",
+      "units": "%",
+      "group": "engine"
+    }
+  ],
+  "has_gps": true,
+  "distance_km": 11.21,
+  "max_speed_kmh": 92.0,
+  "bbox": [
+    -4.70945,
+    56.60844,
+    -4.63899,
+    56.63306
+  ],
+  "start_pos": [
+    -4.639,
+    56.623
+  ],
+  "end_pos": [
+    -4.639,
+    56.623
+  ],
+  "synthetic": true,
+  "recording": false,
+  "source": "demo"
+}

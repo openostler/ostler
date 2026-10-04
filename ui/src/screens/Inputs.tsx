@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { command } from "../api/client";
 import type { CatalogItem } from "../api/schemas";
+import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { HealthStrip } from "../components/HealthStrip";
 import { PlaceholderReadout } from "../components/PlaceholderReadout";
@@ -101,10 +102,11 @@ export function Inputs() {
       </button>
     </ScreenHead>
   );
-  if (snap?.status !== "connected") return <>{head}<StatusGate />{coverage}<NotDecoded items={placeholders} /></>;
+  if (snap?.status !== "connected") return <>{head}<ConnectionNotice /><StatusGate withNotice />{coverage}<NotDecoded items={placeholders} /></>;
   return (
     <>
       {head}
+      <ConnectionNotice />
       {module === "slabs" ? (
         <div className="card warn small">SLABS only communicates while stationary — to log a drive (rpm, boost, temps), switch to TD5.</div>
       ) : null}

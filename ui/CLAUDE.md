@@ -10,6 +10,10 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/screens/` — one component per tab; `registry.ts` lists them (`admin` ones only on /admin).
 - `src/components/` — shared pieces (Value, Gauge, Readout, Sheet, Preferences, ConnectionSheet,
   StatusTag, CoverageBar, PlaceholderReadout, ActionButton, ProcedureSheet, …).
+- `src/screens/Logs.tsx` + `src/components/replay/` — session browser and replay (MapLibre map,
+  Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/maplibre.ts` is the only
+  module that imports `maplibre-gl`; it is reached through `import()` so the main chunk stays
+  small (`maplibreChunk.test.ts` enforces it). `src/state/playback.ts` is the shared cursor.
 - `src/lib/catalog.ts` — the Stable/Experimental visibility rules over `/catalog` (ADR-0008).
 - `src/layout.ts` — the only place that names signals (Drive tiles, body view, LID presets).
   Outputs, Settings and Utilities come from `/catalog`, never from a hard-coded list.

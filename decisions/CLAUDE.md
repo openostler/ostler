@@ -12,6 +12,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0006-english-confidence-vocabulary.md` — `proven`/`candidate` replace the Swedish `belagt`/`kandidat`.
 - `adr-0007-bcu-security-access.md` — derive the BCU seed→key offline freely; gate every live SecurityAccess byte.
 - `adr-0008-unified-status-vocabulary.md` — one derived item status (verified/candidate/sniff/untranscribed) + safety class, server-enforced.
+- `adr-0009-session-logbook-and-location.md` — always-on RaceCapture-style session CSV; VBO/GPX exports; location stays on the device.
 
 ## Editing rules
 

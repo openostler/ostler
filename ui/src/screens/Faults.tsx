@@ -3,6 +3,7 @@ import { command } from "../api/client";
 import type { FaultScanEntry } from "../api/schemas";
 import { useAction } from "../api/useAction";
 import { confirmAction } from "../components/confirm";
+import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatusGate } from "../components/StatusGate";
@@ -143,10 +144,11 @@ export function Faults() {
       <button className="iconbtn" onClick={refresh}><span className="d" />Read</button>
     </ScreenHead>
   );
-  if (snap?.status !== "connected") return <>{head}{coverage}<StatusGate /><FaultScan /></>;
+  if (snap?.status !== "connected") return <>{head}<ConnectionNotice />{coverage}<StatusGate withNotice /><FaultScan /></>;
   return (
     <>
       {head}
+      <ConnectionNotice />
       {coverage}
       <FaultGroup items={current} label="Current" kind="current" note="present now" />
       <FaultGroup items={logged} label="Logged" kind="logged" note="stored history — not necessarily present now" />
