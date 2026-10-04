@@ -913,7 +913,7 @@ def test_td5_source_shows_undecoded_fault_bits():
 
 def test_faults_endpoint_serves_new_module_stores():
     from d2diag.web.server import _faults_list
-    for ui_name, key in (("autobox", "P0705-14"), ("eat", "P0705-14"), ("ace", "33-06"),
+    for ui_name, key in (("autobox", "P0705-14"), ("eat", "P0705-14"), ("ace", "04-02"), ("ace", "flat-33-06"),
                          ("airbag", "008")):
         d = _faults_list(ui_name)
         assert key in {r["key"] for r in d["faults"]}, ui_name

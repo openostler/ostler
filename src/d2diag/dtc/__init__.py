@@ -16,8 +16,9 @@ fault key:
   ``"rsw-NNN"`` and never collide with a tool number.
 * **airbag** — the 3-digit fault number (``"008"``), as the decoder yields it.
 * **autobox** (EAT) — the P-code the tools display (``"P1884"``).
-* **ace** — the NanoCom ``"XX-YY"`` code, or ``"dtcNN"`` for the Hawkeye/Testbook DTC
-  number. The two schemes are kept apart: nothing links them yet.
+* **ace** — the NanoCom component-grouped ``"XX-YY"`` code (the family this car's tool
+  shows), ``"flat-XX-YY"`` for NanoCom's other, flat-list family, or ``"dtcNN"`` for the
+  Hawkeye/Testbook DTC number. The three schemes are kept apart: nothing links them yet.
 
 Meanings are documented facts (factory/community/vendor sources), carried with a
 ``source`` note and a ``confidence``: ``proven`` when the code→meaning pairing was seen on

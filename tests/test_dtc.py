@@ -1,4 +1,6 @@
 """The fault-meaning store (d2diag.dtc): loader, enrich join, and freshness guards."""
+import re
+
 import tools.gen_dtc_seed as seed
 import tools.gen_fault_docs as docs
 from d2diag import dtc
@@ -83,10 +85,13 @@ def test_every_record_has_honest_confidence():
 def test_new_module_stores_load_with_expected_keys():
     assert dtc.meaning("airbag", "008").name.lower().startswith("driver")
     assert dtc.meaning("autobox", "P1884-33") and "torque" in dtc.meaning("autobox", "P1884-33").name
-    assert dtc.meaning("ace", "20-04") and dtc.meaning("ace", "dtc33")
-    # the two ACE display schemes stay apart: no key is both
-    keys = set(dtc.load_meanings("ace"))
-    assert all(k.startswith("dtc") or "-" in k for k in keys)
+    assert dtc.meaning("ace", "flat-20-04") and dtc.meaning("ace", "dtc33")
+    # this car's NanoCom family owns the plain XX-YY keys (04-02 and 06-01 were seen on RDL 016)
+    assert "direction control valve 2" in dtc.meaning("ace", "04-02").name.lower()
+    assert "pressure too low" in dtc.meaning("ace", "06-01").name.lower()
+    # the three ACE display schemes stay apart: every key belongs to exactly one
+    for k in dtc.load_meanings("ace"):
+        assert re.fullmatch(r"\d{2}-\d{2}|flat-\d{2}-\d{2}|dtc\d{1,2}", k), k
 
 
 def test_airbag_decoder_number_resolves():
