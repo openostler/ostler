@@ -60,6 +60,7 @@ _SPEC = [
     ("cruise_master", 0x1E, 0, "bit", 1.0, 0.0, ""),
     ("cruise_set", 0x1E, 0, "bit", 1.0, 0.0, ""),
     ("cruise_resume", 0x1E, 0, "bit", 1.0, 0.0, ""),
+    ("fuel_pump_relay", 0x36, 1, "bit", 1.0, 0.0, ""),  # candidate 2026-10-04
 ]
 
 _SPEC_LIMITS = {
