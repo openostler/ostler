@@ -15,6 +15,8 @@ here before implementation starts.
 - `2026-10-02-hevac-control-design.md` — climate control via display sniff + button injection.
 - `2026-10-02-gps-tracker-alarm-design.md` — GPS/cellular tracker + alarm taps + authenticated fob-emulation disarm.
 - `2026-10-02-remote-start-design.md` — transponder-present bypass + mandatory safety interlocks (highest risk).
+- `2026-10-03-vehicle-view-suite-design.md` — per-module vehicle-view pages on one shared silhouette.
+- `2026-10-04-dtc-coverage-design.md` — filling the fault-meaning store from forum lists, with confidence.
 
 ## Editing rules
 

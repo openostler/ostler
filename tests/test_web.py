@@ -909,3 +909,11 @@ def test_td5_source_shows_undecoded_fault_bits():
     snap = src.poll()
     assert snap["status"] == "connected"
     assert snap["faults"] == ["byte25.bit3", "byte25.bit5"]
+
+
+def test_faults_endpoint_serves_new_module_stores():
+    from d2diag.web.server import _faults_list
+    for ui_name, key in (("autobox", "P0705-14"), ("eat", "P0705-14"), ("ace", "33-06"),
+                         ("airbag", "008")):
+        d = _faults_list(ui_name)
+        assert key in {r["key"] for r in d["faults"]}, ui_name
