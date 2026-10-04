@@ -120,9 +120,10 @@ def test_td5_candidate_bit_and_unknowns_stay_generic():
     cand = [f"{f.offset}.{f.mask.bit_length() - 1}" for f in FAULTS if f.confidence != "proven"]
     assert sorted(cand) == ["11.6", "13.6", "20.7"]
     assert all(dtc.meaning("td5", k).confidence == "candidate" for k in cand)
-    # 13.6 corrected from a NanoCom screen: the glow-plug LAMP, not a second "relay"
-    assert dtc.meaning("td5", "13.6").name == "glowplug lamp drive open load (Current)"
-    assert not dtc.meaning("td5", "13.6").pcode
+    # 11.6 / 13.6 corrected from NanoCom screens: the glow-plug LAMP, not a second "relay"
+    for k in ("11.6", "13.6"):
+        assert dtc.meaning("td5", k).name == "glowplug lamp drive open load (Current)"
+        assert not dtc.meaning("td5", k).pcode
     block = bytearray(35)
     block[20] |= 0x80   # 20.7 candidate → named
     block[15] |= 0x80   # 15.7 seen on the car, no public name → stays generic
