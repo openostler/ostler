@@ -5,8 +5,8 @@ CLI entry points and reverse-engineering utilities. Run them with `PYTHONPATH=sr
 ## Files
 
 - `dashboard.py` — web dashboard (`--mock` or `--serial`). `deploy.sh` — Pi deploy.
-- `verify_ecu.py`, `esp32_read.py`, `module_scan.py` — read-only live checks and the
-  address scan (logic in `src/d2diag/modscan.py`).
+- `verify_ecu.py`, `esp32_read.py`, `module_scan.py`, `bcu_scan.py` — read-only live checks, the
+  address scan and the BCU input scan (logic in `src/d2diag/modscan.py`, `bcu/scan.py`).
 - `decode_session.py`, `analyze_capture.py`, `raw_analyze.py`, `diffmap.py`,
   `lid_sweep.py`, `map_inputs.py`, `map_gui.py`, `nanocom_import.py` — capture analysis
   and mapping (`nanocom_import` logic in `src/d2diag/sniff/importer.py`).

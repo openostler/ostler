@@ -55,6 +55,10 @@ _SPEC = [
     # brake switches, 21 1E bits — proven on the car 2026-10-03 (brake_main active-low)
     ("brake_switch_2", 0x1E, 0, "bit", 1.0, 0.0, ""),
     ("brake_main", 0x1E, 1, "bit", 1.0, 0.0, ""),
+    # cruise switches, 21 1E byte0 bits 2/3/4 — proven on the car 2026-10-04
+    ("cruise_master", 0x1E, 0, "bit", 1.0, 0.0, ""),
+    ("cruise_set", 0x1E, 0, "bit", 1.0, 0.0, ""),
+    ("cruise_resume", 0x1E, 0, "bit", 1.0, 0.0, ""),
 ]
 
 _SPEC_LIMITS = {
