@@ -669,8 +669,8 @@ class MockSlabsDataSource(DataSource):
         self._t = 0.0
         self._faults = {
             "loggade": [
-                "020: front right wheel speed sensor — output too low",
-                "027: shuttle valve switch — electrical failure",
+                "right front wheel speed sensor — output too low",
+                "shuttle valve switch — electrical failure",
             ],
             "aktuella": [],
         }

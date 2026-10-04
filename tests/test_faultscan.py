@@ -74,8 +74,8 @@ def test_live_reads_modules_over_fake(monkeypatch):
     rows = fs.read_all("live", "auto", sleep=lambda *_: None)
     by = {r["module"]: r for r in rows}
     assert by["TD5"]["status"] == "ok"                       # zero block → no faults
-    assert by["SLABS"]["status"] == "faults"                 # 020 + 027
-    assert any(x.startswith("020") for x in by["SLABS"]["faults"])
+    assert by["SLABS"]["status"] == "faults"                 # RF sensor + shuttle valve
+    assert any("right front wheel speed" in x for x in by["SLABS"]["faults"])
     assert by["Airbag"]["status"] == "faults"                # 004 + 022
     assert any("004" in x for x in by["Airbag"]["faults"])
 

@@ -49,7 +49,7 @@ def test_td5_json_decode_matches_python():
 
 
 def test_slabs_json_decode_matches_python():
-    # The exact RDL016 logged block: byte3.bit4 (020) + byte10.bit4 (027).
+    # The exact RDL016 logged block: byte3.bit4 + byte10.bit4 (tool showed 020-05 / 027-05).
     block = bytes.fromhex("00000010000000000000100000000000")
     doc = json.loads(g.build_slabs())
     js = _decode_via_json(doc, block)
@@ -57,5 +57,5 @@ def test_slabs_json_decode_matches_python():
     # SLABS python labels unknowns "unknown (byte i, bit b)"; the JSON/browser uses "byteI.bitB".
     # Known bits must match exactly (that's what we care about here).
     assert [x for x in js if not x.startswith("byte")] == [x for x in py if not x.startswith("unknown")]
-    assert "020: right front wheel speed sensor — output too low" in js
-    assert "027: shuttle valve switch — electrical failure" in js
+    assert "right front wheel speed sensor — output too low" in js
+    assert "shuttle valve switch — electrical failure" in js

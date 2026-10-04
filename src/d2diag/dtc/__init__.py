@@ -11,9 +11,10 @@ fault key:
 
 * **td5** — ``"offset.bit"`` (matches ``td5/faultmap.json`` and the generic
   ``byte<off>.bit<n>`` the decoder emits for unmapped bits).
-* **slabs** — the reference-tool display number (``"020"``). The rswsolutions list uses a
-  different numbering (it contradicts both car-proven anchors), so its entries are keyed
-  ``"rsw-NNN"`` and never collide with a tool number.
+* **slabs** — the raw bit ``"offset.bit"`` of the 16-byte fault block (``"3.4"``), like the
+  Td5; the decoder's text is the record's name. (The reference tool's ``020-05`` display is
+  not a fault number: its first field is an occurrence count.) The rswsolutions list uses its
+  own numbering, keyed ``"rsw-NNN"``.
 * **airbag** — the 3-digit fault number (``"008"``), as the decoder yields it.
 * **autobox** (EAT) — the P-code the tools display (``"P1884"``).
 * **ace** — the NanoCom component-grouped ``"XX-YY"`` code (the family this car's tool
@@ -33,6 +34,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -153,7 +155,10 @@ def _match(raw, module, meanings, by_name) -> "FaultMeaning | None":
             return meanings.get(f"{off}.{bit}")
         except ValueError:
             return None
-    if ":" in raw:                           # slabs: "<nr>: <text>" → number key
+    if raw.startswith("unknown (byte "):     # slabs generic: "unknown (byte i, bit b)" → "i.b"
+        m = re.match(r"unknown \(byte (\d+), bit (\d+)\)", raw)
+        return meanings.get(f"{m.group(1)}.{m.group(2)}") if m else None
+    if ":" in raw:                           # "<nr>: <text>" → number key
         return meanings.get(raw.split(":", 1)[0].strip())
     if raw.isdigit():                        # airbag: decoder number 8 / "8" → "008"
         return meanings.get(raw.zfill(3)) or meanings.get(raw)

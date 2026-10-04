@@ -103,14 +103,16 @@ def test_airbag_decoder_number_resolves():
 
 
 def test_slabs_car_anchors_resolve_to_proven_tool_meaning():
-    """The decoder's car-proven 020/027 must not resolve to the rsw list's different numbering."""
+    """The car-proven anchors resolve by raw bit / decoder text, never via a display number."""
     from d2diag.slabs.faults import decode_fault_block
     block = bytes.fromhex("00000010000000000000100000000000")  # sniff 2026-08-07
     rows = dtc.enrich("slabs", decode_fault_block(block))
-    assert [r["key"] for r in rows] == ["020", "027"]
+    assert [r["key"] for r in rows] == ["3.4", "10.4"]
     assert "wheel speed" in rows[0]["name"].lower() and rows[0]["confidence"] == "proven"
     assert "shuttle valve" in rows[1]["name"].lower() and rows[1]["confidence"] == "proven"
-    assert all(k == "020" or k == "027" or k.startswith("rsw-") for k in dtc.load_meanings("slabs"))
+    assert all(k in ("3.4", "10.4") or k.startswith("rsw-") for k in dtc.load_meanings("slabs"))
+    [unk] = dtc.enrich("slabs", ["unknown (byte 3, bit 4)"])  # generic form resolves by bit
+    assert unk["key"] == "3.4"
 
 
 def test_td5_candidate_bit_and_unknowns_stay_generic():
