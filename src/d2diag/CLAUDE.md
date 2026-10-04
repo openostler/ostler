@@ -9,7 +9,8 @@ The Python package: comms core → interpretation → web consumer. The map is i
 - `td5/`, `slabs/`, `bcu/`, `airbag/`, `ace/`, `autobox/` — module layers and menus.
 - `signals/*.json` — single source of truth for LID mappings (use `upsert_field`).
 - `sniff/` — capture parsing, module detection (`modules.py`), the protocol library,
-  automap, calibration and the NanoCom capture importer (`importer.py`).
+  automap, calibration, the NanoCom capture importer (`importer.py`) and the fault-screen
+  importer (`fault_import.py`, T-30).
 - `faultscan.py`, `modscan.py`, `menus.py`, `community/` — cross-module helpers
   (`modscan.py` = the read-only address scan) and opt-in upload.
 - `web/` — consumer: stdlib HTTP + SSE server, data sources. `web/static/` is the built
