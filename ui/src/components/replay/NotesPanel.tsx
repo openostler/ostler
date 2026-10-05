@@ -1,20 +1,31 @@
 import { useState } from "react";
 import { api } from "../../api/client";
 import type { Note } from "../../api/schemas";
+import type { Flag } from "../../lib/flags";
 import { KIND_ICON, noteAt, noteSpan, sortNotes } from "../../lib/notes";
 import { useApp } from "../../state/app";
+import { useSessionFlags } from "../../state/flags";
 import { useReplay } from "../../state/replay";
 import "../../recording.css";
+import { FlagSheet, SEVERITY } from "../FlagSheet";
 import { NoteEditor, type NoteDraft } from "./NoteEditor";
 
 /** Ask the panel to open its editor: an existing note by id (a chart/scrubber marker tap),
  * or a new note at a time or range (a drag on the chart). */
 export type NoteRequest = { id: string } | { t: number; t_end?: number | null };
 
+/** The list filter (spec §8): All · Notes · Out of range · Faults. */
+type Filter = "all" | "notes" | "range" | "fault";
+const FILTERS: { v: Filter; name: string }[] = [
+  { v: "all", name: "All" }, { v: "notes", name: "Notes" }, { v: "range", name: "Out of range" }, { v: "fault", name: "Faults" },
+];
+type Row = { note: Note; t: number } | { flag: Flag; t: number };
+
 /**
- * The replay notes list (spec §5): every note by time, tap to jump the cursor there, ✎ to
- * edit or delete, and "Add note at cursor". Range notes show "start–end". Demo (synthetic)
- * sessions are read-only. Reads everything from useReplay(); `request` lets the chart open
+ * The replay notes list (spec §5, §8): every note and automatic flag by time, tap a note to jump
+ * the cursor there, ✎ to edit or delete, tap a flag for the flag sheet, and "Add note at cursor".
+ * Range notes show "start–end". A filter (All · Notes · Out of range · Faults) shows when the
+ * session has flags. Demo (synthetic) sessions are read-only. Reads everything from useReplay(); `request` lets the chart open
  * the editor for a marker or a dragged range.
  */
 export function NotesPanel({ request = null, onRequestDone }: {
@@ -24,6 +35,9 @@ export function NotesPanel({ request = null, onRequestDone }: {
   const r = useReplay();
   const { toast } = useApp();
   const [local, setLocal] = useState<NoteRequest | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [flagOpen, setFlagOpen] = useState<Flag | null>(null);
+  const flags = useSessionFlags(r.data, r.session?.modules ?? []).visible;
   const open = local ?? request;
   const close = () => { setLocal(null); if (request) onRequestDone?.(); };
 
@@ -31,6 +45,10 @@ export function NotesPanel({ request = null, onRequestDone }: {
   const sid = r.session.id;
   const readOnly = r.session.synthetic ? "Demo sessions can't be annotated." : null;
   const notes = sortNotes(r.notes);
+  const rows: Row[] = [
+    ...(filter === "all" || filter === "notes" ? notes.map((n) => ({ note: n, t: n.t })) : []),
+    ...(filter === "notes" ? [] : flags.filter((f) => filter === "all" || f.kind === filter).map((f) => ({ flag: f, t: f.t }))),
+  ].sort((a, b) => a.t - b.t); // stable: a note stays ahead of a flag at the same time
 
   const reply = (res: { ok?: boolean; error?: string }, okMsg: string) => {
     if (res.ok === false || res.error) { toast(res.error ?? "The Pi refused the change", true); return false; }
@@ -76,28 +94,50 @@ export function NotesPanel({ request = null, onRequestDone }: {
           onClick={() => setLocal({ t: Math.round(r.t) })}>+ Add note at cursor</button>
       </div>
       {readOnly ? <div className="small muted">{readOnly}</div> : null}
-      {notes.length === 0 ? (
-        <p className="muted small">No notes yet. Tap ⚑ while recording, or add one at the cursor.</p>
+      {flags.length ? (
+        <div className="notes-filter" role="group" aria-label="Show">
+          {FILTERS.map((f) => (
+            <button key={f.v} type="button" className="rchip" aria-pressed={filter === f.v} onClick={() => setFilter(f.v)}>{f.name}</button>
+          ))}
+        </div>
+      ) : null}
+      {rows.length === 0 ? (
+        filter === "all" || filter === "notes"
+          ? <p className="muted small">No notes yet. Tap ⚑ while recording, or add one at the cursor.</p>
+          : <p className="muted small">No {filter === "range" ? "out-of-range" : "fault"} flags in this session.</p>
       ) : (
         <ul className="notes-list">
-          {notes.map((n) => (
-            <li key={n.id} className={`note-row${noteAt(n, r.t) ? " here" : ""}`} data-note={n.id}>
-              <button className="note-jump" onClick={() => r.seek(n.t)} aria-label={`Jump to ${noteSpan(n)}: ${n.text || n.kind}`}>
-                <span className="note-t">{noteSpan(n)}</span>
-                <span className="note-kind" aria-hidden="true">{KIND_ICON[n.kind] ?? "✎"}</span>
+          {rows.map((row) => "flag" in row ? (
+            <li key={row.flag.id} className={`note-row flag-row ${row.flag.severity}${noteAt(row.flag, r.t) ? " here" : ""}`} data-flag={row.flag.id}>
+              <button className="note-jump" onClick={() => setFlagOpen(row.flag)}
+                aria-label={`${SEVERITY[row.flag.severity].word} at ${noteSpan(row.flag)}: ${row.flag.label}`}>
+                <span className="note-t">{noteSpan(row.flag)}</span>
+                <span className={`note-kind flag-icon ${row.flag.severity}`} aria-hidden="true">{SEVERITY[row.flag.severity].icon}</span>
                 <span className="note-body">
-                  {n.text || <span className="muted">{n.kind === "mark" ? "Mark" : "(no text)"}</span>}
-                  {n.t_end != null ? <span className="note-chip">range</span> : null}
-                  {n.tags.map((tag) => <span key={tag} className="note-chip">{tag}</span>)}
+                  {row.flag.label}
+                  <span className={`note-chip flag-word ${row.flag.severity}`}>{SEVERITY[row.flag.severity].word}</span>
                 </span>
               </button>
-              <button className="note-edit" aria-label={readOnly ? "View note" : "Edit note"} onClick={() => setLocal({ id: n.id })}>
+            </li>
+          ) : (
+            <li key={row.note.id} className={`note-row${noteAt(row.note, r.t) ? " here" : ""}`} data-note={row.note.id}>
+              <button className="note-jump" onClick={() => r.seek(row.note.t)} aria-label={`Jump to ${noteSpan(row.note)}: ${row.note.text || row.note.kind}`}>
+                <span className="note-t">{noteSpan(row.note)}</span>
+                <span className="note-kind" aria-hidden="true">{KIND_ICON[row.note.kind] ?? "✎"}</span>
+                <span className="note-body">
+                  {row.note.text || <span className="muted">{row.note.kind === "mark" ? "Mark" : "(no text)"}</span>}
+                  {row.note.t_end != null ? <span className="note-chip">range</span> : null}
+                  {row.note.tags.map((tag) => <span key={tag} className="note-chip">{tag}</span>)}
+                </span>
+              </button>
+              <button className="note-edit" aria-label={readOnly ? "View note" : "Edit note"} onClick={() => setLocal({ id: row.note.id })}>
                 {readOnly ? "…" : "✎"}
               </button>
             </li>
           ))}
         </ul>
       )}
+      {flagOpen ? <FlagSheet item={{ flag: flagOpen }} onClose={() => setFlagOpen(null)} /> : null}
       {open && editing ? (
         <NoteEditor key={editing.id} note={editing} cursor={r.t} readOnly={readOnly}
           onSave={edit(editing)} onDelete={del(editing)} onClose={close} />

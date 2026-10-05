@@ -1,7 +1,12 @@
 import { formatClock, SKIP_MS, SPEEDS, usePlayback } from "../../state/playback";
 
-/** A note on the scrubber: a tick (point) or a span (range); tapping it seeks there. */
-export type TransportTick = { id: string; t: number; t_end?: number | null; label: string };
+/** A note or flag on the scrubber: a tick (point) or a short bar (range); tapping it seeks there.
+ * `tone`: "note" (accent, the default) for manual notes, "warn"/"alarm" for automatic flags. */
+export type TickTone = "note" | "warn" | "alarm";
+export type TransportTick = { id: string; t: number; t_end?: number | null; label: string; tone?: TickTone };
+
+/** The word a tick's tone reads as (colour is never the only cue). */
+const TONE_WORD: Record<TickTone, string> = { note: "Note", warn: "Warning", alarm: "Alarm" };
 
 /** The replay transport: play/pause, ±10 s, speed, and an accessible scrubber with
  * start/current/end clock times, plus optional note ticks. Pinned above the tab bar —
@@ -9,7 +14,8 @@ export type TransportTick = { id: string; t: number; t_end?: number | null; labe
 export function Transport({ offset, follow, onFollow, ticks }: {
   /** utc − session ms (null: show session time). */
   offset: number | null;
-  /** Shown only for a session that is recording now. */
+  /** Shown only for a session that is recording now: "● Latest" pins the cursor to the newest
+   * sample (pressed while it is pinned). */
   follow?: boolean;
   onFollow?: (on: boolean) => void;
   ticks?: readonly TransportTick[];
@@ -31,13 +37,17 @@ export function Transport({ offset, follow, onFollow, ticks }: {
         {ticks ? (
           <div className="replay-rangewrap">
             {range}
-            <div className="replay-ticks" role="group" aria-label="Notes">
-              {ticks.map((n) => (
-                <button key={n.id} type="button" className={`replay-tick${n.t_end != null ? " range" : ""}`}
-                  style={{ left: pct(n.t), ...(n.t_end != null ? { width: `calc(${pct(n.t_end)} - ${pct(n.t)})` } : {}) }}
-                  aria-label={`Note at ${formatClock(n.t, offset)}: ${n.label}`} title={n.label}
-                  onClick={() => p.seek(n.t)} />
-              ))}
+            <div className="replay-ticks" role="group" aria-label="Notes and flags">
+              {ticks.map((n) => {
+                const tone = n.tone ?? "note";
+                return (
+                  <button key={n.id} type="button" className={`replay-tick tone-${tone}${n.t_end != null ? " range" : ""}`}
+                    data-tone={tone}
+                    style={{ left: pct(n.t), ...(n.t_end != null ? { width: `calc(${pct(n.t_end)} - ${pct(n.t)})` } : {}) }}
+                    aria-label={`${TONE_WORD[tone]} at ${formatClock(n.t, offset)}: ${n.label}`} title={n.label}
+                    onClick={() => p.seek(n.t)} />
+                );
+              })}
             </div>
           </div>
         ) : range}
@@ -56,7 +66,11 @@ export function Transport({ offset, follow, onFollow, ticks }: {
           ))}
         </div>
         {onFollow ? (
-          <button className="rchip replay-follow" aria-pressed={!!follow} onClick={() => onFollow(!follow)}>Follow live</button>
+          <button className="rchip replay-follow" aria-label="Follow the latest sample" aria-pressed={!!follow}
+            title={follow ? "Following the newest sample" : "Jump to the newest sample and follow it"}
+            onClick={() => onFollow(true)}>
+            <span className="replay-follow-dot" aria-hidden="true">●</span> Latest
+          </button>
         ) : null}
       </div>
     </div>
