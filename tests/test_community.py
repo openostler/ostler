@@ -1,7 +1,12 @@
 """Community contribution client — consent gating, anonymous ID, PII-free payload."""
+
+import pytest
+
 import json
 
-from d2diag.community import Community
+from openostler.community import Community
+
+pytestmark = pytest.mark.fake_pack
 
 
 class _FakePoster:

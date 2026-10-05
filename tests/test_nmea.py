@@ -5,10 +5,10 @@ import time
 
 import pytest
 
-from d2diag.gps import nmea
-from d2diag.gps.nmea import Fix, FixMerger, parse, sentence
-from d2diag.gps.reader import GpsReader, MockGps, ReplayGps, open_gps, read_fixes
-from d2diag.gps.route import PERIOD_S, demo_route
+from openostler.gps import nmea
+from openostler.gps.nmea import Fix, FixMerger, parse, sentence
+from openostler.gps.reader import GpsReader, MockGps, ReplayGps, open_gps, read_fixes
+from openostler.gps.route import PERIOD_S, demo_route
 
 FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "demo_loop.nmea")
 

@@ -1,7 +1,7 @@
 """Tests for the K-Line layer against a simulated half-duplex ECU (no hardware)."""
 import pytest
 
-from d2diag.kline import (
+from openostler.kline import (
     TD5_ECU_ADDRESS,
     TESTER_ADDRESS,
     KLine,
@@ -76,8 +76,8 @@ def test_functional_init_does_not_mistake_its_own_echo_for_c1():
     # it, so a naive search for 0xC1 finds the echo and reports a connection on
     # a silent bus — exactly what happened in the car 2026-08-19 ("C1! c1 29 f1 81",
     # the 1A 8A acknowledgement dropped right afterwards).
-    from d2diag.kline import KLine
-    from d2diag.kline.kline import KLineTimeout
+    from openostler.kline import KLine
+    from openostler.kline.kline import KLineTimeout
     from tests.fakes import FakeKLineEcu
 
     ecu = FakeKLineEcu({})               # only echoes, no ECU responds
@@ -88,7 +88,7 @@ def test_functional_init_does_not_mistake_its_own_echo_for_c1():
 
 
 def test_functional_init_finds_a_real_c1_after_the_echo():
-    from d2diag.kline import KLine, encode
+    from openostler.kline import KLine, encode
     from tests.fakes import FakeKLineEcu
 
     req = encode(b"\x81", 0x29, 0xF1, addressed=True, functional=True)
@@ -102,7 +102,7 @@ def test_write_gap_sends_one_byte_at_a_time():
     # P4 — inter-byte time in the tester's request. ISO 14230-2 specifies 5–20 ms and
     # muki01 uses 5 ms; we always sent the whole frame in one sweep. write_gap=0
     # keeps the old behaviour, >0 splits up the transmission.
-    from d2diag.kline import KLine
+    from openostler.kline import KLine
     from tests.fakes import FakeKLineEcu
 
     ecu = FakeKLineEcu({})
@@ -125,7 +125,7 @@ def test_init_high_compensates_for_time_already_spent_high():
     # time and KLine subtracts it — otherwise TiniH becomes systematically too long, which
     # kept us outside the SLABS tolerance window (car 2026-08-19: 9 % → 56 % hits).
     import time as _t
-    from d2diag.kline import KLine
+    from openostler.kline import KLine
     from tests.fakes import FakeKLineEcu
 
     class _Pulsing(FakeKLineEcu):
@@ -148,7 +148,7 @@ def test_init_high_compensates_for_time_already_spent_high():
 
 def test_w5_bus_idle_is_off_by_default_and_configurable():
     import time as _t
-    from d2diag.kline import KLine
+    from openostler.kline import KLine
     from tests.fakes import FakeKLineEcu
 
     kl = KLine(FakeKLineEcu({}), timeout=0.01)

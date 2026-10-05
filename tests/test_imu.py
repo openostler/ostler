@@ -4,10 +4,10 @@ import struct
 
 import pytest
 
-from d2diag.imu import lsm6ds, reader
-from d2diag.imu.lsm6ds import Lsm6ds
-from d2diag.imu.reader import ImuReader, MockImu, open_imu
-from d2diag.logbook.motion import G, to_vehicle
+from openostler.imu import lsm6ds, reader
+from openostler.imu.lsm6ds import Lsm6ds
+from openostler.imu.reader import ImuReader, MockImu, open_imu
+from openostler.logbook.motion import G, to_vehicle
 
 
 class FakeBus:

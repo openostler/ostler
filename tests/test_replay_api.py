@@ -5,6 +5,12 @@ refusals, command events, ``recording_options`` + the snapshot ``recording_sourc
 mock ``read_block``, the ``/captures`` merge and the TLS switch. The recorder, notes log,
 audio writer and IMU are tested in their own files. Polls are driven by hand.
 """
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import json
 import os
 import shutil
@@ -16,10 +22,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-import pytest
 
 from tests.fake_sources import FakeTd5Source, FakeSlabsSource
-from d2diag.web.server import DiagServer, _parse_range
+from openostler.web.server import DiagServer, _parse_range
 
 DEMO = "20261005T090000Z"  # the committed synthetic demo session
 REPO = Path(__file__).resolve().parents[1]
@@ -259,7 +264,7 @@ def test_live_note_refused_while_paused(tmp_path, http):
 
 
 def test_live_note_maps_the_recorders_not_recording_to_409(tmp_path, http):
-    from d2diag.web.server import _not_recording_error
+    from openostler.web.server import _not_recording_error
 
     srv = _server(tmp_path)
     _record(srv)
@@ -449,7 +454,7 @@ def test_recording_sources_unavailable(tmp_path):
 # ---- mock read_block ------------------------------------------------------- #
 
 def test_mock_read_block_round_trips_through_the_store():
-    from d2diag.signals import load_signals
+    from openostler.signals import load_signals
 
     src = FakeTd5Source()
     snap = src.poll()
@@ -484,7 +489,7 @@ def test_mock_read_block_through_the_command_route(tmp_path):
 
 
 def test_no_swedish_in_sources():
-    text = (REPO / "src/d2diag/web/sources.py").read_text(encoding="utf-8")
+    text = (REPO / "src/openostler/web/sources.py").read_text(encoding="utf-8")
     assert "ogiltiga" not in text and "Swedish label" not in text
 
 
@@ -571,16 +576,20 @@ def test_dashboard_tls_flags_must_come_together():
     assert r.returncode == 2 and "--tls-cert and --tls-key must be given together" in r.stderr
 
 
-def test_demo_sniff_log_is_committed_and_packaged():
-    demo = REPO / "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt"
-    from d2diag.web.sniffer import SnifferFeed
+def test_demo_sniff_log_ships_with_the_pack_and_deploys_use_it():
+    from openostler.pack import active_pack
+    from openostler.web.sniffer import SnifferFeed
+    from tools.dashboard import pack_replay_log
 
-    feed = SnifferFeed.from_file(str(demo), delay=0, loop=False)
+    demo = pack_replay_log(active_pack())
+    assert demo is not None
+    feed = SnifferFeed.from_file(demo, delay=0, loop=False)
     feed._run()
     snap = feed.snapshot("td5")
     assert snap["frames"] > 100 and {x["lid"] for x in snap["lids"]} >= {"09", "10"}
-    assert "demo/*.txt" in (REPO / "pyproject.toml").read_text()
-    assert "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt" in (REPO / "Dockerfile").read_text()
+    # deploys replay the installed pack's log, never a hard-coded site-packages path
+    for f in ("Dockerfile", "docker-compose.yml"):
+        assert '"--replay", "pack"' in (REPO / f).read_text(), f
 
 
 # ---- split / name / data passthrough ---------------------------------------- #

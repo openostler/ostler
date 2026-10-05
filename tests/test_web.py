@@ -1,13 +1,18 @@
 """Tests for the web dashboard: sources (live + the test fakes) and that the server serves."""
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import json
 import threading
 import time
 import urllib.request
 
-import pytest
 
 from tests.fake_sources import FakeTd5Source
-from d2diag.web.server import DiagServer
+from openostler.web.server import DiagServer
 
 
 @pytest.fixture(autouse=True)
@@ -57,7 +62,7 @@ def test_mock_signals_include_status_and_flag_iat():
 
 
 def test_logger_records_anomalies(tmp_path):
-    from d2diag.web.logger import SnapshotLogger
+    from openostler.web.logger import SnapshotLogger
     p = tmp_path / "a.jsonl"
     lg = SnapshotLogger(str(p), min_interval=999)
     lg.log({"status": "connected", "faults": [], "signals": {
@@ -68,7 +73,7 @@ def test_logger_records_anomalies(tmp_path):
 
 
 def test_snapshot_logger_throttle_and_fault_change(tmp_path):
-    from d2diag.web.logger import SnapshotLogger
+    from openostler.web.logger import SnapshotLogger
 
     p = tmp_path / "log.jsonl"
     lg = SnapshotLogger(str(p), min_interval=999)  # high throttle → only fault change/first log
@@ -90,13 +95,13 @@ def test_snapshot_logger_throttle_and_fault_change(tmp_path):
 
 
 def test_resolve_serial_explicit_passthrough():
-    from d2diag.web.sources import resolve_serial_port
+    from openostler.web.sources import resolve_serial_port
     assert resolve_serial_port("/dev/ttyUSB3") == "/dev/ttyUSB3"
 
 
 def test_signal_upsert_and_list_round_trip(tmp_path, monkeypatch):
-    from d2diag import signals as store
-    from d2diag.web.server import _signal_upsert, _signals_list
+    from openostler import signals as store
+    from openostler.web.server import _signal_upsert, _signals_list
 
     monkeypatch.setattr(store, "_DIR", tmp_path)
     store._CACHE.clear()
@@ -113,7 +118,7 @@ def test_signal_upsert_and_list_round_trip(tmp_path, monkeypatch):
 
 
 def test_fields_list_motor_maps_to_td5():
-    from d2diag.web.server import _fields_list
+    from openostler.web.server import _fields_list
     d = _fields_list("motor")                    # legacy alias "motor" → canonical "td5"
     names = {f["name"] for f in d["fields"]}
     assert d["module"] == "td5" and _fields_list("td5") == d
@@ -123,16 +128,16 @@ def test_fields_list_motor_maps_to_td5():
 
 
 def test_signal_upsert_validation():
-    from d2diag.web.server import _signal_upsert
+    from openostler.web.server import _signal_upsert
     assert not _signal_upsert({"module": "nope", "record": {"name": "x", "lid": "1", "offset": 0}})["ok"]
     assert not _signal_upsert({"module": "td5", "record": {"lid": "1"}})["ok"]  # missing name/offset
 
 
 def test_read_block_command_returns_hex():
-    from d2diag.kline import KLine, encode
-    from d2diag.kwp2000 import KWP2000
+    from openostler.kline import KLine, encode
+    from openostler.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -147,7 +152,7 @@ def test_read_block_command_returns_hex():
 
 
 def test_read_block_command_not_connected():
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     assert not src.command("read_block", {"lids": ["54"]})["ok"]  # _slabs is None
 
@@ -165,7 +170,7 @@ def test_slabs_empty_read_grace_keeps_session_then_reconnects(monkeypatch):
     # A silent poll cycle should NOT tear down the session immediately (full reconnect ~20 s).
     # The session is kept during the grace period and shows the last known values ("stale"),
     # only after _SLABS_EMPTY_GRACE empties in a row is it given up.
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_EMPTY_GRACE
+    from d2diag.sources import SlabsDataSource, _SLABS_EMPTY_GRACE
     src = SlabsDataSource(port="x", read_faults=False)
     src._slabs = _FakeSlabs(b"")           # the bus never responds (21 54 → empty)
     src._last_signals = {"height_left": {"v": 42, "u": "", "s": "ok", "c": "proven"}}
@@ -186,7 +191,7 @@ def test_slabs_empty_read_grace_keeps_session_then_reconnects(monkeypatch):
 
 
 def test_slabs_successful_read_resets_empty_streak():
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     src._slabs = _FakeSlabs(b"")                # silent bus
     src._last_bus = 0.0
@@ -201,9 +206,9 @@ def test_slabs_successful_read_resets_empty_streak():
 
 def test_no_demo_mode_in_the_product():
     """ADR-0011: no server modes, no set_mode, no simulated sources under src/."""
-    import d2diag.web as web
-    import d2diag.web.sources as sources
-    from d2diag.web.server import _SERVER_COMMANDS, DiagServer
+    import openostler.web as web
+    import openostler.web.sources as sources
+    from openostler.web.server import _SERVER_COMMANDS, DiagServer
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
     try:
@@ -228,7 +233,7 @@ def test_no_demo_mode_in_the_product():
 
 
 def test_read_all_faults_uses_the_injected_scan():
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeSlabsSource, fake_fault_report
 
     seen = []
@@ -250,8 +255,8 @@ def test_read_all_faults_uses_the_injected_scan():
 
 
 def test_read_all_faults_defaults_to_the_live_scan(monkeypatch):
-    import d2diag.faultscan as fs
-    from d2diag.web.server import DiagServer
+    import openostler.faultscan as fs
+    from openostler.web.server import DiagServer
 
     monkeypatch.setattr(fs, "read_all", lambda port: [{"module": "TD5", "port": port}])
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, scan_port="auto")
@@ -263,8 +268,8 @@ def test_read_all_faults_defaults_to_the_live_scan(monkeypatch):
 
 
 def test_fault_watch_sets_source_cadence():
-    from d2diag.web.server import DiagServer
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, Td5DataSource
+    from openostler.web.server import DiagServer
+    from d2diag.sources import SlabsDataSource, Td5DataSource
 
     td5, slabs = Td5DataSource("x"), SlabsDataSource("x")
     srv = DiagServer({"td5": td5, "slabs": slabs}, host="127.0.0.1", port=0)
@@ -283,11 +288,12 @@ def test_fault_watch_sets_source_cadence():
 def test_slabs_source_light_poll_reads_heights_only():
     # LIGHT baseline poll (sniff 2026-08-07): the SLABS poll reads ONLY heights (21 54).
     # Store-driven block reading of many LIDs destabilised the session (~7×
-    # bus traffic) and has been deliberately removed — see references/slabs/overview.md.
-    from d2diag.kline import KLine, encode
-    from d2diag.kwp2000 import KWP2000
+    # bus traffic) and has been deliberately removed — see the D2 pack's SLABS overview
+    # (references/slabs/ in discovery2-diag).
+    from openostler.kline import KLine, encode
+    from openostler.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -419,8 +425,8 @@ def test_admin_gate_requires_password_when_set():
 
 
 def test_raw_log_wraps_transport(tmp_path):
-    from d2diag.transport import LoggingTransport, SerialTransport
-    from d2diag.vehicles.lr_d2.sources import (SlabsDataSource, Td5DataSource, _raw_log_path,
+    from openostler.transport import LoggingTransport, SerialTransport
+    from d2diag.sources import (SlabsDataSource, Td5DataSource, _raw_log_path,
                                     _transport)
 
     # off by default
@@ -460,7 +466,7 @@ class _RecordingSession:
 def test_td5_disconnect_releases_session_not_just_close():
     # Module switch on a shared bus: the TD5 session should be ended cleanly (StopDiagnosticSession)
     # before the port is released, otherwise SLABS gets 7F 81 10 on its init.
-    from d2diag.vehicles.lr_d2.sources import Td5DataSource
+    from d2diag.sources import Td5DataSource
     src = Td5DataSource(port="x", read_faults=False)
     sess = _RecordingSession()
     src._td5 = sess
@@ -470,7 +476,7 @@ def test_td5_disconnect_releases_session_not_just_close():
 
 
 def test_slabs_disconnect_releases_session():
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     sess = _RecordingSession()
     src._slabs = sess
@@ -481,7 +487,7 @@ def test_slabs_disconnect_releases_session():
 
 def test_module_switch_disconnects_previous_source():
     # DiagServer._select should release the old session before the new module is selected.
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
     td5, slabs = FakeTd5Source(), FakeSlabsSource()
@@ -500,7 +506,7 @@ def test_module_switch_disconnects_previous_source():
 def test_fault_watch_command_runs_inline():
     # set_fault_watch only writes attributes on the sources → should not be queued behind an
     # ongoing connection in the poll thread (no poller runs in the test).
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
@@ -518,7 +524,7 @@ def test_shutdown_is_guarded_and_inline():
     # The Settings "Shut down Pi" button posts {action:"shutdown"}. It runs INLINE
     # (never queued behind K-line) and is refused unless --allow-shutdown was set,
     # so dev on a laptop can never power off the host.
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     off = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)  # allow_shutdown default False
@@ -545,7 +551,7 @@ def test_shutdown_is_guarded_and_inline():
 def test_ecu_commands_still_go_through_the_poll_queue():
     # The opposite: anything touching K-line MUST be serialized with the poll. Without a poller
     # the queue is never drained → the command times out (short timeout here).
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
@@ -560,7 +566,7 @@ def test_ecu_commands_still_go_through_the_poll_queue():
 def test_connect_sleep_aborts_when_a_command_is_queued():
     # The SLABS silent period is 28 s and a full establishment ~90 s. If the poll thread sleeps
     # through it while a module switch is queued, the UI times out despite a valid command.
-    from d2diag.web.server import ConnectAborted, DiagServer
+    from openostler.web.server import ConnectAborted, DiagServer
     from tests.fake_sources import FakeTd5Source
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
@@ -574,7 +580,7 @@ def test_connect_sleep_aborts_when_a_command_is_queued():
 
 
 def test_sources_get_the_interruptible_sleep_hook():
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     src = FakeTd5Source()
@@ -600,10 +606,10 @@ def test_slabs_poll_reads_store_lids_by_rotation():
     # The experimental mode should show more than heights: the poll reads 21 54 every cycle and
     # rotates ONE extra store LID per cycle (keeps traffic at ~1 Hz). Over several
     # cycles all store fields are filled in without any single cycle block-reading.
-    from d2diag.kline import KLine, encode
-    from d2diag.kwp2000 import KWP2000
+    from openostler.kline import KLine, encode
+    from openostler.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
+    from d2diag.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -640,7 +646,7 @@ def test_slabs_poll_is_throttled_to_one_hz():
     # The server polls at 2 Hz but SLABS can't take it: the reference tool ran ~1 Hz
     # (keepalive was every ~1048 ms). Extra polls should return cached values WITHOUT
     # touching the bus — otherwise we send 4 frames/s and the session dies (~21 s in the car).
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_BUS_PERIOD
+    from d2diag.sources import SlabsDataSource, _SLABS_BUS_PERIOD
     src = SlabsDataSource(port="x", read_faults=False)
     sess = _CountingSlabs()
     src._slabs = sess
@@ -662,7 +668,7 @@ def test_slabs_poll_is_throttled_to_one_hz():
 def test_slabs_faults_are_read_on_a_slow_clock():
     # Fault codes cost two extra frames → their own cadence in seconds, independent of
     # fault_watch (which otherwise sets fault_every=1 on all sources).
-    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_FAULT_PERIOD
+    from d2diag.sources import SlabsDataSource, _SLABS_FAULT_PERIOD
     src = SlabsDataSource(port="x", read_faults=True)
     reads = []
 
@@ -688,7 +694,7 @@ def test_connection_log_notes_each_module_separately(tmp_path):
     # Switching from one connected module to another: status is "connected" at both
     # ends. If the transition is keyed only on status the new module's row falls silent — that
     # hid a successful SLABS session 2026-08-18 23:08:54.
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     class _Liveish(FakeTd5Source):
@@ -710,7 +716,7 @@ def test_connection_log_notes_each_module_separately(tmp_path):
 def test_repeated_connect_phase_is_logged_once(tmp_path):
     # Without a cable the reconnect shouts "opening the cable" 2×/s forever
     # (1.9 MB of noise in an evening) and drowns out the lines you're debugging with.
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
@@ -728,7 +734,7 @@ def test_init_lines_carry_the_last_known_engine_context(tmp_path):
     # K-line is shared: we can't read the engine while SLABS is active. Without the
     # last known context there's no way to tell afterwards whether a silent
     # init attempt was made while moving (SLABS refuses comms >8–20 km/h) or stationary.
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeTd5Source
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
@@ -748,7 +754,7 @@ def test_conf_of_reads_store():
     # The confidence filter (Verified/Experimental) reads the store. After rpm_error
     # and the balance fields were promoted 2026-08-19, maf (1D u16@4) is a remaining
     # TD5 candidate — field proven but the kg/hr scale awaits a factory reference.
-    from d2diag.vehicles.lr_d2.sources import _conf_map, _conf_of
+    from d2diag.sources import _conf_map, _conf_of
     conf = _conf_map("td5")
     assert _conf_of("td5", "rpm_error", conf) == "proven"
     assert _conf_of("td5", "balance_3", conf) == "proven"
@@ -756,7 +762,7 @@ def test_conf_of_reads_store():
 
 
 def test_fuel_computer_rate_trip_economy():
-    from d2diag.vehicles.lr_d2.sources import _FuelComputer
+    from d2diag.sources import _FuelComputer
     t = [0.0]
     fc = _FuelComputer(clock=lambda: t[0])
     # idle: 12 mg/stroke, 750 rpm, stationary → ~1.62 L/h, no economy (not moving)
@@ -777,7 +783,7 @@ def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkey
     assets with an immutable cache header, and nothing outside the static dir."""
     import urllib.error
 
-    from d2diag.web import server as srvmod
+    from openostler.web import server as srvmod
 
     (tmp_path / "assets").mkdir()
     (tmp_path / "index.html").write_text("<title>D2 Diag app</title>", encoding="utf-8")
@@ -816,14 +822,14 @@ def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkey
 
 
 def test_app_falls_back_to_legacy_v2_without_a_build(tmp_path, monkeypatch):
-    from d2diag.web import server as srvmod
+    from openostler.web import server as srvmod
 
     monkeypatch.setattr(srvmod, "_STATIC", tmp_path / "missing")
     assert srvmod._app_html() == srvmod._DASHBOARD_V2.read_bytes()
 
 
 def test_fields_carry_presentation_metadata_and_derived_fields():
-    from d2diag.web.server import _fields_list
+    from openostler.web.server import _fields_list
 
     motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
     assert motor["coolant_temp"]["label"] == "Coolant"
@@ -839,7 +845,7 @@ def test_fields_carry_presentation_metadata_and_derived_fields():
 
 
 def test_fields_carry_display_span_and_explicit_normal_band():
-    from d2diag.web.server import _fields_list
+    from openostler.web.server import _fields_list
 
     motor = {f["name"]: f for f in _fields_list("motor")["fields"]}
     assert motor["coolant_temp"]["span"] == [-20, 120]
@@ -848,7 +854,7 @@ def test_fields_carry_display_span_and_explicit_normal_band():
     assert motor["brake_main"]["span"] is None       # no limits, no span → no bar
     assert motor["maf_sensor"]["span"] is not None   # measured MAF gained limits 2026-10-04
     # the numeric multiplier `scale` is untouched by the display span
-    from d2diag.signals import load_signals
+    from openostler.signals import load_signals
     assert {s.name: s.scale for s in load_signals("td5")}["battery"] == 0.001
 
 
@@ -868,7 +874,7 @@ def test_fake_info_source_shows_seeded_faults_and_clears():
 
 
 def test_info_source_is_honest_not_fabricated():
-    from d2diag.web import InfoDataSource
+    from openostler.web import InfoDataSource
 
     src = InfoDataSource("bcu", live_message="no fault memory")
     d = src.poll()
@@ -880,8 +886,8 @@ def test_info_source_is_honest_not_fabricated():
 
 
 def test_select_info_module():
-    from d2diag.web import InfoDataSource
-    from d2diag.web.server import DiagServer
+    from openostler.web import InfoDataSource
+    from openostler.web.server import DiagServer
     from tests.fake_sources import FakeInfoSource, FakeTd5Source
 
     srv = DiagServer({"td5": FakeTd5Source(), "bcu": FakeInfoSource("bcu"),
@@ -922,7 +928,7 @@ class _FaultyTd5:
 
 def test_td5_source_shows_undecoded_fault_bits():
     # Hidden byte<off>.bit<n> faults let a clear wipe faults nobody saw (2026-10-03).
-    from d2diag.vehicles.lr_d2.sources import Td5DataSource
+    from d2diag.sources import Td5DataSource
     src = Td5DataSource(port="x", read_faults=True)
     src._td5 = _FaultyTd5()
     snap = src.poll()
@@ -931,7 +937,7 @@ def test_td5_source_shows_undecoded_fault_bits():
 
 
 def test_faults_endpoint_serves_new_module_stores():
-    from d2diag.web.server import _faults_list
+    from openostler.web.server import _faults_list
     for ui_name, key in (("autobox", "P0705-14"), ("eat", "P0705-14"), ("ace", "04-02"), ("ace", "flat-33-06"),
                          ("airbag", "008")):
         d = _faults_list(ui_name)
@@ -986,7 +992,7 @@ def test_catalog_is_public_even_with_admin_password_and_public_mode():
 
 
 def test_map_and_coverage_keep_their_legacy_shape():
-    from d2diag.menus import MENUS
+    from openostler.menus import MENUS
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, menus=MENUS,
                      poll_interval=0.05, stream_interval=0.05)
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -1011,8 +1017,8 @@ def test_map_and_coverage_keep_their_legacy_shape():
 
 
 def test_coverage_counts_the_derived_legacy_statuses():
-    from d2diag import catalog
-    from d2diag.menus import MENUS
+    from openostler import catalog
+    from openostler.menus import MENUS
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, menus=MENUS)
     try:
         cov = srv.coverage()
@@ -1085,7 +1091,7 @@ _IDENT_87 = (_FAKE_VIN_HEAD + b"\x12\x34\x56" + b"\x00" + b"\x14\x11\x20\x02" + 
 
 
 def _td5_ecu_responses():
-    from d2diag.kline import encode
+    from openostler.kline import encode
 
     def _f(d):
         return encode(d, addressed=False)
@@ -1101,10 +1107,10 @@ def _td5_ecu_responses():
 
 
 def _td5_source_on_fake(transport):
-    from d2diag.kline import KLine
-    from d2diag.kwp2000 import KWP2000
+    from openostler.kline import KLine
+    from openostler.kwp2000 import KWP2000
     from d2diag.td5 import Td5
-    from d2diag.vehicles.lr_d2.sources import Td5DataSource
+    from d2diag.sources import Td5DataSource
 
     src = Td5DataSource(port="x", read_faults=False)
     src._td5 = Td5(KWP2000(KLine(transport)))
@@ -1139,7 +1145,7 @@ def test_security_status_reads_31_then_33_c0():
 def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
     import logging
 
-    from d2diag.transport import LoggingTransport
+    from openostler.transport import LoggingTransport
     from tests.fakes import FakeKLineEcu
 
     caplog.set_level(logging.DEBUG)
@@ -1171,7 +1177,7 @@ def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
 
 
 def test_read_identity_not_connected_and_mock():
-    from d2diag.vehicles.lr_d2.sources import Td5DataSource
+    from d2diag.sources import Td5DataSource
     assert not Td5DataSource(port="x").command("read_identity", {})["ok"]
     r = FakeTd5Source().command("read_identity", {})
     assert r["ok"] and set(r["identity"]) >= {"part_no", "vin_masked"}
@@ -1202,5 +1208,5 @@ def test_snapshot_has_logbook_fields_and_sessions_default_under_csv_dir(tmp_path
 
 
 def test_delete_session_is_an_inline_server_command():
-    from d2diag.web.server import _INLINE_COMMANDS
+    from openostler.web.server import _INLINE_COMMANDS
     assert "delete_session" in _INLINE_COMMANDS  # never queued behind a K-line establishment

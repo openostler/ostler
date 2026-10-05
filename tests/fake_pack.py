@@ -3,15 +3,15 @@ generic (specs/2026-10-06-phase0-vehiclepack-decoupling-design.md §1, §6).
 
 Two modules: ``alpha`` (fast init 0x10, live, alias ``a``) and ``beta`` (no live reader).
 Data lives in ``tests/fixtures/fake_pack/{signals,dtc}/alpha.json``. Use it with
-``d2diag.pack.use_pack(FAKE_PACK)`` (or ``set_active_pack``). Nothing here names a
+``openostler.pack.use_pack(FAKE_PACK)`` (or ``set_active_pack``). Nothing here names a
 Discovery 2 module.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from d2diag.commands import Command
-from d2diag.pack import (PACK_API_VERSION, Detector, FaultReader, ModuleSpec, SniffSpec,
+from openostler.commands import Command
+from openostler.pack import (PACK_API_VERSION, Detector, FaultReader, ModuleSpec, SniffSpec,
                          VehiclePack)
 
 ROOT = Path(__file__).resolve().parent / "fixtures" / "fake_pack"
@@ -54,7 +54,7 @@ def _alpha_line(b: "list[int]") -> bool:
 
 
 def _sources(port, *, raw_log_dir=None, state_dir=None):
-    from d2diag.web.sources import DataSource, InfoDataSource
+    from openostler.web.sources import DataSource, InfoDataSource
 
     class FakeAlphaSource(DataSource):
         name = "alpha"

@@ -12,7 +12,7 @@ car reading.
 * fake_bcu_signals(tick) — scripted BCU body states (all candidate).
 * fake_read_block(module, values, lids) — LID blocks laid out from the signal store.
 * fake_fault_report(port) — the "read all fault codes" report (RDL 016 baseline).
-* FakeGps — the synthetic GPS loop (d2diag.gps.reader.MockGps).
+* FakeGps — the synthetic GPS loop (openostler.gps.reader.MockGps).
 * fake_modules(gps=None) — {module: source} for a DiagServer, as the dashboard
   builds it for the car.
 """
@@ -22,8 +22,8 @@ import math
 import random
 from typing import Callable
 
-from d2diag.signals import load_signals
-from d2diag.vehicles.lr_d2.sources import (  # private helpers of the real sources (tests only)
+from openostler.signals import load_signals
+from d2diag.sources import (  # private helpers of the real sources (tests only)
     TD5_ACTIONS,
     _SLABS_ACTUATORS,
     _security_message,
@@ -31,7 +31,7 @@ from d2diag.vehicles.lr_d2.sources import (  # private helpers of the real sourc
     _slabs_faults_flat,
     _slabs_sig,
 )
-from d2diag.web.sources import (
+from openostler.web.sources import (
     DataSource,
     _parse_lids,
 )
@@ -370,9 +370,9 @@ class FakeSlabsSource(DataSource):
 
 def fake_fault_report(port: str = "auto", sleep=None) -> "list[dict]":
     """The "read all fault codes" report without a car (the RDL 016 baseline), in the shape
-    of d2diag.faultscan.read_all."""
-    from d2diag.faultscan import _row as row
-    from d2diag.faultscan import unimplemented_rows
+    of openostler.faultscan.read_all."""
+    from openostler.faultscan import _row as row
+    from openostler.faultscan import unimplemented_rows
 
     rows = [
         row("TD5", []),
@@ -386,7 +386,7 @@ def fake_fault_report(port: str = "auto", sleep=None) -> "list[dict]":
 
 def FakeGps():  # noqa: N802 — reads like a class at the call site
     """The synthetic GPS loop (Rannoch Moor demo route), as --gps mock used to give."""
-    from d2diag.gps.reader import MockGps
+    from openostler.gps.reader import MockGps
 
     return MockGps()
 

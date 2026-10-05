@@ -10,7 +10,7 @@ That lets a differential read yield DIFFERENT values between read #1 and read #2
 """
 from __future__ import annotations
 
-from d2diag.transport.base import Transport
+from openostler.transport.base import Transport
 
 
 def _as_response(v):

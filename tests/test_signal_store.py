@@ -1,124 +1,18 @@
-"""Tests for the declarative signal store (d2diag.signals).
+"""Tests for the declarative signal store (openostler.signals).
 
-The parity test is **the safety net for the migration**: the frozen reference table
-below is the hand-coded td5.identifiers literal as it looked before the flip.
-``load_signals("td5")`` must reproduce it exactly (name/lid/offset/type/scale/
-bias/unit + limits) — otherwise the store has silently changed a scale.
+Store mechanics run against FAKE_PACK; the checks on the Discovery 2 stores are
+``needs_pack`` integration tests (the D2 parity tests live in the pack repo).
 """
-import json
 
 import pytest
 
-from d2diag import signals as store
-from d2diag.signals import Signal, load_signals, upsert_field
+import json
 
-# (name, lid, offset, kind, scale, bias, unit) — frozen reference from the old literal.
-_SPEC = [
-    ("rpm", 0x09, 0, "u16", 1.0, 0.0, "rpm"),
-    ("speed", 0x0D, 0, "u8", 1.0, 0.0, "km/h"),
-    ("battery", 0x10, 0, "u16", 0.001, 0.0, "V"),
-    ("coolant_temp", 0x1A, 0, "u16", 0.1, -273.2, "°C"),
-    ("air_temp", 0x1A, 4, "u16", 0.1, -273.2, "°C"),
-    ("ext_temp", 0x1A, 8, "u16", 0.1, -273.2, "°C"),
-    ("fuel_temp", 0x1A, 12, "u16", 0.1, -273.2, "°C"),
-    ("accel_way1", 0x1B, 0, "u16", 0.001, 0.0, "V"),
-    ("accel_way2", 0x1B, 2, "u16", 0.001, 0.0, "V"),
-    ("accel_way3", 0x1B, 4, "u16", 0.001, 0.0, "V"),
-    ("accel_supply", 0x1B, 8, "u16", 0.001, 0.0, "V"),  # long 21 1B form (2026-10-04)
-    ("accel_pedal_pct", 0x1B, 6, "u16", 0.01, 0.0, "%"),  # T-31 2026-10-04 (long form)
-    # short 21 1B form (RDL 016) — reply-length variants of the same names
-    ("accel_supply", 0x1B, 6, "u16", 0.001, 0.0, "V"),
-    ("accel_pedal_pct", 0x1B, 4, "u16", 0.01, 0.0, "%"),
-    ("manifold_press", 0x1C, 0, "u16", 0.0001, 0.0, "bar"),
-    ("maf_sensor", 0x1C, 4, "u16", 0.1, 0.0, "kg/hr"),
-    ("maf_sensor_v", 0x1C, 6, "u16", 0.001, 0.0, "V"),
-    ("maf", 0x1D, 4, "u16", 0.1, -515.0, "kg/hr"),
-    ("injection_qty", 0x1D, 6, "u16", 0.01, 0.0, "mg/stroke"),
-    ("egr_modulator", 0x1D, 15, "u8", 100 / 255, 0.0, "%"),
-    ("wastegate_modulator", 0x1D, 17, "u8", 100 / 255, 0.0, "%"),
-    ("rpm_error", 0x21, 0, "s16", 1.0, 0.0, "rpm"),
-    ("ambient_press_1", 0x23, 0, "u16", 0.0001, 0.0, "bar"),
-    ("ambient_press_2", 0x23, 2, "u16", 0.0001, 0.0, "bar"),
-    ("balance_1", 0x40, 0, "s16", 1.0, 0.0, ""),
-    ("balance_2", 0x40, 2, "s16", 1.0, 0.0, ""),
-    ("balance_3", 0x40, 4, "s16", 1.0, 0.0, ""),
-    ("balance_4", 0x40, 6, "s16", 1.0, 0.0, ""),
-    ("balance_5", 0x40, 8, "s16", 1.0, 0.0, ""),
-    # Candidates ported from external repos (2026-10-01) — guarded here too so their
-    # scale can't drift silently. See references/td5-cross-reference.md.
-    ("wastegate_pos", 0x38, 0, "u16", 0.01, 0.0, "%"),
-    ("egr_pos", 0x37, 0, "u16", 0.01, 0.0, "%"),
-    ("driver_demand", 0x1D, 0, "u16", 0.01, 0.0, "mg/stroke"),
-    # Ecosystem pass (2026-10-01): mined from SimonRafferty/Td5-Diagnostic-App.
-    ("battery_direct", 0x10, 2, "u16", 0.001, 0.0, "V"),   # was reference_voltage (mislabelled)
-    ("smoke_limit", 0x1D, 10, "u16", 0.01, 0.0, "mg/stroke"),
-    ("torque_limit", 0x1D, 12, "u16", 0.01, 0.0, "mg/stroke"),
-    ("egr_inlet", 0x45, 0, "u16", 0.01, 0.0, "%"),
-    ("coolant_sensor_v", 0x1A, 2, "u16", 0.001, 0.0, "V"),
-    ("intake_sensor_v", 0x1A, 6, "u16", 0.001, 0.0, "V"),
-    ("fuel_sensor_v", 0x1A, 14, "u16", 0.001, 0.0, "V"),
-    # brake switches, 21 1E bits — proven on the car 2026-10-03 (brake_main active-low)
-    ("brake_switch_2", 0x1E, 0, "bit", 1.0, 0.0, ""),
-    ("brake_main", 0x1E, 1, "bit", 1.0, 0.0, ""),
-    # cruise switches, 21 1E byte0 bits 2/3/4 — proven on the car 2026-10-04
-    ("cruise_master", 0x1E, 0, "bit", 1.0, 0.0, ""),
-    ("cruise_set", 0x1E, 0, "bit", 1.0, 0.0, ""),
-    ("cruise_resume", 0x1E, 0, "bit", 1.0, 0.0, ""),
-    ("fuel_pump_relay", 0x36, 1, "bit", 1.0, 0.0, ""),  # candidate 2026-10-04
-]
+from openostler import signals as store
+from openostler.signals import Signal, load_signals, upsert_field
 
-_SPEC_LIMITS = {
-    "rpm": (0, 4800), "speed": (0, 200), "battery": (11.5, 15.5),
-    "coolant_temp": (-40, 105), "air_temp": (-30, 80), "fuel_temp": (-30, 90),
-    "ext_temp": (-40, 50),        # ghost: 150°C → suspect (sensor not fitted)
-    "maf": (0, 700),              # kg/hr; u16@4, WOT peak ~667 (candidate scale)
-    "maf_sensor": (0, 700),       # kg/hr; measured MAF 1C@4 (live since 2026-10-04)
-    "maf_sensor_v": (0, 5),       # V; MAF signal 1C@6 (candidate)
-    "accel_pedal_pct": (0, 100),  # % pedal (T-31)
-    "injection_qty": (0, 90),     # mg/stroke (candidate)
-    "egr_modulator": (0, 100),        # % duty (candidate, 1D@15)
-    "wastegate_modulator": (0, 100),  # % duty (candidate, 1D@17); 1D@16 is a dead/reserved byte
-    "manifold_press": (0.8, 2.6), "ambient_press_1": (0.8, 1.1),
-    "ambient_press_2": (0.8, 1.1), "rpm_error": (-300, 300),
-    "accel_way1": (0.0, 5.1), "accel_way2": (0.0, 5.1), "accel_way3": (0.0, 5.1),
-    "accel_supply": (4.9, 5.1),   # reference tool: 5.0 V ±0.1 rock-solid (2026-08-19)
-    "balance_1": (-12, 12), "balance_2": (-12, 12), "balance_3": (-12, 12),
-    "balance_4": (-12, 12), "balance_5": (-12, 12),
-    "wastegate_pos": (0, 100), "egr_pos": (0, 100),   # native-LID candidates (0x38/0x37)
-    "driver_demand": (0, 90),
-    "battery_direct": (11.0, 15.5), "smoke_limit": (0, 90), "torque_limit": (0, 90),
-    "egr_inlet": (0, 100),
-    "coolant_sensor_v": (0.0, 5.1), "intake_sensor_v": (0.0, 5.1), "fuel_sensor_v": (0.0, 5.1),
-}
+pytestmark = pytest.mark.fake_pack
 
-
-def test_td5_store_reproduces_literal_exactly():
-    # keyed by (name, offset): a name may have one record per reply length (21 1B)
-    loaded = {(s.name, s.offset): s for s in load_signals("td5")}
-    assert set(loaded) == {(r[0], r[2]) for r in _SPEC}
-    for name, lid, off, kind, scale, bias, unit in _SPEC:
-        s = loaded[(name, off)]
-        assert (s.lid, s.offset, s.kind, s.scale, s.bias, s.unit) == (lid, off, kind, scale, bias, unit), name
-
-
-def test_td5_store_limits_match_literal():
-    lim = {s.name: s.limits for s in load_signals("td5") if s.limits}
-    assert lim == _SPEC_LIMITS
-
-
-def test_identifiers_public_api_intact():
-    # Downstream importers (sources/decoder/td5) rely on these names.
-    from d2diag.td5.identifiers import BY_NAME, LIDS, LIMITS, SIGNALS, decode_lid
-    assert len(SIGNALS) == len(_SPEC)
-    assert BY_NAME["rpm"].lid == 0x09
-    assert 0x1A in LIDS
-    assert LIMITS["battery"] == (11.5, 15.5)
-    # 21 1A response (real car): coolant offset0 u16/10−273.2
-    data = bytes.fromhex("0cfc04f10cb105eb108800040c950651")
-    assert round(decode_lid(0x1A, data)["coolant_temp"], 1) == 59.2
-
-
-# ---- extended types (u16le/s16le/bit/states) ---------------------------- #
 def test_u16le_and_s16le_decode():
     d = bytes.fromhex("00 80".replace(" ", ""))
     assert Signal("x", 1, 0, "u16le").decode(d) == 0x8000
@@ -183,6 +77,7 @@ def test_remove_field_supports_reassign_and_clear(tmp_path, monkeypatch):
     assert store.remove_field("demo", "56", 0, bit=7) == 0
 
 
+@pytest.mark.needs_pack
 def test_slabs_store_has_belagt_heights_and_door():
     by = {s.name: s for s in load_signals("slabs")}
     assert by["height_left"].confidence == "proven"
@@ -191,8 +86,8 @@ def test_slabs_store_has_belagt_heights_and_door():
 
 
 def test_legacy_swedish_confidence_is_normalised(tmp_path, monkeypatch):
-    import d2diag.signals as store
-    from d2diag.signals import normalize_confidence
+    import openostler.signals as store
+    from openostler.signals import normalize_confidence
 
     assert normalize_confidence("belagt") == "proven"
     assert normalize_confidence("kandidat") == "candidate"
@@ -212,12 +107,14 @@ def test_legacy_swedish_confidence_is_normalised(tmp_path, monkeypatch):
 # --------------------------------------------------------------------------- #
 # Reply-length layouts (specs/2026-10-04-reply-length-layouts-design.md)
 # --------------------------------------------------------------------------- #
+@pytest.mark.needs_pack
 def test_length_restricts_fits():
     sig = Signal("x", 0x1B, 4, length=10)
     assert sig.fits(bytes(10)) and not sig.fits(bytes(8)) and not sig.fits(bytes(12))
     assert Signal("y", 0x1B, 4).fits(bytes(8))  # no length → any long-enough reply
 
 
+@pytest.mark.needs_pack
 def test_length_variants_agree_on_unit_limits_and_labels():
     by: "dict[str, list[Signal]]" = {}
     for s in load_signals("td5"):
@@ -231,13 +128,11 @@ def test_length_variants_agree_on_unit_limits_and_labels():
         assert len(keys) == 1, f"{name}: variants disagree {keys}"
 
 
+@pytest.mark.needs_pack
 def test_fields_list_each_name_once():
-    from d2diag.web.server import _fields_list
+    from openostler.web.server import _fields_list
     names = [f["name"] for f in _fields_list("motor")["fields"]]
     assert len(names) == len(set(names))
     assert "accel_supply" in names
 
 
-def test_esp_header_skips_length_variants():
-    import tools.gen_signal_header as g
-    assert "accel_supply" not in g.build_header() and "accel_pedal" not in g.build_header()

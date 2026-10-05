@@ -15,7 +15,7 @@ import urllib.request
 
 import pytest
 
-from d2diag.pack import use_pack
+from openostler.pack import use_pack
 from tests.fake_pack import FAKE_PACK
 
 
@@ -46,7 +46,7 @@ def _post(base, action, **params):
 
 @pytest.fixture
 def served(fake_pack, tmp_path):
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
 
     srv = DiagServer(fake_pack.sources("auto"), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05, csv_dir=str(tmp_path),
@@ -120,8 +120,8 @@ def test_command_gate_uses_the_pack_registry(served):
 
 def test_signal_upsert_is_limited_to_the_pack_writable_modules(fake_pack, tmp_path,
                                                                monkeypatch):
-    from d2diag import signals
-    from d2diag.web.server import _signal_upsert, _signals_list
+    from openostler import signals
+    from openostler.web.server import _signal_upsert, _signals_list
 
     (tmp_path / "alpha.json").write_text(
         (fake_pack.signals_dir / "alpha.json").read_text(encoding="utf-8"), encoding="utf-8")
@@ -137,7 +137,7 @@ def test_signal_upsert_is_limited_to_the_pack_writable_modules(fake_pack, tmp_pa
 # ---- logbook ---------------------------------------------------------------- #
 
 def _record(root, module):
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
 
     clock = {"t": 1_790_000_000.0, "m": 50.0}
     rec = SessionRecorder(str(root), clock=lambda: clock["t"], mono=lambda: clock["m"],
@@ -154,7 +154,7 @@ def _record(root, module):
 
 
 def test_recorder_writes_canonical_ids(fake_pack, tmp_path):
-    from d2diag.logbook.store import SessionStore
+    from openostler.logbook.store import SessionStore
 
     sid = _record(tmp_path / "s", "a")
     raw = json.loads((tmp_path / "s" / sid / "meta.json").read_text(encoding="utf-8"))
@@ -167,7 +167,7 @@ def test_recorder_writes_canonical_ids(fake_pack, tmp_path):
 
 
 def test_legacy_alias_on_disk_is_normalised_on_read_only(fake_pack, tmp_path):
-    from d2diag.logbook.store import SessionStore
+    from openostler.logbook.store import SessionStore
 
     sid = _record(tmp_path / "s", "alpha")
     d = tmp_path / "s" / sid
@@ -193,11 +193,11 @@ def test_legacy_alias_on_disk_is_normalised_on_read_only(fake_pack, tmp_path):
 
 
 def test_channel_groups_come_from_the_pack_store(fake_pack):
-    from d2diag.logbook import channels
+    from openostler.logbook import channels
 
     assert channels.group_for("alpha_speed") == channels._store_records()["alpha_speed"] \
         .get("group", "").lower()
     assert "alpha_speed" in channels._store_records()
-    from d2diag import signals
+    from openostler import signals
 
     assert os.path.samefile(signals._dir(), fake_pack.signals_dir)

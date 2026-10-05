@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pathlib
 
-from d2diag.web import markdown as md
-from d2diag.web.docs import DocLibrary
+from openostler.web import markdown as md
+from openostler.web.docs import DocLibrary
 
 
 def test_headings_and_inline():

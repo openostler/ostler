@@ -6,9 +6,9 @@ behaviours are still covered by test_tolerant/test_slabs.
 """
 import pytest
 
-from d2diag.kline import KLine, encode
-from d2diag.kwp2000 import KWP2000, KWP2000Error
-from d2diag.session import EcuSession
+from openostler.kline import KLine, encode
+from openostler.kwp2000 import KWP2000, KWP2000Error
+from openostler.session import EcuSession
 from tests.fakes import FakeKLineEcu
 
 NOSLEEP = lambda *_: None  # noqa: E731

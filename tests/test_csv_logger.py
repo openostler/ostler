@@ -1,8 +1,14 @@
 """CSV live-data logger (web/logger.py::CsvLogger) + server start/stop commands."""
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import csv
 import pathlib
 
-from d2diag.web.logger import CsvLogger
+from openostler.web.logger import CsvLogger
 
 
 def _snap(signals, status="connected", faults=None):
@@ -56,7 +62,7 @@ def test_waits_for_signals_before_writing_header(tmp_path):
 
 def test_server_start_stop_csv_commands(tmp_path):
     from tests.fake_sources import FakeTd5Source
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
@@ -83,7 +89,7 @@ def test_csv_commands_do_not_queue_behind_the_poller(tmp_path):
     import time as _time
 
     from tests.fake_sources import FakeTd5Source
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
 
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
@@ -103,7 +109,7 @@ def test_csv_rotates_to_a_new_file_on_module_switch(tmp_path):
     # the wrong module and every row goes empty — 446 rows of TD5 columns without a
     # single height value (the car 2026-08-19). Now the file is rotated instead, one
     # per module.
-    from d2diag.web.logger import CsvLogger
+    from openostler.web.logger import CsvLogger
 
     p = tmp_path / "livedata-20260819-101325.csv"
     log = CsvLogger(str(p))

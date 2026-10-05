@@ -3,16 +3,21 @@
 Proves against RECORDED bytes (real car 2026-08-03) and a simulated turnaround
 glitch that the library gets all the way to unlocked live data.
 """
+
 import pytest
 
-from d2diag.kline import (
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+
+from openostler.kline import (
     TD5_ECU_ADDRESS,
     TESTER_ADDRESS,
     KLine,
     KLineTimeout,
     encode,
 )
-from d2diag.kwp2000 import KWP2000
+from openostler.kwp2000 import KWP2000
 from d2diag.td5 import Td5
 from d2diag.td5.keygen import key_bytes_from_seed
 from tests.fakes import FakeKLineEcu
@@ -78,7 +83,7 @@ def test_strict_request_fails_on_bad_checksum():
 
 
 def test_tolerant_negative_response_still_raises():
-    from d2diag.kwp2000 import NegativeResponse
+    from openostler.kwp2000 import NegativeResponse
 
     req = _sess(b"\x10\xa0")
     neg = _sess(b"\x7f\x10\x10")  # generalReject

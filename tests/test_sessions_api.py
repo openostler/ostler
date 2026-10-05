@@ -5,6 +5,12 @@ refusals, the snapshot ``gps``/``recording`` fields and that the recorder is fed
 recorder/store/exports themselves are tested in their own files. Polls are driven by hand
 (``poll_once`` + ``record_poll``) so nothing depends on thread timing.
 """
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import json
 import os
 import threading
@@ -12,10 +18,9 @@ import time
 import urllib.error
 import urllib.request
 
-import pytest
 
 from tests.fake_sources import FakeTd5Source, FakeSlabsSource
-from d2diag.web.server import DiagServer
+from openostler.web.server import DiagServer
 
 
 class FakeFix:
@@ -57,7 +62,7 @@ class FakeGps:
 
 def _make_synthetic(root) -> str:
     """A closed synthetic session in ``root`` (independent of the committed demo)."""
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
 
     clock = {"t": 1_700_000_000.0, "m": 100.0}
     rec = SessionRecorder(str(root), clock=lambda: clock["t"], mono=lambda: clock["m"],
@@ -373,7 +378,7 @@ def _load_dashboard(monkeypatch):
     import pathlib
     import signal
 
-    from d2diag.web import server as server_mod
+    from openostler.web import server as server_mod
 
     captured = {}
     monkeypatch.setattr(server_mod.DiagServer, "serve", lambda self: captured.update(srv=self))
@@ -401,8 +406,8 @@ def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
     """The Docker/homelab command: live sources, not public, recorder on, OSM geocoder on."""
     import sys
 
-    from d2diag.geo.nominatim import DEFAULT_URL
-    from d2diag.vehicles.lr_d2.sources import InfoDataSource, SlabsDataSource, Td5DataSource
+    from openostler.geo.nominatim import DEFAULT_URL
+    from d2diag.sources import InfoDataSource, SlabsDataSource, Td5DataSource
 
     mod, captured = _load_dashboard(monkeypatch)
     monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
@@ -446,7 +451,7 @@ _WORDS = ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot")
 
 def _make_real(root, start_s: float, name=None, fix=None, synthetic=False) -> str:
     """A closed session in ``root`` starting at ``start_s`` (epoch s)."""
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
 
     clock = {"t": start_s, "m": 100.0}
     rec = SessionRecorder(str(root), clock=lambda: clock["t"], mono=lambda: clock["m"],
@@ -462,7 +467,7 @@ def _make_real(root, start_s: float, name=None, fix=None, synthetic=False) -> st
     sid = rec.status()["session"]
     rec.close()
     if name is not None:
-        from d2diag.logbook.store import SessionStore
+        from openostler.logbook.store import SessionStore
         SessionStore(str(root)).update_meta(sid, name=name)
     return sid
 

@@ -1,13 +1,16 @@
 """Session exports: AiM-named CSV, Racelogic VBO, GPX 1.1 (ADR-0009)."""
+
+import pytest
+
 import csv
 import io
 import xml.etree.ElementTree as ET
 
-import pytest
+from openostler.logbook.channels import export_name, group_for
+from openostler.logbook.export import to_csv, to_gpx, to_vbo, vbo_lat, vbo_long
+from openostler.logbook.store import SessionStore
 
-from d2diag.logbook.channels import export_name, group_for
-from d2diag.logbook.export import to_csv, to_gpx, to_vbo, vbo_lat, vbo_long
-from d2diag.logbook.store import SessionStore
+pytestmark = pytest.mark.fake_pack
 
 META = {"id": "20261006T090000Z", "start_utc": "2026-10-06T09:00:00.000Z",
         "channels": [{"name": "GPS_Speed", "units": "km/h", "group": "gps"},
@@ -24,6 +27,7 @@ ROWS = [
 ]
 
 
+@pytest.mark.needs_pack
 def test_export_names():
     assert export_name("rpm") == "RPM"
     assert export_name("speed") == "Speed"
@@ -97,6 +101,7 @@ def test_gpx_is_valid_track():
 
 @pytest.mark.parametrize("fmt,ext,ctype", [("csv", "csv", "text/csv"), ("vbo", "vbo", "text/plain"),
                                            ("gpx", "gpx", "application/gpx+xml")])
+@pytest.mark.needs_pack
 def test_store_export_demo(tmp_path, fmt, ext, ctype):
     store = SessionStore(str(tmp_path))
     name, content_type, body = store.export("20261005T090000Z", fmt, public=True)
@@ -127,7 +132,7 @@ def test_csv_event_column_at_nearest_row():
 
 
 def test_notes_csv():
-    from d2diag.logbook.export import notes_csv
+    from openostler.logbook.export import notes_csv
     cap = dict(NOTES[1], id="cccc0003", kind="capture", t=1000,
                capture={"module": "td5", "lid": "09", "raw": "02 fa", "value": "762"})
     rows = list(csv.reader(io.StringIO(notes_csv([*NOTES, cap], META))))
@@ -165,6 +170,7 @@ def test_gpx_waypoints_per_note():
     assert "<wpt" not in no_gps
 
 
+@pytest.mark.needs_pack
 def test_store_exports_demo_notes(tmp_path):
     store = SessionStore(str(tmp_path))
     name, ctype, body = store.export("20261005T090000Z", "notes", public=True)

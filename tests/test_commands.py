@@ -1,17 +1,22 @@
-"""The command registry (d2diag.commands) matches what the data sources dispatch, both ways.
+"""The command registry (openostler.commands) matches what the data sources dispatch, both ways.
 
 A new module action needs a registry entry (status + safety) before the server will run it
 (ADR-0008); a registered, runnable action that no source handles would be a dead button.
 """
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
 import pytest
 
-from d2diag import commands
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+
+from unittest.mock import MagicMock
+
+
+from openostler import commands
 from d2diag.td5.td5 import _OUTPUTS
-from d2diag.vehicles.lr_d2.sources import (
+from d2diag.sources import (
     TD5_ACTIONS,
     _SLABS_ACTUATORS,
     SlabsDataSource,

@@ -1,18 +1,23 @@
 """Session recorder and store (ADR-0009, specs/2026-10-05-session-logbook-design.md)."""
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import json
 import os
 import re
 from collections import namedtuple
 
-import pytest
 
-from d2diag.gps.nmea import Fix
-from d2diag.logbook import recorder as recmod
-from d2diag.logbook.demo import DEMO_ROOT
-from d2diag.logbook.recorder import (IDLE_S, NotRecording, SessionRecorder, parse_header,
+from openostler.gps.nmea import Fix
+from openostler.logbook import recorder as recmod
+from openostler.logbook.demo import DEMO_ROOT
+from openostler.logbook.recorder import (IDLE_S, NotRecording, SessionRecorder, parse_header,
                                      rotate_sessions)
-from d2diag.logbook.store import SessionStore, rdp, read_part, reduce_track
-from d2diag.logbook.synth import DEMO_IDS, generate, generate_log1, generate_log2
+from openostler.logbook.store import SessionStore, rdp, read_part, reduce_track
+from d2diag.synth import DEMO_IDS, generate, generate_log1, generate_log2
 
 DEMO1, DEMO2 = DEMO_IDS
 
@@ -560,7 +565,7 @@ def test_generate_writes_both_demo_logs(tmp_path):
 
 def test_session_with_no_rows_is_removed_on_close(tmp_path):
     """A start immediately followed by shutdown (e.g. a restart) leaves no empty session."""
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
     rec = SessionRecorder(str(tmp_path), clock=lambda: 1_000.0, mono=lambda: 5.0)
     rec.feed({"conn": "connected", "status": "connected", "signals": {}, "faults": []}, None)
     rec.close()
@@ -570,7 +575,7 @@ def test_session_with_no_rows_is_removed_on_close(tmp_path):
 # ------------------------------------------------- events (ADR-0010, spec §1) -- #
 
 def events_of(tmp_path, sid):
-    from d2diag.logbook.store import read_events
+    from openostler.logbook.store import read_events
     return read_events(str(tmp_path / "sessions" / sid))
 
 
@@ -763,7 +768,7 @@ def test_demo_has_events_notes_switch_and_gps_accel(tmp_path):
 
 def test_set_name_names_the_open_session_only(tmp_path):
     import json
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
     clock = [1_000.0]
     rec = SessionRecorder(str(tmp_path), clock=lambda: clock[0], mono=lambda: clock[0])
     sid = rec.start({"conn": "connected", "status": "connected", "signals": {"rpm": {"v": 800}}})
@@ -850,7 +855,7 @@ def test_ensure_places_fills_old_sessions(tmp_path):
 def test_first_channels_reach_meta_immediately(tmp_path):
     """A live view must see the channels of the drive in progress before the 30 s meta rewrite."""
     import json
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
     clock = [1_000.0]
     rec = SessionRecorder(str(tmp_path), clock=lambda: clock[0], mono=lambda: clock[0])
     rec.feed({"conn": "connected", "status": "connected", "signals": {"rpm": {"v": 800, "u": "rpm"}},

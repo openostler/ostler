@@ -10,6 +10,12 @@ schemas follow:
 """
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+
 import json
 import os
 import threading
@@ -17,14 +23,13 @@ import time
 import urllib.request
 from pathlib import Path
 
-import pytest
 
-from d2diag.community import Community
-from d2diag.menus import MENUS
+from openostler.community import Community
+from openostler.menus import MENUS
 from tests.fake_sources import FakeSlabsSource, FakeTd5Source, fake_fault_report
-from d2diag.web.docs import DocLibrary
-from d2diag.web.server import DiagServer
-from d2diag.web.sniffer import SnifferFeed
+from openostler.web.docs import DocLibrary
+from openostler.web.server import DiagServer
+from openostler.web.sniffer import SnifferFeed
 
 FIXTURES = Path(__file__).resolve().parents[1] / "ui" / "src" / "api" / "fixtures"
 UPDATE = os.environ.get("UPDATE_UI_FIXTURES") == "1"

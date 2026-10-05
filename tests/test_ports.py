@@ -1,13 +1,13 @@
-"""Serial-port resolution (core, no web/pyserial) — d2diag.ports.resolve_serial_port.
+"""Serial-port resolution (core, no web/pyserial) — openostler.ports.resolve_serial_port.
 
 Moved out of test_web when resolve_serial_port moved from web/sources to the core
-d2diag.ports module. The auto-detection tests patch the shared glob module via
-d2diag.ports; a re-export smoke test still lives in test_web (proves the old import
-path `d2diag.web.sources.resolve_serial_port` keeps working).
+openostler.ports module. The auto-detection tests patch the shared glob module via
+openostler.ports; a re-export smoke test still lives in test_web (proves the old import
+path `openostler.web.sources.resolve_serial_port` keeps working).
 """
 import pytest
 
-import d2diag.ports as p
+import openostler.ports as p
 
 
 def test_resolve_serial_explicit_passthrough():

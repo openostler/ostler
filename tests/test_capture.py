@@ -1,5 +1,11 @@
 """Tests for the capture parsing (the foundation of the protocol library)."""
-from d2diag.sniff import capture
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+from openostler.sniff import capture
 from d2diag.sniff.library import build_library
 
 

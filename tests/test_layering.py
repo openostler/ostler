@@ -10,23 +10,20 @@ import pathlib
 
 import pytest
 
-_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "d2diag"
+_SRC = pathlib.Path(__file__).resolve().parent.parent / "src" / "openostler"
 
 # Everything that is CORE (comms + interpretation). Excludes web/ (consumer) and
 # community/ (opt-in upload client — consumer side).
 _CORE = [
     "transport", "kline", "kwp2000", "session.py", "ports.py", "signals", "menus.py", "catalog.py",
-    "commands.py",
-    "faultscan.py", "sniff", "td5", "slabs", "airbag", "bcu", "ace", "autobox",
+    "commands.py", "faultscan.py", "modscan.py", "sniff", "dtc",
     "gps", "logbook",  # ADR-0009: session logbook + GPS are core (stdlib + pyserial)
     "geo",  # ADR-0011: place names (offline GeoNames + OSM enrichment)
     "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
-    "pack.py", "_compat.py",  # ADR-0013: the VehiclePack contract and the import shim
-    "vehicles",  # the Discovery 2 pack (td5, slabs, bcu, airbag, ace, autobox, sniff, …)
+    "pack.py",  # ADR-0013: the VehiclePack contract
 ]
 _FORBIDDEN = {"web", "apps"}
-# The pack's data-source module is the consumer boundary (it builds web DataSources).
-_CORE_EXCEPT = {"vehicles/lr_d2/sources.py"}
+_CORE_EXCEPT: "set[str]" = set()
 
 
 def _core_files() -> "list[pathlib.Path]":
@@ -71,33 +68,25 @@ def test_logbook_gps_and_imu_are_scanned():
     assert {"gps", "logbook", "imu"} <= names
 
 
-def test_vehicle_pack_is_scanned():
-    # ADR-0013: the moved Discovery 2 module layers must stay under the guard.
-    rel = {p.relative_to(_SRC).as_posix() for p in _core_files()}
-    assert "vehicles/lr_d2/td5/td5.py" in rel and "vehicles/lr_d2/slabs/slabs.py" in rel
-    assert "vehicles/lr_d2/sources.py" not in rel
+# ---- ADR-0013 / ADR-0015: the platform never reaches into a vehicle pack ------------------- #
+# Platform = every src/openostler/**/*.py. It talks to the vehicle only through
+# openostler.pack.active_pack(); no vehicle pack (the reference pack is the separate
+# distribution "d2diag") may be imported or loaded by name.
+_PACK_PREFIXES = ("d2diag",)
+# The Discovery 2 reference pack's module ids and aliases: the platform must not name them.
+_D2_MODULE_LITERALS = frozenset({"td5", "motor", "slabs", "bcu", "airbag", "ace", "autobox",
+                                 "eat", "gearbox"})
 
 
-# ---- ADR-0013 / Phase 0: the platform never reaches into a vehicle pack ------------------- #
-# Platform = every src/d2diag/**/*.py except the packs (vehicles/) and the old-name import
-# shim (_compat.py). It talks to the vehicle only through d2diag.pack.active_pack().
-_LEGACY_D2 = (
-    *(f"d2diag.{m}" for m in ("td5", "slabs", "bcu", "airbag", "ace", "autobox")),
-    *(f"d2diag.sniff.{m}" for m in ("library", "emulator_map", "importer", "fault_import")),
-    "d2diag.logbook.synth",
-)
-_PACK_PREFIX = "d2diag.vehicles"
-
+# Strings equal to a pack name that are not pack references (with why).
+_PACK_STRING_ALLOW = {
+    # ~/.config/d2diag/community.json: consent given before the split is still honoured.
+    "community/__init__.py": frozenset({"d2diag"}),
+}
 
 
 def _platform_files() -> "list[pathlib.Path]":
-    out = []
-    for p in sorted(_SRC.rglob("*.py")):
-        rel = p.relative_to(_SRC)
-        if rel.parts[0] == "vehicles" or rel.as_posix() == "_compat.py":
-            continue
-        out.append(p)
-    return out
+    return sorted(_SRC.rglob("*.py"))
 
 
 def _guarded_platform_files() -> "list[pathlib.Path]":
@@ -138,21 +127,14 @@ def _absolute_imports(path: pathlib.Path, source: "str | None" = None):
 
 
 def _is_pack_module(mod: str) -> bool:
-    if mod == _PACK_PREFIX or mod.startswith(_PACK_PREFIX + "."):
-        return True
-    return any(mod == old or mod.startswith(old + ".") for old in _LEGACY_D2)
+    return any(mod == p or mod.startswith(p + ".") for p in _PACK_PREFIXES)
 
 
 def _dynamic_pack_imports(path: pathlib.Path):
-    """``import_module("…vehicles…")`` / ``__import__("…vehicles…")`` calls, and any other
-    string naming a pack module — except ``pack._BUILTIN_FALLBACK`` (the Phase 0 fallback)."""
+    """``import_module("d2diag…")`` / ``__import__("…vehicles…")`` calls, and any other
+    string constant that is a pack module reference (``d2diag``, ``d2diag.x``, ``d2diag:PACK``).
+    Prose that merely mentions the pack (an install hint) is not a reference."""
     tree = ast.parse(path.read_text(encoding="utf-8"))
-    allowed = set()
-    if path.relative_to(_SRC).as_posix() == "pack.py":
-        for node in ast.walk(tree):
-            if (isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "_BUILTIN_FALLBACK"
-                                                    for t in node.targets)):
-                allowed.add(id(node.value))
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             fn = node.func
@@ -160,10 +142,10 @@ def _dynamic_pack_imports(path: pathlib.Path):
             if name in ("import_module", "__import__") and node.args:
                 arg = node.args[0]
                 if (isinstance(arg, ast.Constant) and isinstance(arg.value, str)
-                        and "vehicles" in arg.value and id(arg) not in allowed):
+                        and ("vehicles" in arg.value or _is_pack_module(arg.value))):
                     yield node.lineno, arg.value
         elif (isinstance(node, ast.Constant) and isinstance(node.value, str)
-              and node.value.startswith(_PACK_PREFIX) and id(node) not in allowed):
+              and " " not in node.value and _is_pack_module(node.value.split(":")[0])):
             yield node.lineno, node.value
 
 
@@ -172,15 +154,16 @@ def test_platform_never_imports_a_pack(path: pathlib.Path):
     for lineno, mod in _absolute_imports(path):
         assert not _is_pack_module(mod), (
             f"{path.relative_to(_SRC)}:{lineno} imports vehicle-pack code {mod!r}: "
-            f"go through d2diag.pack.active_pack()")
+            f"go through openostler.pack.active_pack()")
+    allow = _PACK_STRING_ALLOW.get(path.relative_to(_SRC).as_posix(), frozenset())
     for lineno, ref in _dynamic_pack_imports(path):
+        if ref in allow:
+            continue
         assert False, f"{path.relative_to(_SRC)}:{lineno} loads a vehicle pack by name: {ref!r}"
 
 
 def _pack_module_literals() -> "frozenset[str]":
-    from d2diag.vehicles.lr_d2 import PACK
-
-    return frozenset(PACK.module_ids()) | frozenset(PACK.aliases())
+    return _D2_MODULE_LITERALS
 
 
 def _docstring_nodes(tree) -> "set[int]":
@@ -219,25 +202,16 @@ def test_platform_scan_covers_the_platform():
     assert len(files) > 30
     assert {"catalog.py", "commands.py", "menus.py", "faultscan.py", "modscan.py", "pack.py",
             "sniff/modules.py", "signals/__init__.py", "dtc/__init__.py"} <= rel
-    assert not any(r.startswith("vehicles/") for r in rel) and "_compat.py" not in rel
-    assert len(_guarded_platform_files()) > 30
-    # the pack itself stays under the web guard (except its consumer-boundary sources.py)
-    core = {p.relative_to(_SRC).as_posix() for p in _core_files()}
-    assert any(r.startswith("vehicles/lr_d2/") for r in core)
+    assert not (_SRC / "vehicles").exists() and not (_SRC / "_compat.py").exists()
 
 
-def test_import_resolution_catches_relative_and_legacy_names():
-    # The guard resolves ``from .. import td5`` in d2diag/web/x.py to d2diag.td5.
+def test_import_resolution_catches_relative_and_pack_names():
+    # The guard resolves ``from .. import x`` in openostler/web/x.py against openostler.
     probe = _SRC / "web" / "_probe_never_written.py"
-    assert _package_of(probe) == "d2diag.web"
-    src = "from .. import td5\nfrom ..vehicles.lr_d2 import PACK\nfrom . import server\n"
+    assert _package_of(probe) == "openostler.web"
+    src = "from .. import pack\nimport d2diag\nfrom d2diag.td5 import Td5\nfrom . import server\n"
     mods = [m for _ln, m in _absolute_imports(probe, src)]
-    assert "d2diag.td5" in mods and "d2diag.vehicles.lr_d2" in mods
-    assert [m for m in mods if _is_pack_module(m)] == [
-        "d2diag.td5", "d2diag.vehicles.lr_d2", "d2diag.vehicles.lr_d2.PACK"]
-    init = _SRC / "sniff" / "__init__.py"
-    assert [m for _ln, m in _absolute_imports(init, "from .importer import x\n")] == [
-        "d2diag.sniff.importer", "d2diag.sniff.importer.x"]
-    assert _is_pack_module("d2diag.td5.td5") and _is_pack_module("d2diag.vehicles.lr_d2")
-    assert _is_pack_module("d2diag.sniff.importer") and not _is_pack_module("d2diag.sniff.modules")
-    assert not _is_pack_module("d2diag.td5x")
+    assert "openostler.pack" in mods and "openostler.web.server" in mods
+    assert [m for m in mods if _is_pack_module(m)] == ["d2diag", "d2diag.td5", "d2diag.td5.Td5"]
+    assert _is_pack_module("d2diag:PACK".split(":")[0]) and not _is_pack_module("d2diagx")
+    assert not _is_pack_module("openostler.sniff.modules")

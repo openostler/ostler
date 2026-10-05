@@ -3,7 +3,7 @@
 Proven live on the ESP over USB; these lock the send/receive/fast-init mapping so the
 line protocol can't drift from the bridge section of esp32/kline_node/kline_node.ino.
 """
-from d2diag.transport import EspTransport
+from openostler.transport import EspTransport
 
 
 class _FakeSer:
@@ -75,7 +75,7 @@ def test_slow_init_maps_to_command_and_parses_keybytes():
 
 
 def test_parse_slow_init_none_without_sync():
-    from d2diag.transport import EspTransport
+    from openostler.transport import EspTransport
     assert EspTransport.parse_slow_init(b"\x00\x11\x22") is None
 
 

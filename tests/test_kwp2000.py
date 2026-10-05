@@ -1,8 +1,8 @@
 """Tests for the KWP2000 layer against a simulated ECU (no hardware)."""
 import pytest
 
-from d2diag.kline import KLine, encode
-from d2diag.kwp2000 import KWP2000, NegativeResponse
+from openostler.kline import KLine, encode
+from openostler.kwp2000 import KWP2000, NegativeResponse
 from tests.fakes import FakeKLineEcu
 
 

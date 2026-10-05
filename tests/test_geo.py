@@ -8,8 +8,8 @@ import zipfile
 
 import pytest
 
-from d2diag import geo
-from d2diag.geo import build, nominatim, offline
+from openostler import geo
+from openostler.geo import build, nominatim, offline
 
 CACHE = build.DEFAULT_CACHE
 _HAVE_CACHE = all(os.path.exists(os.path.join(CACHE, n)) for n in build.INPUTS)
@@ -202,8 +202,8 @@ def test_rate_limit_one_per_second(tmp_path):
     url, headers, timeout = calls[0]
     assert url.startswith("https://nominatim.example/reverse?") and "format=jsonv2" in url
     assert "lat=56.800" in url and "lon=-5.100" in url and "zoom=10" in url and "addressdetails=1" in url
-    assert headers["User-Agent"].startswith("discovery2-diag/")
-    assert "(+https://github.com/JamesWrightDavid/discovery2-diag)" in headers["User-Agent"]
+    assert headers["User-Agent"].startswith("openostler/")
+    assert "(+https://github.com/openostler/ostler)" in headers["User-Agent"]
     assert timeout == 10
 
 

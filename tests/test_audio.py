@@ -1,10 +1,13 @@
 """Session audio: phone chunk ordering, Pi arecord, meta.audio, never public (ADR-0010)."""
+
 import pytest
 
-from d2diag.logbook import audio
-from d2diag.logbook.audio import AudioTrackWriter, PiAudio, ext_for, mime_for
-from d2diag.logbook.recorder import SessionRecorder
-from d2diag.logbook.store import SessionStore
+from openostler.logbook import audio
+from openostler.logbook.audio import AudioTrackWriter, PiAudio, ext_for, mime_for
+from openostler.logbook.recorder import SessionRecorder
+from openostler.logbook.store import SessionStore
+
+pytestmark = pytest.mark.fake_pack
 
 T0 = 1791277200.0
 

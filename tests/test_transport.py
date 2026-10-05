@@ -1,5 +1,5 @@
 """Tests for the transport layer. Runs without hardware via pyserial's ``loop://``."""
-from d2diag.transport import LoggingTransport, SerialTransport
+from openostler.transport import LoggingTransport, SerialTransport
 
 
 def test_slow_init_bits_frame():
@@ -57,7 +57,7 @@ def test_logging_transport_writes_tx_and_rx(tmp_path):
 
 def test_logging_transport_is_a_transport():
     # A higher layer should be able to accept LoggingTransport without knowing anything.
-    from d2diag.transport import Transport
+    from openostler.transport import Transport
 
     assert isinstance(LoggingTransport(SerialTransport(url="loop://")), Transport)
 
@@ -65,7 +65,7 @@ def test_logging_transport_is_a_transport():
 def test_serial_fast_init_low_restores_baud_and_flushes_echo(monkeypatch):
     # The baud-drop pulse (the macOS path): lower baud, send 0x00, restore baud, flush the echo.
     # Force non-Linux so the baud trick is tested regardless of host platform.
-    import d2diag.transport.serial_transport as st
+    import openostler.transport.serial_transport as st
     monkeypatch.setattr(st.sys, "platform", "darwin")
     with SerialTransport(url="loop://", baudrate=10400, timeout=0.3) as t:
         t.fast_init_low(0.025)
@@ -76,7 +76,7 @@ def test_serial_fast_init_low_restores_baud_and_flushes_echo(monkeypatch):
 def test_serial_fast_init_low_uses_break_on_linux(monkeypatch):
     # On Linux (Raspberry Pi/FTDI) the hardware can't do 360 baud → the low pulse
     # must come from an OS-timed break instead. Confirmed in the car 2026-08-21.
-    import d2diag.transport.serial_transport as st
+    import openostler.transport.serial_transport as st
     monkeypatch.setattr(st.sys, "platform", "linux")
     calls = {}
     with SerialTransport(url="loop://", baudrate=10400, timeout=0.3) as t:
@@ -90,7 +90,7 @@ def test_serial_fast_init_low_uses_break_on_linux(monkeypatch):
 def test_logging_transport_delegates_serial_hooks():
     # send_break/reset_input_buffer must reach the inner transport, otherwise the
     # wrapper hides them from the K-Line layer's fast init.
-    from d2diag.transport import Transport
+    from openostler.transport import Transport
 
     class _Inner(Transport):
         def __init__(self):

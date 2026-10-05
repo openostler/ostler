@@ -1,9 +1,15 @@
 """Tests for the module maps (Map tab) and the coverage calculation (legacy shape)."""
 from __future__ import annotations
 
-from d2diag import catalog
-from d2diag.menus import MENUS
-from d2diag.web.server import DiagServer
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+
+from openostler import catalog
+from openostler.menus import MENUS
+from openostler.web.server import DiagServer
 from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
 

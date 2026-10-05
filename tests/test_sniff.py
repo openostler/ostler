@@ -1,8 +1,12 @@
 """Passive sniff calibration: frame parsing, LID layer and scale/offset solver."""
 from __future__ import annotations
 
-from d2diag.sniff import LidStore, parse_hex_line, solve_linear, suggest_signal
-from d2diag.sniff.automap import solve as automap_solve
+import pytest
+
+from openostler.sniff import LidStore, parse_hex_line, solve_linear, suggest_signal
+from openostler.sniff.automap import solve as automap_solve
+
+pytestmark = pytest.mark.fake_pack
 
 
 def test_parse_hex_line_and_markers():
@@ -12,6 +16,7 @@ def test_parse_hex_line_and_markers():
     assert parse_hex_line("=== SESSION ... ===") is None
 
 
+@pytest.mark.needs_pack
 def test_lidstore_tracks_module_and_decodes_td5():
     st = LidStore()
     st.ingest_line("[  8773] 81 13 f7 81 0c")          # TD5 fast init
@@ -24,6 +29,7 @@ def test_lidstore_tracks_module_and_decodes_td5():
     assert rpm["value"] == 762
 
 
+@pytest.mark.needs_pack
 def test_lidstore_switches_to_slabs():
     st = LidStore()
     st.ingest_line("[ 100] 81 29 f7 81 22")            # SLABS fast init
@@ -35,6 +41,7 @@ def test_lidstore_switches_to_slabs():
     assert hl["value"] == 0x07
 
 
+@pytest.mark.needs_pack
 def test_slabs_any_door_decoded():
     st = LidStore()
     st.ingest_line("[ 1] 81 29 f7 81 22")
@@ -47,7 +54,7 @@ def test_slabs_any_door_decoded():
 
 
 def test_sniffer_snapshot_has_freshness_fields():
-    from d2diag.web.sniffer import SnifferFeed
+    from openostler.web.sniffer import SnifferFeed
     feed = SnifferFeed(lambda: iter([]), source="test:x")
     feed.store.ingest_line("[1] 81 13 f7 81 0c")               # init (no response frame)
     feed.store.ingest_line("[2] 02 21 09 2c 04 61 09 02 fa 6a")  # 61 09 response → frames+1
@@ -57,8 +64,9 @@ def test_sniffer_snapshot_has_freshness_fields():
     assert {"status", "age", "frames", "source", "error"} <= set(snap)
 
 
+@pytest.mark.needs_pack
 def test_menu_items_carry_lid_bindings():
-    from d2diag.menus import MENUS
+    from openostler.menus import MENUS
     fuel = next(g for g in MENUS["td5"] if "Fuelling" in g["cat"])
     rpm = next(i for i in fuel["items"] if i["name"].endswith("Engine Speed (rpm)"))
     assert rpm["lid"] == "09" and rpm["sig"] == "rpm"

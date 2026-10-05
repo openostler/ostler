@@ -1,14 +1,17 @@
 """Acceleration: rotation, sign conventions, GPS-derived acceleration and the recorder's
 accel channels (ADR-0010; replay-notes-capture spec §3)."""
-import json
-import math
 
 import pytest
 
-from d2diag.gps.nmea import Fix
-from d2diag.logbook.motion import G, GpsAccel, level_matrix, to_vehicle
-from d2diag.logbook.recorder import SessionRecorder
-from d2diag.logbook.store import SessionStore, read_part
+import json
+import math
+
+from openostler.gps.nmea import Fix
+from openostler.logbook.motion import G, GpsAccel, level_matrix, to_vehicle
+from openostler.logbook.recorder import SessionRecorder
+from openostler.logbook.store import SessionStore, read_part
+
+pytestmark = pytest.mark.fake_pack
 
 T0 = 1791277200.0
 

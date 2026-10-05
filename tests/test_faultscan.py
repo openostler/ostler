@@ -1,10 +1,15 @@
 """Basic mode — read fault codes from all modules (live orchestration; the simulated report
 is test scaffolding in tests/fake_sources.py, ADR-0011)."""
-import inspect
 
 import pytest
 
-import d2diag.faultscan as fs
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+import inspect
+
+
+import openostler.faultscan as fs
 from tests.fake_sources import fake_fault_report
 
 
@@ -28,7 +33,7 @@ def test_fake_report_has_all_modules_and_baseline():
 
 def test_live_no_cable_marks_modules_error(monkeypatch):
     # resolve_serial_port raises FileNotFoundError → all three marked error, not a crash.
-    import d2diag.ports as ports
+    import openostler.ports as ports
 
     def _boom(_spec):
         raise FileNotFoundError("no cable")
@@ -42,9 +47,9 @@ def test_live_no_cable_marks_modules_error(monkeypatch):
 
 def test_live_reads_modules_over_fake(monkeypatch):
     # Simulate the car: TD5 with no faults, SLABS with baseline faults, airbag with 004/022.
-    import d2diag.transport as transport_pkg
-    import d2diag.ports as ports
-    from d2diag.kline import encode
+    import openostler.transport as transport_pkg
+    import openostler.ports as ports
+    from openostler.kline import encode
     from tests import fakes
 
     def _f(d):
@@ -96,10 +101,10 @@ def test_live_reads_modules_over_fake(monkeypatch):
 def test_live_stops_td5_session_before_next_module_inits(monkeypatch):
     # Shared bus: the TD5 session must be ended (20 → 60) BEFORE SLABS opens its
     # transport and inits, otherwise StartCommunication answers 7F 81 10.
-    import d2diag.transport as transport_pkg
-    import d2diag.ports as ports
-    from d2diag.kline import encode
-    from d2diag.session import EcuSession
+    import openostler.transport as transport_pkg
+    import openostler.ports as ports
+    from openostler.kline import encode
+    from openostler.session import EcuSession
     from tests import fakes
 
     # Speed it up: skip bus idle/retry sleep (5 s for Td5). Cannot be patched via
@@ -159,9 +164,9 @@ def test_live_stops_td5_session_before_next_module_inits(monkeypatch):
 
 def test_live_td5_reports_undecoded_fault_bits(monkeypatch):
     # The scan must list byte<off>.bit<n> faults, not drop them (2026-10-03 clear wiped them).
-    import d2diag.ports as ports
+    import openostler.ports as ports
     import d2diag.td5 as td5_pkg
-    import d2diag.transport as transport_pkg
+    import openostler.transport as transport_pkg
 
     class _Td5:
         def __init__(self, kwp): pass

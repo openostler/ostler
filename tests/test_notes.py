@@ -1,12 +1,15 @@
 """Per-session notes and capture labels (ADR-0010; replay-notes-capture spec §2)."""
-import json
-import os
 
 import pytest
 
-from d2diag.logbook.notes import NoteLog, read_notes
-from d2diag.logbook.recorder import NotRecording, SessionRecorder
-from d2diag.logbook.store import SessionStore
+import json
+import os
+
+from openostler.logbook.notes import NoteLog, read_notes
+from openostler.logbook.recorder import NotRecording, SessionRecorder
+from openostler.logbook.store import SessionStore
+
+pytestmark = pytest.mark.fake_pack
 
 T0 = 1791277200.0
 DEMO = "20261005T090000Z"
@@ -68,6 +71,7 @@ def _session(tmp_path):
     return c, r
 
 
+@pytest.mark.needs_pack
 def test_store_notes_crud_and_refusals(tmp_path):
     c, r = _session(tmp_path)
     sid = r.status()["session"]
@@ -140,6 +144,7 @@ def test_live_note_refused_while_paused(tmp_path):
     r.close()
 
 
+@pytest.mark.needs_pack
 def test_captures_merge_notes_and_jsonl(tmp_path):
     c, r = _session(tmp_path)
     c["t"] = 1.0

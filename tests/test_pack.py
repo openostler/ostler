@@ -7,9 +7,9 @@ import dataclasses
 
 import pytest
 
-from d2diag import catalog, commands, dtc, faultscan, menus, modscan, pack, signals
-from d2diag.pack import FaultReader
-from d2diag.sniff import modules
+from openostler import catalog, commands, dtc, faultscan, menus, modscan, pack, signals
+from openostler.pack import FaultReader
+from openostler.sniff import modules
 from tests.fake_pack import FAKE_PACK
 
 
@@ -76,10 +76,13 @@ def test_several_entry_points_without_env_is_an_error(loader):
         pack.active_pack()
 
 
-def test_no_entry_point_falls_back_to_the_builtin_pack(loader):
-    got = pack.active_pack()
-    assert isinstance(got, pack.VehiclePack) and got.id == "lr_d2"
-    assert pack._load_ref(pack._BUILTIN_FALLBACK) is got
+def test_no_entry_point_is_a_clear_error_naming_the_group_and_the_fix(loader):
+    # ADR-0015: the Phase 0 built-in fallback is gone; the platform ships no pack.
+    with pytest.raises(pack.NoVehiclePackError) as exc:
+        pack.active_pack()
+    msg = str(exc.value)
+    assert "openostler.vehicle" in msg and "pip install" in msg and pack.ENV_VAR in msg
+    assert not hasattr(pack, "_BUILTIN_FALLBACK")
 
 
 def test_a_non_pack_or_wrong_api_version_is_refused(loader):
@@ -191,7 +194,7 @@ def _with_readers(*readers, unimplemented=()):
 
 
 def test_read_all_runs_every_reader_in_order(monkeypatch):
-    import d2diag.ports as ports
+    import openostler.ports as ports
 
     seen, gaps = [], []
 
@@ -225,7 +228,7 @@ def test_read_all_runs_every_reader_in_order(monkeypatch):
 
 
 def test_read_all_without_a_cable_marks_each_reader(monkeypatch, fake):
-    import d2diag.ports as ports
+    import openostler.ports as ports
 
     def nope(spec):
         raise FileNotFoundError("no cable")
@@ -256,7 +259,7 @@ def test_sniff_detection_uses_the_active_spec(fake):
 
 
 def test_module_tracker_authority_and_hints():
-    from d2diag.pack import Detector, SniffSpec
+    from openostler.pack import Detector, SniffSpec
 
     spec = SniffSpec(
         fast_init={0x10: "alpha"}, slow_init={0x20: "beta"}, tester=0xF1,
@@ -288,9 +291,9 @@ def test_modscan_defaults_come_from_the_spec(fake):
 
 
 def test_modscan_names_addresses_from_the_pack(fake):
-    from d2diag.kline import KLine
-    from d2diag.kline.frame import encode
-    from d2diag.kwp2000 import KWP2000
+    from openostler.kline import KLine
+    from openostler.kline.frame import encode
+    from openostler.kwp2000 import KWP2000
     from tests.fakes import FakeKLineEcu
 
     start = bytes(encode(b"\x81", 0x10, 0xF7, addressed=True))
@@ -312,8 +315,8 @@ def test_entry_points_read_the_new_and_the_legacy_group(monkeypatch):
             self.name, self.value = name, value
 
     groups = {
-        "openostler.vehicle": [EP("lr_d2", "d2diag.vehicles.lr_d2:PACK")],
-        "ostler.vehicle": [EP("old", "x:PACK"), EP("lr_d2", "d2diag.vehicles.lr_d2:PACK")],
+        "openostler.vehicle": [EP("lr_d2", "d2diag:PACK")],
+        "ostler.vehicle": [EP("old", "x:PACK"), EP("lr_d2", "d2diag:PACK")],
     }
 
     class EPs:
@@ -322,6 +325,6 @@ def test_entry_points_read_the_new_and_the_legacy_group(monkeypatch):
 
     monkeypatch.setattr(metadata, "entry_points", lambda: EPs())
     found = [(e.name, e.value) for e in pack._entry_points()]
-    assert found == [("lr_d2", "d2diag.vehicles.lr_d2:PACK"), ("old", "x:PACK")]
+    assert found == [("lr_d2", "d2diag:PACK"), ("old", "x:PACK")]
     assert pack.ENTRY_POINT_GROUP == "openostler.vehicle"
     assert pack.LEGACY_ENTRY_POINT_GROUPS == ("ostler.vehicle",)

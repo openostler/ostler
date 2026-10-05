@@ -1,4 +1,10 @@
 """tests/e2e_server.py — the test/dev-only dashboard on simulated sources (ADR-0011)."""
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import ast
 import json
 import threading
@@ -12,7 +18,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 def _build(tmp_path, monkeypatch, *argv):
     """Run ``main()`` like the command line does, but capture the server instead of serving."""
-    from d2diag.web.server import DiagServer
+    from openostler.web.server import DiagServer
 
     captured = {}
     monkeypatch.setattr(DiagServer, "serve", lambda self: captured.update(srv=self))

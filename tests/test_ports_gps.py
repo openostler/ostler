@@ -1,5 +1,5 @@
 """K-line port auto-detection never picks a GPS receiver (ADR-0009)."""
-from d2diag import ports
+from openostler import ports
 
 
 def test_auto_skips_ublox_by_id(monkeypatch):

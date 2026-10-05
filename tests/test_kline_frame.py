@@ -1,7 +1,7 @@
 """Tests for frame encoding/decoding — both addressed and unaddressed formats."""
 import pytest
 
-from d2diag.kline.frame import (
+from openostler.kline.frame import (
     ChecksumError,
     FrameError,
     checksum,

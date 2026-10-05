@@ -3,14 +3,19 @@ the latched-test banner (`active_test`) and the other snapshot additions
 (specs/2026-10-05-ui-overhaul-design.md, "Snapshot additions" and "Connection UX")."""
 from __future__ import annotations
 
-import threading
-
 import pytest
 
-from d2diag import ports
-from d2diag.web.server import CONN_STATES, DiagServer
-from d2diag.vehicles.lr_d2.sources import Td5DataSource
-from d2diag.web.sources import DataSource
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+
+import threading
+
+
+from openostler import ports
+from openostler.web.server import CONN_STATES, DiagServer
+from d2diag.sources import Td5DataSource
+from openostler.web.sources import DataSource
 from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
 

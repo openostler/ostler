@@ -1,9 +1,15 @@
 """Module detection across all buses (sniff/modules.py).
 
-Sample frames come straight from references/protocol_state_handoff.md and
-sniff.library.KNOWN, one per bus.
+Sample frames come straight from the D2 pack's protocol state handoff
+(references/ in discovery2-diag) and d2diag.sniff.library.KNOWN, one per bus.
 """
-from d2diag.sniff.modules import ModuleTracker, name_for_address, scan
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+from openostler.sniff.modules import ModuleTracker, name_for_address, scan
 
 
 def _b(hexstr):

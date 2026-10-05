@@ -1,15 +1,20 @@
 """SQLite session index (spec 2026-10-06-logs-at-scale §3)."""
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
 import json
 import os
 import sqlite3
 import time
 
-import pytest
 
-from d2diag.logbook import index as idxmod
-from d2diag.logbook.index import SessionIndex
-from d2diag.logbook.store import SessionStore
-from d2diag.logbook.synth import DEMO_IDS
+from openostler.logbook import index as idxmod
+from openostler.logbook.index import SessionIndex
+from openostler.logbook.store import SessionStore
+from d2diag.synth import DEMO_IDS
 
 DAY_MS = 86_400_000
 BASE_MS = 1_767_225_600_000  # 2026-01-01T00:00:00Z
@@ -213,7 +218,7 @@ def test_store_wiring_sync_update_notes_delete(tmp_path):
 
 
 def test_recorder_on_change_keeps_index_current(tmp_path):
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
     store = SessionStore(str(tmp_path / "sessions"), index_path=str(tmp_path / "ix.sqlite"))
     t = {"t": 0.0}
     rec = SessionRecorder(str(tmp_path / "sessions"), clock=lambda: 1_791_277_200 + t["t"],

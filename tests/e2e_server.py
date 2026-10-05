@@ -29,10 +29,10 @@ for _p in (os.path.join(_REPO, "src"), _REPO):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from d2diag.web.server import DiagServer  # noqa: E402
+from openostler.web.server import DiagServer  # noqa: E402
 from tests.fake_sources import FakeGps, fake_fault_report, fake_modules  # noqa: E402
 
-DEMO_SNIFF = os.path.join(_REPO, "src", "d2diag", "vehicles", "lr_d2", "demo", "sniff-demo.txt")
+DEMO_SNIFF = "pack"  # the active vehicle pack's demo sniff log (``demo.sniff_log``)
 SEED_START_S = 1_788_250_000.0  # 2026-09-01 — the seeded editable session
 
 
@@ -47,7 +47,7 @@ class _Fix:
 
 def seed_session(root: str) -> "str | None":
     """Record one short, closed, real (non-synthetic) session into ``root``; its id."""
-    from d2diag.logbook.recorder import SessionRecorder
+    from openostler.logbook.recorder import SessionRecorder
 
     clock = {"t": SEED_START_S, "m": 1000.0}
     rec = SessionRecorder(root, clock=lambda: clock["t"], mono=lambda: clock["m"],
@@ -70,24 +70,22 @@ def seed_session(root: str) -> "str | None":
 
 
 def build(args) -> DiagServer:
-    sessions_dir = args.sessions_dir or os.path.join(tempfile.mkdtemp(prefix="d2diag-e2e-"),
+    sessions_dir = args.sessions_dir or os.path.join(tempfile.mkdtemp(prefix="ostler-e2e-"),
                                                      "sessions")
     os.makedirs(sessions_dir, exist_ok=True)
     if not args.no_seed and not any(os.scandir(sessions_dir)):
         seed_session(sessions_dir)
     gps = None if args.no_gps else FakeGps()
     sniffer = None
-    if args.replay != "off":
-        from d2diag.web.sniffer import SnifferFeed
-        sniffer = SnifferFeed.from_file(args.replay, delay=0.008, loop=True)
-    from d2diag.menus import MENUS
-    from d2diag.web.docs import DocLibrary  # the Docs tab, as tools/dashboard.py builds it
-    docs = DocLibrary()
-    docs.add_file(os.path.join(_REPO, "references", "test_plan.md"), group="Test plan")
-    agent_only = {"CLAUDE.md", "muki01_OBD2_K-line_Reader"}
-    docs.add_dir(os.path.join(_REPO, "docs"), group="Docs", recursive=True, exclude=agent_only)
-    docs.add_dir(os.path.join(_REPO, "references"), group="Reference", recursive=True,
-                 exclude={"test_plan.md"} | agent_only)
+    from openostler.pack import active_pack
+    from tools.dashboard import build_docs, pack_replay_log
+    pack = active_pack()
+    replay = pack_replay_log(pack) if args.replay == DEMO_SNIFF else args.replay
+    if replay and args.replay != "off":
+        from openostler.web.sniffer import SnifferFeed
+        sniffer = SnifferFeed.from_file(replay, delay=0.008, loop=True)
+    from openostler.menus import MENUS
+    docs = build_docs(pack)  # the Docs tab from the pack's sources, as tools/dashboard.py does
     srv = DiagServer(
         fake_modules(gps=gps), host=args.host, port=args.port,
         poll_interval=args.interval, stream_interval=args.interval,
@@ -108,7 +106,7 @@ def main(argv: "list[str] | None" = None) -> int:
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--interval", type=float, default=0.5, help="poll/stream interval (s)")
     ap.add_argument("--replay", default=DEMO_SNIFF,
-                    help="sniff log looped into the Decode tab (default: the demo; off = none)")
+                    help="sniff log looped into the Decode tab (default: the pack's demo; off = none)")
     ap.add_argument("--admin-password", default=None)
     ap.add_argument("--public", action="store_true")
     ap.add_argument("--slabs", action="store_true", help="start on the SLABS module")

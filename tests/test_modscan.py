@@ -1,8 +1,14 @@
 """The read-only address scanner: detects responders and sends only init + 82."""
-from d2diag.kline import KLine
-from d2diag.kline.frame import encode
-from d2diag.kwp2000 import KWP2000
-from d2diag.modscan import AddressScanner, render_table
+
+import pytest
+
+pytestmark = pytest.mark.needs_pack
+pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
+
+from openostler.kline import KLine
+from openostler.kline.frame import encode
+from openostler.kwp2000 import KWP2000
+from openostler.modscan import AddressScanner, render_table
 
 from .fakes import FakeKLineEcu
 
