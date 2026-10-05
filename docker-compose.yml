@@ -11,11 +11,15 @@
 # startup; may hold VIN/EKA data once a car is connected — keep it private).
 services:
   d2diag:
-    build: .
-    # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the committed demo sniff
-    # feed (Decode tab) and the OSM geocoder on.
+    build:
+      context: .
+      args:
+        # The Discovery 2 pack's git ref (ADR-0015); main once split-pack is merged.
+        PACK_REF: "${PACK_REF:-main}"
+    # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the installed pack's demo
+    # sniff feed (Decode tab) and the OSM geocoder on.
     command: ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080",
-              "--replay", "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt",
+              "--replay", "pack",
               "--geocoder", "https://nominatim.openstreetmap.org"]
     restart: unless-stopped
     networks:

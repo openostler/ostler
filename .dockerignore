@@ -5,7 +5,7 @@ __pycache__
 *.pyc
 .venv
 venv
-# UI build deps (the built app is committed to src/d2diag/web/static; node_modules is huge)
+# UI build deps (the built app is committed to src/openostler/web/static; node_modules is huge)
 ui/node_modules
 ui/dist
 # Private car data — never into the image (gitignored too)

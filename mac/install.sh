@@ -1,8 +1,8 @@
 #!/bin/bash
-# Discovery 2 diagnostics — one-paste Mac installer for non-technical testers.
+# Ostler (+ the Discovery 2 pack) — one-paste Mac installer for non-technical testers.
 #
 # The tester pastes ONE line into Terminal:
-#   curl -fsSL https://raw.githubusercontent.com/Leijoma/discovery2-diag/main/mac/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/openostler/ostler/main/mac/install.sh | bash
 # and after that never touches Terminal again — this drops double-clickable
 # launchers on the Desktop. No virtualenv, no `pip` (uses `python3 -m pip --user`),
 # no `source`/activate — all the steps a novice trips over are removed.
@@ -10,15 +10,18 @@
 # Safe to re-run: it updates an existing checkout instead of failing.
 set -e
 
-REPO_URL="https://github.com/Leijoma/discovery2-diag.git"
-DEST="$HOME/discovery2-diag"
+# The platform and the vehicle pack are separate repos (ADR-0013, ADR-0015).
+REPO_URL="https://github.com/openostler/ostler.git"
+DEST="$HOME/ostler"
+PACK_URL="https://github.com/JamesWrightDavid/discovery2-diag.git"
+PACK_DEST="$HOME/discovery2-diag"
 DESKTOP="$HOME/Desktop"
 
 say()  { printf "\n\033[1m%s\033[0m\n" "$1"; }
 ok()   { printf "  \033[32m✓\033[0m %s\n" "$1"; }
 warn() { printf "  \033[33m!\033[0m %s\n" "$1"; }
 
-say "Discovery 2 diagnostics — setting up…"
+say "Ostler for the Discovery 2 — setting up…"
 
 # 1. Python 3 ----------------------------------------------------------------
 if ! command -v python3 >/dev/null 2>&1; then
@@ -39,17 +42,30 @@ else
   exit 1
 fi
 
-# 3. Get / update the code ---------------------------------------------------
-if [ -d "$DEST/.git" ]; then
-  git -C "$DEST" pull --quiet --ff-only 2>/dev/null || true
-  ok "Updated the code in $DEST"
-elif command -v git >/dev/null 2>&1; then
-  git clone --quiet "$REPO_URL" "$DEST"
-  ok "Downloaded the code to $DEST"
-else
+# 3. Get / update the code (platform + Discovery 2 pack) -----------------------
+if ! command -v git >/dev/null 2>&1; then
   warn "git is not installed — opening the Xcode command-line tools installer."
   echo "     Click 'Install', wait for it to finish, then run this again."
   xcode-select --install 2>/dev/null || true
+  exit 1
+fi
+fetch() {  # fetch <url> <dir>
+  if [ -d "$2/.git" ]; then
+    git -C "$2" pull --quiet --ff-only 2>/dev/null || true
+    ok "Updated the code in $2"
+  else
+    git clone --quiet "$1" "$2"
+    ok "Downloaded the code to $2"
+  fi
+}
+fetch "$REPO_URL" "$DEST"
+fetch "$PACK_URL" "$PACK_DEST"
+# The pack registers itself with the platform through its entry point.
+if python3 -m pip install --user --quiet --no-deps -e "$PACK_DEST"; then
+  ok "Installed the Discovery 2 pack"
+else
+  warn "Could not install the Discovery 2 pack."
+  echo "     Try once in Terminal:  python3 -m pip install --user --no-deps -e $PACK_DEST"
   exit 1
 fi
 
@@ -78,7 +94,7 @@ PYTHONPATH=src python3 tools/dashboard.py --serial auto'
 make_launcher "3 QUICK FAULT CHECK.command" \
 'echo "Reading the engine ECU once (read-only). Cable in car + USB in Mac, ignition ON."
 echo ""
-PYTHONPATH=src python3 tools/verify_ecu.py td5 auto
+PYTHONPATH=src python3 "'"$PACK_DEST"'/tools/verify_ecu.py" td5 auto
 echo ""
 echo "Done. Press Return to close."; read _'
 

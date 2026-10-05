@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
 
+# The Discovery 2 reference pack (ADR-0015) runs the integration tests and the e2e suite.
+# Switch PACK_REF to main once the pack's split-pack branch is merged.
+env:
+  PACK_REF: split-pack
+  PACK_REPO: https://github.com/JamesWrightDavid/discovery2-diag
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,7 +20,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -e ".[dev]"
-      - run: pytest -q
+      - name: Install the D2 reference pack
+        run: pip install --no-deps "d2diag @ git+${PACK_REPO}@${PACK_REF}"
+      - name: Tests (the pack is required here, so needs_pack tests must run, not skip)
+        run: pytest -q
+        env:
+          OSTLER_REQUIRE_PACK: "1"
 
   docs:
     runs-on: ubuntu-latest
@@ -53,7 +64,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Committed build output is current
-        run: git diff --exit-code -- ../src/d2diag/web/static && test -z "$(git status --porcelain -- ../src/d2diag/web/static)"
+        run: git diff --exit-code -- ../src/openostler/web/static && test -z "$(git status --porcelain -- ../src/openostler/web/static)"
 
   e2e:
     runs-on: ubuntu-latest
@@ -64,6 +75,8 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -e .
+      - name: Install the D2 reference pack
+        run: pip install --no-deps "d2diag @ git+${PACK_REPO}@${PACK_REF}"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
