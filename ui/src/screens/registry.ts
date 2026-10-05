@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { Analysis } from "./Analysis";
 import { Capture } from "./Capture";
 import { CoverageMap } from "./CoverageMap";
 import { Docs } from "./Docs";
@@ -12,7 +13,8 @@ import { Utilities } from "./Utilities";
 
 /** The screen registry: one entry per tab. Add a tab = add one row here.
  * `admin` screens appear only on /admin (password protected by the server).
- * `icon` + `short` keep seven tabs on a phone (the short label shows on narrow screens). */
+ * `icon` + `short` keep eight tabs on a 393 px phone (the short label shows on narrow screens;
+ * below 8 × 48 px the bar scrolls). */
 export type Screen = {
   id: string;
   label: string;
@@ -30,6 +32,7 @@ export const SCREENS: Screen[] = [
   { id: "settings", label: "Settings", short: "Setup", icon: "≡", component: ModuleSettings },
   { id: "utils", label: "Utilities", short: "Utils", icon: "⚒", component: Utilities },
   { id: "logs", label: "Logs", short: "Logs", icon: "◷", component: Logs },
+  { id: "analysis", label: "Analysis", short: "Analysis", icon: "◎", component: Analysis },
   // Admin: ids stay "map"/"capture" (App's default admin tab and goTo() links use them).
   { id: "map", label: "Decode", icon: "⇄", component: CoverageMap, admin: true },
   { id: "capture", label: "Label", icon: "✎", component: Capture, admin: true },

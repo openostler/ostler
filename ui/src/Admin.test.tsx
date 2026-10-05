@@ -116,7 +116,7 @@ describe("admin mode", () => {
     const admin = SCREENS.filter((x) => x.admin).map((x) => [x.id, x.label]);
     expect(admin).toEqual([["map", "Decode"], ["capture", "Label"], ["docs", "Docs"]]);
     expect(SCREENS.filter((x) => !x.admin).map((x) => x.label))
-      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs"]);
+      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]);
   });
 
   it("explains Decode with three steps and a glossary", async () => {

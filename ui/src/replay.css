@@ -255,3 +255,14 @@
 .logs-heat-cell.on[data-level="3"] { background: color-mix(in srgb, var(--accent) 75%, var(--bg-muted)); }
 .logs-heat-cell.on[data-level="4"] { background: var(--accent); }
 .logs-heat-cell[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 1px; }
+
+/* ---- Analysis tab (spec §7) ---- */
+.analysis-view { gap: 12px; }
+.analysis-head { align-items: center; }
+.analysis-live {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 9999px;
+  font-size: 12px; font-weight: 700; color: var(--ok); background: var(--ok-bg); border: 1px solid var(--ok);
+}
+.analysis-live-dot { width: 8px; height: 8px; border-radius: 9999px; background: var(--ok); animation: blink 1.2s infinite; }
+.analysis-empty h3 { margin: 0 0 6px; }
+.analysis-hint { margin: 0; }

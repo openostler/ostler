@@ -42,12 +42,12 @@ async function switchModule(page: Page, id: string) {
   await expect(select).toHaveValue(id);
 }
 
-test("the seven tabs, no Connect or Capabilities", async ({ page }) => {
+test("the eight tabs (Analysis after Logs), no Connect or Capabilities", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   const tabs = page.getByRole("navigation", { name: "Screens" }).getByRole("button");
-  await expect(tabs).toHaveCount(7);
-  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs"]) {
+  await expect(tabs).toHaveCount(8);
+  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]) {
     await expect(page.getByRole("navigation").getByRole("button", { name: t, exact: true })).toBeVisible();
   }
   await expect(page.getByRole("button", { name: "Connect", exact: true })).toHaveCount(0);
@@ -66,8 +66,15 @@ test("header: no title, one Module control, % mapped only in Experimental, fits 
   await expect(header.locator(".mappct")).toHaveCount(0);
   const fits = async () => header.evaluate((h) => h.scrollWidth <= h.clientWidth);
   expect(await fits()).toBe(true);
-  // seven tabs fit without scrolling
-  expect(await page.locator("nav.tabs").evaluate((n) => n.scrollWidth <= n.clientWidth)).toBe(true);
+  // icon-only Rewind on a phone (the word stays in its aria-label)
+  await expect(header.getByRole("button", { name: "Rewind" })).toBeVisible();
+  await expect(header.locator(".hrewind-w")).toBeHidden();
+  // eight tabs at 48 px: 360 px scrolls; a 393 px phone fits them all
+  const tabsFit = () => page.locator("nav.tabs").evaluate((n) => n.scrollWidth <= n.clientWidth);
+  await page.setViewportSize({ width: 393, height: 852 });
+  expect(await tabsFit()).toBe(true);
+  expect(await fits()).toBe(true);
+  await page.setViewportSize({ width: 360, height: 780 });
 
   await page.addInitScript(() => localStorage.setItem("d2diag.v2",
     JSON.stringify({ consentDone: true, share: false, trust: "experimental" })));
@@ -79,6 +86,26 @@ test("header: no title, one Module control, % mapped only in Experimental, fits 
   await expect(select.locator('option[value="autobox"]')).toHaveText("EAT (auto gearbox)");
   await expect(select.locator('option[value="airbag"]')).toHaveText("SRS (airbag)");
   await page.screenshot({ path: "test-results/header-360.png" });
+});
+
+// The e2e server is connected and recording: Rewind opens the drive in progress 30 s back.
+test("Rewind opens the drive in progress on Analysis in replay; Exit to live returns", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
+  const rewind = page.locator("header").getByRole("button", { name: "Rewind" });
+  await expect(rewind).toBeEnabled();
+  await rewind.click();
+  const banner = page.getByRole("region", { name: "Replay" });
+  await expect(banner).toBeVisible();
+  await expect(banner).toContainText("REPLAY");
+  await expect(nav(page, "Analysis")).toHaveAttribute("aria-current", "page");
+  await expect(rewind).toHaveCount(0); // Exit to live takes its place
+  await page.screenshot({ path: "test-results/rewind-analysis.png" });
+  await banner.getByRole("button", { name: "Exit to live" }).click();
+  await expect(banner).toBeHidden();
+  await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
+  await expect(rewind).toBeVisible();
 });
 
 test("switching to SLABS from the header keeps the tab", async ({ page }) => {

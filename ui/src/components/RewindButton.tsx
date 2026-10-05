@@ -1,0 +1,75 @@
+import { useCallback, useEffect, useState } from "react";
+import { api } from "../api/client";
+import type { SessionMeta } from "../api/schemas";
+import { useApp } from "../state/app";
+import { useReplay } from "../state/replay";
+
+/** Sessions fetched to find the newest finished one. */
+const LOOKUP = 5;
+
+/** The newest session that is not still being recorded (the list is newest first). */
+const newestFinished = (sessions: SessionMeta[]) => sessions.find((s) => !s.recording) ?? null;
+
+/**
+ * Header ⏪ Rewind (spec §7), before the connection pill. While the Pi is recording it opens
+ * the drive in progress 30 s before its newest sample; otherwise the newest finished session
+ * at its start. Then it switches to Analysis. Hidden in replay (Exit to live takes its place);
+ * disabled ("No logs yet") when there are no sessions at all. The list is fetched lazily on
+ * mount and again on each tap.
+ */
+export function RewindButton() {
+  const { snap, toast, goTo } = useApp();
+  const replay = useReplay();
+  const recording = snap?.recording?.session ?? null;
+  /** null: not known yet (or the list failed to load) → enabled. */
+  const [hasLogs, setHasLogs] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (replay.active) return;
+    let alive = true;
+    api.sessions({ limit: LOOKUP }).then(
+      (r) => alive && setHasLogs(r.sessions.length > 0),
+      () => undefined,
+    );
+    return () => { alive = false; };
+  }, [replay.active]);
+
+  const { enter } = replay;
+  const rewind = useCallback(async () => {
+    if (busy) return;
+    if (recording) {
+      enter(recording, { at: "end-30s" });
+      goTo("analysis");
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await api.sessions({ limit: LOOKUP });
+      setHasLogs(r.sessions.length > 0);
+      const s = newestFinished(r.sessions) ?? r.sessions[0] ?? null;
+      if (!s) { toast("No logs yet", true); return; }
+      enter(s.id);
+      goTo("analysis");
+    } catch (e) {
+      toast(`Could not load the logs: ${(e as Error).message}`, true);
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, recording, enter, goTo, toast]);
+
+  if (replay.active) return null;
+  const disabled = !recording && hasLogs === false;
+  return (
+    <button
+      className="chip hrewind"
+      aria-label="Rewind"
+      title={disabled ? "No logs yet" : recording ? "Rewind 30 s on this drive" : "Open the last drive"}
+      disabled={disabled || busy}
+      onClick={rewind}
+    >
+      <span aria-hidden="true">⏪</span>
+      <span className="hrewind-w" aria-hidden="true">Rewind</span>
+    </button>
+  );
+}

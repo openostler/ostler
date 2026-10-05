@@ -226,12 +226,13 @@ describe("calm instrument", () => {
 describe("overhaul navigation", () => {
   beforeEach(() => consented());
 
-  it("has the seven tabs (Logs last) and no Connect or Capabilities tab", async () => {
+  it("has the eight tabs (Logs, then Analysis last) and no Connect or Capabilities tab", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     const nav = await screen.findByRole("navigation", { name: "Screens" });
+    expect(nav).toHaveClass("many"); // 48 px minimum per tab: fits 393 px, scrolls narrower
     expect(within(nav).getAllByRole("button").map((b) => b.getAttribute("aria-label")))
-      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs"]);
+      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]);
     expect(screen.queryByRole("button", { name: "Connect" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capabilities" })).not.toBeInTheDocument();
   });
@@ -479,6 +480,44 @@ describe("whole-app replay", () => {
     pushSnapshot(live);
     expect(await screen.findByText("Connected")).toBeInTheDocument();
     expect(screen.getByLabelText("Car battery 12.2 V")).toBeInTheDocument();
+  });
+
+  it("Rewind while recording opens the drive 30 s before its end on Analysis; Exit returns to live", async () => {
+    const user = userEvent.setup();
+    const rec = { ...live, recording: { session: "s1", since: 0, rows: 61 } };
+    installReplayServer({ snapshot: rec });
+    render(<App path="/" />);
+    pushSnapshot(rec);
+    await user.click(await screen.findByRole("button", { name: "Rewind" }));
+    const banner = await screen.findByRole("region", { name: "Replay" });
+    expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("button", { name: "Rewind" })).not.toBeInTheDocument();
+    const slider = await screen.findByRole("slider", { name: "Playback position" });
+    await waitFor(() => expect(slider).toHaveValue("30000")); // last sample 60 s − 30 s
+    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
+    expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Rewind" })).toBeInTheDocument();
+  });
+
+  it("goTo(id) switches the tab (Rewind with no recording opens the newest log on Analysis)", async () => {
+    const user = userEvent.setup();
+    const server = installReplayServer({ snapshot: live });
+    const inner = globalThis.fetch;
+    vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
+      const url = new URL(input, "http://dash.local");
+      if (url.pathname !== "/sessions") return inner(input, init);
+      server.calls.push({ path: url.pathname + url.search, method: "GET" });
+      return new Response(JSON.stringify({ sessions: [replayMeta], next: null }), { headers: { "Content-Type": "application/json" } });
+    }));
+    render(<App path="/" />);
+    pushSnapshot(live);
+    expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
+    await user.click(await screen.findByRole("button", { name: "Rewind" }));
+    expect(await screen.findByRole("region", { name: "Replay" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
+    const slider = await screen.findByRole("slider", { name: "Playback position" });
+    await waitFor(() => expect(slider).toHaveValue("0")); // the start
+    expect(server.calls.map((c) => c.path)).toContain("/sessions?limit=5");
   });
 
   it("shows the note chip as the cursor passes a note, and seeks from a note tick", async () => {

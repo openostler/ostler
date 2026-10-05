@@ -10,6 +10,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/screens/` — one component per tab; `registry.ts` lists them (`admin` ones only on /admin).
 - `src/components/` — shared pieces (Value, Gauge, Readout, Sheet, Preferences, ConnectionSheet,
   StatusTag, CoverageBar, PlaceholderReadout, ActionButton, ProcedureSheet, …).
+- `src/screens/Analysis.tsx` + `components/replay/AnalysisView.tsx` — the map/chart/G-G/notes view,
+  live (the drive in progress, marker on `snap.gps`) or replay; `components/RewindButton.tsx`
+  in the header jumps 30 s back into the drive in progress (or opens the latest log).
 - `src/screens/Logs.tsx` + `src/components/replay/` — session browser and replay (MapLibre map,
   Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/maplibre.ts` is the only
   module that imports `maplibre-gl`; it is reached through `import()` so the main chunk stays
