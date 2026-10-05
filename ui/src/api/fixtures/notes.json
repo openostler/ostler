@@ -1,0 +1,19 @@
+{
+  "id": "20261005T090000Z",
+  "notes": [
+    {
+      "id": "a1b2c3d4",
+      "t": 120000,
+      "t_end": null,
+      "text": "Rough idle after the junction",
+      "tags": [
+        "issue"
+      ],
+      "kind": "note",
+      "source": "retro",
+      "created": "2026-10-05T09:02:00.000Z",
+      "edited": null,
+      "capture": null
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "20261005T090000Z",
+  "events": [
+    {
+      "t": 0,
+      "type": "state",
+      "conn": "connected",
+      "status": "connected",
+      "module": "motor",
+      "mode": "demo",
+      "active_test": null,
+      "fault_watch": false,
+      "logging": {
+        "recording": false
+      }
+    },
+    {
+      "t": 240000,
+      "type": "command",
+      "action": "output_fan",
+      "ok": true,
+      "message": "A/C fan (mock)"
+    },
+    {
+      "t": 360000,
+      "type": "module",
+      "module": "slabs"
+    }
+  ]
+}
