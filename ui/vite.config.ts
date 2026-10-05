@@ -10,7 +10,7 @@ const API = process.env.D2DIAG_API ?? "http://localhost:8080";
 const API_ROUTES = [
   "/events", "/snapshot", "/command", "/fields", "/map", "/sniff", "/signals",
   "/docs", "/doc", "/capture", "/automap", "/signal", "/calib", "/community", "/catalog", "/sessions",
-  "/notes", "/captures",
+  "/notes", "/captures", "/pack",
 ];
 
 export default defineConfig({

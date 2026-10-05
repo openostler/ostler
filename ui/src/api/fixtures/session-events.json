@@ -6,7 +6,7 @@
       "type": "state",
       "conn": "connected",
       "status": "connected",
-      "module": "motor",
+      "module": "td5",
       "mode": "demo",
       "active_test": null,
       "fault_watch": false,

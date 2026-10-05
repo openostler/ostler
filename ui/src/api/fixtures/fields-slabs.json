@@ -8,15 +8,15 @@
       "limits": null,
       "label": "Height left (raw)",
       "group": "Ride height",
-      "description": "Left ride-height sensor (raw 0–255). Normal ~110–135; L≈R on level ground.",
+      "description": "Left ride-height sensor (raw 0–255, ≈1.4 mm per count). Typical ~135–165; calibration-dependent.",
       "derived": false,
       "span": [
         0,
         255
       ],
       "normal": [
-        110,
-        135
+        135,
+        165
       ]
     },
     {
@@ -26,15 +26,15 @@
       "limits": null,
       "label": "Height right (raw)",
       "group": "Ride height",
-      "description": "Right ride-height sensor (raw 0–255). Normal ~110–135.",
+      "description": "Right ride-height sensor (raw 0–255, ≈1.4 mm per count). Typical ~135–165; calibration-dependent.",
       "derived": false,
       "span": [
         0,
         255
       ],
       "normal": [
-        110,
-        135
+        135,
+        165
       ]
     },
     {
@@ -222,6 +222,66 @@
         2.0,
         2.4
       ]
+    },
+    {
+      "name": "reverse_gear",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Reverse gear",
+      "group": "Inputs",
+      "description": "Reverse gear selected (automatic gearbox selector).",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "neutral_gear",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Neutral gear",
+      "group": "Inputs",
+      "description": "Neutral selected (automatic gearbox selector). Park also reads 0 here.",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "diff_lock",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Centre diff lock",
+      "group": "Inputs",
+      "description": "Centre differential lock engaged.",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "transfer_low",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Transfer box low range",
+      "group": "Inputs",
+      "description": "Set when the transfer box is in low range.",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "brake_analog",
+      "unit": "raw",
+      "c": "proven",
+      "limits": null,
+      "label": "Brake signal (raw)",
+      "group": "Inputs",
+      "description": "Analogue brake-pedal signal on SLABS 21 48 (raw u16; falls when the pedal is pressed). Candidate, unscaled.",
+      "derived": false,
+      "span": null,
+      "normal": null
     },
     {
       "name": "height_left_mm",

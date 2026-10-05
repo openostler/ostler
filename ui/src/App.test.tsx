@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { LIVE_REFRESH_MS } from "./api/useSessions";
+import { getPack, setPack } from "./pack/store";
 import { baseSnapshot, consented, installFakeServer, pushSnapshot } from "./test/fakeServer";
 
 const connected = { ...baseSnapshot, faults: [] };
@@ -23,6 +24,33 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+});
+
+describe("vehicle pack boot", () => {
+  beforeEach(() => consented());
+
+  it("loads /pack once before rendering, then shows the dashboard", async () => {
+    setPack(null);
+    const server = installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+    expect(getPack()?.default_module).toBe("td5");
+    expect(server.calls.filter((c) => c.path === "/pack")).toHaveLength(1);
+  });
+
+  it("shows the error card when /pack fails, and retries", async () => {
+    setPack(null);
+    installFakeServer({ snapshot: connected });
+    const ok = globalThis.fetch;
+    vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) =>
+      String(input).startsWith("/pack") ? new Response("down", { status: 503 }) : ok(input, init)));
+    render(<App path="/" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not load the vehicle");
+    vi.stubGlobal("fetch", ok);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+  });
 });
 
 describe("first start", () => {
@@ -265,7 +293,7 @@ describe("overhaul navigation", () => {
     consented({ trust: "experimental" });
     render(<App path="/" />);
     const header2 = document.querySelector("header") as HTMLElement;
-    await waitFor(() => expect(header2.querySelector(".mappct")).toHaveTextContent("34% mapped")); // motor: 34 of 99 verified
+    await waitFor(() => expect(header2.querySelector(".mappct")).toHaveTextContent("34% mapped")); // td5: 34 of 99 verified
   });
 
   it("shows a small admin chip instead of a title on /admin", async () => {
@@ -374,13 +402,13 @@ describe("overhaul navigation", () => {
   it("reads the ECU identity on Settings and shows only the masked VIN", async () => {
     const user = userEvent.setup();
     const identityCatalog = {
-      module: "motor", store_module: "td5", coverage: cov(1),
+      module: "td5", store_module: "td5", coverage: cov(1),
       pages: [{ id: "settings", title: "Settings", coverage: cov(1), groups: [{ id: "settings-identity", title: "Identity", items: [{
         id: "identity", name: "ECU identity", status: "verified", safety: "read",
         actions: [{ action: "read_identity", label: "Read", status: "verified", safety: "read", confirm: "none" }],
       }] }] }],
     };
-    installFakeServer({ snapshot: connected, catalogs: { motor: identityCatalog }, commands: {
+    installFakeServer({ snapshot: connected, catalogs: { td5: identityCatalog }, commands: {
       read_identity: { ok: true, identity: { part_no: "NNN500250", vin: "SALLTGM88XA123456", vin_masked: "SALLT********3456" } },
     } });
     render(<App path="/" />);
@@ -396,12 +424,12 @@ describe("overhaul navigation", () => {
     const user = userEvent.setup();
     consented({ trust: "experimental" });
     const inputsCatalog = {
-      module: "motor", store_module: "td5", coverage: cov(0, 0, 1),
+      module: "td5", store_module: "td5", coverage: cov(0, 0, 1),
       pages: [{ id: "inputs", title: "Inputs", coverage: cov(0, 0, 1), groups: [{ id: "inputs-x", title: "Inputs — Switches", items: [{
         id: "brake-sw", name: "Brake switch", status: "sniff", safety: "read",
       }] }] }],
     };
-    installFakeServer({ snapshot: connected, catalogs: { motor: inputsCatalog } });
+    installFakeServer({ snapshot: connected, catalogs: { td5: inputsCatalog } });
     render(<App path="/" />);
     await user.click(await screen.findByRole("button", { name: "Inputs" }));
     const section = await screen.findByRole("region", { name: "From NanoCom — not yet decoded" });
@@ -415,7 +443,7 @@ describe("overhaul navigation", () => {
 const RT = Array.from({ length: 61 }, (_, i) => i * 1000); // 0 … 60 s
 const replayMeta = {
   id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: "2026-10-05T09:01:00.000Z", duration_s: 60, rows: 61,
-  parts: ["data.csv"], modules: ["motor"], has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null,
+  parts: ["data.csv"], modules: ["td5"], has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null,
   start_pos: null, end_pos: null, synthetic: false, recording: false, source: "mock", audio: [],
   channels: [
     { name: "rpm", units: "rpm", group: "engine", c: "proven", limits: [700, 4500] },
@@ -428,7 +456,7 @@ const replayData = {
   ch: { rpm: RT.map(() => 1234), battery: RT.map(() => 13.7) },
 };
 const replayEvents = [
-  { t: 0, type: "state", conn: "connected", status: "connected", module: "motor", mode: "mock", active_test: null, fault_watch: false, logging: { recording: false } },
+  { t: 0, type: "state", conn: "connected", status: "connected", module: "td5", mode: "mock", active_test: null, fault_watch: false, logging: { recording: false } },
   { t: 10_000, type: "command", action: "output_ac_fan", ok: true, message: "A/C fan" },
   { t: 20_000, type: "active_test", active_test: { action: "output_ac_fan", label: "A/C Fan", since: 20, stop: "output_ac_fan" } },
   { t: 30_000, type: "active_test", active_test: null },

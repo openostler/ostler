@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import sessionsFx from "../../api/fixtures/sessions.json";
 import type { SessionMeta } from "../../api/schemas";
 import {
-  CATEGORIES, categoryOf, DEFAULT_PINS, groupChannels, highlight, loadPins, loadRecent, MAX_RECENT, pickerChannels, PINS_KEY,
+  categories, categoryOf, DEFAULT_PINS, groupChannels, highlight, loadPins, loadRecent, MAX_RECENT, pickerChannels, PINS_KEY,
   pushRecent, searchChannels, togglePin, type PickerChannel,
 } from "./channels";
 
@@ -32,7 +32,7 @@ describe("picker categories", () => {
     const rows = pickerChannels(demo, names, {});
     const groups = groupChannels(rows);
     const order = groups.map((g) => g.category);
-    expect(order).toEqual([...order].sort((a, b) => CATEGORIES.indexOf(a) - CATEGORIES.indexOf(b)));
+    expect(order).toEqual([...order].sort((a, b) => categories().indexOf(a) - categories().indexOf(b)));
     expect(order[0]).toBe("GPS/Motion");
     expect(groups.find((g) => g.category === "Engine")!.rows.map((r) => r.name)).toEqual(["rpm", "speed", "manifold_press", "accel_pedal_pct"]);
     expect(groups.find((g) => g.category === "Temperatures")!.rows.map((r) => r.name)).toEqual(["coolant_temp", "air_temp"]);

@@ -15,6 +15,7 @@ import {
   FieldsResponse,
   MapResponse,
   OkReply,
+  PackSchema,
   CaptureList,
   NoteList,
   NoteReply,
@@ -77,6 +78,8 @@ export function command(action: string, params?: Record<string, unknown>) {
 
 export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
+  /** The active vehicle pack's manifest (module ids, names, aliases, layout). */
+  pack: () => getJson("/pack", PackSchema),
   catalog: (module: string) => getJson(`/catalog?module=${encodeURIComponent(module)}`, Catalog),
   catalogModules: () => getJson("/catalog", CatalogModules),
   /** One page of sessions, newest first (keyset paging: pass `next` back as `before`). */

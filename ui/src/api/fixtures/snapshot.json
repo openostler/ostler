@@ -3,7 +3,7 @@
   "source": "td5",
   "signals": {
     "rpm": {
-      "v": 807.12,
+      "v": 777.21,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
@@ -15,7 +15,7 @@
       "c": "proven"
     },
     "battery": {
-      "v": 14.03,
+      "v": 14.07,
       "u": "V",
       "s": "ok",
       "c": "proven"
@@ -33,13 +33,13 @@
       "c": "proven"
     },
     "fuel_temp": {
-      "v": 13.59,
+      "v": 15.05,
       "u": "°C",
       "s": "ok",
       "c": "proven"
     },
     "manifold_press": {
-      "v": 1.0,
+      "v": 1.01,
       "u": "bar",
       "s": "ok",
       "c": "proven"
@@ -51,55 +51,55 @@
       "c": "proven"
     },
     "economy": {
-      "v": 8.22,
+      "v": 8.23,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "trip_economy": {
-      "v": 7.99,
+      "v": 7.83,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "lifetime_economy": {
-      "v": 8.53,
+      "v": 8.49,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "rpm_error": {
-      "v": 5.93,
+      "v": -0.84,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
     },
     "balance_1": {
-      "v": 3.31,
+      "v": 1.19,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_2": {
-      "v": 0.31,
+      "v": -1.15,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_3": {
-      "v": 2.95,
+      "v": -0.97,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_4": {
-      "v": 3.28,
+      "v": 3.58,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_5": {
-      "v": 0.32,
+      "v": 1.02,
       "u": "",
       "s": "ok",
       "c": "proven"
@@ -109,7 +109,7 @@
     "air flow circuit (Logged Low)",
     "inlet air temp. circuit (Current)"
   ],
-  "module": "motor",
+  "module": "td5",
   "logging": {
     "recording": false
   },
@@ -117,8 +117,8 @@
   "fault_watch": false,
   "allow_shutdown": false,
   "conn": "connected",
-  "ts": 1791162437.8958397,
-  "battery_v": 14.03,
+  "ts": 1791226936.0540018,
+  "battery_v": 14.07,
   "port": {
     "spec": "auto",
     "resolved": null,

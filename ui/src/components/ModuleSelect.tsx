@@ -1,6 +1,6 @@
 import { command } from "../api/client";
 import { useCatalogModules } from "../api/useCatalog";
-import { MODULE_NAME, moduleName } from "../layout";
+import { canonicalModule, moduleName, moduleNames } from "../layout";
 import { coveragePct, modulesFor } from "../lib/catalog";
 import { useApp } from "../state/app";
 
@@ -10,12 +10,13 @@ import { useApp } from "../state/app";
  * Stable lists only modules with something verified. */
 export function ModuleSelect() {
   const { snap, module, experimental, toast } = useApp();
-  const mods = useCatalogModules(module);
+  // ids are canonical; an alias from an older server maps onto the pack id
+  const mods = useCatalogModules(module)?.map((m) => ({ ...m, module: canonicalModule(m.module) }));
   const recording = !!snap?.logging?.recording;
 
   const options: { id: string; label: string }[] = mods
     ? modulesFor(mods, experimental, module).map((m) => ({ id: m.module, label: m.name }))
-    : Object.keys(MODULE_NAME).map((id) => ({ id, label: moduleName(id) }));
+    : moduleNames().map(([id, label]) => ({ id, label }));
   if (!options.some((o) => o.id === module)) options.unshift({ id: module, label: moduleName(module) });
   const current = options.find((o) => o.id === module)?.label ?? moduleName(module);
   const cov = experimental ? mods?.find((m) => m.module === module)?.coverage : undefined;

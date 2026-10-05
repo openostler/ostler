@@ -18,11 +18,14 @@ dev = ["pytest>=7"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"d2diag.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*",
-                "demo/*.txt"]
-"d2diag.signals" = ["*.json"]
-"d2diag.logbook.demo" = ["*/*.csv", "*/*.json", "*/*.jsonl"]
+"d2diag.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*"]
 "d2diag.geo" = ["*.tsv.gz"]
+"d2diag.vehicles.lr_d2" = ["layout.json", "signals/*.json", "dtc/*.json", "td5/*.json",
+                           "slabs/*.json", "demo/*.txt", "demo/sessions/*/*"]
+
+# Vehicle packs (ADR-0013): the platform resolves its pack through this group.
+[project.entry-points."ostler.vehicle"]
+lr_d2 = "d2diag.vehicles.lr_d2:PACK"
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

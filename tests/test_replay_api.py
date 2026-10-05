@@ -572,7 +572,7 @@ def test_dashboard_tls_flags_must_come_together():
 
 
 def test_demo_sniff_log_is_committed_and_packaged():
-    demo = REPO / "src/d2diag/web/demo/sniff-demo.txt"
+    demo = REPO / "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt"
     from d2diag.web.sniffer import SnifferFeed
 
     feed = SnifferFeed.from_file(str(demo), delay=0, loop=False)
@@ -580,7 +580,7 @@ def test_demo_sniff_log_is_committed_and_packaged():
     snap = feed.snapshot("td5")
     assert snap["frames"] > 100 and {x["lid"] for x in snap["lids"]} >= {"09", "10"}
     assert "demo/*.txt" in (REPO / "pyproject.toml").read_text()
-    assert "src/d2diag/web/demo/sniff-demo.txt" in (REPO / "Dockerfile").read_text()
+    assert "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt" in (REPO / "Dockerfile").read_text()
 
 
 # ---- split / name / data passthrough ---------------------------------------- #

@@ -1,37 +1,43 @@
-import { BodyCar } from "../components/BodyCar";
+import { createElement } from "react";
 import { HealthStrip } from "../components/HealthStrip";
 import { ScreenHead } from "../components/ScreenHead";
-import { SlabsCar } from "../components/SlabsCar";
 import { StatTile } from "../components/StatTile";
 import { StatusGate } from "../components/StatusGate";
-import { DRIVE_TILES } from "../layout";
+import { driveView, tileConv } from "../layout";
+import { usePack } from "../pack/store";
 import { useApp } from "../state/app";
+import { getView } from "../vehicles/registry";
 
-/** Driver's dashboard: a per-module vehicle view on one shared Discovery base. TD5 shows
- * the hero tiles, SLABS the wheels/heights, BCU the body (lamps/doors). Other modules show a
- * placeholder until they get a view. Calm when healthy; neutral/"awaiting" when undecoded. */
+/** Driver's dashboard: the per-module view the pack's layout names (layout.drive). "tiles"
+ * is generic — hero gauges and stat tiles; any other kind is a view the pack registered
+ * (vehicles/registry.ts). Modules without one show a placeholder. Calm when healthy;
+ * neutral/"awaiting" when undecoded. */
 export function Drive() {
   const { snap, module, fields } = useApp();
+  const pack = usePack();
   const recording = !!snap?.logging?.recording;
   const head = <ScreenHead title="Drive">{recording ? <span className="status hi"><span className="si">●</span>REC</span> : null}</ScreenHead>;
   if (snap?.status !== "connected") return <>{head}<StatusGate /></>;
 
-  if (module === "slabs") return <>{head}<HealthStrip /><SlabsCar signals={snap.signals} fields={fields} /></>;
-  if (module === "bcu") return <>{head}<BodyCar signals={snap.signals} /></>;
-  if (module === "motor") {
+  const view = driveView(module);
+  const health = view?.health ? <HealthStrip /> : null;
+  if (view?.kind === "tiles") {
     return (
       <>
         {head}
-        <HealthStrip />
+        {health}
         <div className="drive2">
-          {DRIVE_TILES.map((t) => (
+          {(view.tiles ?? []).map((t) => (
             <StatTile key={t.signal} name={t.signal} label={t.label} sig={snap.signals[t.signal]} field={fields[t.signal]}
-              gauge={t.gauge} dec={t.dec} unit={t.unit} conv={t.conv} />
+              gauge={t.gauge} dec={t.dec} unit={t.unit} conv={tileConv(t)} />
           ))}
         </div>
       </>
     );
   }
+  // a registered view is a stable module-level component (looked up, never created here)
+  const packView = view ? getView(pack?.id, view.kind) : undefined;
+  if (packView) return <>{head}{health}{createElement(packView, { signals: snap.signals, fields })}</>;
   return (
     <>
       {head}

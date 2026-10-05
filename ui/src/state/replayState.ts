@@ -4,6 +4,7 @@
  * reads through `useApp()` from the recorded columns. No React, no fetch — unit-tested directly.
  */
 import type { Field, GpsFix, Note, SessionChannel, SessionData, SessionEvent, SessionMeta, SignalValue, Snapshot } from "../api/schemas";
+import { canonicalModule, defaultModule } from "../layout";
 import { HISTORY_LEN, type LiveState, type Sample } from "./live";
 import { indexAt } from "./playback";
 import type { ReplayEventState } from "./replayTypes";
@@ -181,9 +182,10 @@ export function historyAt(data: SessionData, i: number, names: readonly string[]
   return out;
 }
 
-/** The module in view at the event state (the recorded one), else the session's first. */
-export function moduleOf(state: ReplayEventState, meta?: SessionMeta, fallback = "motor"): string {
-  return state.module ?? meta?.modules[0] ?? fallback;
+/** The module in view at the event state (the recorded one), else the session's first,
+ * else the pack's default — canonical (a legacy alias in an old log reads as the pack's id). */
+export function moduleOf(state: ReplayEventState, meta?: SessionMeta, fallback = defaultModule()): string {
+  return canonicalModule(state.module ?? meta?.modules[0] ?? fallback);
 }
 
 /** Device-level snapshot fields carried over from the live stream (not car state). */

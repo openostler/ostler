@@ -74,7 +74,8 @@ telemetry, tracking and an alarm. See
 The layering stays as above. Two names are added:
 
 - **Vehicle packs** are declarative per-vehicle data plus small code hooks. They sit inside
-  INTERPRETATION. The D2 Td5 is the reference pack.
+  INTERPRETATION. The D2 Td5 is the reference pack, in `src/d2diag/vehicles/lr_d2/`, reached
+  only through `d2diag.pack` (Phase 0 done).
 - **Integrations** are opt-in consumers and add-ons, such as MQTT/Home Assistant, the
   tracker and the alarm. Every one of them is off by default.
 

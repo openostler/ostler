@@ -133,7 +133,7 @@ test("switching to SLABS from the header keeps the tab", async ({ page }) => {
   await expect(page.locator(".screen-head")).toContainText("SLABS");
   await page.screenshot({ path: "test-results/faults-slabs.png", fullPage: true });
   // restore TD5: the test server is shared by every test
-  await switchModule(page, "motor");
+  await switchModule(page, "td5");
   await expect(page.locator(".screen-head")).toContainText("TD5");
 });
 
@@ -236,7 +236,7 @@ for (const scheme of ["dark", "light"] as const) {
     await page.screenshot({ path: `test-results/${scheme}-drive-slabs.png`, fullPage: true });
     // leave the shared test server on TD5 for other tests
     await dismissIfShown(page);
-    await switchModule(page, "motor");
+    await switchModule(page, "td5");
     await expect(page.getByRole("heading", { name: "Drive" })).toBeVisible();
     await context.close();
   });

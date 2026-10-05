@@ -9,7 +9,8 @@ import pytest
 
 from d2diag import ports
 from d2diag.web.server import CONN_STATES, DiagServer
-from d2diag.web.sources import DataSource, Td5DataSource
+from d2diag.vehicles.lr_d2.sources import Td5DataSource
+from d2diag.web.sources import DataSource
 from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
 
@@ -119,7 +120,7 @@ def test_aborted_establishment_keeps_conn(make_server):
 
 def test_module_switch_restarts_the_state_machine(make_server):
     a, b = _Scripted(["ok", "fail"]), _Scripted(["fail"])
-    srv = make_server({"motor": a, "slabs": b}, active="motor")
+    srv = make_server({"td5": a, "slabs": b}, active="td5")
     srv.poll_once()
     assert _cmd(srv, "select_module", module="slabs")["ok"]
     assert srv.latest["conn"] == "connecting"
@@ -164,7 +165,7 @@ def test_disconnect_over_the_poll_thread(make_server):
 
 def test_set_port_repoints_every_live_source_and_reconnects(make_server):
     td5_live, slabs_live = Td5DataSource("auto"), _Scripted(["ok"])
-    srv = make_server({"motor": td5_live, "slabs": slabs_live}, active="slabs")
+    srv = make_server({"td5": td5_live, "slabs": slabs_live}, active="slabs")
     srv.poll_once()
     _cmd(srv, "disconnect")
     r = _cmd(srv, "set_port", port="/dev/ttyUSB7")
@@ -225,10 +226,10 @@ def test_latched_test_sets_and_clears_the_banner(make_server):
 
 def test_module_switch_stops_a_latched_test_first(make_server):
     slabs, sent = _recording_slabs()
-    srv = make_server({"slabs": slabs, "motor": FakeTd5Source()}, active="slabs")
+    srv = make_server({"slabs": slabs, "td5": FakeTd5Source()}, active="slabs")
     assert _cmd(srv, "bleed_power_on")["ok"]
     assert srv.latest["active_test"]["stop"] == "bleed_power_off"
-    assert _cmd(srv, "select_module", module="motor")["ok"]
+    assert _cmd(srv, "select_module", module="td5")["ok"]
     assert sent[-1] == "bleed_power_off"                      # sent before the switch
     assert srv.latest["active_test"] is None
 

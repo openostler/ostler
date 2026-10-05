@@ -39,7 +39,18 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-_DIR = Path(__file__).resolve().parent
+# The store directory. ``None`` (the default) means the active vehicle pack's
+# ``dtc_dir``; tests monkeypatch ``_DIR`` to a temporary directory.
+_DIR: "Path | None" = None
+
+
+def _dir() -> Path:
+    """The fault-meaning store directory: ``_DIR`` if set, else ``active_pack().dtc_dir``."""
+    if _DIR is not None:
+        return Path(_DIR)
+    from ..pack import active_pack
+
+    return Path(active_pack().dtc_dir)
 
 
 @dataclass(frozen=True)
@@ -61,7 +72,7 @@ class FaultMeaning:
 
 
 def _path(module: str) -> Path:
-    return _DIR / f"{module}.json"
+    return _dir() / f"{module}.json"
 
 
 def load_records(module: str) -> "list[dict]":
@@ -72,13 +83,21 @@ def load_records(module: str) -> "list[dict]":
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-_CACHE: "dict[str, dict[str, FaultMeaning]]" = {}
+# Keyed by (store directory, module), so switching packs (or ``_DIR``) never serves another
+# store's meanings.
+_CACHE: "dict[tuple[str, str], dict[str, FaultMeaning]]" = {}
+
+
+def _key(module: str) -> "tuple[str, str]":
+    return (str(_dir()), module)
 
 
 def load_meanings(module: str) -> "dict[str, FaultMeaning]":
-    """Load a module's fault meanings as ``{key: FaultMeaning}`` (cached per module)."""
-    if module not in _CACHE:
-        _CACHE[module] = {
+    """Load a module's fault meanings as ``{key: FaultMeaning}`` (cached per store directory
+    and module)."""
+    key = _key(module)
+    if key not in _CACHE:
+        _CACHE[key] = {
             r["key"]: FaultMeaning(
                 key=r["key"], name=r.get("name", ""), description=r.get("description", ""),
                 cause=r.get("cause", ""), severity=r.get("severity", ""),
@@ -87,7 +106,7 @@ def load_meanings(module: str) -> "dict[str, FaultMeaning]":
             )
             for r in load_records(module)
         }
-    return _CACHE[module]
+    return _CACHE[key]
 
 
 def meaning(module: str, key: str) -> "FaultMeaning | None":
@@ -108,13 +127,13 @@ def upsert_meaning(module: str, record: dict) -> None:
     else:
         rows.append(rec)
     p = _path(module)
-    fd, tmp = tempfile.mkstemp(dir=str(_DIR), suffix=".tmp")
+    fd, tmp = tempfile.mkstemp(dir=str(_dir()), suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(rows, f, ensure_ascii=False, indent=2)
             f.write("\n")
         os.replace(tmp, p)
-        _CACHE.pop(module, None)
+        _CACHE.pop(_key(module), None)
     finally:
         if os.path.exists(tmp):
             os.remove(tmp)

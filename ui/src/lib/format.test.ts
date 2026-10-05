@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clockHHMM, convertUnit, flagFor, fmt, parseFault, spacedHex, storeModule } from "./format";
+import { clockHHMM, convertUnit, flagFor, fmt, parseFault, spacedHex } from "./format";
 
 describe("fmt", () => {
   it("uses one decimal below 100 and none above", () => {
@@ -43,10 +43,8 @@ describe("flagFor", () => {
   it("is ok for proven values in range", () => expect(flagFor(null, "proven").cls).toBe("ok"));
 });
 
-it("formats hex, clock and store modules", () => {
+it("formats hex and clock", () => {
   expect(spacedHex("0902fa")).toBe("09 02 fa");
   expect(spacedHex("09 02fa")).toBe("09 02 fa");
   expect(clockHHMM(new Date(2026, 0, 1, 7, 5))).toBe("07:05");
-  expect(storeModule("motor")).toBe("td5");
-  expect(storeModule("slabs")).toBe("slabs");
 });

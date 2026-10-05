@@ -34,7 +34,7 @@ const demo: SessionMeta = {
   ...(sessionsFx.sessions[0] as unknown as SessionMeta),
   name: "Demo log 1", description: "A synthetic demo drive.", place: { label: "Rannoch Moor", source: "geonames" },
   place_start: null, place_end: null, note_count: 2, synthetic: true, recording: false, source: "demo",
-  modules: ["motor", "slabs"], has_gps: true, distance_km: 11.21, max_speed_kmh: 92, duration_s: 720,
+  modules: ["td5", "slabs"], has_gps: true, distance_km: 11.21, max_speed_kmh: 92, duration_s: 720,
 };
 const real: SessionMeta = {
   ...demo, name: null, description: null, place: null, note_count: 0, id: "20261004T170000Z", start_utc: "2026-10-04T17:00:00.000Z", synthetic: false, source: "live",

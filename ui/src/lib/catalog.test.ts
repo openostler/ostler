@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import bcuFx from "../api/fixtures/catalog-bcu.json";
 import modulesFx from "../api/fixtures/catalog-modules.json";
-import motorFx from "../api/fixtures/catalog-motor.json";
+import td5Fx from "../api/fixtures/catalog-td5.json";
 import { Catalog, CatalogModules, type CatalogItem } from "../api/schemas";
 import {
   actionLocked,
@@ -17,7 +17,7 @@ import {
   visibleGroups,
 } from "./catalog";
 
-const motor = Catalog.parse(motorFx);
+const td5 = Catalog.parse(td5Fx);
 const bcu = Catalog.parse(bcuFx);
 const item = (over: Partial<CatalogItem>): CatalogItem => ({
   id: "x", name: "X", status: "verified", safety: "read", ref: "", note: "", placeholder: false, actions: [], ...over,
@@ -52,9 +52,9 @@ describe("actions", () => {
 
 describe("pages and groups", () => {
   it("filters a page's groups and drops empty ones", () => {
-    expect(visibleGroups(pageOf(motor, "outputs"), false)).toEqual([]);
-    expect(visibleGroups(pageOf(motor, "outputs"), true).map((g) => g.group.id)).toEqual(["outputs-tests"]);
-    const stable = pageItems(pageOf(motor, "inputs"), false);
+    expect(visibleGroups(pageOf(td5, "outputs"), false)).toEqual([]);
+    expect(visibleGroups(pageOf(td5, "outputs"), true).map((g) => g.group.id)).toEqual(["outputs-tests"]);
+    const stable = pageItems(pageOf(td5, "inputs"), false);
     expect(stable.length).toBeGreaterThan(0);
     expect(stable.every((i) => i.status === "verified")).toBe(true);
   });
@@ -77,9 +77,9 @@ describe("coverage", () => {
   it("lists only modules with something verified in Stable", () => {
     const mods = CatalogModules.parse(modulesFx).modules;
     expect(modulesFor(mods, true).map((m) => m.module))
-      .toEqual(["motor", "slabs", "bcu", "ace", "autobox", "airbag"]);
-    expect(modulesFor(mods, false).map((m) => m.module)).toEqual(["motor", "slabs"]);
-    expect(modulesFor(mods, false, "bcu").map((m) => m.module)).toEqual(["motor", "slabs", "bcu"]);
+      .toEqual(["td5", "slabs", "bcu", "ace", "autobox", "airbag"]);
+    expect(modulesFor(mods, false).map((m) => m.module)).toEqual(["td5", "slabs"]);
+    expect(modulesFor(mods, false, "bcu").map((m) => m.module)).toEqual(["td5", "slabs", "bcu"]);
   });
 });
 

@@ -1,9 +1,9 @@
 """Read side of the logbook: list, meta, columnar replay data, delete, export (ADR-0009),
 plus events, notes, audio and capture labels (ADR-0010).
 
-``SessionStore(root, demo_root=DEMO_ROOT)`` merges the recorded sessions under ``root``
-with the committed synthetic demo session(s). ``public=True`` hides every non-synthetic
-session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
+``SessionStore(root, demo_root=<the active pack's demo sessions>)`` merges the recorded
+sessions under ``root`` with the committed synthetic demo session(s). ``public=True`` hides
+every non-synthetic session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
 their notes are read-only (``PermissionError``); every note write is refused in public
 mode. Audio is never available in public mode (``KeyError``).
 
@@ -27,7 +27,7 @@ import time
 from . import channels as ch
 from . import export as _export
 from .audio import mime_for, track_file
-from .demo import DEMO_ROOT
+from . import demo as _demo_pkg
 from . import places as _places
 from .notes import NoteLog, read_notes
 from .recorder import (MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions,
@@ -39,6 +39,7 @@ LIVE_GRACE_S = 90.0  # a "recording" meta newer than this is the live session
 MAX_NAME = 80
 MAX_DESCRIPTION = 2000
 _UNSET = object()
+_PACK = object()  # SessionStore default: the active vehicle pack's demo sessions
 _PLACE_WHICH = {"start": "place_start", "place_start": "place_start",
                 "end": "place_end", "place_end": "place_end"}
 
@@ -48,7 +49,15 @@ _EXPORTS = {
     "gpx": (_export.to_gpx, "application/gpx+xml", "gpx"),
     "notes": (_export.notes_csv, "text/csv; charset=utf-8", "notes.csv"),
 }
-_STORE_MODULE = {"motor": "td5"}  # UI module name → signal store module
+
+
+def _canonical(mid) -> str:
+    """A module id or legacy alias (``motor``) → the active pack's canonical id. Applied
+    on READ only: files on disk are never rewritten."""
+    from ..pack import canonical_module
+
+    m = str(mid or "")
+    return (canonical_module(m) or m) if m else m
 
 
 # ------------------------------------------------------------------ reading -- #
@@ -154,6 +163,8 @@ def read_events(path: str) -> "list[dict]":
         if isinstance(ev, dict) and isinstance(ev.get("type"), str) \
                 and isinstance(ev.get("t"), (int, float)):
             ev.pop("trust", None)
+            if isinstance(ev.get("module"), str) and ev["module"]:
+                ev["module"] = _canonical(ev["module"])   # legacy alias → canonical id
             out.append(ev)
     return out
 
@@ -173,6 +184,13 @@ def _complete_meta(meta: dict) -> dict:
         c.setdefault("limits", ch.limits_for(name))
         chans.append(c)
     meta = {**meta, "channels": chans}
+    if isinstance(meta.get("modules"), list):
+        mods: "list" = []
+        for m in meta["modules"]:
+            c = _canonical(m) if isinstance(m, str) else m
+            if c not in mods:
+                mods.append(c)
+        meta["modules"] = mods                    # legacy alias → canonical id, on read
     meta.setdefault("audio", [])
     meta.setdefault("accel_cal", None)
     meta.setdefault("name", None)
@@ -285,8 +303,10 @@ def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
 # -------------------------------------------------------------------- store -- #
 
 class SessionStore:
-    def __init__(self, root: str, demo_root: "str | None" = DEMO_ROOT,
+    def __init__(self, root: str, demo_root: "str | None" = _PACK,  # type: ignore[assignment]
                  index_path: "str | None" = None) -> None:
+        if demo_root is _PACK:
+            demo_root = _demo_pkg.demo_root()
         self.root = str(root)
         self.demo_root = str(demo_root) if demo_root else None
         self.index = None
@@ -481,6 +501,7 @@ class SessionStore:
             src = []
             t, utc, series = _minmax_buckets(t, utc, series, max_points, src)
         text = {k: [rows[i].get(k) or None for i in src] for k in ("faults", "module")}
+        text["module"] = [_canonical(m) if m else m for m in text["module"]]
         return {"id": meta["id"], "t": t, "utc": utc, "ch": series, "text": text,
                 "track": reduce_track(track), "decimated": decimated}
 
@@ -581,11 +602,11 @@ class SessionStore:
                  labeled_path: "str | None" = None) -> "list[dict]":
         """Capture labels for the Decode solver: every ``capture`` note of every session
         (``t``/``session`` set) plus the rows of ``logs/labeled_captures.jsonl``
-        (``labeled_path``; ``t``/``session`` null). ``module`` filters (``motor`` and
-        ``td5`` are the same module). Admin only: never call it for a public request."""
+        (``labeled_path``; ``t``/``session`` null). ``module`` filters by canonical id (a
+        legacy alias matches its module); rows carry canonical ids. Admin only: never call
+        it for a public request."""
         def norm(m) -> str:
-            m = str(m or "").lower()
-            return _STORE_MODULE.get(m, m)
+            return _canonical(str(m or "").lower())
 
         want = norm(module) if module else None
         out: "list[dict]" = []
@@ -596,7 +617,7 @@ class SessionStore:
                     continue
                 if want and norm(cap.get("module")) != want:
                     continue
-                out.append({"module": str(cap.get("module") or ""),
+                out.append({"module": _canonical(cap.get("module")),
                             "lid": str(cap.get("lid") or ""), "raw": str(cap.get("raw") or ""),
                             "value": str(cap.get("value") or ""), "t": n.get("t"),
                             "session": sid})
@@ -616,7 +637,7 @@ class SessionStore:
                 if want and norm(r.get("module")) != want:
                     continue
                 value = r.get("value", r.get("text"))
-                out.append({"module": str(r.get("module") or ""), "lid": str(r.get("lid")),
+                out.append({"module": _canonical(r.get("module")), "lid": str(r.get("lid")),
                             "raw": str(r.get("raw") or ""),
                             "value": "" if value is None else str(value),
                             "t": None, "session": None})

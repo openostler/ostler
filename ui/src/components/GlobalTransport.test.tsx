@@ -15,7 +15,7 @@ vi.mock("./RecordingOptions", () => ({ RecordingOptions: () => <div>Recording op
 
 const T = Array.from({ length: 601 }, (_, i) => i * 1000); // 0 … 10 min
 const META = {
-  id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: null, duration_s: 600, rows: 601, parts: [], modules: ["motor"],
+  id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: null, duration_s: 600, rows: 601, parts: [], modules: ["td5"],
   channels: [], has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null,
   synthetic: false, recording: false, source: "mock", audio: [],
 } as unknown as NonNullable<Replay["session"]>;

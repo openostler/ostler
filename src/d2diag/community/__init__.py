@@ -19,6 +19,8 @@ import urllib.request
 import uuid
 from pathlib import Path
 
+from ..pack import canonical_module
+
 
 def _ssl_context():
     """Verified TLS context. Use certifi's CA bundle if present (fixes the macOS
@@ -181,7 +183,7 @@ class Community:
             "install_id": self.install_id(),
             "tool_version": TOOL_VERSION,
             "vehicle": self._cfg.get("vehicle"),
-            "module": r.get("module"),
+            "module": canonical_module(r.get("module")),
             "lid": r.get("lid"),
             "offset": r.get("offset"),
             "kind": r.get("kind"),

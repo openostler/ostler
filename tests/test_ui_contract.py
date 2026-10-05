@@ -74,8 +74,8 @@ def base(tmp_path_factory):
     sniffer.store.ingest_line("[2] 02 21 09 2c 04 61 09 02 fa 6a")
     srv = DiagServer(
         host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
-        source={"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
-        fault_scan=fake_fault_report, active="motor", menus=MENUS, docs=DocLibrary().add_file(doc),
+        source={"td5": FakeTd5Source(), "slabs": FakeSlabsSource()},
+        fault_scan=fake_fault_report, active="td5", menus=MENUS, docs=DocLibrary().add_file(doc),
         sniffer=sniffer, captures_path=str(tmp / "captures.jsonl"), csv_dir=str(tmp),
         # offline poster: nothing leaves the test; the opt-in is queued, not sent
         community=Community(config_path=str(tmp / "community.json"),
@@ -112,11 +112,12 @@ def _post(base, path, body):
 # name → how to obtain the response. Order matters only for CSV start before stop.
 CASES = {
     "snapshot": lambda b: _get(b, "/snapshot"),
-    "fields-motor": lambda b: _get(b, "/fields?module=motor"),
+    "pack": lambda b: _get(b, "/pack"),
+    "fields-td5": lambda b: _get(b, "/fields?module=td5"),
     "fields-slabs": lambda b: _get(b, "/fields?module=slabs"),
     "faults-airbag": lambda b: _get(b, "/faults?module=airbag"),
     "map": lambda b: _get(b, "/map?module=td5"),
-    "catalog-motor": lambda b: _get(b, "/catalog?module=motor"),
+    "catalog-td5": lambda b: _get(b, "/catalog?module=td5"),
     "catalog-bcu": lambda b: _get(b, "/catalog?module=bcu"),
     "catalog-modules": lambda b: _get(b, "/catalog"),
     "sessions": lambda b: _get(b, "/sessions"),

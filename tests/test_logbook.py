@@ -35,7 +35,7 @@ class Clock:
 
 
 def snap(connected=True, **signals):
-    return {"conn": "connected" if connected else "lost", "module": "motor", "mode": "live",
+    return {"conn": "connected" if connected else "lost", "module": "td5", "mode": "live",
             "faults": [], "signals": {k: {"v": v, "u": "x"} for k, v in signals.items()}}
 
 
@@ -83,7 +83,7 @@ def test_starts_on_connect_and_ends_after_idle(tmp_path):
     assert r.status() is None
     m = meta_of(tmp_path, st["session"])
     assert m["recording"] is False and m["end_utc"] == "2026-10-06T09:05:00.000Z"
-    assert m["duration_s"] == 300 and m["modules"] == ["motor"]
+    assert m["duration_s"] == 300 and m["modules"] == ["td5"]
 
 
 def test_gps_alone_never_records(tmp_path):
@@ -440,7 +440,7 @@ def test_store_data_shape(tmp_path):
     sid = _recorded(tmp_path)
     d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, "rpm,GPS_Speed,nope")
     assert set(d) == {"id", "t", "utc", "ch", "text", "track", "decimated"}
-    assert d["text"]["module"] == ["motor"] * 10 and d["text"]["faults"] == [None] * 10
+    assert d["text"]["module"] == ["td5"] * 10 and d["text"]["faults"] == [None] * 10
     assert set(d["ch"]) == {"rpm", "GPS_Speed"} and d["decimated"] is False
     assert len(d["t"]) == len(d["utc"]) == len(d["ch"]["rpm"]) == 10
     assert d["track"][0] == [-4.68, 56.62, 0] and len(d["track"]) == 10
@@ -595,7 +595,7 @@ def test_events_state_line_and_on_change_only(tmp_path):
     r.close()  # events are flushed with the data (≤ 1 s), so read after close
     ev = events_of(tmp_path, sid)
     assert ev[0] == {"t": 0, "type": "state", "conn": "connected", "status": "connected",
-                     "module": "motor", "mode": "live", "active_test": None,
+                     "module": "td5", "mode": "live", "active_test": None,
                      "fault_watch": False, "logging": {"recording": False}}
     rest = [(e["t"], e["type"]) for e in ev[1:]]
     assert rest == [(3000, "fault_watch"), (3000, "logging"), (4000, "conn"),
@@ -611,7 +611,7 @@ def test_event_api_dedups_state_and_strips_command(tmp_path):
     r.feed(snap(rpm=800), None)
     sid = r.status()["session"]
     c.t += 1.0
-    assert r.event("module", module="motor") is None  # unchanged
+    assert r.event("module", module="td5") is None  # unchanged
     line = r.event("command", action="output_ac_fan", ok=True, message="A/C fan",
                    params={"secret": 1}, trust="experimental", raw="30 a4")
     assert line == {"t": 1000, "type": "command", "action": "output_ac_fan", "ok": True,
@@ -659,13 +659,13 @@ def test_module_switch_keeps_session_and_state_line_per_part(tmp_path):
     assert r.status()["session"] == sid
     r.close()
     m = meta_of(tmp_path, sid)
-    assert m["modules"] == ["motor", "slabs"] and m["parts"] == ["data-0.csv", "data-1.csv"]
+    assert m["modules"] == ["td5", "slabs"] and m["parts"] == ["data-0.csv", "data-1.csv"]
     ev = events_of(tmp_path, sid)
     assert [(e["t"], e["type"]) for e in ev] == [(0, "state"), (2000, "module"),
                                                  (2000, "state")]
     assert ev[1]["module"] == "slabs" and ev[2]["module"] == "slabs"
     d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, ["rpm"])
-    assert d["text"]["module"] == ["motor"] * 4 + ["slabs"] * 4
+    assert d["text"]["module"] == ["td5"] * 4 + ["slabs"] * 4
 
 
 def test_events_fsync_with_data_cadence(tmp_path):
@@ -738,7 +738,7 @@ def test_demo_has_events_notes_switch_and_gps_accel(tmp_path):
     store = SessionStore(str(tmp_path / "none"))
     sid = "20261005T090000Z"
     ev = store.events(sid, public=True)
-    assert ev[0]["type"] == "state" and ev[0]["module"] == "motor"
+    assert ev[0]["type"] == "state" and ev[0]["module"] == "td5"
     assert ev[0]["conn"] == "connected"
     assert not any(e["type"] == "conn" for e in ev)  # stays connected
     sw = [e for e in ev if e["type"] == "module"]
@@ -750,7 +750,7 @@ def test_demo_has_events_notes_switch_and_gps_accel(tmp_path):
     assert len(notes) == 3 and all(n["source"] == "retro" for n in notes)
     assert [n["t"] for n in notes] == sorted(n["t"] for n in notes)
     m = store.meta(sid, public=True)
-    assert m["modules"] == ["motor", "slabs"]
+    assert m["modules"] == ["td5", "slabs"]
     d = store.data(sid, ["height_left", "rpm", "GPS_LonAcc", "GPS_LatAcc"], max_points=100000)
     i_sw = d["t"].index(360000)
     assert all(v is None for v in d["ch"]["rpm"][i_sw:])
@@ -854,7 +854,7 @@ def test_first_channels_reach_meta_immediately(tmp_path):
     clock = [1_000.0]
     rec = SessionRecorder(str(tmp_path), clock=lambda: clock[0], mono=lambda: clock[0])
     rec.feed({"conn": "connected", "status": "connected", "signals": {"rpm": {"v": 800, "u": "rpm"}},
-              "faults": [], "module": "motor"}, None)
+              "faults": [], "module": "td5"}, None)
     sid = rec.status()["session"]
     names = [c["name"] for c in json.loads((tmp_path / sid / "meta.json").read_text())["channels"]]
     assert "rpm" in names

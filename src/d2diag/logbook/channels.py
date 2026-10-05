@@ -7,7 +7,6 @@ Exports use AiM-style names via ``export_name``: known channels map to their AiM
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 GPS_CHANNELS = ("GPS_Latitude", "GPS_Longitude", "GPS_Speed", "GPS_Heading",
                 "GPS_Altitude", "GPS_Nsat", "GPS_HDOP")
@@ -67,16 +66,25 @@ def export_name(name: str) -> str:
 
 
 _STORE: "dict[str, dict] | None" = None
+_STORE_KEY: "tuple | None" = None
 
 
 def _store_records() -> "dict[str, dict]":
-    """name → its signal store record, read once. A name in several modules (``battery``)
-    takes the engine ECU's record first, then the other modules in name order."""
-    global _STORE
-    if _STORE is None:
+    """name → its signal store record, read once per store directory. A name in several
+    modules (``battery``) takes the record of the module listed first by the vehicle pack
+    (``pack.modules`` order), then any other store file in name order."""
+    global _STORE, _STORE_KEY
+    from .. import signals
+    from ..pack import active_pack
+
+    pack = active_pack()
+    root = signals._dir()
+    key = (str(root), id(pack))
+    if _STORE is None or _STORE_KEY != key:
         recs_by_name: "dict[str, dict]" = {}
-        root = Path(__file__).resolve().parent.parent / "signals"
-        for p in sorted(root.glob("*.json"), key=lambda q: (q.stem != "td5", q.name)):
+        order = {m: i for i, m in enumerate(pack.module_ids())}
+        for p in sorted(root.glob("*.json"),
+                        key=lambda q: (order.get(q.stem, len(order)), q.name)):
             try:
                 recs = json.loads(p.read_text(encoding="utf-8"))
             except (OSError, ValueError):
@@ -84,7 +92,7 @@ def _store_records() -> "dict[str, dict]":
             for r in recs if isinstance(recs, list) else []:
                 if isinstance(r, dict) and r.get("name"):
                     recs_by_name.setdefault(str(r["name"]), r)
-        _STORE = recs_by_name
+        _STORE, _STORE_KEY = recs_by_name, key
     return _STORE
 
 

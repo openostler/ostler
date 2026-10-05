@@ -1,7 +1,7 @@
 {
   "modules": [
     {
-      "module": "motor",
+      "module": "td5",
       "store_module": "td5",
       "name": "TD5 (engine)",
       "coverage": {

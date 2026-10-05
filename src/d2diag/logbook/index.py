@@ -18,7 +18,8 @@ Details:
 * ``before`` is a cursor ``"<start_ms>:<id>"``, a bare ``"<start_ms>"`` or an ISO date or
   datetime (the scrubber's "end of that month"): sessions strictly older are returned.
   ``frm``/``to`` are ISO dates (UTC days, both inclusive) or datetimes. ``module`` matches
-  a module name (``td5`` and ``motor`` are the same module). Bad values raise ``ValueError``.
+  a module id or a legacy alias of it (both canonicalised by the vehicle pack; rows store
+  canonical ids). Bad values raise ``ValueError``.
 * ``histogram`` buckets are newest first; ``group="day"`` with ``year`` keeps that year.
   It accepts the same filters as ``page`` (keyword arguments).
 * Thread-safe: one connection guarded by a lock (``check_same_thread=False``).
@@ -33,16 +34,32 @@ import sqlite3
 import threading
 import time
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2   # 2: module ids stored canonical (legacy aliases normalised)
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 RECONCILE_S = 60.0
-_MODULE_ALIASES = {"td5": ("td5", "motor"), "motor": ("td5", "motor")}
 _WORD = re.compile(r"\w+", re.UNICODE)
 _COLS = ("id", "start_ms", "end_ms", "duration_s", "distance_km", "max_speed_kmh", "modules",
          "place", "place_end", "name", "description", "note_count", "has_gps", "synthetic",
          "recording", "notes", "sig", "meta_json")
 _FTS_COLS = ("name", "description", "place", "place_end", "notes")
+
+
+def _canonical(mid: str) -> str:
+    """A module id or legacy alias → the active vehicle pack's canonical id."""
+    from ..pack import canonical_module
+
+    return canonical_module(mid) or mid
+
+
+def _canonical_modules(mods) -> "list[str]":
+    """``meta.modules`` with every id canonical, de-duplicated, order kept."""
+    out: "list[str]" = []
+    for m in mods or []:
+        c = _canonical(str(m))
+        if c not in out:
+            out.append(c)
+    return out
 
 
 def _iso_ms(s) -> "int | None":
@@ -215,10 +232,12 @@ class SessionIndex:
         start = _iso_ms(meta.get("start_utc"))
         if start is None:
             return None
+        modules = _canonical_modules(meta.get("modules"))
+        meta = {**meta, "modules": modules} if "modules" in meta else meta
         note_text = "\n".join(str(n.get("text") or "") for n in notes if n.get("text"))
         return (sid, start, _iso_ms(meta.get("end_utc")), meta.get("duration_s"),
                 float(meta.get("distance_km") or 0.0), meta.get("max_speed_kmh"),
-                json.dumps(list(meta.get("modules") or [])),
+                json.dumps(modules),
                 _place_label(meta.get("place")), _place_label(meta.get("place_end")),
                 meta.get("name"), meta.get("description"), int(meta.get("note_count") or 0),
                 int(bool(meta.get("has_gps"))), int(bool(meta.get("synthetic"))),
@@ -318,9 +337,8 @@ class SessionIndex:
             where.append("start_ms < ?")
             args.append(hi)
         if module:
-            names = _MODULE_ALIASES.get(str(module).lower(), (str(module),))
-            where.append("(" + " OR ".join("modules LIKE ? ESCAPE '\\'" for _ in names) + ")")
-            args += [_like(json.dumps(n)) for n in names]
+            where.append("modules LIKE ? ESCAPE '\\'")
+            args.append(_like(json.dumps(_canonical(str(module)))))
         if _truthy(has_notes):
             where.append("note_count > 0")
         if min_km not in (None, ""):

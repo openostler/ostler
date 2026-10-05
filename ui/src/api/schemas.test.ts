@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import {
-  AutomapReply, Catalog, CatalogModules, CaptureList, CommandReply, NoteList, SessionData, SessionEvents, SessionHistogram, SessionList, SessionMeta, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
+  AutomapReply, Catalog, CatalogModules, CaptureList, CommandReply, NoteList, SessionData, SessionEvents, SessionHistogram, PackSchema, SessionList, SessionMeta, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
   OkReply, Snapshot, SniffResponse,
 } from "./schemas";
 
@@ -13,7 +13,7 @@ const fixtures = import.meta.glob<unknown>("./fixtures/*.json", { eager: true, i
 
 const SCHEMA_FOR: Record<string, z.ZodType> = {
   snapshot: Snapshot,
-  "fields-motor": FieldsResponse,
+  "fields-td5": FieldsResponse,
   "fields-slabs": FieldsResponse,
   "faults-airbag": FaultsResponse,
   map: MapResponse,
@@ -28,7 +28,7 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   "read-all-faults": CommandReply,
   automap: AutomapReply,
   capture: OkReply,
-  "catalog-motor": Catalog,
+  "catalog-td5": Catalog,
   "catalog-bcu": Catalog,
   "catalog-modules": CatalogModules,
   sessions: SessionList,
@@ -38,6 +38,7 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   notes: NoteList,
   captures: CaptureList,
   "session-histogram": SessionHistogram,
+  pack: PackSchema,
 };
 
 describe("API contract fixtures", () => {
@@ -54,7 +55,7 @@ describe("API contract fixtures", () => {
   });
 
   it("carries presentation metadata for every field", () => {
-    const motor = FieldsResponse.parse(fixtures["./fixtures/fields-motor.json"]);
-    expect(motor.fields.every((f) => f.label && f.group)).toBe(true);
+    const td5 = FieldsResponse.parse(fixtures["./fixtures/fields-td5.json"]);
+    expect(td5.fields.every((f) => f.label && f.group)).toBe(true);
   });
 });

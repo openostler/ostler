@@ -1,5 +1,5 @@
 {
-  "module": "motor",
+  "module": "td5",
   "store_module": "td5",
   "coverage": {
     "verified": 34,

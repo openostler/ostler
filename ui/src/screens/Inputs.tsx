@@ -9,7 +9,7 @@ import { Readout } from "../components/Readout";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatusGate } from "../components/StatusGate";
 import { Trend } from "../components/Trend";
-import { GROUP_ORDER, moduleName } from "../layout";
+import { groupOrder, moduleName, moduleNotices } from "../layout";
 import { pageOf, visibleGroups } from "../lib/catalog";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
@@ -20,11 +20,8 @@ function useCsv() {
   const recording = pending ?? !!snap?.logging?.recording;
   const toggle = async () => {
     const starting = !recording;
-    if (starting && module === "slabs" && !window.confirm(
-      "SLABS only communicates while stationary — comms drop as soon as the car moves.\n" +
-      "This log will NOT capture a drive. To log a drive (rpm, speed, boost, temps), switch to TD5 first.\n\n" +
-      "Start the SLABS log anyway?",
-    )) return;
+    const ask = moduleNotices(module).record_confirm;
+    if (starting && ask && !window.confirm(ask)) return;
     setPending(starting);
     toast(starting ? "recording…" : "stopping…");
     try {
@@ -81,11 +78,13 @@ export function Inputs() {
   const labelOf = (n: string) => fields[n]?.label ?? n;
   const byGroup = new Map<string, string[]>();
   for (const n of names) byGroup.set(groupOf(n), [...(byGroup.get(groupOf(n)) ?? []), n]);
-  const order = [...GROUP_ORDER.filter((g) => byGroup.has(g)), ...[...byGroup.keys()].filter((g) => !GROUP_ORDER.includes(g))];
+  const groups = groupOrder();
+  const order = [...groups.filter((g) => byGroup.has(g)), ...[...byGroup.keys()].filter((g) => !groups.includes(g))];
   const channels = all.filter((n) => typeof signals[n]?.v === "number").sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
   const togglePlot = (n: string) =>
     setPlot((p) => (p.includes(n) ? p.filter((x) => x !== n) : p.length < 3 ? [...p, n] : p));
 
+  const banner = moduleNotices(module).inputs_banner;
   const page = pageOf(catalog, "inputs");
   const placeholders = experimental
     ? visibleGroups(page, true)
@@ -109,9 +108,7 @@ export function Inputs() {
     <>
       {head}
       <ConnectionNotice />
-      {module === "slabs" ? (
-        <div className="card warn small">SLABS only communicates while stationary — to log a drive (rpm, boost, temps), switch to TD5.</div>
-      ) : null}
+      {banner ? <div className="card warn small">{banner}</div> : null}
       <HealthStrip />
       {coverage}
       <div className="seg" role="group" aria-label="Show">

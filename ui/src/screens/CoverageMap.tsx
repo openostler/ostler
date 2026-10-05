@@ -7,9 +7,9 @@ import { CoverageBar } from "../components/CoverageBar";
 import { SniffBadge } from "../components/SniffBadge";
 import { StatusTag } from "../components/StatusTag";
 import { StepHeader } from "../components/StepHeader";
-import { catalogModule, coverageOf } from "../lib/catalog";
+import { coverageOf } from "../lib/catalog";
 import { readList, writeList } from "../state/prefs";
-import { storeModule } from "../lib/format";
+import { canonicalModule } from "../layout";
 import { mergeReadings, recordFromSolve, signalNameFor, type LabelCapture, type Reading } from "../lib/mapping";
 import { useApp } from "../state/app";
 
@@ -144,7 +144,7 @@ function MappedRow({ module, cat, item, status, sniff, labels }: {
  * community share). The solver also uses the labels saved on the Label tab (GET /captures). */
 export function CoverageMap() {
   const { module: active, toast } = useApp();
-  const [module, setModule] = useState(storeModule(active));
+  const [module, setModule] = useState(canonicalModule(active));
   const [map, setMap] = useState<MapResponse | null>(null);
   const [derived, setDerived] = useState<{ module: string; byName: Map<string, string> } | null>(null);
   const sniff = useSniff(module, 1000);
@@ -162,7 +162,7 @@ export function CoverageMap() {
 
   useEffect(() => {
     let alive = true;
-    api.catalog(catalogModule(module)).then(
+    api.catalog(module).then(
       (c) => alive && setDerived({
         module,
         byName: new Map(c.pages.flatMap((p) => p.groups.flatMap((g) => g.items.map((i) => [i.name, i.status] as const)))),

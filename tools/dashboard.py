@@ -21,7 +21,7 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
         --tls-cert pi.crt --tls-key pi.key
 
     # a sniff feed for the admin Decode tab without a car (the homelab runs this):
-    PYTHONPATH=src python3 tools/dashboard.py --replay src/d2diag/web/demo/sniff-demo.txt
+    PYTHONPATH=src python3 tools/dashboard.py --replay src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt
 
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """
@@ -32,15 +32,45 @@ import sys
 # Make the tool runnable as "python3 tools/dashboard.py" without PYTHONPATH=src.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from d2diag.web import InfoDataSource, SlabsDataSource, Td5DataSource  # noqa: E402
+from d2diag.pack import active_pack, canonical_module  # noqa: E402
 from d2diag.web.server import DiagServer  # noqa: E402
 
 
+def build_docs(pack, dict_path: "str | None" = None, extra_dirs=()):
+    """The Docs tab from the pack's ``docs`` sources (canonical files, not copies).
+
+    ``dict_path`` (``--dict``) replaces the path of the pack's optional answer-key source;
+    any other optional source whose path is missing is skipped."""
+    from d2diag.web.docs import DocLibrary
+
+    docs = DocLibrary()
+    for src in pack.docs:
+        path = src.path
+        if src.optional:
+            if dict_path:
+                path = dict_path
+            elif not os.path.exists(path):
+                continue
+        if src.recursive or os.path.isdir(path):
+            docs.add_dir(path, group=src.group, recursive=src.recursive,
+                         exclude=set(src.exclude))
+        else:
+            docs.add_file(path, title=src.title, group=src.group)
+    for extra in extra_dirs:
+        docs.add_dir(extra, group="Extra")
+    return docs
+
+
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Discovery 2 realtime dashboard")
+    pack = active_pack()
+    ap = argparse.ArgumentParser(description=f"{pack.name} realtime dashboard")
     ap.add_argument("--serial", help="serial port of the K-line cable (omit → auto-detect)")
-    ap.add_argument("--slabs", action="store_true",
-                    help="SLABS source instead of Td5 (fast init 0x29; requires a transmitting cable)")
+    ap.add_argument("--module", default=None,
+                    help="module to start on (default: the vehicle pack's default, "
+                         f"{pack.default_module}; one of {', '.join(pack.module_ids())})")
+    # Old spelling of ``--module slabs`` (kept working, not advertised).
+    ap.add_argument("--slabs", action="store_const", const="slabs", dest="slabs_alias",
+                    help=argparse.SUPPRESS)
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8080, help="HTTP port (default 8080)")
     ap.add_argument("--interval", type=float, default=0.5, help="poll/stream interval (s)")
@@ -60,7 +90,8 @@ def main() -> int:
                          "Also read from D2DIAG_ADMIN_PW. Unset → admin is ungated "
                          "(fine on localhost, NOT on a public bind).")
     ap.add_argument("--dict", dest="dict_path",
-                    help="path to the fault-code dictionary (default: sibling repo 'Discovery 2/')")
+                    help="path to the fault-code dictionary (replaces the pack's optional "
+                         "answer-key document)")
     ap.add_argument("--docs", action="append", default=[],
                     help="extra directory of .md files to show in the Docs tab (repeatable)")
     ap.add_argument("--sniff", metavar="PORT",
@@ -108,8 +139,8 @@ def main() -> int:
     # Raw bus log (TX/RX) for mapping — off by default, on with --raw-log.
     _repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     raw_log_dir = os.path.join(_repo, "logs") if args.raw_log else None
-    # The fuel computer's lifetime total is persisted here (survives restart). Gitignored.
-    fuel_state_path = os.path.join(_repo, "fuel_totals.json")
+    # Pack state (e.g. the Td5 fuel computer's lifetime total, fuel_totals.json) lives in the
+    # repo root (survives restart; gitignored).
 
     # The car's sources, one per module. They autodetect the port (``auto``) if none is
     # given → fail softly at poll time if the cable is missing. Only ONE module is active
@@ -122,23 +153,11 @@ def main() -> int:
         gps = open_gps(gps_spec)
     except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
         print(f"GPS: unavailable for {gps_spec!r} ({type(exc).__name__}: {exc}) — continuing without")
-    modules = {
-        "motor": Td5DataSource(port, raw_log_dir=raw_log_dir, fuel_state_path=fuel_state_path),
-        "slabs": SlabsDataSource(port, raw_log_dir=raw_log_dir),
-        # Modules with no live-signal reader yet (faults/info only): selectable, and they
-        # report honestly that they aren't readable on the car yet — nothing fabricated.
-        "airbag": InfoDataSource("airbag", live_message=(
-            "Airbag/SRS is read-only by construction; live fault read is experimental "
-            "and not wired into the dashboard yet. Use 'Scan all modules'.")),
-        "ace": InfoDataSource("ace", live_message=(
-            "ACE uses a proprietary bulk protocol that isn't decoded yet.")),
-        "autobox": InfoDataSource("autobox", live_message=(
-            "The EAT gearbox answers but its fault payload isn't decoded yet.")),
-        "bcu": InfoDataSource("bcu", live_message=(
-            "The BCU has no conventional fault memory; its inputs/outputs aren't "
-            "wired into the dashboard yet.")),
-    }
-    active = "slabs" if args.slabs else "motor"
+    modules = pack.sources(port, raw_log_dir=raw_log_dir, state_dir=_repo)
+    active = canonical_module(args.module or args.slabs_alias) or pack.default_module
+    if active not in modules:
+        ap.error(f"unknown module {args.module or args.slabs_alias!r} "
+                 f"(one of {', '.join(modules)})")
 
     logger = None
     log_path = args.log_file
@@ -150,26 +169,9 @@ def main() -> int:
         from d2diag.web.logger import SnapshotLogger
         logger = SnapshotLogger(log_path, min_interval=args.log_interval)
 
-    from d2diag.menus import MENUS  # module menu registry for the Map tab
-    from d2diag.web.docs import DocLibrary  # markdown view for the Docs tab
-
-    # The Docs tab mirrors the CANONICAL source files (not a copy):
-    #   Answer key = the fault-code dictionary in the register repo (sibling folder 'Discovery 2/')
-    #   Docs = the curated knowledge base docs/**.md; Reference = references/**.md
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    dict_path = args.dict_path or os.path.join(
-        os.path.dirname(repo_root), "Discovery 2", "discovery2_reference tool_fault_dictionary.md")
-    docs = DocLibrary()
-    # The test backlog first: it is what you read on the phone while sitting in the car.
-    docs.add_file(os.path.join(repo_root, "references", "test_plan.md"), group="Test plan")
-    docs.add_file(dict_path, title="reference tool fault-code dictionary (answer key)", group="Answer key")
-    agent_only = {"CLAUDE.md", "muki01_OBD2_K-line_Reader"}
-    docs.add_dir(os.path.join(repo_root, "docs"), group="Docs", recursive=True,
-                 exclude=agent_only)
-    docs.add_dir(os.path.join(repo_root, "references"), group="Reference", recursive=True,
-                 exclude={"test_plan.md"} | agent_only)
-    for extra in args.docs:
-        docs.add_dir(extra, group="Extra")
+    # The Docs tab mirrors the CANONICAL source files the pack lists (not a copy).
+    repo_root = _repo
+    docs = build_docs(pack, args.dict_path, args.docs)
 
     # Map tab: passive sniff feed (live ESP32 or replayed log).
     sniffer = None
@@ -194,7 +196,7 @@ def main() -> int:
     srv = DiagServer(
         host=args.host, port=args.port,
         poll_interval=args.interval, stream_interval=args.interval, logger=logger,
-        active=active, menus=MENUS, docs=docs, sniffer=sniffer, captures_path=captures_path,
+        active=active, menus=pack.menus, docs=docs, sniffer=sniffer, captures_path=captures_path,
         source=modules, scan_port=port, csv_dir=csv_dir, community=community,
         public=args.public, fault_watch=args.fault_watch,
         admin_password=args.admin_password,

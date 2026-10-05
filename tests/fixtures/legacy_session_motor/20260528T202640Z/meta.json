@@ -1,0 +1,143 @@
+{
+ "id": "20260528T202640Z",
+ "name": null,
+ "description": null,
+ "place_start": {
+  "label": "Highland, Scotland",
+  "source": "geonames"
+ },
+ "place_end": {
+  "label": "Highland, Scotland",
+  "source": "geonames"
+ },
+ "place": {
+  "label": "Highland, Scotland",
+  "source": "geonames"
+ },
+ "start_utc": "2026-05-28T20:26:40.000Z",
+ "end_utc": "2026-05-28T20:26:46.000Z",
+ "duration_s": 6,
+ "rows": 12,
+ "parts": [
+  "data-0.csv",
+  "data-1.csv"
+ ],
+ "modules": [
+  "motor",
+  "slabs"
+ ],
+ "channels": [
+  {
+   "name": "GPS_Latitude",
+   "units": "deg",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_Longitude",
+   "units": "deg",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_Speed",
+   "units": "km/h",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_Heading",
+   "units": "deg",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_Altitude",
+   "units": "m",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_Nsat",
+   "units": "",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_HDOP",
+   "units": "",
+   "group": "gps",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_LonAcc",
+   "units": "g",
+   "group": "accel",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "GPS_LatAcc",
+   "units": "g",
+   "group": "accel",
+   "c": null,
+   "limits": null
+  },
+  {
+   "name": "rpm",
+   "units": "rpm",
+   "group": "engine",
+   "c": "proven",
+   "limits": [
+    0,
+    4800
+   ]
+  },
+  {
+   "name": "speed",
+   "units": "km/h",
+   "group": "engine",
+   "c": "proven",
+   "limits": [
+    0,
+    200
+   ]
+  },
+  {
+   "name": "height_left",
+   "units": "raw",
+   "group": "ride height",
+   "c": "proven",
+   "limits": null
+  }
+ ],
+ "has_gps": true,
+ "distance_km": 0.24,
+ "max_speed_kmh": 20.0,
+ "bbox": [
+  -4.76,
+  56.64,
+  -4.76,
+  56.6422
+ ],
+ "start_pos": [
+  -4.76,
+  56.64
+ ],
+ "end_pos": [
+  -4.76,
+  56.642
+ ],
+ "synthetic": false,
+ "recording": false,
+ "source": "live",
+ "audio": [],
+ "accel_cal": null
+}

@@ -26,10 +26,10 @@ const stubFetch = (failFields = false) => {
     const module = url.searchParams.get("module")!;
     if (url.pathname === "/fields") {
       if (failFields) return new Response("nope", { status: 500 });
-      const fields = module === "motor" ? [field("coolant")] : [field("oil")];
+      const fields = module === "td5" ? [field("coolant")] : [field("oil")];
       return Response.json({ module, fields });
     }
-    const faults = module === "motor" ? [{ key: "031", name: "031: pressure switch (Current)", description: "Brake pressure switch" }] : [];
+    const faults = module === "td5" ? [{ key: "031", name: "031: pressure switch (Current)", description: "Brake pressure switch" }] : [];
     return Response.json({ module, faults });
   }));
 };
@@ -48,26 +48,26 @@ afterEach(() => {
 describe("useSessionFlags", () => {
   it("loads /fields for every module, detects, labels faults and counts", async () => {
     stubFetch();
-    const { result } = renderHook(() => useSessionFlags(DATA, ["motor", "slabs"]));
+    const { result } = renderHook(() => useSessionFlags(DATA, ["td5", "slabs"]));
     await vi.waitFor(() => expect(result.current.counts.range).toBe(2));
     expect(result.current.all.map((f) => f.id)).toEqual(["range:coolant:10000", "fault:031:20000", "range:oil:30000"]);
     expect(result.current.all[1]!.label).toBe("Brake pressure switch");
     expect(result.current.counts).toEqual({ range: 2, faults: 1 });
-    expect(calls.filter((c) => c.startsWith("/fields")).sort()).toEqual(["/fields?module=motor", "/fields?module=slabs"]);
+    expect(calls.filter((c) => c.startsWith("/fields")).sort()).toEqual(["/fields?module=slabs", "/fields?module=td5"]);
   });
 
   it("caches per module across hooks", async () => {
     stubFetch();
-    const a = renderHook(() => useSessionFlags(DATA, ["motor"]));
+    const a = renderHook(() => useSessionFlags(DATA, ["td5"]));
     await vi.waitFor(() => expect(a.result.current.counts.range).toBe(1));
-    const b = renderHook(() => useSessionFlags(DATA, ["motor"]));
+    const b = renderHook(() => useSessionFlags(DATA, ["td5"]));
     await vi.waitFor(() => expect(b.result.current.counts.range).toBe(1));
     expect(calls.filter((c) => c.startsWith("/fields"))).toHaveLength(1);
   });
 
   it("fails soft: no fields → fault flags only", async () => {
     stubFetch(true);
-    const { result } = renderHook(() => useSessionFlags(DATA, ["motor"]));
+    const { result } = renderHook(() => useSessionFlags(DATA, ["td5"]));
     await vi.waitFor(() => expect(calls.length).toBeGreaterThan(1));
     await vi.waitFor(() => expect(result.current.all).toHaveLength(1));
     expect(result.current.all[0]!.kind).toBe("fault");
@@ -81,7 +81,7 @@ describe("useSessionFlags", () => {
 
   it("applies the flag manager's options (and re-renders when they change)", async () => {
     stubFetch();
-    const { result } = renderHook(() => useSessionFlags(DATA, ["motor", "slabs"]));
+    const { result } = renderHook(() => useSessionFlags(DATA, ["td5", "slabs"]));
     await vi.waitFor(() => expect(result.current.counts.range).toBe(2));
     act(() => saveFlagOptions({ ...DEFAULT_FLAG_OPTIONS, muted: ["oil"] }));
     expect(result.current.counts).toEqual({ range: 1, faults: 1 });

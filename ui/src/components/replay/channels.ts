@@ -1,17 +1,26 @@
 /**
  * ChannelPicker logic, pure (spec §5 "ChannelPicker"): the categories a session's channels
- * fall into (from the `group` the server records per channel — never hard-coded per signal),
+ * fall into (from the `group` the server records per channel — never hard-coded per signal;
+ * vehicle-specific groups come from the pack's `layout.replay.group_categories`),
  * search over label / unit / name with highlight ranges, and the per-device pins and recents.
  */
 import type { Field, SessionMeta } from "../../api/schemas";
+import { groupCategories } from "../../layout";
 import { channelLabel } from "./labels";
 
-export const CATEGORIES = [
-  "GPS/Motion", "Engine", "Fuelling", "Temperatures", "Electrical", "Switches", "Chassis/SLABS", "Accelerometer", "Other",
-] as const;
-export type Category = (typeof CATEGORIES)[number];
+/** Platform categories; the pack's own (e.g. a chassis category) sit before Accelerometer. */
+const BASE_CATEGORIES = ["GPS/Motion", "Engine", "Fuelling", "Temperatures", "Electrical", "Switches"] as const;
+const TAIL_CATEGORIES = ["Accelerometer", "Other"] as const;
+export type Category = string;
 
-/** Raw store / session groups (any case) → picker category. */
+/** Every picker category in display order (platform ones plus the pack's). */
+export function categories(): Category[] {
+  const fixed = new Set<string>([...BASE_CATEGORIES, ...TAIL_CATEGORIES]);
+  const extra = [...new Set(Object.values(groupCategories()))].filter((c) => !fixed.has(c));
+  return [...BASE_CATEGORIES, ...extra, ...TAIL_CATEGORIES];
+}
+
+/** Raw store / session groups (any case) → picker category (platform part). */
 const GROUP_MAP: Record<string, Category> = {
   gps: "GPS/Motion", motion: "GPS/Motion", position: "GPS/Motion",
   engine: "Engine", accelerator: "Engine", pressures: "Engine", pressure: "Engine", turbo: "Engine",
@@ -19,14 +28,15 @@ const GROUP_MAP: Record<string, Category> = {
   temperatures: "Temperatures", temperature: "Temperatures",
   electrical: "Electrical", battery: "Electrical",
   inputs: "Switches", outputs: "Switches", switches: "Switches",
-  chassis: "Chassis/SLABS", slabs: "Chassis/SLABS", wheels: "Chassis/SLABS", "ride height": "Chassis/SLABS", brakes: "Chassis/SLABS", suspension: "Chassis/SLABS",
   accel: "Accelerometer", accelerometer: "Accelerometer", imu: "Accelerometer",
 };
 
 /** A channel's category: its recorded group, else a guess from the GPS_/Acc naming. */
 export function categoryOf(group: string | undefined, name: string): Category {
   const g = (group ?? "").trim().toLowerCase();
-  if (GROUP_MAP[g]) return GROUP_MAP[g];
+  const pack = groupCategories();
+  const hit = GROUP_MAP[g] ?? Object.entries(pack).find(([k]) => k.toLowerCase() === g)?.[1];
+  if (hit) return hit;
   if (!g) {
     if (/^(Acc_[XYZ]|InlineAcc|LateralAcc|VerticalAcc)$/.test(name)) return "Accelerometer";
     if (name.startsWith("GPS_")) return "GPS/Motion";
@@ -47,7 +57,7 @@ export function pickerChannels(meta: SessionMeta, names: readonly string[], fiel
 
 /** Rows grouped in category order (empty categories dropped; rows keep their order). */
 export function groupChannels(rows: readonly PickerChannel[]): { category: Category; rows: PickerChannel[] }[] {
-  return CATEGORIES.map((category) => ({ category, rows: rows.filter((r) => r.category === category) })).filter((g) => g.rows.length);
+  return categories().map((category) => ({ category, rows: rows.filter((r) => r.category === category) })).filter((g) => g.rows.length);
 }
 
 const terms = (q: string) => q.toLowerCase().split(/\s+/).filter(Boolean);

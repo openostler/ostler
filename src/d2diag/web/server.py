@@ -31,12 +31,10 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from ..pack import active_pack, canonical_module
 from ..ports import list_serial_ports, resolve_serial_port
 from .docs import DocLibrary
 from .sources import DataSource
-
-# UI module id → store module, used when d2diag.catalog is not importable.
-_UI_TO_STORE = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}
 
 
 # Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
@@ -93,14 +91,17 @@ class ApiError(Exception):
         self.error = error
 
 
-def _store_module_for(ui_id: "str | None") -> str:
-    """UI module id → signal-store/registry module (``motor`` → ``td5``)."""
-    ui_id = ui_id or ""
-    try:
-        from .. import catalog
-        return catalog.store_module_for(ui_id) or ui_id
-    except (ImportError, AttributeError, KeyError, ValueError):
-        return _UI_TO_STORE.get(ui_id, ui_id)
+def _store_module_for(mid: "str | None") -> str:
+    """A module id or legacy alias → its canonical id (the store/registry id), via the
+    active vehicle pack. Unknown ids come back unchanged; ``None`` → ``""``."""
+    return canonical_module(mid or "") or ""
+
+
+def _query_module(q: "dict", default: "str | None" = None) -> str:
+    """``?module=`` from a parsed query string, canonical; the pack's default module when
+    absent or empty."""
+    raw = (q.get("module", [None])[0]) or default or active_pack().default_module
+    return _store_module_for(raw)
 
 
 def _catalog_response(module: "str | None") -> "tuple[dict, int]":
@@ -110,6 +111,7 @@ def _catalog_response(module: "str | None") -> "tuple[dict, int]":
     if not module:
         return {"modules": catalog.module_summary()}, 200
     store = _store_module_for(module)
+    module = store
     known = {m.get("store_module") for m in catalog.module_summary()}
     if store not in known:
         return {"ok": False, "error": f"unknown module: {module}"}, 404
@@ -212,7 +214,9 @@ def _automap(req: "dict") -> "dict":
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
-_ALLOWED_MODULES = ("td5", "slabs", "airbag")
+def _writable_modules() -> "tuple[str, ...]":
+    """Store modules whose signal store the admin mapper may read and write."""
+    return tuple(active_pack().writable_signal_modules)
 
 
 def _signal_upsert(req: "dict") -> "dict":
@@ -221,8 +225,8 @@ def _signal_upsert(req: "dict") -> "dict":
     valuable RE work: mapping done in the car survives server-side."""
     from ..signals import upsert_field
 
-    module = (req.get("module") or "").lower()
-    if module not in _ALLOWED_MODULES:
+    module = _store_module_for(str(req.get("module") or "").lower())
+    if module not in _writable_modules():
         return {"ok": False, "error": f"unknown module: {module!r}"}
     rec = req.get("record") or {}
     if not rec.get("name") or rec.get("lid") is None or rec.get("offset") is None:
@@ -238,7 +242,8 @@ def _signals_list(module: str) -> "dict":
     """Read the store for a module (for the UI: show mapped fields + confidence)."""
     from ..signals import load_records
 
-    if module not in _ALLOWED_MODULES:
+    module = _store_module_for(module)
+    if module not in _writable_modules():
         return {"module": module, "signals": []}
     return {"module": module, "signals": load_records(module)}
 
@@ -248,8 +253,6 @@ def _fields_list(module: str) -> "dict":
     metadata (label/group/description) — so the UI can show the layout with empty
     placeholders even WITHOUT a cable/live data. The UI's only metadata source."""
     from ..signals import load_signals
-
-    from .sources import DERIVED_FIELDS
 
     def _span(span, limits):
         """Display span: explicit, else the limits padded by 10 % each side."""
@@ -261,7 +264,8 @@ def _fields_list(module: str) -> "dict":
             return [round(lo - pad, 3), round(hi + pad, 3)]
         return None
 
-    store_mod = {"motor": "td5"}.get(module, module)  # UI module name → store module
+    module = store_mod = _store_module_for(module)  # a legacy alias → the canonical id
+    derived = active_pack().derived_fields.get(store_mod, {})
     fields = []
     seen: "set[str]" = set()
     for s in load_signals(store_mod):
@@ -278,7 +282,7 @@ def _fields_list(module: str) -> "dict":
             # meaningless "normal 0–200 km/h" across the whole scale
             "normal": list(s.normal) if s.normal else None,
         })
-    for name, m in DERIVED_FIELDS.get(module, {}).items():
+    for name, m in derived.items():
         fields.append({"name": name, "unit": m.get("unit", ""), "c": m.get("c", "candidate"),
                        "limits": None, "label": m.get("label", name),
                        "group": m.get("group", "Other"),
@@ -293,9 +297,8 @@ def _faults_list(module: str) -> "dict":
     (td5 ``offset.bit``, slabs/airbag display number, autobox ``P-code-NN``, ace ``XX-YY``)."""
     from ..dtc import load_records
 
-    # UI module name → store module ("motor" is the Td5; the EAT has two common names)
-    store_mod = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}.get(module, module)
-    return {"module": module, "faults": load_records(store_mod)}
+    module = _store_module_for(module)  # a legacy alias → the canonical id
+    return {"module": module, "faults": load_records(module)}
 
 
 def _parse_range(header: "str | None", size: int):
@@ -407,8 +410,8 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            mod = (q.get("module", [None])[0]) or self.server._active
-            mp = self.server.legacy_menu(_store_module_for(mod))
+            mod = _query_module(q, self.server._active)
+            mp = self.server.legacy_menu(mod)
             if mp is None:
                 mp = self.server.source.menu_map()
             self._json({
@@ -430,15 +433,19 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            self._json(_signals_list((q.get("module", ["td5"])[0]) or "td5"))
+            self._json(_signals_list(_query_module(q)))
         elif self.path.split("?")[0] == "/fields":
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            self._json(_fields_list((q.get("module", ["motor"])[0]) or "motor"))
+            self._json(_fields_list(_query_module(q)))
         elif self.path.split("?")[0] == "/faults":
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            self._json(_faults_list((q.get("module", ["motor"])[0]) or "motor"))
+            self._json(_faults_list(_query_module(q)))
+        elif self.path.split("?")[0] == "/pack":
+            # Public (also in public mode): the vehicle pack's manifest (modules, aliases,
+            # UI layout). The UI loads it once at boot.
+            self._json(active_pack().manifest())
         elif self.path.split("?")[0] == "/catalog":
             # Public (also in public mode): read-only item metadata for the module pages.
             from urllib.parse import parse_qs, urlparse
@@ -867,10 +874,9 @@ _SERVER_COMMANDS = frozenset({"select_module", "read_all_faults",
                               "connect", "disconnect", "set_port"})
 # Generic per-source commands every module offers (not in the command registry).
 _GENERIC_SOURCE_COMMANDS = frozenset({"clear_faults", "read_block"})
-# Prefixes of module-command families: an action like these that is NOT registered for
-# the active module is refused as unknown instead of reaching a source.
-_MODULE_COMMAND_PREFIXES = ("output_", "injector_", "raise_", "lower_", "wheel_",
-                            "bleed_", "pump_")
+# Prefixes of module-command families (``active_pack().module_command_prefixes``): an
+# action like these that is NOT registered for the active module is refused as unknown
+# instead of reaching a source.
 
 # Snapshot `conn` values (spec: Connection UX).
 CONN_STATES = ("disconnected", "connecting", "connected", "lost", "reconnecting", "error")
@@ -880,9 +886,9 @@ _PORT_INFO_TTL = 2.0  # seconds between serial-port rescans for the snapshot
 def _looks_like_module_command(action: str) -> bool:
     from .. import commands
 
-    if action.startswith(_MODULE_COMMAND_PREFIXES):
+    if action.startswith(tuple(active_pack().module_command_prefixes)):
         return True
-    return any(c.action == action for c in commands.REGISTRY.values())
+    return any(c.action == action for c in commands.registry().values())
 
 
 class ConnectAborted(Exception):
@@ -948,14 +954,17 @@ class DiagServer(ThreadingHTTPServer):
         # no demo mode; the tests inject their fakes here). Only ONE module is active at a
         # time (K-line = shared bus) → a tab switch releases the old session and
         # establishes a new one.
+        # Keys are canonical module ids (a legacy alias such as the old UI id is mapped).
         if isinstance(source, dict) and source:
-            self._modules: "dict[str, DataSource]" = dict(source)
+            self._modules: "dict[str, DataSource]" = {
+                _store_module_for(k) or k: v for k, v in source.items()}
         elif source is not None and not isinstance(source, dict):
-            self._modules = {source.name: source}
+            self._modules = {_store_module_for(source.name) or source.name: source}
         else:
             raise ValueError("DiagServer requires a source")
         # "Read all fault codes": d2diag.faultscan.read_all(port) unless injected (tests).
         self._fault_scan = fault_scan
+        active = _store_module_for(active) if active else active
         self._active = active if active in self._modules else next(iter(self._modules))
         self.source = self._modules[self._active]
         self.poll_interval = poll_interval
@@ -1339,7 +1348,7 @@ class DiagServer(ThreadingHTTPServer):
                     raise ApiError(400, f"{arg} must be an ISO date (YYYY-MM-DD)")
                 filters[name] = v
         if query.get("module"):
-            filters["module"] = query["module"]
+            filters["module"] = _store_module_for(query["module"])  # a legacy alias → its id
         hn = query.get("has_notes")
         if hn is not None and hn.lower() in ("1", "true", "yes"):
             filters["has_notes"] = True
@@ -2130,7 +2139,8 @@ class DiagServer(ThreadingHTTPServer):
 
     # ---- command gate (ADR-0008) -------------------------------------- #
     def store_module(self) -> str:
-        """The registry/store module of the active source (``td5`` for the motor tab)."""
+        """The registry/store module of the active source (its ``store_module``, else the
+        canonical id of the active module)."""
         return getattr(self.source, "store_module", None) or _store_module_for(self._active)
 
     def refusal(self, action: str, params: "dict | None" = None) -> "str | None":
@@ -2326,7 +2336,9 @@ class DiagServer(ThreadingHTTPServer):
 
     def _select(self, name: "str | None") -> "dict":
         """Switch the active module: release the old session, activate the new one
-        (established lazily on the next poll). K-line is a shared bus → only one session at a time."""
+        (established lazily on the next poll). K-line is a shared bus → only one session at a time.
+        A legacy alias selects its canonical module."""
+        name = _store_module_for(name) if name else name
         if name not in self._modules:
             return {"ok": False, "error": f"unknown module: {name}"}
         if name != self._active:

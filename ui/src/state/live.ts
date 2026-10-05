@@ -23,7 +23,7 @@ export type LiveState = {
   seqDone: boolean;
 };
 
-export const initialLive: LiveState = { module: "motor", history: {}, seen: {}, seq: [], seqDone: false };
+export const initialLive: LiveState = { module: "", history: {}, seen: {}, seq: [], seqDone: false };
 
 export function reduceSnapshot(state: LiveState, snap: Snapshot, now: number): LiveState {
   const module = snap.module ?? state.module;

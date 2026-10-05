@@ -1,6 +1,6 @@
 """Test/dev-only dashboard with a SIMULATED car (ADR-0011: the product has no demo mode).
 
-Builds a ``DiagServer`` from ``tests/fake_sources.py``: the motor, SLABS and info modules
+Builds a ``DiagServer`` from ``tests/fake_sources.py``: the Td5, SLABS and info modules
 (airbag/ACE/EAT/BCU), the synthetic GPS loop, the simulated fault scan and a looping demo
 sniff replay for the admin Decode tab. The geocoder is always off and sessions go to a
 throwaway directory (default: a fresh temp dir), seeded with one closed, editable
@@ -32,7 +32,7 @@ for _p in (os.path.join(_REPO, "src"), _REPO):
 from d2diag.web.server import DiagServer  # noqa: E402
 from tests.fake_sources import FakeGps, fake_fault_report, fake_modules  # noqa: E402
 
-DEMO_SNIFF = os.path.join(_REPO, "src", "d2diag", "web", "demo", "sniff-demo.txt")
+DEMO_SNIFF = os.path.join(_REPO, "src", "d2diag", "vehicles", "lr_d2", "demo", "sniff-demo.txt")
 SEED_START_S = 1_788_250_000.0  # 2026-09-01 — the seeded editable session
 
 
@@ -55,7 +55,7 @@ def seed_session(root: str) -> "str | None":
     lat, lon = 56.6400, -4.7600  # open moorland (synthetic)
     for i in range(40):
         fix = _Fix(lat, lon, 40.0, int(clock["t"] * 1000))
-        rec.feed({"conn": "connected", "status": "connected", "module": "motor",
+        rec.feed({"conn": "connected", "status": "connected", "module": "td5",
                   "signals": {"rpm": {"v": 1500 + 10 * i, "u": "rpm"},
                               "speed": {"v": 40.0, "u": "km/h"},
                               "coolant_temp": {"v": 70 + i * 0.3, "u": "°C"}},
@@ -91,7 +91,7 @@ def build(args) -> DiagServer:
     srv = DiagServer(
         fake_modules(gps=gps), host=args.host, port=args.port,
         poll_interval=args.interval, stream_interval=args.interval,
-        active="slabs" if args.slabs else "motor", menus=MENUS, docs=docs, sniffer=sniffer,
+        active="slabs" if args.slabs else "td5", menus=MENUS, docs=docs, sniffer=sniffer,
         captures_path=os.path.join(os.path.dirname(sessions_dir), "labeled_captures.jsonl"),
         csv_dir=os.path.dirname(sessions_dir), public=args.public,
         admin_password=args.admin_password, gps=gps, sessions_dir=sessions_dir,

@@ -73,7 +73,7 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     sets `_keepalive_sub = None` so it gets a bare `3E`.
 - **`EcuSession.read_block(lids) -> {lid_hex: bytes}`** has exactly the shape
   `sniff/automap.py` consumes. That lets a live session feed the differential mapper.
-- **Signal store (`src/d2diag/signals/*.json`).**
+- **Signal store (`src/d2diag/vehicles/lr_d2/signals/*.json`).**
   - Decoders, the dashboard and automap all read it.
   - Confirmed mappings are written back with `upsert_field`.
   - Each field carries `confidence`, either `proven` or `candidate`.
