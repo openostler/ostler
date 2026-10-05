@@ -19,7 +19,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   small (`maplibreChunk.test.ts` enforces it). `src/state/playback.ts` is the shared cursor.
 - `src/state/replay.tsx` + `replayState.ts` — whole-app replay (ADR-0010): while a session is open,
   `useApp()` returns a snapshot synthesised at the cursor, every action is refused, and
-  `ReplayBanner` + `GlobalTransport` show on every tab. `lib/audio.ts`, `lib/motion.ts` and
+  the header pill becomes a flashing "Replay · Exit to live" button and `GlobalTransport`
+  (with the note chip floating over the page above it) shows on every tab. `lib/audio.ts`, `lib/motion.ts` and
   `RecordingCard`/`RecordingOptions`/`MarkButton` are the recording side.
 - `src/lib/catalog.ts` — the Stable/Experimental visibility rules over `/catalog` (ADR-0008).
 - `src/layout.ts` — the only place that names signals (Drive tiles, body view, LID presets).

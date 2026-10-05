@@ -7,7 +7,6 @@ import { ActionButton } from "../components/ActionButton";
 import { ConnectionNotice } from "../components/ConnectionNotice";
 import { ConnectionPill } from "../components/ConnectionPill";
 import { GlobalTransport } from "../components/GlobalTransport";
-import { ReplayBanner } from "../components/ReplayBanner";
 import { renderWithApp } from "../test/renderWithApp";
 import { AppCtx, type AppContext } from "./app";
 import { initialLive } from "./live";
@@ -72,38 +71,38 @@ describe("read-only actions in replay", () => {
     expect(screen.getByRole("button", { name: "A/C Fan" })).toBeInTheDocument();
   });
 
-  it("the pill reads Replay and the connection notice is hidden", () => {
-    renderWithApp(withReplay(replaying(), <><ConnectionPill /><ConnectionNotice /></>), {
+  it("the pill reads Replay · Exit to live, exits on click, and the connection notice is hidden", () => {
+    const r = replaying();
+    renderWithApp(withReplay(r, <><ConnectionPill /><ConnectionNotice /></>), {
       snap: { status: "error", conn: "error", signals: {}, faults: [] },
     });
-    expect(screen.getByLabelText("Replay — read only")).toHaveTextContent("Replay");
+    const pill = screen.getByRole("button", { name: "Replay — Exit to live" });
+    expect(pill).toHaveTextContent("Replay · Exit to live");
+    expect(pill).toHaveClass("pill-replay");
     expect(screen.queryByText("No connection")).not.toBeInTheDocument();
+    fireEvent.click(pill);
+    expect(r.exit).toHaveBeenCalled();
   });
 });
 
-describe("ReplayBanner", () => {
-  it("shows REPLAY, the date, the cursor clock, the current note and Exit to live", () => {
-    const r = replaying();
-    render(withReplay(r, <ReplayBanner />));
-    const banner = screen.getByRole("region", { name: "Replay" });
-    expect(banner).toHaveTextContent("REPLAY");
-    expect(screen.getByTestId("replay-clock")).toHaveTextContent("⏱ 0:02");
-    expect(banner).toHaveTextContent("⚑ Clunk");
-    fireEvent.click(screen.getByRole("button", { name: "Exit to live" }));
-    expect(r.exit).toHaveBeenCalled();
+describe("GlobalTransport note overlay", () => {
+  it("shows the note at the cursor in an overlay above the scrubber", () => {
+    const { container } = render(withReplay(replaying({ data: {} as Replay["data"] }), <GlobalTransport />));
+    const layer = container.querySelector(".gnote-layer");
+    expect(layer).not.toBeNull();
+    expect(layer).toHaveTextContent("⚑ Clunk");
+    expect(screen.getByRole("status")).toHaveTextContent("Clunk");
   });
 
-  it("keeps Exit visible while loading or on error", () => {
-    const { rerender } = render(withReplay(replaying({ loading: true, session: undefined }), <ReplayBanner />));
+  it("shows loading and errors in the overlay", () => {
+    const { rerender } = render(withReplay(replaying({ loading: true, session: undefined }), <GlobalTransport />));
     expect(screen.getByText("Loading session…")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Exit to live" })).toBeInTheDocument();
-    rerender(withReplay(replaying({ error: "HTTP 404", session: undefined }), <ReplayBanner />));
-    expect(screen.getByText(/Could not load this session: HTTP 404/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Exit to live" })).toBeInTheDocument();
+    rerender(withReplay(replaying({ error: "HTTP 404", session: undefined }), <GlobalTransport />));
+    expect(screen.getByRole("alert")).toHaveTextContent(/Could not load this session: HTTP 404/);
   });
 
   it("renders nothing when live", () => {
-    const { container } = render(<><ReplayBanner /><GlobalTransport /></>);
+    const { container } = render(<GlobalTransport />);
     expect(container).toBeEmptyDOMElement();
   });
 });

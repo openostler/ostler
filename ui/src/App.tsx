@@ -13,7 +13,6 @@ import { MarkButton } from "./components/MarkButton";
 import { ModuleSelect } from "./components/ModuleSelect";
 import { Preferences } from "./components/Preferences";
 import { ReplayAudio } from "./components/replay/ReplayAudio";
-import { ReplayBanner } from "./components/ReplayBanner";
 import { RewindButton } from "./components/RewindButton";
 import { moduleName } from "./layout";
 import { clockHHMM, faultLookup, fmt } from "./lib/format";
@@ -177,7 +176,7 @@ function AppShell({ path }: { path: string }) {
             <button className="chip" aria-label="Preferences" onClick={() => setPrefsOpen(true)}>⚙</button>
           </div>
         </header>
-        {replay.active ? <ReplayBanner /> : <ActiveTestBanner />}
+        {replay.active ? null : <ActiveTestBanner />}
         {experimental && !replay.active ? (
           <div className="expbanner"><span className="pdot yellow" />Experimental mode — unverified items and tests shown</div>
         ) : null}
