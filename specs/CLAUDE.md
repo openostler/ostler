@@ -20,7 +20,7 @@ here before implementation starts.
 - `2026-10-06-logs-at-scale-design.md` — place names, paged/searchable logs + scrubber, editable records, live-only recording, no demo mode (ADR-0011).
 - `2026-10-06-platform-direction-design.md` — DRAFT: the open vehicle platform direction (packs, guardian hardware, MQTT/HA, alarm, IA, phases).
 - `2026-10-06-phase0-vehiclepack-decoupling-design.md` — Phase 0: D2 behind a VehiclePack contract in place (ADR-0013 step 1).
-- `2026-10-06-ui-architecture-design.md` — DRAFT: head-unit-first UI for any vehicle: layout classes, status strip, five destinations, driving lockouts, garage, capability manifest and render tiers, add-on devices, safety tiers, decode pipeline.
+- `2026-10-06-ui-architecture-design.md` — APPROVED (ADR-0016, ADR-0018): head-unit-first UI for any vehicle: layout classes, status strip, five destinations, driving lockouts, garage, capability manifest and render tiers, add-on devices, safety tiers, decode pipeline.
 
 Discovery 2 specs (NanoCom capture, HEVAC control, DTC coverage, fault-screen import,
 reply-length layouts) stay in the D2 pack repo (ADR-0015).

@@ -2,7 +2,7 @@
 title: "Goals — what Ostler is for and where it is going"
 area: root
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [SCOPE.md]
 summary: >
@@ -13,8 +13,8 @@ summary: >
 
 This is the one place that says what Ostler is for and where it is going. The detail lives
 in the [direction spec](specs/2026-10-06-platform-direction-design.md) and the
-[UI architecture spec](specs/2026-10-06-ui-architecture-design.md) (both **drafts** for
-owner review), the ADRs in [decisions/](decisions/CLAUDE.md) and the research in
+[UI architecture spec](specs/2026-10-06-ui-architecture-design.md) (the direction spec is a
+**draft**; the UI spec is **approved**, ADR-0018), the ADRs in [decisions/](decisions/CLAUDE.md) and the research in
 [references/research/](references/research/platform.md). Where this file and those
 disagree, they win; fix this file. The hard rules are in [CONSTITUTION.md](CONSTITUTION.md).
 
@@ -50,16 +50,24 @@ which are why Ostler exists:
 **Peers we interoperate with rather than replace:** OVMS (we speak its MQTT topic tree),
 OBDb (we share CC BY-SA signal data), OwnTracks and Traccar (location), Home Assistant,
 jlr-scanner (Discovery 3/4), WiCAN (hardware front end). See [ovms.md](references/research/ovms.md).
+We also **reuse their data** ([ADR-0019](decisions/adr-0019-reuse-from-ovms-and-obdb.md)): OBDb is
+the primary source for polled signals, and every OVMS vehicle and command is imported where the
+licence allows, with commands disabled behind the safety gates and a human review gate on the
+importer.
 
 ## 2. Principles
 
 1. **Local-first and private by default.** Everything works with no cloud. Location and
    audio stay on the device unless the owner opts in (ADR-0009, ADR-0010). Every outbound
    path is opt-in and off by default. Cloud APIs die, so we never depend on one.
-2. **Open standards wherever they exist.** COVESA VSS paths as the canonical signal
-   namespace, with OVMS, Home Assistant and OBDb names generated as aliases (owner
-   direction; proposed in the UI spec §5.6, to be locked by an ADR). OBDb-compatible pack
-   data, MQTT with Home Assistant discovery, OwnTracks, Traccar OsmAnd, SocketCAN, ISO-TP.
+2. **Open standards first** ([ADR-0017](decisions/adr-0017-open-standards-first.md)).
+   Prefer an open standard, spec or format over a bespoke one, adopted as files and
+   conventions rather than heavy frameworks. COVESA VSS (6.1) is the canonical signal
+   namespace, **decided** ([ADR-0016](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md)),
+   with OVMS, Home Assistant and OBDb names generated as aliases. OBDb-compatible pack data,
+   JSON Schema, OpenAPI/AsyncAPI, MQTT with Home Assistant discovery, OwnTracks, Traccar
+   OsmAnd, SocketCAN (listen-only by default, [ADR-0020](decisions/adr-0020-can-links-listen-only-by-default.md)),
+   ISO-TP, REUSE/SPDX, SBOMs, WCAG 2.2 AA.
 3. **Safety travels with the action.** One server-side gate serves every path (UI, MQTT,
    Home Assistant, schedules). Remote paths get read-only actions only (plus arming the
    software alarm). The UI only adds friction; it never is the gate.
@@ -102,7 +110,7 @@ jlr-scanner (Discovery 3/4), WiCAN (hardware front end). See [ovms.md](reference
 | **Logging and telemetry** | Session logbook with replay, GPS and place names, notes, audio, IMU, flags; CSV, VBO and GPX export; later log import/export (MoTeC, AiM, RaceChrono, RealDash) and lap timing | core / add-on | Logbook, replay and exports shipped; formats and lap timing in backlog |
 | **Tracker and alarm** | An always-on ESP32 guardian with its own battery and IoT SIM: tracker, geofences, a **notify-only** alarm (strong/weak triggers, tamper), notifications escalating HA → ntfy → Telegram → SMS | add-on | Designed (Phase 2); not built |
 | **Add-on devices** | Modules on a **private CAN bus** (never the vehicle's): relay box, head-unit CAN/OBD emulator, gauge display; devices register into UI slots through a `DevicePack` contract | add-on | Phase 4; not built |
-| **Cameras** | One camera system for dashcam, parking/alarm clips, reversing and underbody (360 later), streamed through go2rtc (optionally Frigate) into the same timeline, on our own infrastructure | add-on | Designed; constraints open (§10) |
+| **Cameras** | One camera system for dashcam, parking/alarm clips, reversing and underbody, streamed through go2rtc (optionally Frigate) into the same timeline, on our own infrastructure. **Future:** 360° surround view as another camera kind under the same rules (ADR-0018) | add-on | Designed; constraints open (§12) |
 | **Displays / head unit** | Displays are thin clients: the PWA on any screen, **head-unit first**, then an Ostler Android launcher, then possibly our own ROM or display hardware | core / add-on | PWA shipped (phone-first today); head-unit layout is UI phase U1 |
 | **Integrations** | Opt-in MQTT with Home Assistant discovery, an OVMS v3-compatible topic tree, OwnTracks, Traccar OsmAnd, ntfy; a stdlib MQTT client | add-on | Phase 1; not built |
 | **Decode pipeline** | A read-only path from any unknown car to a pack with verified signals: connect → identify → inventory → baseline → capture → correlate → label → verify → package → contribute; a Decode mode in the app | core (developer) | Sniff, automap and catalog exist; pipeline is UI phase U7 |
@@ -184,8 +192,9 @@ combined. U0–U3 sit in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets i
 | | Repo split: platform `openostler` + pack `d2diag`, history kept | **Done** ([ADR-0015](decisions/adr-0015-repo-split-executed.md)) |
 | | Homelab dev server (Docker/Dokploy, platform + pack at `PACK_REF`) | **Done** |
 | | Version tracker: platform and pack versions and commits (`GET /version`, Settings → Version) | **Done** |
-| | UI research (seven notes) and the UI architecture draft | **Done** ([research](references/research/ui/)) |
-| | U0 seams: `vid` on sessions, optional VSS `metric` on signals, `metrics.json` | Next |
+| | UI research (seven notes) and the UI architecture spec, approved | **Done** ([research](references/research/ui/), ADR-0018) |
+| | Standards, CAN/head-unit and OVMS-reuse research; ADR-0016 to ADR-0021 | **Done** |
+| | U0 seams: `vid` on sessions, optional VSS `metric` on signals, `vss/` overlay and generated `metrics.json`, JSON Schemas, OpenAPI/AsyncAPI | Next |
 | | U1 shell: layout classes, status strip, rail/bottom bar, five destinations, Drive mode | Planned |
 | | U2 driving state and server-enforced lockouts; U3 generated capability manifest, Scan all | Planned |
 | **1 — Integrations** | Opt-in, read-only MQTT/HA, OVMS topics, OwnTracks, Traccar OsmAnd, ntfy | Planned |
@@ -202,9 +211,10 @@ combined. U0–U3 sit in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets i
 - **Nothing writes to a car without the gates.** Coding and security writes are listed
   for honesty and never runnable; clears, actuator tests and procedures are confirmed,
   Parked-only and logged. Airbag/SRS is read-only by construction.
-- **No EKA, key or immobiliser programming** in any product path, and no SecurityAccess
-  or replayed sniffed write beyond what a module needs for diagnostic reads (e.g. the Td5
-  seed-key unlock) without its own ADR.
+- **No EKA, key or immobiliser programming in any default path.** It is gated and opt-in
+  only, through the safety gates: the D2 pack keeps EKA read/set behind its gate (the pack's
+  ADR-0007). No other SecurityAccess or replayed sniffed write beyond what a module needs for
+  diagnostic reads (e.g. the Td5 seed-key unlock) without its own ADR.
 - **The VIN is never logged, recorded, put in fixtures or uploaded.** It is decoded in
   memory; only a masked form and a device-local fingerprint are kept. Raw captures are
   never committed.
@@ -243,18 +253,17 @@ Proposed, not yet adopted as targets:
 
 ## 12. Open questions
 
-- Lock VSS as the canonical namespace with an ADR (UI spec Q1); the rest of the UI spec's
-  owner questions (§11) are open while it is a draft.
-- A `comfort` safety class for our own devices (HEVAC setpoints, camera switching)
-  allowed while Moving (UI spec Q4).
+- Whether `docs/` (and `references/`) are licensed CC BY-SA 4.0 like the data; REUSE needs
+  an answer.
+- CRA role and legal advice before the first hardware sale.
+- The trust setup for local HTTPS on the Pi (per-device CA or ACME DNS;
+  [ADR-0021](decisions/adr-0021-local-https-on-the-device.md)).
 - How packs ship UI views separately from the platform build ([TODO.md](TODO.md)).
 - Reverse-camera latency against Pi boot time, and a pre-event buffer while parked.
 - The documented device ↔ cloud protocol, and whether a non-stdlib MQTT client is worth
   an ADR.
 - The SoC for our own board (CM5 or i.MX93), and the guardian ↔ Pi power logic (unverified).
 - The official UKIPO/EUIPO trademark search before announcing.
-- How the D2 pack's gated BCU security research (its ADR-0007) sits with the "no key
-  programming" line.
 
 ## Where the detail lives
 
@@ -263,8 +272,16 @@ Proposed, not yet adopted as targets:
 - Decisions: [ADR-0012 licence](decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md),
   [ADR-0013 repo split and pack contract](decisions/adr-0013-repo-split-and-vehicle-pack-contract.md),
   [ADR-0014 handles](decisions/adr-0014-ostler-handles.md),
-  [ADR-0015 split executed](decisions/adr-0015-repo-split-executed.md).
+  [ADR-0015 split executed](decisions/adr-0015-repo-split-executed.md),
+  [ADR-0016 VSS](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md),
+  [ADR-0017 open standards](decisions/adr-0017-open-standards-first.md),
+  [ADR-0018 UI decisions](decisions/adr-0018-ui-architecture-decisions.md),
+  [ADR-0019 OVMS/OBDb reuse](decisions/adr-0019-reuse-from-ovms-and-obdb.md),
+  [ADR-0020 CAN links](decisions/adr-0020-can-links-listen-only-by-default.md),
+  [ADR-0021 local HTTPS](decisions/adr-0021-local-https-on-the-device.md).
 - Research: [landscape](references/research/landscape.md), [OVMS](references/research/ovms.md),
+  [OVMS reuse](references/research/ovms_reuse.md), [standards](references/research/standards.md),
+  [CAN and head units](references/research/canbus_headunit.md),
   [hardware](references/research/hardware.md), [platform](references/research/platform.md),
   [feature backlog](references/research/features_backlog.md), [UI notes](references/research/ui/).
 - Rules and scope: [CONSTITUTION.md](CONSTITUTION.md), [SCOPE.md](SCOPE.md),
