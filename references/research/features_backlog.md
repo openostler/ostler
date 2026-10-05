@@ -50,3 +50,7 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 23 | **Relay-box module** on the private CAN bus | add-on | Waveshare 8DI-8RO-C, ESPHome | Outputs are gated like any other action |
 | 24 | **ODX import** | moonshot | odxtools (MIT), OpenSOVD (Apache) | Only from files the user owns; never shipped (DMCA lesson) |
 | 25 | **Cloud** (hosted sync, fleet, remote access) | moonshot | — | Funding route (ADR-0012). Fully AGPL or open-core: still an open question. |
+| 26 | **Display as thin client**: the PWA in kiosk mode on any tablet, phone or head-unit browser | core | Existing PWA | The owner's direction (direction spec v0.2). No CAN-box work needed. |
+| 27 | **Ostler Android launcher**: auto-start, camera view on reverse, CarPlay/AA via a wireless dongle (Carlinkit-type) | add-on | — | About 90% of a custom head unit. A custom ROM only if the launcher hits real limits. |
+| 28 | **Camera system**: dashcam, parking/alarm clips, reversing, underbody; go2rtc + Frigate (Pi 5 AI HAT) | add-on | go2rtc (MIT), Frigate (MIT), ESP32-CAM_MJPEG2SD (AGPL ✓) | Constraints: reverse latency vs Pi boot, a pre-event buffer while parked, wired cameras for continuous recording |
+| 29 | **Gauge display module**: an ESP32-S3 round/bar screen for always-visible coolant, boost, EAT temperature, flags and alarm state | add-on | Waveshare / LilyGO touch displays (£30–60) | Optional, alongside the main screen |

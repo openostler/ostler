@@ -2,7 +2,7 @@
 title: "Platform direction — from D2 Td5 tool to open vehicle platform (diagnostics · logger · telemetry · tracker/alarm) — design"
 area: specs
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md]
 summary: >
@@ -83,13 +83,73 @@ Each phase gets its own spec and tests.
 - **Some changes need an ADR first:** a new top-level destination, a new outbound data path, or a new runtime dependency.
 - **The D2 pack's coverage is protected:** CI fails if it regresses.
 
-## Open questions for the owner
+## Owner answers (2026-10-06)
 
-1. Is the cloud fully AGPL (Nabu Casa style), or a separate proprietary service (open core)? See ADR-0012.
-2. Does the alarm stay strictly notify-only for the first release? Proposed: yes.
-3. Is "Map" an acceptable stand-in for the Security slot when no guardian is fitted?
-4. When is the right time to rename the project, and what is the name to trademark?
+1. **The cloud is closed source.** It is the revenue stream, so it lives in a private
+   `ostler-cloud` repo. It speaks only a documented MQTT/HTTPS protocol to the open device
+   side and never imports platform code. That boundary keeps AGPL code and closed code
+   separate (ADR-0013).
+2. **The alarm is notify-only.** Actuation (OEM disarm, immobiliser, remote start) stays a
+   moonshot, and each item needs its own ADR and gate.
+3. **The Security slot shows "Map"** when no guardian is fitted.
+4. **The working brand is "Ostler"**, pending an official UKIPO/EUIPO search in classes
+   9, 12, 38 and 42. Naming research is in ADR-0013.
+
+## Displays are thin clients; cameras live on our infrastructure
+
+The owner's direction:
+
+- **All the hardware and intelligence is ours.** The Pi, the guardian, the cameras and the
+  recording are all our infrastructure.
+- **Any screen is a view of the PWA.** That covers a phone, a tablet, or the current
+  Android head unit's browser in kiosk mode. No CAN-box work is needed for this.
+- **One camera system does every job.** Dashcam, parking/alarm clips, reversing and
+  underbody views all come from the same cameras. They stream through go2rtc, optionally
+  with Frigate detection on a Pi 5 AI HAT, into the same Logs and flags timeline. A locked
+  head unit's own cameras are not duplicated.
+- **The path:**
+  1. Kiosk PWA now.
+  2. An Ostler Android launcher: auto-start, a camera view on reverse, and CarPlay/AA via
+     a wireless dongle.
+  3. Only if the launcher hits real limits: our own ROM (AOSP/LineageOS) or our own
+     display hardware.
+- **Keep a head unit for media** if CarPlay, radio, the amplifier and steering-wheel
+  controls are wanted. Nobody should rebuild those.
+
+**Constraints to resolve before relying on cameras:**
+
+1. **Reverse-camera latency and Pi boot time** (about 15–20 s on demand). Reversing must
+   be instant. Either keep a direct path from camera to screen, or keep the Pi up while
+   the ignition is on, ready before reverse is selected. Until then, treat it as
+   assist-only.
+2. **Pre-event footage while parked.** An alarm that wakes the Pi starts recording about
+   20 s late. Cameras therefore need their own pre-record buffer: SD-card IP cams,
+   ESP32-CAM_MJPEG2SD (AGPL), or a parking-mode dashcam. The alternative is a Pi left
+   running while armed, which costs battery.
+3. **Wired cameras for continuous recording.** Use PoE/Ethernet RTSP, CSI or USB. ESP32
+   cams are fine for snapshots only.
+4. **Pi 5 load.** It can record 2–4 RTSP streams without transcoding. Detection needs an
+   AI HAT (Hailo) or a Coral.
+
+## Repository map (ADR-0013)
+
+| Repo | Visibility, licence | Role |
+|---|---|---|
+| `ostler` (new) | public, AGPL + commercial | Platform: core comms, snapshot contract, VehiclePack SDK, logbook/replay, integrations, web server, **the main UI** |
+| `discovery2-diag` (this repo) | public, AGPL code + CC BY-SA data | Becomes the **Land Rover Discovery 2 pack** |
+| `ostler-firmware` (new) | public, AGPL | ESP32 guardian and add-on modules |
+| `ostler-cloud` (new) | **private, closed** | Ostler Cloud |
+| Later | — | `ostler-hardware` (CERN-OHL-S) and `ostler-android` |
+| HEVAC | owner's separate project | Not part of this platform |
+
+**Sequence:**
+
+1. Decouple in place behind a `VehiclePack` interface. This is Phase 0 and needs its own
+   spec.
+2. Split the repos, preserving history.
+3. Create the firmware and cloud repos when that work starts.
 
 ## Changelog
 
 - 2026-10-06: v0.1, a draft from the October 2026 research pass.
+- 2026-10-06: v0.2, owner answers (closed cloud, notify-only alarm, Map slot, working name Ostler); displays as thin clients with cameras on our infrastructure; repository map.
