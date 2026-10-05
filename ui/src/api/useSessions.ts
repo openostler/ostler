@@ -1,24 +1,124 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./client";
-import type { SessionMeta } from "./schemas";
+import type { SessionHistogram, SessionMeta } from "./schemas";
 
 /** A session being recorded is re-fetched this often while replayed (its trace grows; state/replay.tsx). */
 export const LIVE_REFRESH_MS = 5_000;
 
-/** GET /sessions (newest first). `refreshKey` re-fetches (e.g. a recording starting). */
-export function useSessions(refreshKey = "") {
-  const [state, setState] = useState<{ sessions: SessionMeta[] | null; error: string | null }>({ sessions: null, error: null });
+/** Page size for the Logs browser (the server caps it at 200). */
+export const PAGE_SIZE = 50;
+
+/** The Logs filters (spec §3 query parameters; `from`/`to` are ISO dates, inclusive). */
+export type SessionFilters = {
+  q?: string;
+  from?: string;
+  to?: string;
+  module?: string;
+  has_notes?: boolean;
+  min_km?: number;
+};
+
+export const filtersActive = (f: SessionFilters) =>
+  !!(f.q?.trim() || f.from || f.to || f.module || f.has_notes || f.min_km);
+
+type Query = Omit<SessionFilters, "has_notes"> & { has_notes: boolean };
+
+type PagesState = {
+  /** The request key these pages answer (a different key → the first page is loading). */
+  forKey: string | null;
+  sessions: SessionMeta[] | null;
+  next: string | null;
+  error: string | null;
+  /** A further page is being fetched. */
+  more: boolean;
+};
+
+/**
+ * Keyset-paged GET /sessions (newest first). Any change to `filters`, `anchor` (a `before`
+ * cursor the first page starts at, e.g. the month scrubber's) or `refreshKey` drops the
+ * pages and loads the first one again; `loadMore` appends the page after `next`.
+ */
+export function useSessionPages(filters: SessionFilters, anchor: string | null = null, refreshKey = "") {
+  const [state, setState] = useState<PagesState>({ forKey: null, sessions: null, next: null, error: null, more: false });
   const [nonce, setNonce] = useState(0);
+  const q: Query = {
+    q: filters.q?.trim() || undefined, from: filters.from || undefined, to: filters.to || undefined,
+    module: filters.module || undefined, has_notes: !!filters.has_notes, min_km: filters.min_km || undefined,
+  };
+  const filterKey = JSON.stringify(q);
+  const reqKey = JSON.stringify([filterKey, anchor, refreshKey, nonce]);
+  const live = useRef(reqKey); // the newest request key: a late page for an older one is dropped
+  const busy = useRef(false);
+
+  useEffect(() => {
+    live.current = reqKey;
+    busy.current = true;
+    const f = JSON.parse(filterKey) as Query;
+    api.sessions({ ...f, limit: PAGE_SIZE, before: anchor }).then(
+      (r) => {
+        if (live.current !== reqKey) return;
+        busy.current = false;
+        setState({ forKey: reqKey, sessions: r.sessions, next: r.next ?? null, error: null, more: false });
+      },
+      (e: Error) => {
+        if (live.current !== reqKey) return;
+        busy.current = false;
+        setState((s) => ({ ...s, forKey: reqKey, error: e.message, more: false }));
+      },
+    );
+  }, [reqKey, filterKey, anchor]);
+
+  const cursor = state.forKey === reqKey ? state.next : null;
+  const loadMore = useCallback(() => {
+    if (!cursor || busy.current) return;
+    busy.current = true;
+    setState((s) => ({ ...s, more: true }));
+    const f = JSON.parse(filterKey) as Query;
+    api.sessions({ ...f, limit: PAGE_SIZE, before: cursor }).then(
+      (r) => {
+        if (live.current !== reqKey) return;
+        busy.current = false;
+        setState((s) => {
+          const seen = new Set((s.sessions ?? []).map((x) => x.id));
+          return { ...s, sessions: [...(s.sessions ?? []), ...r.sessions.filter((x) => !seen.has(x.id))], next: r.next ?? null, error: null, more: false };
+        });
+      },
+      (e: Error) => {
+        if (live.current !== reqKey) return;
+        busy.current = false;
+        setState((s) => ({ ...s, error: e.message, more: false }));
+      },
+    );
+  }, [cursor, filterKey, reqKey]);
+
+  const reload = useCallback(() => setNonce((n) => n + 1), []);
+  const fresh = state.forKey === reqKey;
+  return {
+    /** The loaded pages; the previous query's rows stay shown while the first page reloads. */
+    sessions: state.sessions,
+    next: cursor,
+    error: state.error,
+    /** The first page of the current query is in flight. */
+    loading: !fresh,
+    loadingMore: state.more,
+    loadMore,
+    reload,
+  };
+}
+
+/** GET /sessions/histogram (month buckets, or day buckets of one year). Null until loaded or
+ * when the server has no histogram (the scrubber and heatmap then stay hidden). */
+export function useSessionHistogram(group: "month" | "day", year?: number, refreshKey = "") {
+  const [hist, setHist] = useState<SessionHistogram | null>(null);
   useEffect(() => {
     let alive = true;
-    api.sessions().then(
-      (r) => alive && setState({ sessions: r.sessions, error: null }),
-      (e: Error) => alive && setState((s) => ({ sessions: s.sessions, error: e.message })),
+    api.sessionHistogram(group, year).then(
+      (h) => alive && setHist(h),
+      () => alive && setHist(null),
     );
     return () => { alive = false; };
-  }, [nonce, refreshKey]);
-  const reload = useCallback(() => setNonce((n) => n + 1), []);
-  return { ...state, reload };
+  }, [group, year, refreshKey]);
+  return hist;
 }
 
 /** Channels worth fetching for replay: everything numeric (the trace and chart pickers

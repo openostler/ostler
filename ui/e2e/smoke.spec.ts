@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Skip the first-start consent screen (stored per device, like a returning user), and
- * acknowledge the fault sheet whenever it pops up — the mock car has stored faults. */
+ * acknowledge the fault sheet whenever it pops up — the simulated car has stored faults. */
 async function returningUser(page: Page) {
   await page.addInitScript(() =>
     localStorage.setItem("d2diag.v2", JSON.stringify({ consentDone: true, share: false })),
@@ -19,7 +19,7 @@ test("first start asks for consent before anything else", async ({ page }) => {
   await expect(page.getByText("Before you connect")).toBeHidden();
 });
 
-test("live mock data streams into Drive and Inputs", async ({ page }) => {
+test("simulated live data streams into Drive and Inputs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
@@ -74,6 +74,10 @@ test("header: no title, one Module control, % mapped only in Experimental, fits 
   await page.reload();
   await expect(header.locator(".mappct")).toHaveText(/^\d+% mapped$/);
   expect(await fits()).toBe(true);
+  // Experimental lists every module, named ABBR (plain words)
+  const select = header.getByRole("combobox", { name: "Module" });
+  await expect(select.locator('option[value="autobox"]')).toHaveText("EAT (auto gearbox)");
+  await expect(select.locator('option[value="airbag"]')).toHaveText("SRS (airbag)");
   await page.screenshot({ path: "test-results/header-360.png" });
 });
 
@@ -85,11 +89,13 @@ test("switching to SLABS from the header keeps the tab", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Faults" })).toBeVisible();
   await expect(page.locator(".screen-head")).toContainText("SLABS");
   await page.screenshot({ path: "test-results/faults-slabs.png", fullPage: true });
-  // restore TD5: the mock server is shared by every test
+  // restore TD5: the test server is shared by every test
   await switchModule(page, "motor");
   await expect(page.locator(".screen-head")).toContainText("TD5");
 });
 
+// The sheet's immediate open with no connection (0 ms on load, 1 s into reconnecting, never in
+// replay) is covered in vitest (state/connection.test.ts, App.test.tsx): this server is connected.
 test("the connection pill opens the connection sheet", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
@@ -97,6 +103,10 @@ test("the connection pill opens the connection sheet", async ({ page }) => {
   const sheet = page.getByRole("dialog");
   await expect(sheet.getByText("Connection", { exact: true })).toBeVisible();
   await expect(sheet.getByText("10 400 baud · 8N1 · half duplex")).toBeVisible();
+  // live only (ADR-0011): no Data source block, no Mock/Live switch, no mode row
+  await expect(sheet.getByText("Data source")).toHaveCount(0);
+  await expect(sheet.getByRole("button", { name: "Mock" })).toHaveCount(0);
+  await expect(sheet.getByText("MODE", { exact: true })).toHaveCount(0);
   await page.screenshot({ path: "test-results/connection-sheet.png" });
   await sheet.getByRole("button", { name: "Done" }).click();
   await expect(sheet).toBeHidden();
@@ -181,7 +191,7 @@ for (const scheme of ["dark", "light"] as const) {
     await page.waitForTimeout(1500);
     await dismissIfShown(page);
     await page.screenshot({ path: `test-results/${scheme}-drive-slabs.png`, fullPage: true });
-    // leave the shared mock server on TD5 for other tests
+    // leave the shared test server on TD5 for other tests
     await dismissIfShown(page);
     await switchModule(page, "motor");
     await expect(page.getByRole("heading", { name: "Drive" })).toBeVisible();

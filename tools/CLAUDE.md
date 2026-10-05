@@ -4,7 +4,8 @@ CLI entry points and reverse-engineering utilities. Run them with `PYTHONPATH=sr
 
 ## Files
 
-- `dashboard.py` — web dashboard (`--mock` or `--serial`). `deploy.sh` — Pi deploy.
+- `dashboard.py` — web dashboard, always live (`--serial`, `--replay`, `--geocoder`; no demo
+  mode, ADR-0011 — a simulated car is `tests/e2e_server.py`). `deploy.sh` — Pi deploy.
 - `verify_ecu.py`, `esp32_read.py`, `module_scan.py`, `bcu_scan.py` — read-only live checks, the
   address scan and the BCU input scan (logic in `src/d2diag/modscan.py`, `bcu/scan.py`).
 - `decode_session.py`, `analyze_capture.py`, `raw_analyze.py`, `diffmap.py`,

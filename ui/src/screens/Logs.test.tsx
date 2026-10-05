@@ -4,7 +4,8 @@ import sessionDataFx from "../api/fixtures/session-data.json";
 import sessionsFx from "../api/fixtures/sessions.json";
 import type { Note, SessionMeta } from "../api/schemas";
 import { GlobalTransport } from "../components/GlobalTransport";
-import { formatDuration, formatPos } from "../components/replay/sessionFormat";
+import { formatDuration, rowDate } from "../components/replay/sessionFormat";
+import { moduleName } from "../layout";
 import { lineColorExpression, RAMPS, rangeOf } from "../components/replay/trace";
 import { fmt } from "../lib/format";
 import { ReplayProvider } from "../state/replay";
@@ -27,9 +28,16 @@ vi.mock("../components/replay/maplibre", () => ({
   },
 }));
 
-const demo = sessionsFx.sessions[0] as unknown as SessionMeta;
+// The fixture supplies the demo's id and channels (they match session-data.json); every
+// field a test asserts on is set here, so regenerated fixtures don't move the expectations.
+const demo: SessionMeta = {
+  ...(sessionsFx.sessions[0] as unknown as SessionMeta),
+  name: "Demo log 1", description: "A synthetic demo drive.", place: { label: "Rannoch Moor", source: "geonames" },
+  place_start: null, place_end: null, note_count: 2, synthetic: true, recording: false, source: "demo",
+  modules: ["motor", "slabs"], has_gps: true, distance_km: 11.21, max_speed_kmh: 92, duration_s: 720,
+};
 const real: SessionMeta = {
-  ...demo, id: "20261004T170000Z", start_utc: "2026-10-04T17:00:00.000Z", synthetic: false, source: "live",
+  ...demo, name: null, description: null, place: null, note_count: 0, id: "20261004T170000Z", start_utc: "2026-10-04T17:00:00.000Z", synthetic: false, source: "live",
   has_gps: false, start_pos: null, end_pos: null, bbox: null, distance_km: 0, max_speed_kmh: null,
   channels: [
     { name: "rpm", units: "rpm", group: "engine" }, { name: "coolant_temp", units: "°C", group: "engine" },
@@ -53,9 +61,12 @@ const demoNotes = [note("a1b2c3d4", 20_000), note("b2c3d4e5", 30_000, 50_000)];
 
 type Call = { path: string; method: string; body?: unknown };
 let calls: Call[];
+/** PATCH /sessions/<real> replies with this (null → the server echoes the patch). */
+let patchReply: { status: number; body: unknown } | null;
 
 function stubServer() {
   calls = [];
+  patchReply = null;
   const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { "Content-Type": "application/json" } });
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
     const url = new URL(input, "http://dash.local");
@@ -63,7 +74,12 @@ function stubServer() {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     calls.push({ path: url.pathname + url.search, method, body });
     const p = url.pathname;
-    if (p === "/sessions") return json({ sessions: [demo, real] });
+    if (p === "/sessions") return json({ sessions: [demo, real], next: null });
+    if (p === "/sessions/histogram") return json({ group: url.searchParams.get("group"), buckets: [] });
+    if (p === `/sessions/${real.id}` && method === "PATCH") {
+      if (patchReply) return json(patchReply.body, patchReply.status);
+      return json({ ok: true, meta: { ...real, ...body } });
+    }
     if (p === `/sessions/${demo.id}`) return json(demo);
     if (p === `/sessions/${demo.id}/data`) return json(sessionDataFx);
     if (p === `/sessions/${demo.id}/events`) return json({ id: demo.id, events: [] });
@@ -111,19 +127,23 @@ async function openReal() {
 }
 
 describe("Logs — session browser", () => {
-  it("lists sessions by day with the row details and a demo chip", async () => {
+  it("lists sessions under year/month headers with the row details and a demo chip", async () => {
     renderWithApp(ui());
     const row = await screen.findByText("demo");
     const btn = row.closest("button")!;
+    expect(btn.querySelector(".replay-row-title")).toHaveTextContent("Demo log 1");
+    expect(btn).toHaveTextContent("Rannoch Moor");
+    expect(btn).toHaveTextContent("2 notes");
+    expect(document.querySelector(`[data-session="${real.id}"] .replay-row-title`)).toHaveTextContent("Untitled session");
+    expect(btn).toHaveTextContent(rowDate(demo));
     expect(btn).toHaveTextContent(formatDuration(demo.duration_s));
     expect(btn).toHaveTextContent(`${fmt(demo.distance_km, 1)} km`);
-    expect(btn).toHaveTextContent(`max ${fmt(demo.max_speed_kmh, 0)} km/h`);
-    expect(btn).toHaveTextContent(formatPos(demo.start_pos));
-    expect(btn).toHaveTextContent(demo.modules.join(", "));
+    expect(btn).toHaveTextContent(demo.modules.map(moduleName).join(", "));
     const other = document.querySelector(`[data-session="${real.id}"]`)!;
-    expect(other).toHaveTextContent("no GPS");
     expect(within(other as HTMLElement).queryByText("demo")).toBeNull();
-    expect(screen.getAllByRole("region").length).toBeGreaterThanOrEqual(2); // two day groups
+    expect(screen.getByRole("heading", { name: "2026" })).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-month]").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Place names © OpenStreetMap contributors \(ODbL\) · GeoNames \(CC BY 4\.0\)/)).toBeInTheDocument();
     expect(screen.queryByTestId("global-transport")).toBeNull(); // live: no transport
   });
 });
@@ -279,13 +299,20 @@ describe("Logs — replay", () => {
     width.mockRestore();
   });
 
-  it("a real session: Delete needs the typed id, posts delete_session and leaves replay", async () => {
+  it("a real session: Delete needs the word Delete (case-sensitive), posts delete_session and leaves replay", async () => {
     const { ctx } = renderWithApp(ui());
     await openReal();
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     const go = screen.getByRole("button", { name: "Delete session" });
     expect(go).toBeDisabled();
-    fireEvent.change(screen.getByRole("textbox", { name: `Type ${real.id} to confirm` }), { target: { value: real.id } });
+    const box = screen.getByRole("textbox", { name: "Type Delete to confirm" });
+    fireEvent.change(box, { target: { value: real.id } });
+    expect(go).toBeDisabled();
+    fireEvent.change(box, { target: { value: "delete" } });
+    expect(go).toBeDisabled();
+    fireEvent.change(box, { target: { value: "DELETE" } });
+    expect(go).toBeDisabled();
+    fireEvent.change(box, { target: { value: "Delete" } });
     expect(go).toBeEnabled();
     await act(async () => { fireEvent.click(go); });
     expect(calls.find((c) => c.path === "/command")?.body).toEqual({ action: "delete_session", params: { id: real.id } });
@@ -294,10 +321,62 @@ describe("Logs — replay", () => {
     expect(screen.queryByTestId("global-transport")).toBeNull();
   });
 
-  it("public mode hides Delete and the note tool", async () => {
+  it("inline name: tap, type, Enter saves through PATCH (trimmed); Escape cancels", async () => {
+    renderWithApp(ui());
+    await openReal();
+    fireEvent.click(screen.getByRole("button", { name: "Edit Session name" }));
+    const field = screen.getByRole("textbox", { name: "Session name" });
+    expect(field).toHaveFocus();
+    fireEvent.change(field, { target: { value: "  Glen Coe run  " } });
+    await act(async () => { fireEvent.keyDown(field, { key: "Enter" }); });
+    const patch = calls.find((c) => c.method === "PATCH");
+    expect(patch).toEqual({ path: `/sessions/${real.id}`, method: "PATCH", body: { name: "Glen Coe run" } });
+    expect(screen.getByRole("heading", { name: /Glen Coe run/ })).toBeInTheDocument();
+
+    // Escape: nothing is sent, the old name stays
+    fireEvent.click(screen.getByRole("button", { name: "Edit Session name: Glen Coe run" }));
+    const again = screen.getByRole("textbox", { name: "Session name" });
+    fireEvent.change(again, { target: { value: "oops" } });
+    fireEvent.keyDown(again, { key: "Escape" });
+    expect(screen.queryByRole("textbox", { name: "Session name" })).toBeNull();
+    expect(screen.getByRole("heading", { name: /Glen Coe run/ })).toBeInTheDocument();
+    expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(1);
+  });
+
+  it("inline description: blur saves; a refused PATCH rolls back with a toast", async () => {
+    const { ctx } = renderWithApp(ui());
+    await openReal();
+    fireEvent.click(screen.getByRole("button", { name: "Edit Description" }));
+    const field = screen.getByRole("textbox", { name: "Description" });
+    fireEvent.change(field, { target: { value: "Checked the rear height." } });
+    await act(async () => { fireEvent.blur(field); });
+    expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ description: "Checked the rear height." });
+    expect(screen.getByText("Checked the rear height.")).toBeInTheDocument();
+
+    patchReply = { status: 403, body: { ok: false, error: "read-only session" } };
+    fireEvent.click(screen.getByRole("button", { name: /^Edit Description:/ }));
+    const again = screen.getByRole("textbox", { name: "Description" });
+    fireEvent.change(again, { target: { value: "" } });
+    await act(async () => { fireEvent.blur(again); });
+    expect(calls.filter((c) => c.method === "PATCH").at(-1)?.body).toEqual({ description: null });
+    await waitFor(() => expect(screen.getByText("Checked the rear height.")).toBeInTheDocument());
+    expect(ctx.toast).toHaveBeenCalledWith("Not saved: read-only session", true);
+  });
+
+  it("a demo log: name and description are read-only, no Delete", async () => {
+    renderWithApp(ui());
+    await openDemo();
+    expect(screen.getByRole("heading", { name: "Demo log 1" })).toBeInTheDocument();
+    expect(screen.getByText("A synthetic demo drive.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Edit / })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+  });
+
+  it("public mode hides Delete, the note tool and the inline editors", async () => {
     renderWithApp(ui(), { snap: { status: "connected", signals: {}, faults: [], public: true } });
     await openReal();
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Edit / })).toBeNull();
     expect(screen.queryByRole("button", { name: "Drag to note" })).toBeNull();
   });
 });

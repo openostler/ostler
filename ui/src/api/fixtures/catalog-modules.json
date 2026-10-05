@@ -51,7 +51,7 @@
     {
       "module": "autobox",
       "store_module": "autobox",
-      "name": "Auto gearbox (EAT)",
+      "name": "EAT (auto gearbox)",
       "coverage": {
         "verified": 0,
         "candidate": 2,
@@ -63,7 +63,7 @@
     {
       "module": "airbag",
       "store_module": "airbag",
-      "name": "Airbag / SRS",
+      "name": "SRS (airbag)",
       "coverage": {
         "verified": 0,
         "candidate": 1,

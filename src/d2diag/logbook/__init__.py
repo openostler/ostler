@@ -26,4 +26,14 @@ Contract (specs/2026-10-05-session-logbook-design.md):
   add_note / edit_note / delete_note / audio_path / captures`` and ``export(id, "notes")``;
   ``notes.NoteLog``, ``audio.AudioTrackWriter``/``PiAudio``, ``motion.to_vehicle``/
   ``level_matrix``/``GpsAccel``. ``store.data`` also returns ``text: {faults, module}``.
+* ADR-0011 (specs/2026-10-06-logs-at-scale-design.md): sessions open only while connected
+  and pause (no rows) while disconnected; ``status()`` adds ``state: "recording" |
+  "paused"``; ``note()``/``split()`` raise ``recorder.NotRecording`` (a ``RuntimeError``)
+  unless recording; ``SessionRecorder(..., on_change=callable(sid))``.
+  ``SessionStore(root, demo_root, index_path=None)``: ``update_meta(id, name=, description=,
+  public=False)``, ``set_place(id, "start"|"end", label, source="osm")``,
+  ``ensure_places(id)``, ``sync(id)``, ``index`` (``index.SessionIndex``: ``page``,
+  ``histogram``, ``sync``, ``remove``, ``rebuild``, ``reconcile``). Meta gains
+  ``description``, ``place_start``/``place_end``/``place`` (``places.py``) and a computed
+  ``note_count``. ``synth.generate(root) -> [id]`` builds "Demo log 1" and "Demo log 2".
 """

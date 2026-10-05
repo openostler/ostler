@@ -1,9 +1,15 @@
 """Always-on session recording (ADR-0009, specs/2026-10-05-session-logbook-design.md).
 
-``SessionRecorder.feed(snapshot, gps)`` is called once per poll. A session opens when
-``conn`` first becomes ``connected`` or GPS speed goes above 3 km/h, and ends after
-``IDLE_S`` with no connected poll and GPS speed below 3 km/h (or no GPS), or on
-``close()``. Each session is a directory ``<root>/<id>/`` with RaceCapture-style CSV parts
+``SessionRecorder.feed(snapshot, gps)`` is called once per poll. A session opens only
+when the car is connected (``conn == "connected"``, or ``status == "connected"`` when
+``conn`` is absent); GPS movement never opens one (ADR-0011). While the car is
+disconnected the open session is **paused**: no data rows are written (not even GPS),
+state events are still logged, and it ends after ``IDLE_S`` without a connected poll, or
+on ``close()``. ``status()["state"]`` is ``"recording"`` or ``"paused"``; ``note()`` and
+``split()`` raise ``NotRecording`` unless recording. On close the offline place names
+(``place_start``/``place_end``/``place``) are written to the meta, and the optional
+``on_change(session_id)`` callback runs after a session opens, closes, is renamed or
+gets a live note (the server wires it to ``SessionStore.sync``). Each session is a directory ``<root>/<id>/`` with RaceCapture-style CSV parts
 and an atomically rewritten ``meta.json``. Only ``signals``, ``faults``, ``module``, GPS
 and acceleration are recorded — never the VIN or any identity read.
 
@@ -14,7 +20,7 @@ ADR-0010 additions (specs/2026-10-05-replay-notes-capture-design.md):
   from the snapshot, on change only, and writes a ``state`` line at the start of every
   part. ``command`` events keep only ``action, ok, message?, error?`` (never params; for
   identity reads only ``action, ok``).
-* Notes: ``note(...)`` stamps a live note "now" (starting a session if none is open).
+* Notes: ``note(...)`` stamps a live note "now" in the recording session.
 * Acceleration: ``feed_accel(samples, source)`` and ``set_accel_cal(matrix, source,
   method)``; ``GPS_LonAcc``/``GPS_LatAcc`` from every GPS fix.
 * Audio: ``audio_put(...)``/``audio_stop(...)`` for phone chunks, ``set_pi_audio(PiAudio)``
@@ -36,11 +42,11 @@ from typing import Callable
 
 from . import channels as ch
 from . import motion
+from . import places as _places
 from .audio import AudioTrackWriter
 from .notes import NoteLog, read_notes
 
-IDLE_S = 300.0          # end after this long idle
-MOVING_KMH = 3.0        # GPS speed that counts as moving
+IDLE_S = 300.0          # end after this long without a connected poll
 FSYNC_S = 1.0           # fsync the data file at most this often
 META_S = 30.0           # rewrite meta.json this often while recording
 PART_S = 3600.0         # split parts hourly
@@ -54,6 +60,17 @@ JITTER_KMH = 1.0        # GPS segments slower than this don't add distance (stat
 _IDENTITY = re.compile(r"(^|_)(vin|eka|ident|identity|serial|part_?no|part_number)($|_)",
                        re.IGNORECASE)
 _ID_RE = re.compile(r"^[0-9]{8}T[0-9]{6}Z(-[0-9]+)?$")
+# meta fields another writer (SessionStore.update_meta / set_place) may change while the
+# session is still recording: the recorder adopts such external edits on its next write.
+USER_KEYS = ("name", "description", "place_start", "place_end", "place")
+
+
+class NotRecording(RuntimeError):
+    """A live note or a split was asked for while no session is recording (none open,
+    or the open one is paused because the car is disconnected)."""
+
+    def __init__(self, msg: str = "Not recording — connect to the car first") -> None:
+        super().__init__(msg)
 
 
 # ---------------------------------------------------------------- helpers -- #
@@ -252,7 +269,6 @@ class _Session:
         self.last_sync_m = -math.inf
         self.last_meta_m = start_m
         self.last_conn_m = start_m
-        self.last_move_m = start_m
         self.last_fix_mono: "float | None" = None
         self.last_gps_m = -math.inf
         self.utc_offset: "float | None" = None
@@ -275,6 +291,18 @@ class _Session:
         self.writers: "dict[str, AudioTrackWriter]" = {}
         self.audio: "list[dict]" = []       # finished phone tracks and every Pi track
         self.pi_entry: "dict | None" = None
+        # ADR-0011
+        self.paused = False
+        self.user: dict = {k: None for k in USER_KEYS}   # name, description, place*
+        self.written: dict = {}                            # user fields last written
+
+    @property
+    def name(self) -> "str | None":
+        return self.user.get("name")
+
+    @name.setter
+    def name(self, v: "str | None") -> None:
+        self.user["name"] = v
 
     def ms(self, m: float) -> int:
         return int(round((m - self.start_m) * 1000.0))
@@ -296,7 +324,8 @@ class SessionRecorder:
                  synthetic: bool = False, poll_hz: "float | None" = None,
                  trust_clock: bool = True, min_free_bytes: int = MIN_FREE_BYTES,
                  fsync: Callable[[int], None] = os.fsync,
-                 accel_hz: int = DEFAULT_ACCEL_HZ) -> None:
+                 accel_hz: int = DEFAULT_ACCEL_HZ,
+                 on_change: "Callable[[str], None] | None" = None) -> None:
         self.root = str(root)
         self._clock, self._mono = clock, mono
         self.source, self.synthetic = source, synthetic
@@ -312,6 +341,7 @@ class SessionRecorder:
         self._dt_ema: "float | None" = None
         self._cal: "dict[str, dict]" = {}   # source → {matrix, source, method}
         self._pi = None                       # audio.PiAudio while Pi audio is on
+        self.on_change = on_change
         self._recover()
 
     # ---- public ------------------------------------------------------- #
@@ -327,21 +357,19 @@ class SessionRecorder:
                 snap.get("status") == "connected")
             fix = gps if (gps is not None and getattr(gps, "fix", False)
                           and gps.lat is not None and gps.lon is not None) else None
-            speed = fix.speed_kmh if fix is not None else None
             s = self._s
             if s is None:
-                if not (connected or (speed is not None and speed > MOVING_KMH)):
+                if not connected:  # GPS movement never opens a session (ADR-0011)
                     return
                 s = self._open(now, m, snap)
             else:
                 self._state_changes(s, m, snap)
             self._check_pi(s, m)
+            s.paused = not connected
             if connected:
                 s.last_conn_m = m
-            if speed is not None and speed >= MOVING_KMH:
-                s.last_move_m = m
-            self._row(s, now, m, snap if connected else None, fix)
-            if m - max(s.last_conn_m, s.last_move_m) >= IDLE_S:
+                self._row(s, now, m, snap, fix)
+            if m - s.last_conn_m >= IDLE_S:
                 self._end(s, now, m)
             elif m - s.last_meta_m >= META_S:
                 self._write_meta(s, m)
@@ -353,9 +381,17 @@ class SessionRecorder:
                 self._end(self._s, self._clock(), self._mono())
 
     def status(self) -> "dict | None":
-        """The snapshot ``recording`` field: ``{session, since, rows}`` or None."""
+        """The snapshot ``recording`` field: ``{session, since, rows, state}`` or None;
+        ``state`` is ``"recording"`` or ``"paused"`` (open but disconnected)."""
         s = self._s
-        return None if s is None else {"session": s.id, "since": s.start_s, "rows": s.rows}
+        return None if s is None else {"session": s.id, "since": s.start_s, "rows": s.rows,
+                                       "state": "paused" if s.paused else "recording"}
+
+    @property
+    def recording(self) -> bool:
+        """True while a session is open and not paused."""
+        s = self._s
+        return s is not None and not s.paused
 
     @property
     def session_id(self) -> "str | None":
@@ -370,8 +406,10 @@ class SessionRecorder:
             if sess is None:
                 self._next_name = name or None
                 return
+            self._adopt_external(sess, os.path.join(sess.dir, "meta.json"))
             sess.name = name or None
             self._write_meta(sess, self._mono())
+        self._changed(sess.id)
 
     def session_ms(self) -> "int | None":
         """Now, in session milliseconds (None when nothing is recording)."""
@@ -379,21 +417,22 @@ class SessionRecorder:
         return None if s is None else s.ms(self._mono())
 
     def start(self, snapshot: "dict | None" = None) -> str:
-        """Open a session now if none is open (e.g. a live note); returns its id. It ends
-        by the usual idle rule."""
+        """Open a session now if none is open; returns its id. For tests and tools only:
+        no server route starts a session without a connection (ADR-0011). It ends by the
+        usual idle rule."""
         with self._lock:
             if self._s is None:
                 self._open(self._clock(), self._mono(), snapshot or {})
             return self._s.id
 
     def split(self, snapshot: "dict | None" = None) -> str:
-        """End the open session (if any) and start a new one; returns the new id."""
+        """End the recording session and start a new one; returns the new id.
+        ``NotRecording`` unless a session is recording (not paused)."""
         with self._lock:
-            if self._s is not None:
-                self._end(self._s, self._clock(), self._mono())
-            now, m = self._clock(), self._mono()
-            if self._s is None:
-                self._open(now, m, snapshot or {})
+            if self._s is None or self._s.paused:
+                raise NotRecording()
+            self._end(self._s, self._clock(), self._mono())
+            self._open(self._clock(), self._mono(), snapshot or {})
             return self._s.id
 
     def event(self, etype: str, **fields) -> "dict | None":
@@ -421,16 +460,18 @@ class SessionRecorder:
 
     def note(self, text: str = "", tags=(), kind: str = "mark", capture=None,
              t_end=None, snapshot: "dict | None" = None) -> "tuple[str, dict]":
-        """A live note stamped now in the recording session (one is started first if
-        nothing is recording). Returns ``(session_id, note)``; ``ValueError`` on bad input."""
+        """A live note stamped now in the recording session. Returns ``(session_id,
+        note)``; ``NotRecording`` when nothing is recording (no session, or paused),
+        ``ValueError`` on bad input. ``snapshot`` is accepted for compatibility."""
         with self._lock:
-            if self._s is None:
-                self._open(self._clock(), self._mono(), snapshot or {})
             s = self._s
+            if s is None or s.paused:
+                raise NotRecording()
             note = NoteLog(s.dir, clock=self._clock).add(
                 s.ms(self._mono()), text=text, tags=tags, kind=kind, source="live",
                 t_end=t_end, capture=capture)
-            return s.id, note
+        self._changed(s.id)
+        return s.id, note
 
     # ---- acceleration -------------------------------------------------- #
 
@@ -466,7 +507,7 @@ class SessionRecorder:
             s = self._s
             if session is not None and (s is None or s.id != session):
                 raise KeyError(session)
-            if s is None or not samples:
+            if s is None or s.paused or not samples:  # paused: no data rows
                 return 0
             m = self._mono()
             if not s.extra:
@@ -570,6 +611,15 @@ class SessionRecorder:
             return max(1, min(50, int(round(1.0 / self._dt_ema))))
         return DEFAULT_RATE_HZ
 
+    def _changed(self, sid: str) -> None:
+        cb = self.on_change
+        if cb is None:
+            return
+        try:
+            cb(sid)
+        except Exception:  # noqa: BLE001 — an index failure never stops recording
+            pass
+
     def _recover(self) -> None:
         """Mark sessions left ``recording`` by a crash as ended."""
         if not os.path.isdir(self.root):
@@ -625,6 +675,7 @@ class SessionRecorder:
         if self._pi is not None:
             self._start_pi(s, m)
         self._write_meta(s, m)
+        self._changed(sid)
         return s
 
     @staticmethod
@@ -882,7 +933,11 @@ class SessionRecorder:
                    and c not in ch.TEXT_CHANNELS and (s.has_gps or not c.startswith("GPS_"))]
         return {
             "id": s.id,
-            "name": getattr(s, "name", None),
+            "name": s.user.get("name"),
+            "description": s.user.get("description"),
+            "place_start": s.user.get("place_start"),
+            "place_end": s.user.get("place_end"),
+            "place": s.user.get("place"),
             "start_utc": iso_utc(s.start_s),
             "end_utc": None if recording else iso_utc(s.end_s),
             "duration_s": int(round(max(0.0, dur))),
@@ -905,12 +960,35 @@ class SessionRecorder:
             "accel_cal": s.accel_cal,
         }
 
+    def _adopt_external(self, s: _Session, path: str) -> None:
+        """Keep edits another writer made to the user fields since our last write."""
+        if not s.written:
+            return
+        disk = _read_meta(path)
+        if not disk:
+            return
+        for k in USER_KEYS:
+            if k in disk and disk[k] != s.written.get(k):
+                s.user[k] = s.written[k] = disk[k]
+
     def _write_meta(self, s: _Session, m: float) -> None:
+        path = os.path.join(s.dir, "meta.json")
+        self._adopt_external(s, path)
+        meta = self._meta(s, m)
         try:
-            write_json_atomic(os.path.join(s.dir, "meta.json"), self._meta(s, m))
+            write_json_atomic(path, meta)
+            s.written = {k: meta.get(k) for k in USER_KEYS}
         except OSError:
             pass
         s.last_meta_m = m
+
+    def _fill_places(self, s: _Session) -> None:
+        """Offline place names at close (unless another writer already set them)."""
+        if s.user.get("place_start") or s.user.get("place_end"):
+            return
+        found = _places.places_for(s.start_pos, s.end_pos)
+        if found is not None:
+            s.user.update(found)
 
     def _end(self, s: _Session, now: float, m: float) -> None:
         for track in list(s.writers):
@@ -936,5 +1014,9 @@ class SessionRecorder:
             # no signal value, GPS fix, note or audio (e.g. a server restart): leave no
             # empty session
             shutil.rmtree(s.dir, ignore_errors=True)
+            self._changed(s.id)
             return
+        self._adopt_external(s, os.path.join(s.dir, "meta.json"))
+        self._fill_places(s)
         self._write_meta(s, m)
+        self._changed(s.id)

@@ -30,24 +30,16 @@ def _err(module: str, exc: "Exception", *, note: str = "") -> "dict":
             "error": f"{type(exc).__name__}: {exc}", "note": note}
 
 
-def read_all(mode: str, port: str = "auto",
+def unimplemented_rows() -> "list[dict]":
+    """The modules without a reading comms class, as ``unimplemented`` report rows."""
+    return [{"module": name, "status": "unimplemented", "faults": [], "note": note}
+            for name, note in _UNIMPLEMENTED]
+
+
+def read_all(port: str = "auto",
              sleep: "Callable[[float], None]" = time.sleep) -> "list[dict]":
-    """Read fault codes from all modules. ``mode`` = 'mock' | 'live'."""
-    rows = _mock_report() if mode != "live" else _live_report(port, sleep)
-    for name, note in _UNIMPLEMENTED:
-        rows.append({"module": name, "status": "unimplemented", "faults": [], "note": note})
-    return rows
-
-
-def _mock_report() -> "list[dict]":
-    """The RDL 016 baseline (proven) as demo data without a car."""
-    return [
-        _row("TD5", []),
-        _row("SLABS", ["right front wheel speed sensor — output too low (Logged)",
-                       "shuttle valve switch — electrical failure (Logged)"]),
-        _row("Airbag", ["004: airbag warning lamp — open circuit intermittent",
-                        "022: open circuit intermittent"], note="experimental"),
-    ]
+    """Read fault codes from all modules on the car (live only: ADR-0011, no demo mode)."""
+    return _live_report(port, sleep) + unimplemented_rows()
 
 
 def _live_report(port: str, sleep: "Callable[[float], None]") -> "list[dict]":
@@ -96,7 +88,7 @@ def _live_report(port: str, sleep: "Callable[[float], None]") -> "list[dict]":
         rows.append(_err("SLABS", exc))
     sleep(0.5)
 
-    # --- Airbag (experimentellt, read-only) ------------------------------- #
+    # --- Airbag (experimental, read-only) ------------------------------- #
     try:
         from .airbag import AIRBAG_ADDRESS, Airbag
         a = Airbag(KWP2000(KLine(SerialTransport(real_port, timeout=1.0), target=AIRBAG_ADDRESS),

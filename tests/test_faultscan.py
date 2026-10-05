@@ -1,9 +1,22 @@
-"""Basic mode — read fault codes from all modules (mock + live orchestration)."""
+"""Basic mode — read fault codes from all modules (live orchestration; the simulated report
+is test scaffolding in tests/fake_sources.py, ADR-0011)."""
+import inspect
+
+import pytest
+
 import d2diag.faultscan as fs
+from tests.fake_sources import fake_fault_report
 
 
-def test_mock_report_has_all_modules_and_baseline():
-    rows = fs.read_all("mock")
+def test_read_all_is_live_only():
+    assert list(inspect.signature(fs.read_all).parameters) == ["port", "sleep"]
+    assert not hasattr(fs, "_mock_report")
+    with pytest.raises(TypeError):
+        fs.read_all("live", "auto", lambda *_: None, "extra")
+
+
+def test_fake_report_has_all_modules_and_baseline():
+    rows = fake_fault_report()
     by = {r["module"]: r for r in rows}
     # the three readable + the three not implemented
     assert {"TD5", "SLABS", "Airbag"} <= set(by)
@@ -21,7 +34,7 @@ def test_live_no_cable_marks_modules_error(monkeypatch):
         raise FileNotFoundError("no cable")
 
     monkeypatch.setattr(ports, "resolve_serial_port", _boom)
-    rows = fs.read_all("live", "auto", sleep=lambda *_: None)
+    rows = fs.read_all("auto", sleep=lambda *_: None)
     readable = {r["module"]: r for r in rows if r["status"] != "unimplemented"}
     assert set(readable) == {"TD5", "SLABS", "Airbag"}
     assert all(r["status"] == "error" for r in readable.values())
@@ -71,7 +84,7 @@ def test_live_reads_modules_over_fake(monkeypatch):
     monkeypatch.setattr(transport_pkg, "SerialTransport", _fake_transport)
     monkeypatch.setattr(ports, "resolve_serial_port", lambda spec: "FAKE")
 
-    rows = fs.read_all("live", "auto", sleep=lambda *_: None)
+    rows = fs.read_all("auto", sleep=lambda *_: None)
     by = {r["module"]: r for r in rows}
     assert by["TD5"]["status"] == "ok"                       # zero block → no faults
     assert by["SLABS"]["status"] == "faults"                 # RF sensor + shuttle valve
@@ -138,7 +151,7 @@ def test_live_stops_td5_session_before_next_module_inits(monkeypatch):
     monkeypatch.setattr(transport_pkg, "SerialTransport", _fake_transport)
     monkeypatch.setattr(ports, "resolve_serial_port", lambda spec: "FAKE")
 
-    fs.read_all("live", "auto", sleep=lambda *_: None)
+    fs.read_all("auto", sleep=lambda *_: None)
     # order: TD5 transport → … → td5-stop → SLABS transport
     assert "td5-stop" in events
     assert events.index("td5-stop") < events.index("new-transport", 1)
@@ -160,6 +173,6 @@ def test_live_td5_reports_undecoded_fault_bits(monkeypatch):
     monkeypatch.setattr(td5_pkg, "Td5", _Td5)
     monkeypatch.setattr(transport_pkg, "SerialTransport", lambda port, timeout=1.0: None)
     monkeypatch.setattr(ports, "resolve_serial_port", lambda spec: "FAKE")
-    rows = fs.read_all("live", "auto", sleep=lambda *_: None)
+    rows = fs.read_all("auto", sleep=lambda *_: None)
     td5 = next(r for r in rows if r["module"] == "TD5")
     assert td5["status"] == "faults" and td5["faults"] == ["byte25.bit3"]

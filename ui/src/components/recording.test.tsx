@@ -128,6 +128,16 @@ describe("MarkButton (header ⚑)", () => {
     expect(calls[1]).toEqual({ path: "/sessions/S1/notes/abcd1234", method: "PATCH", body: { text: "clunk", tags: ["noise"] } });
   });
 
+  it("is hidden while the session is paused (no connection); an absent state means recording", () => {
+    stubServer();
+    const paused = recordingSnap();
+    const { unmount } = renderWithApp(<MarkButton />, { snap: { ...paused, recording: { ...paused.recording!, state: "paused" } } });
+    expect(screen.queryByRole("button", { name: "Mark this moment" })).toBeNull();
+    unmount();
+    renderWithApp(<MarkButton />, { snap: { ...paused, recording: { ...paused.recording!, state: "recording" } } });
+    expect(screen.getByRole("button", { name: "Mark this moment" })).toBeInTheDocument();
+  });
+
   it("points phone capture at the recording session", () => {
     stubServer();
     const audio = new AudioCapture({ fetch: vi.fn() as unknown as typeof fetch, now: () => 0, uuid: () => "u", sleep: async () => undefined });
@@ -227,6 +237,20 @@ describe("RecordingCard", () => {
     expect(src).toHaveTextContent("GPS (USB) · fix, 7 sats");
     expect(src).toHaveTextContent("Pi mic");
     expect(src).toHaveTextContent("Pi IMU 25 Hz");
+  });
+
+  it("paused: says 'Paused — no connection' and offers no ⚑ Mark, Note… or Split", () => {
+    stubServer();
+    const snap = recordingSnap();
+    const rec = { ...snap.recording!, state: "paused" };
+    renderWithApp(<RecordingCard recording={rec} nowS={1_791_000_720} onOpen={vi.fn()} />, { snap: { ...snap, recording: rec } });
+    expect(screen.getByText("Paused — no connection")).toBeInTheDocument();
+    expect(screen.queryByText(/Recording now ·/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Mark this moment" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Note…" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Split/ })).toBeNull();
+    expect(screen.getByRole("button", { name: "Recording options" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Paused — no connection — open" })).toBeInTheDocument();
   });
 
   it("renders nothing without a recording", () => {

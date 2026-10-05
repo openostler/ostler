@@ -5,17 +5,16 @@ import { useApp } from "../state/app";
 import { useNow } from "../state/useNow";
 import { Sheet } from "./Sheet";
 
-/** Connection: state and the connect phases, mock/live source, the serial port (auto or
- * an override), and Retry / Connect / Disconnect. Opens from the pill, by itself after 3 s
- * without a connection, and again 60 s after a dismissal while still down (see
+/** Connection: state and the connect phases, the serial port (auto or an override), and
+ * Retry / Connect / Disconnect. The server is always live (ADR-0011: no mock mode). Opens from
+ * the pill, by itself as soon as there is no connection (1 s into `reconnecting`), never
+ * during a replay, and again 60 s after a dismissal while still down (see
  * state/connection.ts). `downSince` (ms epoch) drives "No connection for 1 m 20 s". */
 export function ConnectionSheet({ onClose, downSince = null }: { onClose: () => void; downSince?: number | null }) {
   const { snap, live, linkUp, module, refresh, toast } = useApp();
   const now = useNow(1000);
   const conn = connOf(snap);
   const [dot, word] = pillFor(conn, linkUp);
-  const mode = snap?.mode ?? "mock";
-  const modes = snap?.modes ?? [];
   const port = snap?.port;
   const pub = !!snap?.public;
 
@@ -55,7 +54,6 @@ export function ConnectionSheet({ onClose, downSince = null }: { onClose: () => 
         <dl className="kv" style={{ marginTop: 10 }}>
           <dt>SOURCE</dt><dd>{snap?.source ?? "—"}</dd>
           <dt>LINE</dt><dd>10 400 baud · 8N1 · half duplex</dd>
-          <dt>MODE</dt><dd>{mode === "live" ? "live vehicle" : "mock (no car)"}</dd>
         </dl>
         <div className="btn-row" style={{ marginTop: 12 }}>
           {down ? <button className="btn accent" onClick={() => void send("connect")}>Retry</button> : null}
@@ -80,18 +78,6 @@ export function ConnectionSheet({ onClose, downSince = null }: { onClose: () => 
                 </div>
               );
             })}
-          </div>
-        </section>
-      ) : null}
-
-      {modes.length >= 2 && !pub ? (
-        <section>
-          <div className="kicker" style={{ marginBottom: 8 }}>Data source</div>
-          <div className="btn-row">
-            <button className={`btn ${mode === "mock" ? "accent" : ""}`} aria-pressed={mode === "mock"}
-              onClick={() => void send("set_mode", { mode: "mock" })}>Mock</button>
-            <button className={`btn ${mode === "live" ? "accent" : ""}`} aria-pressed={mode === "live"}
-              onClick={() => void send("set_mode", { mode: "live" })}>Live vehicle</button>
           </div>
         </section>
       ) : null}

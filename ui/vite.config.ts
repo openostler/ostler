@@ -4,8 +4,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 // The Python server owns every API route. In dev, Vite proxies them to it
-// (`PYTHONPATH=src python3 tools/dashboard.py --mock`), so hot reload works against
-// the mock car. Override the target with D2DIAG_API=http://pi.local:8080.
+// (`PYTHONPATH=src python3 tests/e2e_server.py` — the test-only simulated car; the product
+// itself has no mock mode, ADR-0011), so hot reload works without a car. Override the target with D2DIAG_API=http://pi.local:8080.
 const API = process.env.D2DIAG_API ?? "http://localhost:8080";
 const API_ROUTES = [
   "/events", "/snapshot", "/command", "/fields", "/map", "/sniff", "/signals",

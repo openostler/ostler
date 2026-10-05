@@ -12,3 +12,11 @@ Contract:
   ≤1 request/s, cache keyed by lat/lon rounded to 3 dp, backoff 60 s → 1 h; ``url=None`` = off.
 * ``ATTRIBUTION`` — "Place names © OpenStreetMap contributors (ODbL) · GeoNames (CC BY 4.0)".
 """
+
+from . import nominatim, offline  # noqa: E402  (offline data loads lazily on first label())
+from .nominatim import USER_AGENT, Enricher  # noqa: E402
+from .offline import label  # noqa: E402
+
+ATTRIBUTION = "Place names © OpenStreetMap contributors (ODbL) · GeoNames (CC BY 4.0)"
+
+__all__ = ["ATTRIBUTION", "Enricher", "USER_AGENT", "label", "nominatim", "offline"]

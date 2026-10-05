@@ -9,14 +9,18 @@ import pytest
 from d2diag.gps.nmea import Fix
 from d2diag.logbook import recorder as recmod
 from d2diag.logbook.demo import DEMO_ROOT
-from d2diag.logbook.recorder import IDLE_S, SessionRecorder, parse_header, rotate_sessions
+from d2diag.logbook.recorder import (IDLE_S, NotRecording, SessionRecorder, parse_header,
+                                     rotate_sessions)
 from d2diag.logbook.store import SessionStore, rdp, read_part, reduce_track
-from d2diag.logbook.synth import generate
+from d2diag.logbook.synth import DEMO_IDS, generate, generate_log1, generate_log2
+
+DEMO1, DEMO2 = DEMO_IDS
 
 T0 = 1791277200.0  # 2026-10-06T09:00:00Z (a day after the demo session)
 META_KEYS = {"id", "name", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules",
              "channels", "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos",
-             "end_pos", "synthetic", "recording", "source", "audio", "accel_cal"}
+             "end_pos", "synthetic", "recording", "source", "audio", "accel_cal",
+             "description", "place_start", "place_end", "place"}
 
 
 class Clock:
@@ -66,14 +70,14 @@ def test_starts_on_connect_and_ends_after_idle(tmp_path):
     c, r = make(tmp_path)
     r.feed(snap(rpm=800), None)
     st = r.status()
-    assert st["session"] == "20261006T090000Z" and st["since"] == T0 and st["rows"] == 1
+    assert st == {"session": "20261006T090000Z", "since": T0, "rows": 1, "state": "recording"}
     m = meta_of(tmp_path, st["session"])
     assert set(m) == META_KEYS and m["recording"] is True and m["end_utc"] is None
     assert m["source"] == "live" and m["synthetic"] is False
     while c.t < IDLE_S - 1:  # disconnected, no GPS
         c.t += 1.0
         r.feed(snap(connected=False), None)
-        assert r.status() is not None
+        assert r.status()["state"] == "paused"
     c.t = IDLE_S
     r.feed(snap(connected=False), None)
     assert r.status() is None
@@ -82,16 +86,106 @@ def test_starts_on_connect_and_ends_after_idle(tmp_path):
     assert m["duration_s"] == 300 and m["modules"] == ["motor"]
 
 
-def test_starts_on_gps_movement_and_movement_keeps_it_open(tmp_path):
+def test_gps_alone_never_records(tmp_path):
+    """ADR-0011: GPS movement never opens a session."""
     c, r = make(tmp_path)
-    r.feed(snap(connected=False), fix(c, speed=3.5))
-    assert r.status() is not None
-    for _ in range(400):  # moving, never connected
+    for _ in range(100):
         c.t += 1.0
-        r.feed(snap(connected=False), fix(c, lat=56.62 + c.t * 1e-5, speed=20.0))
-    assert r.status() is not None
-    m = meta_of(tmp_path, r.status()["session"])
-    assert m["has_gps"] is True and m["modules"] == []
+        r.feed(snap(connected=False), fix(c, lat=56.62 + c.t * 1e-5, speed=40.0))
+        r.feed(None, fix(c, lat=56.62 + c.t * 1e-5, speed=40.0))
+    assert r.status() is None
+    assert not os.path.exists(tmp_path / "sessions") or not os.listdir(tmp_path / "sessions")
+
+
+def test_paused_writes_no_rows_but_logs_events_and_idle_ends(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), fix(c, speed=20.0))
+    sid = r.status()["session"]
+    for _ in range(int(IDLE_S) - 1):  # disconnected but moving: paused, no rows at all
+        c.t += 1.0
+        r.feed(snap(connected=False), fix(c, lat=56.62 + c.t * 1e-5, speed=40.0))
+        st = r.status()
+        assert st["state"] == "paused" and st["rows"] == 1
+    assert r.feed_accel([[int(c.clock() * 1000), 0.0, 0.0, 9.81]], "imu") == 0
+    assert r.recording is False
+    c.t = IDLE_S
+    r.feed(snap(connected=False), fix(c, speed=40.0))  # movement does not keep it open
+    assert r.status() is None
+    _, rows = read_part(str(tmp_path / "sessions" / sid / "data.csv"))
+    assert len(rows) == 1 and rows[0]["rpm"] == 800
+    ev = events_of(tmp_path, sid)
+    assert [e for e in ev if e["type"] == "conn"] == [{"t": 1000, "type": "conn",
+                                                        "conn": "lost"}]
+    m = meta_of(tmp_path, sid)
+    assert m["recording"] is False and m["duration_s"] == int(IDLE_S)
+
+
+def test_paused_then_reconnect_resumes_same_session(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    c.t = 100.0
+    r.feed(snap(connected=False), None)
+    assert r.status()["state"] == "paused"
+    c.t = 200.0
+    r.feed(snap(rpm=900), None)
+    assert r.status() == {"session": sid, "since": T0, "rows": 2, "state": "recording"}
+    c.t = 200.0 + IDLE_S - 1
+    r.feed(snap(connected=False), None)
+    assert r.status()["session"] == sid  # idle counts from the last connected poll
+    r.close()
+
+
+def test_split_and_note_need_recording(tmp_path):
+    c, r = make(tmp_path)
+    with pytest.raises(NotRecording):
+        r.split()
+    with pytest.raises(NotRecording):
+        r.note("x")
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    c.t = 5.0
+    sid2 = r.split(snap(rpm=800))
+    assert sid2 != sid and r.status()["state"] == "recording"
+    r.close()
+
+
+def test_on_change_called_on_open_note_and_close(tmp_path):
+    seen = []
+    c, r = make(tmp_path, on_change=seen.append)
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    c.t = 1.0
+    r.note("x")
+    r.set_name("Trip")
+    r.close()
+    assert seen == [sid] * 4
+
+
+def test_place_names_written_on_close(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), fix(c, lat=50.627, lon=-3.966, speed=10.0))
+    sid = r.status()["session"]
+    assert meta_of(tmp_path, sid)["place"] is None  # only on close
+    c.t = 1.0
+    r.feed(snap(rpm=800), fix(c, lat=56.622, lon=-4.68, speed=10.0))
+    r.close()
+    m = meta_of(tmp_path, sid)
+    assert m["place_start"]["source"] == "geonames" and "Devon" in m["place_start"]["label"]
+    assert "Scotland" in m["place_end"]["label"] and m["place"] == m["place_start"]
+
+
+def test_external_meta_edit_survives_recorder_rewrite(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    store = SessionStore(str(tmp_path / "sessions"), demo_root=None)
+    store.update_meta(sid, name="Live edit", description="while recording")
+    c.t = 40.0  # past META_S: the recorder rewrites meta.json
+    r.feed(snap(rpm=810), None)
+    r.close()
+    m = meta_of(tmp_path, sid)
+    assert m["name"] == "Live edit" and m["description"] == "while recording"
 
 
 def test_id_collision_suffix(tmp_path):
@@ -106,7 +200,9 @@ def test_sparse_rows_and_header(tmp_path):
     c, r = make(tmp_path, poll_hz=5)
     r.feed(snap(rpm=800, coolant_temp=80.5), fix(c, speed=10))
     c.t += 0.2
-    r.feed(snap(connected=False), fix(c, speed=12))  # GPS only
+    r.feed(snap(connected=False), fix(c, speed=12))  # paused: no row, not even GPS
+    c.t += 0.2
+    r.feed({**snap(), "signals": {}}, fix(c, speed=12))  # connected, GPS only
     c.t += 0.2
     r.feed(snap(rpm=810), None)  # rpm only
     sid = r.status()["session"]
@@ -123,7 +219,7 @@ def test_sparse_rows_and_header(tmp_path):
     assert names[11:] == ["rpm", "coolant_temp", "module", "faults"]
     assert '"rpm"|"x"|5' in cells and '"GPS_Speed"|"km/h"|10' in cells
     _, rows = read_part(str(path))
-    assert [r_["Interval"] for r_ in rows] == [0, 200, 400]
+    assert [r_["Interval"] for r_ in rows] == [0, 400, 600]
     assert rows[1].get("rpm") is None and rows[1]["GPS_Speed"] == 12
     assert rows[2].get("GPS_Latitude") is None and rows[2]["rpm"] == 810
     assert rows[0]["Utc"] == int(T0 * 1000)
@@ -398,31 +494,68 @@ def test_delete_refuses_live_session(tmp_path):
         SessionStore(str(tmp_path / "sessions")).delete(r.status()["session"])
 
 
-def test_demo_session_is_synthetic_and_listed(tmp_path):
+def test_demo_logs_are_synthetic_and_listed(tmp_path):
     store = SessionStore(str(tmp_path / "none"))
-    (m,) = store.list(public=True)
-    assert m["synthetic"] is True and m["source"] == "demo" and m["has_gps"] is True
-    assert 600 <= m["duration_s"] <= 800 and m["rows"] >= 3000
-    d = store.data(m["id"], ["speed", "rpm"])
+    pub = store.list(public=True)
+    assert [m["id"] for m in pub] == [DEMO1, DEMO2]  # newest first
+    assert [m["name"] for m in pub] == ["Demo log 1", "Demo log 2"]
+    for m in pub:
+        assert m["synthetic"] is True and m["source"] == "demo" and m["has_gps"] is True
+        assert "synthetic" in m["description"] and len(m["description"]) <= 2000
+        size = sum(os.path.getsize(os.path.join(DEMO_ROOT, m["id"], f))
+                   for f in os.listdir(os.path.join(DEMO_ROOT, m["id"])))
+        assert size < 600_000
+    m1, m2 = pub
+    assert 600 <= m1["duration_s"] <= 800 and m1["rows"] >= 3000
+    assert 360 <= m2["duration_s"] <= 480 and m2["modules"] == ["slabs"]
+    d = store.data(DEMO1, ["speed", "rpm"])
     assert d["decimated"] is True and d["track"] and len(d["track"]) <= 5000
-    size = sum(os.path.getsize(os.path.join(DEMO_ROOT, m["id"], f))
-               for f in os.listdir(os.path.join(DEMO_ROOT, m["id"])))
-    assert size < 600_000
 
 
-def test_demo_generation_is_deterministic(tmp_path):
-    sid = generate(str(tmp_path / "a"))
-    sid2 = generate(str(tmp_path / "b"))
-    assert sid == sid2 == "20261005T090000Z"
+def test_demo_logs_have_place_labels(tmp_path):
+    store = SessionStore(str(tmp_path / "none"))
+    m1, m2 = store.meta(DEMO1, public=True), store.meta(DEMO2, public=True)
+    for m in (m1, m2):
+        for k in ("place_start", "place_end", "place"):
+            assert m[k]["source"] == "geonames" and m[k]["label"]
+    assert m1["place"]["label"].endswith("Scotland")
+    assert "Devon" in m2["place"]["label"]
+
+
+def test_demo_log2_is_slabs_with_faults_heights_and_two_notes(tmp_path):
+    store = SessionStore(str(tmp_path / "none"))
+    notes = store.notes(DEMO2, public=True)
+    assert len(notes) == 2 and store.meta(DEMO2)["note_count"] == 2
+    d = store.data(DEMO2, ["height_left", "height_right", "wheel_speed_fr"],
+                   max_points=100000)
+    hl = [v for v in d["ch"]["height_left"] if v is not None]
+    assert max(hl) - min(hl) >= 15  # the raise/lower test and the rough ground
+    faults = {f for f in d["text"]["faults"] if f}
+    assert any("wheel speed" in f for f in faults) and any("shuttle" in f for f in faults)
+    ev = store.events(DEMO2, public=True)
+    assert [e["action"] for e in ev if e["type"] == "command"] == ["raise_left", "lower_left"]
+    assert any(e["type"] == "fault_watch" and e["on"] for e in ev)
+
+
+@pytest.mark.parametrize("which", [0, 1])
+def test_demo_generation_is_deterministic(tmp_path, which):
+    fn = (generate_log1, generate_log2)[which]
+    sid = fn(str(tmp_path / "a"))
+    sid2 = fn(str(tmp_path / "b"))
+    assert sid == sid2 == DEMO_IDS[which]
     files = sorted(os.listdir(tmp_path / "a" / sid))
-    assert files == ["data-0.csv", "data-1.csv", "events.jsonl", "meta.json", "notes.jsonl"]
     assert files == sorted(f for f in os.listdir(os.path.join(DEMO_ROOT, sid))
                            if not f.startswith("."))
     for f in files:
         a = (tmp_path / "a" / sid / f).read_bytes()
         assert a == (tmp_path / "b" / sid / f).read_bytes()
         assert a == open(os.path.join(DEMO_ROOT, sid, f), "rb").read(), \
-            f"committed demo {f} is stale: run tools/make_demo_session.py"
+            f"committed demo {sid}/{f} is stale: run tools/make_demo_session.py"
+
+
+def test_generate_writes_both_demo_logs(tmp_path):
+    assert generate(str(tmp_path)) == list(DEMO_IDS)
+    assert sorted(os.listdir(tmp_path)) == sorted(DEMO_IDS)
 
 
 def test_session_with_no_rows_is_removed_on_close(tmp_path):
@@ -641,3 +774,74 @@ def test_set_name_names_the_open_session_only(tmp_path):
     sid2 = rec.split()
     assert json.loads((tmp_path / sid2 / "meta.json").read_text()).get("name") is None
     rec.close()
+
+
+# ------------------------------------------ editable meta (ADR-0011, spec §3) -- #
+
+def test_update_meta_trims_caps_and_clears(tmp_path):
+    sid = _recorded(tmp_path)
+    store = SessionStore(str(tmp_path / "sessions"), demo_root=None)
+    m = store.update_meta(sid, name="  Glen   Coe\n run ", description="  Line 1\nLine 2  ")
+    assert m["name"] == "Glen Coe run" and m["description"] == "Line 1\nLine 2"
+    assert meta_of(tmp_path, sid)["name"] == "Glen Coe run"
+    m = store.update_meta(sid, name="x" * 200, description="y" * 5000)
+    assert len(m["name"]) == 80 and len(m["description"]) == 2000
+    m = store.update_meta(sid, description="   ")  # name unchanged, description cleared
+    assert m["name"] == "x" * 80 and m["description"] is None
+    assert store.update_meta(sid, name="")["name"] is None
+    with pytest.raises(ValueError):
+        store.update_meta(sid, name=5)
+    with pytest.raises(KeyError):
+        store.update_meta("20991231T000000Z", name="x")
+
+
+def test_update_meta_refused_public_and_synthetic(tmp_path):
+    sid = _recorded(tmp_path)
+    store = SessionStore(str(tmp_path / "sessions"))
+    with pytest.raises(PermissionError):
+        store.update_meta(sid, name="x", public=True)
+    for demo in DEMO_IDS:
+        with pytest.raises(PermissionError):
+            store.update_meta(demo, name="x")
+    root = tmp_path / "sessions"
+    (root / "20260101T000000Z").mkdir()
+    (root / "20260101T000000Z" / "meta.json").write_text(json.dumps(
+        {"id": "20260101T000000Z", "start_utc": "2026-01-01T00:00:00.000Z", "synthetic": True}))
+    with pytest.raises(PermissionError):
+        store.update_meta("20260101T000000Z", name="x")
+
+
+def test_set_place_keeps_offline_label(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), fix(c, lat=50.627, lon=-3.966, speed=10.0))
+    sid = r.status()["session"]
+    c.t = 1.0
+    r.close()
+    store = SessionStore(str(tmp_path / "sessions"))
+    offline = store.meta(sid)["place_start"]["label"]
+    m = store.set_place(sid, "start", "Cut Hill, Devon")
+    assert m["place_start"] == {"label": "Cut Hill, Devon", "source": "osm",
+                                "label_offline": offline}
+    assert m["place"] == m["place_start"]
+    m = store.set_place(sid, "start", "Dartmoor, Devon")  # re-enrich keeps the offline one
+    assert m["place_start"]["label_offline"] == offline
+    assert m["place_end"]["source"] == "geonames"
+    with pytest.raises(ValueError):
+        store.set_place(sid, "middle", "x")
+    with pytest.raises(PermissionError):
+        store.set_place(DEMO1, "start", "x")
+
+
+def test_ensure_places_fills_old_sessions(tmp_path):
+    root = tmp_path / "sessions"
+    sid = "20260101T000000Z"
+    (root / sid).mkdir(parents=True)
+    (root / sid / "meta.json").write_text(json.dumps(
+        {"id": sid, "start_utc": "2026-01-01T00:00:00.000Z", "start_pos": [-4.68, 56.622],
+         "end_pos": None}))
+    store = SessionStore(str(root), demo_root=None)
+    assert store.meta(sid)["place"] is None
+    assert store.ensure_places(sid) is True
+    m = store.meta(sid)
+    assert m["place"]["label"] == "Highland, Scotland" and m["place_end"] is None
+    assert store.ensure_places(sid) is False  # once

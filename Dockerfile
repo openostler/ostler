@@ -1,8 +1,8 @@
 # Discovery 2 diagnostics web viewer — container image.
 #
-# Runs the stdlib HTTP + React dashboard in MOCK mode (fully simulated, no car/serial):
-# the full dashboard plus the fault dictionary, docs, coverage and system map. Live serial
-# data stays on the Pi. The React UI is prebuilt and committed to src/d2diag/web/static, so
+# Runs the stdlib HTTP + React dashboard LIVE (there is no demo mode, ADR-0011). With no
+# cable attached it shows "No connection" plus the two committed demo logs, the fault
+# dictionary, docs, coverage and system map; nothing is recorded without a car. The React UI is prebuilt and committed to src/d2diag/web/static, so
 # no Node is needed at runtime; the only runtime dependency is pyserial.
 #
 # The app runs straight from the source tree (tools/dashboard.py prepends ./src to sys.path),
@@ -27,8 +27,10 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/snapshot', timeout=3).status == 200 else 1)"
 
-# Mock mode, bound on all interfaces for Traefik. NOT --public (forces live serial) and
-# NOT --allow-shutdown (would let the web UI power off the host). --replay loops the
-# committed synthetic sniff log so the admin Decode tab has a feed (no car data in it).
-CMD ["python", "tools/dashboard.py", "--mock", "--host", "0.0.0.0", "--port", "8080", \
-     "--replay", "src/d2diag/web/demo/sniff-demo.txt"]
+# Live, bound on all interfaces for Traefik. NOT --allow-shutdown (would let the web UI
+# power off the host). --replay loops the committed synthetic sniff log so the admin Decode
+# tab has a feed (no car data in it). The OSM geocoder is on (the default
+# https://nominatim.openstreetmap.org; ≤1 request/s, cached in logs/geocache.json).
+CMD ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080", \
+     "--replay", "src/d2diag/web/demo/sniff-demo.txt", \
+     "--geocoder", "https://nominatim.openstreetmap.org"]

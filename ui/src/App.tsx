@@ -88,7 +88,7 @@ function AppShell({ path }: { path: string }) {
   const module = replay.active ? moduleOf(eventState, replay.session, liveModule) : liveModule;
   const { catalog } = useCatalog(module);
   const conn = connOf(liveSnap);
-  const connSheet = useConnectionSheet(conn, !prefs.consentDone || replay.active);
+  const connSheet = useConnectionSheet(conn, !prefs.consentDone, replay.active);
 
   const reloadCommunity = useCallback(() => {
     api.community().then(setCommunity, () => undefined);

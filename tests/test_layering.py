@@ -19,6 +19,7 @@ _CORE = [
     "commands.py",
     "faultscan.py", "sniff", "td5", "slabs", "airbag", "bcu", "ace", "autobox",
     "gps", "logbook",  # ADR-0009: session logbook + GPS are core (stdlib + pyserial)
+    "geo",  # ADR-0011: place names (offline GeoNames + OSM enrichment)
     "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
 ]
 _FORBIDDEN = {"web", "apps"}

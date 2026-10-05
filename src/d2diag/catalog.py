@@ -40,8 +40,8 @@ MODULE_NAMES = {
     "slabs": "SLABS (ABS + air suspension)",
     "bcu": "BCU (body control)",
     "ace": "ACE (active cornering)",
-    "autobox": "Auto gearbox (EAT)",
-    "airbag": "Airbag / SRS",
+    "autobox": "EAT (auto gearbox)",
+    "airbag": "SRS (airbag)",
 }
 
 # Store signals deliberately not linked from any menu item (drift guard in tests/test_catalog.py).

@@ -1,4 +1,4 @@
-"""Tests for the web dashboard: the mock source's shape + that the server serves."""
+"""Tests for the web dashboard: sources (live + the test fakes) and that the server serves."""
 import json
 import threading
 import time
@@ -6,7 +6,7 @@ import urllib.request
 
 import pytest
 
-from d2diag.web import MockDataSource
+from tests.fake_sources import FakeTd5Source
 from d2diag.web.server import DiagServer
 
 
@@ -23,10 +23,10 @@ def _server_files_in_tmp(tmp_path, monkeypatch):
     monkeypatch.setattr(DiagServer, "__init__", init)
 
 
-def test_mock_source_shape():
-    d = MockDataSource().poll()
+def test_fake_source_shape():
+    d = FakeTd5Source().poll()
     assert d["status"] == "connected"
-    assert d["source"] == "mock"
+    assert d["source"] == "td5" and FakeTd5Source.simulated
     assert "rpm" in d["signals"]
     assert set(d["signals"]["rpm"]) == {"v", "u", "s", "c"}   # c = confidence (trust view)
     assert d["signals"]["battery"]["u"] == "V"
@@ -50,7 +50,7 @@ def test_signal_status_ranges():
 
 
 def test_mock_signals_include_status_and_flag_iat():
-    d = MockDataSource().poll()
+    d = FakeTd5Source().poll()
     assert "s" in d["signals"]["rpm"]
     assert d["signals"]["air_temp"]["s"] == "high"   # mock IAT 120 °C → high
     assert d["signals"]["battery"]["s"] == "ok"
@@ -199,69 +199,83 @@ def test_slabs_successful_read_resets_empty_streak():
     assert src._empty_streak == 0               # reset by a successful read
 
 
-def test_mode_toggle_switches_variant():
-    from d2diag.web import MockDataSource, MockSlabsDataSource
-    from d2diag.web.server import DiagServer
+def test_no_demo_mode_in_the_product():
+    """ADR-0011: no server modes, no set_mode, no simulated sources under src/."""
+    import d2diag.web as web
+    import d2diag.web.sources as sources
+    from d2diag.web.server import _SERVER_COMMANDS, DiagServer
 
-    mock_motor, live_motor = MockDataSource(), MockDataSource()
-    variants = {"motor": {"mock": mock_motor, "live": live_motor},
-                "slabs": {"mock": MockSlabsDataSource(), "live": MockSlabsDataSource()}}
-    srv = DiagServer(host="127.0.0.1", port=0, variants=variants, mode="mock", active="motor")
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
     try:
-        assert srv._mode == "mock" and srv._modes == ["live", "mock"]
-        assert srv.source is mock_motor
-        r = srv._set_mode("live")
-        assert r["ok"] and srv._mode == "live" and srv.source is live_motor
-        assert srv.latest["mode"] == "live" and srv.latest["modes"] == ["live", "mock"]
-        assert not srv._set_mode("nope")["ok"]   # unknown mode rejected
+        assert not hasattr(srv, "_set_mode") and not hasattr(srv, "_modes")
+        assert "mode" not in srv.latest and "modes" not in srv.latest
+        assert "set_mode" not in _SERVER_COMMANDS
+        import threading
+        holder = {"result": None, "event": threading.Event()}
+        srv._commands.put(({"action": "set_mode", "params": {"mode": "mock"}}, holder))
+        srv._drain_commands()
+        assert not holder["result"]["ok"]  # not a server command: the source refuses it
+        assert "unknown command" in holder["result"]["error"]
     finally:
         srv.server_close()
+    for mod in (web, sources):
+        names = [n for n in dir(mod) if "mock" in n.lower()]
+        assert names == [], f"simulated sources left in {mod.__name__}: {names}"
+    with pytest.raises(TypeError):
+        DiagServer(host="127.0.0.1", port=0, variants={"motor": {"mock": FakeTd5Source()}})
+    with pytest.raises(TypeError):
+        sources.InfoDataSource("bcu", mock=True)
 
 
-def test_read_all_faults_command_mock():
-    from d2diag.web import MockDataSource, MockSlabsDataSource
+def test_read_all_faults_uses_the_injected_scan():
     from d2diag.web.server import DiagServer
+    from tests.fake_sources import FakeSlabsSource, fake_fault_report
 
-    variants = {"motor": {"mock": MockDataSource(), "live": MockDataSource()},
-                "slabs": {"mock": MockSlabsDataSource(), "live": MockSlabsDataSource()}}
-    srv = DiagServer(host="127.0.0.1", port=0, variants=variants, mode="mock", active="motor")
+    seen = []
+
+    def scan(port):
+        seen.append(port)
+        return fake_fault_report(port)
+
+    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
+                     host="127.0.0.1", port=0, active="motor", scan_port="/dev/ttyUSB3",
+                     fault_scan=scan)
     try:
         r = srv._read_all_faults()
-        assert r["ok"] and r["mode"] == "mock"
+        assert r["ok"] and "mode" not in r and seen == ["/dev/ttyUSB3"]
         mods = {x["module"] for x in r["report"]}
         assert {"TD5", "SLABS", "Airbag"} <= mods
     finally:
         srv.server_close()
 
 
-def test_fault_watch_sets_source_cadence():
-    from d2diag.web import MockDataSource, MockSlabsDataSource
+def test_read_all_faults_defaults_to_the_live_scan(monkeypatch):
+    import d2diag.faultscan as fs
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import SlabsDataSource, Td5DataSource
 
-    variants = {"motor": {"mock": MockDataSource(), "live": Td5DataSource("x")},
-                "slabs": {"mock": MockSlabsDataSource(), "live": SlabsDataSource("x")}}
-    srv = DiagServer(host="127.0.0.1", port=0, variants=variants, mode="mock")
+    monkeypatch.setattr(fs, "read_all", lambda port: [{"module": "TD5", "port": port}])
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, scan_port="auto")
     try:
-        assert variants["motor"]["live"].fault_every == 10        # default: ~5s
-        r = srv.set_fault_watch(True)
-        assert r["ok"] and r["fault_watch"] is True
-        assert variants["motor"]["live"].fault_every == 1         # now every cycle
-        assert variants["slabs"]["live"].fault_every == 1
-        srv.set_fault_watch(False)
-        assert variants["slabs"]["live"].fault_every == 10        # back to ~5s
+        assert srv._read_all_faults() == {"ok": True,
+                                          "report": [{"module": "TD5", "port": "auto"}]}
     finally:
         srv.server_close()
 
 
-def test_single_source_has_no_mode_toggle():
-    from d2diag.web import MockDataSource
+def test_fault_watch_sets_source_cadence():
     from d2diag.web.server import DiagServer
+    from d2diag.web.sources import SlabsDataSource, Td5DataSource
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0)   # backwards compat
+    td5, slabs = Td5DataSource("x"), SlabsDataSource("x")
+    srv = DiagServer({"motor": td5, "slabs": slabs}, host="127.0.0.1", port=0)
     try:
-        assert srv._modes == [] and srv.latest["modes"] == []
-        assert not srv._set_mode("live")["ok"]
+        assert td5.fault_every == 10        # default: ~5s
+        r = srv.set_fault_watch(True)
+        assert r["ok"] and r["fault_watch"] is True
+        assert td5.fault_every == 1         # now every cycle
+        assert slabs.fault_every == 1
+        srv.set_fault_watch(False)
+        assert slabs.fault_every == 10      # back to ~5s
     finally:
         srv.server_close()
 
@@ -296,7 +310,7 @@ def test_slabs_source_light_poll_reads_heights_only():
 
 
 def test_mock_clear_faults_command():
-    src = MockDataSource()
+    src = FakeTd5Source()
     assert src.poll()["faults"]  # has faults from the start
     assert src.command("clear_faults")["ok"] is True
     assert src.poll()["faults"] == []  # empty right after the clear
@@ -307,11 +321,11 @@ def test_mock_clear_faults_command():
 
 
 def test_mock_unknown_command_fails():
-    assert MockDataSource().command("frobnicate")["ok"] is False
+    assert FakeTd5Source().command("frobnicate")["ok"] is False
 
 
 def test_server_command_endpoint_clears():
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05)
     port = srv.server_address[1]
     srv.start_polling()
@@ -333,7 +347,7 @@ def test_server_command_endpoint_clears():
 
 
 def test_server_serves_snapshot_and_html():
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05)
     port = srv.server_address[1]
     srv.start_polling()
@@ -375,7 +389,7 @@ def test_admin_gate_requires_password_when_set():
     import base64
     import urllib.error
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05,
                      admin_password="hemligt")
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -424,7 +438,7 @@ def test_raw_log_wraps_transport(tmp_path):
 
 
 def test_admin_ungated_without_password():
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05)  # no password set
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
@@ -468,9 +482,9 @@ def test_slabs_disconnect_releases_session():
 def test_module_switch_disconnects_previous_source():
     # DiagServer._select should release the old session before the new module is selected.
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource, MockSlabsDataSource
+    from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
-    td5, slabs = MockDataSource(), MockSlabsDataSource()
+    td5, slabs = FakeTd5Source(), FakeSlabsSource()
     dropped = []
     td5.disconnect = lambda: dropped.append("td5")  # type: ignore[method-assign]
 
@@ -487,9 +501,9 @@ def test_fault_watch_command_runs_inline():
     # set_fault_watch only writes attributes on the sources → should not be queued behind an
     # ongoing connection in the poll thread (no poller runs in the test).
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0)
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
     try:
         r = srv.enqueue_command({"action": "set_fault_watch", "params": {"on": True}})
         assert r["ok"] and r["fault_watch"] is True
@@ -505,9 +519,9 @@ def test_shutdown_is_guarded_and_inline():
     # (never queued behind K-line) and is refused unless --allow-shutdown was set,
     # so dev on a laptop can never power off the host.
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    off = DiagServer(MockDataSource(), host="127.0.0.1", port=0)  # allow_shutdown default False
+    off = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)  # allow_shutdown default False
     try:
         r = off.enqueue_command({"action": "shutdown"})
         assert not r["ok"] and "not enabled" in r["error"]
@@ -516,7 +530,7 @@ def test_shutdown_is_guarded_and_inline():
     finally:
         off.server_close()
 
-    on = DiagServer(MockDataSource(), host="127.0.0.1", port=0, allow_shutdown=True)
+    on = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, allow_shutdown=True)
     calls = []
     on._spawn_poweroff = lambda: calls.append(True)  # stub — must NOT power off the test host
     try:
@@ -532,9 +546,9 @@ def test_ecu_commands_still_go_through_the_poll_queue():
     # The opposite: anything touching K-line MUST be serialized with the poll. Without a poller
     # the queue is never drained → the command times out (short timeout here).
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0)
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
     try:
         r = srv.enqueue_command({"action": "clear_faults"}, timeout=0.2)
         assert r["ok"] is False and "timeout" in r["error"]
@@ -547,9 +561,9 @@ def test_connect_sleep_aborts_when_a_command_is_queued():
     # The SLABS silent period is 28 s and a full establishment ~90 s. If the poll thread sleeps
     # through it while a module switch is queued, the UI times out despite a valid command.
     from d2diag.web.server import ConnectAborted, DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0)
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0)
     try:
         srv._connect_sleep(0.05)                    # empty queue → sleeps to completion
         srv._commands.put(({"action": "select_module"}, {}))
@@ -561,9 +575,9 @@ def test_connect_sleep_aborts_when_a_command_is_queued():
 
 def test_sources_get_the_interruptible_sleep_hook():
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    src = MockDataSource()
+    src = FakeTd5Source()
     srv = DiagServer(src, host="127.0.0.1", port=0)
     try:
         assert src.on_sleep == srv._connect_sleep
@@ -675,14 +689,14 @@ def test_connection_log_notes_each_module_separately(tmp_path):
     # ends. If the transition is keyed only on status the new module's row falls silent — that
     # hid a successful SLABS session 2026-08-18 23:08:54.
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    class _Liveish(MockDataSource):              # the name must not start with "Mock"
+    class _Liveish(FakeTd5Source):
         name = "motor"
+        simulated = False                        # simulated sources are otherwise not logged
 
     srv = DiagServer(_Liveish(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
-        srv._mode = "live"                       # mock sources are otherwise not logged
         srv._log_conn_transition({"module": "motor", "status": "connected", "signals": {"rpm": 1}})
         srv._log_conn_transition({"module": "slabs", "status": "connected", "signals": {"h": 1}})
         srv._log_conn_transition({"module": "slabs", "status": "connected", "signals": {"h": 1}})
@@ -690,16 +704,16 @@ def test_connection_log_notes_each_module_separately(tmp_path):
     finally:
         srv.server_close()
     assert len(lines) == 2                       # one row per module, no repetition
-    assert "[motor/live]" in lines[0] and "[slabs/live]" in lines[1]
+    assert "[motor]" in lines[0] and "[slabs]" in lines[1]
 
 
 def test_repeated_connect_phase_is_logged_once(tmp_path):
     # Without a cable the reconnect shouts "opening the cable" 2×/s forever
     # (1.9 MB of noise in an evening) and drowns out the lines you're debugging with.
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
         for _ in range(5):
             srv._connect_progress("opening the cable")
@@ -715,9 +729,9 @@ def test_init_lines_carry_the_last_known_engine_context(tmp_path):
     # last known context there's no way to tell afterwards whether a silent
     # init attempt was made while moving (SLABS refuses comms >8–20 km/h) or stationary.
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import MockDataSource
+    from tests.fake_sources import FakeTd5Source
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
         srv._remember_engine({"signals": {
             "rpm": {"v": 761.0}, "battery": {"v": 13.93}, "speed": {"v": 0.0}}})
@@ -773,7 +787,7 @@ def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkey
     (tmp_path.parent / "secret.txt").write_text("nope", encoding="utf-8")
     monkeypatch.setattr(srvmod, "_STATIC", tmp_path)
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0,
                      poll_interval=0.05, stream_interval=0.05)
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
@@ -838,14 +852,14 @@ def test_fields_carry_display_span_and_explicit_normal_band():
     assert {s.name: s.scale for s in load_signals("td5")}["battery"] == 0.001
 
 
-def test_info_source_mock_shows_seeded_faults_and_clears():
-    from d2diag.web import InfoDataSource
+def test_fake_info_source_shows_seeded_faults_and_clears():
+    from tests.fake_sources import FakeInfoSource
 
-    src = InfoDataSource("airbag", mock=True, faults=["004: lamp open circuit"])
+    src = FakeInfoSource("airbag", faults=["004: lamp open circuit"])
     d = src.poll()
     assert d["status"] == "connected" and d["source"] == "airbag"
     assert d["signals"] == {} and d["faults"] == ["004: lamp open circuit"]
-    # mock clear empties the list for a few polls, then the seed returns
+    # a clear empties the list for a few polls, then the seed returns
     assert src.command("clear_faults")["ok"]
     assert src.poll()["faults"] == []
     for _ in range(4):
@@ -853,40 +867,39 @@ def test_info_source_mock_shows_seeded_faults_and_clears():
     assert last == ["004: lamp open circuit"]
 
 
-def test_info_source_live_is_honest_not_fabricated():
+def test_info_source_is_honest_not_fabricated():
     from d2diag.web import InfoDataSource
 
-    src = InfoDataSource("bcu", mock=False, live_message="no fault memory")
+    src = InfoDataSource("bcu", live_message="no fault memory")
     d = src.poll()
     assert d["status"] == "error" and d["signals"] == {} and d["faults"] == []
     assert d["error"] == "no fault memory"
-    # no write command is accepted on a live info source
+    # no write command is accepted on an info source
     assert not src.command("clear_faults")["ok"]
+    assert "not readable" in InfoDataSource("ace").poll()["error"]
 
 
-def test_select_info_module_connects_in_mock():
-    from d2diag.web import InfoDataSource, MockDataSource
+def test_select_info_module():
+    from d2diag.web import InfoDataSource
     from d2diag.web.server import DiagServer
+    from tests.fake_sources import FakeInfoSource, FakeTd5Source
 
-    variants = {
-        "motor": {"mock": MockDataSource(), "live": MockDataSource()},
-        "bcu": {"mock": InfoDataSource("bcu", mock=True, faults=[]),
-                "live": InfoDataSource("bcu", mock=False)},
-    }
-    srv = DiagServer(host="127.0.0.1", port=0, variants=variants, mode="mock", active="motor")
+    srv = DiagServer({"motor": FakeTd5Source(), "bcu": FakeInfoSource("bcu"),
+                      "ace": InfoDataSource("ace")}, host="127.0.0.1", port=0, active="motor")
     try:
-        assert srv._select("bcu")["ok"]           # selectable now (was rejected before)
+        assert srv._select("bcu")["ok"]
         assert srv._active == "bcu"
         assert srv.source.poll()["status"] == "connected"
+        assert srv._select("ace")["ok"] and srv.poll_once()["status"] == "error"
         assert not srv._select("nope")["ok"]      # unknown module still rejected
     finally:
         srv.server_close()
 
 
-def test_info_source_mock_signal_gen_emits_body_states():
-    from d2diag.web import InfoDataSource, mock_bcu_signals
+def test_fake_info_source_signal_gen_emits_body_states():
+    from tests.fake_sources import FakeInfoSource, fake_bcu_signals
 
-    src = InfoDataSource("bcu", mock=True, signal_gen=mock_bcu_signals)
+    src = FakeInfoSource("bcu", signal_gen=fake_bcu_signals)
     d = src.poll()
     assert d["status"] == "connected"
     sig = d["signals"]
@@ -897,14 +910,6 @@ def test_info_source_mock_signal_gen_emits_body_states():
     assert sig["battery"]["u"] == "V"
     # booleans are 0/1
     assert sig["side_lights"]["v"] in (0, 1)
-
-
-def test_info_source_live_still_has_no_signals_even_with_gen():
-    from d2diag.web import InfoDataSource, mock_bcu_signals
-
-    src = InfoDataSource("bcu", mock=False, signal_gen=mock_bcu_signals)
-    d = src.poll()
-    assert d["status"] == "error" and d["signals"] == {}
 
 
 class _FaultyTd5:
@@ -956,8 +961,8 @@ def _get(base, path):
 
 
 def test_catalog_is_public_even_with_admin_password_and_public_mode():
-    from d2diag.web.sources import MockSlabsDataSource
-    srv = DiagServer({"motor": MockDataSource(), "slabs": MockSlabsDataSource()},
+    from tests.fake_sources import FakeSlabsSource
+    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
                      public=True, admin_password="hemligt")
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -982,7 +987,7 @@ def test_catalog_is_public_even_with_admin_password_and_public_mode():
 
 def test_map_and_coverage_keep_their_legacy_shape():
     from d2diag.menus import MENUS
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, menus=MENUS,
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, menus=MENUS,
                      poll_interval=0.05, stream_interval=0.05)
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
@@ -1008,7 +1013,7 @@ def test_map_and_coverage_keep_their_legacy_shape():
 def test_coverage_counts_the_derived_legacy_statuses():
     from d2diag import catalog
     from d2diag.menus import MENUS
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, menus=MENUS)
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, menus=MENUS)
     try:
         cov = srv.coverage()
         for name in MENUS:
@@ -1021,8 +1026,8 @@ def test_coverage_counts_the_derived_legacy_statuses():
 
 
 def test_command_gate_refusals_over_http():
-    from d2diag.web.sources import MockSlabsDataSource
-    srv = DiagServer({"motor": MockDataSource(), "slabs": MockSlabsDataSource()},
+    from tests.fake_sources import FakeSlabsSource
+    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
                      active="motor")
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -1051,8 +1056,8 @@ def test_command_gate_refusals_over_http():
 
 
 def test_public_server_refuses_actuators_but_not_reads():
-    from d2diag.web.sources import MockSlabsDataSource
-    srv = DiagServer({"slabs": MockSlabsDataSource(), "motor": MockDataSource()},
+    from tests.fake_sources import FakeSlabsSource
+    srv = DiagServer({"slabs": FakeSlabsSource(), "motor": FakeTd5Source()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
                      active="slabs", public=True)
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -1143,7 +1148,6 @@ def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
                                                logfile=str(raw_log), echo=True))
     srv = DiagServer(src, host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
-        srv._mode = "live"
         holder = {"result": None, "event": threading.Event()}
         srv._commands.put(({"action": "read_identity",
                             "params": {"trust": "experimental"}}, holder))
@@ -1169,15 +1173,15 @@ def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
 def test_read_identity_not_connected_and_mock():
     from d2diag.web.sources import Td5DataSource
     assert not Td5DataSource(port="x").command("read_identity", {})["ok"]
-    r = MockDataSource().command("read_identity", {})
+    r = FakeTd5Source().command("read_identity", {})
     assert r["ok"] and set(r["identity"]) >= {"part_no", "vin_masked"}
-    assert MockDataSource().command("security_status", {})["status"] == 3
+    assert FakeTd5Source().command("security_status", {})["status"] == 3
 
 
 def test_snapshot_has_logbook_fields_and_sessions_default_under_csv_dir(tmp_path):
     """Session logbook (ADR-0009): sessions live under <csv_dir>/sessions by default
     (logs/sessions in production) and every snapshot carries `gps` and `recording`."""
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
         assert srv._sessions_dir == str(tmp_path / "sessions")
         assert {"gps", "recording"} <= set(srv.latest)
@@ -1188,7 +1192,7 @@ def test_snapshot_has_logbook_fields_and_sessions_default_under_csv_dir(tmp_path
     finally:
         srv.stop()
         srv.server_close()
-    srv2 = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+    srv2 = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
                       sessions_dir=str(tmp_path / "elsewhere"))
     try:
         assert srv2._sessions_dir == str(tmp_path / "elsewhere")

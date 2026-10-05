@@ -21,7 +21,7 @@ import pytest
 
 from d2diag.community import Community
 from d2diag.menus import MENUS
-from d2diag.web import MockDataSource, MockSlabsDataSource
+from tests.fake_sources import FakeSlabsSource, FakeTd5Source, fake_fault_report
 from d2diag.web.docs import DocLibrary
 from d2diag.web.server import DiagServer
 from d2diag.web.sniffer import SnifferFeed
@@ -74,8 +74,8 @@ def base(tmp_path_factory):
     sniffer.store.ingest_line("[2] 02 21 09 2c 04 61 09 02 fa 6a")
     srv = DiagServer(
         host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
-        variants={"motor": {"mock": MockDataSource()}, "slabs": {"mock": MockSlabsDataSource()}},
-        mode="mock", active="motor", menus=MENUS, docs=DocLibrary().add_file(doc),
+        source={"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
+        fault_scan=fake_fault_report, active="motor", menus=MENUS, docs=DocLibrary().add_file(doc),
         sniffer=sniffer, captures_path=str(tmp / "captures.jsonl"), csv_dir=str(tmp),
         # offline poster: nothing leaves the test; the opt-in is queued, not sent
         community=Community(config_path=str(tmp / "community.json"),
@@ -120,6 +120,7 @@ CASES = {
     "catalog-bcu": lambda b: _get(b, "/catalog?module=bcu"),
     "catalog-modules": lambda b: _get(b, "/catalog"),
     "sessions": lambda b: _get(b, "/sessions"),
+    "session-histogram": lambda b: _get(b, "/sessions/histogram?group=month"),
     "session-meta": lambda b: _get(b, "/sessions/20261005T090000Z"),
     "session-data": lambda b: _get(b, "/sessions/20261005T090000Z/data?ch=rpm,GPS_Speed&max=50"),
     "session-events": lambda b: _get(b, "/sessions/20261005T090000Z/events"),

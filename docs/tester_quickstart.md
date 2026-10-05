@@ -3,7 +3,7 @@ title: "Discovery 2 Td5 diagnostics — Mac tester guide"
 area: docs
 status: stable
 version: 1.0
-updated: 2026-09-30
+updated: 2026-10-06
 summary: >
   Non-programmer guide for a Mac tester: check the KKL cable, one-paste install, desktop launchers. Read-only.
 ---
@@ -62,7 +62,7 @@ On your Desktop you now have:
 
 | Icon | What it does |
 |---|---|
-| **1 TEST WITHOUT CAR** | Proves the software works — **do this first, no car needed.** Opens a dashboard with fake moving data in your browser. |
+| **1 TEST WITHOUT CAR** | Proves the software works — **do this first, no car needed.** Opens the dashboard in your browser; with no car it says "No connection" — open **Logs** and replay **Demo log 1**. |
 | **2 READ THE CAR** | Live dashboard from the real car in your browser. |
 | **3 QUICK FAULT CHECK** | Reads the engine fault codes once and prints them. |
 
@@ -73,8 +73,10 @@ A small black window opens when you run one — that's normal. **Leave it open w
 tool; close it to stop.**
 
 ### Do this first: icon 1 (no car)
-Double-click **1 TEST WITHOUT CAR**. A browser tab opens at `http://localhost:8080` showing a
-dashboard with numbers moving. If you see that, the software is perfect. Close the black window.
+Double-click **1 TEST WITHOUT CAR**. A browser tab opens at `http://localhost:8080`. With no car
+it shows "No connection" — that's expected. Close that box, open the **Logs** tab and tap
+**Demo log 1**: numbers and the map replay a recorded drive. If you see that, the software is
+perfect. Close the black window.
 
 ### Then the car: icons 2 and 3
 1. Plug the cable into the car's **OBD socket** (under the dash, on the driver's side) **and** the
@@ -137,7 +139,7 @@ and writes the three `.command` launchers to your Desktop. You can read it first
 [`mac/install.sh`](../mac/install.sh). To run things by hand instead:
 ```
 cd ~/discovery2-diag
-PYTHONPATH=src python3 tools/dashboard.py --mock          # test dashboard
+PYTHONPATH=src python3 tools/dashboard.py                 # dashboard (no car: replay a Demo log)
 PYTHONPATH=src python3 tools/dashboard.py --serial auto   # live dashboard
 PYTHONPATH=src python3 tools/verify_ecu.py td5 auto       # one-shot fault read
 pytest -q                                                 # run the test suite

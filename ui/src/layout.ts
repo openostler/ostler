@@ -9,9 +9,9 @@
 export const MODULE_NAME: Record<string, string> = {
   motor: "TD5 (engine)",
   slabs: "SLABS (ABS + air suspension)",
-  airbag: "Airbag / SRS",
+  airbag: "SRS (airbag)",
   ace: "ACE (active cornering)",
-  autobox: "Auto gearbox (EAT)",
+  autobox: "EAT (auto gearbox)",
   bcu: "BCU (body control)",
 };
 export const moduleName = (m: string): string => MODULE_NAME[m] ?? m;
