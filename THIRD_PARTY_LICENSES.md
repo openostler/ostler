@@ -52,9 +52,11 @@ Current. Only factual data (offset/bit → fault text) has been used.
 [k0sci3j/BinOwl_Td5Gauge](https://github.com/k0sci3j/BinOwl_Td5Gauge) — an ESP32 Td5
 gauge, **GPL-3.0**. Reviewed 2026-08-25 as a **reference for protocol facts only**
 (LID -> field offsets and scalings, frame lengths, init/keepalive sequence); see
-`references/td5-external-findings.md`. GPL-3.0 is incompatible with this project, so
-**no source code from there may be copied or ported** — only non-protectable facts
-about the ECU protocol, each of which is verified against our own captures before use.
+`references/td5-external-findings.md`. When this was reviewed the project
+was MIT-licensed, so only non-protectable facts about the ECU protocol were used, each
+verified against our own captures. Since ADR-0012 the project is AGPL-3.0-or-later, which
+is compatible with GPL-3.0: code could now be reused **with** its GPL-3.0 notice and
+attribution recorded here — none has been so far.
 
 ## muki01/OBD2_K-line_Reader — K-line reference (MIT)
 
@@ -95,3 +97,10 @@ kept in `ui/astryx-theme.css`.
 > OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The Figtree font is loaded from Google Fonts (SIL Open Font License).
+
+## GeoNames — offline place names (CC BY 4.0)
+
+`src/d2diag/geo/places.tsv.gz` is trimmed from the [GeoNames](https://www.geonames.org/)
+`cities1000` and admin-name dumps, licensed **CC BY 4.0** (ADR-0011). Attribution is shown
+in the Logs footer. Online refinement uses OpenStreetMap Nominatim (data © OpenStreetMap
+contributors, ODbL); results are cached on the device only and are not shipped.

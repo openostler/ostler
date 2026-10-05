@@ -246,5 +246,13 @@ Contributing data or code? Add yourself here.
 
 ## License
 
-MIT (see `pyproject.toml`). Third-party components retain their own licenses —
-see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+- **Code:** [AGPL-3.0-or-later](LICENSE). Running a modified version as a network
+  service means offering its source to its users. A **commercial licence** (for closed or
+  embedded use without the AGPL obligations) is available from the maintainer.
+- **Vehicle data** (`src/d2diag/signals/`, `src/d2diag/dtc/`, fault-code tables, future
+  vehicle packs): [CC BY-SA 4.0](LICENSE-DATA).
+- **Contributions** are accepted under the [Contributor License Agreement](CLA.md) — see
+  [CONTRIBUTING.md](CONTRIBUTING.md).
+- Versions published before 2026-10-06 were MIT-licensed; copies obtained under those
+  terms keep them. Third-party components retain their own licences — see
+  [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). Decision: ADR-0012.
