@@ -2,7 +2,7 @@
 title: "Platform direction — from D2 Td5 tool to open vehicle platform (diagnostics · logger · telemetry · tracker/alarm) — design"
 area: specs
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md]
 summary: >
@@ -154,3 +154,4 @@ The owner's direction:
 - 2026-10-06: v0.1, a draft from the October 2026 research pass.
 - 2026-10-06: v0.2, owner answers (closed cloud, notify-only alarm, Map slot, working name Ostler); displays as thin clients with cameras on our infrastructure; repository map.
 - 2026-10-06: v0.3, handles per ADR-0014 (GitHub org and Python package `openostler`).
+- 2026-10-06: v0.4, the IA row is refined by the [UI architecture design](2026-10-06-ui-architecture-design.md) (draft); no decision here changes.

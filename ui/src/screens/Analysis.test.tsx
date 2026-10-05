@@ -232,8 +232,11 @@ describe("Analysis — replay", () => {
     renderWithApp(ui(demo.id));
     await screen.findByRole("button", { name: "Play" });
     const i = fxRpm.findIndex((v, k) => k > 0 && v != null && v !== fxRpm[0]);
+    // Scrub only once the session data has loaded (the readouts show the first sample):
+    // a change fired earlier is reset to the start when the data arrives.
+    const ro = await screen.findByRole("group", { name: "Values at the cursor" });
+    await within(ro).findByText(fmt(fxRpm[0]));
     fireEvent.change(screen.getByRole("slider", { name: "Playback position" }), { target: { value: String(fxData.t[i]) } });
-    const ro = screen.getByRole("group", { name: "Values at the cursor" });
     await waitFor(() => expect(within(ro).getByText(fmt(fxRpm[i]))).toBeInTheDocument());
   });
 
