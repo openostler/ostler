@@ -336,6 +336,7 @@ const LonLat = z.tuple([z.number(), z.number()]);
 
 export const SessionMeta = z.object({
   id: z.string(),
+  name: z.string().nullable().optional(),
   start_utc: z.string(),
   end_utc: z.string().nullable(),
   duration_s: z.number(),
@@ -366,6 +367,8 @@ export const SessionData = z.object({
   ch: z.record(z.string(), z.array(z.number().nullable())),
   track: z.array(z.tuple([z.number(), z.number(), z.number()])),
   decimated: z.boolean(),
+  /** Text channels aligned with t (faults joined with "; ", module). */
+  text: z.record(z.string(), z.array(z.string().nullable())).optional(),
 });
 export type SessionData = z.infer<typeof SessionData>;
 

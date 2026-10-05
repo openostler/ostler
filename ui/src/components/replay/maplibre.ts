@@ -9,7 +9,8 @@ import type { ExpressionSpecification, StyleSpecification } from "@maplibre/mapl
 import { AttributionControl, Map as MlMap, Marker, NavigationControl, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import type { BBox, Cursor, FeatureCollection } from "./trace";
+import { casingFor, layerVisible, type Basemap, type SatSource } from "./basemap";
+import { LANE_OFFSET, type BBox, type Cursor, type FeatureCollection, type TraceLane } from "./trace";
 
 setWorkerUrl(workerUrl);
 
@@ -26,8 +27,11 @@ export const BLANK_STYLE: StyleSpecification = {
 };
 
 export type TraceMapHandle = {
-  setTrace: (fc: FeatureCollection) => void;
-  setColor: (expr: unknown[]) => void;
+  /** A lane's segments; null hides that lane (trace B is optional). */
+  setTrace: (lane: TraceLane, fc: FeatureCollection | null) => void;
+  setColor: (lane: TraceLane, expr: unknown[]) => void;
+  /** Streets / Satellite / Hybrid: only layout visibility changes, so the traces survive. */
+  setBasemap: (b: Basemap) => void;
   setCursor: (c: Cursor | null) => void;
   /** True once the map fell back to the blank style. */
   isBlank: () => boolean;
@@ -35,6 +39,9 @@ export type TraceMapHandle = {
 };
 
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+const LANES: TraceLane[] = ["a", "b"];
+/** Our own layers (never touched by the basemap switch). */
+const OWN = (id: string) => id.startsWith("trace-");
 
 function arrowEl(): HTMLElement {
   const el = document.createElement("div");
@@ -48,12 +55,15 @@ function arrowEl(): HTMLElement {
 export function createTraceMap(opts: {
   container: HTMLElement;
   bbox: BBox | null;
-  trace: FeatureCollection;
-  color: unknown[];
+  traces: Record<TraceLane, FeatureCollection | null>;
+  colors: Record<TraceLane, unknown[]>;
+  basemap: Basemap;
+  satellite: SatSource;
   onBlank?: () => void;
 }): TraceMapHandle {
-  let trace = opts.trace;
-  let color = opts.color;
+  const traces = { ...opts.traces };
+  const colors = { ...opts.colors };
+  let basemap = opts.basemap;
   let blank = typeof navigator !== "undefined" && navigator.onLine === false;
 
   const map = new MlMap({
@@ -75,38 +85,72 @@ export function createTraceMap(opts: {
     opts.onBlank?.();
   };
   const timer = window.setTimeout(() => { if (!map.isStyleLoaded()) toBlank(); }, STYLE_TIMEOUT_MS);
-  // Style or tile failure (offline, blocked, server down) → the trace on a plain background.
-  map.on("error", () => toBlank());
+  // Style or vector tile failure (offline, blocked, server down) → the trace on a plain
+  // background. An imagery tile failing only leaves holes in the imagery.
+  map.on("error", (e) => { if ((e as { sourceId?: string }).sourceId !== "satellite") toBlank(); });
 
-  // (Re-)add our layers after every style load (the blank swap drops them).
-  const addTrace = () => {
-    if (map.getSource("trace")) return;
-    map.addSource("trace", { type: "geojson", data: trace as never });
-    map.addLayer({
-      id: "trace-casing", type: "line", source: "trace",
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: { "line-color": "#ffffff", "line-width": 7, "line-opacity": 0.9 },
-    });
-    map.addLayer({
-      id: "trace", type: "line", source: "trace",
-      layout: { "line-cap": "round", "line-join": "round" },
-      paint: { "line-color": color as ExpressionSpecification, "line-width": 4 },
-    });
+  const applyBasemap = () => {
+    for (const l of map.getStyle()?.layers ?? []) {
+      if (OWN(l.id)) continue;
+      map.setLayoutProperty(l.id, "visibility", layerVisible(l, basemap) ? "visible" : "none");
+    }
+    const casing = casingFor(basemap);
+    for (const lane of LANES) {
+      const id = `trace-${lane}-casing`;
+      if (!map.getLayer(id)) continue;
+      map.setPaintProperty(id, "line-color", casing.color);
+      map.setPaintProperty(id, "line-opacity", casing.opacity);
+    }
   };
-  map.on("style.load", addTrace);
-  if (map.isStyleLoaded()) addTrace();
+
+  // (Re-)add the imagery and our layers after every style load (the blank swap drops them).
+  const addLayers = () => {
+    if (!map.getSource("satellite")) {
+      map.addSource("satellite", {
+        type: "raster", tiles: [opts.satellite.tiles], tileSize: 256, maxzoom: opts.satellite.maxzoom,
+        attribution: opts.satellite.attribution,
+      });
+      // Below the first label layer, so Hybrid keeps the names on top of the imagery.
+      const firstSymbol = map.getStyle()?.layers?.find((l) => l.type === "symbol")?.id;
+      map.addLayer({ id: "satellite", type: "raster", source: "satellite", layout: { visibility: "none" } }, firstSymbol);
+    }
+    const casing = casingFor(basemap);
+    for (const lane of LANES) {
+      const src = `trace-${lane}`;
+      if (map.getSource(src)) continue;
+      const offset = LANE_OFFSET[lane];
+      map.addSource(src, { type: "geojson", data: (traces[lane] ?? EMPTY) as never });
+      map.addLayer({
+        id: `trace-${lane}-casing`, type: "line", source: src,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": casing.color, "line-width": 7, "line-opacity": casing.opacity, "line-offset": offset },
+      });
+      map.addLayer({
+        id: `trace-${lane}`, type: "line", source: src,
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": colors[lane] as ExpressionSpecification, "line-width": 4, "line-offset": offset },
+      });
+    }
+    applyBasemap();
+  };
+  map.on("style.load", addLayers);
+  if (map.isStyleLoaded()) addLayers();
 
   const marker = new Marker({ element: arrowEl(), rotationAlignment: "map", pitchAlignment: "map" });
   let markerOn = false;
 
   return {
-    setTrace(fc) {
-      trace = fc;
-      (map.getSource("trace") as GeoJSONSource | undefined)?.setData((fc ?? EMPTY) as never);
+    setTrace(lane, fc) {
+      traces[lane] = fc;
+      (map.getSource(`trace-${lane}`) as GeoJSONSource | undefined)?.setData((fc ?? EMPTY) as never);
     },
-    setColor(expr) {
-      color = expr;
-      if (map.getLayer("trace")) map.setPaintProperty("trace", "line-color", expr as ExpressionSpecification);
+    setColor(lane, expr) {
+      colors[lane] = expr;
+      if (map.getLayer(`trace-${lane}`)) map.setPaintProperty(`trace-${lane}`, "line-color", expr as ExpressionSpecification);
+    },
+    setBasemap(b) {
+      basemap = b;
+      if (map.isStyleLoaded()) applyBasemap();
     },
     setCursor(c) {
       if (!c) {

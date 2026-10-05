@@ -15,9 +15,9 @@
       }
     },
     {
-      "t": 240000,
+      "t": 130000,
       "type": "command",
-      "action": "output_fan",
+      "action": "output_ac_fan",
       "ok": true,
       "message": "A/C fan (mock)"
     },
@@ -25,6 +25,47 @@
       "t": 360000,
       "type": "module",
       "module": "slabs"
+    },
+    {
+      "t": 360000,
+      "type": "state",
+      "conn": "connected",
+      "status": "connected",
+      "module": "slabs",
+      "mode": "demo",
+      "active_test": null,
+      "fault_watch": false,
+      "logging": {
+        "recording": false
+      }
+    },
+    {
+      "t": 540000,
+      "type": "command",
+      "action": "pump_on",
+      "ok": true,
+      "message": "ABS pump on (mock)"
+    },
+    {
+      "t": 540000,
+      "type": "active_test",
+      "active_test": {
+        "action": "pump_on",
+        "label": "ABS pump on",
+        "stop": "pump_off"
+      }
+    },
+    {
+      "t": 548000,
+      "type": "command",
+      "action": "pump_off",
+      "ok": true,
+      "message": "ABS pump off (mock)"
+    },
+    {
+      "t": 548000,
+      "type": "active_test",
+      "active_test": null
     }
   ]
 }

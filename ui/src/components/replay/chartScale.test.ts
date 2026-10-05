@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lanePaths, msOf, niceTicks, viewFor, xOf, yRange, zoomAround, zoomTo } from "./chartScale";
+import { lanePaths, msOf, niceTicks, noteSpans, viewFor, xOf, yRange, zoomAround, zoomTo } from "./chartScale";
 
 /** A min/max-per-bucket reduction like the server's /data decimation (pairs share a time). */
 function decimate(t: number[], v: number[], bucket: number) {
@@ -81,5 +81,14 @@ describe("zoom", () => {
   it("nice ticks", () => {
     expect(niceTicks(0, 100, 4)).toEqual([0, 50, 100]);
     expect(niceTicks(0, 1, 5)).toEqual([0, 0.2, 0.4, 0.6, 0.8, 1]);
+  });
+});
+
+describe("note markers", () => {
+  const n = (id: string, t: number, t_end: number | null = null) =>
+    ({ id, t, t_end, text: "", tags: [], kind: "note", source: "retro", created: "" });
+  it("points become lines, ranges bands, clipped to the view; out-of-view notes drop", () => {
+    const spans = noteSpans([n("a", 500), n("b", 200, 1500), n("c", 5000)], { t0: 0, t1: 1000 }, 100);
+    expect(spans.map((s) => [s.note.id, s.x0, s.x1])).toEqual([["a", 50, 50], ["b", 20, 100]]);
   });
 });

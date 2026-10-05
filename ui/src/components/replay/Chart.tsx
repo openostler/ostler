@@ -1,14 +1,17 @@
 /**
  * The replay chart strip: up to 3 channels in stacked lanes on one time axis, a shared
  * cursor at the playback time. Tap or drag to seek; drag-select (Select mode or shift-drag)
- * or pinch to zoom; Reset zoom returns to the whole session. Canvas, devicePixelRatio aware,
+ * or pinch to zoom; Reset zoom returns to the whole session. Notes (spec §5) show as lines
+ * (points) or bands (ranges); with the note tool on, a drag makes a range note; tapping a
+ * note line opens it. Canvas, devicePixelRatio aware,
  * in two layers (data redrawn on data/view/size change; cursor every frame).
  *
  * Approach informed by DovesDataviewer (GPL-3.0), independently implemented.
  */
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
+import type { Note } from "../../api/schemas";
 import { formatClock } from "../../state/playback";
-import { lanePaths, msOf, niceTicks, viewFor, xOf, yRange, zoomAround, zoomTo, type View } from "./chartScale";
+import { lanePaths, msOf, niceTicks, noteSpans, viewFor, xOf, yRange, zoomAround, zoomTo, type View } from "./chartScale";
 
 export type Lane = { name: string; label: string; unit: string };
 
@@ -33,7 +36,10 @@ function prepare(canvas: HTMLCanvasElement | null, w: number, h: number): Canvas
 
 const cssVar = (el: Element, name: string, dflt: string) => getComputedStyle(el).getPropertyValue(name).trim() || dflt;
 
-export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
+/** A tap this close (px) to a note line opens the note instead of seeking. */
+const NOTE_HIT_PX = 8;
+
+export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = [], onAddRange, onNoteTap }: {
   t: number[];
   ch: Record<string, (number | null)[]>;
   lanes: Lane[];
@@ -43,6 +49,10 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
   /** utc − session ms (null: no UTC) for the axis labels. */
   offset: number | null;
   onSeek: (ms: number) => void;
+  notes?: readonly Note[];
+  /** Present when notes can be added (the note tool is offered). */
+  onAddRange?: (t0: number, t1: number) => void;
+  onNoteTap?: (note: Note) => void;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const base = useRef<HTMLCanvasElement>(null);
@@ -50,8 +60,9 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
   const [width, setWidth] = useState(0);
   const [zoom, setZoom] = useState<View | null>(null);
   const [selectMode, setSelectMode] = useState(false);
+  const [noteMode, setNoteMode] = useState(false);
   const [sel, setSel] = useState<{ a: number; b: number } | null>(null);
-  const gesture = useRef<{ kind: "seek" | "select" | "pinch"; pts: Map<number, number>; view: View; d0: number; mid: number } | null>(null);
+  const gesture = useRef<{ kind: "seek" | "select" | "note" | "pinch"; pts: Map<number, number>; view: View; d0: number; mid: number } | null>(null);
 
   const height = lanes.length * LANE_H + Math.max(0, lanes.length - 1) * GAP;
   const paged = viewFor(zoom, time, start, end);
@@ -110,7 +121,9 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
     if (!ctx || !wrap.current) return;
     ctx.clearRect(0, 0, width, height);
     if (sel) {
-      ctx.fillStyle = cssVar(wrap.current, "--chart-select", "rgba(31,111,224,0.15)");
+      ctx.fillStyle = gesture.current?.kind === "note"
+        ? cssVar(wrap.current, "--chart-note-band", "rgba(176,130,0,0.22)")
+        : cssVar(wrap.current, "--chart-select", "rgba(31,111,224,0.15)");
       const [a, b] = [Math.min(sel.a, sel.b), Math.max(sel.a, sel.b)];
       ctx.fillRect(a, 0, b - a, height);
     }
@@ -137,9 +150,18 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
       setSel(null);
       return;
     }
-    const select = selectMode || e.shiftKey;
-    gesture.current = { kind: select ? "select" : "seek", pts: new Map([[e.pointerId, x]]), view, d0: 0, mid: 0 };
-    if (select) setSel({ a: x, b: x });
+    const note = noteMode && !!onAddRange;
+    const select = !note && (selectMode || e.shiftKey);
+    if (!note && !select && onNoteTap) {
+      const hit = spans.find((s) => Math.abs(s.x0 - x) <= NOTE_HIT_PX || Math.abs(s.x1 - x) <= NOTE_HIT_PX);
+      if (hit) {
+        gesture.current = null;
+        onNoteTap(hit.note);
+        return;
+      }
+    }
+    gesture.current = { kind: note ? "note" : select ? "select" : "seek", pts: new Map([[e.pointerId, x]]), view, d0: 0, mid: 0 };
+    if (note || select) setSel({ a: x, b: x });
     else onSeek(msOf(x, view, width));
   };
   const move = (e: RPointerEvent<HTMLCanvasElement>) => {
@@ -148,7 +170,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
     const x = xIn(e);
     g.pts.set(e.pointerId, x);
     if (g.kind === "seek") onSeek(msOf(x, g.view, width));
-    else if (g.kind === "select") setSel((s) => (s ? { ...s, b: x } : s));
+    else if (g.kind === "select" || g.kind === "note") setSel((s) => (s ? { ...s, b: x } : s));
     else if (g.pts.size >= 2) {
       const [a, b] = [...g.pts.values()] as [number, number];
       const d = Math.max(10, Math.abs(a - b));
@@ -163,11 +185,17 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
       setZoom(zoomTo(msOf(sel.a, g.view, width), msOf(sel.b, g.view, width), start, end));
       setSelectMode(false);
     }
-    if (g.kind === "select") setSel(null);
+    if (g.kind === "note" && sel && Math.abs(sel.b - sel.a) > 8) {
+      const [a, b] = [msOf(Math.min(sel.a, sel.b), g.view, width), msOf(Math.max(sel.a, sel.b), g.view, width)];
+      onAddRange?.(Math.round(a), Math.round(b));
+      setNoteMode(false);
+    }
+    if (g.kind === "select" || g.kind === "note") setSel(null);
     if (g.pts.size === 0) gesture.current = null;
   };
 
   const zoomed = zoom != null;
+  const spans = noteSpans(notes, view, width);
   const ticks = niceTicks(view.t0, view.t1, 3).filter((v) => v > view.t0 && v < view.t1);
 
   return (
@@ -175,7 +203,11 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
       <div className="replay-chart-head">
         <span className="kicker">Chart</span>
         <div className="replay-chart-tools">
-          <button className="rchip" aria-pressed={selectMode} onClick={() => setSelectMode((m) => !m)}
+          {onAddRange ? (
+            <button className="rchip" aria-pressed={noteMode} onClick={() => { setNoteMode((m) => !m); setSelectMode(false); }}
+              title="Drag across the chart to note that span">Drag to note</button>
+          ) : null}
+          <button className="rchip" aria-pressed={selectMode} onClick={() => { setSelectMode((m) => !m); setNoteMode(false); }}
             title="Drag across the chart to zoom to that span">Select to zoom</button>
           {zoomed ? <button className="rchip" onClick={() => setZoom(null)}>Reset zoom</button> : null}
         </div>
@@ -186,6 +218,10 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek }: {
           <canvas ref={over} className="replay-canvas replay-canvas-over" style={{ height }}
             role="img" aria-label={`Chart of ${lanes.map((l) => l.label).join(", ")}; cursor at ${formatClock(time, offset)}. Tap or drag to seek.`}
             onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} />
+          {spans.map(({ note, x0, x1 }) => (
+            <div key={note.id} className={note.t_end != null ? "replay-note-band" : "replay-note-line"} data-note={note.id} aria-hidden="true"
+              style={note.t_end != null ? { left: x0, width: Math.max(2, x1 - x0) } : { left: x0 - 1 }} title={note.text || note.kind} />
+          ))}
           {lanes.map((l, i) => (
             <div key={l.name} className="replay-lane-label small" style={{ top: i * (LANE_H + GAP) }}>
               <span className="replay-swatch" style={{ background: `var(--series-${i + 1})` }} aria-hidden="true" />

@@ -12,6 +12,9 @@
 services:
   d2diag:
     build: .
+    # Same as the Dockerfile CMD: mock mode plus the committed demo sniff feed (Decode tab).
+    command: ["python", "tools/dashboard.py", "--mock", "--host", "0.0.0.0", "--port", "8080",
+              "--replay", "src/d2diag/web/demo/sniff-demo.txt"]
     restart: unless-stopped
     networks:
       - dokploy-network

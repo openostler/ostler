@@ -1,45 +1,83 @@
 /**
- * One session's replay: map with a channel-coloured trace, chart strip, readouts at the
- * cursor and the transport bar, all driven by one PlaybackCtx (specs/2026-10-05-session-logbook-design.md).
+ * One session's replay page in Logs, over the app-root replay (ADR-0010, spec §4–5): the map
+ * with traces A and B, the G-G panel, readouts at the cursor, the chart strip with notes and
+ * the notes panel. The cursor and playing state come from `useReplay()`; the transport is the
+ * global one <App> shows on every tab.
  */
 import { useMemo, useState } from "react";
 import { api, command } from "../../api/client";
 import type { SessionData, SessionMeta } from "../../api/schemas";
-import { useSessionReplay } from "../../api/useSessions";
 import { useApp } from "../../state/app";
-import { PlaybackCtx, usePlaybackState, utcOffset, valueAt } from "../../state/playback";
+import { valueAt } from "../../state/playback";
+import { useReplay } from "../../state/replay";
 import { confirmReady } from "../confirm";
 import { Chart, type Lane } from "./Chart";
+import { ChannelPicker } from "./ChannelPicker";
+import { pickerChannels } from "./channels";
+import { GGPanel } from "./GGPanel";
 import { channelLabel, channelUnits, showValue } from "./labels";
-import { TraceLegend } from "./Legend";
+import { TraceLegend, type LegendTrace } from "./Legend";
+import { NotesPanel, type NoteRequest } from "./NotesPanel";
 import { formatDuration, startTime } from "./sessionFormat";
-import { bboxOf, cursorAt, defaultTraceChannel, lineColorExpression, plottable, rangeOf, traceSegments } from "./trace";
-import { TraceMap } from "./TraceMap";
-import { Transport } from "./Transport";
+import {
+  bboxOf, cursorAt, defaultTraceChannel, laneRamp, lineColorExpression, plottable, rangeOf, simplifyTrack, traceSegments,
+  type TraceLane,
+} from "./trace";
+import { TraceMap, type MapTrace } from "./TraceMap";
 
 const MAX_LANES = 3;
-/** GPS housekeeping channels: offered for the trace, not picked for the chart by default. */
-const GPS_AUX = new Set(["GPS_Heading", "GPS_Nsat", "GPS_HDOP", "GPS_Altitude"]);
-const COLOR = lineColorExpression();
+const CLASSIC_KEY = "d2diag.classicRamp";
 
-export function Replay({ id, onBack, onDeleted }: { id: string; onBack: () => void; onDeleted: () => void }) {
-  const { meta, data, error } = useSessionReplay(id);
-  if (!meta || !data) {
+function loadClassic(): boolean {
+  try { return window.localStorage.getItem(CLASSIC_KEY) === "1"; } catch { return false; }
+}
+function saveClassic(on: boolean) {
+  try { window.localStorage.setItem(CLASSIC_KEY, on ? "1" : "0"); } catch { /* not remembered */ }
+}
+
+/** Which slot the channel picker is filling. */
+type PickFor = { kind: "trace"; lane: TraceLane } | { kind: "lane"; index: number } | null;
+
+export function Replay({ onDeleted }: { onDeleted: () => void }) {
+  const r = useReplay();
+  const back = <button className="rchip replay-back" onClick={r.exit}>‹ Sessions</button>;
+  if (!r.session || !r.data) {
     return (
       <div className="stack">
-        <button className="rchip replay-back" onClick={onBack}>‹ Sessions</button>
-        <p className={error ? "muted" : "muted small"}>{error ? `Could not load this session: ${error}` : "Loading session…"}</p>
+        {back}
+        <p className={r.error ? "muted" : "muted small"}>{r.error ? `Could not load this session: ${r.error}` : "Loading session…"}</p>
       </div>
     );
   }
-  return <ReplayView key={id} meta={meta} data={data} onBack={onBack} onDeleted={onDeleted} />;
+  return <ReplayView key={r.session.id} meta={r.session} data={r.data} onDeleted={onDeleted} />;
 }
 
-function ReplayView({ meta, data, onBack, onDeleted }: { meta: SessionMeta; data: SessionData; onBack: () => void; onDeleted: () => void }) {
+function ReplayView({ meta, data, onDeleted }: { meta: SessionMeta; data: SessionData; onDeleted: () => void }) {
   const { fields, prefs, snap } = useApp();
+  const replay = useReplay();
+  const time = replay.t;
   const names = useMemo(() => plottable(meta).filter((n) => data.ch[n]), [meta, data]);
-  const [traceCh, setTraceCh] = useState<string | null>(null);
-  const trace = traceCh && names.includes(traceCh) ? traceCh : defaultTraceChannel(names);
+  const channels = useMemo(() => pickerChannels(meta, names, fields), [meta, names, fields]);
+
+  // ---- traces ----
+  const [traceA, setTraceA] = useState<string | null>(null);
+  const [traceB, setTraceB] = useState<string | null>(null);
+  const [classic, setClassicState] = useState(loadClassic);
+  const setClassic = (on: boolean) => { setClassicState(on); saveClassic(on); };
+  const a = traceA && names.includes(traceA) ? traceA : defaultTraceChannel(names);
+  const b = traceB && names.includes(traceB) ? traceB : null;
+  const smooth = useMemo(() => ({ t: data.t, ch: data.ch, track: simplifyTrack(data.track) }), [data]);
+  const rangeA = useMemo(() => (a ? rangeOf(data.ch[a]) : null), [data, a]);
+  const rangeB = useMemo(() => (b ? rangeOf(data.ch[b]) : null), [data, b]);
+  const colorsA = laneRamp("a", classic);
+  const colorsB = laneRamp("b", classic);
+  const mapA = useMemo<MapTrace | null>(() => (a ? { fc: traceSegments(smooth, a, rangeA), colors: colorsA, color: lineColorExpression(colorsA) } : null), [smooth, a, rangeA, colorsA]);
+  const mapB = useMemo<MapTrace | null>(() => (b ? { fc: traceSegments(smooth, b, rangeB), colors: colorsB, color: lineColorExpression(colorsB) } : null), [smooth, b, rangeB, colorsB]);
+  const trackTimes = useMemo(() => data.track.map((p) => p[2]), [data]);
+  const cursor = useMemo(() => cursorAt(data, time, trackTimes), [data, time, trackTimes]);
+  const bbox = meta.bbox ?? bboxOf(data.track);
+
+  // ---- chart lanes ----
   const [picked, setPicked] = useState<string[] | null>(null);
   const lanesNames = useMemo(() => {
     if (picked) return picked.filter((n) => names.includes(n));
@@ -47,89 +85,112 @@ function ReplayView({ meta, data, onBack, onDeleted }: { meta: SessionMeta; data
     const rest = names.filter((n) => n !== first && !n.startsWith("GPS_"));
     return [first, ...rest].filter((n): n is string => !!n).slice(0, MAX_LANES);
   }, [picked, names]);
-  const [follow, setFollow] = useState(meta.recording);
-  const live = meta.recording && follow;
 
-  const pb = usePlaybackState(data.t, { pinToEnd: live, onUserMove: () => setFollow(false) });
-  const offset = useMemo(() => utcOffset(data.t, data.utc), [data]);
-
-  const range = useMemo(() => (trace ? rangeOf(data.ch[trace]) : null), [data, trace]);
-  const segments = useMemo(() => (trace ? traceSegments(data, trace, range) : { type: "FeatureCollection" as const, features: [] }), [data, trace, range]);
-  const trackTimes = useMemo(() => data.track.map((p) => p[2]), [data]);
-  const cursor = useMemo(() => cursorAt(data, pb.time, trackTimes), [data, pb.time, trackTimes]);
-  const bbox = meta.bbox ?? bboxOf(data.track);
-
+  const [pickFor, setPickFor] = useState<PickFor>(null);
   const label = (n: string) => channelLabel(n, fields);
   const lanes: Lane[] = lanesNames.map((n) => ({ name: n, label: label(n), unit: showValue(0, channelUnits(meta, n), prefs.units).unit }));
   const readouts = [...lanesNames, ...(data.ch.GPS_Speed && !lanesNames.includes("GPS_Speed") ? ["GPS_Speed"] : [])];
   const date = new Date(meta.start_utc).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  const start = data.t[0] ?? 0;
+  const end = data.t[data.t.length - 1] ?? 0;
+  const canNote = !meta.synthetic && !snap?.public;
+  const speedCh = names.includes("speed") ? "speed" : names.includes("GPS_Speed") ? "GPS_Speed" : null;
+
+  const legend: LegendTrace[] = [
+    ...(a ? [{ lane: "a" as const, channel: a, label: label(a), range: rangeA, unit: channelUnits(meta, a), colors: colorsA }] : []),
+    ...(b ? [{ lane: "b" as const, channel: b, label: label(b), range: rangeB, unit: channelUnits(meta, b), colors: colorsB }] : []),
+  ];
+
+  // The chart hands note work to the notes panel: a tapped marker opens its editor, a drag
+  // with the note tool opens a new range note there.
+  const [noteReq, setNoteReq] = useState<NoteRequest | null>(null);
+
+  const picker = (() => {
+    if (!pickFor) return null;
+    const close = () => setPickFor(null);
+    if (pickFor.kind === "trace") {
+      const lane = pickFor.lane;
+      return (
+        <ChannelPicker title={`Trace ${lane.toUpperCase()} colour`} channels={channels} value={lane === "a" ? a : b} onClose={close}
+          onPick={(n) => (lane === "a" ? setTraceA(n) : setTraceB(n))}
+          onRemove={lane === "b" && b ? () => setTraceB(null) : undefined} removeLabel="Remove trace B" />
+      );
+    }
+    const i = pickFor.index;
+    const cur = lanesNames[i] ?? null;
+    return (
+      <ChannelPicker title={cur ? `Chart lane ${i + 1}` : "Add a chart lane"} channels={channels} value={cur} onClose={close}
+        onPick={(n) => {
+          // Replace this lane (a channel already in another lane swaps places with it).
+          const next = [...lanesNames];
+          const j = next.indexOf(n);
+          if (cur) {
+            next[i] = n;
+            if (j >= 0 && j !== i) next[j] = cur;
+          } else if (j < 0) next.push(n);
+          setPicked(next.slice(0, MAX_LANES));
+        }}
+        onRemove={cur && lanesNames.length > 1 ? () => setPicked(lanesNames.filter((x) => x !== cur)) : undefined} removeLabel="Remove this lane" />
+    );
+  })();
 
   return (
-    <PlaybackCtx.Provider value={pb}>
-      <div className="replay stack" data-session={meta.id}>
-        <div className="replay-head">
-          <button className="rchip replay-back" onClick={onBack}>‹ Sessions</button>
-          <div className="replay-title">
-            <h2>{date} · {startTime(meta)}</h2>
-            <span className="muted small">
-              {formatDuration(meta.duration_s)}
-              {meta.synthetic ? <span className="replay-chip-demo">demo</span> : null}
-              {meta.recording ? <span className="replay-chip-live">recording</span> : null}
-              {data.decimated ? <span title="Long session: each point keeps the min and max of its span"> · overview</span> : null}
-            </span>
-          </div>
-          <SessionActions meta={meta} canDelete={!meta.synthetic && !snap?.public} onDeleted={onDeleted} />
+    <div className="replay stack" data-session={meta.id}>
+      <div className="replay-head">
+        <button className="rchip replay-back" onClick={replay.exit}>‹ Sessions</button>
+        <div className="replay-title">
+          <h2>{date} · {startTime(meta)}</h2>
+          <span className="muted small">
+            {formatDuration(meta.duration_s)}
+            {meta.synthetic ? <span className="replay-chip-demo">demo</span> : null}
+            {meta.recording ? <span className="replay-chip-live">recording</span> : null}
+            {data.decimated ? <span title="Long session: each point keeps the min and max of its span"> · overview</span> : null}
+          </span>
         </div>
-
-        {meta.has_gps || data.track.length ? (
-          <div className="card replay-mapcard">
-            <TraceMap trace={segments} color={COLOR} bbox={bbox} cursor={cursor} />
-            {trace ? (
-              <TraceLegend channels={names.map((n) => ({ name: n, label: label(n) }))} channel={trace} onChannel={setTraceCh}
-                label={label} range={range} unit={channelUnits(meta, trace)} units={prefs.units} />
-            ) : null}
-          </div>
-        ) : <p className="card muted small">No GPS in this session — chart only.</p>}
-
-        <div className="replay-readouts" role="group" aria-label="Values at the cursor">
-          {readouts.map((n) => {
-            const v = showValue(valueAt(data.t, data.ch[n], pb.time), channelUnits(meta, n), prefs.units);
-            return (
-              <div key={n} className="replay-readout" data-channel={n}>
-                <span className="replay-readout-label small">{label(n)}</span>
-                <span className="replay-readout-value"><b>{v.text}</b>{v.unit ? <span className="u"> {v.unit}</span> : null}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <LanePicker names={names} label={label} lanes={lanesNames} onChange={setPicked} />
-        <Chart t={data.t} ch={data.ch} lanes={lanes} time={pb.time} start={pb.start} end={pb.end} offset={offset} onSeek={pb.seek} />
-
-        <Transport offset={offset} follow={live} onFollow={meta.recording ? setFollow : undefined} />
+        <SessionActions meta={meta} canDelete={!meta.synthetic && !snap?.public} onDeleted={onDeleted} />
       </div>
-    </PlaybackCtx.Provider>
-  );
-}
 
-function LanePicker({ names, label, lanes, onChange }: { names: string[]; label: (n: string) => string; lanes: string[]; onChange: (l: string[]) => void }) {
-  const others = names.filter((n) => !GPS_AUX.has(n) || lanes.includes(n));
-  return (
-    <details className="replay-menu replay-lanes">
-      <summary className="rchip">Chart channels ({lanes.length}/{MAX_LANES})</summary>
-      <div className="replay-menu-body card">
-        {[...others, ...names.filter((n) => !others.includes(n))].map((n) => {
-          const on = lanes.includes(n);
+      {meta.has_gps || data.track.length ? (
+        <div className="card replay-mapcard">
+          <TraceMap a={mapA} b={mapB} bbox={bbox} cursor={cursor} />
+          {legend.length ? (
+            <TraceLegend traces={legend} units={prefs.units} onEdit={(lane) => setPickFor({ kind: "trace", lane })}
+              onAddB={b ? undefined : () => setPickFor({ kind: "trace", lane: "b" })} classic={classic} onClassic={setClassic} />
+          ) : null}
+        </div>
+      ) : <p className="card muted small">No GPS in this session — chart only.</p>}
+
+      <GGPanel data={data} names={names} speed={speedCh} t={time} />
+
+      <div className="replay-readouts" role="group" aria-label="Values at the cursor">
+        {readouts.map((n) => {
+          const v = showValue(valueAt(data.t, data.ch[n], time), channelUnits(meta, n), prefs.units);
           return (
-            <label key={n} className="row check">
-              <input type="checkbox" checked={on} disabled={!on && lanes.length >= MAX_LANES}
-                onChange={() => onChange(on ? lanes.filter((x) => x !== n) : [...lanes, n])} />
-              <span>{label(n)}</span>
-            </label>
+            <div key={n} className="replay-readout" data-channel={n}>
+              <span className="replay-readout-label small">{label(n)}</span>
+              <span className="replay-readout-value"><b>{v.text}</b>{v.unit ? <span className="u"> {v.unit}</span> : null}</span>
+            </div>
           );
         })}
       </div>
-    </details>
+
+      <div className="replay-lanes" role="group" aria-label="Chart channels">
+        {lanesNames.map((n, i) => (
+          <button key={n} type="button" className="rchip" data-channel={n} aria-label={`Chart lane ${i + 1}: ${label(n)} — change channel`}
+            onClick={() => setPickFor({ kind: "lane", index: i })}>
+            <span className="replay-swatch" style={{ background: `var(--series-${i + 1})` }} aria-hidden="true" />{label(n)} <span aria-hidden="true">▾</span>
+          </button>
+        ))}
+        {lanesNames.length < MAX_LANES && names.length > lanesNames.length ? (
+          <button type="button" className="rchip" onClick={() => setPickFor({ kind: "lane", index: lanesNames.length })}>+ Add lane</button>
+        ) : null}
+      </div>
+      <Chart t={data.t} ch={data.ch} lanes={lanes} time={time} start={start} end={end} offset={replay.offset} onSeek={replay.seek}
+        notes={replay.notes} onAddRange={canNote ? (t0, t1) => setNoteReq({ t: t0, t_end: t1 }) : undefined} onNoteTap={(n) => setNoteReq({ id: n.id })} />
+
+      <NotesPanel request={noteReq} onRequestDone={() => setNoteReq(null)} />
+      {picker}
+    </div>
   );
 }
 

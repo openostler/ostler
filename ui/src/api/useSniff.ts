@@ -10,17 +10,19 @@ export type SniffState = {
   fps: number;
   /** False when the server answered but has no sniffer configured (no --sniff/--replay). */
   configured: boolean;
+  /** True when the feed is a recorded replay (the homelab demo), not a live tap. */
+  demo: boolean;
   error: string | null;
 };
 
-/** Poll /sniff (the passive ESP32 tap on the reference tool's traffic) while mounted.
+/** Poll /sniff (the passive ESP32 tap on the NanoCom's K-line traffic, or the demo replay) while mounted.
  * `onPoll` runs after every successful poll (outside render) with the new state. */
 export function useSniff(
   module: string | undefined,
   intervalMs = 1000,
   onPoll?: (s: SniffState) => void,
 ): SniffState {
-  const [state, setState] = useState<SniffState>({ data: null, active: new Set(), fps: 0, configured: true, error: null });
+  const [state, setState] = useState<SniffState>({ data: null, active: new Set(), fps: 0, configured: true, demo: false, error: null });
   const prev = useRef<{ counts: Record<string, number>; lines: number | null; t: number }>({ counts: {}, lines: null, t: 0 });
   const onPollRef = useRef(onPoll);
   useEffect(() => {
@@ -47,7 +49,8 @@ export function useSniff(
         const dt = p.t ? (now - p.t) / 1000 : 0;
         const fps = p.lines != null && dt > 0 ? Math.max(0, Math.round((lines - p.lines) / dt)) : 0;
         prev.current = { counts, lines, t: now };
-        const next = { data: d, active, fps, configured: d.status != null, error: null };
+        const demo = (d.source ?? "").startsWith("replay");
+        const next = { data: d, active, fps, configured: d.status != null, demo, error: null };
         setState(next);
         onPollRef.current?.(next);
       } catch (e) {

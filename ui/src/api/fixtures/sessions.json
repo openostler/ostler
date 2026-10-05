@@ -2,86 +2,194 @@
   "sessions": [
     {
       "id": "20261005T090000Z",
+      "name": null,
       "start_utc": "2026-10-05T09:00:00.000Z",
       "end_utc": "2026-10-05T09:12:00.000Z",
       "duration_s": 720,
       "rows": 3600,
       "parts": [
-        "data.csv"
+        "data-0.csv",
+        "data-1.csv"
       ],
       "modules": [
-        "motor"
+        "motor",
+        "slabs"
       ],
       "channels": [
         {
           "name": "GPS_Latitude",
           "units": "deg",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_Longitude",
           "units": "deg",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_Speed",
           "units": "km/h",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_Heading",
           "units": "deg",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_Altitude",
           "units": "m",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_Nsat",
           "units": "",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
         },
         {
           "name": "GPS_HDOP",
           "units": "",
-          "group": "gps"
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_LonAcc",
+          "units": "g",
+          "group": "accel",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_LatAcc",
+          "units": "g",
+          "group": "accel",
+          "c": null,
+          "limits": null
         },
         {
           "name": "rpm",
           "units": "rpm",
-          "group": "engine"
+          "group": "engine",
+          "c": "proven",
+          "limits": [
+            0,
+            4800
+          ]
         },
         {
           "name": "speed",
           "units": "km/h",
-          "group": "engine"
+          "group": "engine",
+          "c": "proven",
+          "limits": [
+            0,
+            200
+          ]
         },
         {
           "name": "coolant_temp",
           "units": "°C",
-          "group": "temperatures"
+          "group": "temperatures",
+          "c": "proven",
+          "limits": [
+            -40,
+            105
+          ]
         },
         {
           "name": "air_temp",
           "units": "°C",
-          "group": "temperatures"
+          "group": "temperatures",
+          "c": "proven",
+          "limits": [
+            -30,
+            80
+          ]
         },
         {
           "name": "battery",
           "units": "V",
-          "group": "electrical"
+          "group": "electrical",
+          "c": "proven",
+          "limits": [
+            11.5,
+            15.5
+          ]
         },
         {
           "name": "manifold_press",
           "units": "bar",
-          "group": "pressures"
+          "group": "pressures",
+          "c": "proven",
+          "limits": [
+            0.8,
+            2.6
+          ]
         },
         {
           "name": "accel_pedal_pct",
           "units": "%",
-          "group": "engine"
+          "group": "engine",
+          "c": "proven",
+          "limits": [
+            0,
+            100
+          ]
+        },
+        {
+          "name": "height_left",
+          "units": "",
+          "group": "ride height",
+          "c": "proven",
+          "limits": null
+        },
+        {
+          "name": "height_right",
+          "units": "",
+          "group": "ride height",
+          "c": "proven",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_fl",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_fr",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_rl",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_rr",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
         }
       ],
       "has_gps": true,
@@ -103,11 +211,14 @@
       ],
       "synthetic": true,
       "recording": false,
-      "source": "demo"
+      "source": "demo",
+      "audio": [],
+      "accel_cal": null
     },
     {
-      "id": "20261004T231542Z",
-      "start_utc": "2026-10-04T23:15:42.519Z",
+      "id": "20261005T002421Z",
+      "name": null,
+      "start_utc": "2026-10-05T00:24:21.069Z",
       "end_utc": null,
       "duration_s": 0,
       "rows": 0,
@@ -124,7 +235,9 @@
       "end_pos": null,
       "synthetic": false,
       "recording": true,
-      "source": "mock"
+      "source": "mock",
+      "audio": [],
+      "accel_cal": null
     }
   ]
 }

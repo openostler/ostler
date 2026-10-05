@@ -20,3 +20,38 @@ export function recordFromSolve(r: AutomapReply, name: string): Record<string, u
   }
   return rec;
 }
+
+/** One solver input: what the reference tool showed (`text`) and the raw bytes per LID. */
+export type Reading = { text: string; raws: Record<string, string> };
+/** A label saved on the Label tab (server copy from GET /captures). */
+export type LabelCapture = { lid: string; raw: string; value: string };
+
+/** LID as the store spells it: "0x2B" / " 2b " → "2b". */
+export const normLid = (lid: string): string => lid.trim().replace(/^0x/i, "").toLowerCase();
+/** Raw bytes as the store spells them: "02FA" / "02 fa" → "02 fa". */
+export const normHex = (raw: string): string =>
+  raw.replace(/\s+/g, "").toLowerCase().replace(/(..)/g, "$1 ").trim();
+
+/** Solver input = this device's readings + the Label tab's server labels for the same
+ * LIDs. Duplicates (same LID and raw bytes) are dropped; a local reading wins. Returns the
+ * merged list and how many came from the server. */
+export function mergeReadings(
+  local: Reading[],
+  captures: LabelCapture[],
+  lids: string[],
+): { readings: Reading[]; fromLabels: number } {
+  const wanted = new Map(lids.filter(Boolean).map((l) => [normLid(l), l] as const)); // key as the solver spells it
+  const seen = new Set<string>();
+  for (const r of local) for (const [l, raw] of Object.entries(r.raws)) seen.add(`${normLid(l)}|${normHex(raw)}`);
+  const extra: Reading[] = [];
+  for (const c of captures) {
+    const lid = normLid(c.lid);
+    const raw = normHex(c.raw);
+    const key = `${lid}|${raw}`;
+    const as = wanted.get(lid);
+    if (as == null || !raw || !c.value.trim() || seen.has(key)) continue;
+    seen.add(key);
+    extra.push({ text: c.value.trim(), raws: { [as]: raw } });
+  }
+  return { readings: [...local, ...extra], fromLabels: extra.length };
+}

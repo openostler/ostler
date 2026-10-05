@@ -30,8 +30,9 @@ export const SCREENS: Screen[] = [
   { id: "settings", label: "Settings", short: "Setup", icon: "≡", component: ModuleSettings },
   { id: "utils", label: "Utilities", short: "Utils", icon: "⚒", component: Utilities },
   { id: "logs", label: "Logs", short: "Logs", icon: "◷", component: Logs },
-  { id: "map", label: "Map", icon: "▦", component: CoverageMap, admin: true },
-  { id: "capture", label: "Capture", icon: "◉", component: Capture, admin: true },
+  // Admin: ids stay "map"/"capture" (App's default admin tab and goTo() links use them).
+  { id: "map", label: "Decode", icon: "⇄", component: CoverageMap, admin: true },
+  { id: "capture", label: "Label", icon: "✎", component: Capture, admin: true },
   { id: "docs", label: "Docs", icon: "▤", component: Docs, admin: true },
 ];
 

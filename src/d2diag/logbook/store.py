@@ -1,12 +1,16 @@
-"""Read side of the logbook: list, meta, columnar replay data, delete, export (ADR-0009).
+"""Read side of the logbook: list, meta, columnar replay data, delete, export (ADR-0009),
+plus events, notes, audio and capture labels (ADR-0010).
 
 ``SessionStore(root, demo_root=DEMO_ROOT)`` merges the recorded sessions under ``root``
 with the committed synthetic demo session(s). ``public=True`` hides every non-synthetic
-session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted.
+session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
+their notes are read-only (``PermissionError``); every note write is refused in public
+mode. Audio is never available in public mode (``KeyError``).
 """
 from __future__ import annotations
 
 import csv
+import json
 import math
 import os
 import re
@@ -15,7 +19,9 @@ import time
 
 from . import channels as ch
 from . import export as _export
+from .audio import mime_for, track_file
 from .demo import DEMO_ROOT
+from .notes import NoteLog, read_notes
 from .recorder import MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions
 
 _SAFE_ID = re.compile(r"^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$")
@@ -26,7 +32,9 @@ _EXPORTS = {
     "csv": (_export.to_csv, "text/csv; charset=utf-8", "csv"),
     "vbo": (_export.to_vbo, "text/plain; charset=utf-8", "vbo"),
     "gpx": (_export.to_gpx, "application/gpx+xml", "gpx"),
+    "notes": (_export.notes_csv, "text/csv; charset=utf-8", "notes.csv"),
 }
+_STORE_MODULE = {"motor": "td5"}  # UI module name → signal store module
 
 
 # ------------------------------------------------------------------ reading -- #
@@ -105,7 +113,55 @@ def read_rows(path: str, meta: dict) -> "tuple[list[tuple[str, str, float]], lis
                 seen.add(h[0])
                 cols.append(h)
         rows.extend(part_rows)
+    # acceleration samples are written at their own (earlier) timestamps: restore time
+    # order (stable, so rows with equal times keep their written order)
+    rows.sort(key=lambda r: r["Interval"])
     return cols, rows
+
+
+def read_events(path: str) -> "list[dict]":
+    """``events.jsonl`` of a session directory; a truncated or malformed line is skipped."""
+    try:
+        with open(os.path.join(path, "events.jsonl"), "r", encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError:
+        return []
+    lines = text.split("\n")
+    if not text.endswith("\n"):
+        lines = lines[:-1]
+    out = []
+    for ln in lines:
+        if not ln.strip():
+            continue
+        try:
+            ev = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(ev, dict) and isinstance(ev.get("type"), str) \
+                and isinstance(ev.get("t"), (int, float)):
+            ev.pop("trust", None)
+            out.append(ev)
+    return out
+
+
+def _complete_meta(meta: dict) -> dict:
+    """Fill the ADR-0010 fields older sessions lack (channel c/limits/group, audio,
+    accel_cal), so every reader sees one shape."""
+    chans = []
+    for c in meta.get("channels") or []:
+        if not isinstance(c, dict) or not c.get("name"):
+            continue
+        c = dict(c)
+        name = str(c["name"])
+        if "group" not in c or (ch.is_accel(name) and c.get("group") != "accel"):
+            c["group"] = ch.group_for(name)
+        c.setdefault("c", ch.confidence_for(name))
+        c.setdefault("limits", ch.limits_for(name))
+        chans.append(c)
+    meta = {**meta, "channels": chans}
+    meta.setdefault("audio", [])
+    meta.setdefault("accel_cal", None)
+    return meta
 
 
 # --------------------------------------------------------------- reduction -- #
@@ -161,9 +217,10 @@ def reduce_track(points: "list[list[float]]", limit: int = MAX_TRACK) -> "list[l
 
 
 def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
-                    max_points: int) -> "tuple[list, list, dict]":
+                    max_points: int, idx: "list | None" = None) -> "tuple[list, list, dict]":
     """Reduce to ≤ ``max_points`` samples: per bucket two samples (first and last time of
-    the bucket) carrying each channel's min and max in the order they occurred."""
+    the bucket) carrying each channel's min and max in the order they occurred. ``idx``
+    (a list) receives the source row index of each output sample."""
     n = len(t)
     buckets = max(1, max_points // 2)
     out_t: list = []
@@ -175,6 +232,8 @@ def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
             continue
         out_t += [t[lo], t[hi - 1]]
         out_u += [utc[lo], utc[hi - 1]]
+        if idx is not None:
+            idx += [lo, hi - 1]
         for k, vals in cols.items():
             imin = imax = None
             for i in range(lo, hi):
@@ -229,7 +288,7 @@ class SessionStore:
                     "recording": False}
         if public and not meta.get("synthetic"):
             raise KeyError(sid)
-        return path, demo, meta
+        return path, demo, _complete_meta(meta)
 
     # ---- API ---- #
 
@@ -255,7 +314,9 @@ class SessionStore:
     def data(self, sid: str, channels=None, max_points: int = 2000,
              public: bool = False) -> dict:
         """Columnar replay data (spec ``/data``). ``channels``: names (list or comma
-        string); default every numeric channel. Unknown channels are omitted."""
+        string); default every numeric channel. Unknown channels are omitted. ``text`` holds
+        the ``faults`` and ``module`` text channels aligned with ``t`` (the value at each
+        output sample's source row; null when empty)."""
         path, _, meta = self._resolve(sid, public)
         cols, rows = read_rows(path, meta)
         numeric = [c[0] for c in cols if c[0] not in ch.TIME_CHANNELS
@@ -270,9 +331,12 @@ class SessionStore:
                  if r.get("GPS_Latitude") is not None and r.get("GPS_Longitude") is not None]
         max_points = max(2, int(max_points or 2000))
         decimated = len(t) > max_points
+        src = list(range(len(t)))
         if decimated:
-            t, utc, series = _minmax_buckets(t, utc, series, max_points)
-        return {"id": meta["id"], "t": t, "utc": utc, "ch": series,
+            src = []
+            t, utc, series = _minmax_buckets(t, utc, series, max_points, src)
+        text = {k: [rows[i].get(k) or None for i in src] for k in ("faults", "module")}
+        return {"id": meta["id"], "t": t, "utc": utc, "ch": series, "text": text,
                 "track": reduce_track(track), "decimated": decimated}
 
     def delete(self, sid: str) -> None:
@@ -291,13 +355,117 @@ class SessionStore:
         shutil.rmtree(path)
 
     def export(self, sid: str, fmt: str, public: bool = False) -> "tuple[str, str, bytes]":
-        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx."""
+        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | notes."""
         fmt = (fmt or "").lower()
         if fmt not in _EXPORTS:
             raise ValueError(f"unknown export format: {fmt!r}")
-        meta, rows = self.rows(sid, public)
+        path, _, meta = self._resolve(sid, public)
+        notes = read_notes(path)
         fn, ctype, ext = _EXPORTS[fmt]
-        return f"{meta['id']}.{ext}", ctype, fn(rows, meta).encode("utf-8")
+        if fmt == "notes":
+            body = fn(notes, meta)
+        else:
+            body = fn(read_rows(path, meta)[1], meta, notes=notes)
+        return f"{meta['id']}.{ext}", ctype, body.encode("utf-8")
+
+    # ---- events and notes (ADR-0010) ---- #
+
+    def events(self, sid: str, public: bool = False) -> "list[dict]":
+        """The session's events stream (``GET /sessions/<id>/events``)."""
+        path, _, _ = self._resolve(sid, public)
+        return read_events(path)
+
+    def notes(self, sid: str, public: bool = False) -> "list[dict]":
+        """The session's notes, sorted by ``t`` (``GET /sessions/<id>/notes``)."""
+        path, _, _ = self._resolve(sid, public)
+        return read_notes(path)
+
+    def _note_log(self, sid: str, public: bool) -> NoteLog:
+        if public:
+            raise PermissionError("notes are read-only in public mode")
+        path, demo, meta = self._resolve(sid, False)
+        if demo or meta.get("synthetic") or meta.get("source") == "demo":
+            raise PermissionError("synthetic sessions are read-only")
+        return NoteLog(path)
+
+    def add_note(self, sid: str, t, text: str = "", tags=(), kind: str = "note",
+                 source: str = "retro", t_end=None, capture=None,
+                 public: bool = False) -> dict:
+        """Add a note. ``KeyError`` (unknown session), ``PermissionError`` (public mode or
+        a synthetic session), ``ValueError`` (bad fields)."""
+        return self._note_log(sid, public).add(t, text=text, tags=tags, kind=kind,
+                                               source=source, t_end=t_end, capture=capture)
+
+    def edit_note(self, sid: str, nid: str, public: bool = False, **fields) -> dict:
+        """Change any of ``text, tags, t, t_end``; ``KeyError`` for an unknown note."""
+        return self._note_log(sid, public).edit(nid, **fields)
+
+    def delete_note(self, sid: str, nid: str, public: bool = False) -> None:
+        self._note_log(sid, public).delete(nid)
+
+    # ---- audio (ADR-0010; never public) ---- #
+
+    def audio_path(self, sid: str, track: str, public: bool = False) -> str:
+        """The file of an audio track (serve it with ``audio.mime_for(path)`` and Range
+        support). ``KeyError`` in public mode, for an unknown session or track."""
+        if public:
+            raise KeyError(track)
+        path, _, _ = self._resolve(sid, False)
+        f = track_file(path, track)
+        if f is None:
+            raise KeyError(track)
+        return f
+
+    @staticmethod
+    def audio_mime(path: str) -> str:
+        return mime_for(path)
+
+    # ---- capture labels (admin) ---- #
+
+    def captures(self, module: "str | None" = None,
+                 labeled_path: "str | None" = None) -> "list[dict]":
+        """Capture labels for the Decode solver: every ``capture`` note of every session
+        (``t``/``session`` set) plus the rows of ``logs/labeled_captures.jsonl``
+        (``labeled_path``; ``t``/``session`` null). ``module`` filters (``motor`` and
+        ``td5`` are the same module). Admin only: never call it for a public request."""
+        def norm(m) -> str:
+            m = str(m or "").lower()
+            return _STORE_MODULE.get(m, m)
+
+        want = norm(module) if module else None
+        out: "list[dict]" = []
+        for sid, (path, _demo) in sorted(self._dirs().items()):
+            for n in read_notes(path):
+                cap = n.get("capture")
+                if n.get("kind") != "capture" or not isinstance(cap, dict):
+                    continue
+                if want and norm(cap.get("module")) != want:
+                    continue
+                out.append({"module": str(cap.get("module") or ""),
+                            "lid": str(cap.get("lid") or ""), "raw": str(cap.get("raw") or ""),
+                            "value": str(cap.get("value") or ""), "t": n.get("t"),
+                            "session": sid})
+        if labeled_path:
+            try:
+                with open(labeled_path, "r", encoding="utf-8") as fh:
+                    lines = fh.read().split("\n")
+            except OSError:
+                lines = []
+            for ln in lines:
+                try:
+                    r = json.loads(ln) if ln.strip() else None
+                except ValueError:
+                    continue
+                if not isinstance(r, dict) or not r.get("lid"):
+                    continue
+                if want and norm(r.get("module")) != want:
+                    continue
+                value = r.get("value", r.get("text"))
+                out.append({"module": str(r.get("module") or ""), "lid": str(r.get("lid")),
+                            "raw": str(r.get("raw") or ""),
+                            "value": "" if value is None else str(value),
+                            "t": None, "session": None})
+        return out
 
     def rotate(self, min_free_bytes: int = MIN_FREE_BYTES, usage=shutil.disk_usage,
                keep=()) -> "list[str]":
@@ -305,4 +473,4 @@ class SessionStore:
         return rotate_sessions(self.root, min_free_bytes, usage=usage, keep=keep)
 
 
-__all__ = ["SessionStore", "read_part", "read_rows", "rdp", "reduce_track"]
+__all__ = ["SessionStore", "read_part", "read_rows", "read_events", "rdp", "reduce_track"]

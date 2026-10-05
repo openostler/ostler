@@ -3,13 +3,14 @@ import type { CatalogAction, CommandReply } from "../api/schemas";
 import { useAction } from "../api/useAction";
 import { actionLocked } from "../lib/catalog";
 import { useApp } from "../state/app";
+import { useReplay } from "../state/replay";
 import { confirmReady, SAFETY } from "./confirm";
 
 /**
  * One registry action as a button, with the confirm the registry asks for:
  * none → runs on tap; preconditions → a checklist the user ticks; typed → type the item
  * name. Gated or planned → a lock, no button. Experimental actions exist only in
- * Experimental mode.
+ * Experimental mode. In replay every action is a lock with the word "replay" (read-only).
  */
 export function ActionButton({ action, itemName, disabled, onResult }: {
   action: CatalogAction;
@@ -18,6 +19,7 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
   onResult?: (r: CommandReply) => void;
 }) {
   const { experimental } = useApp();
+  const { active: replaying } = useReplay();
   const run = useAction();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -34,6 +36,13 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
     );
   }
   if (action.status !== "verified" && !experimental) return null;
+  if (replaying) {
+    return (
+      <span className="locked replay-lock" title="Replay — read only" aria-label={`${action.label}: replay, read only`} data-action={action.action}>
+        <span aria-hidden="true">🔒</span>{action.label} · replay
+      </span>
+    );
+  }
 
   const fire = async () => {
     setBusy(true);

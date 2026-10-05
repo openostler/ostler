@@ -122,6 +122,8 @@ CASES = {
     "sessions": lambda b: _get(b, "/sessions"),
     "session-meta": lambda b: _get(b, "/sessions/20261005T090000Z"),
     "session-data": lambda b: _get(b, "/sessions/20261005T090000Z/data?ch=rpm,GPS_Speed&max=50"),
+    "session-events": lambda b: _get(b, "/sessions/20261005T090000Z/events"),
+    "notes": lambda b: _get(b, "/sessions/20261005T090000Z/notes"),
     "sniff": lambda b: _get(b, "/sniff?module=td5"),
     "docs": lambda b: _get(b, "/docs"),
     "community": lambda b: _get(b, "/community"),
@@ -139,6 +141,8 @@ CASES = {
         "candidate_lids": ["09"], "name": "rpm", "unit": "rpm"}),
     "capture": lambda b: _post(b, "/capture", {"module": "td5", "lid": "09",
                                                "raw": "02 fa", "text": "762 rpm"}),
+    # after "capture": the merged list holds at least that row
+    "captures": lambda b: _get(b, "/captures?module=td5"),
 }
 
 

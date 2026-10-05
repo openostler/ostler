@@ -12,6 +12,7 @@ import { Trend } from "../components/Trend";
 import { GROUP_ORDER, moduleName } from "../layout";
 import { pageOf, visibleGroups } from "../lib/catalog";
 import { useApp } from "../state/app";
+import { useReplay } from "../state/replay";
 
 function useCsv() {
   const { snap, module, toast } = useApp();
@@ -65,6 +66,7 @@ export function Inputs() {
   const [plot, setPlot] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const { recording, toggle } = useCsv();
+  const { active: replaying } = useReplay();
 
   const signals = snap?.signals ?? {};
   // every expected field (placeholders without a cable) plus anything live; the _mm
@@ -97,7 +99,7 @@ export function Inputs() {
       {recording && snap?.logging?.file ? (
         <span className="small dis mono">{snap.logging.file}{snap.logging.rows != null ? ` · ${snap.logging.rows} rows` : ""}</span>
       ) : null}
-      <button className={`iconbtn ${recording ? "rec" : ""}`} aria-pressed={recording} onClick={toggle}>
+      <button className={`iconbtn ${recording ? "rec" : ""}`} aria-pressed={recording} onClick={toggle} disabled={replaying}>
         <span className="d" />{recording ? "Stop" : "Log CSV"}
       </button>
     </ScreenHead>

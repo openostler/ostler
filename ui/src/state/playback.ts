@@ -93,14 +93,29 @@ export type Playback = {
   setSpeed: (s: Speed) => void;
 };
 
+export type PlaybackOpts = {
+  /** Follow live: hold the cursor at the newest sample. */
+  pinToEnd?: boolean;
+  /** Called on any user seek or play (so the caller can drop Follow live). */
+  onUserMove?: () => void;
+  /** A new key (e.g. a new session id in the root replay provider) rewinds to the start and pauses. */
+  resetKey?: string | null;
+};
+
 /**
- * The playback controller over a time base. `pinToEnd` (Follow live) holds the cursor at the
- * newest sample. Any user seek or play calls `onUserMove` (so the caller can drop Follow live).
+ * The playback controller over a time base. One clock serves both a single Logs replay and the
+ * app-root ReplayProvider (ADR-0010): `resetKey` lets the long-lived root clock start over when
+ * another session is opened.
  */
-export function usePlaybackState(t: readonly number[], opts: { pinToEnd?: boolean; onUserMove?: () => void } = {}): Playback {
+export function usePlaybackState(t: readonly number[], opts: PlaybackOpts = {}): Playback {
   const start = t.length ? t[0]! : 0;
   const end = t.length ? t[t.length - 1]! : 0;
   const [state, setState] = useState<{ time: number; playing: boolean; speed: Speed }>({ time: start, playing: false, speed: 1 });
+  const [key, setKey] = useState(opts.resetKey);
+  if (opts.resetKey !== key) {
+    setKey(opts.resetKey);
+    setState((s) => ({ ...s, time: start, playing: false }));
+  }
   const anchor = useRef<Anchor>({ wall: 0, time: start });
   const bounds = useRef({ start, end, speed: state.speed, time: state.time });
   const onUserMove = useRef(opts.onUserMove);
@@ -152,8 +167,14 @@ export function usePlaybackState(t: readonly number[], opts: { pinToEnd?: boolea
 
 export const PlaybackCtx = createContext<Playback | null>(null);
 
+/** The nearest playback clock: a Logs replay's own provider, else the root ReplayProvider's
+ * (which provides PlaybackCtx while a session is open, so this keeps working as screens move
+ * to `useReplay()`). Throws when neither is present. */
 export function usePlayback(): Playback {
   const p = useContext(PlaybackCtx);
   if (!p) throw new Error("usePlayback() outside <PlaybackCtx.Provider>");
   return p;
 }
+
+/** A Speed from any number (unknown → 1×). */
+export const toSpeed = (n: number): Speed => ((SPEEDS as readonly number[]).includes(n) ? (n as Speed) : 1);

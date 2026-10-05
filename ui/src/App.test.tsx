@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
@@ -385,5 +385,151 @@ describe("overhaul navigation", () => {
     const section = await screen.findByRole("region", { name: "From NanoCom — not yet decoded" });
     expect(within(section).getByText("Brake switch")).toBeInTheDocument();
     expect(within(section).getByText("sniff target")).toBeInTheDocument();
+  });
+});
+
+/* ---- whole-app replay (ADR-0010, spec §4) ---- */
+
+const RT = Array.from({ length: 61 }, (_, i) => i * 1000); // 0 … 60 s
+const replayMeta = {
+  id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: "2026-10-05T09:01:00.000Z", duration_s: 60, rows: 61,
+  parts: ["data.csv"], modules: ["motor"], has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null,
+  start_pos: null, end_pos: null, synthetic: false, recording: false, source: "mock", audio: [],
+  channels: [
+    { name: "rpm", units: "rpm", group: "engine", c: "proven", limits: [700, 4500] },
+    { name: "battery", units: "V", group: "electrical", c: "proven", limits: [11.5, 15.5] },
+    { name: "module", units: "", group: "text" },
+  ],
+};
+const replayData = {
+  id: "s1", t: RT, utc: RT.map((t) => 1_791_190_800_000 + t), decimated: false, track: [],
+  ch: { rpm: RT.map(() => 1234), battery: RT.map(() => 13.7) },
+};
+const replayEvents = [
+  { t: 0, type: "state", conn: "connected", status: "connected", module: "motor", mode: "mock", active_test: null, fault_watch: false, logging: { recording: false } },
+  { t: 10_000, type: "command", action: "output_ac_fan", ok: true, message: "A/C fan" },
+  { t: 20_000, type: "active_test", active_test: { action: "output_ac_fan", label: "A/C Fan", since: 20, stop: "output_ac_fan" } },
+  { t: 30_000, type: "active_test", active_test: null },
+  { t: 40_000, type: "module", module: "slabs" },
+];
+const replayNotes = [{ id: "n1", t: 5000, t_end: null, text: "Rough idle", tags: [], kind: "note", source: "retro", created: "2026-10-05T09:00:05Z" }];
+
+/** The fake server plus /sessions/s1 (meta, data, events, notes). */
+function installReplayServer(opts: Parameters<typeof installFakeServer>[0] = {}) {
+  const server = installFakeServer(opts);
+  const inner = globalThis.fetch;
+  vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
+    const url = new URL(input, "http://dash.local");
+    const m = /^\/sessions\/s1(?:\/(data|events|notes))?$/.exec(url.pathname);
+    if (!m) return inner(input, init);
+    server.calls.push({ path: url.pathname + url.search, method: init?.method ?? "GET" });
+    const body = m[1] === "data" ? replayData : m[1] === "events" ? { id: "s1", events: replayEvents }
+      : m[1] === "notes" ? { id: "s1", notes: replayNotes } : replayMeta;
+    return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+  }));
+  return server;
+}
+
+async function seek(ms: number) {
+  const slider = await screen.findByRole("slider", { name: "Playback position" });
+  fireEvent.change(slider, { target: { value: String(ms) } });
+}
+
+describe("whole-app replay", () => {
+  beforeEach(() => consented());
+  const live = { ...connected, battery_v: 12.2 };
+
+  it("shows the amber banner, Replay pill and the global transport on Drive; Exit returns to live", async () => {
+    const user = userEvent.setup();
+    installReplayServer({ snapshot: live });
+    render(<App path="/" replay="s1" />);
+    const banner = await screen.findByRole("region", { name: "Replay" });
+    expect(banner).toHaveTextContent("REPLAY");
+    expect(await within(banner).findByTestId("replay-clock")).toHaveTextContent(/⏱/);
+    expect(screen.getByLabelText("Replay — read only")).toHaveTextContent("Replay");
+    expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
+    expect(await screen.findByTestId("global-transport")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Note at .*: Rough idle/ })).toBeInTheDocument();
+    expect(document.querySelector("main")).toHaveClass("replay-edge");
+    // the header battery is the recorded one, not the live one
+    expect(screen.getByLabelText("Car battery 13.7 V")).toBeInTheDocument();
+    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
+    expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("global-transport")).not.toBeInTheDocument();
+    pushSnapshot(live);
+    expect(await screen.findByText("Connected")).toBeInTheDocument();
+    expect(screen.getByLabelText("Car battery 12.2 V")).toBeInTheDocument();
+  });
+
+  it("shows the note chip as the cursor passes a note, and seeks from a note tick", async () => {
+    const user = userEvent.setup();
+    installReplayServer({ snapshot: live });
+    render(<App path="/" replay="s1" />);
+    const banner = await screen.findByRole("region", { name: "Replay" });
+    await screen.findByTestId("global-transport");
+    expect(within(banner).queryByText(/Rough idle/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Note at .*: Rough idle/ }));
+    expect(within(banner).getByText(/Rough idle/)).toBeInTheDocument();
+  });
+
+  it("is read-only: actions are locked with the word replay and nothing is sent", async () => {
+    consented({ trust: "experimental" });
+    const user = userEvent.setup();
+    const server = installReplayServer({ snapshot: live });
+    render(<App path="/" replay="s1" />);
+    await screen.findByTestId("global-transport");
+    await user.click(screen.getByRole("button", { name: "Outputs" }));
+    const card = (await screen.findByText(/A\/C Fan/)).closest("[data-replay-item]") as HTMLElement;
+    expect(within(card).getByLabelText(/replay, read only/)).toHaveTextContent("🔒");
+    expect(within(card).queryByRole("button", { name: /A\/C Fan/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Faults" }));
+    await user.click(screen.getByRole("button", { name: "Settings" }));
+    expect(await screen.findByLabelText("Identity in replay")).toBeInTheDocument();
+    expect(server.commandsSent()).toEqual([]);
+  });
+
+  it("Outputs highlights the latched test at t and shows when each item last ran", async () => {
+    consented({ trust: "experimental" });
+    const user = userEvent.setup();
+    installReplayServer({ snapshot: live });
+    render(<App path="/" replay="s1" />);
+    await screen.findByTestId("global-transport");
+    await user.click(screen.getByRole("button", { name: "Outputs" }));
+    const item = () => document.querySelector('[data-replay-item="ac-fan"]') as HTMLElement;
+    await waitFor(() => expect(item()).toBeTruthy());
+    expect(item()).not.toHaveAttribute("data-running");
+    expect(item()).not.toHaveTextContent("ran at");
+    await seek(21_000);
+    expect(item()).toHaveAttribute("data-running", "true");
+    expect(item()).toHaveTextContent(/ran at \d\d:\d\d:\d\d ✓/);
+    await seek(35_000);
+    expect(item()).not.toHaveAttribute("data-running");
+  });
+
+  it("follows the recorded module without touching the live connection", async () => {
+    const server = installReplayServer({ snapshot: live });
+    render(<App path="/" replay="s1" />);
+    await screen.findByTestId("global-transport");
+    expect(screen.getByLabelText(/Module TD5.*\(recorded\)/)).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Module" })).not.toBeInTheDocument();
+    await seek(45_000);
+    expect(await screen.findByLabelText(/Module SLABS.*\(recorded\)/)).toBeInTheDocument();
+    await waitFor(() => expect(server.calls.some((c) => c.path === "/fields?module=slabs")).toBe(true));
+    expect(server.calls.some((c) => c.path === "/catalog?module=slabs")).toBe(true);
+    expect(server.commandsSent()).toEqual([]);
+  });
+
+  it("suppresses the connection notice and the automatic connection sheet", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      installReplayServer({ snapshot: { ...connected, conn: "error", status: "error" } });
+      render(<App path="/" replay="s1" />);
+      await screen.findByTestId("global-transport");
+      await act(async () => { vi.advanceTimersByTime(10_000); });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.queryByText("No connection")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

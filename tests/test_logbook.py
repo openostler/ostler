@@ -14,9 +14,9 @@ from d2diag.logbook.store import SessionStore, rdp, read_part, reduce_track
 from d2diag.logbook.synth import generate
 
 T0 = 1791277200.0  # 2026-10-06T09:00:00Z (a day after the demo session)
-META_KEYS = {"id", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules",
+META_KEYS = {"id", "name", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules",
              "channels", "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos",
-             "end_pos", "synthetic", "recording", "source"}
+             "end_pos", "synthetic", "recording", "source", "audio", "accel_cal"}
 
 
 class Clock:
@@ -119,14 +119,16 @@ def test_sparse_rows_and_header(tmp_path):
     names = [h[0] for h in parse_header(lines[0])]
     assert names[2:9] == ["GPS_Latitude", "GPS_Longitude", "GPS_Speed", "GPS_Heading",
                           "GPS_Altitude", "GPS_Nsat", "GPS_HDOP"]
-    assert names[9:] == ["rpm", "coolant_temp", "module", "faults"]
+    assert names[9:11] == ["GPS_LonAcc", "GPS_LatAcc"]
+    assert names[11:] == ["rpm", "coolant_temp", "module", "faults"]
     assert '"rpm"|"x"|5' in cells and '"GPS_Speed"|"km/h"|10' in cells
     _, rows = read_part(str(path))
     assert [r_["Interval"] for r_ in rows] == [0, 200, 400]
     assert rows[1].get("rpm") is None and rows[1]["GPS_Speed"] == 12
     assert rows[2].get("GPS_Latitude") is None and rows[2]["rpm"] == 810
     assert rows[0]["Utc"] == int(T0 * 1000)
-    assert sorted(os.listdir(tmp_path / "sessions" / sid)) == ["data.csv", "meta.json"]
+    assert sorted(os.listdir(tmp_path / "sessions" / sid)) == ["data.csv", "events.jsonl",
+                                                               "meta.json"]
 
 
 def test_new_channel_starts_new_part(tmp_path):
@@ -138,7 +140,7 @@ def test_new_channel_starts_new_part(tmp_path):
     r.feed(snap(rpm=830, battery=14.1), None)  # new channel mid-session
     sid = r.status()["session"]
     d = tmp_path / "sessions" / sid
-    assert sorted(os.listdir(d)) == ["data-0.csv", "data-1.csv", "meta.json"]
+    assert sorted(os.listdir(d)) == ["data-0.csv", "data-1.csv", "events.jsonl", "meta.json"]
     assert meta_of(tmp_path, sid)["parts"] == ["data-0.csv", "data-1.csv"]
     r.close()
     data = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, ["rpm", "battery"])
@@ -181,9 +183,10 @@ def test_fsync_at_most_once_per_second(tmp_path):
     for _ in range(50):  # 10 s at 5 Hz
         r.feed(snap(rpm=800), None)
         c.t += 0.2
-    assert 9 <= len(calls) <= 11
+    # data.csv once per second, plus events.jsonl once (its state line)
+    assert 10 <= len(calls) <= 12
     r.close()
-    assert len(calls) <= 12
+    assert len(calls) <= 13
 
 
 def test_meta_rewritten_every_30s(tmp_path):
@@ -340,7 +343,8 @@ def test_store_unknown_and_public_hidden(tmp_path):
 def test_store_data_shape(tmp_path):
     sid = _recorded(tmp_path)
     d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, "rpm,GPS_Speed,nope")
-    assert set(d) == {"id", "t", "utc", "ch", "track", "decimated"}
+    assert set(d) == {"id", "t", "utc", "ch", "text", "track", "decimated"}
+    assert d["text"]["module"] == ["motor"] * 10 and d["text"]["faults"] == [None] * 10
     assert set(d["ch"]) == {"rpm", "GPS_Speed"} and d["decimated"] is False
     assert len(d["t"]) == len(d["utc"]) == len(d["ch"]["rpm"]) == 10
     assert d["track"][0] == [-4.68, 56.62, 0] and len(d["track"]) == 10
@@ -380,7 +384,7 @@ def test_delete_refuses_demo_and_deletes_real(tmp_path):
     store = SessionStore(str(tmp_path / "sessions"))
     with pytest.raises(PermissionError):
         store.delete("20261005T090000Z")
-    assert os.path.exists(os.path.join(DEMO_ROOT, "20261005T090000Z", "data.csv"))
+    assert os.path.exists(os.path.join(DEMO_ROOT, "20261005T090000Z", "data-0.csv"))
     store.delete(sid)
     assert sid not in [m["id"] for m in store.list()]
     with pytest.raises(KeyError):
@@ -403,14 +407,18 @@ def test_demo_session_is_synthetic_and_listed(tmp_path):
     assert d["decimated"] is True and d["track"] and len(d["track"]) <= 5000
     size = sum(os.path.getsize(os.path.join(DEMO_ROOT, m["id"], f))
                for f in os.listdir(os.path.join(DEMO_ROOT, m["id"])))
-    assert size < 1_000_000
+    assert size < 600_000
 
 
 def test_demo_generation_is_deterministic(tmp_path):
     sid = generate(str(tmp_path / "a"))
     sid2 = generate(str(tmp_path / "b"))
     assert sid == sid2 == "20261005T090000Z"
-    for f in ("data.csv", "meta.json"):
+    files = sorted(os.listdir(tmp_path / "a" / sid))
+    assert files == ["data-0.csv", "data-1.csv", "events.jsonl", "meta.json", "notes.jsonl"]
+    assert files == sorted(f for f in os.listdir(os.path.join(DEMO_ROOT, sid))
+                           if not f.startswith("."))
+    for f in files:
         a = (tmp_path / "a" / sid / f).read_bytes()
         assert a == (tmp_path / "b" / sid / f).read_bytes()
         assert a == open(os.path.join(DEMO_ROOT, sid, f), "rb").read(), \
@@ -424,3 +432,212 @@ def test_session_with_no_rows_is_removed_on_close(tmp_path):
     rec.feed({"conn": "connected", "status": "connected", "signals": {}, "faults": []}, None)
     rec.close()
     assert [p for p in tmp_path.iterdir() if p.is_dir()] == []
+
+
+# ------------------------------------------------- events (ADR-0010, spec §1) -- #
+
+def events_of(tmp_path, sid):
+    from d2diag.logbook.store import read_events
+    return read_events(str(tmp_path / "sessions" / sid))
+
+
+def test_events_state_line_and_on_change_only(tmp_path):
+    c, r = make(tmp_path)
+    s = snap(rpm=800)
+    s.update(status="connected", fault_watch=False, logging={"recording": False},
+             active_test=None)
+    r.feed(s, None)
+    sid = r.status()["session"]
+    for _ in range(5):  # nothing changes: no events
+        c.t += 0.5
+        r.feed(dict(s), None)
+    c.t += 0.5
+    r.feed({**s, "fault_watch": True, "logging": {"recording": True, "file": "/x/live.csv",
+                                                  "rows": 3}}, None)
+    c.t += 0.5
+    r.feed({**s, "fault_watch": True, "logging": {"recording": True, "file": "/x/live.csv",
+                                                  "rows": 9}}, None)  # rows only: no event
+    c.t += 0.5
+    r.feed({**s, "conn": "lost", "status": "error", "error": "timeout"}, None)
+    r.close()  # events are flushed with the data (≤ 1 s), so read after close
+    ev = events_of(tmp_path, sid)
+    assert ev[0] == {"t": 0, "type": "state", "conn": "connected", "status": "connected",
+                     "module": "motor", "mode": "live", "active_test": None,
+                     "fault_watch": False, "logging": {"recording": False}}
+    rest = [(e["t"], e["type"]) for e in ev[1:]]
+    assert rest == [(3000, "fault_watch"), (3000, "logging"), (4000, "conn"),
+                    (4000, "status"), (4000, "fault_watch"), (4000, "logging"),
+                    (4000, "error")]
+    assert ev[2] == {"t": 3000, "type": "logging", "recording": True, "file": "live.csv"}
+    assert ev[1]["on"] is True and ev[-1]["error"] == "timeout"
+
+
+def test_event_api_dedups_state_and_strips_command(tmp_path):
+    c, r = make(tmp_path)
+    assert r.event("command", action="x", ok=True) is None  # nothing recording
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    c.t += 1.0
+    assert r.event("module", module="motor") is None  # unchanged
+    line = r.event("command", action="output_ac_fan", ok=True, message="A/C fan",
+                   params={"secret": 1}, trust="experimental", raw="30 a4")
+    assert line == {"t": 1000, "type": "command", "action": "output_ac_fan", "ok": True,
+                    "message": "A/C fan"}
+    r.event("command", action="pump_on", ok=False, error="refused")
+    r.event("audio", track="t1", state="start", source="phone", trust="x")
+    r.event("active_test", active_test={"action": "pump_on", "label": "Pump",
+                                        "since": 1.0, "stop": "pump_off"})
+    r.event("active_test", active_test={"action": "pump_on", "label": "Pump",
+                                        "since": 2.0, "stop": "pump_off"})  # same test
+    r.close()
+    ev = events_of(tmp_path, sid)
+    assert [e["type"] for e in ev] == ["state", "command", "command", "audio", "active_test"]
+    assert ev[2] == {"t": 1000, "type": "command", "action": "pump_on", "ok": False,
+                     "error": "refused"}
+    assert "trust" not in ev[3]
+    assert ev[4]["active_test"] == {"action": "pump_on", "label": "Pump", "stop": "pump_off"}
+
+
+def test_identity_read_never_lands_in_events(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800), None)
+    sid = r.status()["session"]
+    r.event("command", action="read_identity", ok=True,
+            message="VIN SALLTGM88XA123456 · EKA 1234", vin="SALLTGM88XA123456",
+            params={"vin": "SALLTGM88XA123456"})
+    r.close()
+    ev = events_of(tmp_path, sid)
+    assert ev[-1] == {"t": 0, "type": "command", "action": "read_identity", "ok": True}
+    blob = (tmp_path / "sessions" / sid / "events.jsonl").read_text(encoding="utf-8")
+    assert "SALLT" not in blob and "1234" not in blob
+
+
+def test_module_switch_keeps_session_and_state_line_per_part(tmp_path):
+    c, r = make(tmp_path)
+    for _ in range(4):
+        r.feed(snap(rpm=800), None)
+        c.t += 0.5
+    sid = r.status()["session"]
+    s = snap(height_left=150)
+    s["module"] = "slabs"
+    for _ in range(4):
+        r.feed(s, None)
+        c.t += 0.5
+    assert r.status()["session"] == sid
+    r.close()
+    m = meta_of(tmp_path, sid)
+    assert m["modules"] == ["motor", "slabs"] and m["parts"] == ["data-0.csv", "data-1.csv"]
+    ev = events_of(tmp_path, sid)
+    assert [(e["t"], e["type"]) for e in ev] == [(0, "state"), (2000, "module"),
+                                                 (2000, "state")]
+    assert ev[1]["module"] == "slabs" and ev[2]["module"] == "slabs"
+    d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, ["rpm"])
+    assert d["text"]["module"] == ["motor"] * 4 + ["slabs"] * 4
+
+
+def test_events_fsync_with_data_cadence(tmp_path):
+    calls = []
+    c, r = make(tmp_path, fsync=calls.append)
+    r.feed(snap(rpm=800), None)
+    n0 = len(calls)
+    for i in range(10):  # ten commands within 0.5 s: no extra syncs
+        c.t += 0.05
+        r.event("command", action=f"a{i}", ok=True)
+    assert len(calls) == n0
+    c.t += 1.0
+    r.event("command", action="late", ok=True)
+    assert len(calls) == n0 + 2  # data + events, once
+
+
+def test_meta_channels_carry_confidence_limits_group(tmp_path):
+    c, r = make(tmp_path)
+    r.feed(snap(rpm=800, egr_pos=12, made_up_sig=5), fix(c, speed=10))
+    sid = r.status()["session"]
+    r.close()
+    chans = {x["name"]: x for x in meta_of(tmp_path, sid)["channels"]}
+    assert chans["rpm"]["c"] == "proven" and chans["rpm"]["limits"] == [0, 4800]
+    assert chans["rpm"]["group"] == "engine"
+    assert chans["egr_pos"]["c"] == "candidate"
+    assert chans["made_up_sig"]["c"] == "candidate" and chans["made_up_sig"]["limits"] is None
+    assert chans["GPS_Speed"] == {"name": "GPS_Speed", "units": "km/h", "group": "gps",
+                                  "c": None, "limits": None}
+    assert chans["GPS_LonAcc"]["group"] == "accel" and chans["GPS_LonAcc"]["c"] is None
+
+
+def test_store_completes_old_meta(tmp_path):
+    root = tmp_path / "sessions"
+    (root / "20260101T000000Z").mkdir(parents=True)
+    (root / "20260101T000000Z" / "meta.json").write_text(json.dumps(
+        {"id": "20260101T000000Z", "channels": [{"name": "rpm", "units": "rpm"}]}))
+    m = SessionStore(str(root), demo_root=None).meta("20260101T000000Z")
+    assert m["channels"][0] == {"name": "rpm", "units": "rpm", "group": "engine",
+                                "c": "proven", "limits": [0, 4800]}
+    assert m["audio"] == [] and m["accel_cal"] is None
+    assert SessionStore(str(root), demo_root=None).events("20260101T000000Z") == []
+
+
+def test_store_events_public_filter_and_truncation(tmp_path):
+    sid = _recorded(tmp_path)
+    store = SessionStore(str(tmp_path / "sessions"))
+    with pytest.raises(KeyError):
+        store.events(sid, public=True)
+    with open(tmp_path / "sessions" / sid / "events.jsonl", "a", encoding="utf-8") as fh:
+        fh.write('{"t": 5, "type": "co')
+    assert [e["type"] for e in store.events(sid)] == ["state"]
+
+
+def test_text_channels_follow_decimation(tmp_path):
+    c, r = make(tmp_path)
+    for i in range(300):
+        s = snap(rpm=800 + i)
+        s["faults"] = ["P0100"] if i >= 150 else []
+        r.feed(s, None)
+        c.t += 0.2
+    sid = r.status()["session"]
+    r.close()
+    d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, ["rpm"], max_points=20)
+    assert d["decimated"] and len(d["text"]["faults"]) == len(d["t"]) == len(d["ch"]["rpm"])
+    for t, f in zip(d["t"], d["text"]["faults"]):
+        assert f == ("P0100" if t >= 150 * 200 else None)
+
+
+def test_demo_has_events_notes_switch_and_gps_accel(tmp_path):
+    store = SessionStore(str(tmp_path / "none"))
+    sid = "20261005T090000Z"
+    ev = store.events(sid, public=True)
+    assert ev[0]["type"] == "state" and ev[0]["module"] == "motor"
+    assert ev[0]["conn"] == "connected"
+    assert not any(e["type"] == "conn" for e in ev)  # stays connected
+    sw = [e for e in ev if e["type"] == "module"]
+    assert sw == [{"t": 360000, "type": "module", "module": "slabs"}]
+    tests = [e for e in ev if e["type"] == "active_test"]
+    assert [bool(e["active_test"]) for e in tests] == [True, False]
+    assert any(e["type"] == "command" and e["action"] == "output_ac_fan" for e in ev)
+    notes = store.notes(sid, public=True)
+    assert len(notes) == 3 and all(n["source"] == "retro" for n in notes)
+    assert [n["t"] for n in notes] == sorted(n["t"] for n in notes)
+    m = store.meta(sid, public=True)
+    assert m["modules"] == ["motor", "slabs"]
+    d = store.data(sid, ["height_left", "rpm", "GPS_LonAcc", "GPS_LatAcc"], max_points=100000)
+    i_sw = d["t"].index(360000)
+    assert all(v is None for v in d["ch"]["rpm"][i_sw:])
+    assert any(v is not None for v in d["ch"]["height_left"][i_sw:])
+    assert max(abs(v) for v in d["ch"]["GPS_LonAcc"] if v is not None) > 0.1
+    assert max(abs(v) for v in d["ch"]["GPS_LatAcc"] if v is not None) > 0.05
+    with pytest.raises(PermissionError):
+        store.add_note(sid, 1000, "x")
+
+
+def test_set_name_names_the_open_session_only(tmp_path):
+    import json
+    from d2diag.logbook.recorder import SessionRecorder
+    clock = [1_000.0]
+    rec = SessionRecorder(str(tmp_path), clock=lambda: clock[0], mono=lambda: clock[0])
+    sid = rec.start({"conn": "connected", "status": "connected", "signals": {"rpm": {"v": 800}}})
+    rec.set_name("Track day")
+    meta = json.loads((tmp_path / sid / "meta.json").read_text())
+    assert meta["name"] == "Track day"
+    clock[0] += 10
+    sid2 = rec.split()
+    assert json.loads((tmp_path / sid2 / "meta.json").read_text()).get("name") is None
+    rec.close()

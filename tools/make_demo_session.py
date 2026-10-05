@@ -1,8 +1,9 @@
-"""Regenerate the committed synthetic demo session (ADR-0009).
+"""Regenerate the committed synthetic demo session (ADR-0009, ADR-0010).
 
     PYTHONPATH=src python3 tools/make_demo_session.py [--out DIR]
 
-Writes ``src/d2diag/logbook/demo/<id>/`` (data.csv + meta.json) deterministically: the
+Writes ``src/d2diag/logbook/demo/<id>/`` (data CSV parts, meta.json, events.jsonl and
+notes.jsonl) deterministically: the
 same code always produces byte-identical files. The logic lives in
 ``d2diag.logbook.synth``.
 """

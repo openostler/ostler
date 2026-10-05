@@ -5,6 +5,7 @@
  *
  * Approach informed by DovesDataviewer (GPL-3.0), independently implemented.
  */
+import type { Note } from "../../api/schemas";
 import { clamp, indexAt } from "../../state/playback";
 
 export type View = { t0: number; t1: number };
@@ -103,4 +104,11 @@ export function niceTicks(lo: number, hi: number, n = 3): number[] {
   const out: number[] = [];
   for (let x = Math.ceil(lo / step) * step; x <= hi + 1e-9; x += step) out.push(+x.toFixed(10));
   return out;
+}
+
+/** Notes inside the view, as pixel spans (a point note has x0 = x1). */
+export function noteSpans(notes: readonly Note[], v: View, width: number): { note: Note; x0: number; x1: number }[] {
+  return notes
+    .filter((n) => (n.t_end ?? n.t) >= v.t0 && n.t <= v.t1)
+    .map((n) => ({ note: n, x0: Math.max(0, xOf(n.t, v, width)), x1: Math.min(width, xOf(n.t_end ?? n.t, v, width)) }));
 }

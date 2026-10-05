@@ -11,7 +11,35 @@
       ],
       "kind": "note",
       "source": "retro",
-      "created": "2026-10-05T09:02:00.000Z",
+      "created": "2026-10-05T09:30:00.000Z",
+      "edited": null,
+      "capture": null
+    },
+    {
+      "id": "5e6f7a8b",
+      "t": 175000,
+      "t_end": 230000,
+      "text": "Full-throttle climb: boost and coolant look fine",
+      "tags": [
+        "driving"
+      ],
+      "kind": "note",
+      "source": "retro",
+      "created": "2026-10-05T09:31:00.000Z",
+      "edited": null,
+      "capture": null
+    },
+    {
+      "id": "9c0d1e2f",
+      "t": 540000,
+      "t_end": 548000,
+      "text": "ABS pump test while stopped, pump audible",
+      "tags": [
+        "test"
+      ],
+      "kind": "note",
+      "source": "retro",
+      "created": "2026-10-05T09:32:00.000Z",
       "edited": null,
       "capture": null
     }

@@ -3,7 +3,7 @@
   "source": "mock",
   "signals": {
     "rpm": {
-      "v": 842.66,
+      "v": 830.52,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
@@ -15,7 +15,7 @@
       "c": "proven"
     },
     "battery": {
-      "v": 14.13,
+      "v": 13.99,
       "u": "V",
       "s": "ok",
       "c": "proven"
@@ -33,13 +33,13 @@
       "c": "proven"
     },
     "fuel_temp": {
-      "v": 13.66,
+      "v": 13.64,
       "u": "°C",
       "s": "ok",
       "c": "proven"
     },
     "manifold_press": {
-      "v": 1.0,
+      "v": 0.99,
       "u": "bar",
       "s": "ok",
       "c": "proven"
@@ -51,55 +51,55 @@
       "c": "proven"
     },
     "economy": {
-      "v": 8.08,
+      "v": 8.17,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "trip_economy": {
-      "v": 7.87,
+      "v": 7.83,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "lifetime_economy": {
-      "v": 8.47,
+      "v": 8.46,
       "u": "L/100km",
       "s": null,
       "c": "candidate"
     },
     "rpm_error": {
-      "v": 0.5,
+      "v": -2.48,
       "u": "rpm",
       "s": "ok",
       "c": "proven"
     },
     "balance_1": {
-      "v": 1.56,
+      "v": -2.0,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_2": {
-      "v": -2.71,
+      "v": 1.93,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_3": {
-      "v": 0.32,
+      "v": 2.38,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_4": {
-      "v": 0.06,
+      "v": -0.57,
       "u": "",
       "s": "ok",
       "c": "proven"
     },
     "balance_5": {
-      "v": 2.77,
+      "v": 1.34,
       "u": "",
       "s": "ok",
       "c": "proven"
@@ -121,8 +121,8 @@
   "fault_watch": false,
   "allow_shutdown": false,
   "conn": "connected",
-  "ts": 1791155742.5190892,
-  "battery_v": 14.13,
+  "ts": 1791159861.0687723,
+  "battery_v": 13.99,
   "port": {
     "spec": "auto",
     "resolved": null,
@@ -130,5 +130,17 @@
   },
   "active_test": null,
   "gps": null,
-  "recording": null
+  "recording": null,
+  "recording_sources": {
+    "gps": "none",
+    "pi_audio": {
+      "state": "unavailable",
+      "reason": "Pi audio is off (start with --audio pi)"
+    },
+    "imu": {
+      "state": "unavailable",
+      "reason": "no IMU configured (start with --imu auto or mock)"
+    },
+    "accel_hz": 25
+  }
 }

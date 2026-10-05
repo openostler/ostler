@@ -241,9 +241,15 @@ def test_no_vin_or_identity_in_any_session_file(tmp_path):
         srv.server_close()
     files = list((tmp_path / "sessions" / sid).rglob("*"))
     assert any(f.name == "meta.json" for f in files)
+    # ADR-0010 §1: the identity read is an event with only {action, ok} — no payload.
+    events = [json.loads(x) for x in
+              (tmp_path / "sessions" / sid / "events.jsonl").read_text().splitlines()]
+    ident_ev = [e for e in events if e.get("action") == "read_identity"]
+    assert ident_ev and all(set(e) == {"t", "type", "action", "ok"} for e in ident_ev)
     for f in files:
         if f.is_file():
             text = f.read_text(encoding="utf-8", errors="replace")
+            text = text.replace('"action":"read_identity"', "")  # the bare action name only
             for needle in (ident["part_no"], ident["vin_masked"], "vin", "VIN", "identity"):
                 assert needle not in text, f"{needle!r} leaked into {f.name}"
 

@@ -4,8 +4,21 @@
 ``conn`` first becomes ``connected`` or GPS speed goes above 3 km/h, and ends after
 ``IDLE_S`` with no connected poll and GPS speed below 3 km/h (or no GPS), or on
 ``close()``. Each session is a directory ``<root>/<id>/`` with RaceCapture-style CSV parts
-and an atomically rewritten ``meta.json``. Only ``signals``, ``faults``, ``module`` and GPS
-are recorded — never the VIN or any identity read.
+and an atomically rewritten ``meta.json``. Only ``signals``, ``faults``, ``module``, GPS
+and acceleration are recorded — never the VIN or any identity read.
+
+ADR-0010 additions (specs/2026-10-05-replay-notes-capture-design.md):
+
+* ``events.jsonl``: ``event(type, **fields)``; ``feed()`` derives the state-ish events
+  (conn, status, connect_phase, module, mode, active_test, fault_watch, logging, error)
+  from the snapshot, on change only, and writes a ``state`` line at the start of every
+  part. ``command`` events keep only ``action, ok, message?, error?`` (never params; for
+  identity reads only ``action, ok``).
+* Notes: ``note(...)`` stamps a live note "now" (starting a session if none is open).
+* Acceleration: ``feed_accel(samples, source)`` and ``set_accel_cal(matrix, source,
+  method)``; ``GPS_LonAcc``/``GPS_LatAcc`` from every GPS fix.
+* Audio: ``audio_put(...)``/``audio_stop(...)`` for phone chunks, ``set_pi_audio(PiAudio)``
+  for the Pi's microphone; tracks are listed in ``meta.audio``.
 """
 from __future__ import annotations
 
@@ -22,6 +35,9 @@ import time
 from typing import Callable
 
 from . import channels as ch
+from . import motion
+from .audio import AudioTrackWriter
+from .notes import NoteLog, read_notes
 
 IDLE_S = 300.0          # end after this long idle
 MOVING_KMH = 3.0        # GPS speed that counts as moving
@@ -137,6 +153,87 @@ def _num_value(v) -> "float | int | None":
     return None
 
 
+
+# ----------------------------------------------------------------- events -- #
+
+# state-ish event type → the snapshot-derived key it de-duplicates on
+STATE_TYPES = ("conn", "status", "connect_phase", "module", "mode", "active_test",
+               "fault_watch", "logging", "error")
+STATE_LINE = ("conn", "status", "module", "mode", "active_test", "fault_watch", "logging")
+_EVENT_FIELD = {"connect_phase": "phase", "fault_watch": "on"}  # type → its field name
+_STRIP = ("trust", "params", "param", "payload", "identity", "vin")
+_IDENTITY_ACTION = re.compile(r"(ident|vin|eka|serial)", re.IGNORECASE)
+_TYPE_RE = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
+MAX_ACCEL_SAMPLES = 5000      # per feed_accel call
+DEFAULT_ACCEL_HZ = 25
+# Sources whose sensor is mounted in the vehicle frame (x forward, y left, z up) unless
+# calibrated otherwise. A phone always needs a calibration before vehicle channels.
+_ALIGNED_SOURCES = ("imu", "pi", "mock")
+
+
+def _norm_active_test(v) -> "dict | None":
+    if not isinstance(v, dict) or not v.get("action"):
+        return None
+    return {k: v[k] for k in ("action", "label", "stop") if v.get(k) is not None}
+
+
+def _norm_logging(v) -> dict:
+    if not isinstance(v, dict):
+        return {"recording": False}
+    out = {"recording": bool(v.get("recording"))}
+    if out["recording"] and v.get("file"):
+        out["file"] = os.path.basename(str(v["file"]))
+    return out
+
+
+def derive_state(snap: dict) -> dict:
+    """The event state carried by a snapshot (values as they appear in events)."""
+    return {
+        "conn": snap.get("conn"),
+        "status": snap.get("status"),
+        "connect_phase": snap.get("connect_phase"),
+        "module": snap.get("module"),
+        "mode": snap.get("mode"),
+        "active_test": _norm_active_test(snap.get("active_test")),
+        "fault_watch": bool(snap.get("fault_watch")),
+        "logging": _norm_logging(snap.get("logging")),
+        "error": str(snap.get("error") or ""),
+    }
+
+
+def _event_value(etype: str, fields: dict):
+    """The de-dup value of a state-ish event built from its fields."""
+    if etype == "active_test":
+        return _norm_active_test(fields.get("active_test"))
+    if etype == "logging":
+        return _norm_logging({"recording": fields.get("recording"), "file": fields.get("file")})
+    if etype == "fault_watch":
+        return bool(fields.get("on"))
+    if etype == "error":
+        return str(fields.get("error") or "")
+    return fields.get(_EVENT_FIELD.get(etype, etype))
+
+
+def _event_fields(etype: str, value) -> dict:
+    if etype == "logging":
+        return dict(value)
+    return {_EVENT_FIELD.get(etype, etype): value}
+
+
+def clean_command(fields: dict) -> dict:
+    """``command`` events keep ``action, ok, message?, error?`` only — never params — and an
+    identity read keeps only ``action, ok`` (the VIN never lands in a session)."""
+    action = str(fields.get("action") or "")
+    out: dict = {"action": action, "ok": bool(fields.get("ok"))}
+    if _IDENTITY_ACTION.search(action):
+        return out
+    for k in ("message", "error"):
+        v = fields.get(k)
+        if isinstance(v, str) and v:
+            out[k] = v[:300]
+    return out
+
+
 # ---------------------------------------------------------------- session -- #
 
 class _Session:
@@ -148,7 +245,9 @@ class _Session:
         self.columns: "list[str]" = []
         self.units: "dict[str, str]" = {}
         self.signals: "list[str]" = []
+        self.extra: "list[str]" = []        # acceleration channels, once seen
         self.rows = 0
+        self.accel_rows = 0
         self.part_start_m = start_m
         self.last_sync_m = -math.inf
         self.last_meta_m = start_m
@@ -167,6 +266,18 @@ class _Session:
         self.last_pt: "tuple[float, float] | None" = None
         self.end_s: "float | None" = None
         self.end_m: "float | None" = None
+        # ADR-0010
+        self.efh: "io.TextIOWrapper | None" = None
+        self.events_dirty = False
+        self.state: dict = {}
+        self.gps_accel = motion.GpsAccel()
+        self.accel_cal: "dict | None" = None
+        self.writers: "dict[str, AudioTrackWriter]" = {}
+        self.audio: "list[dict]" = []       # finished phone tracks and every Pi track
+        self.pi_entry: "dict | None" = None
+
+    def ms(self, m: float) -> int:
+        return int(round((m - self.start_m) * 1000.0))
 
 
 class SessionRecorder:
@@ -176,33 +287,37 @@ class SessionRecorder:
     arguments: ``source`` (default: the snapshot's ``mode``, else ``live``), ``synthetic``,
     ``poll_hz`` (header rate hint; otherwise estimated from the feed cadence, default 2),
     ``trust_clock`` (fill ``Utc`` from ``clock`` until a GPS fix gives time),
-    ``min_free_bytes`` (rotation threshold; 0 disables) and ``fsync`` (the function used
-    for data-file syncs).
+    ``min_free_bytes`` (rotation threshold; 0 disables), ``fsync`` (the function used
+    for data-file syncs) and ``accel_hz`` (header rate of the acceleration channels).
     """
 
     def __init__(self, root: str, clock: Callable[[], float] = time.time,
                  mono: Callable[[], float] = time.monotonic, *, source: "str | None" = None,
                  synthetic: bool = False, poll_hz: "float | None" = None,
                  trust_clock: bool = True, min_free_bytes: int = MIN_FREE_BYTES,
-                 fsync: Callable[[int], None] = os.fsync) -> None:
+                 fsync: Callable[[int], None] = os.fsync,
+                 accel_hz: int = DEFAULT_ACCEL_HZ) -> None:
         self.root = str(root)
         self._clock, self._mono = clock, mono
         self.source, self.synthetic = source, synthetic
         self.poll_hz, self.trust_clock = poll_hz, trust_clock
         self.min_free_bytes = min_free_bytes
+        self.accel_hz = accel_hz
         self._fsync = fsync
         self.fsyncs = 0
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._s: "_Session | None" = None
         self._src: str = source or "live"
         self._last_feed_m: "float | None" = None
         self._dt_ema: "float | None" = None
+        self._cal: "dict[str, dict]" = {}   # source → {matrix, source, method}
+        self._pi = None                       # audio.PiAudio while Pi audio is on
         self._recover()
 
     # ---- public ------------------------------------------------------- #
 
     def feed(self, snapshot: "dict | None", gps=None) -> None:
-        """One poll: maybe open a session, write a row, maybe end it."""
+        """One poll: maybe open a session, record state changes, write a row, maybe end."""
         with self._lock:
             now, m = self._clock(), self._mono()
             self._note_cadence(m)
@@ -218,6 +333,9 @@ class SessionRecorder:
                 if not (connected or (speed is not None and speed > MOVING_KMH)):
                     return
                 s = self._open(now, m, snap)
+            else:
+                self._state_changes(s, m, snap)
+            self._check_pi(s, m)
             if connected:
                 s.last_conn_m = m
             if speed is not None and speed >= MOVING_KMH:
@@ -238,6 +356,203 @@ class SessionRecorder:
         """The snapshot ``recording`` field: ``{session, since, rows}`` or None."""
         s = self._s
         return None if s is None else {"session": s.id, "since": s.start_s, "rows": s.rows}
+
+    @property
+    def session_id(self) -> "str | None":
+        s = self._s
+        return None if s is None else s.id
+
+    def set_name(self, name: "str | None") -> None:
+        """Name the session being recorded (meta ``name``); None clears it. With no session
+        open, the name is kept for the next one."""
+        with self._lock:
+            sess = self._s
+            if sess is None:
+                self._next_name = name or None
+                return
+            sess.name = name or None
+            self._write_meta(sess, self._mono())
+
+    def session_ms(self) -> "int | None":
+        """Now, in session milliseconds (None when nothing is recording)."""
+        s = self._s
+        return None if s is None else s.ms(self._mono())
+
+    def start(self, snapshot: "dict | None" = None) -> str:
+        """Open a session now if none is open (e.g. a live note); returns its id. It ends
+        by the usual idle rule."""
+        with self._lock:
+            if self._s is None:
+                self._open(self._clock(), self._mono(), snapshot or {})
+            return self._s.id
+
+    def split(self, snapshot: "dict | None" = None) -> str:
+        """End the open session (if any) and start a new one; returns the new id."""
+        with self._lock:
+            if self._s is not None:
+                self._end(self._s, self._clock(), self._mono())
+            now, m = self._clock(), self._mono()
+            if self._s is None:
+                self._open(now, m, snapshot or {})
+            return self._s.id
+
+    def event(self, etype: str, **fields) -> "dict | None":
+        """Append ``{"t", "type", ...fields}`` to the open session's ``events.jsonl``.
+        State-ish types are written only when they change; ``command`` is reduced to
+        ``action, ok, message?, error?``; ``trust``/``params`` are always stripped. Returns
+        the line written, or None (no session open, or no change)."""
+        with self._lock:
+            s = self._s
+            if s is None or not isinstance(etype, str) or not _TYPE_RE.match(etype):
+                return None
+            m = self._mono()
+            if etype in STATE_TYPES:
+                value = _event_value(etype, fields)
+                if s.state.get(etype, object()) == value:
+                    return None
+                s.state[etype] = value
+                return self._emit(s, m, etype, _event_fields(etype, value))
+            if etype == "command":
+                return self._emit(s, m, etype, clean_command(fields))
+            if etype == "accel_cal":
+                return self._emit(s, m, etype, {k: fields.get(k) for k in
+                                                ("matrix", "source", "method")})
+            return self._emit(s, m, etype, fields)
+
+    def note(self, text: str = "", tags=(), kind: str = "mark", capture=None,
+             t_end=None, snapshot: "dict | None" = None) -> "tuple[str, dict]":
+        """A live note stamped now in the recording session (one is started first if
+        nothing is recording). Returns ``(session_id, note)``; ``ValueError`` on bad input."""
+        with self._lock:
+            if self._s is None:
+                self._open(self._clock(), self._mono(), snapshot or {})
+            s = self._s
+            note = NoteLog(s.dir, clock=self._clock).add(
+                s.ms(self._mono()), text=text, tags=tags, kind=kind, source="live",
+                t_end=t_end, capture=capture)
+            return s.id, note
+
+    # ---- acceleration -------------------------------------------------- #
+
+    def set_accel_cal(self, matrix, source: str = "phone", method: str = "level") -> dict:
+        """Store a sensor→vehicle calibration for ``source`` (kept for later sessions too),
+        record it in ``meta.accel_cal`` and as an ``accel_cal`` event."""
+        if not motion.valid_matrix(matrix):
+            raise ValueError("matrix must be 3x3 numbers")
+        cal = {"matrix": [[float(x) for x in row] for row in matrix],
+               "source": str(source or "phone"), "method": str(method or "manual")}
+        with self._lock:
+            self._cal[cal["source"]] = cal
+            s = self._s
+            if s is not None:
+                s.accel_cal = cal
+                self._emit(s, self._mono(), "accel_cal", dict(cal))
+                self._write_meta(s, self._mono())
+        return cal
+
+    def accel_matrix(self, source: str):
+        cal = self._cal.get(source)
+        if cal is not None:
+            return cal["matrix"]
+        return motion.IDENTITY if source in _ALIGNED_SOURCES else None
+
+    def feed_accel(self, samples, source: str = "phone",
+                   session: "str | None" = None) -> int:
+        """Write ``[[epoch_ms, ax, ay, az], ...]`` (m/s², specific force) as sparse rows at
+        their own times: ``Acc_X/Y/Z`` raw and, when a calibration applies, ``InlineAcc``/
+        ``LateralAcc``/``VerticalAcc`` in g. Returns the rows written (0 when nothing is
+        recording). ``session`` must name the recording session if given (``KeyError``)."""
+        with self._lock:
+            s = self._s
+            if session is not None and (s is None or s.id != session):
+                raise KeyError(session)
+            if s is None or not samples:
+                return 0
+            m = self._mono()
+            if not s.extra:
+                self._ensure_columns(s, m, [], list(ch.ACCEL_CHANNELS))
+            matrix = self.accel_matrix(source)
+            start_ms = s.start_s * 1000.0
+            limit_ms = s.ms(m) + 5000
+            n = 0
+            for smp in list(samples)[:MAX_ACCEL_SAMPLES]:
+                try:
+                    ep, ax, ay, az = (float(x) for x in smp[:4])
+                except (TypeError, ValueError):
+                    continue
+                if not all(math.isfinite(x) for x in (ep, ax, ay, az)):
+                    continue
+                t_ms = int(round(ep - start_ms))
+                if t_ms < 0 or t_ms > limit_ms:
+                    continue
+                vals = {"Acc_X": fmt_num(ax, 3), "Acc_Y": fmt_num(ay, 3),
+                        "Acc_Z": fmt_num(az, 3)}
+                if matrix is not None:
+                    il, lt, vt = motion.to_vehicle((ax, ay, az), matrix)
+                    vals.update(InlineAcc=fmt_num(il, 4), LateralAcc=fmt_num(lt, 4),
+                                VerticalAcc=fmt_num(vt, 4))
+                vals["Interval"] = str(t_ms)
+                vals["Utc"] = str(int(round(ep)))
+                self._write_row(s, m, vals)
+                n += 1
+            s.accel_rows += n
+            return n
+
+    # ---- audio --------------------------------------------------------- #
+
+    def audio_put(self, track: str, seq: int, data: bytes, mime: str = "audio/webm",
+                  start_ms: "float | None" = None, session: "str | None" = None,
+                  source: str = "phone") -> dict:
+        """Append a phone audio chunk to ``audio-<track>.<ext>`` of the recording session.
+        ``start_ms`` is the epoch ms of the track start (sent with seq 0). Returns the
+        track's ``meta.audio`` entry. ``KeyError`` when no/another session is recording,
+        ``ValueError`` for a bad track, type or chunk."""
+        with self._lock:
+            s = self._s
+            if s is None or (session is not None and s.id != session):
+                raise KeyError(session or "no session is recording")
+            m = self._mono()
+            w = s.writers.get(track)
+            if w is None:
+                if any(e["track"] == track for e in s.audio):
+                    raise ValueError("track already finished")
+                t0 = s.ms(m) if start_ms is None else max(
+                    0, int(round(float(start_ms) - s.start_s * 1000.0)))
+                w = AudioTrackWriter(s.dir, track, mime, t0, source=source)
+                s.writers[track] = w
+                self._emit(s, m, "audio", {"track": w.track, "state": "start",
+                                           "source": source})
+                self._write_meta(s, m)
+            w.put(seq, data)
+            w.end_ms = s.ms(m)
+            return w.entry()
+
+    def audio_stop(self, track: str, state: str = "stop") -> "dict | None":
+        """Close a phone track (``state`` ``stop`` or ``lost``); its entry, or None."""
+        with self._lock:
+            s = self._s
+            if s is None or track not in s.writers:
+                return None
+            return self._close_writer(s, self._mono(), track, state)
+
+    def set_pi_audio(self, pi) -> None:
+        """Turn Pi audio on (a ``PiAudio``; recorded for every session from now) or off
+        (None). Never raises."""
+        with self._lock:
+            s = self._s
+            if pi is None:
+                if s is not None:
+                    self._stop_pi(s, self._mono())
+                elif self._pi is not None:
+                    try:
+                        self._pi.stop()
+                    except Exception:  # noqa: BLE001
+                        pass
+                self._pi = None
+                return
+            self._pi = pi
+            if s is not None and s.pi_entry is None:
+                self._start_pi(s, self._mono())
 
     # ---- internals ---------------------------------------------------- #
 
@@ -293,17 +608,61 @@ class SessionRecorder:
         mode = snap.get("mode")
         self._src = self.source or (mode if mode in ("mock", "live", "demo") else "live")
         s = _Session(sid, path, now, m)
-        s.columns = [*ch.TIME_CHANNELS, *ch.GPS_CHANNELS, *ch.TEXT_CHANNELS]
+        s.name, self._next_name = getattr(self, "_next_name", None), None
+        s.columns = self._columns(s)
         s.units = {c: ch.UNITS.get(c, "") for c in s.columns}
-        self._new_part(s, m)
+        s.state = derive_state(snap)
+        s.efh = open(os.path.join(path, "events.jsonl"), "w", encoding="utf-8")
         self._s = s
+        self._new_part(s, m)  # writes the state line
+        if s.state.get("connect_phase"):
+            self._emit(s, m, "connect_phase", {"phase": s.state["connect_phase"]})
+        if s.state.get("error"):
+            self._emit(s, m, "error", {"error": s.state["error"]})
+        for cal in self._cal.values():
+            s.accel_cal = cal
+            self._emit(s, m, "accel_cal", dict(cal))
+        if self._pi is not None:
+            self._start_pi(s, m)
         self._write_meta(s, m)
         return s
+
+    @staticmethod
+    def _columns(s: _Session) -> "list[str]":
+        return [*ch.TIME_CHANNELS, *ch.GPS_CHANNELS, *ch.GPS_ACCEL_CHANNELS, *s.signals,
+                *s.extra, *ch.TEXT_CHANNELS]
+
+    def _emit(self, s: _Session, m: float, etype: str, fields: dict) -> "dict | None":
+        if s.efh is None:
+            return None
+        line = {"t": s.ms(m), "type": etype}
+        for k, v in fields.items():
+            if k in ("t", "type") or k in _STRIP:
+                continue
+            line[k] = v
+        try:
+            s.efh.write(json.dumps(line, ensure_ascii=False, separators=(",", ":"),
+                                   default=str) + "\n")
+        except (OSError, ValueError):
+            return None
+        s.events_dirty = True
+        self._sync(s, m)
+        return line
+
+    def _state_line(self, s: _Session, m: float) -> None:
+        self._emit(s, m, "state", {k: s.state.get(k) for k in STATE_LINE})
+
+    def _state_changes(self, s: _Session, m: float, snap: dict) -> None:
+        new = derive_state(snap)
+        for etype in STATE_TYPES:
+            if new[etype] != s.state.get(etype, object()):
+                s.state[etype] = new[etype]
+                self._emit(s, m, etype, _event_fields(etype, new[etype]))
 
     def _part_name(self, idx: int) -> str:
         return "data.csv" if idx == 0 else f"data-{idx}.csv"
 
-    def _new_part(self, s: _Session, m: float) -> None:
+    def _new_part(self, s: _Session, m: float, state_line: bool = True) -> None:
         if s.fh is not None:  # close the current part; data.csv → data-0.csv on first split
             self._sync(s, m, force=True)
             s.fh.close()
@@ -317,11 +676,14 @@ class SessionRecorder:
         rate = self._rate()
         cells = []
         for c in s.columns:
-            r = (10 if c in ch.TIME_CHANNELS else GPS_RATE_HZ if c.startswith("GPS_") else rate)
+            r = (10 if c in ch.TIME_CHANNELS else GPS_RATE_HZ if c.startswith("GPS_")
+                 else int(self.accel_hz) if c in ch.ACCEL_CHANNELS else rate)
             cells.append(header_cell(c, s.units.get(c, ""), r))
         s.fh.write(",".join(cells) + "\n")
         s.part_start_m = m
         s.last_sync_m = -math.inf
+        if state_line:
+            self._state_line(s, m)
 
     def _sync(self, s: _Session, m: float, force: bool = False) -> None:
         if s.fh is None:
@@ -333,7 +695,44 @@ class SessionRecorder:
             except OSError:
                 pass
             self.fsyncs += 1
+            if s.efh is not None and s.events_dirty:
+                s.efh.flush()
+                try:
+                    self._fsync(s.efh.fileno())
+                except OSError:
+                    pass
+                s.events_dirty = False
+            for w in s.writers.values():
+                w.sync(self._fsync)
             s.last_sync_m = m
+
+    def _ensure_columns(self, s: _Session, m: float, new_signals: "list[str]",
+                        new_extra: "list[str]") -> None:
+        """Add channels; a new part (or, before the first row, a rewritten header)."""
+        if not new_signals and not new_extra:
+            return
+        s.signals.extend(new_signals)
+        s.extra.extend(new_extra)
+        for c in new_extra:
+            s.units.setdefault(c, ch.UNITS.get(c, ""))
+        s.columns = self._columns(s)
+        if s.rows > 0:
+            self._new_part(s, m)
+            self._write_meta(s, m)
+        else:  # nothing written yet: rewrite this part's header in place
+            s.fh.seek(0)
+            s.fh.truncate()
+            s.parts.pop()
+            fh, s.fh = s.fh, None
+            fh.close()
+            self._new_part(s, m, state_line=False)
+
+    def _write_row(self, s: _Session, m: float, vals: dict) -> None:
+        buf = io.StringIO()
+        csv.writer(buf, lineterminator="\n").writerow([vals.get(c, "") for c in s.columns])
+        s.fh.write(buf.getvalue())
+        s.rows += 1
+        self._sync(s, m)
 
     def _row(self, s: _Session, now: float, m: float, snap: "dict | None",
              fix) -> None:
@@ -346,7 +745,9 @@ class SessionRecorder:
                 v = _num_value(sv)
                 if v is None:
                     continue
-                if name not in s.signals:
+                if name not in s.signals and name not in new_signals:
+                    if name in ch.ACCEL_CHANNELS or name in ch.GPS_ACCEL_CHANNELS:
+                        continue  # reserved for feed_accel / GPS
                     new_signals.append(name)
                     unit = sv.get("u") if isinstance(sv, dict) else None
                     s.units[name] = str(unit) if unit else ch.UNITS.get(name, "")
@@ -365,37 +766,25 @@ class SessionRecorder:
             s.last_fix_mono, s.last_gps_m = fix.mono, m
             if fix.utc_ms is not None:
                 s.utc_offset = fix.utc_ms - (fix.mono if fix.mono else m) * 1000.0
-            self._gps_vals(s, fix, vals)
+            self._gps_vals(s, m, fix, vals)
         if not vals:
             return
         if new_signals:
-            s.signals.extend(new_signals)
-            s.columns = [*ch.TIME_CHANNELS, *ch.GPS_CHANNELS, *s.signals, *ch.TEXT_CHANNELS]
-        if new_signals and s.rows > 0 or m - s.part_start_m >= PART_S:
+            self._ensure_columns(s, m, new_signals, [])
+        elif m - s.part_start_m >= PART_S:
             self._new_part(s, m)
             self._write_meta(s, m)
-        elif new_signals:  # nothing written yet: rewrite this part's header in place
-            s.fh.seek(0)
-            s.fh.truncate()
-            s.parts.pop()
-            fh, s.fh = s.fh, None
-            fh.close()
-            self._new_part(s, m)
         if s.utc_offset is not None:
             utc = str(int(round(m * 1000.0 + s.utc_offset)))
         elif self.trust_clock:
             utc = str(int(round(now * 1000.0)))
         else:
             utc = ""
-        vals["Interval"] = str(int(round((m - s.start_m) * 1000.0)))
+        vals["Interval"] = str(s.ms(m))
         vals["Utc"] = utc
-        buf = io.StringIO()
-        csv.writer(buf, lineterminator="\n").writerow([vals.get(c, "") for c in s.columns])
-        s.fh.write(buf.getvalue())
-        s.rows += 1
-        self._sync(s, m)
+        self._write_row(s, m, vals)
 
-    def _gps_vals(self, s: _Session, fix, vals: dict) -> None:
+    def _gps_vals(self, s: _Session, m: float, fix, vals: dict) -> None:
         lat, lon = float(fix.lat), float(fix.lon)
         vals["GPS_Latitude"] = fmt_num(lat, 7)
         vals["GPS_Longitude"] = fmt_num(lon, 7)
@@ -411,6 +800,11 @@ class SessionRecorder:
             vals["GPS_Nsat"] = fmt_num(int(fix.sats))
         if fix.hdop is not None:
             vals["GPS_HDOP"] = fmt_num(fix.hdop, 2)
+        acc = s.gps_accel.feed(fix.utc_ms if fix.utc_ms is not None else m * 1000.0,
+                               fix.speed_kmh, fix.heading)
+        if acc is not None:
+            vals["GPS_LonAcc"] = fmt_num(acc[0], 3)
+            vals["GPS_LatAcc"] = fmt_num(acc[1], 3)
         s.has_gps = True
         if s.last_pt is not None and (fix.speed_kmh is None or fix.speed_kmh >= JITTER_KMH):
             s.dist_m += haversine_m(s.last_pt[0], s.last_pt[1], lat, lon)
@@ -425,6 +819,62 @@ class SessionRecorder:
             s.start_pos = pos
         s.end_pos = pos
 
+    # ---- audio internals ---- #
+
+    def _close_writer(self, s: _Session, m: float, track: str, state: str) -> dict:
+        w = s.writers.pop(track)
+        w.close(end_ms=s.ms(m))
+        entry = w.entry()
+        s.audio.append(entry)
+        self._emit(s, m, "audio", {"track": track, "state": state if state in (
+            "stop", "lost") else "stop", "source": w.source})
+        self._write_meta(s, m)
+        return entry
+
+    def _start_pi(self, s: _Session, m: float) -> None:
+        pi = self._pi
+        try:
+            track = pi.start(s.dir)
+        except Exception:  # noqa: BLE001
+            track = None
+        if not track:
+            return
+        s.pi_entry = {"track": track, "mime": getattr(pi, "MIME", "audio/wav"),
+                      "start_ms": s.ms(m), "end_ms": None, "source": "pi", "bytes": 0}
+        s.audio.append(s.pi_entry)
+        self._emit(s, m, "audio", {"track": track, "state": "start", "source": "pi"})
+
+    def _stop_pi(self, s: _Session, m: float, state: str = "stop") -> None:
+        e, pi = s.pi_entry, self._pi
+        if e is None:
+            return
+        s.pi_entry = None
+        size = 0
+        if pi is not None:
+            try:
+                size = pi.stop()
+            except Exception:  # noqa: BLE001
+                size = 0
+        e["end_ms"], e["bytes"] = s.ms(m), int(size or 0)
+        self._emit(s, m, "audio", {"track": e["track"], "state": state, "source": "pi"})
+
+    def _check_pi(self, s: _Session, m: float) -> None:
+        if s.pi_entry is None or self._pi is None:
+            return
+        try:
+            alive = self._pi.running
+        except Exception:  # noqa: BLE001
+            alive = False
+        if not alive:
+            self._stop_pi(s, m, state="lost")
+
+    def _audio_entries(self, s: _Session) -> "list[dict]":
+        out = [dict(e) for e in s.audio]
+        out += [w.entry() for w in s.writers.values()]
+        return sorted(out, key=lambda e: (e.get("start_ms") or 0, e["track"]))
+
+    # ---- meta / end ---- #
+
     def _meta(self, s: _Session, m: float) -> dict:
         recording = s.end_s is None
         dur = (m if recording else s.end_m) - s.start_m
@@ -432,13 +882,15 @@ class SessionRecorder:
                    and c not in ch.TEXT_CHANNELS and (s.has_gps or not c.startswith("GPS_"))]
         return {
             "id": s.id,
+            "name": getattr(s, "name", None),
             "start_utc": iso_utc(s.start_s),
             "end_utc": None if recording else iso_utc(s.end_s),
             "duration_s": int(round(max(0.0, dur))),
             "rows": s.rows,
             "parts": list(s.parts),
             "modules": list(s.modules),
-            "channels": [{"name": c, "units": s.units.get(c, ""), "group": ch.group_for(c)}
+            "channels": [{"name": c, "units": s.units.get(c, ""), "group": ch.group_for(c),
+                          "c": ch.confidence_for(c), "limits": ch.limits_for(c)}
                          for c in numeric],
             "has_gps": s.has_gps,
             "distance_km": round(s.dist_m / 1000.0, 2),
@@ -449,6 +901,8 @@ class SessionRecorder:
             "synthetic": bool(self.synthetic),
             "recording": recording,
             "source": self._src,
+            "audio": self._audio_entries(s),
+            "accel_cal": s.accel_cal,
         }
 
     def _write_meta(self, s: _Session, m: float) -> None:
@@ -459,14 +913,28 @@ class SessionRecorder:
         s.last_meta_m = m
 
     def _end(self, s: _Session, now: float, m: float) -> None:
+        for track in list(s.writers):
+            self._close_writer(s, m, track, "stop")
+        self._stop_pi(s, m)
         if s.fh is not None:
             self._sync(s, m, force=True)
             s.fh.close()
             s.fh = None
+        if s.efh is not None:
+            try:
+                s.efh.flush()
+                if s.events_dirty:
+                    self._fsync(s.efh.fileno())
+            except OSError:
+                pass
+            s.efh.close()
+            s.efh = None
         s.end_s, s.end_m = now, m
         self._s = None
-        if s.rows == 0 or (not s.signals and not s.has_gps):
-            # no signal value and no GPS fix (e.g. a server restart): leave no empty session
+        has_data = s.rows > 0 and (s.signals or s.has_gps or s.accel_rows)
+        if not has_data and not s.audio and not read_notes(s.dir):
+            # no signal value, GPS fix, note or audio (e.g. a server restart): leave no
+            # empty session
             shutil.rmtree(s.dir, ignore_errors=True)
             return
         self._write_meta(s, m)

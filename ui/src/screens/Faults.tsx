@@ -11,6 +11,7 @@ import { moduleName } from "../layout";
 import { pageOf } from "../lib/catalog";
 import { parseFault, type ParsedFault } from "../lib/format";
 import { useApp } from "../state/app";
+import { useReplay } from "../state/replay";
 
 function download(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
@@ -61,6 +62,7 @@ const SCAN_ICON: Record<string, string> = { ok: "✓", faults: "⚠", error: "�
 /** Read-all-faults scan: every module in turn, establish → read → release. Read-only. */
 function FaultScan() {
   const { toast } = useApp();
+  const { active: replaying } = useReplay();
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState<{ at: string; mode: string; entries: FaultScanEntry[] } | null>(null);
   const run = async () => {
@@ -78,7 +80,7 @@ function FaultScan() {
   return (
     <div className="card">
       <div className="row"><span className="kicker grow">All modules</span>
-        <button className="iconbtn" onClick={run} disabled={busy}>{busy ? "Scanning…" : "Scan all modules"}</button>
+        <button className="iconbtn" onClick={run} disabled={busy || replaying}>{busy ? "Scanning…" : "Scan all modules"}</button>
       </div>
       <div className="small muted pretty" style={{ marginTop: 6 }}>
         Reads every module one at a time (the bus is shared). Takes up to 45 s.
@@ -104,6 +106,7 @@ function FaultScan() {
 
 export function Faults() {
   const { snap, module, refresh, toast, catalog, experimental } = useApp();
+  const { active: replaying } = useReplay();
   const run = useAction();
   const page = pageOf(catalog, "faults");
   const coverage = experimental && page ? <CoverageBar coverage={page.coverage} label="Faults coverage" /> : null;
@@ -137,11 +140,11 @@ export function Faults() {
 
   const head = (
     <ScreenHead title="Faults">
-      <button className={`iconbtn ${watch ? "on" : ""}`} aria-pressed={watch} onClick={toggleWatch}
+      <button className={`iconbtn ${watch ? "on" : ""}`} aria-pressed={watch} onClick={toggleWatch} disabled={replaying}
         title="Polls faults every cycle (~0.5 s) instead of every ~5 s">
         <span className="d" />{watch ? "Watch ON" : "Fault watch"}
       </button>
-      <button className="iconbtn" onClick={refresh}><span className="d" />Read</button>
+      <button className="iconbtn" onClick={refresh} disabled={replaying}><span className="d" />Read</button>
     </ScreenHead>
   );
   if (snap?.status !== "connected") return <>{head}<ConnectionNotice />{coverage}<StatusGate withNotice /><FaultScan /></>;
@@ -164,7 +167,13 @@ export function Faults() {
           </div>
           <div className="row" style={{ gap: 8, marginTop: 10 }}>
             <button className="iconbtn" onClick={writeFile}>Write to file</button>
-            <button className="iconbtn danger" style={{ marginLeft: "auto" }} onClick={clear}><span className="d" />Clear codes</button>
+            {replaying ? (
+              <span className="locked replay-lock" style={{ marginLeft: "auto" }} aria-label="Clear codes: replay, read only">
+                <span aria-hidden="true">🔒</span>Clear codes · replay
+              </span>
+            ) : (
+              <button className="iconbtn danger" style={{ marginLeft: "auto" }} onClick={clear}><span className="d" />Clear codes</button>
+            )}
           </div>
         </div>
       )}

@@ -19,4 +19,11 @@ Contract (specs/2026-10-05-session-logbook-design.md):
   ``delete`` raises ``PermissionError`` for demo/synthetic/live sessions and ``KeyError``
   for unknown ids; ``recorder.rotate_sessions(root, min_free_bytes)``;
   ``synth.generate(root)`` builds the demo session.
+* ADR-0010 (specs/2026-10-05-replay-notes-capture-design.md): ``SessionRecorder.event(type,
+  **fields)``, ``note(...)``, ``start()``, ``split()``, ``feed_accel(samples, source,
+  session=None)``, ``set_accel_cal(matrix, source, method)``, ``audio_put(...)``,
+  ``audio_stop(track)``, ``set_pi_audio(PiAudio | None)``; ``SessionStore.events / notes /
+  add_note / edit_note / delete_note / audio_path / captures`` and ``export(id, "notes")``;
+  ``notes.NoteLog``, ``audio.AudioTrackWriter``/``PiAudio``, ``motion.to_vehicle``/
+  ``level_matrix``/``GpsAccel``. ``store.data`` also returns ``text: {faults, module}``.
 """

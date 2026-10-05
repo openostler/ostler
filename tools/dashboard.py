@@ -14,6 +14,14 @@
 Every connected period is recorded to --sessions-dir (default logs/sessions) and browsed
 in the Logs tab (specs/2026-10-05-session-logbook-design.md).
 
+    # opt-in cabin audio (arecord) and a Pi IMU; HTTPS so the phone mic/motion work
+    # (ADR-0010; switched on per device from the Logs tab's recording options):
+    PYTHONPATH=src python3 tools/dashboard.py --audio pi --imu auto \
+        --tls-cert pi.crt --tls-key pi.key
+
+    # a sniff feed for the admin Decode tab without a car (the homelab runs this):
+    PYTHONPATH=src python3 tools/dashboard.py --mock --replay src/d2diag/web/demo/sniff-demo.txt
+
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """
 import argparse
@@ -79,7 +87,19 @@ def main() -> int:
                          "auto otherwise")
     ap.add_argument("--sessions-dir", default=None,
                     help="where recorded sessions go (default: <repo>/logs/sessions)")
+    ap.add_argument("--audio", choices=("off", "pi"), default="off",
+                    help="cabin audio on the Pi: off (default) or pi (arecord, 16 kHz mono; "
+                         "still opt-in per session from the recording options)")
+    ap.add_argument("--imu", choices=("auto", "none", "mock"), default=None,
+                    help="Pi IMU for acceleration: auto (LSM6DS on /dev/i2c-1; none if "
+                         "absent), none, or mock (synthetic). Default: mock with --mock, "
+                         "auto otherwise")
+    ap.add_argument("--tls-cert", help="serve HTTPS with this certificate (PEM); needs "
+                                       "--tls-key. The phone mic and motion sensors need HTTPS")
+    ap.add_argument("--tls-key", help="private key (PEM) for --tls-cert")
     args = ap.parse_args()
+    if bool(args.tls_cert) != bool(args.tls_key):
+        ap.error("--tls-cert and --tls-key must be given together")
 
     # Raw bus log (TX/RX) for mapping — off by default, on with --raw-log.
     _repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -204,7 +224,18 @@ def main() -> int:
         admin_password=args.admin_password,
         allow_shutdown=args.allow_shutdown,
         gps=gps, sessions_dir=sessions_dir,
+        audio=args.audio, imu=args.imu or ("mock" if args.mock else "auto"),
     )
+    scheme = "http"
+    if args.tls_cert:
+        try:
+            srv.enable_tls(args.tls_cert, args.tls_key)
+        except (OSError, ValueError) as exc:  # ssl.SSLError is an OSError
+            srv.server_close()
+            print(f"TLS: cannot load {args.tls_cert} / {args.tls_key} "
+                  f"({type(exc).__name__}: {exc})")
+            return 2
+        scheme = "https"
     if raw_log_dir:
         print(f"Raw TX/RX log → {raw_log_dir}/raw-<module>-<time>.log")
     if args.admin_password:
@@ -213,7 +244,12 @@ def main() -> int:
         print("Admin: /admin OPEN (no --admin-password) — set one for a public bind")
     print(f"Docs: {len(docs.index())} in the Docs tab")
     print(f"Captures → {captures_path}")
-    print(f"Dashboard: http://localhost:{args.port}   (modules: {', '.join(variants)} · active: {active} · mode: {mode})")
+    rs = srv.recording_sources()
+    print(f"Recording sources: Pi audio {rs['pi_audio']['state']}"
+          f"{' (' + rs['pi_audio']['reason'] + ')' if rs['pi_audio'].get('reason') else ''}"
+          f" · IMU {rs['imu']['state']}"
+          f"{' (' + rs['imu']['reason'] + ')' if rs['imu'].get('reason') else ''}")
+    print(f"Dashboard: {scheme}://localhost:{args.port}   (modules: {', '.join(variants)} · active: {active} · mode: {mode})")
     print(f"Live port: {port}  (switch mock/live in the UI)")
     print(f"GPS: {gps_spec} → {getattr(gps, 'src', None) or 'none'} · sessions → {sessions_dir}"
           f"{'' if srv._recorder is not None else ' (recording unavailable)'}")

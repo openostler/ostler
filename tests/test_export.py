@@ -106,3 +106,73 @@ def test_store_export_demo(tmp_path, fmt, ext, ctype):
         ET.fromstring(body)
     with pytest.raises(ValueError):
         store.export("20261005T090000Z", "xrk")
+
+
+# ------------------------------------------------ notes in exports (ADR-0010) -- #
+
+NOTES = [
+    {"id": "aaaa0001", "t": 240, "t_end": None, "text": "Clunk\nfront left", "tags": ["noise"],
+     "kind": "note", "source": "live", "created": "2026-10-06T09:00:01.000Z", "edited": None,
+     "capture": None},
+    {"id": "bbbb0002", "t": 480, "t_end": 900, "text": "", "tags": [], "kind": "mark",
+     "source": "retro", "created": "2026-10-06T09:05:00.000Z", "edited": None, "capture": None},
+]
+
+
+def test_csv_event_column_at_nearest_row():
+    rows = list(csv.reader(io.StringIO(to_csv(ROWS, META, notes=NOTES))))
+    assert rows[0][-1] == "event"
+    assert [r[-1] for r in rows[1:]] == ["", "aaaa0001", "bbbb0002"]
+    assert to_csv(ROWS, META) == to_csv(ROWS, META, notes=[])  # no notes: unchanged
+
+
+def test_notes_csv():
+    from d2diag.logbook.export import notes_csv
+    cap = dict(NOTES[1], id="cccc0003", kind="capture", t=1000,
+               capture={"module": "td5", "lid": "09", "raw": "02 fa", "value": "762"})
+    rows = list(csv.reader(io.StringIO(notes_csv([*NOTES, cap], META))))
+    assert rows[0][:8] == ["id", "time_s", "end_s", "utc", "kind", "source", "text", "tags"]
+    assert rows[1][:8] == ["aaaa0001", "0.24", "", "2026-10-06T09:00:00.240Z", "note", "live",
+                           "Clunk\nfront left", "noise"]
+    assert rows[2][2] == "0.9" and rows[3][-4:] == ["td5", "09", "02 fa", "762"]
+
+
+def test_vbo_comments_and_event_column():
+    lines = to_vbo(ROWS, META, notes=NOTES).split("\r\n")
+    c0, c1 = lines.index("[comments]"), lines.index("[column names]")
+    comments = lines[c0:c1]
+    assert "Note aaaa0001 at 0.2s [noise]: Clunk front left" in comments
+    assert "Note bbbb0002 at 0.5-0.9s: mark" in comments
+    cols = lines[c1 + 1].split(" ")
+    assert cols[-1] == "event1"
+    h0, h1 = lines.index("[header]"), lines.index("[channel units]")
+    assert lines[h1 - 2] == "event1"
+    data = [ln.split(" ") for ln in lines[lines.index("[data]") + 1:] if ln]
+    assert [d[-1] for d in data] == ["1", "1"]  # 240 ms → the 0 ms line, 480 ms → 500 ms
+    assert all(len(d) == len(cols) for d in data)
+
+
+def test_gpx_waypoints_per_note():
+    root = ET.fromstring(to_gpx(ROWS, META, notes=NOTES).encode("utf-8"))
+    ns = {"g": "http://www.topografix.com/GPX/1/1"}
+    wpts = root.findall("g:wpt", ns)
+    assert len(wpts) == 2
+    assert wpts[0].get("lat") == "52" and wpts[0].find("g:name", ns).text == "Clunk front left"
+    assert wpts[1].get("lat") == "52.0001" and wpts[1].find("g:type", ns).text == "mark"
+    assert wpts[0].find("g:time", ns).text == "2026-10-06T09:00:00.000Z"
+    assert list(root).index(wpts[-1]) < list(root).index(root.find("g:trk", ns))  # schema order
+    no_gps = to_gpx([{"Interval": 0, "Utc": None, "rpm": 1}], META, notes=NOTES)
+    assert "<wpt" not in no_gps
+
+
+def test_store_exports_demo_notes(tmp_path):
+    store = SessionStore(str(tmp_path))
+    name, ctype, body = store.export("20261005T090000Z", "notes", public=True)
+    assert name == "20261005T090000Z.notes.csv" and ctype.startswith("text/csv")
+    assert len(body.decode().strip().split("\n")) == 4
+    _, _, gpx = store.export("20261005T090000Z", "gpx", public=True)
+    assert gpx.count(b"<wpt") == 3
+    _, _, text = store.export("20261005T090000Z", "csv", public=True)
+    rows = list(csv.reader(io.StringIO(text.decode())))
+    assert rows[0][-1] == "event" and sum(1 for r in rows[1:] if r[-1]) == 3
+    assert "GPS_LonAcc" in rows[0] and "Height_Left" in rows[0]

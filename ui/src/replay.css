@@ -1,19 +1,22 @@
 /* Logs tab: session browser + map replay (specs/2026-10-05-session-logbook-design.md).
-   Uses the styles.css tokens. Chart series = dataviz reference categorical slots 1-3, validated
+   Uses the styles.css tokens. The transport bar styles here also serve GlobalTransport (ADR-0010). Chart series = dataviz reference categorical slots 1-3, validated
    with validate_palette.js against --surface in both modes (light aqua < 3:1 → every lane is
    direct-labelled). Replay values never use the live/stale Readout styling. */
 
 .logs, .replay {
   --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
   --chart-grid: var(--line); --chart-cursor: var(--text-1); --chart-select: rgba(31, 111, 224, 0.16);
+  --chart-note: #8a6500; --chart-note-band: rgba(176, 130, 0, 0.18);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .logs, :root:not([data-theme="light"]) .replay {
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-select: rgba(79, 140, 232, 0.22);
+    --chart-note: #d9a62e; --chart-note-band: rgba(217, 166, 46, 0.2);
   }
 }
 :root[data-theme="dark"] .logs, :root[data-theme="dark"] .replay {
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --chart-select: rgba(79, 140, 232, 0.22);
+  --chart-note: #d9a62e; --chart-note-band: rgba(217, 166, 46, 0.2);
 }
 
 .replay { gap: 12px; }
@@ -60,8 +63,7 @@
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 5; min-width: 160px;
   display: flex; flex-direction: column; gap: 8px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 }
-.replay-lanes .replay-menu-body { left: 0; right: auto; }
-.replay-lanes { align-self: flex-start; }
+.replay-lanes { display: flex; flex-wrap: wrap; gap: 6px; }
 .replay-confirm { flex-basis: 100%; }
 .replay-delete { color: var(--ic-red); border-color: var(--bd-red); }
 
@@ -75,14 +77,67 @@
 }
 .replay-map-empty { display: grid; place-items: center; height: 100%; color: #444c55; }
 .replay-svg { width: 100%; height: 100%; display: block; }
-/* white arrow, dark outline: distinct from every step of the blue trace ramp */
+/* white arrow, dark outline: distinct from every step of both trace ramps */
 .replay-svg-cursor path, .replay-arrow path { fill: #ffffff; stroke: #101317; stroke-width: 2; stroke-linejoin: round; }
 .replay-arrow { width: 26px; height: 26px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35)); }
 .replay-arrow.no-heading svg { transform: scale(0.8); }
-.replay-legend { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; padding: 10px 16px 12px; }
-.replay-legend-pick { display: flex; flex-direction: column; gap: 4px; }
-.replay-legend-pick .input { min-width: 140px; }
+.replay-legend { display: flex; flex-direction: column; gap: 10px; padding: 10px 16px 12px; }
+.replay-legend-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.replay-legend-pick { max-width: 100%; }
+.replay-lane-tag {
+  display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; font-size: 11px;
+  background: var(--sunken); color: var(--fg);
+}
 .replay-legend-key { flex: 1; min-width: 160px; }
+.replay-legend-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+/* basemap switch: over the map, top-left (the zoom buttons sit top-right) */
+.replay-basemap {
+  position: absolute; left: 8px; top: 8px; z-index: 2; display: flex; border-radius: 10px; overflow: hidden;
+  border: 1px solid rgba(16, 19, 23, 0.25); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.replay-basemap-btn {
+  min-height: 36px; padding: 0 10px; border: 0; background: rgba(255, 255, 255, 0.94); color: #101317;
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.replay-basemap-btn + .replay-basemap-btn { border-left: 1px solid rgba(16, 19, 23, 0.15); }
+.replay-basemap-btn[aria-pressed="true"] { background: #101317; color: #ffffff; }
+
+/* ---- G-G ---- */
+.replay-gg { padding: 10px 12px; }
+.replay-gg-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.replay-gg-svg { display: block; width: 100%; max-width: 280px; margin: 0 auto; aspect-ratio: 1; }
+.replay-gg-axis { stroke: var(--line-strong); stroke-width: 1; }
+.replay-gg-ring { fill: none; stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+.replay-gg-tick { fill: var(--text-2); font-size: 9px; }
+.replay-gg-cursor { fill: var(--surface); stroke: var(--text-1); stroke-width: 2.5; }
+
+/* ---- channel picker (bottom sheet) ---- */
+.cpick { display: flex; flex-direction: column; gap: 12px; max-height: 70vh; overflow-y: auto; }
+.cpick-search { width: 100%; }
+.cpick-chips { display: flex; flex-direction: column; gap: 8px; }
+.cpick-chiprow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cpick-chiprow .kicker { min-width: 56px; }
+.cpick-groups { display: flex; flex-direction: column; gap: 4px; }
+.cpick-cat {
+  width: 100%; min-height: 40px; text-align: left; border: 0; background: transparent; color: var(--fg);
+  font: inherit; font-weight: 700; cursor: pointer; padding: 0 2px;
+}
+.cpick-rows { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cpick-row { display: flex; align-items: stretch; gap: 4px; }
+.cpick-pick {
+  flex: 1; min-width: 0; min-height: 44px; display: flex; flex-direction: column; justify-content: center; text-align: left;
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--fg);
+  font: inherit; cursor: pointer;
+}
+.cpick-pick[aria-current="true"] { border-color: var(--accent); }
+.cpick-label { font-weight: 600; overflow-wrap: anywhere; }
+.cpick-meta { overflow-wrap: anywhere; }
+.cpick mark { background: var(--warn-bg); color: inherit; border-radius: 2px; }
+.cpick-pin {
+  min-width: 44px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--fg2);
+  font-size: 18px; cursor: pointer;
+}
+.cpick-pin[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 .replay-legend-bar { height: 10px; border-radius: 4px; }
 .replay-legend-ends { display: flex; justify-content: space-between; margin-top: 3px; color: var(--fg2); font-variant-numeric: tabular-nums; }
 
@@ -108,9 +163,12 @@
   color: var(--fg); line-height: 18px;
 }
 .replay-swatch { width: 10px; height: 3px; border-radius: 2px; }
+.replay-note-line, .replay-note-band { position: absolute; top: 0; bottom: 0; pointer-events: none; }
+.replay-note-line { width: 2px; background: var(--chart-note); }
+.replay-note-band { background: var(--chart-note-band); border-left: 2px solid var(--chart-note); border-right: 2px solid var(--chart-note); }
 .replay-chart-axis { display: flex; justify-content: space-between; margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-/* ---- transport: pinned to the bottom of the Logs screen, just above the tab bar ---- */
+/* ---- transport (rendered app-wide by GlobalTransport; base styles kept here) ---- */
 .replay-transport {
   position: sticky; bottom: -16px; z-index: 4; margin: 0 -16px -16px; padding: 8px 16px 10px;
   background: var(--bg-surface); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px;

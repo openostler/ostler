@@ -1,0 +1,74 @@
+/* Recording, notes, audio and motion UI (specs/2026-10-05-replay-notes-capture-design.md §3, §5).
+   Uses the styles.css tokens only. Neutral when healthy; warn colour only for a lost source,
+   always with an icon and a word. */
+
+/* ---- header ⚑ ---- */
+.mark-btn { font-size: 16px; min-width: 40px; }
+.mark-btn[aria-busy="true"] { opacity: 0.6; }
+
+/* ---- note sheet / editor ---- */
+.note-text {
+  width: 100%; min-height: 72px; resize: vertical; padding: 10px 12px; box-sizing: border-box;
+  border: 1px solid var(--border-emph); border-radius: 10px; background: var(--bg-surface); color: var(--fg); font: inherit;
+}
+.note-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.note-tag {
+  min-height: 36px; padding: 0 12px; border: 1px solid var(--border-emph); border-radius: 9999px;
+  background: var(--bg-surface); color: var(--fg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.note-tag[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.note-when { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.note-when b { font-variant-numeric: tabular-nums; }
+
+/* ---- Logs recording card ---- */
+.rec-card { display: flex; flex-direction: column; gap: 10px; }
+.rec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rec-open { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.rec-dot { width: 10px; height: 10px; border-radius: 9999px; background: var(--alarm); flex: 0 0 10px; }
+.rec-sources { display: flex; flex-wrap: wrap; gap: 6px; }
+.rec-src {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px;
+  border: 1px solid var(--border); font-size: 12px; color: var(--fg2);
+}
+.rec-src.on { border-color: var(--border-emph); color: var(--fg); }
+.rec-src.lost { border-color: var(--bd-yellow); background: var(--bg-yellow); color: var(--fg); }
+.rec-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.rec-actions .btn { padding: 0 6px; }
+@media (max-width: 360px) { .rec-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- options modal ---- */
+.opt-group { display: flex; flex-direction: column; gap: 8px; }
+.opt-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-choice {
+  flex: 1 1 120px; min-height: 44px; padding: 6px 10px; text-align: left; display: flex; flex-direction: column; gap: 2px;
+  border: 1px solid var(--border-emph); border-radius: 10px; background: var(--bg-surface); color: var(--fg);
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+.opt-choice[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt-choice:disabled { color: var(--fg-dis); cursor: not-allowed; background: var(--bg-muted); }
+.opt-reason { font-size: 12px; font-weight: 400; color: var(--fg2); }
+.opt-cal { display: flex; flex-direction: column; gap: 8px; }
+.opt-check { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.opt-errors { margin: 0; padding-left: 18px; color: var(--fg); }
+
+/* ---- replay notes ---- */
+.notes-panel { display: flex; flex-direction: column; gap: 8px; }
+.notes-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.notes-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.note-row {
+  display: flex; align-items: stretch; gap: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card);
+}
+.note-row.here { border-color: var(--accent); }
+.note-jump {
+  flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; text-align: left;
+  border: 0; background: none; color: var(--fg); font: inherit; cursor: pointer;
+}
+.note-jump .note-t { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.note-jump .note-body { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.note-edit { border: 0; border-left: 1px solid var(--border); background: none; color: var(--fg2); padding: 0 12px; cursor: pointer; font: inherit; }
+.note-kind { color: var(--fg2); }
+.note-chip { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 9999px; border: 1px solid var(--border); font-size: 11px; color: var(--fg2); }
+
+/* ---- replay audio ---- */
+.replay-audio { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.replay-audio .off { font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: center; font-size: 12px; color: var(--fg2); }

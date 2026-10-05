@@ -11,9 +11,19 @@ import { indexAt, valueAt } from "../../state/playback";
 
 export const BUCKETS = 20;
 
-/** Sequential single-hue ramp (dataviz reference blue, steps 250 → 700): light = low, dark =
- * high. Starts at 250 so the lowest bucket still clears 2:1 on the light basemap. */
-const STOPS = ["#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
+/**
+ * Trace ramps (spec §5 "Map"): perceptually ordered, CVD-safe, sampled from the matplotlib /
+ * seaborn tables. Both are trimmed so neither end is near black (plasma loses its darkest
+ * 12 %, mako its darkest 22 % and lightest 3 %), and both run dark = low → light = high so
+ * the two lanes read the same way. Trace A = plasma (warm), B = mako (cool); "classic" is
+ * turbo for owners used to rainbow loggers.
+ */
+export const RAMP_STOPS = {
+  plasma: ["#4b03a1", "#6e00a8", "#8e0ca4", "#ac2694", "#c43e7f", "#d9586a", "#e97257", "#f79044", "#fdaf31", "#fbd324", "#f0f921"],
+  mako: ["#3b2e5d", "#413e7f", "#3c5397", "#366a9f", "#3480a4", "#3496a9", "#39abac", "#48c0ad", "#6dd3ad", "#a4e0bb", "#ceeed7"],
+  turbo: ["#30123b", "#434eba", "#4685fa", "#28bceb", "#1ae4b6", "#55fa76", "#a4fc3c", "#d9e436", "#faba39", "#fb8122", "#e5470b", "#b91e02", "#7a0403"],
+} as const;
+export type RampName = keyof typeof RAMP_STOPS;
 /** Track points with no value for the channel. */
 export const NO_VALUE_COLOR = "#9aa1a9";
 
@@ -23,8 +33,17 @@ function hexToRgb(h: string): [number, number, number] {
 }
 const toHex = (c: number[]) => `#${c.map((x) => Math.round(x).toString(16).padStart(2, "0")).join("")}`;
 
+/** WCAG relative luminance (0 … 1) of a #rrggbb colour. */
+export function luminance(hex: string): number {
+  const [r, g, b] = hexToRgb(hex).map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
 /** `n` colours evenly sampled along the stops (linear in sRGB between neighbouring steps). */
-export function ramp(n = BUCKETS, stops: readonly string[] = STOPS): string[] {
+export function ramp(n = BUCKETS, stops: readonly string[] = RAMP_STOPS.plasma): string[] {
   if (n === 1) return [stops[0]!];
   return Array.from({ length: n }, (_, i) => {
     const pos = (i / (n - 1)) * (stops.length - 1);
@@ -35,7 +54,23 @@ export function ramp(n = BUCKETS, stops: readonly string[] = STOPS): string[] {
     return toHex(a.map((x, j) => x + (b[j]! - x) * f));
   });
 }
-export const RAMP = ramp();
+export const RAMPS: Record<RampName, string[]> = {
+  plasma: ramp(BUCKETS, RAMP_STOPS.plasma),
+  mako: ramp(BUCKETS, RAMP_STOPS.mako),
+  turbo: ramp(BUCKETS, RAMP_STOPS.turbo),
+};
+/** Trace A's default ramp. */
+export const RAMP = RAMPS.plasma;
+
+/** The ramp for a lane: A plasma, B mako; "classic" turns both into turbo. */
+export const laneRamp = (lane: TraceLane, classic = false): string[] => (classic ? RAMPS.turbo : lane === "a" ? RAMPS.plasma : RAMPS.mako);
+
+/** The two traces. A is drawn on the left of the direction of travel, B on the right. */
+export type TraceLane = "a" | "b";
+/** MapLibre `line-offset` per lane, px (positive = right of the line direction). */
+export const LANE_OFFSET: Record<TraceLane, number> = { a: -3, b: 3 };
+/** Douglas–Peucker tolerance for the drawn track, metres. */
+export const SMOOTH_M = 1;
 
 export type Range = { min: number; max: number };
 
@@ -158,4 +193,79 @@ export function defaultTraceChannel(names: readonly string[]): string | null {
   if (names.includes("speed")) return "speed";
   if (names.includes("GPS_Speed")) return "GPS_Speed";
   return names[0] ?? null;
+}
+
+/**
+ * Douglas–Peucker simplification of the track (lon, lat, t kept together) with a tolerance in
+ * metres, on a local equirectangular projection. It removes GPS jitter so the offset lanes
+ * stay parallel instead of zig-zagging (spec §5: "~1 m smooth").
+ */
+export function simplifyTrack(track: SessionData["track"], toleranceM = SMOOTH_M): SessionData["track"] {
+  if (track.length < 3 || toleranceM <= 0) return track.slice();
+  const lat0 = track[0]![1];
+  const mPerDegLat = 111_320;
+  const mPerDegLon = 111_320 * Math.cos((lat0 * Math.PI) / 180);
+  const xy = track.map(([lon, lat]) => [lon * mPerDegLon, lat * mPerDegLat] as const);
+  const keep = new Uint8Array(track.length);
+  keep[0] = 1;
+  keep[track.length - 1] = 1;
+  const stack: [number, number][] = [[0, track.length - 1]];
+  const tol2 = toleranceM * toleranceM;
+  while (stack.length) {
+    const [i, j] = stack.pop()!;
+    const [ax, ay] = xy[i]!;
+    const [bx, by] = xy[j]!;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    let worst = -1;
+    let worstD = tol2;
+    for (let k = i + 1; k < j; k++) {
+      const [px, py] = xy[k]!;
+      let f = len2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+      f = Math.max(0, Math.min(1, f));
+      const ex = ax + f * dx - px;
+      const ey = ay + f * dy - py;
+      const d = ex * ex + ey * ey;
+      if (d > worstD) { worstD = d; worst = k; }
+    }
+    if (worst > 0) {
+      keep[worst] = 1;
+      stack.push([i, worst], [worst, j]);
+    }
+  }
+  return track.filter((_, k) => keep[k]);
+}
+
+/**
+ * A polyline moved sideways by `d` px (positive = right of the direction of travel, as
+ * MapLibre's `line-offset`) in screen space (y down). Each vertex moves along the average of
+ * its neighbouring segment normals (a mitred join, capped at 2 × d for sharp turns). Used by
+ * the SVG fallback to draw the two lanes the way the map does.
+ */
+export function offsetPolyline(pts: readonly (readonly [number, number])[], d: number): [number, number][] {
+  if (pts.length < 2 || d === 0) return pts.map((p) => [p[0], p[1]]);
+  const normals: [number, number][] = [];
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const dx = pts[i + 1]![0] - pts[i]![0];
+    const dy = pts[i + 1]![1] - pts[i]![1];
+    const len = Math.hypot(dx, dy);
+    // Right-hand normal in y-down screen space: (−dy, dx) / len.
+    normals.push(len > 0 ? [-dy / len, dx / len] : normals[normals.length - 1] ?? [0, 0]);
+  }
+  return pts.map((p, i) => {
+    const n0 = normals[Math.max(0, i - 1)]!;
+    const n1 = normals[Math.min(normals.length - 1, i)]!;
+    let nx = n0[0] + n1[0];
+    let ny = n0[1] + n1[1];
+    const len = Math.hypot(nx, ny);
+    if (len < 1e-9) { nx = n1[0]; ny = n1[1]; } else {
+      // Mitre: scale so the offset from each segment is d (capped at 2d).
+      const cos = (nx * n1[0] + ny * n1[1]) / len;
+      const k = Math.min(2, 1 / Math.max(cos, 0.5));
+      nx = (nx / len) * k;
+      ny = (ny / len) * k;
+    }
+    return [p[0] + nx * d, p[1] + ny * d];
+  });
 }
