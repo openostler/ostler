@@ -579,24 +579,15 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
 
 /* ---- whole-app replay (ADR-0010): amber = "this is a recording, read-only" ----
    Amber is the existing --warn token, always paired with the word REPLAY / "replay". */
-.replaybanner {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding: 6px 16px;
-  background: var(--warn-bg); border-bottom: 2px solid var(--warn); font-size: 12px; font-weight: 700;
-}
-.replaybanner-tag { letter-spacing: 1px; color: var(--text-1); }
-.replaybanner-txt { color: var(--text-1); font-variant-numeric: tabular-nums; }
-.replaybanner-note {
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  padding: 1px 8px; border: 1px solid var(--warn); border-radius: 9999px; background: var(--surface); font-weight: 600;
-}
-.replaybanner-exit {
-  margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--warn); border-radius: 8px;
-  background: var(--surface); color: var(--text-1); font-size: 12px; font-weight: 700; cursor: pointer;
-}
 /* replay frame: a border on the scroll container itself stays put while the content scrolls,
-   so all four sides stay visible between the banner and the transport bar */
+   so all four sides stay visible between the header and the transport bar */
 main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
-.pill-replay { border-color: var(--warn); }
+/* In replay the header pill is the way back: "Replay · Exit to live", flashing amber. */
+.pill-replay { border-color: var(--warn); background: var(--warn-bg); animation: replay-flash 1.6s ease-in-out infinite; }
+.pill-replay .pdot { animation: blink 1.6s steps(2, start) infinite; }
+@keyframes replay-flash { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--warn); } }
+@media (prefers-reduced-motion: reduce) { .pill-replay, .pill-replay .pdot { animation: none; } }
+@media (max-width: 480px) { .pill-exit { display: none; } .pill-replay .pill-word::after { content: " · Exit"; } }
 .modctl-replay { cursor: default; }
 .replay-lock { white-space: nowrap; }
 
@@ -608,7 +599,19 @@ main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .replay-itemnote.bad { color: var(--alarm); }
 
 /* the global transport: a bar above the tab bar on every tab while replaying */
-.gtransport { flex-shrink: 0; }
+.gtransport { flex-shrink: 0; position: relative; }
+/* the current note / load state floats over the bottom of the page, just above the scrubber —
+   absolutely positioned, so it never shifts the content */
+.gnote-layer {
+  position: absolute; left: 0; right: 0; bottom: 100%; z-index: 5; pointer-events: none;
+  display: flex; justify-content: center; padding: 0 16px 8px;
+}
+.gnote {
+  pointer-events: auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 6px 12px; border: 1px solid var(--warn); border-radius: 9999px; background: var(--surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-size: 13px; font-weight: 600; color: var(--text-1);
+}
+.gnote-err { border-color: var(--alarm); }
 .gtransport .replay-transport { position: static; margin: 0; border-top: 2px solid var(--warn); }
 .replay-rangewrap { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
 .replay-rangewrap .replay-range { width: 100%; }

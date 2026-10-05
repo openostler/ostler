@@ -2,7 +2,7 @@
 title: "Whole-app replay, notes, audio and accelerometer recording, replay map v2, Decode/Label admin — design"
 area: specs
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [specs/2026-10-05-session-logbook-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
@@ -147,8 +147,9 @@ Each session gets `notes.jsonl`.
 - **Settings** shows only "identity read at HH:MM:SS".
 
 **Clearly replay:**
-- An amber `ReplayBanner` replaces the experimental strip: "REPLAY · <date time> · ⏱ <cursor clock> · [Exit to live]". It shows a note chip as the cursor passes a note.
-- The header connection pill reads "Replay".
+- No top banner (v1.2): the date and cursor clock are already on the transport, so a banner would repeat them.
+- The header connection pill becomes a flashing amber button, "Replay · Exit to live" ("Replay · Exit" at ≤480 px). Tapping it exits to live. The flashing stops under `prefers-reduced-motion`.
+- As the cursor passes a note, a note chip floats just above the scrubber, drawn over the page so nothing shifts. Loading and load errors show in the same place.
 - `main` gets an amber edge.
 - The connection notice and the automatic connection sheet are suppressed.
 
@@ -275,3 +276,4 @@ All errors are in English.
 
 - 2026-10-05: v1.0, approved.
 - 2026-10-06: v1.1, Analysis tab (live + replay) and the header Rewind button (§7).
+- 2026-10-06: v1.2, the replay banner is removed: Exit to live moves into a flashing connection pill, and the note chip floats above the scrubber (§4).

@@ -96,14 +96,15 @@ test("Rewind opens the drive in progress on Analysis in replay; Exit to live ret
   const rewind = page.locator("header").getByRole("button", { name: "Rewind" });
   await expect(rewind).toBeEnabled();
   await rewind.click();
-  const banner = page.getByRole("region", { name: "Replay" });
-  await expect(banner).toBeVisible();
-  await expect(banner).toContainText("REPLAY");
+  const exit = page.locator("header").getByRole("button", { name: "Replay — Exit to live" });
+  await expect(exit).toBeVisible();
+  await expect(exit).toContainText("Replay");
+  await expect(page.getByRole("region", { name: "Replay" })).toHaveCount(0); // no top banner
   await expect(nav(page, "Analysis")).toHaveAttribute("aria-current", "page");
   await expect(rewind).toHaveCount(0); // Exit to live takes its place
   await page.screenshot({ path: "test-results/rewind-analysis.png" });
-  await banner.getByRole("button", { name: "Exit to live" }).click();
-  await expect(banner).toBeHidden();
+  await exit.click();
+  await expect(exit).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
   await expect(rewind).toBeVisible();
 });

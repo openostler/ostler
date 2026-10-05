@@ -460,22 +460,21 @@ describe("whole-app replay", () => {
   beforeEach(() => consented());
   const live = { ...connected, battery_v: 12.2 };
 
-  it("shows the amber banner, Replay pill and the global transport on Drive; Exit returns to live", async () => {
+  it("shows the Replay · Exit to live pill and the global transport on Drive; Exit returns to live", async () => {
     const user = userEvent.setup();
     installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
-    const banner = await screen.findByRole("region", { name: "Replay" });
-    expect(banner).toHaveTextContent("REPLAY");
-    expect(await within(banner).findByTestId("replay-clock")).toHaveTextContent(/⏱/);
-    expect(screen.getByLabelText("Replay — read only")).toHaveTextContent("Replay");
+    const pill = await screen.findByRole("button", { name: "Replay — Exit to live" });
+    expect(pill).toHaveTextContent("Replay · Exit to live");
+    expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument(); // no top banner
     expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
     expect(await screen.findByTestId("global-transport")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Note at .*: Rough idle/ })).toBeInTheDocument();
     expect(document.querySelector("main")).toHaveClass("replay-edge");
     // the header battery is the recorded one, not the live one
     expect(screen.getByLabelText("Car battery 13.7 V")).toBeInTheDocument();
-    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
-    expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
+    expect(screen.queryByRole("button", { name: "Replay — Exit to live" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("global-transport")).not.toBeInTheDocument();
     pushSnapshot(live);
     expect(await screen.findByText("Connected")).toBeInTheDocument();
@@ -489,13 +488,13 @@ describe("whole-app replay", () => {
     render(<App path="/" />);
     pushSnapshot(rec);
     await user.click(await screen.findByRole("button", { name: "Rewind" }));
-    const banner = await screen.findByRole("region", { name: "Replay" });
+    await screen.findByRole("button", { name: "Replay — Exit to live" });
     expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("button", { name: "Rewind" })).not.toBeInTheDocument();
     const slider = await screen.findByRole("slider", { name: "Playback position" });
     await waitFor(() => expect(slider).toHaveValue("30000")); // last sample 60 s − 30 s
-    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
-    expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
+    expect(screen.queryByRole("button", { name: "Replay — Exit to live" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rewind" })).toBeInTheDocument();
   });
 
@@ -513,7 +512,7 @@ describe("whole-app replay", () => {
     pushSnapshot(live);
     expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
     await user.click(await screen.findByRole("button", { name: "Rewind" }));
-    expect(await screen.findByRole("region", { name: "Replay" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Replay — Exit to live" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
     const slider = await screen.findByRole("slider", { name: "Playback position" });
     await waitFor(() => expect(slider).toHaveValue("0")); // the start
@@ -524,11 +523,10 @@ describe("whole-app replay", () => {
     const user = userEvent.setup();
     installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
-    const banner = await screen.findByRole("region", { name: "Replay" });
-    await screen.findByTestId("global-transport");
-    expect(within(banner).queryByText(/Rough idle/)).not.toBeInTheDocument();
+    const transport = await screen.findByTestId("global-transport");
+    expect(within(transport).queryByRole("status")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Note at .*: Rough idle/ }));
-    expect(within(banner).getByText(/Rough idle/)).toBeInTheDocument();
+    expect(within(transport).getByRole("status")).toHaveTextContent(/Rough idle/);
   });
 
   it("is read-only: actions are locked with the word replay and nothing is sent", async () => {
@@ -596,10 +594,9 @@ describe("whole-app replay", () => {
     const user = userEvent.setup();
     installReplayServer({ snapshot: { ...connected, conn: "error", status: "error" } });
     render(<App path="/" replay="s1" />);
-    const banner = await screen.findByRole("region", { name: "Replay" });
     await screen.findByTestId("global-transport");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
+    await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
     const sheet = await screen.findByRole("dialog", {}, { timeout: 500 });
     expect(within(sheet).getByText("Connection")).toBeInTheDocument();
   });

@@ -33,7 +33,7 @@ async function openDemo(page: Page) {
   await expect(navButton(page, "Analysis")).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { name: "Demo log 1" })).toBeVisible();
   // the global transport (on every tab while in replay)
-  await expect(page.getByTestId("global-transport").getByRole("button", { name: "Play" })).toBeVisible();
+  await expect(page.getByTestId("global-transport").getByRole("button", { name: "Play", exact: true })).toBeVisible();
 }
 
 test("the main chunk excludes maplibre; it loads only for a replay", async ({ page }) => {
@@ -63,7 +63,7 @@ test("open the demo session, scrub, play and pause", async ({ page }) => {
   await expect(now).not.toHaveText(start ?? "");
   const mid = await now.textContent();
 
-  const play = page.getByRole("button", { name: "Play" });
+  const play = page.getByRole("button", { name: "Play", exact: true });
   await expect(play).toHaveAttribute("aria-pressed", "false");
   await play.click();
   await expect(play).toHaveAttribute("aria-pressed", "true");
