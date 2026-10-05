@@ -5,7 +5,7 @@ import { legendGradient, type Range, type TraceLane } from "./trace";
 export type LegendTrace = { lane: TraceLane; channel: string; label: string; range: Range | null; unit: string; colors: readonly string[] };
 
 /** The trace colour keys: per trace a channel button (opens the picker), the gradient and
- * min / max at its ends; "+ Add trace" for B; the Classic (turbo) colour option. */
+ * min / max at its ends; "+ Add trace" for B; the Classic (two-colour gradient) option. */
 export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic }: {
   traces: LegendTrace[];
   units: Units;
@@ -42,7 +42,7 @@ export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic 
       <div className="replay-legend-tools">
         {onAddB ? <button type="button" className="rchip" onClick={onAddB}>+ Add trace</button> : null}
         <button type="button" className="rchip" aria-pressed={classic} onClick={() => onClassic(!classic)}
-          title="Rainbow (turbo) colours, as older loggers use">Classic colours</button>
+          title="Two-colour gradients: blue → red (trace A), green → purple (trace B)">Classic colours</button>
       </div>
     </div>
   );

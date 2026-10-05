@@ -10,14 +10,19 @@ import { AttributionControl, Map as MlMap, Marker, NavigationControl, setWorkerU
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { casingFor, layerVisible, type Basemap, type SatSource } from "./basemap";
-import { LANE_OFFSET, type BBox, type Cursor, type FeatureCollection, type TraceLane } from "./trace";
+import { LANE_OFFSET, NO_VALUE_COLOR, type BBox, type Cursor, type FeatureCollection, type TraceLane } from "./trace";
 
 setWorkerUrl(workerUrl);
 
 /** OpenFreeMap vector tiles (no key; attribution carried by the style). ADR-0009. */
 export const ONLINE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 /** Before the online style answers, give up after this long and draw the trace alone. */
-const STYLE_TIMEOUT_MS = 8_000;
+const STYLE_TIMEOUT_MS = 15_000;
+
+/** A lane colour MapLibre accepts: a non-empty expression, else the plain no-value grey.
+ * (An empty `[]` is an invalid expression: MapLibre rejects the layer and raises an error.) */
+export const laneColor = (expr: unknown): ExpressionSpecification | string =>
+  Array.isArray(expr) && expr.length > 0 ? (expr as ExpressionSpecification) : typeof expr === "string" && expr ? expr : NO_VALUE_COLOR;
 
 /** Offline / failed style: a plain background, so only the trace shows. */
 export const BLANK_STYLE: StyleSpecification = {
@@ -29,12 +34,16 @@ export const BLANK_STYLE: StyleSpecification = {
 export type TraceMapHandle = {
   /** A lane's segments; null hides that lane (trace B is optional). */
   setTrace: (lane: TraceLane, fc: FeatureCollection | null) => void;
-  setColor: (lane: TraceLane, expr: unknown[]) => void;
+  setColor: (lane: TraceLane, expr: unknown) => void;
   /** Streets / Satellite / Hybrid: only layout visibility changes, so the traces survive. */
   setBasemap: (b: Basemap) => void;
   setCursor: (c: Cursor | null) => void;
   /** True once the map fell back to the blank style. */
   isBlank: () => boolean;
+  /** Try the online style again after a fall-back to the blank one. */
+  retry: () => void;
+  /** True once the online style has loaded (the basemap switch is usable). */
+  isReady: () => boolean;
   destroy: () => void;
 };
 
@@ -56,15 +65,19 @@ export function createTraceMap(opts: {
   container: HTMLElement;
   bbox: BBox | null;
   traces: Record<TraceLane, FeatureCollection | null>;
-  colors: Record<TraceLane, unknown[]>;
+  colors: Record<TraceLane, unknown>;
   basemap: Basemap;
   satellite: SatSource;
   onBlank?: () => void;
+  /** The online style has loaded (called once per successful load). */
+  onReady?: () => void;
 }): TraceMapHandle {
   const traces = { ...opts.traces };
   const colors = { ...opts.colors };
   let basemap = opts.basemap;
   let blank = typeof navigator !== "undefined" && navigator.onLine === false;
+  /** True once the base style has loaded: later errors (a tile, a glyph) never blank the map. */
+  let styleLoaded = false;
 
   const map = new MlMap({
     container: opts.container,
@@ -84,10 +97,19 @@ export function createTraceMap(opts: {
     map.setStyle(BLANK_STYLE, { diff: false });
     opts.onBlank?.();
   };
-  const timer = window.setTimeout(() => { if (!map.isStyleLoaded()) toBlank(); }, STYLE_TIMEOUT_MS);
-  // Style or vector tile failure (offline, blocked, server down) → the trace on a plain
-  // background. An imagery tile failing only leaves holes in the imagery.
-  map.on("error", (e) => { if ((e as { sourceId?: string }).sourceId !== "satellite") toBlank(); });
+  let timer = window.setTimeout(() => { if (!styleLoaded) toBlank(); }, STYLE_TIMEOUT_MS);
+  // Only a failure of the base style itself (offline, blocked, server down) falls back to the
+  // trace on a plain background. Once the style has loaded, a failed tile, glyph or sprite just
+  // leaves a hole — it is logged, never a reason to throw the whole map away.
+  map.on("error", (e) => {
+    const err = (e as { error?: unknown }).error;
+    if (!styleLoaded && !blank) {
+      console.warn("replay map: style failed, showing the trace only", err);
+      toBlank();
+    } else {
+      console.warn("replay map:", err);
+    }
+  });
 
   const applyBasemap = () => {
     for (const l of map.getStyle()?.layers ?? []) {
@@ -128,13 +150,21 @@ export function createTraceMap(opts: {
       map.addLayer({
         id: `trace-${lane}`, type: "line", source: src,
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": colors[lane] as ExpressionSpecification, "line-width": 4, "line-offset": offset },
+        paint: { "line-color": laneColor(colors[lane]) as ExpressionSpecification, "line-width": 4, "line-offset": offset },
       });
     }
     applyBasemap();
   };
-  map.on("style.load", addLayers);
-  if (map.isStyleLoaded()) addLayers();
+  const loaded = () => {
+    if (!blank) {
+      styleLoaded = true;
+      window.clearTimeout(timer);
+    }
+    addLayers();
+    if (!blank) opts.onReady?.();
+  };
+  map.on("style.load", loaded);
+  if (map.isStyleLoaded()) loaded();
 
   const marker = new Marker({ element: arrowEl(), rotationAlignment: "map", pitchAlignment: "map" });
   let markerOn = false;
@@ -146,7 +176,7 @@ export function createTraceMap(opts: {
     },
     setColor(lane, expr) {
       colors[lane] = expr;
-      if (map.getLayer(`trace-${lane}`)) map.setPaintProperty(`trace-${lane}`, "line-color", expr as ExpressionSpecification);
+      if (map.getLayer(`trace-${lane}`)) map.setPaintProperty(`trace-${lane}`, "line-color", laneColor(expr) as ExpressionSpecification);
     },
     setBasemap(b) {
       basemap = b;
@@ -164,6 +194,15 @@ export function createTraceMap(opts: {
       markerOn = true;
     },
     isBlank: () => blank,
+    isReady: () => styleLoaded && !blank,
+    retry() {
+      if (!blank) return;
+      blank = false;
+      styleLoaded = false;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => { if (!styleLoaded) toBlank(); }, STYLE_TIMEOUT_MS);
+      map.setStyle(ONLINE_STYLE, { diff: false });
+    },
     destroy() {
       window.clearTimeout(timer);
       marker.remove();

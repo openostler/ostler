@@ -587,7 +587,9 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
   margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--warn); border-radius: 8px;
   background: var(--surface); color: var(--text-1); font-size: 12px; font-weight: 700; cursor: pointer;
 }
-main.replay-edge { box-shadow: inset 4px 0 0 var(--warn), inset -4px 0 0 var(--warn); }
+/* replay frame: a border on the scroll container itself stays put while the content scrolls,
+   so all four sides stay visible between the banner and the transport bar */
+main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .pill-replay { border-color: var(--warn); }
 .modctl-replay { cursor: default; }
 .replay-lock { white-space: nowrap; }

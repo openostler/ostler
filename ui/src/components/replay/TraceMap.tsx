@@ -45,13 +45,16 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
         const h = m.createTraceMap({
           container: box.current, bbox: bounds,
           traces: { a: l.a?.fc ?? null, b: l.b?.fc ?? null },
-          colors: { a: l.a?.color ?? [], b: l.b?.color ?? [] },
+          colors: { a: l.a?.color ?? NO_VALUE_COLOR, b: l.b?.color ?? NO_VALUE_COLOR },
           basemap: l.basemap, satellite: satelliteSource(bounds),
           onBlank: () => alive && setStatus("blank"),
+          onReady: () => alive && setStatus("map"),
         });
         h.setCursor(l.cursor);
         handle.current = h;
-        setStatus(h.isBlank() ? "blank" : "map");
+        // "map" only once the online style has loaded; until then it stays "loading"
+        // (the trace still draws), and a style failure moves it to "blank".
+        setStatus(h.isBlank() ? "blank" : (h.isReady?.() ?? true) ? "map" : "loading");
       })
       .catch((e: unknown) => {
         console.warn("replay map unavailable", e);
@@ -80,7 +83,12 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
         <div ref={box} className="replay-map-gl" role="region" aria-label="Session map" />
       )}
       {status === "map" ? <BasemapSwitch value={basemap} onChange={setBasemap} /> : null}
-      {status === "blank" ? <div className="replay-map-note">Map tiles unavailable — trace only</div> : null}
+      {status === "blank" ? (
+        <div className="replay-map-note">
+          Map tiles unavailable — trace only{" "}
+          <button type="button" className="rchip" onClick={() => { handle.current?.retry(); setStatus("loading"); }}>Retry map</button>
+        </div>
+      ) : null}
       {status === "failed" ? <div className="replay-map-note">Map unavailable on this device — trace only</div> : null}
     </div>
   );

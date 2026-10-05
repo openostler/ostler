@@ -22,7 +22,7 @@ vi.mock("../components/replay/maplibre", () => ({
   createTraceMap: () => {
     if (mapMock.fail) throw new Error("WebGL not supported");
     mapMock.handle = {
-      setTrace: vi.fn(), setColor: vi.fn(), setBasemap: vi.fn(), setCursor: vi.fn(), isBlank: vi.fn(() => false), destroy: vi.fn(),
+      setTrace: vi.fn(), setColor: vi.fn(), setBasemap: vi.fn(), setCursor: vi.fn(), isBlank: vi.fn(() => false), retry: vi.fn(), destroy: vi.fn(),
     };
     return mapMock.handle;
   },
@@ -214,9 +214,10 @@ describe("Logs — replay", () => {
     expect(localStorage.getItem("d2diag.basemap")).toBe("satellite");
     expect(screen.getByRole("button", { name: "Satellite" })).toHaveAttribute("aria-pressed", "true");
 
-    // Classic turns both lanes turbo
+    // Classic: two-colour gradients (A blue → red, B green → purple)
     fireEvent.click(screen.getByRole("button", { name: "Classic colours" }));
-    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("b", lineColorExpression(RAMPS.turbo)));
+    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("a", lineColorExpression(RAMPS.classicA)));
+    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("b", lineColorExpression(RAMPS.classicB)));
 
     // remove trace B from its picker
     fireEvent.click(screen.getByRole("button", { name: /^Trace B: rpm/ }));

@@ -15,13 +15,15 @@ export const BUCKETS = 20;
  * Trace ramps (spec §5 "Map"): perceptually ordered, CVD-safe, sampled from the matplotlib /
  * seaborn tables. Both are trimmed so neither end is near black (plasma loses its darkest
  * 12 %, mako its darkest 22 % and lightest 3 %), and both run dark = low → light = high so
- * the two lanes read the same way. Trace A = plasma (warm), B = mako (cool); "classic" is
- * turbo for owners used to rainbow loggers.
+ * the two lanes read the same way. Trace A = plasma (warm), B = mako (cool). "Classic colours"
+ * are plain two-colour gradients: A blue → red (low → high, the RS3/RaceChrono convention),
+ * B green → purple, so the two lanes stay distinguishable.
  */
 export const RAMP_STOPS = {
   plasma: ["#4b03a1", "#6e00a8", "#8e0ca4", "#ac2694", "#c43e7f", "#d9586a", "#e97257", "#f79044", "#fdaf31", "#fbd324", "#f0f921"],
   mako: ["#3b2e5d", "#413e7f", "#3c5397", "#366a9f", "#3480a4", "#3496a9", "#39abac", "#48c0ad", "#6dd3ad", "#a4e0bb", "#ceeed7"],
-  turbo: ["#30123b", "#434eba", "#4685fa", "#28bceb", "#1ae4b6", "#55fa76", "#a4fc3c", "#d9e436", "#faba39", "#fb8122", "#e5470b", "#b91e02", "#7a0403"],
+  classicA: ["#2166ac", "#b2182b"],
+  classicB: ["#1b7837", "#762a83"],
 } as const;
 export type RampName = keyof typeof RAMP_STOPS;
 /** Track points with no value for the channel. */
@@ -57,13 +59,15 @@ export function ramp(n = BUCKETS, stops: readonly string[] = RAMP_STOPS.plasma):
 export const RAMPS: Record<RampName, string[]> = {
   plasma: ramp(BUCKETS, RAMP_STOPS.plasma),
   mako: ramp(BUCKETS, RAMP_STOPS.mako),
-  turbo: ramp(BUCKETS, RAMP_STOPS.turbo),
+  classicA: ramp(BUCKETS, RAMP_STOPS.classicA),
+  classicB: ramp(BUCKETS, RAMP_STOPS.classicB),
 };
 /** Trace A's default ramp. */
 export const RAMP = RAMPS.plasma;
 
-/** The ramp for a lane: A plasma, B mako; "classic" turns both into turbo. */
-export const laneRamp = (lane: TraceLane, classic = false): string[] => (classic ? RAMPS.turbo : lane === "a" ? RAMPS.plasma : RAMPS.mako);
+/** The ramp for a lane: A plasma, B mako; "classic" = two-colour gradients (A blue → red, B green → purple). */
+export const laneRamp = (lane: TraceLane, classic = false): string[] =>
+  lane === "a" ? (classic ? RAMPS.classicA : RAMPS.plasma) : (classic ? RAMPS.classicB : RAMPS.mako);
 
 /** The two traces. A is drawn on the left of the direction of travel, B on the right. */
 export type TraceLane = "a" | "b";
