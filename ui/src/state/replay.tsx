@@ -42,6 +42,7 @@ const EMPTY_T: number[] = [];
 export const INACTIVE: Replay = {
   active: false, id: null, loading: false, error: null, offset: null, playback: null, state: initialEventState(),
   events: [], notes: [], t: 0, playing: false, speed: 1,
+  follow: false, setFollow: noop,
   enter: noop, exit: noop, seek: noop, play: noop, pause: noop, setSpeed: noop,
   addNote: async () => null, refreshNotes: noop,
 };
@@ -67,21 +68,19 @@ export async function loadSession(id: string): Promise<Omit<Loaded, "error">> {
   return { id, meta, data, events, notes };
 }
 
-/** Rewind's look-back from the newest sample. */
-export const REWIND_MS = 30_000;
-
-/** The cursor for `enter(id, {at})`: a session time, or "end-30s" = 30 s before the last
- * sample (never before 0). */
-export function startCursor(t: readonly number[], at: number | "end-30s"): number {
-  if (at === "end-30s") return t.length ? Math.max(0, t[t.length - 1]! - REWIND_MS) : 0;
+/** The cursor for `enter(id, {at})`: a session time, or "end" = the last sample (Rewind). */
+export function startCursor(t: readonly number[], at: number | "end"): number {
+  if (at === "end") return t.length ? t[t.length - 1]! : 0;
   return at;
 }
 
 export function ReplayProvider({ children, initial = null }: { children: ReactNode; initial?: string | null }) {
   const [id, setId] = useState<string | null>(initial);
   /** The start cursor asked for by `enter()`, applied once when that session's data first
-   * arrives (a still-recording session's 5 s refresh never moves the cursor again). */
-  const [startAt, setStartAt] = useState<{ id: string; at: number | "end-30s" } | null>(null);
+   * arrives (a still-recording session's 5 s refresh never moves it again; follow pins it to the newest sample instead). */
+  const [startAt, setStartAt] = useState<{ id: string; at: number | "end" } | null>(null);
+  /** Follow: the cursor stays on the newest sample while a recording session grows. */
+  const [follow, setFollowState] = useState(false);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [tick, setTick] = useState(0);
   const cur = loaded && loaded.id === id ? loaded : null;
@@ -106,21 +105,29 @@ export function ReplayProvider({ children, initial = null }: { children: ReactNo
     return () => window.clearInterval(timer);
   }, [recording]);
 
-  const pb = usePlaybackState(data?.t ?? EMPTY_T, { resetKey: id });
+  // a seek the provider makes itself (the start cursor) is not a user move
+  const internalSeek = useRef(false);
+  const onUserMove = useCallback(() => {
+    if (!internalSeek.current) setFollowState(false);
+  }, []);
+  const pb = usePlaybackState(data?.t ?? EMPTY_T, { resetKey: id, pinToEnd: follow, onUserMove });
   const offset = useMemo(() => (data ? utcOffset(data.t, data.utc) : null), [data]);
   const events = cur?.events;
   const state = useMemo(() => foldEvents(events ?? [], pb.time), [events, pb.time]);
 
-  const enter = useCallback((next: string, opts?: { at?: number | "end-30s" }) => {
+  const enter = useCallback((next: string, opts?: { at?: number | "end"; follow?: boolean }) => {
     setId(next);
     setStartAt(opts?.at != null ? { id: next, at: opts.at } : null);
+    setFollowState(!!opts?.follow);
   }, []);
+  const setFollow = useCallback((on: boolean) => setFollowState(on), []);
   const { pause, seek: pbSeek } = pb;
   const exit = useCallback(() => {
     pause();
     setId(null);
     setLoaded(null);
     setStartAt(null);
+    setFollowState(false);
   }, [pause]);
 
   // apply the requested start cursor once the session's samples are in
@@ -128,7 +135,12 @@ export function ReplayProvider({ children, initial = null }: { children: ReactNo
   useEffect(() => {
     if (!startAt || !data || startAt.id !== id || applied.current === startAt) return;
     applied.current = startAt;
-    pbSeek(startCursor(data.t, startAt.at));
+    internalSeek.current = true;
+    try {
+      pbSeek(startCursor(data.t, startAt.at));
+    } finally {
+      internalSeek.current = false;
+    }
   }, [startAt, data, id, pbSeek]);
 
   const refreshNotes = useCallback(() => {
@@ -157,7 +169,7 @@ export function ReplayProvider({ children, initial = null }: { children: ReactNo
   const value: Replay = active ? {
     active, id, loading: !cur, error: cur?.error ?? null, offset, playback: pb, state,
     session: meta, data, events: events ?? [], notes: cur?.notes ?? [],
-    t: pb.time, playing: pb.playing, speed: pb.speed,
+    t: pb.time, playing: pb.playing, speed: pb.speed, follow, setFollow,
     enter, exit, seek: pb.seek, play: pb.play, pause: pb.pause, setSpeed, addNote, refreshNotes,
   } : { ...INACTIVE, enter };
 

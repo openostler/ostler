@@ -1,15 +1,17 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PlaybackCtx, usePlaybackState } from "../../state/playback";
-import { Transport } from "./Transport";
+import { Transport, type TransportTick } from "./Transport";
 
 const T = Array.from({ length: 301 }, (_, i) => i * 200); // 0 … 60 s
 
-function Harness({ offset = null, onFollow }: { offset?: number | null; onFollow?: (on: boolean) => void }) {
+function Harness({ offset = null, onFollow, follow = false, ticks }: {
+  offset?: number | null; onFollow?: (on: boolean) => void; follow?: boolean; ticks?: TransportTick[];
+}) {
   const pb = usePlaybackState(T);
   return (
     <PlaybackCtx.Provider value={pb}>
-      <Transport offset={offset} {...(onFollow ? { onFollow, follow: false } : {})} />
+      <Transport offset={offset} ticks={ticks} {...(onFollow ? { onFollow, follow } : {})} />
       <output data-testid="time">{Math.round(pb.time)}</output>
     </PlaybackCtx.Provider>
   );
@@ -79,13 +81,36 @@ describe("Transport", () => {
     expect(screen.getByTestId("clock-end")).toHaveTextContent("1:00");
   });
 
-  it("Follow live appears only when offered", () => {
+  it("● Latest appears only when offered, re-pins, and reads pressed while following", () => {
     const { unmount } = render(<Harness />);
-    expect(screen.queryByRole("button", { name: "Follow live" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Follow the latest sample" })).toBeNull();
     unmount();
     const onFollow = vi.fn();
-    render(<Harness onFollow={onFollow} />);
-    fireEvent.click(screen.getByRole("button", { name: "Follow live" }));
+    const { rerender } = render(<Harness onFollow={onFollow} />);
+    const btn = screen.getByRole("button", { name: "Follow the latest sample" });
+    expect(btn).toHaveTextContent("● Latest");
+    expect(btn).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(btn);
     expect(onFollow).toHaveBeenCalledWith(true);
+    rerender(<Harness onFollow={onFollow} follow />);
+    expect(screen.getByRole("button", { name: "Follow the latest sample" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("ticks carry a tone word and range ticks are bars; a tap seeks", () => {
+    render(<Harness ticks={[
+      { id: "n", t: 5_000, label: "Clunk" },
+      { id: "w", t: 20_000, t_end: 30_000, label: "Coolant high", tone: "warn" },
+      { id: "a", t: 40_000, label: "P0380 Glow plug", tone: "alarm" },
+    ]} />);
+    const note = screen.getByRole("button", { name: "Note at 0:05: Clunk" });
+    const warn = screen.getByRole("button", { name: "Warning at 0:20: Coolant high" });
+    const alarm = screen.getByRole("button", { name: "Alarm at 0:40: P0380 Glow plug" });
+    expect(note).toHaveClass("tone-note");
+    expect(warn).toHaveClass("tone-warn", "range");
+    expect(warn.style.width).not.toBe("");
+    expect(alarm).toHaveClass("tone-alarm");
+    expect(alarm).not.toHaveClass("range");
+    fireEvent.click(warn);
+    expect(time()).toBe(20_000);
   });
 });

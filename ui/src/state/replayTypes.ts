@@ -17,9 +17,14 @@ export interface ReplayState {
   playing: boolean;
   /** 1 | 2 | 4 | 8 */
   speed: number;
-  /** Open a session for replay. `at`: the start cursor in session ms, or "end-30s" (30 s
-   * before the last sample — Rewind on the drive in progress). Default: the start. */
-  enter(id: string, opts?: { at?: number | "end-30s" }): void;
+  /** Open a session for replay, paused. `at`: the start cursor in session ms, or "end" (the last
+   * sample — Rewind). Default: the start. `follow`: keep the cursor pinned to the newest sample
+   * while a recording session grows (Rewind on the drive in progress); any user move drops it. */
+  enter(id: string, opts?: { at?: number | "end"; follow?: boolean }): void;
+  /** True while the cursor is pinned to the newest sample of a growing session. */
+  follow: boolean;
+  /** Re-pin to the newest sample ("● Latest" on the transport) or drop the pin. */
+  setFollow(on: boolean): void;
   exit(): void;
   seek(t: number): void;
   play(): void;

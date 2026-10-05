@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { LIVE_REFRESH_MS } from "./api/useSessions";
 import { baseSnapshot, consented, installFakeServer, pushSnapshot } from "./test/fakeServer";
 
 const connected = { ...baseSnapshot, faults: [] };
@@ -435,8 +436,16 @@ const replayEvents = [
 ];
 const replayNotes = [{ id: "n1", t: 5000, t_end: null, text: "Rough idle", tags: [], kind: "note", source: "retro", created: "2026-10-05T09:00:05Z" }];
 
-/** The fake server plus /sessions/s1 (meta, data, events, notes). */
-function installReplayServer(opts: Parameters<typeof installFakeServer>[0] = {}) {
+/** Session data with samples every second from 0 to `last` ms. */
+const replayDataTo = (last: number) => {
+  const t = Array.from({ length: last / 1000 + 1 }, (_, i) => i * 1000);
+  return { ...replayData, t, utc: t.map((x) => 1_791_190_800_000 + x), ch: { rpm: t.map(() => 1234), battery: t.map(() => 13.7) } };
+};
+
+/** The fake server plus /sessions/s1 (meta, data, events, notes). `s1` overrides the meta, and
+ * the data on each fetch (a drive still being recorded grows). */
+function installReplayServer(opts: Parameters<typeof installFakeServer>[0] = {},
+  s1: { meta?: Record<string, unknown>; data?: () => unknown } = {}) {
   const server = installFakeServer(opts);
   const inner = globalThis.fetch;
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
@@ -444,8 +453,8 @@ function installReplayServer(opts: Parameters<typeof installFakeServer>[0] = {})
     const m = /^\/sessions\/s1(?:\/(data|events|notes))?$/.exec(url.pathname);
     if (!m) return inner(input, init);
     server.calls.push({ path: url.pathname + url.search, method: init?.method ?? "GET" });
-    const body = m[1] === "data" ? replayData : m[1] === "events" ? { id: "s1", events: replayEvents }
-      : m[1] === "notes" ? { id: "s1", notes: replayNotes } : replayMeta;
+    const body = m[1] === "data" ? (s1.data?.() ?? replayData) : m[1] === "events" ? { id: "s1", events: replayEvents }
+      : m[1] === "notes" ? { id: "s1", notes: replayNotes } : (s1.meta ?? replayMeta);
     return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
   }));
   return server;
@@ -481,21 +490,32 @@ describe("whole-app replay", () => {
     expect(screen.getByLabelText("Car battery 12.2 V")).toBeInTheDocument();
   });
 
-  it("Rewind while recording opens the drive 30 s before its end on Analysis; Exit returns to live", async () => {
-    const user = userEvent.setup();
-    const rec = { ...live, recording: { session: "s1", since: 0, rows: 61 } };
-    installReplayServer({ snapshot: rec });
-    render(<App path="/" />);
-    pushSnapshot(rec);
-    await user.click(await screen.findByRole("button", { name: "Rewind" }));
-    await screen.findByRole("button", { name: "Replay — Exit to live" });
-    expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
-    expect(screen.queryByRole("button", { name: "Rewind" })).not.toBeInTheDocument();
-    const slider = await screen.findByRole("slider", { name: "Playback position" });
-    await waitFor(() => expect(slider).toHaveValue("30000")); // last sample 60 s − 30 s
-    await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
-    expect(screen.queryByRole("button", { name: "Replay — Exit to live" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Rewind" })).toBeInTheDocument();
+  it("Rewind while recording opens the drive at its newest sample on Analysis and follows it; Exit returns to live", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const rec = { ...live, recording: { session: "s1", since: 0, rows: 61 } };
+      let last = 60_000;
+      installReplayServer({ snapshot: rec }, { meta: { ...replayMeta, recording: true, end_utc: null }, data: () => replayDataTo(last) });
+      render(<App path="/" />);
+      pushSnapshot(rec);
+      await user.click(await screen.findByRole("button", { name: "Rewind" }));
+      await screen.findByRole("button", { name: "Replay — Exit to live" });
+      expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
+      expect(screen.queryByRole("button", { name: "Rewind" })).not.toBeInTheDocument();
+      const slider = await screen.findByRole("slider", { name: "Playback position" });
+      await waitFor(() => expect(slider).toHaveValue("60000")); // the newest sample
+      // the 5 s refresh brings 10 s more: the scrubber grows and the cursor stays on the newest sample
+      last = 70_000;
+      await act(async () => { vi.advanceTimersByTime(LIVE_REFRESH_MS); });
+      await waitFor(() => expect(slider).toHaveAttribute("max", "70000"));
+      await waitFor(() => expect(slider).toHaveValue("70000"));
+      await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
+      expect(screen.queryByRole("button", { name: "Replay — Exit to live" })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Rewind" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("goTo(id) switches the tab (Rewind with no recording opens the newest log on Analysis)", async () => {
@@ -515,7 +535,7 @@ describe("whole-app replay", () => {
     expect(await screen.findByRole("button", { name: "Replay — Exit to live" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
     const slider = await screen.findByRole("slider", { name: "Playback position" });
-    await waitFor(() => expect(slider).toHaveValue("0")); // the start
+    await waitFor(() => expect(slider).toHaveValue("60000")); // its last sample, not the start
     expect(server.calls.map((c) => c.path)).toContain("/sessions?limit=5");
   });
 

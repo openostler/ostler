@@ -116,6 +116,11 @@ export function usePlaybackState(t: readonly number[], opts: PlaybackOpts = {}):
     setKey(opts.resetKey);
     setState((s) => ({ ...s, time: start, playing: false }));
   }
+  // While pinned the clock's own time tracks the newest sample, so dropping the pin (a seek,
+  // ±skip or Play) carries on from where the cursor was shown, not from a stale time.
+  if (opts.pinToEnd && (state.time !== end || state.playing)) {
+    setState((s) => ({ ...s, time: end, playing: false }));
+  }
   const anchor = useRef<Anchor>({ wall: 0, time: start });
   const bounds = useRef({ start, end, speed: state.speed, time: state.time });
   const onUserMove = useRef(opts.onUserMove);

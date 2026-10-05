@@ -35,23 +35,26 @@ function renderRewind(r: Replay, recording: string | null = null) {
 }
 
 describe("RewindButton", () => {
-  it("while recording: opens the drive in progress 30 s before its end, then Analysis", async () => {
+  it("while recording: opens the drive in progress at its newest sample, following it, then Analysis", async () => {
     sessionsServer([meta("live", true)]);
     const r = replay();
     const { ctx } = renderRewind(r, "live");
     const btn = screen.getByRole("button", { name: "Rewind" });
     expect(btn).toHaveTextContent("⏪Rewind");
+    expect(btn).toHaveAttribute("title", "Rewind to the latest sample");
     fireEvent.click(btn);
-    expect(r.enter).toHaveBeenCalledWith("live", { at: "end-30s" });
+    expect(r.enter).toHaveBeenCalledWith("live", { at: "end", follow: true });
     expect(ctx.goTo).toHaveBeenCalledWith("analysis");
   });
 
-  it("not recording: opens the newest finished session at its start, then Analysis", async () => {
+  it("not recording: opens the newest finished session at its end, then Analysis", async () => {
     const paths = sessionsServer([meta("still-open", true), meta("s2", false), meta("s1", false)]);
     const r = replay();
     const { ctx } = renderRewind(r);
-    fireEvent.click(screen.getByRole("button", { name: "Rewind" }));
-    await waitFor(() => expect(r.enter).toHaveBeenCalledWith("s2"));
+    const btn = screen.getByRole("button", { name: "Rewind" });
+    expect(btn).toHaveAttribute("title", "Open the last drive at its end");
+    fireEvent.click(btn);
+    await waitFor(() => expect(r.enter).toHaveBeenCalledWith("s2", { at: "end" }));
     expect(ctx.goTo).toHaveBeenCalledWith("analysis");
     expect(paths).toContain("/sessions?limit=5");
   });

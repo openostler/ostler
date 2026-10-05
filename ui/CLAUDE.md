@@ -12,7 +12,11 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   StatusTag, CoverageBar, PlaceholderReadout, ActionButton, ProcedureSheet, …).
 - `src/screens/Analysis.tsx` + `components/replay/AnalysisView.tsx` — the map/chart/G-G/notes view,
   live (the drive in progress, marker on `snap.gps`) or replay; `components/RewindButton.tsx`
-  in the header jumps 30 s back into the drive in progress (or opens the latest log).
+  in the header opens the drive in progress at its latest sample and follows it as it grows
+  (or opens the latest log at its end).
+- `src/lib/flags.ts` + `state/flags.ts` — automatic flags derived from a session's data on load
+  (sensor outside its `normal` band, faults appearing); never stored. `FlagSheet` shows one;
+  the flag manager is the Flags section of `RecordingOptions` ("Recording & flags").
 - `src/screens/Logs.tsx` + `src/components/replay/` — session browser and replay (MapLibre map,
   Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/maplibre.ts` is the only
   module that imports `maplibre-gl`; it is reached through `import()` so the main chunk stays

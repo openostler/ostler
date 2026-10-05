@@ -11,9 +11,9 @@ const LOOKUP = 5;
 const newestFinished = (sessions: SessionMeta[]) => sessions.find((s) => !s.recording) ?? null;
 
 /**
- * Header ⏪ Rewind (spec §7), before the connection pill. While the Pi is recording it opens
- * the drive in progress 30 s before its newest sample; otherwise the newest finished session
- * at its start. Then it switches to Analysis. Hidden in replay (Exit to live takes its place);
+ * Header ⏪ Rewind (spec §7, §8), before the connection pill. While the Pi is recording it opens
+ * the drive in progress at its newest sample, paused, and follows it as it grows; otherwise the
+ * newest finished session at its last sample, paused. Then it switches to Analysis. Hidden in replay (Exit to live takes its place);
  * disabled ("No logs yet") when there are no sessions at all. The list is fetched lazily on
  * mount and again on each tap.
  */
@@ -39,7 +39,7 @@ export function RewindButton() {
   const rewind = useCallback(async () => {
     if (busy) return;
     if (recording) {
-      enter(recording, { at: "end-30s" });
+      enter(recording, { at: "end", follow: true });
       goTo("analysis");
       return;
     }
@@ -49,7 +49,7 @@ export function RewindButton() {
       setHasLogs(r.sessions.length > 0);
       const s = newestFinished(r.sessions) ?? r.sessions[0] ?? null;
       if (!s) { toast("No logs yet", true); return; }
-      enter(s.id);
+      enter(s.id, { at: "end" });
       goTo("analysis");
     } catch (e) {
       toast(`Could not load the logs: ${(e as Error).message}`, true);
@@ -64,7 +64,7 @@ export function RewindButton() {
     <button
       className="chip hrewind"
       aria-label="Rewind"
-      title={disabled ? "No logs yet" : recording ? "Rewind 30 s on this drive" : "Open the last drive"}
+      title={disabled ? "No logs yet" : recording ? "Rewind to the latest sample" : "Open the last drive at its end"}
       disabled={disabled || busy}
       onClick={rewind}
     >

@@ -157,6 +157,32 @@ test("the demo logs are listed by name; search finds Demo log 2", async ({ page 
   await page.screenshot({ path: "test-results/logs-browser.png", fullPage: true });
 });
 
+// Automatic flags (spec §8) are derived in the UI, so they show on demo logs too.
+test("Demo log 2 shows flag ticks; the chip opens the flag sheet (read-only on a demo)", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await openLogs(page);
+  await page.locator("button.replay-row", { hasText: "Demo log 2" }).first().click();
+  await expect(page.getByRole("heading", { name: "Demo log 2" })).toBeVisible();
+  const transport = page.getByTestId("global-transport");
+  // ticks: buttons in the "Notes and flags" strip labelled "Warning at …" / "Alarm at …"
+  const ticks = transport.getByRole("group", { name: "Notes and flags" }).getByRole("button", { name: /^(Warning|Alarm) at / });
+  await expect(ticks.first()).toBeAttached();
+  expect(await ticks.count()).toBeGreaterThan(0);
+  await ticks.first().click();
+  const chip = transport.locator("button[data-flag]");
+  await expect(chip).toBeVisible();
+  await chip.click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.getByRole("button", { name: "Jump to" })).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Keep as note" })).toHaveCount(0); // a demo log
+  await page.screenshot({ path: "test-results/flag-sheet.png" });
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
+  // ⚑ is hidden on demo logs
+  await expect(page.locator("header").getByRole("button", { name: "Mark at the cursor" })).toHaveCount(0);
+});
+
 test("a demo log's name is read-only", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");

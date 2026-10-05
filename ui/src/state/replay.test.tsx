@@ -176,30 +176,81 @@ describe("ReplayProvider", () => {
     expect(result.current.t).toBe(0);
   });
 
-  it("enter(id, {at: \"end-30s\"}) starts 30 s before the last sample (never before 0)", async () => {
-    expect(startCursor([0, 1000, 90_000], "end-30s")).toBe(60_000);
-    expect(startCursor([0, 1000, 10_000], "end-30s")).toBe(0);
-    expect(startCursor([], "end-30s")).toBe(0);
+  it("enter(id, {at: \"end\"}) starts at the last sample", async () => {
+    expect(startCursor([0, 1000, 90_000], "end")).toBe(90_000);
+    expect(startCursor([], "end")).toBe(0);
     expect(startCursor([0, 1000], 500)).toBe(500);
     sessionServer(90);
     const { result } = hook();
-    act(() => result.current.enter("s1", { at: "end-30s" }));
-    await vi.waitFor(() => expect(result.current.t).toBe(60_000));
+    act(() => result.current.enter("s1", { at: "end" }));
+    await vi.waitFor(() => expect(result.current.t).toBe(90_000));
+    expect(result.current.playing).toBe(false);
+    expect(result.current.follow).toBe(false);
   });
 
-  it("a still-recording session's refresh never moves the cursor after end-30s", async () => {
+  it("without follow a still-recording session's refresh never moves the cursor", async () => {
     vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     try {
       sessionServer(90, true, 20);
       const { result } = hook();
-      act(() => result.current.enter("s1", { at: "end-30s" }));
-      await vi.waitFor(() => expect(result.current.t).toBe(60_000));
+      act(() => result.current.enter("s1", { at: "end" }));
+      await vi.waitFor(() => expect(result.current.t).toBe(90_000));
       act(() => { vi.advanceTimersByTime(LIVE_REFRESH_MS); });
       await vi.waitFor(() => expect(result.current.data?.t.at(-1)).toBe(110_000));
-      expect(result.current.t).toBe(60_000);
+      expect(result.current.t).toBe(90_000);
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("follow keeps the cursor on the newest sample as data grows; a seek drops it; setFollow(true) re-pins", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    try {
+      sessionServer(90, true, 20);
+      const { result } = hook();
+      act(() => result.current.enter("s1", { at: "end", follow: true }));
+      await vi.waitFor(() => expect(result.current.t).toBe(90_000));
+      expect(result.current.follow).toBe(true);
+      act(() => { vi.advanceTimersByTime(LIVE_REFRESH_MS); });
+      await vi.waitFor(() => expect(result.current.data?.t.at(-1)).toBe(110_000));
+      expect(result.current.t).toBe(110_000);
+      expect(result.current.playing).toBe(false);
+      expect(result.current.follow).toBe(true);
+
+      act(() => result.current.seek(50_000));
+      expect(result.current.follow).toBe(false);
+      expect(result.current.t).toBe(50_000);
+      act(() => { vi.advanceTimersByTime(LIVE_REFRESH_MS); });
+      await vi.waitFor(() => expect(result.current.data?.t.at(-1)).toBe(130_000));
+      expect(result.current.t).toBe(50_000);
+
+      act(() => result.current.setFollow(true));
+      expect(result.current.t).toBe(130_000);
+      // ±10 s from the pinned cursor carries on from the newest sample
+      act(() => result.current.playback!.skip(-10_000));
+      expect(result.current.follow).toBe(false);
+      expect(result.current.t).toBe(120_000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("play drops follow; exit and entering without follow reset it", async () => {
+    sessionServer(90, true);
+    const { result } = hook();
+    act(() => result.current.enter("s1", { at: "end", follow: true }));
+    await vi.waitFor(() => expect(result.current.t).toBe(90_000));
+    act(() => result.current.play());
+    expect(result.current.follow).toBe(false);
+    act(() => result.current.pause());
+    act(() => result.current.setFollow(true));
+    act(() => result.current.exit());
+    expect(result.current.follow).toBe(false);
+    act(() => result.current.enter("s1", { follow: true }));
+    expect(result.current.follow).toBe(true);
+    act(() => result.current.enter("s1"));
+    expect(result.current.follow).toBe(false);
+    expect(INACTIVE.follow).toBe(false);
   });
 
   it("usePlaybackState rewinds and pauses when resetKey changes", () => {

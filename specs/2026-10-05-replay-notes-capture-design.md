@@ -2,7 +2,7 @@
 title: "Whole-app replay, notes, audio and accelerometer recording, replay map v2, Decode/Label admin — design"
 area: specs
 status: stable
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [specs/2026-10-05-session-logbook-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
@@ -236,6 +236,53 @@ All errors are in English.
 - `at` is the start cursor in session ms.
 - `"end-30s"` means 30 s before the session's last sample.
 
+## 8. Rewind to the end, automatic flags, the flag manager and ⚑ in replay (v1.3)
+
+**Rewind:**
+- Without a recording, Rewind opens the newest finished log at its **last sample**, paused.
+- While recording, it opens the drive in progress at its last sample, paused, and **follows** it:
+  - each 5 s refresh extends the scrubber and keeps the cursor on the newest sample;
+  - scrubbing, ±10 s, a tick tap or Play drops follow;
+  - "● Latest" on the transport re-pins it.
+- The API is `enter(id, {at: "end", follow: true})`. The old `"end-30s"` option is gone.
+
+**Automatic flags** (`ui/src/lib/flags.ts`) are derived in the UI from the loaded session data each time it loads. They are never stored, so they work on every log, including the demo logs and the drive in progress, and settings apply retroactively.
+
+*Out of range:* applies to signals with a `normal` band.
+- **Starts** after **3 s** outside the band.
+- **Ends** once the value is back inside by **2 %** of the span.
+- **Merging:** excursions of one signal less than **10 s** apart merge.
+- **Warm-up:** a value that is out of range from its first reading and only moves back towards the band is not flagged. Examples are a cold engine warming up, or the engine not running yet.
+- **One flag per excursion:** it is a range flag carrying the peak.
+- **Severity:**
+  - `alarm` if the value also left `limits`;
+  - otherwise `warn`.
+- **Flood cap:** more than 6 flags starting within 60 s fold into one "N more out of range" flag. This follows EEMUA 191 and ISA-18.2.
+
+*Faults:*
+- A point flag when a code **first appears** during the drive.
+- Codes already present at the first read become one "stored faults" flag at the start.
+- Severity: Current → `alarm`, Logged → `warn`.
+
+**Display:**
+- **Transport ticks:** manual notes use the accent colour; flags use warn or alarm colour, and range flags are drawn as short bars.
+- **Chip:** the chip above the scrubber shows the flag or note at the cursor, and tapping it opens the **flag sheet**. The sheet shows:
+  - title, time, duration;
+  - peak and normal band, or the fault code, meaning and Current/Logged;
+  - **Jump to**, **Keep as note** (not on demo logs), **Mute this sensor** and **Flag settings**.
+- **Analysis notes panel:** lists flags with the notes, with the filter All · Notes · Out of range · Faults.
+
+**Flag manager:**
+- Lives in the Recording options sheet: three switches (Manual ⚑, Sensor out of range, Faults), each with counts, plus a list of muted sensors.
+- It is reachable always through Preferences ("Recording & flags").
+- Settings are per device (`d2diag.flagOptions`) and display-only.
+
+**⚑ button:**
+- **Live while recording:** unchanged.
+- **Paused (no connection):** shown greyed, titled "Connect to the car to mark".
+- **Replay of an editable session:** adds a retro mark at the cursor through the "What happened?" sheet.
+- **Demo logs and public mode:** hidden.
+
 ## Testing
 
 - **pytest:**
@@ -277,3 +324,4 @@ All errors are in English.
 - 2026-10-05: v1.0, approved.
 - 2026-10-06: v1.1, Analysis tab (live + replay) and the header Rewind button (§7).
 - 2026-10-06: v1.2, the replay banner is removed: Exit to live moves into a flashing connection pill, and the note chip floats above the scrubber (§4).
+- 2026-10-06: v1.3, Rewind opens at the end (following the drive in progress), automatic flags (out of range, faults), the flag manager, and ⚑ in replay (§8).
