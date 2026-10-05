@@ -15,6 +15,32 @@ Vehicle knowledge ships separately, as **vehicle packs**.
 > community documentation. It is not a finished commercial tool. Use at your own risk, and
 > read the safety notes.
 
+## Goals
+
+Ostler aims to be **the Home Assistant of the automotive world**: one open, local-first
+hub for your vehicles, on hardware you own. The full statement is in **[GOALS.md](GOALS.md)**.
+
+- **Diagnostics for every car:** the Discovery 2 first, then other Land Rovers, any
+  OBD-II car, modern CAN/UDS and pre-OBD cars, each as a community vehicle pack.
+- **A data logger with telemetry**, a **GPS tracker** and a **notify-only alarm** on an
+  always-on ESP32 guardian with its own battery and IoT SIM.
+- **Add-on devices** on a private CAN bus (relay box, head-unit CAN/OBD emulator) and
+  **cameras** on our own infrastructure (dashcam, parking, reversing, underbody).
+- **Displays are thin clients:** one head-unit-first PWA, generated from per-vehicle
+  capability manifests, with a garage for several vehicles.
+- **Open standards:** COVESA VSS signal paths, OBDb-compatible data, MQTT with Home
+  Assistant discovery, OVMS and OwnTracks compatibility.
+- **A decode pipeline** that turns an unknown car into a pack with verified signals.
+- **Hard lines:** nothing writes to a car without the safety gates; no EKA or key
+  programming; the VIN is never logged or uploaded; private by default, no cloud needed.
+- **Anti-bloat:** features are core, add-on (off by default) or moonshot (own ADR).
+- **Funding:** official hardware and an optional Ostler Cloud subscription, with AGPL code
+  plus a commercial licence.
+
+Done so far: the `VehiclePack` decoupling, the platform/pack repo split, a dev server, a
+version tracker and the UI research. Next: the UI seams and head-unit shell, then opt-in
+MQTT/Home Assistant.
+
 ## What the platform does
 
 - **Comms core:** raw transport (pyserial, an ESP32 bridge), K-line framing with fast and
@@ -118,6 +144,7 @@ conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabula
 
 ## Documentation
 
+- [GOALS.md](GOALS.md) says what the project is for and where it is going.
 - [INDEX.md](INDEX.md) lists every doc, and [CONSTITUTION.md](CONSTITUTION.md) holds the
   hard rules.
 - [decisions/](decisions/CLAUDE.md) holds the ADRs, and [specs/](specs/CLAUDE.md) the

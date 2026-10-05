@@ -19,6 +19,7 @@ orient cheaply, then load on demand.
 ## Then load on demand
 
 - The code map, commands and key seams: [docs/architecture.md](docs/architecture.md).
+- What the project is for and where it is going: [GOALS.md](GOALS.md).
 - Mission and layering boundary: [SCOPE.md](SCOPE.md).
 - What moved where at the split: [ADR-0015](decisions/adr-0015-repo-split-executed.md).
 - Why a choice was made: [decisions/](decisions/CLAUDE.md).
