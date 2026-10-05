@@ -1,0 +1,17 @@
+{
+  "platform": {
+    "name": "Ostler",
+    "version": "0.0.1",
+    "commit": "b9dd0f4df891d73250238b2d07cbc0428ca83180",
+    "source": "https://github.com/openostler/ostler"
+  },
+  "pack": {
+    "id": "lr_d2",
+    "name": "Land Rover Discovery 2 Td5",
+    "version": "0.1.0",
+    "commit": "1de0fd2d18ae131c84ac5de7ecb13376edbb5bc6",
+    "source": null
+  },
+  "built": null,
+  "started": "2026-10-05T22:29:23Z"
+}

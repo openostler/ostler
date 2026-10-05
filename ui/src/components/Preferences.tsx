@@ -5,9 +5,11 @@ import { confirmAction } from "./confirm";
 import { RadioOpt } from "./RadioOpt";
 import { RecordingOptions } from "./RecordingOptions";
 import { Sheet } from "./Sheet";
+import { VersionCard } from "./VersionCard";
 
 /** ⚙ Preferences (per device): trust mode, sharing, display, units, "Recording & flags" (the
- * recording options and the flag manager, reachable without a recording), admin link, power.
+ * recording options and the flag manager, reachable without a recording), admin link, power,
+ * and the running version.
  * The serial port lives in the ConnectionSheet (there is no mock mode — ADR-0011). */
 export function Preferences({ onClose }: { onClose: () => void }) {
   const { prefs, setPrefs, snap, community, reloadCommunity, toast, admin } = useApp();
@@ -101,6 +103,10 @@ export function Preferences({ onClose }: { onClose: () => void }) {
           </div>
         </section>
       ) : null}
+      <section>
+        <div className="kicker" style={{ marginBottom: 8 }}>Version</div>
+        <VersionCard />
+      </section>
       <button className="btn accent" onClick={onClose}>Done</button>
     </Sheet>
   );

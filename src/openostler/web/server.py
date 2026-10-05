@@ -446,6 +446,10 @@ class _Handler(BaseHTTPRequestHandler):
             # Public (also in public mode): the vehicle pack's manifest (modules, aliases,
             # UI layout). The UI loads it once at boot.
             self._json(active_pack().manifest())
+        elif self.path.split("?")[0] == "/version":
+            # Public: what is running (platform + pack versions and commits) for Settings.
+            from ..version import build_info
+            self._json(build_info(active_pack()))
         elif self.path.split("?")[0] == "/catalog":
             # Public (also in public mode): read-only item metadata for the module pages.
             from urllib.parse import parse_qs, urlparse

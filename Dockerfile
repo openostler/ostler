@@ -8,6 +8,13 @@
 #
 # The image installs the platform (this repo) plus one vehicle pack (ADR-0013, ADR-0015):
 # the Land Rover Discovery 2 reference pack "d2diag" from its repo at PACK_REF.
+
+# Meta stage: stamp the platform commit and build time (Settings → Version) from .git,
+# then drop .git so it never reaches the final image.
+FROM python:3.12-slim AS meta
+COPY . /src
+RUN python /src/tools/build_meta.py /src && rm -rf /src/.git
+
 FROM python:3.12-slim
 
 # The D2 pack's git ref (a branch, tag or commit), e.g. --build-arg PACK_REF=v0.1.0.
@@ -24,7 +31,7 @@ ENV PYTHONUNBUFFERED=1
 # Dependency layer first, for build-cache reuse across source changes.
 RUN pip install --no-cache-dir "pyserial>=3.5"
 
-COPY . /app
+COPY --from=meta /src /app
 
 # The platform, then the pack (--no-deps: the pack depends on "openostler", installed just
 # above). The pack is a source checkout installed editable, not a git+ wheel: it serves
@@ -33,6 +40,7 @@ COPY . /app
 RUN pip install --no-cache-dir . \
  && apt-get update && apt-get install -y --no-install-recommends git \
  && git clone --depth 1 --branch "${PACK_REF}" "${PACK_REPO}" /opt/d2-pack \
+ && git -C /opt/d2-pack rev-parse HEAD > /opt/d2-pack/BUILD_COMMIT \
  && rm -rf /opt/d2-pack/.git \
  && pip install --no-cache-dir --no-deps -e /opt/d2-pack \
  && apt-get purge -y git && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*

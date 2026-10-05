@@ -14,6 +14,7 @@ generators, …) live in the vehicle pack's repo (ADR-0015).
   addresses from the pack's `SniffSpec`).
 - `esp32_read.py` — ESP32 sniffer reader with live markers.
 - `make_demo_session.py` — regenerates the pack's demo sessions (`pack.demo.generate`).
+- `build_meta.py` — stamps `BUILD_COMMIT`/`BUILD_TIME` into the Docker build (Settings → Version).
 - `build_places.py` — builds `src/openostler/geo/places.tsv.gz` from GeoNames.
 
 ## Editing rules

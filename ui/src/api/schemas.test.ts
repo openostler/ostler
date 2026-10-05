@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import {
-  AutomapReply, Catalog, CatalogModules, CaptureList, CommandReply, NoteList, SessionData, SessionEvents, SessionHistogram, PackSchema, SessionList, SessionMeta, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
+  AutomapReply, Catalog, CatalogModules, CaptureList, CommandReply, NoteList, SessionData, SessionEvents, SessionHistogram, PackSchema, VersionInfo, SessionList, SessionMeta, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
   OkReply, Snapshot, SniffResponse,
 } from "./schemas";
 
@@ -39,6 +39,7 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   captures: CaptureList,
   "session-histogram": SessionHistogram,
   pack: PackSchema,
+  version: VersionInfo,
 };
 
 describe("API contract fixtures", () => {

@@ -23,3 +23,22 @@ describe("Preferences — Recording & flags", () => {
     expect(screen.getByText("Preferences")).toBeInTheDocument();
   });
 });
+
+describe("Preferences — Version", () => {
+  it("shows the platform and pack versions with links to their commits", async () => {
+    const body = {
+      platform: { name: "Ostler", version: "0.0.1", commit: "b9dd0f4df891d73250238b2d07cbc0428ca83180",
+        source: "https://github.com/openostler/ostler" },
+      pack: { id: "lr_d2", name: "Land Rover Discovery 2", version: "0.1.0", commit: "db2afd97114448", source: null },
+      built: "2026-10-05T22:10:00Z", started: "2026-10-05T22:11:00Z",
+    };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => new Response(
+      JSON.stringify(String(url).endsWith("/version") ? body : {}), { headers: { "Content-Type": "application/json" } })));
+    renderWithApp(<Preferences onClose={vi.fn()} />, { snap: { status: "connected", signals: {}, faults: [], recording: null } });
+    const link = await screen.findByRole("link", { name: "b9dd0f4" });
+    expect(link).toHaveAttribute("href", "https://github.com/openostler/ostler/commit/b9dd0f4df891d73250238b2d07cbc0428ca83180");
+    expect(screen.getByText("Land Rover Discovery 2")).toBeInTheDocument();
+    expect(screen.getByText("db2afd9")).toBeInTheDocument(); // no source URL → plain text
+    expect(screen.getByText("Built")).toBeInTheDocument();
+  });
+});

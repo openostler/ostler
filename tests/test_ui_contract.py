@@ -118,6 +118,7 @@ def _post(base, path, body):
 CASES = {
     "snapshot": lambda b: _get(b, "/snapshot"),
     "pack": lambda b: _get(b, "/pack"),
+    "version": lambda b: _get(b, "/version"),
     "fields-td5": lambda b: _get(b, "/fields?module=td5"),
     "fields-slabs": lambda b: _get(b, "/fields?module=slabs"),
     "faults-airbag": lambda b: _get(b, "/faults?module=airbag"),

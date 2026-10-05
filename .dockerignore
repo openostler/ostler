@@ -1,4 +1,4 @@
-.git
+# .git is read by the Dockerfile meta stage (commit stamp) and never reaches the image.
 .github
 .pytest_cache
 __pycache__

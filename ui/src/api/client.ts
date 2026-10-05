@@ -16,6 +16,7 @@ import {
   MapResponse,
   OkReply,
   PackSchema,
+  VersionInfo,
   CaptureList,
   NoteList,
   NoteReply,
@@ -80,6 +81,8 @@ export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
   /** The active vehicle pack's manifest (module ids, names, aliases, layout). */
   pack: () => getJson("/pack", PackSchema),
+  /** Platform and pack versions and commits (Settings → Version). */
+  version: () => getJson("/version", VersionInfo),
   catalog: (module: string) => getJson(`/catalog?module=${encodeURIComponent(module)}`, Catalog),
   catalogModules: () => getJson("/catalog", CatalogModules),
   /** One page of sessions, newest first (keyset paging: pass `next` back as `before`). */

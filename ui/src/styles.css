@@ -672,3 +672,8 @@ main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .flag-row.alarm { border-left: 3px solid var(--alarm); }
 .note-chip.flag-word.warn { border-color: var(--warn); }
 .note-chip.flag-word.alarm { border-color: var(--alarm); }
+
+/* Settings → Version: label / value pairs. */
+.version-card { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.version-card dt { color: var(--fg2); }
+.version-card dd { margin: 0; overflow-wrap: anywhere; }

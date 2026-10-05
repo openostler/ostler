@@ -513,3 +513,17 @@ export const PackSchema = z.object({
   layout: PackLayout.default({}),
 });
 export type Pack = z.infer<typeof PackSchema>;
+/** GET /version: what is running (Settings → Version). A commit is null when unknown. */
+const VersionPart = z.object({
+  name: z.string(),
+  version: z.string().nullable(),
+  commit: z.string().nullable(),
+  source: z.string().nullable(),
+});
+export const VersionInfo = z.object({
+  platform: VersionPart,
+  pack: VersionPart.extend({ id: z.string() }),
+  built: z.string().nullable(),
+  started: z.string(),
+});
+export type VersionInfo = z.infer<typeof VersionInfo>;
