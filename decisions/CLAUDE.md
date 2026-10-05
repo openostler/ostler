@@ -16,6 +16,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0010-replay-notes-audio-motion.md` — read-only whole-app replay; per-session notes; opt-in audio/accel kept on the device; Esri imagery with attribution.
 - `adr-0011-no-demo-mode-live-only-recording-place-names.md` — no mock mode (demo logs instead); record only while connected; GeoNames + OSM place names.
 - `adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md` — AGPL-3.0-or-later code + commercial licence; CC BY-SA 4.0 vehicle data; CLA.
+- `adr-0013-repo-split-and-vehicle-pack-contract.md` — split into `ostler` platform, this repo as the D2 pack, `ostler-firmware`, private `ostler-cloud`; VehiclePack contract.
 
 ## Editing rules
 
