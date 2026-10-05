@@ -34,7 +34,8 @@ history of every kept path is preserved (`git log --follow` works). Two passes:
      `references/research/`, `mac/`, `.github/`;
    - the root files;
    - the platform tools: `dashboard.py`, `deploy.sh`, `build_places.py`, `esp32_read.py`,
-     `raw_analyze.py`, `make_demo_session.py` and `module_scan.py`;
+     `make_demo_session.py` and `module_scan.py` (`raw_analyze.py` is Td5-specific and stays
+     in the pack);
    - the platform specs.
 2. **Drop** (`--invert-paths`):
    - `src/d2diag/vehicles/` and `_compat.py`;

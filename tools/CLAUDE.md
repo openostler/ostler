@@ -13,7 +13,6 @@ generators, …) live in the vehicle pack's repo (ADR-0015).
 - `module_scan.py` — read-only K-line address scan (logic in `src/openostler/modscan.py`,
   addresses from the pack's `SniffSpec`).
 - `esp32_read.py` — ESP32 sniffer reader with live markers.
-- `raw_analyze.py` — raw TX/RX log analyser over the signal store.
 - `make_demo_session.py` — regenerates the pack's demo sessions (`pack.demo.generate`).
 - `build_places.py` — builds `src/openostler/geo/places.tsv.gz` from GeoNames.
 

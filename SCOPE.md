@@ -60,7 +60,7 @@ This repo is the **platform** (ADR-0013, ADR-0015):
 - `src/openostler/` — the core library (comms + interpretation + the `VehiclePack`
   contract) plus, under `web/`, the reference consumer (dashboard/SSE/logging).
 - `ui/` — the React/TS dashboard, built into `src/openostler/web/static/`.
-- `tools/` — the platform CLIs (`dashboard`, `deploy.sh`, `module_scan`, `raw_analyze`,
+- `tools/` — the platform CLIs (`dashboard`, `deploy.sh`, `module_scan`,
   `esp32_read`, `build_places`, `make_demo_session`).
 - `docs/`, `specs/`, `decisions/`, `references/research/` — platform docs and decisions.
 
