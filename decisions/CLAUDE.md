@@ -17,6 +17,12 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0013-repo-split-and-vehicle-pack-contract.md` — split into `ostler` platform, this repo as the D2 pack, `ostler-firmware`, private `ostler-cloud`; VehiclePack contract.
 - `adr-0014-ostler-handles.md` — handles: GitHub org/PyPI/import `openostler`, npm `@ostler`, entry point `openostler.vehicle`, `@ostler.tech`; trademark policy.
 - `adr-0015-repo-split-executed.md` — the split done: this repo is the `openostler` platform; the D2 pack (`d2diag`) is a separate distribution; what moved where.
+- `adr-0016-covesa-vss-canonical-signal-namespace.md` — VSS 6.1 paths are canonical; `vss/ostler.vspec` overlay (`Vehicle.Ostler.*`) is the single source; generated `metrics.json`; OVMS/HA/OBDb aliases; verbatim VSS units, QUDT not UCUM.
+- `adr-0017-open-standards-first.md` — prefer open standards as files, not frameworks; the adopted set with verdicts; the rule for adding a dependency or standard; reference-only list.
+- `adr-0018-ui-architecture-decisions.md` — UI spec Q2–Q11 answered (areas, driver-side rail, comfort class, lockouts, tiers, VIN, service mode, cameras incl. 360 later); capabilities as data, no vehicle-type checks.
+- `adr-0019-reuse-from-ovms-and-obdb.md` — import all OVMS vehicles and commands the licence allows (exclusions are licence/legal only); commands disabled behind the gates, Tier 4 until its own ADR; OBDb primary for polled data; importer with a review gate.
+- `adr-0020-can-links-listen-only-by-default.md` — frame-level `CanLink` beside `Transport`, SocketCAN first; listen-only by default; TX only via pack allowlist + Parked + server gate; no MQTT→vehicle CAN.
+- `adr-0021-local-https-on-the-device.md` — the Pi serves local HTTPS so phones get service workers; trust setup (per-device CA, ACME DNS) to design; stdlib `ssl`.
 
 ADR-0005 (NanoCom sniff workflow) and ADR-0007 (BCU SecurityAccess) are Discovery 2
 decisions and stay in the D2 pack repo; their numbers are not reused.
@@ -26,4 +32,6 @@ decisions and stay in the D2 pack repo; their numbers are not reused.
 - Never edit an accepted ADR's decision. Supersede it with a new ADR and set the old
   one's frontmatter `status: superseded`.
 - Name new ADRs `adr-NNNN-kebab-title.md`, with the next number (never reused).
+- New ADRs (from ADR-0016) follow MADR: add **Decision drivers** and **Confirmation** sections
+  (ADR-0017).
 - Rebuild INDEX.md after adding an ADR.

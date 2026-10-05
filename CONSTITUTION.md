@@ -2,7 +2,7 @@
 title: Constitution
 area: root
 status: stable
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
@@ -74,6 +74,9 @@ summary: >
 - **Tests run without hardware** against `tests/fakes.py::FakeKLineEcu`. Platform tests run
   against `tests/fake_pack.py`; tests that need the Discovery 2 pack are marked
   `needs_pack`, and CI installs the pack so they never skip there.
+- **Prefer open standards** ([ADR-0017](decisions/adr-0017-open-standards-first.md)); the
+  canonical signal namespace is **COVESA VSS**
+  ([ADR-0016](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md)).
 - **English everywhere** for new content: code, comments, docs and commits. When you
   touch Swedish text, translate it.
 
@@ -96,3 +99,5 @@ summary: >
 - 2026-10-06 — Repo split executed (ADR-0015): this is the platform repo (`openostler`);
   vehicle packs are separate distributions; the signal store lives in each pack; the
   `needs_pack` test rule added.
+- 2026-10-06 — Added the open-standards rule (ADR-0017) and COVESA VSS as the canonical
+  signal namespace (ADR-0016).
