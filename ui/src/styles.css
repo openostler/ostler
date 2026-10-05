@@ -657,7 +657,7 @@ main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .flagsheet-meta { color: var(--text-2); font-variant-numeric: tabular-nums; }
 .flagsheet-range { display: flex; flex-direction: column; gap: 4px; }
 .flagsheet-faults { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.flagsheet-faults .fault { padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; }
+.flagsheet-faults .fault { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; }
 .flagsheet-code { font-variant-numeric: tabular-nums; }
 .flagsheet-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .flagsheet-tags .note-chip { margin-left: 0; }

@@ -252,6 +252,7 @@ All errors are in English.
 - **Starts** after **3 s** outside the band.
 - **Ends** once the value is back inside by **2 %** of the span.
 - **Merging:** excursions of one signal less than **10 s** apart merge.
+- **Warm-up:** a value that is out of range from its first reading and only moves back towards the band is not flagged. Examples are a cold engine warming up, or the engine not running yet.
 - **One flag per excursion:** it is a range flag carrying the peak.
 - **Severity:**
   - `alarm` if the value also left `limits`;

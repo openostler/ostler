@@ -58,11 +58,15 @@ export function GlobalTransport() {
     : r.loading || !r.data ? <span className="gnote" role="status">Loading session…</span>
       : chip ? <span className="gnote-slot" role="status">{chip}</span> : null;
   const following = r.session?.recording ? { follow: r.follow, onFollow: () => r.setFollow(true) } : {};
+  // The sheet is a sibling, not a child: `.gtransport` is positioned (for the chip), so a child
+  // `.sheet` (absolute, inset 0) would be confined to the transport bar.
   return (
-    <div className="gtransport" data-testid="global-transport">
-      {overlay ? <div className="gnote-layer" aria-live="polite">{overlay}</div> : null}
-      {r.playback && r.data ? <Transport offset={r.offset} ticks={ticks} {...following} /> : null}
+    <>
+      <div className="gtransport" data-testid="global-transport">
+        {overlay ? <div className="gnote-layer" aria-live="polite">{overlay}</div> : null}
+        {r.playback && r.data ? <Transport offset={r.offset} ticks={ticks} {...following} /> : null}
+      </div>
       {open ? <FlagSheet item={open} onClose={() => setOpen(null)} /> : null}
-    </div>
+    </>
   );
 }

@@ -97,6 +97,23 @@ describe("detectFlags — out of range", () => {
     expect(f[0]).toMatchObject({ t: 25_000, t_end: 29_000 });
   });
 
+  it("a value out of range from the first reading that only recovers is not flagged (warm-up)", () => {
+    // a cold engine: 5 °C at the start, warming steadily into the band by 40 s
+    expect(detectFlags(session(120, { a: (s) => Math.min(50, 5 + s) }), fields)).toEqual([]);
+    // the engine not running yet: stuck at 0 for a while, then into the band
+    expect(detectFlags(session(60, { a: (s) => (s < 20 ? 0 : inside) }), fields)).toEqual([]);
+  });
+
+  it("an excursion from the first reading that gets worse is still flagged", () => {
+    const f = detectFlags(session(60, { a: (s) => (s < 10 ? 10 - s : inside) }), fields);
+    expect(f).toMatchObject([{ t: 0, t_end: 9_000, peak: 1, peakT: 9_000 }]);
+  });
+
+  it("an excursion that starts after the first reading is flagged even if it only recovers", () => {
+    const f = detectFlags(session(60, { a: (s) => (s >= 10 && s < 20 ? 5 + (s - 10) : inside) }), fields);
+    expect(f).toMatchObject([{ t: 10_000, peak: 5 }]);
+  });
+
   it("ignores fields without a normal band and fields not in the data", () => {
     const data = session(60, { a: between(10, 20, 90), b: between(10, 20, 90) });
     expect(detectFlags(data, { a: field("a", { normal: null }), c: field("c") })).toEqual([]);

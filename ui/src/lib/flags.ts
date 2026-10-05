@@ -55,7 +55,12 @@ export const FLAG_RULES = {
 /** A null gap longer than this ends an excursion (the signal was not being read). */
 const GAP_MS = 5_000;
 
-type Excursion = { start: number; end: number; peak: number; peakT: number; dist: number; alarm: boolean };
+type Excursion = {
+  start: number; end: number; peak: number; peakT: number; dist: number; alarm: boolean;
+  /** Out of range from the signal's first reading and only ever recovering towards the band
+   * (a cold engine warming up, the engine not yet running) — expected, so never flagged. */
+  settling: boolean;
+};
 
 /** One signal's excursions outside `normal` (before the on-delay, merge and flood rules). */
 function excursions(t: readonly number[], col: readonly (number | null)[], f: Field): Excursion[] {
@@ -66,11 +71,13 @@ function excursions(t: readonly number[], col: readonly (number | null)[], f: Fi
   const out: Excursion[] = [];
   let cur: Excursion | null = null;
   let lastT = -Infinity;
+  let firstT: number | null = null;
   const n = Math.min(t.length, col.length);
   for (let i = 0; i < n; i++) {
     const v = col[i];
     if (v == null || Number.isNaN(v)) continue;
     const tt = t[i]!;
+    firstT ??= tt;
     if (cur && tt - lastT > GAP_MS) {
       out.push(cur);
       cur = null;
@@ -79,7 +86,7 @@ function excursions(t: readonly number[], col: readonly (number | null)[], f: Fi
     const outside = v < lo || v > hi;
     if (!cur) {
       if (!outside) continue;
-      cur = { start: tt, end: tt, peak: v, peakT: tt, dist: v < lo ? lo - v : v - hi, alarm: false };
+      cur = { start: tt, end: tt, peak: v, peakT: tt, dist: v < lo ? lo - v : v - hi, alarm: false, settling: tt === firstT };
     } else if (!outside && v > lo + db && v < hi - db) {
       out.push(cur);
       cur = null;
@@ -88,7 +95,7 @@ function excursions(t: readonly number[], col: readonly (number | null)[], f: Fi
     cur.end = tt;
     if (outside) {
       const dist = v < lo ? lo - v : v - hi;
-      if (dist > cur.dist) Object.assign(cur, { dist, peak: v, peakT: tt });
+      if (dist > cur.dist) Object.assign(cur, { dist, peak: v, peakT: tt, settling: false });
       if (lim && (v < lim[0] || v > lim[1])) cur.alarm = true;
     }
   }
@@ -96,7 +103,7 @@ function excursions(t: readonly number[], col: readonly (number | null)[], f: Fi
   // the on-delay, then merge what is left when closer than mergeGapMs
   const merged: Excursion[] = [];
   for (const e of out) {
-    if (e.end - e.start < FLAG_RULES.onDelayMs) continue;
+    if (e.settling || e.end - e.start < FLAG_RULES.onDelayMs) continue;
     const prev = merged[merged.length - 1];
     if (prev && e.start - prev.end < FLAG_RULES.mergeGapMs) {
       prev.end = e.end;
