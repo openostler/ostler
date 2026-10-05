@@ -2,7 +2,7 @@
 
 ## td5keygen — SecurityAccess seed→key
 
-`src/d2diag/td5/keygen.py` is a Python port of the algorithm in
+`src/d2diag/vehicles/lr_d2/td5/keygen.py` is a Python port of the algorithm in
 [pajacobson/td5keygen](https://github.com/pajacobson/td5keygen).
 
 > BSD 2-Clause License

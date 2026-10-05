@@ -27,7 +27,11 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   (with the note chip floating over the page above it) shows on every tab. `lib/audio.ts`, `lib/motion.ts` and
   `RecordingCard`/`RecordingOptions`/`MarkButton` are the recording side.
 - `src/lib/catalog.ts` — the Stable/Experimental visibility rules over `/catalog` (ADR-0008).
-- `src/layout.ts` — the only place that names signals (Drive tiles, body view, LID presets).
+- `src/layout.ts` — accessors over the active vehicle pack's layout (`/pack`, loaded at boot
+  into `src/pack/store.ts`). Signal names for Drive tiles, the body view and LID presets live in
+  the pack's `layout.json`, never in UI code. `src/vehicles/` holds pack-specific views
+  (`lr_d2/`: SlabsCar, BodyCar) registered by pack id; a literal guard keeps module ids out of
+  the rest of `src/`.
   Outputs, Settings and Utilities come from `/catalog`, never from a hard-coded list.
 - `src/styles.css` — the calm-instrument tokens (auto day/night) and all styles.
 - `e2e/` — Playwright smoke test against the test-only server `tests/e2e_server.py` (simulated car; ADR-0011).

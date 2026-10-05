@@ -70,7 +70,7 @@ K-Line          (framing addressed+unaddressed, checksum, fast + 5-baud slow ini
 Transport       (raw bytes in/out — no protocol knowledge; pyserial)
 ```
 
-Supporting pieces: a **signal store** (`src/d2diag/signals/*.json`) read and
+Supporting pieces: a **signal store** (`src/d2diag/vehicles/lr_d2/signals/*.json`) read and
 written by both the decoders and the auto-mapper, a passive **sniff** subsystem,
 and the `web` dashboard. Nothing above the transport layer knows *how* the bytes
 travel:
@@ -112,7 +112,7 @@ browser (it never touches the cable).
 
 **No car? Replay the demo.** The dashboard has no mock or demo mode: it always runs
 live and shows "No connection" until a car is connected. The demo is two committed,
-read-only synthetic sessions, "Demo log 1" and "Demo log 2" (`src/d2diag/logbook/demo/`).
+read-only synthetic sessions, "Demo log 1" and "Demo log 2" (`src/d2diag/vehicles/lr_d2/demo/sessions/`).
 Open one from the Logs tab and replay it through the whole app
 ([ADR-0011](decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md)).
 
@@ -249,7 +249,7 @@ Contributing data or code? Add yourself here.
 - **Code:** [AGPL-3.0-or-later](LICENSE). Running a modified version as a network
   service means offering its source to its users. A **commercial licence** (for closed or
   embedded use without the AGPL obligations) is available from the maintainer.
-- **Vehicle data** (`src/d2diag/signals/`, `src/d2diag/dtc/`, fault-code tables, future
+- **Vehicle data** (`src/d2diag/vehicles/lr_d2/signals/`, `src/d2diag/vehicles/lr_d2/dtc/`, fault-code tables, future
   vehicle packs): [CC BY-SA 4.0](LICENSE-DATA).
 - **Contributions** are accepted under the [Contributor License Agreement](CLA.md) — see
   [CONTRIBUTING.md](CONTRIBUTING.md).

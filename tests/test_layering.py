@@ -88,13 +88,6 @@ _LEGACY_D2 = (
 )
 _PACK_PREFIX = "d2diag.vehicles"
 
-# TODO(phase0): remove when package B lands. Files owned by work package B (server, web
-# sources, logbook), still being rewritten concurrently; the integrator deletes this.
-_B_IN_PROGRESS = frozenset({
-    "web/server.py", "web/sources.py",
-    "logbook/__init__.py", "logbook/channels.py", "logbook/index.py", "logbook/store.py",
-    "logbook/recorder.py", "logbook/demo/__init__.py",
-})
 
 
 def _platform_files() -> "list[pathlib.Path]":
@@ -108,8 +101,7 @@ def _platform_files() -> "list[pathlib.Path]":
 
 
 def _guarded_platform_files() -> "list[pathlib.Path]":
-    return [p for p in _platform_files()
-            if p.relative_to(_SRC).as_posix() not in _B_IN_PROGRESS]
+    return _platform_files()
 
 
 def _package_of(path: pathlib.Path) -> str:

@@ -7156,11 +7156,11 @@
   ],
   [
    "eat",
-   "6eb0e7ceabdd5aa56ab4381d729d8b665feef4d824afcef8e0b9a1ecd18b79c3"
+   "aec85321476010fbd02b78068ed1259076041c00ec38508e65c02d7fceb9d5de"
   ],
   [
    "gearbox",
-   "facb7c362a2a119a1331cb19c19dc7b66ca2997cc03e774fd14e45af49a34e78"
+   "aec85321476010fbd02b78068ed1259076041c00ec38508e65c02d7fceb9d5de"
   ],
   [
    "airbag",
@@ -8071,6 +8071,66 @@
        110.0
       ],
       "unit": "%"
+     },
+     {
+      "c": "candidate",
+      "derived": true,
+      "description": "Fuel flow from injection quantity × rpm (derived, candidate).",
+      "group": "Fuelling",
+      "label": "Fuel rate",
+      "limits": null,
+      "name": "fuel_rate",
+      "normal": null,
+      "span": [
+       0,
+       20
+      ],
+      "unit": "L/h"
+     },
+     {
+      "c": "candidate",
+      "derived": true,
+      "description": "Live consumption — only meaningful while moving (derived, candidate).",
+      "group": "Fuelling",
+      "label": "Fuel economy",
+      "limits": null,
+      "name": "economy",
+      "normal": null,
+      "span": [
+       0,
+       25
+      ],
+      "unit": "L/100km"
+     },
+     {
+      "c": "candidate",
+      "derived": true,
+      "description": "Average consumption since the dashboard started (derived, candidate).",
+      "group": "Fuelling",
+      "label": "Trip economy",
+      "limits": null,
+      "name": "trip_economy",
+      "normal": null,
+      "span": [
+       0,
+       25
+      ],
+      "unit": "L/100km"
+     },
+     {
+      "c": "candidate",
+      "derived": true,
+      "description": "Average consumption across all logged driving (derived, candidate).",
+      "group": "Fuelling",
+      "label": "Lifetime economy",
+      "limits": null,
+      "name": "lifetime_economy",
+      "normal": null,
+      "span": [
+       0,
+       25
+      ],
+      "unit": "L/100km"
      }
     ],
     "module": "td5"
@@ -9290,14 +9350,14 @@
    "eat",
    {
     "fields": [],
-    "module": "eat"
+    "module": "autobox"
    }
   ],
   [
    "gearbox",
    {
     "fields": [],
-    "module": "gearbox"
+    "module": "autobox"
    }
   ],
   [

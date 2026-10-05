@@ -2,8 +2,8 @@
 title: Constitution
 area: root
 status: stable
-version: 1.1
-updated: 2026-10-01
+version: 1.2
+updated: 2026-10-06
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
   principles plus this project's protocol, layering, safety and data-honesty invariants.
@@ -33,7 +33,11 @@ summary: >
 - **Core never imports from the consumer layer.** `transport`, `kline`, `kwp2000`,
   `session`, `ports`, module decoders and `signals` must not import `web` (enforced by
   `tests/test_layering.py`). `web/sources.py` is the boundary. See [SCOPE.md](SCOPE.md).
-- **`src/d2diag/signals/*.json` is the single source of truth for LID field mappings.**
+- **The platform never imports a vehicle pack** (ADR-0013). Vehicle specifics live in
+  `src/d2diag/vehicles/<pack>/` and reach the platform only through the `VehiclePack`
+  contract (`d2diag.pack.active_pack()`). Platform code names no module ids or aliases.
+  `tests/test_layering.py` enforces both rules.
+- **`src/d2diag/vehicles/lr_d2/signals/*.json` is the single source of truth for LID field mappings.**
   Write it only via `upsert_field`; never hand-paste `Signal(...)` rows. The ESP32 decode
   header is generated from it, never hand-copied.
 - **Confidence is honest.** Every field is `proven` (verified against the car) or
@@ -82,3 +86,4 @@ summary: >
 - 2026-09-30 — Initial constitution: adopted Vibes as Code; invariants lifted from the
   former CLAUDE.md and SCOPE.md.
 - 2026-10-01 — Confidence values renamed to `proven`/`candidate` (ADR-0006).
+- 2026-10-06 — Vehicle specifics moved behind the `VehiclePack` contract; the signal store path is now `src/d2diag/vehicles/lr_d2/signals/` (ADR-0013, Phase 0).
