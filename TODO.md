@@ -22,8 +22,9 @@ Updated 2026-10-06. Check off when done.
 - [ ] Create the `openostler` GitHub org (ADR-0014 checklist) and push this repo as
       `openostler/ostler`; update the URLs in `pyproject.toml`, `README.md`,
       `mac/install.sh` and the geocoder User-Agent if the name differs.
-- [ ] Switch CI and the Dockerfile default from the pack's `split-pack` branch to `main`
-      (`PACK_REF` in `.github/workflows/ci.yml`) once it is merged.
+- [x] Switch CI and the Dockerfile default from the pack's `split-pack` branch to `main`.
+- [ ] Ship the D2 pack's docs (`references/`, `docs/`) inside its wheel, so a `git+`/PyPI
+      install also fills the Docs tab; until then CI and Docker install a source checkout.
 - [ ] Publish `openostler` to PyPI (placeholder 0.0.1 first) so packs can depend on it
       without a git URL; then drop `--no-deps` from the pack installs.
 - [ ] **UI composition root:** `ui/src/main.tsx` imports `./vehicles/lr_d2` (the D2

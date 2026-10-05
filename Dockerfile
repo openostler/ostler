@@ -10,7 +10,7 @@
 # the Land Rover Discovery 2 reference pack "d2diag" from its repo at PACK_REF.
 FROM python:3.12-slim
 
-# The D2 pack's git ref (a branch, tag or commit), e.g. --build-arg PACK_REF=split-pack.
+# The D2 pack's git ref (a branch, tag or commit), e.g. --build-arg PACK_REF=v0.1.0.
 ARG PACK_REF=main
 ARG PACK_REPO=https://github.com/JamesWrightDavid/discovery2-diag
 
@@ -27,10 +27,14 @@ RUN pip install --no-cache-dir "pyserial>=3.5"
 COPY . /app
 
 # The platform, then the pack (--no-deps: the pack depends on "openostler", installed just
-# above). git is needed only for the pack's git+ URL and is removed again.
+# above). The pack is a source checkout installed editable, not a git+ wheel: it serves
+# its docs (references/, docs/) for the Docs tab from the checkout. git is needed only
+# for the clone and is removed again.
 RUN pip install --no-cache-dir . \
  && apt-get update && apt-get install -y --no-install-recommends git \
- && pip install --no-cache-dir --no-deps "d2diag @ git+${PACK_REPO}@${PACK_REF}" \
+ && git clone --depth 1 --branch "${PACK_REF}" "${PACK_REPO}" /opt/d2-pack \
+ && rm -rf /opt/d2-pack/.git \
+ && pip install --no-cache-dir --no-deps -e /opt/d2-pack \
  && apt-get purge -y git && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080

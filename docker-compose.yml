@@ -14,7 +14,7 @@ services:
     build:
       context: .
       args:
-        # The Discovery 2 pack's git ref (ADR-0015); main once split-pack is merged.
+        # The Discovery 2 pack's git ref (ADR-0015).
         PACK_REF: "${PACK_REF:-main}"
     # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the installed pack's demo
     # sniff feed (Decode tab) and the OSM geocoder on.
