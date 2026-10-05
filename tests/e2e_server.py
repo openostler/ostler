@@ -1,6 +1,6 @@
 """Test/dev-only dashboard with a SIMULATED car (ADR-0011: the product has no demo mode).
 
-Builds a ``DiagServer`` from ``tests/fake_sources.py``: the motor, SLABS and info modules
+Builds a ``DiagServer`` from ``tests/fake_sources.py``: the Td5, SLABS and info modules
 (airbag/ACE/EAT/BCU), the synthetic GPS loop, the simulated fault scan and a looping demo
 sniff replay for the admin Decode tab. The geocoder is always off and sessions go to a
 throwaway directory (default: a fresh temp dir), seeded with one closed, editable
@@ -55,7 +55,7 @@ def seed_session(root: str) -> "str | None":
     lat, lon = 56.6400, -4.7600  # open moorland (synthetic)
     for i in range(40):
         fix = _Fix(lat, lon, 40.0, int(clock["t"] * 1000))
-        rec.feed({"conn": "connected", "status": "connected", "module": "motor",
+        rec.feed({"conn": "connected", "status": "connected", "module": "td5",
                   "signals": {"rpm": {"v": 1500 + 10 * i, "u": "rpm"},
                               "speed": {"v": 40.0, "u": "km/h"},
                               "coolant_temp": {"v": 70 + i * 0.3, "u": "°C"}},
@@ -91,7 +91,7 @@ def build(args) -> DiagServer:
     srv = DiagServer(
         fake_modules(gps=gps), host=args.host, port=args.port,
         poll_interval=args.interval, stream_interval=args.interval,
-        active="slabs" if args.slabs else "motor", menus=MENUS, docs=docs, sniffer=sniffer,
+        active="slabs" if args.slabs else "td5", menus=MENUS, docs=docs, sniffer=sniffer,
         captures_path=os.path.join(os.path.dirname(sessions_dir), "labeled_captures.jsonl"),
         csv_dir=os.path.dirname(sessions_dir), public=args.public,
         admin_password=args.admin_password, gps=gps, sessions_dir=sessions_dir,

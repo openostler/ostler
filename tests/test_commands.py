@@ -11,7 +11,7 @@ import pytest
 
 from d2diag import commands
 from d2diag.td5.td5 import _OUTPUTS
-from d2diag.web.sources import (
+from d2diag.vehicles.lr_d2.sources import (
     TD5_ACTIONS,
     _SLABS_ACTUATORS,
     SlabsDataSource,

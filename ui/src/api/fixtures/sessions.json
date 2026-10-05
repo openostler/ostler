@@ -25,7 +25,7 @@
         "data-1.csv"
       ],
       "modules": [
-        "motor",
+        "td5",
         "slabs"
       ],
       "channels": [
@@ -228,35 +228,6 @@
       "audio": [],
       "accel_cal": null,
       "note_count": 3
-    },
-    {
-      "id": "20261005T010717Z",
-      "name": null,
-      "description": null,
-      "place_start": null,
-      "place_end": null,
-      "place": null,
-      "start_utc": "2026-10-05T01:07:17.896Z",
-      "end_utc": null,
-      "duration_s": 0,
-      "rows": 0,
-      "parts": [
-        "data.csv"
-      ],
-      "modules": [],
-      "channels": [],
-      "has_gps": false,
-      "distance_km": 0.0,
-      "max_speed_kmh": null,
-      "bbox": null,
-      "start_pos": null,
-      "end_pos": null,
-      "synthetic": false,
-      "recording": true,
-      "source": "live",
-      "audio": [],
-      "accel_cal": null,
-      "note_count": 0
     },
     {
       "id": "20261004T153000Z",

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { SessionMeta } from "../../api/schemas";
-import { moduleName } from "../../layout";
+import { canonicalModule, moduleName } from "../../layout";
 import { convertUnit, fmt, type Units } from "../../lib/format";
 import { formatDuration, groupByYearMonth, rowDate, sessionPlace, sessionTitle } from "./sessionFormat";
 
@@ -76,7 +76,7 @@ function SessionRow({ s, units, onOpen }: { s: SessionMeta; units: Units; onOpen
           <span>{rowDate(s)}</span>
           <span>{formatDuration(s.duration_s)}</span>
           {s.has_gps ? <span>{fmt(dist.v, 1)} {dist.unit}</span> : null}
-          {s.modules.length ? <span>{s.modules.map(moduleName).join(", ")}</span> : null}
+          {s.modules.length ? <span>{[...new Set(s.modules.map(canonicalModule))].map(moduleName).join(", ")}</span> : null}
           {notes > 0 ? <span>{notes} note{notes === 1 ? "" : "s"}</span> : null}
         </span>
       </button>

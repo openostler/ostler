@@ -6,7 +6,7 @@ import { ProcedureSheet } from "../components/ProcedureSheet";
 import { ScreenHead } from "../components/ScreenHead";
 import { Sheet } from "../components/Sheet";
 import { StatusTag } from "../components/StatusTag";
-import { UTIL_LIDS } from "../layout";
+import { utilLids } from "../layout";
 import { coverageOf, groupTree, pageOf, STABLE_EMPTY, type GroupNode, type VisibleGroup } from "../lib/catalog";
 import { spacedHex } from "../lib/format";
 import { useApp } from "../state/app";
@@ -15,7 +15,7 @@ import { useApp } from "../state/app";
 function LidDump() {
   const { module, toast } = useApp();
   const run = useAction();
-  const preset = UTIL_LIDS[module] ?? { example: "", note: "" };
+  const preset = utilLids(module);
   const [lids, setLids] = useState(preset.example);
   const [raws, setRaws] = useState<Record<string, string> | null>(null);
 

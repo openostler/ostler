@@ -164,16 +164,23 @@ def load_records(module: str) -> "list[dict]":
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-_CACHE: "dict[str, list[Signal]]" = {}
+# Keyed by (store directory, module), so switching packs (or ``_DIR``) never serves another
+# store's signals.
+_CACHE: "dict[tuple[str, str], list[Signal]]" = {}
+
+
+def _key(module: str) -> "tuple[str, str]":
+    return (str(_dir()), module)
 
 
 def load_signals(module: str) -> "list[Signal]":
-    """Load a module's signals as :class:`Signal` objects (cached per module;
-    the cache is cleared by :func:`upsert_field`). Live decoders can therefore call this
-    often without reading the file every time."""
-    if module not in _CACHE:
-        _CACHE[module] = [_record_to_signal(r) for r in load_records(module)]
-    return _CACHE[module]
+    """Load a module's signals as :class:`Signal` objects (cached per store directory and
+    module; the cache is cleared by :func:`upsert_field`). Live decoders can therefore call
+    this often without reading the file every time."""
+    key = _key(module)
+    if key not in _CACHE:
+        _CACHE[key] = [_record_to_signal(r) for r in load_records(module)]
+    return _CACHE[key]
 
 
 def upsert_field(module: str, record: dict) -> None:
@@ -203,7 +210,7 @@ def upsert_field(module: str, record: dict) -> None:
             json.dump(rows, f, ensure_ascii=False, indent=2)
             f.write("\n")
         os.replace(tmp, p)
-        _CACHE.pop(module, None)  # invalidate so the next load sees the new record
+        _CACHE.pop(_key(module), None)  # invalidate so the next load sees the new record
     finally:
         if os.path.exists(tmp):
             os.remove(tmp)
@@ -235,7 +242,7 @@ def remove_field(module: str, lid, offset: int, bit: "int | None" = None) -> int
                 json.dump(kept, f, ensure_ascii=False, indent=2)
                 f.write("\n")
             os.replace(tmp, p)
-            _CACHE.pop(module, None)
+            _CACHE.pop(_key(module), None)
         finally:
             if os.path.exists(tmp):
                 os.remove(tmp)

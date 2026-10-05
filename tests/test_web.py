@@ -114,9 +114,9 @@ def test_signal_upsert_and_list_round_trip(tmp_path, monkeypatch):
 
 def test_fields_list_motor_maps_to_td5():
     from d2diag.web.server import _fields_list
-    d = _fields_list("motor")                    # UI module "motor" → store "td5"
+    d = _fields_list("motor")                    # legacy alias "motor" → canonical "td5"
     names = {f["name"] for f in d["fields"]}
-    assert d["module"] == "motor"
+    assert d["module"] == "td5" and _fields_list("td5") == d
     assert {"rpm", "coolant_temp"} <= names       # lets the UI show the layout with no cable
     rpm = next(f for f in d["fields"] if f["name"] == "rpm")
     assert rpm["unit"] == "rpm" and rpm["c"] == "proven"
@@ -132,7 +132,7 @@ def test_read_block_command_returns_hex():
     from d2diag.kline import KLine, encode
     from d2diag.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -147,7 +147,7 @@ def test_read_block_command_returns_hex():
 
 
 def test_read_block_command_not_connected():
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     assert not src.command("read_block", {"lids": ["54"]})["ok"]  # _slabs is None
 
@@ -165,7 +165,7 @@ def test_slabs_empty_read_grace_keeps_session_then_reconnects(monkeypatch):
     # A silent poll cycle should NOT tear down the session immediately (full reconnect ~20 s).
     # The session is kept during the grace period and shows the last known values ("stale"),
     # only after _SLABS_EMPTY_GRACE empties in a row is it given up.
-    from d2diag.web.sources import SlabsDataSource, _SLABS_EMPTY_GRACE
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_EMPTY_GRACE
     src = SlabsDataSource(port="x", read_faults=False)
     src._slabs = _FakeSlabs(b"")           # the bus never responds (21 54 → empty)
     src._last_signals = {"height_left": {"v": 42, "u": "", "s": "ok", "c": "proven"}}
@@ -186,7 +186,7 @@ def test_slabs_empty_read_grace_keeps_session_then_reconnects(monkeypatch):
 
 
 def test_slabs_successful_read_resets_empty_streak():
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     src._slabs = _FakeSlabs(b"")                # silent bus
     src._last_bus = 0.0
@@ -222,7 +222,7 @@ def test_no_demo_mode_in_the_product():
         names = [n for n in dir(mod) if "mock" in n.lower()]
         assert names == [], f"simulated sources left in {mod.__name__}: {names}"
     with pytest.raises(TypeError):
-        DiagServer(host="127.0.0.1", port=0, variants={"motor": {"mock": FakeTd5Source()}})
+        DiagServer(host="127.0.0.1", port=0, variants={"td5": {"mock": FakeTd5Source()}})
     with pytest.raises(TypeError):
         sources.InfoDataSource("bcu", mock=True)
 
@@ -237,8 +237,8 @@ def test_read_all_faults_uses_the_injected_scan():
         seen.append(port)
         return fake_fault_report(port)
 
-    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
-                     host="127.0.0.1", port=0, active="motor", scan_port="/dev/ttyUSB3",
+    srv = DiagServer({"td5": FakeTd5Source(), "slabs": FakeSlabsSource()},
+                     host="127.0.0.1", port=0, active="td5", scan_port="/dev/ttyUSB3",
                      fault_scan=scan)
     try:
         r = srv._read_all_faults()
@@ -264,10 +264,10 @@ def test_read_all_faults_defaults_to_the_live_scan(monkeypatch):
 
 def test_fault_watch_sets_source_cadence():
     from d2diag.web.server import DiagServer
-    from d2diag.web.sources import SlabsDataSource, Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, Td5DataSource
 
     td5, slabs = Td5DataSource("x"), SlabsDataSource("x")
-    srv = DiagServer({"motor": td5, "slabs": slabs}, host="127.0.0.1", port=0)
+    srv = DiagServer({"td5": td5, "slabs": slabs}, host="127.0.0.1", port=0)
     try:
         assert td5.fault_every == 10        # default: ~5s
         r = srv.set_fault_watch(True)
@@ -287,7 +287,7 @@ def test_slabs_source_light_poll_reads_heights_only():
     from d2diag.kline import KLine, encode
     from d2diag.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -420,7 +420,7 @@ def test_admin_gate_requires_password_when_set():
 
 def test_raw_log_wraps_transport(tmp_path):
     from d2diag.transport import LoggingTransport, SerialTransport
-    from d2diag.web.sources import (SlabsDataSource, Td5DataSource, _raw_log_path,
+    from d2diag.vehicles.lr_d2.sources import (SlabsDataSource, Td5DataSource, _raw_log_path,
                                     _transport)
 
     # off by default
@@ -460,7 +460,7 @@ class _RecordingSession:
 def test_td5_disconnect_releases_session_not_just_close():
     # Module switch on a shared bus: the TD5 session should be ended cleanly (StopDiagnosticSession)
     # before the port is released, otherwise SLABS gets 7F 81 10 on its init.
-    from d2diag.web.sources import Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import Td5DataSource
     src = Td5DataSource(port="x", read_faults=False)
     sess = _RecordingSession()
     src._td5 = sess
@@ -470,7 +470,7 @@ def test_td5_disconnect_releases_session_not_just_close():
 
 
 def test_slabs_disconnect_releases_session():
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     src = SlabsDataSource(port="x", read_faults=False)
     sess = _RecordingSession()
     src._slabs = sess
@@ -603,7 +603,7 @@ def test_slabs_poll_reads_store_lids_by_rotation():
     from d2diag.kline import KLine, encode
     from d2diag.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
-    from d2diag.web.sources import SlabsDataSource
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource
     from tests.fakes import FakeKLineEcu
 
     def _f(d):
@@ -640,7 +640,7 @@ def test_slabs_poll_is_throttled_to_one_hz():
     # The server polls at 2 Hz but SLABS can't take it: the reference tool ran ~1 Hz
     # (keepalive was every ~1048 ms). Extra polls should return cached values WITHOUT
     # touching the bus — otherwise we send 4 frames/s and the session dies (~21 s in the car).
-    from d2diag.web.sources import SlabsDataSource, _SLABS_BUS_PERIOD
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_BUS_PERIOD
     src = SlabsDataSource(port="x", read_faults=False)
     sess = _CountingSlabs()
     src._slabs = sess
@@ -662,7 +662,7 @@ def test_slabs_poll_is_throttled_to_one_hz():
 def test_slabs_faults_are_read_on_a_slow_clock():
     # Fault codes cost two extra frames → their own cadence in seconds, independent of
     # fault_watch (which otherwise sets fault_every=1 on all sources).
-    from d2diag.web.sources import SlabsDataSource, _SLABS_FAULT_PERIOD
+    from d2diag.vehicles.lr_d2.sources import SlabsDataSource, _SLABS_FAULT_PERIOD
     src = SlabsDataSource(port="x", read_faults=True)
     reads = []
 
@@ -748,7 +748,7 @@ def test_conf_of_reads_store():
     # The confidence filter (Verified/Experimental) reads the store. After rpm_error
     # and the balance fields were promoted 2026-08-19, maf (1D u16@4) is a remaining
     # TD5 candidate — field proven but the kg/hr scale awaits a factory reference.
-    from d2diag.web.sources import _conf_map, _conf_of
+    from d2diag.vehicles.lr_d2.sources import _conf_map, _conf_of
     conf = _conf_map("td5")
     assert _conf_of("td5", "rpm_error", conf) == "proven"
     assert _conf_of("td5", "balance_3", conf) == "proven"
@@ -756,7 +756,7 @@ def test_conf_of_reads_store():
 
 
 def test_fuel_computer_rate_trip_economy():
-    from d2diag.web.sources import _FuelComputer
+    from d2diag.vehicles.lr_d2.sources import _FuelComputer
     t = [0.0]
     fc = _FuelComputer(clock=lambda: t[0])
     # idle: 12 mg/stroke, 750 rpm, stationary → ~1.62 L/h, no economy (not moving)
@@ -884,8 +884,8 @@ def test_select_info_module():
     from d2diag.web.server import DiagServer
     from tests.fake_sources import FakeInfoSource, FakeTd5Source
 
-    srv = DiagServer({"motor": FakeTd5Source(), "bcu": FakeInfoSource("bcu"),
-                      "ace": InfoDataSource("ace")}, host="127.0.0.1", port=0, active="motor")
+    srv = DiagServer({"td5": FakeTd5Source(), "bcu": FakeInfoSource("bcu"),
+                      "ace": InfoDataSource("ace")}, host="127.0.0.1", port=0, active="td5")
     try:
         assert srv._select("bcu")["ok"]
         assert srv._active == "bcu"
@@ -922,7 +922,7 @@ class _FaultyTd5:
 
 def test_td5_source_shows_undecoded_fault_bits():
     # Hidden byte<off>.bit<n> faults let a clear wipe faults nobody saw (2026-10-03).
-    from d2diag.web.sources import Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import Td5DataSource
     src = Td5DataSource(port="x", read_faults=True)
     src._td5 = _FaultyTd5()
     snap = src.poll()
@@ -962,7 +962,7 @@ def _get(base, path):
 
 def test_catalog_is_public_even_with_admin_password_and_public_mode():
     from tests.fake_sources import FakeSlabsSource
-    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
+    srv = DiagServer({"td5": FakeTd5Source(), "slabs": FakeSlabsSource()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
                      public=True, admin_password="hemligt")
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -970,9 +970,9 @@ def test_catalog_is_public_even_with_admin_password_and_public_mode():
         code, body = _get(base, "/catalog")
         assert code == 200
         mods = {m["module"]: m for m in body["modules"]}
-        assert mods["motor"]["store_module"] == "td5" and "coverage" in mods["motor"]
-        code, body = _get(base, "/catalog?module=motor")
-        assert code == 200 and body["module"] == "motor" and body["store_module"] == "td5"
+        assert mods["td5"]["store_module"] == "td5" and "coverage" in mods["td5"]
+        code, body = _get(base, "/catalog?module=motor")  # a legacy alias → its module
+        assert code == 200 and body["module"] == "td5" and body["store_module"] == "td5"
         assert [p["id"] for p in body["pages"]] == ["faults", "inputs", "outputs",
                                                      "settings", "utilities"]
         code, body = _get(base, "/catalog?module=slabs")
@@ -1001,7 +1001,7 @@ def test_map_and_coverage_keep_their_legacy_shape():
         for name, cov in body["coverage"].items():
             assert set(cov) == {"ok", "maybe", "total"}
             assert cov["ok"] + cov["maybe"] <= cov["total"]
-        # motor (UI id) resolves to the td5 map
+        # the legacy alias "motor" resolves to the td5 map
         code, motor = _get(base, "/map?module=motor")
         assert motor["map"] == body["map"]
     finally:
@@ -1027,9 +1027,9 @@ def test_coverage_counts_the_derived_legacy_statuses():
 
 def test_command_gate_refusals_over_http():
     from tests.fake_sources import FakeSlabsSource
-    srv = DiagServer({"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
+    srv = DiagServer({"td5": FakeTd5Source(), "slabs": FakeSlabsSource()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
-                     active="motor")
+                     active="td5")
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
         # experimental without trust → 400; with trust → runs (mock)
@@ -1057,7 +1057,7 @@ def test_command_gate_refusals_over_http():
 
 def test_public_server_refuses_actuators_but_not_reads():
     from tests.fake_sources import FakeSlabsSource
-    srv = DiagServer({"slabs": FakeSlabsSource(), "motor": FakeTd5Source()},
+    srv = DiagServer({"slabs": FakeSlabsSource(), "td5": FakeTd5Source()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
                      active="slabs", public=True)
     base = f"http://127.0.0.1:{_serve(srv)}"
@@ -1066,7 +1066,7 @@ def test_public_server_refuses_actuators_but_not_reads():
         assert code == 400 and "public" in body["error"]
         code, body = _post(base, "bleed_power_on")
         assert code == 400 and "public" in body["error"]
-        assert _post(base, "select_module", module="motor")[0] == 200
+        assert _post(base, "select_module", module="td5")[0] == 200
         code, body = _post(base, "output_mil_lamp", trust="experimental")
         assert code == 400 and "public" in body["error"]
         code, body = _post(base, "read_identity", trust="experimental")   # read-only: allowed
@@ -1104,7 +1104,7 @@ def _td5_source_on_fake(transport):
     from d2diag.kline import KLine
     from d2diag.kwp2000 import KWP2000
     from d2diag.td5 import Td5
-    from d2diag.web.sources import Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import Td5DataSource
 
     src = Td5DataSource(port="x", read_faults=False)
     src._td5 = Td5(KWP2000(KLine(transport)))
@@ -1171,7 +1171,7 @@ def test_read_identity_masks_vin_and_never_logs_it(tmp_path, caplog, capsys):
 
 
 def test_read_identity_not_connected_and_mock():
-    from d2diag.web.sources import Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import Td5DataSource
     assert not Td5DataSource(port="x").command("read_identity", {})["ok"]
     r = FakeTd5Source().command("read_identity", {})
     assert r["ok"] and set(r["identity"]) >= {"part_no", "vin_masked"}

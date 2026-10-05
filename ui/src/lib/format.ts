@@ -70,6 +70,3 @@ export function flagFor(status: string | null | undefined, confidence: string | 
   if (confidence === "candidate") return { cls: "exp", txt: "EXP" };
   return { cls: "ok", txt: "OK" };
 }
-
-/** UI module key → signal-store module ("motor" is the Td5). */
-export const storeModule = (m: string): string => (m === "motor" ? "td5" : m);

@@ -25,7 +25,7 @@
       "cat": "Fault codes",
       "items": [
         {
-          "name": "Read faults (210 bits raw-mapped)",
+          "name": "Read faults (211 bits raw-mapped, 3 candidate)",
           "status": "ok",
           "ref": "21 3B, byte*8+bit; PROVEN Ekaitza + reference tool v1.12"
         },
@@ -88,15 +88,15 @@
         },
         {
           "name": "7. Accel. Way 3 (V)",
-          "status": "maybe",
-          "ref": "21 1B@4 — voltage trace (way3 scale requires pedal sweep)",
+          "status": "ok",
+          "ref": "21 1B@4 (long 10-byte form; Euro 3)",
           "lid": "1b",
           "sig": "accel_way3"
         },
         {
           "name": "8. Accel. Supply (V)",
           "status": "ok",
-          "ref": "21 1B@6",
+          "ref": "21 1B@8 long form (D2-JW); @6 in the short 8-byte form",
           "lid": "1b",
           "sig": "accel_supply"
         },
@@ -117,48 +117,49 @@
         {
           "name": "11. Air Inlet Temp (°C)",
           "status": "ok",
-          "ref": "21 1A@4 (scale not car-confirmed)",
+          "ref": "21 1A@4",
           "lid": "1a",
           "sig": "air_temp"
         },
         {
           "name": "12. Air Flow (kg/hr)",
-          "status": "maybe",
-          "ref": "21 1D u16@4 — MAF, field proven (r=0.95 vs rpm×MAP); scale candidate",
-          "lid": "1d",
-          "sig": "maf"
+          "status": "ok",
+          "ref": "21 1C@4 ×0.1 kg/h (physical MAF sensor)",
+          "lid": "1c",
+          "sig": "maf_sensor"
         },
         {
           "name": "13. Ambient Pressure (kPa)",
           "status": "ok",
-          "ref": "21 23",
+          "ref": "21 23@0",
           "lid": "23",
           "sig": "ambient_press_1"
         },
         {
           "name": "14. Manifold Turbo Pressure (kPa)",
           "status": "ok",
-          "ref": "21 1C@0 — CONFIRMED 2026-08-03",
+          "ref": "21 1C@0",
           "lid": "1c",
           "sig": "manifold_press"
         },
         {
           "name": "15. EGR Modulator (%)",
           "status": "maybe",
-          "ref": "21 1D@15 u8 (candidate)",
+          "ref": "21 1D@15 u8 (native 21 37 is the alternative, T-02)",
           "lid": "1d",
           "sig": "egr_modulator"
         },
         {
           "name": "16. EGR Inlet (%)",
-          "status": "todo",
-          "ref": "21 1D@16 — constant 0 (dead/reserved byte)",
-          "lid": "1d"
+          "status": "maybe",
+          "ref": "21 45@0 ×0.01 % (1D@16 was a dead byte)",
+          "lid": "45",
+          "sig": "egr_inlet"
         },
         {
           "name": "17. Wastegate Modulator (%)",
           "status": "maybe",
-          "ref": "21 1D@17 u8 (candidate)",
+          "ref": "21 1D@17 u8 (native 21 38 is the alternative, T-02)",
           "lid": "1d",
           "sig": "wastegate_modulator"
         },
@@ -204,27 +205,29 @@
       "items": [
         {
           "name": "1. Brake Switch 1",
-          "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "status": "ok",
+          "ref": "21 1E byte1 bit7 (active-low)",
+          "lid": "1e",
+          "sig": "brake_main"
         },
         {
           "name": "2. Brake Switch 2",
-          "status": "todo",
-          "ref": "cf. pair with Brake 1 (complementary)",
-          "lid": "1e 36"
+          "status": "ok",
+          "ref": "21 1E byte0 bit0 (complementary to Brake 1)",
+          "lid": "1e",
+          "sig": "brake_switch_2"
         },
         {
           "name": "3. Clutch Switch",
           "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "ref": "SR-App hint: 21 1E@0 bit1 (not stored)",
+          "lid": "1e"
         },
         {
           "name": "4. Transfer Ratio (HIGH/LOW)",
           "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "ref": "SR-App hint: 21 1E@1 bit6 (not stored)",
+          "lid": "1e"
         },
         {
           "name": "5. Gear Box (P/N…)",
@@ -234,33 +237,36 @@
         },
         {
           "name": "6. Cruise Control",
-          "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "status": "ok",
+          "ref": "21 1E byte0 bit2 (master)",
+          "lid": "1e",
+          "sig": "cruise_master"
         },
         {
           "name": "7. Cruise Resume",
-          "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "status": "ok",
+          "ref": "21 1E byte0 bit4",
+          "lid": "1e",
+          "sig": "cruise_resume"
         },
         {
           "name": "8. Set Accelerate",
-          "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "status": "ok",
+          "ref": "21 1E byte0 bit3 (SET)",
+          "lid": "1e",
+          "sig": "cruise_set"
         },
         {
           "name": "9. AC Clutch Request",
           "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "ref": "SR-App hint: 21 1E@1 bit3 (not stored)",
+          "lid": "1e"
         },
         {
           "name": "10. AC Clutch Drive",
           "status": "todo",
-          "ref": "",
-          "lid": "1e 36"
+          "ref": "SR-App hint: 21 36 relay block (not stored)",
+          "lid": "36"
         },
         {
           "name": "11. AC Fan Request",
@@ -273,6 +279,116 @@
           "status": "todo",
           "ref": "",
           "lid": "1e 36"
+        }
+      ]
+    },
+    {
+      "cat": "Inputs — extra live data (not on the NanoCom)",
+      "items": [
+        {
+          "name": "Accelerator pedal (%)",
+          "status": "ok",
+          "ref": "21 1B@6 ×0.01 % (long form); @4 short form",
+          "lid": "1b",
+          "sig": "accel_pedal_pct"
+        },
+        {
+          "name": "Air mass (modelled)",
+          "status": "maybe",
+          "ref": "21 1D@4 — likely the ECU's model, T-01",
+          "lid": "1d",
+          "sig": "maf"
+        },
+        {
+          "name": "Air flow sensor voltage (V)",
+          "status": "maybe",
+          "ref": "21 1C@6",
+          "lid": "1c",
+          "sig": "maf_sensor_v"
+        },
+        {
+          "name": "Coolant sensor voltage (V)",
+          "status": "maybe",
+          "ref": "21 1A@2",
+          "lid": "1a",
+          "sig": "coolant_sensor_v"
+        },
+        {
+          "name": "Intake air sensor voltage (V)",
+          "status": "maybe",
+          "ref": "21 1A@6",
+          "lid": "1a",
+          "sig": "intake_sensor_v"
+        },
+        {
+          "name": "Fuel temp sensor voltage (V)",
+          "status": "maybe",
+          "ref": "21 1A@14",
+          "lid": "1a",
+          "sig": "fuel_sensor_v"
+        },
+        {
+          "name": "Ambient pressure 2 (kPa)",
+          "status": "ok",
+          "ref": "21 23@2",
+          "lid": "23",
+          "sig": "ambient_press_2"
+        },
+        {
+          "name": "Battery direct (V)",
+          "status": "maybe",
+          "ref": "21 10@2",
+          "lid": "10",
+          "sig": "battery_direct"
+        },
+        {
+          "name": "Injection quantity",
+          "status": "ok",
+          "ref": "21 1D@6",
+          "lid": "1d",
+          "sig": "injection_qty"
+        },
+        {
+          "name": "Driver demand",
+          "status": "maybe",
+          "ref": "21 1D@0 (T-03)",
+          "lid": "1d",
+          "sig": "driver_demand"
+        },
+        {
+          "name": "Smoke limit",
+          "status": "maybe",
+          "ref": "21 1D@10",
+          "lid": "1d",
+          "sig": "smoke_limit"
+        },
+        {
+          "name": "Torque limit",
+          "status": "maybe",
+          "ref": "21 1D@12",
+          "lid": "1d",
+          "sig": "torque_limit"
+        },
+        {
+          "name": "EGR modulator (native 0x37, %)",
+          "status": "maybe",
+          "ref": "21 37@0 (T-02)",
+          "lid": "37",
+          "sig": "egr_pos"
+        },
+        {
+          "name": "Wastegate modulator (native 0x38, %)",
+          "status": "maybe",
+          "ref": "21 38@0 (T-02)",
+          "lid": "38",
+          "sig": "wastegate_pos"
+        },
+        {
+          "name": "Fuel pump relay",
+          "status": "ok",
+          "ref": "21 36 byte1 bit2",
+          "lid": "36",
+          "sig": "fuel_pump_relay"
         }
       ]
     },
@@ -297,27 +413,27 @@
         {
           "name": "Config Tune ID",
           "status": "todo",
-          "ref": "docx: 'svtnp006' (not RDL 016)"
+          "ref": "docx: 'svtnp006'; not in the 1A 87/9A/9B/9C blocks"
         },
         {
           "name": "Fuel Tune ID",
           "status": "todo",
-          "ref": "docx: 'svdhg003'"
+          "ref": "docx: 'svdhg003'; not in the 1A blocks"
         },
         {
           "name": "ECU Part Number",
-          "status": "todo",
-          "ref": "docx: 'NNN000120'"
+          "status": "maybe",
+          "ref": "1A 9A: 'NNN' + BCD (D2-JW NNN000130); 1A 87 adds VIN, date, NNW software no."
         },
         {
           "name": "Homologation",
           "status": "todo",
-          "ref": "docx: '4213'"
+          "ref": "docx: '4213'; not in the 1A blocks"
         },
         {
           "name": "GET VIN",
           "status": "todo",
-          "ref": "own service; read separately"
+          "ref": "1A 87@0-10 ASCII (first 11 VIN chars) + BCD serial; returned masked by Read ECU identity"
         }
       ]
     },
@@ -325,9 +441,109 @@
       "cat": "Settings — feature/config (21)",
       "items": [
         {
-          "name": "21 feature flags (packed block?)",
+          "name": "Temperature Gauge",
           "status": "todo",
-          "ref": "Temperature Gauge…Wastegate Modulator + ECU Status(enum); toggle one at a time during capture"
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Tachometer",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "SLABS",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Road Speed",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Radiator Fan",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "MIL Lamp",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Fuel Used",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Fuel Temperature",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "EGR Modulator",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "EGR Inlet",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Cruise Lamp",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Cruise Control",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Clutch Switch",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "CAN Bus",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Auxiliary Fan",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Auto Gearbox",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Air Conditioning",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Active Engine mount",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Ambient Sensor",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "Wastegate Modulator",
+          "status": "todo",
+          "ref": "ENABLED/DISABLED flag"
+        },
+        {
+          "name": "ECU Status",
+          "status": "todo",
+          "ref": "enum, docx baseline 'ROBUST'"
         }
       ]
     },
@@ -336,68 +552,88 @@
       "items": [
         {
           "name": "1. A/C Clutch (pulse)",
-          "status": "ok",
-          "ref": "30 A3 FF (sniffed 08-08)"
+          "status": "maybe",
+          "ref": "30 A3 FF"
         },
         {
           "name": "2. A/C Fan (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 A4 FF"
         },
         {
           "name": "3. MIL Lamp (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 A2 FF"
         },
         {
           "name": "4. Fuel Pump (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 A1 FF"
         },
         {
           "name": "5. Glow Plugs (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 B3 FF"
         },
         {
           "name": "6. Pulse Rev Counter",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 B7 FF (tacho needle)"
         },
         {
           "name": "7. Wastegate Modul. (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 BE FF 00 0A 13 88 (PWM)"
         },
         {
           "name": "8. Temp Gauge (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 BA FF"
         },
         {
           "name": "9. EGR Throttle (pulse)",
-          "status": "ok",
+          "status": "maybe",
           "ref": "30 BD FF 00 FA 13 88 (PWM)"
         },
         {
-          "name": "10–14. Injector 1–5 (single pulse)",
-          "status": "ok",
-          "ref": "31 C2 0<n> (sniffed)"
+          "name": "10. Injector 1 (single pulse)",
+          "status": "maybe",
+          "ref": "31 C2 01"
+        },
+        {
+          "name": "11. Injector 2 (single pulse)",
+          "status": "maybe",
+          "ref": "31 C2 02"
+        },
+        {
+          "name": "12. Injector 3 (single pulse)",
+          "status": "maybe",
+          "ref": "31 C2 03"
+        },
+        {
+          "name": "13. Injector 4 (single pulse)",
+          "status": "maybe",
+          "ref": "31 C2 04"
+        },
+        {
+          "name": "14. Injector 5 (single pulse)",
+          "status": "maybe",
+          "ref": "31 C2 05"
         }
       ]
     },
     {
-      "cat": "Utilities ⚠️ (2)",
+      "cat": "Utilities — security ⚠️ (2)",
       "items": [
         {
           "name": "GET SECURITY STATUS",
-          "status": "ok",
-          "ref": "31 C0 + 33 C0 → 03 = not immobilised (sniffed/coded)"
+          "status": "maybe",
+          "ref": "31 C0 + 33 C0 → 03 = not immobilised (read-only)"
         },
         {
           "name": "LEARN SECURITY CODE",
           "status": "todo",
-          "ref": "🔴 can change immobiliser state — not implemented, NEVER run during testing"
+          "ref": "🔴 can change immobiliser state — never sent"
         }
       ]
     }
@@ -413,18 +649,18 @@
   "coverage": {
     "td5": {
       "ok": 34,
-      "maybe": 4,
-      "total": 60
+      "maybe": 30,
+      "total": 99
     },
     "slabs": {
-      "ok": 13,
-      "maybe": 24,
-      "total": 51
+      "ok": 21,
+      "maybe": 25,
+      "total": 73
     },
     "bcu": {
       "ok": 0,
-      "maybe": 2,
-      "total": 157
+      "maybe": 1,
+      "total": 180
     },
     "ace": {
       "ok": 0,
@@ -434,10 +670,10 @@
     "autobox": {
       "ok": 0,
       "maybe": 2,
-      "total": 30
+      "total": 31
     },
     "airbag": {
-      "ok": 1,
+      "ok": 0,
       "maybe": 1,
       "total": 19
     }

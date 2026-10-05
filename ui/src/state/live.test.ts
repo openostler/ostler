@@ -8,7 +8,7 @@ describe("reduceSnapshot", () => {
   it("records numeric history and caps it", () => {
     let s = initialLive;
     for (let i = 0; i < HISTORY_LEN + 5; i++) {
-      s = reduceSnapshot(s, snap({ module: "motor", signals: { rpm: { v: i, u: "rpm" } } }), i);
+      s = reduceSnapshot(s, snap({ module: "td5", signals: { rpm: { v: i, u: "rpm" } } }), i);
     }
     expect(s.history.rpm).toHaveLength(HISTORY_LEN);
     expect(s.history.rpm?.at(-1)).toEqual({ t: HISTORY_LEN + 4, v: HISTORY_LEN + 4 });
@@ -25,7 +25,7 @@ describe("reduceSnapshot", () => {
   });
 
   it("starts fresh when the module changes", () => {
-    let s = reduceSnapshot(initialLive, snap({ module: "motor", signals: { rpm: { v: 800, u: "rpm" } } }), 0);
+    let s = reduceSnapshot(initialLive, snap({ module: "td5", signals: { rpm: { v: 800, u: "rpm" } } }), 0);
     s = reduceSnapshot(s, snap({ module: "slabs", signals: { height_left: { v: 120, u: "" } } }), 1);
     expect(s.module).toBe("slabs");
     expect(Object.keys(s.history)).toEqual(["height_left"]);

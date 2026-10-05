@@ -70,7 +70,7 @@ export type Recording = z.infer<typeof Recording>;
 export const Snapshot = z.object({
   status: z.string(), // "connected" | "connecting" | "error" | "no-cable"
   source: z.string().optional(),
-  module: z.string().optional(), // UI module key: "motor" | "slabs"
+  module: z.string().optional(), // canonical module id (a /pack module id)
   mode: z.string().nullable().optional(), // "mock" | "live"
   modes: z.array(z.string()).optional(),
   signals: z.record(z.string(), SignalValue).default({}),
@@ -451,13 +451,58 @@ export const CaptureList = z.object({
   captures: z.array(CaptureValue.extend({ t: z.number().nullable().optional(), session: z.string().nullable().optional() })),
 });
 
-/** GET /pack — the active vehicle pack's manifest (Phase 0, ADR-0013). */
+/** GET /pack — the active vehicle pack's manifest (Phase 0, ADR-0013). Module ids are
+ * canonical (the signal-store ids); `aliases` maps legacy ids onto them. `layout` is the
+ * pack's screen layout (what goes where); every part is optional so a minimal pack works. */
 export const PackModule = z.object({
   id: z.string(),
   name: z.string(),
   aliases: z.array(z.string()),
   live: z.boolean(),
 });
+export const DriveTile = z.object({
+  signal: z.string(),
+  label: z.string(),
+  gauge: z.boolean().optional(),
+  dec: z.number().optional(),
+  unit: z.string().optional(),
+  /** Display = value × scale (e.g. 0.1 turns L/100km into L/mil). */
+  scale: z.number().optional(),
+});
+export type DriveTile = z.infer<typeof DriveTile>;
+/** A module's Drive view: "tiles" is generic; any other kind is a pack-registered view. */
+export const DriveView = z.looseObject({
+  kind: z.string(),
+  /** Lead with the HealthStrip. */
+  health: z.boolean().optional(),
+  tiles: z.array(DriveTile).optional(),
+});
+export type DriveView = z.infer<typeof DriveView>;
+export const BodyRow = z.object({
+  signal: z.string(),
+  label: z.string(),
+  kind: z.enum(["flag", "num"]),
+  unit: z.string().optional(),
+  dec: z.number().optional(),
+});
+export type BodyRow = z.infer<typeof BodyRow>;
+export const BodyGroup = z.object({ title: z.string(), items: z.array(BodyRow) });
+export type BodyGroup = z.infer<typeof BodyGroup>;
+export const ModuleNotices = z.looseObject({
+  /** Asked before starting a CSV log on this module. */
+  record_confirm: z.string().optional(),
+  /** Shown above the Inputs list on this module. */
+  inputs_banner: z.string().optional(),
+});
+export const PackLayout = z.looseObject({
+  group_order: z.array(z.string()).optional(),
+  drive: z.record(z.string(), DriveView).optional(),
+  body: z.object({ signals: z.record(z.string(), z.string()), groups: z.array(BodyGroup) }).optional(),
+  util_lids: z.record(z.string(), z.object({ example: z.string(), note: z.string() })).optional(),
+  notices: z.record(z.string(), ModuleNotices).optional(),
+  replay: z.looseObject({ group_categories: z.record(z.string(), z.string()).optional() }).optional(),
+});
+export type PackLayout = z.infer<typeof PackLayout>;
 export const PackSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -465,6 +510,6 @@ export const PackSchema = z.object({
   default_module: z.string(),
   modules: z.array(PackModule),
   aliases: z.record(z.string(), z.string()),
-  layout: z.record(z.string(), z.unknown()),
+  layout: PackLayout.default({}),
 });
 export type Pack = z.infer<typeof PackSchema>;

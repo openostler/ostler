@@ -23,7 +23,7 @@ afterEach(() => {
 const replaying = (over: Partial<Replay> = {}): Replay => ({
   ...INACTIVE, active: true, id: "s1", exit: vi.fn(),
   session: {
-    id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: null, duration_s: 60, rows: 2, parts: [], modules: ["motor"],
+    id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: null, duration_s: 60, rows: 2, parts: [], modules: ["td5"],
     channels: [], has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null,
     synthetic: false, recording: false, source: "mock", audio: [],
   },
@@ -35,7 +35,7 @@ const replaying = (over: Partial<Replay> = {}): Replay => ({
 const withReplay = (r: Replay, ui: ReactNode) => <ReplayCtx.Provider value={r}>{ui}</ReplayCtx.Provider>;
 
 const appCtx = (over: Partial<AppContext> = {}): AppContext => ({
-  snap: { status: "connected", signals: {}, faults: [] }, live: initialLive, linkUp: true, module: "motor", catalog: null,
+  snap: { status: "connected", signals: {}, faults: [] }, live: initialLive, linkUp: true, module: "td5", catalog: null,
   fields: {}, faultMeaning: () => undefined, refresh: vi.fn(), prefs: { ...DEFAULT_PREFS, consentDone: true }, setPrefs: vi.fn(),
   experimental: false, admin: false, community: null, reloadCommunity: vi.fn(), goTo: vi.fn(), toast: vi.fn(),
   ackedFaults: new Set(), showFaultSheet: vi.fn(), openConnection: vi.fn(), ...over,

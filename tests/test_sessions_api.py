@@ -402,7 +402,7 @@ def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
     import sys
 
     from d2diag.geo.nominatim import DEFAULT_URL
-    from d2diag.web.sources import InfoDataSource, SlabsDataSource, Td5DataSource
+    from d2diag.vehicles.lr_d2.sources import InfoDataSource, SlabsDataSource, Td5DataSource
 
     mod, captured = _load_dashboard(monkeypatch)
     monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
@@ -412,7 +412,7 @@ def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
     srv = captured["srv"]
     try:
         assert srv._public is False and "mode" not in srv.latest
-        assert isinstance(srv._modules["motor"], Td5DataSource)
+        assert isinstance(srv._modules["td5"], Td5DataSource)
         assert isinstance(srv._modules["slabs"], SlabsDataSource)
         assert all(isinstance(srv._modules[m], InfoDataSource)
                    for m in ("airbag", "ace", "autobox", "bcu"))
@@ -689,3 +689,46 @@ def test_no_enricher_in_public_mode_or_when_off(tmp_path):
         assert srv._enricher is None
     finally:
         srv.server_close()
+
+
+# ---- legacy "motor" sessions: migrated on read, never rewritten (Phase 0 §2) ---- #
+
+LEGACY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures",
+                      "legacy_session_motor")
+LEGACY_ID = "20260528T202640Z"
+
+
+def test_legacy_motor_session_lists_filters_and_replays_as_td5(tmp_path, served):
+    import shutil
+
+    root = tmp_path / "sessions"
+    shutil.copytree(os.path.join(LEGACY, LEGACY_ID), root / LEGACY_ID)
+    before = {p.name: p.read_bytes() for p in (root / LEGACY_ID).iterdir()}
+    assert b'"motor"' in before["meta.json"] and b'"motor"' in before["events.jsonl"]
+    src = FakeTd5Source(gps=None)
+    srv = DiagServer(src, host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                     sessions_dir=str(root), record_sessions=False, geocoder=None)
+    get, _ = served(srv)
+
+    def j(path):
+        code, _h, body = get(path)
+        assert code == 200, (path, code, body)
+        return json.loads(body)
+
+    listed = [m for m in j("/sessions")["sessions"] if m["id"] == LEGACY_ID]
+    assert listed and listed[0]["modules"] == ["td5", "slabs"]
+    for want in ("td5", "motor", "MOTOR"):
+        ids = [m["id"] for m in j(f"/sessions?module={want}")["sessions"]]
+        assert LEGACY_ID in ids, want
+    assert j(f"/sessions/{LEGACY_ID}")["modules"] == ["td5", "slabs"]
+    events = j(f"/sessions/{LEGACY_ID}/events")["events"]
+    assert [e["module"] for e in events if "module" in e] == ["td5", "slabs", "slabs"]
+    data = j(f"/sessions/{LEGACY_ID}/data?ch=rpm&max=100")
+    assert set(data["text"]["module"]) == {"td5", "slabs"}
+    caps = j("/captures?module=td5")["captures"]
+    assert any(c.get("session") == LEGACY_ID and c["module"] == "td5" for c in caps)
+    assert [c["session"] for c in j("/captures?module=motor")["captures"]] == \
+        [c["session"] for c in caps]
+    # read-migration only: the files on disk are untouched
+    assert {p.name: p.read_bytes() for p in (root / LEGACY_ID).iterdir()
+            if p.name in before} == before

@@ -36,7 +36,10 @@ def test_canonical_ids_and_aliases(lr_d2):
 def test_pack_members_reference_the_live_objects(lr_d2):
     from d2diag import commands, menus
 
-    assert tuple(lr_d2.actions) == tuple(commands._ALL)
+    from d2diag.vehicles.lr_d2.actions import ACTIONS
+
+    assert lr_d2.actions is ACTIONS
+    assert list(commands.registry().values()) == list(ACTIONS)
     assert dict(lr_d2.menus) == menus.MENUS
     assert set(lr_d2.derived_fields) == {"td5", "slabs"}
     assert [r.label for r in lr_d2.faultscan] == ["TD5", "SLABS", "Airbag"]

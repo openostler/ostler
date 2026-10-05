@@ -11,7 +11,7 @@ import { groupByYearMonth, indexAt, monthEndCursor, heatLevel, sessionTitle, isP
 const base: SessionMeta = {
   ...SessionListSchema.parse(sessionsFx).sessions[0]!,
   name: null, description: null, place: null, place_start: null, place_end: null, note_count: 0,
-  modules: ["motor", "slabs"], has_gps: true, distance_km: 11.2, duration_s: 720,
+  modules: ["td5", "slabs"], has_gps: true, distance_km: 11.2, duration_s: 720,
 };
 const mk = (id: string, iso: string, over: Partial<SessionMeta> = {}): SessionMeta =>
   ({ ...base, id, start_utc: iso, synthetic: false, source: "live", recording: false, ...over });

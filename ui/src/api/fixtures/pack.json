@@ -67,6 +67,7 @@
     "drive": {
       "td5": {
         "kind": "tiles",
+        "health": true,
         "tiles": [
           {
             "signal": "manifold_press",

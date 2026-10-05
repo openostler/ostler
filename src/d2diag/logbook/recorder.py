@@ -203,13 +203,23 @@ def _norm_logging(v) -> dict:
     return out
 
 
+def _canonical_module(mid):
+    """A module id (or legacy alias) as the active vehicle pack's canonical id; anything
+    that is not a non-empty string is returned unchanged."""
+    if not isinstance(mid, str) or not mid:
+        return mid
+    from ..pack import canonical_module
+
+    return canonical_module(mid) or mid
+
+
 def derive_state(snap: dict) -> dict:
     """The event state carried by a snapshot (values as they appear in events)."""
     return {
         "conn": snap.get("conn"),
         "status": snap.get("status"),
         "connect_phase": snap.get("connect_phase"),
-        "module": snap.get("module"),
+        "module": _canonical_module(snap.get("module")),
         "mode": snap.get("mode"),
         "active_test": _norm_active_test(snap.get("active_test")),
         "fault_watch": bool(snap.get("fault_watch")),
@@ -228,6 +238,8 @@ def _event_value(etype: str, fields: dict):
         return bool(fields.get("on"))
     if etype == "error":
         return str(fields.get("error") or "")
+    if etype == "module":
+        return _canonical_module(fields.get("module"))
     return fields.get(_EVENT_FIELD.get(etype, etype))
 
 
@@ -808,7 +820,7 @@ class SessionRecorder:
                 vals[name] = fmt_num(v)
                 if name == "speed":
                     s.max_speed = v if s.max_speed is None else max(s.max_speed, v)
-            module = snap.get("module")
+            module = _canonical_module(snap.get("module"))
             if isinstance(module, str) and module:
                 vals["module"] = module
                 if module not in s.modules:

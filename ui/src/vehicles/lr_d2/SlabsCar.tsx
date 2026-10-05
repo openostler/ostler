@@ -1,6 +1,6 @@
-import type { Field, SignalValue } from "../api/schemas";
-import { fmt } from "../lib/format";
-import { RangeBar } from "./RangeBar";
+import type { Field, SignalValue } from "../../api/schemas";
+import { fmt } from "../../lib/format";
+import { RangeBar } from "../../components/RangeBar";
 
 // Readouts sit OUTSIDE the body (x 45 / 255); wheels hug the body edge.
 const WHEELS = [

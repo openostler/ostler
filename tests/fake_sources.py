@@ -23,15 +23,17 @@ import random
 from typing import Callable
 
 from d2diag.signals import load_signals
-from d2diag.web.sources import (  # private helpers of the real sources (thin, tests only)
+from d2diag.vehicles.lr_d2.sources import (  # private helpers of the real sources (tests only)
     TD5_ACTIONS,
     _SLABS_ACTUATORS,
-    DataSource,
-    _parse_lids,
     _security_message,
     _sig,
     _slabs_faults_flat,
     _slabs_sig,
+)
+from d2diag.web.sources import (
+    DataSource,
+    _parse_lids,
 )
 
 
@@ -392,7 +394,7 @@ def FakeGps():  # noqa: N802 — reads like a class at the call site
 def fake_modules(gps=None) -> "dict[str, DataSource]":
     """{module: source} like the dashboard builds for the car, all simulated."""
     return {
-        "motor": FakeTd5Source(gps=gps),
+        "td5": FakeTd5Source(gps=gps),
         "slabs": FakeSlabsSource(gps=gps),
         "airbag": FakeInfoSource("airbag", faults=[
             "004: airbag warning lamp — open circuit intermittent",

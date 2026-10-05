@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { filtersActive, type SessionFilters as Filters } from "../../api/useSessions";
-import { MODULE_NAME } from "../../layout";
+import { moduleNames } from "../../layout";
 import { dayLabelShort, MIN_KM_STEPS, SEARCH_DEBOUNCE_MS } from "./sessionFormat";
 
 
@@ -50,7 +50,7 @@ export function SessionFilters({ value, onChange }: { value: Filters; onChange: 
           data-active={value.module ? "true" : undefined}
           onChange={(e) => set({ module: e.target.value || undefined })}>
           <option value="">Any module</option>
-          {Object.entries(MODULE_NAME).map(([k, name]) => <option key={k} value={k}>{name}</option>)}
+          {moduleNames().map(([k, name]) => <option key={k} value={k}>{name}</option>)}
         </select>
         <button type="button" className="rchip" aria-pressed={!!value.has_notes}
           onClick={() => set({ has_notes: !value.has_notes || undefined })}>Has notes</button>

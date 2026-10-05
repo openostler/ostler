@@ -4,36 +4,36 @@
     {
       "key": "004",
       "name": "Airbag warning lamp circuit, open circuit",
-      "description": "Airbag (TRW SPS) fault 004: Airbag warning lamp circuit, open circuit.",
+      "description": "SRS (airbag, TRW SPS) fault 004: Airbag warning lamp circuit, open circuit.",
       "cause": "Read-only module: investigate the named circuit (connectors, rotary coupler, under-seat plugs); never actuate.",
-      "system": "airbag (SRS)",
-      "source": "references/airbag_fault_codes.md; RDL 016 baseline read 2026-08-07 (docs/discovery-2-td5/fault-codes.md) showed \"warning lamp open circuit\" and \"LH pretensioner open circuit\"; raw re-read 2026-08-10 gave 004 + 022. Pairing by elimination, since 022 is the LH pretensioner. A P38 thread shows 004 with no circuit named: https://www.landyzone.co.uk/land-rover/srs-error-004-open-circuit.383085/",
+      "system": "SRS (airbag)",
+      "source": "references/airbag_fault_codes.md; RDL 016 baseline read 2026-08-07 (docs/discovery-2-td5/fault-codes.md) showed \"warning lamp open circuit\" and \"LH pretensioner open circuit\"; raw re-read 2026-08-10 gave 004 + 022. Pairing by elimination, since 022 is the LH pretensioner. A P38 thread shows 004 with no circuit named: https://www.landyzone.co.uk/land-rover/srs-error-004-open-circuit.383085/ ; also set on D2-JW (read 2026-10-04, `61 02 90 04 90 00`)",
       "confidence": "candidate"
     },
     {
       "key": "008",
       "name": "Driver's airbag circuit, open circuit",
-      "description": "Airbag (TRW SPS) fault 008: Driver's airbag circuit, open circuit.",
+      "description": "SRS (airbag, TRW SPS) fault 008: Driver's airbag circuit, open circuit.",
       "cause": "Read-only module: investigate the named circuit (connectors, rotary coupler, under-seat plugs); never actuate.",
-      "system": "airbag (SRS)",
+      "system": "SRS (airbag)",
       "source": "references/airbag_fault_codes.md; NanoCom, 2003 Discovery 2: https://www.landyzone.co.uk/land-rover/srs-light.385858/",
       "confidence": "candidate"
     },
     {
       "key": "022",
       "name": "Left-hand seat-belt pretensioner circuit, open circuit",
-      "description": "Airbag (TRW SPS) fault 022: Left-hand seat-belt pretensioner circuit, open circuit.",
+      "description": "SRS (airbag, TRW SPS) fault 022: Left-hand seat-belt pretensioner circuit, open circuit.",
       "cause": "Read-only module: investigate the named circuit (connectors, rotary coupler, under-seat plugs); never actuate.",
-      "system": "airbag (SRS)",
+      "system": "SRS (airbag)",
       "source": "references/airbag_fault_codes.md; thread title, Discovery 2 forum: https://www.aulro.com/afvb/discovery-2-a/260850-code-022-left-hand-pretensioner-measures-open-circuit-permanent.html ; also the RDL 016 baseline read",
       "confidence": "candidate"
     },
     {
       "key": "023",
       "name": "Right-hand seat-belt pretensioner circuit, short to ground",
-      "description": "Airbag (TRW SPS) fault 023: Right-hand seat-belt pretensioner circuit, short to ground.",
+      "description": "SRS (airbag, TRW SPS) fault 023: Right-hand seat-belt pretensioner circuit, short to ground.",
       "cause": "Read-only module: investigate the named circuit (connectors, rotary coupler, under-seat plugs); never actuate.",
-      "system": "airbag (SRS)",
+      "system": "SRS (airbag)",
       "source": "references/airbag_fault_codes.md; Discovery 2: https://www.landyzone.co.uk/land-rover/seat-belt-pretensioner-gone-off.294442/",
       "confidence": "candidate"
     }

@@ -230,10 +230,10 @@ describe("RecordingOptions", () => {
 describe("RecordingCard", () => {
   it("shows duration, modules and sources", () => {
     stubServer();
-    renderWithApp(<RecordingCard recording={recordingSnap().recording!} nowS={1_791_000_720} modules={["motor", "slabs"]} />,
+    renderWithApp(<RecordingCard recording={recordingSnap().recording!} nowS={1_791_000_720} modules={["td5", "slabs"]} />,
       { snap: recordingSnap({ recording_sources: { ...SOURCES, pi_audio: { state: "on" }, imu: { state: "on" } } }) });
     expect(screen.getByText("Recording now · 12 min")).toBeInTheDocument();
-    expect(screen.getByText(/1440 rows · motor, slabs/)).toBeInTheDocument();
+    expect(screen.getByText(/1440 rows · td5, slabs/)).toBeInTheDocument();
     const src = screen.getByLabelText("Sources");
     expect(src).toHaveTextContent("GPS (USB) · fix, 7 sats");
     expect(src).toHaveTextContent("Pi mic");

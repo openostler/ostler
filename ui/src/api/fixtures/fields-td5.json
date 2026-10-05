@@ -1,5 +1,5 @@
 {
-  "module": "motor",
+  "module": "td5",
   "fields": [
     {
       "name": "rpm",
@@ -206,27 +206,6 @@
       ]
     },
     {
-      "name": "accel_supply",
-      "unit": "V",
-      "c": "proven",
-      "limits": [
-        4.9,
-        5.1
-      ],
-      "label": "Pedal supply",
-      "group": "Accelerator",
-      "description": "5 V reference — rock-solid 5.0 V ±0.1.",
-      "derived": false,
-      "span": [
-        4.8,
-        5.2
-      ],
-      "normal": [
-        4.9,
-        5.1
-      ]
-    },
-    {
       "name": "manifold_press",
       "unit": "bar",
       "c": "proven",
@@ -236,7 +215,7 @@
       ],
       "label": "Turbo pressure",
       "group": "Pressures",
-      "description": "Turbo / boost pressure. Idle ~1.0 bar; full load 2.0–2.2; overboost-cut >2.42.",
+      "description": "Turbo / boost pressure, absolute (bar). Idle ≈ ambient (~1.0); full load 2.0–2.2; overboost cut ≈ ambient + 1.42 bar.",
       "derived": false,
       "span": [
         0.8,
@@ -320,7 +299,7 @@
       ],
       "label": "Injector 1",
       "group": "Fuelling",
-      "description": "Cylinder 1 fuelling correction. ±4 healthy; +6…+15 = weak cylinder.",
+      "description": "Cylinder 1 fuelling correction. ±4 healthy (owners quote ±3). Larger values are worth checking but not proof of a bad injector: owners report cars running for years at double figures.",
       "derived": false,
       "span": [
         -15,
@@ -489,14 +468,332 @@
     },
     {
       "name": "maf_sensor",
-      "unit": "raw",
-      "c": "candidate",
-      "limits": null,
-      "label": "Air flow sensor (raw)",
+      "unit": "kg/hr",
+      "c": "proven",
+      "limits": [
+        0,
+        700
+      ],
+      "label": "Air flow (measured)",
       "group": "Engine",
-      "description": "Physical MAF sensor, raw (1C@4). Faulted on RDL016 — logged to see whether it ever responds to airflow. See test T-01.",
+      "description": "Physical MAF sensor (1C@4), u16 x0.1 kg/h. Live once the 'air flow circuit' fault was cleared (2026-10-04).",
+      "derived": false,
+      "span": [
+        -70.0,
+        770.0
+      ],
+      "normal": null
+    },
+    {
+      "name": "wastegate_pos",
+      "unit": "%",
+      "c": "candidate",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "Wastegate (0x38)",
+      "group": "Engine",
+      "description": "Wastegate modulator % from native LID 0x38 (candidate, /100 per two Simon sources). Native-vs-1D@17 conflict — see T-02.",
+      "derived": false,
+      "span": [
+        0,
+        100
+      ],
+      "normal": null
+    },
+    {
+      "name": "egr_pos",
+      "unit": "%",
+      "c": "candidate",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "EGR (0x37)",
+      "group": "Engine",
+      "description": "EGR modulator % from native LID 0x37 (candidate, /100 per two Simon sources). Native-vs-1D@15 conflict — see T-02.",
+      "derived": false,
+      "span": [
+        0,
+        100
+      ],
+      "normal": null
+    },
+    {
+      "name": "battery_direct",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        11.0,
+        15.5
+      ],
+      "label": "Battery (direct)",
+      "group": "Electrical",
+      "description": "Second battery reading, 'Battery Direct' (0x10@2, candidate). The 5V sensor reference is accel_supply (1B@6), not here.",
+      "derived": false,
+      "span": [
+        10,
+        16
+      ],
+      "normal": [
+        12.4,
+        14.8
+      ]
+    },
+    {
+      "name": "driver_demand",
+      "unit": "mg/stroke",
+      "c": "candidate",
+      "limits": [
+        0,
+        90
+      ],
+      "label": "Driver demand",
+      "group": "Fuelling",
+      "description": "Driver's demand (1D@0, candidate) — pedal request; mg/stroke (BinOwl) vs % (Simon app), drops to ~0 on overrun. See T-03.",
+      "derived": false,
+      "span": [
+        0,
+        80
+      ],
+      "normal": null
+    },
+    {
+      "name": "smoke_limit",
+      "unit": "mg/stroke",
+      "c": "candidate",
+      "limits": [
+        0,
+        90
+      ],
+      "label": "Smoke limit",
+      "group": "Fuelling",
+      "description": "Smoke-map fuelling limit (1D@10, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        80
+      ],
+      "normal": null
+    },
+    {
+      "name": "torque_limit",
+      "unit": "mg/stroke",
+      "c": "candidate",
+      "limits": [
+        0,
+        90
+      ],
+      "label": "Torque limit",
+      "group": "Fuelling",
+      "description": "Torque-limiter fuelling ceiling (1D@12, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        80
+      ],
+      "normal": null
+    },
+    {
+      "name": "egr_inlet",
+      "unit": "%",
+      "c": "candidate",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "EGR inlet",
+      "group": "Engine",
+      "description": "EGR inlet position % from native LID 0x45 (candidate). Replaces the abandoned 1D@16 mis-map.",
+      "derived": false,
+      "span": [
+        0,
+        100
+      ],
+      "normal": null
+    },
+    {
+      "name": "coolant_sensor_v",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Coolant sensor V",
+      "group": "Temperatures",
+      "description": "Coolant-sensor voltage (1A@2, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": null
+    },
+    {
+      "name": "intake_sensor_v",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Intake sensor V",
+      "group": "Temperatures",
+      "description": "Intake-air-sensor voltage (1A@6, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": null
+    },
+    {
+      "name": "fuel_sensor_v",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        0.0,
+        5.1
+      ],
+      "label": "Fuel sensor V",
+      "group": "Temperatures",
+      "description": "Fuel-sensor voltage (1A@14, candidate).",
+      "derived": false,
+      "span": [
+        0,
+        5
+      ],
+      "normal": null
+    },
+    {
+      "name": "brake_switch_2",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Brake switch (2nd)",
+      "group": "Inputs",
+      "description": "Second brake pedal switch (active-high).",
       "derived": false,
       "span": null,
+      "normal": null
+    },
+    {
+      "name": "brake_main",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Brake switch (main)",
+      "group": "Inputs",
+      "description": "Main brake pedal switch (active-low: 0 = pressed).",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "cruise_master",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Cruise master switch",
+      "group": "Inputs",
+      "description": "Cruise control master switch on the dash (latching).",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "cruise_set",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Cruise SET",
+      "group": "Inputs",
+      "description": "Cruise SET button on the steering wheel (momentary).",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "cruise_resume",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Cruise RESUME",
+      "group": "Inputs",
+      "description": "Cruise RESUME button on the steering wheel (momentary).",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "maf_sensor_v",
+      "unit": "V",
+      "c": "candidate",
+      "limits": [
+        0,
+        5
+      ],
+      "label": "Air flow sensor voltage",
+      "group": "Engine",
+      "description": "MAF sensor signal voltage (1C@6, mV). Candidate.",
+      "derived": false,
+      "span": [
+        -0.5,
+        5.5
+      ],
+      "normal": null
+    },
+    {
+      "name": "accel_supply",
+      "unit": "V",
+      "c": "proven",
+      "limits": [
+        4.9,
+        5.1
+      ],
+      "label": "Pedal supply",
+      "group": "Accelerator",
+      "description": "5 V reference — rock-solid 5.0 V ±0.1.",
+      "derived": false,
+      "span": [
+        4.8,
+        5.2
+      ],
+      "normal": [
+        4.9,
+        5.1
+      ]
+    },
+    {
+      "name": "fuel_pump_relay",
+      "unit": "",
+      "c": "proven",
+      "limits": null,
+      "label": "Fuel pump relay",
+      "group": "Outputs",
+      "description": "Fuel pump relay status as commanded by the ECU (21 36 byte1 bit2). Candidate.",
+      "derived": false,
+      "span": null,
+      "normal": null
+    },
+    {
+      "name": "accel_pedal_pct",
+      "unit": "%",
+      "c": "proven",
+      "limits": [
+        0,
+        100
+      ],
+      "label": "Accelerator pedal",
+      "group": "Engine",
+      "description": "Accelerator pedal position as computed by the ECU, 0-100 % (21 1B@6 in the long form).",
+      "derived": false,
+      "span": [
+        -10.0,
+        110.0
+      ],
       "normal": null
     },
     {

@@ -123,6 +123,3 @@ export function identityRows(identity: unknown): [string, string][] {
     .filter(([k, v]) => v != null && v !== "" && (!/vin/i.test(k) || k === "vin_masked"))
     .map(([k, v]) => [k, typeof v === "object" ? JSON.stringify(v) : String(v)]);
 }
-
-/** UI module key ↔ /catalog key: the Map tab speaks store modules ("td5"). */
-export const catalogModule = (storeModule: string): string => (storeModule === "td5" ? "motor" : storeModule);

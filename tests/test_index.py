@@ -145,8 +145,9 @@ def test_filters(big):
     assert {m["start_utc"][:10] for m in one_day} == {"2026-01-05"}
     slabs = _all(ix, module="slabs")
     assert len(slabs) == 1000 + 2 and all("slabs" in m["modules"] for m in slabs)  # + both demo logs
-    motor = _all(ix, module="td5")  # td5 and motor are one module
-    assert motor and all("motor" in m["modules"] for m in motor)
+    td5 = _all(ix, module="td5")  # legacy "motor" rows are stored canonical (td5)
+    assert td5 and all("td5" in m["modules"] and "motor" not in m["modules"] for m in td5)
+    assert [m["id"] for m in _all(ix, module="motor")] == [m["id"] for m in td5]  # alias
     noted = _all(ix, has_notes=True)
     assert {m["id"] for m in noted} == {ids[1234], *DEMO_IDS}
     assert all(m["note_count"] > 0 for m in noted)
@@ -155,7 +156,7 @@ def test_filters(big):
     pub = _all(ix, public=True)
     assert [m["id"] for m in pub] == list(DEMO_IDS)
     both = _all(ix, q="okehampton", module="motor", min_km=1)
-    assert both and all(m["distance_km"] >= 1 and "motor" in m["modules"] for m in both)
+    assert both and all(m["distance_km"] >= 1 and "td5" in m["modules"] for m in both)
 
 
 def test_before_accepts_dates_for_the_scrubber(big):

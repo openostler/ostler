@@ -26,7 +26,7 @@ def test_e2e_server_builds_a_simulated_car_with_a_seeded_editable_session(tmp_pa
                                                                            monkeypatch):
     srv = _build(tmp_path, monkeypatch)
     try:
-        assert set(srv._modules) == {"motor", "slabs", "airbag", "ace", "autobox", "bcu"}
+        assert set(srv._modules) == {"td5", "slabs", "airbag", "ace", "autobox", "bcu"}
         assert all(getattr(s, "simulated", False) for s in srv._modules.values())
         assert srv._enricher is None and srv.gps is not None
         snap = srv.poll_once()

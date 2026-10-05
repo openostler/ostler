@@ -16,11 +16,14 @@ module's link die before the next init.
 from __future__ import annotations
 
 import time
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from .kline.kline import KLineError
 from .kwp2000.kwp2000 import KWP2000, KWP2000Error
-from .sniff.modules import FAST_INIT_ADDRESSES, SLOW_INIT_ADDRESSES, name_for_address
+from .sniff.modules import name_for_address
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .pack import SniffSpec
 
 
 class AddressScanner:
@@ -29,8 +32,10 @@ class AddressScanner:
     def __init__(self, kwp: KWP2000,
                  sleep: Callable[[float], None] = time.sleep,
                  settle: float = 2.0,
-                 progress: "Callable[[str], None] | None" = None) -> None:
+                 progress: "Callable[[str], None] | None" = None,
+                 spec: "SniffSpec | None" = None) -> None:
         self._kwp = kwp
+        self._spec = spec  # names the addresses; None → the active vehicle pack's
         self._k = kwp._k
         self._sleep = sleep
         self._settle = settle
@@ -52,7 +57,7 @@ class AddressScanner:
         self._say(f"fast init 0x{addr:02x}")
         self._k._target = addr
         result = {"address": f"0x{addr:02x}", "init": "fast",
-                  "module": name_for_address(addr)}
+                  "module": name_for_address(addr, self._spec)}
         try:
             data = self._kwp.start_communication(tolerant=True)
             result.update(status="responded", keybytes=bytes(data).hex(" "))
@@ -67,7 +72,7 @@ class AddressScanner:
         self._say(f"5-baud slow init 0x{addr:02x}")
         self._k._target = addr
         result = {"address": f"0x{addr:02x}", "init": "slow",
-                  "module": name_for_address(addr)}
+                  "module": name_for_address(addr, self._spec)}
         try:
             kw = self._kwp.slow_init(addr)
             result.update(status="responded", keybytes=f"{kw[0]:02x} {kw[1]:02x}")
@@ -89,12 +94,33 @@ class AddressScanner:
         return rows
 
 
-# Default address plan for a Td5 Discovery 2: the proven modules plus every asserted-only
-# address we want to confirm or rule out (cruise/HEVAC/IDM/instrument pack live here, and
-# the 0x18 responder that answered a 5-baud wake). Unknown addresses are reported as
-# `unknown:0xNN` by name_for_address, never dropped.
-DEFAULT_FAST = sorted(FAST_INIT_ADDRESSES)                         # 0x13, 0x29
-DEFAULT_SLOW = sorted(set(SLOW_INIT_ADDRESSES) | {0x18, 0x5A})     # 0x18, 0x40, 0x5a, 0x5b
+def default_fast(spec: "SniffSpec | None" = None) -> "list[int]":
+    """The default fast-init plan: every fast-init address the vehicle pack names."""
+    s = spec if spec is not None else _active_sniff()
+    return sorted(s.fast_init)
+
+
+def default_slow(spec: "SniffSpec | None" = None) -> "list[int]":
+    """The default slow-init plan: the pack's slow-init addresses plus its ``extra_scan``
+    addresses (asserted-only modules we want to confirm or rule out). Unknown addresses are
+    reported as ``unknown:0xNN`` by :func:`name_for_address`, never dropped."""
+    s = spec if spec is not None else _active_sniff()
+    return sorted(set(s.slow_init) | set(s.extra_scan))
+
+
+def _active_sniff() -> "SniffSpec":
+    from .pack import active_pack
+
+    return active_pack().sniff
+
+
+def __getattr__(name: str):
+    # DEFAULT_FAST / DEFAULT_SLOW: computed from the active pack on access (never at import).
+    if name == "DEFAULT_FAST":
+        return default_fast()
+    if name == "DEFAULT_SLOW":
+        return default_slow()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def render_table(rows: "list[dict]") -> str:

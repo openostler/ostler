@@ -3,17 +3,21 @@ from __future__ import annotations
 
 import pytest
 
-from d2diag import catalog, commands, signals
+import dataclasses
+
+from d2diag import catalog, commands, pack, signals
 from d2diag.commands import Command
 from d2diag.menus import MENUS
 from d2diag.signals import Signal
+from tests.fake_pack import FAKE_PACK
 
 FAKE = "fake"
 
 
 @pytest.fixture
 def fake(monkeypatch):
-    """A synthetic module: a tiny store, a few registry actions, and a menu set per test."""
+    """A synthetic module in a pack of its own: a tiny store, a few registry actions, and a
+    menu set per test (the derivation rules are platform logic, not Discovery 2 data)."""
     store = [
         Signal("good", 0x10, 0, confidence="proven"),
         Signal("meh", 0x11, 0, confidence="candidate"),
@@ -23,19 +27,21 @@ def fake(monkeypatch):
     real_load = signals.load_signals
     monkeypatch.setattr(catalog.signals, "load_signals",
                         lambda m: store if m == FAKE else real_load(m))
-    for c in (
+    actions = (
         Command("ok_act", FAKE, "Verified", status="verified", safety="actuator"),
         Command("exp_act", FAKE, "Experimental", status="experimental", safety="read"),
         Command("plan_act", FAKE, "Planned", status="planned", safety="service"),
         Command("gate_act", FAKE, "Gated", status="planned", safety="gated"),
         Command("gate2_act", FAKE, "Gated 2", status="planned", safety="gated"),
-    ):
-        monkeypatch.setitem(commands.REGISTRY, (FAKE, c.action), c)
+    )
+    menus: "dict[str, list]" = {}
+    p = dataclasses.replace(FAKE_PACK, actions=actions, menus=menus)
 
     def set_menu(groups):
-        monkeypatch.setitem(MENUS, FAKE, groups)
+        menus[FAKE] = groups
         return groups
-    return set_menu
+    with pack.use_pack(p):
+        yield set_menu
 
 
 def _items(cat: dict) -> "list[dict]":
@@ -162,7 +168,8 @@ def test_legacy_status_and_menu(fake):
         {"name": "C", "status": "todo", "ref": ""}]}]
 
 
-def test_ui_module_aliases():
+def test_store_module_for_is_the_canonical_id():
+    # Deprecated wrapper over d2diag.pack.canonical_module (aliases from the pack).
     assert catalog.store_module_for("motor") == "td5"
     assert catalog.store_module_for("eat") == catalog.store_module_for("gearbox") == "autobox"
     assert catalog.store_module_for("slabs") == "slabs"
@@ -268,7 +275,7 @@ def test_coverage_sums(module):
 @pytest.mark.parametrize("module", ["td5", "slabs"])
 def test_drift_guard_every_store_signal_is_linked(module):
     linked = {it["sig"] for g in MENUS[module] for it in g["items"] if it.get("sig")}
-    allowed = catalog.UNLINKED_OK.get(module, set())
+    allowed = pack.active_pack().unlinked_ok.get(module, frozenset())
     store = {r["name"] for r in signals.load_records(module)}
     missing = store - linked - allowed
     assert not missing, f"{module}: store signals neither linked nor in UNLINKED_OK: {sorted(missing)}"
@@ -277,17 +284,19 @@ def test_drift_guard_every_store_signal_is_linked(module):
 
 
 def test_store_modules_all_have_menus():
-    import pathlib
-    store_dir = pathlib.Path(signals.__file__).parent
-    for p in store_dir.glob("*.json"):
+    stores = sorted(signals._dir().glob("*.json"))
+    assert stores, "the pack's signal store is empty"
+    for p in stores:
         assert p.stem in MENUS, p.stem
 
 
 def test_module_summary():
     rows = catalog.module_summary()
     assert [r["store_module"] for r in rows] == list(MENUS)
-    assert rows[0]["module"] == "motor"
+    assert rows[0]["module"] == "td5"                      # canonical ids, no UI alias
     for r in rows:
+        assert r["module"] == r["store_module"]
+        assert r["name"] == pack.active_pack().module(r["module"]).name
         assert set(r) == {"module", "store_module", "name", "coverage"}
         assert r["coverage"] == catalog.build_catalog(r["store_module"])["coverage"]
         assert r["name"] != r["store_module"]

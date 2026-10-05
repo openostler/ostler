@@ -5,8 +5,7 @@ import type { SniffLid } from "../api/schemas";
 import { useSniff } from "../api/useSniff";
 import { SniffBadge } from "../components/SniffBadge";
 import { StepHeader } from "../components/StepHeader";
-import { moduleName } from "../layout";
-import { storeModule } from "../lib/format";
+import { canonicalModule, moduleName } from "../layout";
 import { normHex, normLid, type LabelCapture } from "../lib/mapping";
 import { useApp } from "../state/app";
 import { readList, writeList } from "../state/prefs";
@@ -116,7 +115,7 @@ function SniffCapture({ onSaved }: { onSaved: OnSaved }) {
   };
   const reset = () => { armed.current.on = false; setBatch({}); setTexts({}); setPhase("idle"); };
   const save = async () => {
-    const module = storeModule(sniff.data?.module ?? "?");
+    const module = canonicalModule(sniff.data?.module ?? "?");
     let n = 0;
     for (const lid of Object.keys(batch)) {
       const text = (texts[lid] ?? "").trim();
@@ -195,7 +194,7 @@ function DirectCapture({ onSaved }: { onSaved: OnSaved }) {
   const save = async () => {
     if (!last) return toast("Read a block first", true);
     if (!text.trim()) return toast("Type what changed or what the value means", true);
-    const rec = labelRecord(storeModule(module), last.lid, last.raw, text);
+    const rec = labelRecord(canonicalModule(module), last.lid, last.raw, text);
     try {
       const r = await saveLabel(rec);
       if (!r.ok) return toast(r.error ?? "Could not save", true);
@@ -235,7 +234,7 @@ function DirectCapture({ onSaved }: { onSaved: OnSaved }) {
 /** Admin "Label": teach the decoder what bytes mean (sniffed or read directly). */
 export function Capture() {
   const { module, toast } = useApp();
-  const logModule = storeModule(module);
+  const logModule = canonicalModule(module);
   const { log, add } = useCaptureLog(logModule);
   const server = useServerLabels(logModule);
   const onSaved = (m: string, e: Omit<LogEntry, "t">) => {

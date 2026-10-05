@@ -1,7 +1,7 @@
 """Catalog: every NanoCom function per module, each with one derived status and a safety class.
 
 ADR-0008 and ``specs/2026-10-05-ui-overhaul-design.md`` are the contract. The module
-menus (``src/d2diag/*/menu.py``, collected in :mod:`d2diag.menus`) say *what exists*; this
+menus (the active vehicle pack's ``menus``, see :mod:`d2diag.menus`) say *what exists*; this
 module derives *how far we are* from what each item links to, never from a hand copy:
 
 1. ``sig``: the signal-store record (``at`` = ``"LID@offset"`` picks among same-name
@@ -11,12 +11,14 @@ module derives *how far we are* from what each item links to, never from a hand 
    candidate, all verified → verified). Safety = the most severe action safety.
 3. Otherwise the hand ``status`` (``verified`` only for session and fault items).
 
-Core module: data only, no I/O beyond reading the signal store, never imports ``web``.
+Module ids and display names come from the active pack (:func:`d2diag.pack.active_pack`);
+nothing here names a vehicle module. Core module: data only, no I/O beyond reading the
+signal store, never imports ``web``.
 """
 from __future__ import annotations
 
 from . import commands, signals
-from .menus import MENUS
+from .pack import active_pack, canonical_module
 
 STATUSES = ("verified", "candidate", "sniff", "untranscribed")
 SAFETY_RANK = {"read": 0, "actuator": 1, "service": 2, "gated": 3}
@@ -30,38 +32,18 @@ HAND_VERIFIED_PAGES = ("session", "faults")
 # Safety of an item with no link and no override, by the page it sits on.
 _DEFAULT_SAFETY = {"outputs": "actuator", "utilities": "service"}
 
-# UI module id ↔ store module. The UI calls the Td5 "motor"; the EAT has two common names.
-UI_MODULE = {"td5": "motor"}
-_STORE_ALIASES = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}
-
-# Display names, matching ui/src/layout.ts MODULE_NAME (keyed by store module).
-MODULE_NAMES = {
-    "td5": "TD5 (engine)",
-    "slabs": "SLABS (ABS + air suspension)",
-    "bcu": "BCU (body control)",
-    "ace": "ACE (active cornering)",
-    "autobox": "EAT (auto gearbox)",
-    "airbag": "SRS (airbag)",
-}
-
-# Store signals deliberately not linked from any menu item (drift guard in tests/test_catalog.py).
-UNLINKED_OK: "dict[str, set[str]]" = {
-    "td5": {
-        "ext_temp",  # phantom: the sensor is not fitted on the Td5, constant 150 °C (ignore)
-    },
-    "slabs": set(),
-}
-
 _LEGACY = {"verified": "ok", "candidate": "maybe"}
 
 
-def store_module_for(ui_id: str) -> str:
-    """Store module for a UI module id (``motor`` → ``td5``; ``eat``/``gearbox`` → ``autobox``)."""
-    return _STORE_ALIASES.get(ui_id, ui_id)
+def store_module_for(ui_id: "str | None") -> "str | None":
+    """Deprecated: use :func:`d2diag.pack.canonical_module` (a legacy alias → its module id)."""
+    return canonical_module(ui_id)
 
 
-def ui_module_for(store_module: str) -> str:
-    return UI_MODULE.get(store_module, store_module)
+def module_name(module: str) -> str:
+    """Display name of a module id or alias (the id itself when the pack has no such module)."""
+    spec = active_pack().module(module)
+    return spec.name if spec is not None else module
 
 
 def legacy_status(status: str) -> str:
@@ -149,11 +131,11 @@ def _item_out(store_module: str, group: dict, item: dict) -> dict:
 
 def build_catalog(store_module: str) -> dict:
     """The /catalog page structure for one module (the server adds the outer ``module`` key)."""
-    store_module = store_module_for(store_module)
+    store_module = canonical_module(store_module)
     pages = {pid: {"id": pid, "title": title, "coverage": _empty_cov(), "groups": []}
              for pid, title in PAGES}
     total = _empty_cov()
-    for group in MENUS.get(store_module, []):
+    for group in active_pack().menus.get(store_module, []):
         gpage = group.get("page")
         if gpage not in GROUP_PAGES:
             raise ValueError(f"{store_module}/{group.get('id')}: page {gpage!r} not in {GROUP_PAGES}")
@@ -170,18 +152,19 @@ def build_catalog(store_module: str) -> dict:
 
 
 def module_summary() -> list:
-    """One row per module for the header dropdown: ``{module, store_module, name, coverage}``."""
-    return [{"module": ui_module_for(m), "store_module": m, "name": MODULE_NAMES.get(m, m),
-             "coverage": build_catalog(m)["coverage"]} for m in MENUS]
+    """One row per module with a menu, in the pack's menu order, for the header dropdown:
+    ``{module, store_module, name, coverage}`` (``module == store_module``: ids are canonical)."""
+    return [{"module": m, "store_module": m, "name": module_name(m),
+             "coverage": build_catalog(m)["coverage"]} for m in active_pack().menus]
 
 
 def legacy_menu(store_module: str) -> list:
     """The pre-ADR-0008 menu shape for the admin /map and ``DiagServer.coverage()``:
     ``[{"cat", "items": [{"name", "status" (ok/maybe/todo), "ref", "lid"?, "sig"?}]}]``
     (``lid``/``sig`` only on items that have them, as the old menus did)."""
-    store_module = store_module_for(store_module)
+    store_module = canonical_module(store_module)
     out = []
-    for group in MENUS.get(store_module, []):
+    for group in active_pack().menus.get(store_module, []):
         items = []
         for it in group.get("items", []):
             status, _, _ = derive(store_module, group, it)

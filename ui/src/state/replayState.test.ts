@@ -7,7 +7,7 @@ import {
 
 const meta = (over: Partial<SessionMeta> = {}): SessionMeta => ({
   id: "s1", start_utc: "2026-10-05T09:00:00.000Z", end_utc: null, duration_s: 100, rows: 101, parts: ["data.csv"],
-  modules: ["motor"], has_gps: true, distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null,
+  modules: ["td5"], has_gps: true, distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null,
   synthetic: false, recording: false, source: "mock", audio: [],
   channels: [
     { name: "GPS_Latitude", units: "deg", group: "gps" },
@@ -38,7 +38,7 @@ const data = (): SessionData => ({
 });
 
 const events: SessionEvent[] = [
-  { t: 0, type: "state", conn: "connected", status: "connected", module: "motor", mode: "mock", active_test: null, fault_watch: false, logging: { recording: false } },
+  { t: 0, type: "state", conn: "connected", status: "connected", module: "td5", mode: "mock", active_test: null, fault_watch: false, logging: { recording: false } },
   { t: 10_000, type: "command", action: "output_ac_fan", ok: true, message: "A/C fan" },
   { t: 20_000, type: "active_test", active_test: { action: "output_ac_fan", label: "A/C Fan", since: 20, stop: "stop_ac_fan" } },
   { t: 25_000, type: "command", action: "read_identity", ok: false, error: "no answer" },
@@ -54,7 +54,7 @@ const events: SessionEvent[] = [
 describe("event folding", () => {
   it("starts from the state line and applies changes up to t", () => {
     const s = foldEvents(events, 0);
-    expect(s).toMatchObject({ conn: "connected", status: "connected", module: "motor", active_test: null, fault_watch: false });
+    expect(s).toMatchObject({ conn: "connected", status: "connected", module: "td5", active_test: null, fault_watch: false });
     expect(s).not.toHaveProperty("mode");
     expect(s.lastCommand).toEqual({});
   });
@@ -90,7 +90,7 @@ describe("event folding", () => {
   });
 
   it("a later part's state line does not forget earlier commands", () => {
-    const s = foldEvents([...events.slice(0, 2), { t: 12_000, type: "state", module: "motor" }], 13_000);
+    const s = foldEvents([...events.slice(0, 2), { t: 12_000, type: "state", module: "td5" }], 13_000);
     expect(s.lastCommand.output_ac_fan?.ok).toBe(true);
   });
 });
@@ -123,8 +123,8 @@ describe("snapshot synthesis", () => {
 
   it("follows the recorded module, and keeps only that module's fields once known", () => {
     const before = synthesise({ meta: meta(), data: data(), events, t: 30_000 });
-    expect(before.module).toBe("motor");
-    expect(before.snap.module).toBe("motor");
+    expect(before.module).toBe("td5");
+    expect(before.snap.module).toBe("td5");
     expect(before.snap).not.toHaveProperty("mode");
     const slabsFields = { height_fl: { limits: null, unit: "mm", c: "candidate" } as unknown as Field };
     const after = synthesise({ meta: meta(), data: data(), events, t: 70_000, fields: slabsFields });

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { api } from "./api/client";
 import type { Community, FaultMeaning, Field, Snapshot } from "./api/schemas";
 import { useCatalog } from "./api/useCatalog";
+import { useLoadPack } from "./api/usePack";
 import { useSnapshot } from "./api/useSnapshot";
 import { ActiveTestBanner } from "./components/ActiveTestBanner";
 import { ConnectionPill } from "./components/ConnectionPill";
@@ -14,7 +15,7 @@ import { ModuleSelect } from "./components/ModuleSelect";
 import { Preferences } from "./components/Preferences";
 import { ReplayAudio } from "./components/replay/ReplayAudio";
 import { RewindButton } from "./components/RewindButton";
-import { moduleName } from "./layout";
+import { canonicalModule, defaultModule, moduleName } from "./layout";
 import { clockHHMM, faultLookup, fmt } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
 import { connOf } from "./lib/connection";
@@ -54,10 +55,30 @@ function Clock() {
  * `replay` opens a session straight away (a deep link, and the tests).
  */
 export function App({ path = window.location.pathname, replay }: { path?: string; replay?: string }) {
+  // the vehicle pack (module ids, names, layout) loads once at boot; nothing renders before it
+  const { pack, error, retry } = useLoadPack();
+  if (!pack) return <PackGate error={error} onRetry={retry} />;
   return (
     <ReplayProvider initial={replay ?? null}>
       <AppShell path={path} />
     </ReplayProvider>
+  );
+}
+
+/** Before /pack answers: a quiet loading line, or the error card with a retry. */
+function PackGate({ error, onRetry }: { error: string | null; onRetry: () => void }) {
+  return (
+    <div className="app">
+      <main id="view">
+        {error ? (
+          <div className="card bad" role="alert">
+            <div style={{ fontWeight: 700, color: "var(--ic-red)" }}>Could not load the vehicle</div>
+            <div className="small muted pretty" style={{ marginTop: 4 }}>{error} — is the dashboard server running?</div>
+            <button className="btn accent" style={{ marginTop: 10 }} onClick={onRetry}>Retry</button>
+          </div>
+        ) : <div className="empty"><div className="title">Loading…</div></div>}
+      </main>
+    </div>
   );
 }
 
@@ -84,7 +105,9 @@ function AppShell({ path }: { path: string }) {
 
   const replay = useReplay();
   const { snap: liveSnap, linkUp: liveLinkUp, refresh: liveRefresh } = useSnapshot(dispatch);
-  const liveModule = liveSnap?.module ?? live.module;
+  // module ids are canonical (a legacy alias maps to the pack id); before the first
+  // snapshot the pack's default module is in view
+  const liveModule = canonicalModule(liveSnap?.module ?? (live.module || defaultModule()));
   // replay: the event state at the cursor decides the module in view (never sent to the car)
   const eventState = replay.state;
   const module = replay.active ? moduleOf(eventState, replay.session, liveModule) : liveModule;

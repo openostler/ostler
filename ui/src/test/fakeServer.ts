@@ -2,12 +2,13 @@ import { act } from "@testing-library/react";
 import { vi } from "vitest";
 import catalogBcu from "../api/fixtures/catalog-bcu.json";
 import catalogModulesFx from "../api/fixtures/catalog-modules.json";
-import catalogMotor from "../api/fixtures/catalog-motor.json";
+import catalogTd5 from "../api/fixtures/catalog-td5.json";
 import communityFx from "../api/fixtures/community.json";
 import docsFx from "../api/fixtures/docs.json";
-import fieldsMotor from "../api/fixtures/fields-motor.json";
+import fieldsTd5 from "../api/fixtures/fields-td5.json";
 import fieldsSlabs from "../api/fixtures/fields-slabs.json";
 import mapFx from "../api/fixtures/map.json";
+import packFx from "../api/fixtures/pack.json";
 import snapshotFx from "../api/fixtures/snapshot.json";
 import sniffFx from "../api/fixtures/sniff.json";
 
@@ -40,7 +41,7 @@ export function installFakeServer(opts: {
   commands?: Record<string, unknown>;
   docHtml?: string;
   automap?: unknown;
-  /** /catalog?module=… replies by UI module (default: the contract fixtures). */
+  /** /catalog?module=… replies by module id (default: the contract fixtures). */
   catalogs?: Record<string, unknown>;
   /** /catalog (no module) reply. */
   catalogModules?: unknown;
@@ -49,7 +50,7 @@ export function installFakeServer(opts: {
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
   const commands: Record<string, unknown> = { ...opts.commands };
-  const catalogs: Record<string, unknown> = { motor: catalogMotor, bcu: catalogBcu, ...opts.catalogs };
+  const catalogs: Record<string, unknown> = { td5: catalogTd5, bcu: catalogBcu, ...opts.catalogs };
   const emptyCatalog = (module: string) => ({
     module, store_module: module, coverage: { verified: 0, candidate: 0, sniff: 0, untranscribed: 0, total: 0 },
     pages: ["faults", "inputs", "outputs", "settings", "utilities"].map((id) => ({
@@ -64,8 +65,9 @@ export function installFakeServer(opts: {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     calls.push({ path: url.pathname + url.search, method, body });
     switch (url.pathname) {
+      case "/pack": return json(packFx);
       case "/snapshot": return json(opts.snapshot ?? snapshotFx);
-      case "/fields": return json(url.searchParams.get("module") === "slabs" ? fieldsSlabs : fieldsMotor);
+      case "/fields": return json(url.searchParams.get("module") === "slabs" ? fieldsSlabs : fieldsTd5);
       case "/faults": return json({ module: url.searchParams.get("module"), faults: [] });
       case "/community": return json(communityFx);
       case "/community/consent": return json({ ok: true, consent: !!body?.consent });
