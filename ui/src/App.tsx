@@ -8,8 +8,13 @@ import { ConnectionPill } from "./components/ConnectionPill";
 import { ConnectionSheet } from "./components/ConnectionSheet";
 import { Consent } from "./components/Consent";
 import { FaultSheet } from "./components/FaultSheet";
+import { GlobalTransport } from "./components/GlobalTransport";
+import { MarkButton } from "./components/MarkButton";
 import { ModuleSelect } from "./components/ModuleSelect";
 import { Preferences } from "./components/Preferences";
+import { ReplayAudio } from "./components/replay/ReplayAudio";
+import { ReplayBanner } from "./components/ReplayBanner";
+import { moduleName } from "./layout";
 import { clockHHMM, faultLookup, fmt } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
 import { connOf } from "./lib/connection";
@@ -18,6 +23,8 @@ import { screensFor } from "./screens/registry";
 import { AppCtx, type AppContext } from "./state/app";
 import { initialLive, reduceSnapshot, type LiveState } from "./state/live";
 import { usePrefs } from "./state/prefs";
+import { READ_ONLY_ERROR, ReplayProvider, useReplay } from "./state/replay";
+import { moduleOf, synthesise } from "./state/replayState";
 
 function useToast() {
   const [toast, setToast] = useState<{ msg: string; bad: boolean } | null>(null);
@@ -40,7 +47,23 @@ function Clock() {
   return <span className="hdr-clock">{now}</span>;
 }
 
-export function App({ path = window.location.pathname }: { path?: string }) {
+/**
+ * The dashboard. `ReplayProvider` sits at the root (ADR-0010): while a session is open, the
+ * context every screen reads (`useApp()`) carries a snapshot synthesised at the replay cursor,
+ * the module in view follows the recorded one, and nothing is sent to the car.
+ * `replay` opens a session straight away (a deep link, and the tests).
+ */
+export function App({ path = window.location.pathname, replay }: { path?: string; replay?: string }) {
+  return (
+    <ReplayProvider initial={replay ?? null}>
+      <AppShell path={path} />
+    </ReplayProvider>
+  );
+}
+
+const noop = () => undefined;
+
+function AppShell({ path }: { path: string }) {
   const admin = isAdminPath(path);
   const screens = useMemo(() => screensFor(admin), [admin]);
   const [tab, setTab] = useState(admin ? "map" : "drive");
@@ -57,11 +80,15 @@ export function App({ path = window.location.pathname }: { path?: string }) {
   const [ackedFaults, setAcked] = useState<Set<string>>(() => new Set());
   const [manualFaults, setManualFaults] = useState<string[] | null>(null);
 
-  const { snap, linkUp, refresh } = useSnapshot(dispatch);
-  const module = snap?.module ?? live.module;
+  const replay = useReplay();
+  const { snap: liveSnap, linkUp: liveLinkUp, refresh: liveRefresh } = useSnapshot(dispatch);
+  const liveModule = liveSnap?.module ?? live.module;
+  // replay: the event state at the cursor decides the module in view (never sent to the car)
+  const eventState = replay.state;
+  const module = replay.active ? moduleOf(eventState, replay.session, liveModule) : liveModule;
   const { catalog } = useCatalog(module);
-  const conn = connOf(snap);
-  const connSheet = useConnectionSheet(conn, !prefs.consentDone);
+  const conn = connOf(liveSnap);
+  const connSheet = useConnectionSheet(conn, !prefs.consentDone || replay.active);
 
   const reloadCommunity = useCallback(() => {
     api.community().then(setCommunity, () => undefined);
@@ -87,10 +114,22 @@ export function App({ path = window.location.pathname }: { path?: string }) {
   }, [module, faultsByModule]);
   const faultMeaning = useMemo(() => faultLookup(faultsByModule[module] ?? []), [faultsByModule, module]);
 
+  const fields = fieldsByModule[module];
+  const synth = useMemo(() => {
+    if (!replay.active || !replay.session || !replay.data) return null;
+    return synthesise({
+      meta: replay.session, data: replay.data, events: replay.events, t: replay.t,
+      fields: fields ?? {}, base: liveSnap, state: eventState,
+    });
+  }, [replay.active, replay.session, replay.data, replay.events, replay.t, fields, liveSnap, eventState]);
+  const snap = replay.active ? synth?.snap ?? null : liveSnap;
+  const linkUp = replay.active ? true : liveLinkUp;
+  const refresh = replay.active ? noop : liveRefresh;
+
   // Faults pop up once when connected; dismissing acknowledges them, so afterwards only
   // NEW faults alert. Derived from the snapshot (no effect); the Drive tile can also
   // open the sheet on demand.
-  const unacked = snap?.status === "connected" ? snap.faults.filter((f) => !ackedFaults.has(f)) : [];
+  const unacked = !replay.active && snap?.status === "connected" ? snap.faults.filter((f) => !ackedFaults.has(f)) : [];
   const sheetFaults = manualFaults ?? (unacked.length ? unacked : null);
   const dismissFaults = () => {
     setAcked((a) => new Set([...a, ...(sheetFaults ?? [])]));
@@ -99,20 +138,32 @@ export function App({ path = window.location.pathname }: { path?: string }) {
 
   const experimental = prefs.trust === "experimental";
   const ctx: AppContext = {
-    snap, live, linkUp, module, catalog, fields: fieldsByModule[module] ?? {}, faultMeaning, refresh, prefs, setPrefs,
+    snap, live: synth?.live ?? (replay.active ? { ...initialLive, module } : live), linkUp, module, catalog,
+    fields: fields ?? {}, faultMeaning, refresh, prefs, setPrefs,
     experimental, admin, community, reloadCommunity, goTo: setTab, toast: showToast, ackedFaults,
-    showFaultSheet: setManualFaults, openConnection: connSheet.show,
+    showFaultSheet: setManualFaults,
+    openConnection: replay.active ? () => showToast(READ_ONLY_ERROR, true) : connSheet.show,
   };
   const Current = (screens.find((s) => s.id === tab) ?? screens[0])!.component;
 
   return (
     <AppCtx.Provider value={ctx}>
-      <div className="app">
+      <div className={`app${replay.active ? " replaying" : ""}`}>
         <header>
           {admin ? <span className="hadmin">admin</span> : null}
-          <ModuleSelect />
+          {replay.active ? (
+            <div className="hmod">
+              <div className="modctl modctl-replay" aria-label={`Module ${moduleName(module)} (recorded)`}>
+                <span className="modctl-txt">
+                  <span className="modctl-k">Module</span>
+                  <span className="modctl-v">{moduleName(module)}</span>
+                </span>
+              </div>
+            </div>
+          ) : <ModuleSelect />}
           <div className="hright">
             <Clock />
+            <MarkButton />
             {typeof snap?.battery_v === "number" ? (
               <span className="hbatt" aria-label={`Car battery ${fmt(snap.battery_v, 1)} V`}>
                 <span aria-hidden="true">⚡</span>{fmt(snap.battery_v, 1)}<span className="u">V</span>
@@ -122,11 +173,13 @@ export function App({ path = window.location.pathname }: { path?: string }) {
             <button className="chip" aria-label="Preferences" onClick={() => setPrefsOpen(true)}>⚙</button>
           </div>
         </header>
-        <ActiveTestBanner />
-        {experimental ? (
+        {replay.active ? <ReplayBanner /> : <ActiveTestBanner />}
+        {experimental && !replay.active ? (
           <div className="expbanner"><span className="pdot yellow" />Experimental mode — unverified items and tests shown</div>
         ) : null}
-        <main id="view"><Current /></main>
+        <main id="view" className={replay.active ? "replay-edge" : undefined}><Current /></main>
+        <GlobalTransport />
+        <ReplayAudio />
         <nav className={`tabs${screens.length > 6 ? " many" : ""}`} aria-label="Screens">
           {screens.map((s) => (
             <button key={s.id} aria-label={s.label} aria-current={s.id === tab ? "page" : undefined} onClick={() => setTab(s.id)}>

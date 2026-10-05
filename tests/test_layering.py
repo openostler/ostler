@@ -19,6 +19,7 @@ _CORE = [
     "commands.py",
     "faultscan.py", "sniff", "td5", "slabs", "airbag", "bcu", "ace", "autobox",
     "gps", "logbook",  # ADR-0009: session logbook + GPS are core (stdlib + pyserial)
+    "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
 ]
 _FORBIDDEN = {"web", "apps"}
 
@@ -59,7 +60,7 @@ def test_core_file_list_is_present():
     assert len(files) > 15
 
 
-def test_logbook_and_gps_are_scanned():
-    # ADR-0009: the new core packages must be part of the scan, not silently skipped.
+def test_logbook_gps_and_imu_are_scanned():
+    # ADR-0009/0010: the new core packages must be part of the scan, not silently skipped.
     names = {p.relative_to(_SRC).parts[0] for p in _core_files()}
-    assert {"gps", "logbook"} <= names
+    assert {"gps", "logbook", "imu"} <= names

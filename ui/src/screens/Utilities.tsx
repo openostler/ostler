@@ -90,7 +90,7 @@ function GroupCard({ node, onOpen }: { node: GroupNode; onOpen: (o: Open) => voi
  * (catalog page "utilities"), as group cards with at most one sub-menu level. Each opens
  * a ProcedureSheet. The raw LID dump is under "Advanced", Experimental only. */
 export function Utilities() {
-  const { catalog, experimental } = useApp();
+  const { catalog, experimental, admin, goTo } = useApp();
   const [open, setOpen] = useState<Open>(null);
   const page = pageOf(catalog, "utilities");
   const tree = groupTree(page, experimental);
@@ -119,6 +119,12 @@ export function Utilities() {
       {open === "advanced" ? (
         <Sheet title="Advanced" onClose={() => setOpen(null)}>
           <LidDump />
+          {admin ? (
+            <div className="row" style={{ gap: 8 }}>
+              <span className="small muted grow pretty">To say what these bytes mean, use the Label tab — it reads the same blocks and saves your labels.</span>
+              <button className="btn" onClick={() => { setOpen(null); goTo("capture"); }}>Label these bytes →</button>
+            </div>
+          ) : null}
           <button className="btn accent" onClick={() => setOpen(null)}>Done</button>
         </Sheet>
       ) : open ? (

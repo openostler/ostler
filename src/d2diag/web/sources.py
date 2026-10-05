@@ -361,6 +361,7 @@ class MockDataSource(DataSource):
         # Optional GPS source (gps.reader.MockGps …): when it has a speed, the mock
         # "drives" along with it so mock `speed` ≈ GPS speed in recorded sessions.
         self._gps = gps
+        self._last_signals: "dict" = {}  # last poll, for the mock read_block
 
     def poll(self) -> "dict":
         self._t += 1
@@ -406,14 +407,19 @@ class MockDataSource(DataSource):
             self._cleared_ticks -= 1
             if self._cleared_ticks == 0:
                 self._faults = [self._ACTIVE_FAULT]
+        self._last_signals = _sig(signals)
         return {
             "status": "connected",
             "source": self.name,
-            "signals": _sig(signals),
+            "signals": self._last_signals,
             "faults": list(self._faults),
         }
 
     def command(self, action: str, params: "dict | None" = None) -> "dict":
+        if action == "read_block":
+            if not self._last_signals:
+                self.poll()
+            return _mock_read_block_cmd("td5", self._last_signals, params)
         if action == "clear_faults":
             self._faults = []
             self._cleared_ticks = 4  # empty for ~4 polls, then the active fault returns
@@ -541,6 +547,20 @@ def mock_bcu_signals(tick: int) -> "dict":
     return sig
 
 
+def _parse_lids(params: "dict | None") -> "list[int]":
+    """``params.lids`` (hex strings or ints) → LID ints. Raises ValueError when invalid."""
+    lids_in = (params or {}).get("lids") or []
+    if not isinstance(lids_in, (list, tuple)):
+        raise ValueError("lids must be a list")
+    try:
+        lids = [int(x, 16) if isinstance(x, str) else int(x) for x in lids_in]
+    except (ValueError, TypeError):
+        raise ValueError("invalid lids (expected hex strings such as \"09\")") from None
+    if any(not 0 <= lid <= 0xFF for lid in lids):
+        raise ValueError("invalid lids (each LID is one byte, 00-ff)")
+    return lids
+
+
 def _read_block_cmd(session, params: "dict | None") -> "dict":
     """Read a set of LIDs via a live session → {ok, raws:{lidhex:hex}}.
 
@@ -548,16 +568,80 @@ def _read_block_cmd(session, params: "dict | None") -> "dict":
     (baseline/read-again). Shared by the Td5 and SLABS sources."""
     if session is None:
         return {"ok": False, "error": "not connected"}
-    lids_in = (params or {}).get("lids") or []
     try:
-        lids = [int(x, 16) if isinstance(x, str) else int(x) for x in lids_in]
-    except (ValueError, TypeError):
-        return {"ok": False, "error": "ogiltiga lids"}
+        lids = _parse_lids(params)
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}
     try:
         raws = session.read_block(lids)
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
     return {"ok": True, "raws": {k: v.hex() for k, v in raws.items()}}
+
+
+# Integer range per store field kind (for encoding a mock value back into raw bytes).
+_KIND_RANGE = {"u8": (0, 0xFF), "u16": (0, 0xFFFF), "u16le": (0, 0xFFFF),
+               "s16": (-0x8000, 0x7FFF), "s16le": (-0x8000, 0x7FFF)}
+
+
+def _encode_field(buf: bytearray, sig, value: float) -> None:
+    """Write ``value`` into ``buf`` the way ``Signal.decode`` reads it back."""
+    if sig.kind == "bit":
+        mask = 1 << (sig.bit or 0)
+        if value:
+            buf[sig.offset] |= mask
+        else:
+            buf[sig.offset] &= ~mask & 0xFF
+        return
+    lo, hi = _KIND_RANGE.get(sig.kind, (0, 0xFFFF))
+    raw = int(round((float(value) - sig.bias) / (sig.scale or 1.0)))
+    raw = max(lo, min(hi, raw)) & (0xFF if sig.kind == "u8" else 0xFFFF)
+    if sig.kind == "u8":
+        buf[sig.offset] = raw
+    elif sig.kind.endswith("le"):
+        buf[sig.offset], buf[sig.offset + 1] = raw & 0xFF, raw >> 8
+    else:
+        buf[sig.offset], buf[sig.offset + 1] = raw >> 8, raw & 0xFF
+
+
+def mock_read_block(module: str, values: "dict[str, float]", lids: "list[int]") -> "dict[str, str]":
+    """Deterministic mock LID blocks built from the signal store and the mock values.
+
+    For every requested LID with store fields, a data block is laid out from the fields'
+    offsets/kinds (the longest reply-length variant when a LID has several) and each field
+    is encoded from ``values`` (the last mock poll; a field the mock does not simulate reads
+    as raw 0). A LID the store does not know is skipped, as a real ECU would refuse it.
+    Returns ``{lidhex: hex}`` like the live ``read_block``. Mock only: never a car value."""
+    width = {"u8": 1, "bit": 1}
+    by_lid: "dict[int, list]" = {}
+    for sig in load_signals(module):
+        by_lid.setdefault(sig.lid, []).append(sig)
+    out: "dict[str, str]" = {}
+    for lid in lids:
+        sigs = by_lid.get(lid)
+        if not sigs:
+            continue
+        lengths = [s.length for s in sigs if s.length is not None]
+        length = max(lengths) if lengths else None
+        use = [s for s in sigs if s.length is None or s.length == length]
+        size = max([s.offset + width.get(s.kind, 2) for s in use] + [length or 0])
+        buf = bytearray(size)
+        for sig in use:
+            v = values.get(sig.name)
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                continue
+            _encode_field(buf, sig, v)
+        out[f"{lid:02x}"] = bytes(buf).hex()
+    return out
+
+
+def _mock_read_block_cmd(module: str, signals: "dict", params: "dict | None") -> "dict":
+    try:
+        lids = _parse_lids(params)
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}
+    values = {k: (s.get("v") if isinstance(s, dict) else s) for k, s in (signals or {}).items()}
+    return {"ok": True, "raws": mock_read_block(module, values, lids), "mock": True}
 
 
 class Td5DataSource(DataSource):
@@ -746,12 +830,16 @@ def _slabs_decode_store(raws: "dict[int, bytes]") -> "dict[str, float]":
 
 
 def _slabs_faults_flat(f: "dict[str, list]") -> "list[str]":
-    """{"loggade":[…],"aktuella":[…]} → flat list with (Logged)/(Current) tags."""
-    return [x + " (Logged)" for x in f.get("loggade", [])] + \
-           [x + " (Current)" for x in f.get("aktuella", [])]
+    """{"logged":[…],"current":[…]} → flat list with (Logged)/(Current) tags.
+
+    ``slabs.Slabs.read_faults`` still answers with its legacy keys ("loggade" = logged,
+    "aktuella" = current); both spellings are accepted."""
+    logged = f.get("logged", f.get("loggade", []))
+    current = f.get("current", f.get("aktuella", []))
+    return [x + " (Logged)" for x in logged] + [x + " (Current)" for x in current]
 
 
-# Actuator actions (web → SLABS). Name → Swedish label (for mock responses/UI).
+# Actuator actions (web → SLABS). Name → English label (for mock responses/UI).
 _SLABS_ACTUATORS = {
     "buzzer": "Buzzer test", "compressor": "Compressor test", "exhaust": "Exhaust valve test",
     "pump_on": "ABS pump on", "pump_off": "ABS pump off",
@@ -802,13 +890,14 @@ class MockSlabsDataSource(DataSource):
         self._t = 0.0
         self._gps = gps  # optional GPS source: wheel speeds follow its speed (see poll)
         self._faults = {
-            "loggade": [
+            "logged": [
                 "right front wheel speed sensor — output too low",
                 "shuttle valve switch — electrical failure",
             ],
-            "aktuella": [],
+            "current": [],
         }
         self._cleared = 0
+        self._last_signals: "dict" = {}  # last poll, for the mock read_block
 
     def poll(self) -> "dict":
         self._t += 1
@@ -825,16 +914,21 @@ class MockSlabsDataSource(DataSource):
             vals[f"wheel_speed_{w}"] = 124.0 + moving
             vals[f"abs_sensor_{w}"] = round(2.3 + random.uniform(-0.05, 0.05), 2)
         signals = _slabs_sig(vals)
+        self._last_signals = signals
         if self._cleared > 0:
             self._cleared -= 1
             if self._cleared == 0:
-                self._faults = {"loggade": [], "aktuella": []}
+                self._faults = {"logged": [], "current": []}
         return {"status": "connected", "source": self.name,
                 "signals": signals, "faults": _slabs_faults_flat(self._faults)}
 
     def command(self, action: str, params: "dict | None" = None) -> "dict":
+        if action == "read_block":
+            if not self._last_signals:
+                self.poll()
+            return _mock_read_block_cmd("slabs", self._last_signals, params)
         if action == "clear_faults":
-            self._faults = {"loggade": [], "aktuella": []}
+            self._faults = {"logged": [], "current": []}
             self._cleared = 4
             return {"ok": True, "message": "Fault codes cleared (mock)"}
         if action in _SLABS_ACTUATORS:

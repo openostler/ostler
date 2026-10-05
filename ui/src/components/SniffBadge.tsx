@@ -1,30 +1,30 @@
 import type { SniffState } from "../api/useSniff";
 
-/** Freshness of the passive sniff feed, in one line. */
+/** Freshness of the passive sniff feed (ESP32 tap listening to the NanoCom), in one line. */
 export function SniffBadge({ sniff, showActive = true }: { sniff: SniffState; showActive?: boolean }) {
   const d = sniff.data;
   let cls = "";
   let text: string;
   if (sniff.error) {
     cls = "red";
-    text = `sniff: ${sniff.error}`;
+    text = `Cannot reach the sniff feed: ${sniff.error}`;
   } else if (!d) {
-    text = "checking the sniff feed…";
+    text = "Checking for a sniff tap…";
   } else if (!sniff.configured) {
-    text = "no sniff feed — start the dashboard with --sniff PORT (or --replay LOG)";
+    text = "No tap connected — the homelab runs a demo feed";
   } else if (d.status === "error") {
     cls = "red";
-    text = `sniff error: ${d.error ?? "?"}`;
+    text = `The sniff tap reported an error: ${d.error ?? "unknown"}`;
   } else if (d.status === "live" && d.age != null && d.age < 3) {
     cls = "green";
-    const demo = (d.source ?? "").startsWith("replay") ? " · demo" : "";
-    const polling = showActive && sniff.active.size ? ` · polling ${[...sniff.active].slice(0, 6).join(" ")}` : "";
-    text = `LIVE · ${sniff.fps} lines/s · ${d.frames ?? 0} reads${polling}${demo}`;
+    const demo = sniff.demo ? " · demo feed (recorded)" : "";
+    const polling = showActive && sniff.active.size ? ` · NanoCom is reading ${[...sniff.active].slice(0, 6).join(" ")}` : "";
+    text = `Listening · ${sniff.fps} lines/s · ${d.frames ?? 0} reads${polling}${demo}`;
   } else if (d.age != null) {
     cls = "yellow";
-    text = `no traffic for ${d.age}s — is the tap connected and the reference tool on?`;
+    text = `Nothing heard for ${d.age}s — is the tap plugged in and the NanoCom showing a live screen?`;
   } else {
-    text = `waiting for traffic… (${(d.source ?? "").replace(/^serial:/, "")})`;
+    text = `Tap connected, waiting for the NanoCom to ask for data… (${(d.source ?? "").replace(/^serial:/, "")})`;
   }
   return (
     <span className="row small" style={{ gap: 6 }} role="status">

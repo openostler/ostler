@@ -8,12 +8,17 @@ import { ScreenHead } from "../components/ScreenHead";
 import { StatusTag } from "../components/StatusTag";
 import { identityRows, isPlaceholder, pageOf, STABLE_EMPTY, visibleGroups } from "../lib/catalog";
 import { useApp } from "../state/app";
+import { formatClock } from "../state/playback";
+import { useReplay } from "../state/replay";
 
 /** The module's Settings page (catalog page "settings"): identity and configuration,
  * read-only. The identity Read (read_identity) shows what the ECU returns, with the VIN
  * masked — the full VIN is never shown. */
 export function ModuleSettings() {
   const { catalog, experimental, snap } = useApp();
+  const replay = useReplay();
+  // replay: identity values are never recorded (ADR-0010), only when a read happened
+  const idRead = replay.active ? replay.state.lastCommand.read_identity : undefined;
   const [identity, setIdentity] = useState<[string, string][] | null>(null);
   const page = pageOf(catalog, "settings");
   const groups = visibleGroups(page, experimental);
@@ -52,7 +57,12 @@ export function ModuleSettings() {
           </div>
         </section>
       ))}
-      {identity ? (
+      {replay.active ? (
+        <div className="card small muted" role="note" aria-label="Identity in replay">
+          {idRead ? `identity read at ${formatClock(idRead.t, replay.offset)} ${idRead.ok ? "✓" : "✗"}` : "No identity read in this session up to here."}
+          <div className="dis">Identity values are never stored in a session.</div>
+        </div>
+      ) : identity ? (
         <div className="card" role="region" aria-label="Identity">
           <div className="kicker" style={{ marginBottom: 8 }}>Identity (read from the ECU)</div>
           {identity.length ? (

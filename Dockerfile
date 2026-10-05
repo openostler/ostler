@@ -28,5 +28,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/snapshot', timeout=3).status == 200 else 1)"
 
 # Mock mode, bound on all interfaces for Traefik. NOT --public (forces live serial) and
-# NOT --allow-shutdown (would let the web UI power off the host).
-CMD ["python", "tools/dashboard.py", "--mock", "--host", "0.0.0.0", "--port", "8080"]
+# NOT --allow-shutdown (would let the web UI power off the host). --replay loops the
+# committed synthetic sniff log so the admin Decode tab has a feed (no car data in it).
+CMD ["python", "tools/dashboard.py", "--mock", "--host", "0.0.0.0", "--port", "8080", \
+     "--replay", "src/d2diag/web/demo/sniff-demo.txt"]

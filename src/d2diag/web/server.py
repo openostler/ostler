@@ -6,6 +6,10 @@ every module action passes the command gate (:func:`d2diag.commands.refusal`, AD
 first. ``/catalog`` serves the per-module UI catalog (specs/2026-10-05-ui-overhaul-design.md).
 ``/sessions*`` serves the always-on session logbook (specs/2026-10-05-session-logbook-design.md,
 ADR-0009); the poll loop feeds every snapshot (plus the GPS fix) to the ``SessionRecorder``.
+The replay routes (session events, notes, audio, acceleration, ``/captures``) and the
+``recording_options`` command follow specs/2026-10-05-replay-notes-capture-design.md
+(ADR-0010): public mode refuses every write and never serves audio, and synthetic
+sessions are read-only.
 """
 from __future__ import annotations
 
@@ -33,8 +37,34 @@ _UI_TO_STORE = {"motor": "td5", "eat": "autobox", "gearbox": "autobox"}
 # Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
 # is answered 404 before it reaches the store (no path traversal through the URL).
 _SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$")
-_EXPORT_FORMATS = ("csv", "vbo", "gpx")
+_EXPORT_FORMATS = ("csv", "vbo", "gpx", "notes")
 _DEFAULT_MAX_POINTS = 2000
+
+# ---- replay API (ADR-0010) ---- #
+_NOTE_ID = re.compile(r"^[0-9a-f]{8}$")
+_TRACK_ID = re.compile(r"^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$")  # = logbook.audio.TRACK_RE
+_NOTE_KINDS = ("mark", "note", "capture")
+_NOTE_SOURCES = ("live", "retro")
+_NOTE_TEXT_MAX = 2000
+_NOTE_TAGS_MAX = 16
+_AUDIO_CHUNK_MAX = 2 * 1024 * 1024   # bytes per POSTed audio chunk
+_JSON_BODY_MAX = 2 * 1024 * 1024     # bytes of a JSON body on the replay routes
+_ACCEL_SAMPLES_MAX = 5000            # samples per POST /accel
+_ACCEL_HZ = (10, 25, 50)
+_PUBLIC_REFUSAL = "not available in public mode"
+_SYNTHETIC_REFUSAL = "synthetic sessions are read-only"
+# Command actions whose outcome text could carry an identity payload: only {action, ok}
+# reaches the events stream (spec §1 — the VIN never lands in a session).
+_IDENTITY_ACTION = re.compile(r"identity|vin|eka|serial", re.IGNORECASE)
+
+
+class ApiError(Exception):
+    """A replay-API refusal: HTTP ``code`` plus an English ``error`` message."""
+
+    def __init__(self, code: int, error: str) -> None:
+        super().__init__(error)
+        self.code = code
+        self.error = error
 
 
 def _store_module_for(ui_id: "str | None") -> str:
@@ -242,6 +272,83 @@ def _faults_list(module: str) -> "dict":
     return {"module": module, "faults": load_records(store_mod)}
 
 
+def _parse_range(header: "str | None", size: int):
+    """A single ``bytes=`` range → (start, end) inclusive; None = whole file;
+    ``"invalid"`` = unsatisfiable (416). Multi-range requests are served whole."""
+    if not header:
+        return None
+    m = re.fullmatch(r"\s*bytes=(\d*)-(\d*)\s*", header)
+    if not m:
+        return None if "," in header else "invalid"
+    a, b = m.group(1), m.group(2)
+    if not a and not b:
+        return "invalid"
+    if not a:  # suffix: the last N bytes
+        n = int(b)
+        if n == 0 or size == 0:
+            return "invalid"
+        return max(0, size - n), size - 1
+    start = int(a)
+    end = int(b) if b else size - 1
+    if start >= size or end < start:
+        return "invalid"
+    return start, min(end, size - 1)
+
+
+def _num(v, name: str, *, minimum: "float | None" = None) -> float:
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or v != v:
+        raise ApiError(400, f"{name} must be a number")
+    if minimum is not None and v < minimum:
+        raise ApiError(400, f"{name} must be ≥ {minimum:g}")
+    return float(v)
+
+
+def _note_fields(body: "dict", partial: bool) -> "dict":
+    """Validate note fields (spec §2) → the subset present (all required ones unless
+    ``partial``). Raises :class:`ApiError` 400."""
+    out: "dict" = {}
+    if "t" in body or not partial:
+        out["t"] = int(round(_num(body.get("t"), "t", minimum=0)))
+    if "t_end" in body and body["t_end"] is not None:
+        out["t_end"] = int(round(_num(body["t_end"], "t_end", minimum=0)))
+    elif "t_end" in body:
+        out["t_end"] = None
+    if "t" in out and out.get("t_end") is not None and out["t_end"] < out["t"]:
+        raise ApiError(400, "t_end must not be before t")
+    if "text" in body or not partial:
+        text = body.get("text", "")
+        if text is None:
+            text = ""
+        if not isinstance(text, str):
+            raise ApiError(400, "text must be a string")
+        out["text"] = text[:_NOTE_TEXT_MAX]
+    if "tags" in body or not partial:
+        tags = body.get("tags") or []
+        if not isinstance(tags, list) or not all(isinstance(x, str) for x in tags):
+            raise ApiError(400, "tags must be a list of strings")
+        out["tags"] = [x.strip()[:40] for x in tags if x.strip()][:_NOTE_TAGS_MAX]
+    return out
+
+
+def _capture_value(cap) -> "dict":
+    """A capture note's ``capture`` {module, lid, raw, value}, all strings."""
+    if not isinstance(cap, dict):
+        raise ApiError(400, "capture must be an object {module, lid, raw, value}")
+    lid = cap.get("lid")
+    if isinstance(lid, int) and not isinstance(lid, bool):
+        lid = f"{lid:02x}"
+    out = {"module": cap.get("module"), "lid": lid, "raw": cap.get("raw"),
+           "value": cap.get("value", cap.get("text"))}
+    for k, v in out.items():
+        if v is None:
+            out[k] = ""
+        elif not isinstance(v, (str, int, float)) or isinstance(v, bool):
+            raise ApiError(400, f"capture.{k} must be a string")
+        out[k] = str(out[k])[:200]
+    out["lid"] = out["lid"].strip().lower()
+    return out
+
+
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:  # silent log
         pass
@@ -317,6 +424,12 @@ class _Handler(BaseHTTPRequestHandler):
             self._json(body, code=code)
         elif self.path.split("?")[0] == "/sessions" or self.path.startswith("/sessions/"):
             self._sessions_get()
+        elif self.path.split("?")[0] == "/captures":
+            if not self._require_admin():
+                return
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query)
+            self._api(lambda: self.server.captures(q.get("module", [None])[0]))
         elif self.path == "/community":
             c = self.server.community
             self._json(c.state() if c is not None else {"consent": None, "endpoint": None})
@@ -382,7 +495,15 @@ class _Handler(BaseHTTPRequestHandler):
         elif self.path == "/capture":
             if not self._require_admin():
                 return
-            self._json(_append_capture(self.server.captures_path, self._body()))
+            body = self._body()
+            res = _append_capture(self.server.captures_path, body)
+            if res.get("ok"):
+                self.server.capture_note(body)  # into the recording session, if any
+            self._json(res)
+        elif self.path.split("?")[0] == "/notes/live":
+            self._api(lambda: self.server.live_note(self._json_body()))
+        elif self.path.startswith("/sessions/"):
+            self._sessions_post()
         elif self.path == "/signal":
             if not self._require_admin():
                 return
@@ -403,6 +524,145 @@ class _Handler(BaseHTTPRequestHandler):
                 self._json(c.contribute(self._body()))
         else:
             self.send_error(404)
+
+    def do_PATCH(self) -> None:  # noqa: N802
+        sid, rest = self._session_parts()
+        if sid is None or len(rest) != 2 or rest[0] != "notes":
+            self._json({"ok": False, "error": "not found"}, 404)
+            return
+        self._api(lambda: self.server.edit_note(sid, rest[1], self._json_body()))
+
+    def do_DELETE(self) -> None:  # noqa: N802
+        sid, rest = self._session_parts()
+        if sid is None or len(rest) != 2 or rest[0] != "notes":
+            self._json({"ok": False, "error": "not found"}, 404)
+            return
+        self._api(lambda: self.server.delete_note(sid, rest[1]))
+
+    # ---- replay API helpers (ADR-0010) --------------------------------- #
+    def _session_parts(self) -> "tuple[str | None, list[str]]":
+        """``/sessions/<id>/a/b`` → ("<id>", ["a", "b"]); (None, []) for anything else."""
+        from urllib.parse import unquote, urlparse
+
+        parts = [unquote(p) for p in urlparse(self.path).path.split("/") if p]
+        if len(parts) < 2 or parts[0] != "sessions":
+            return None, []
+        return parts[1], parts[2:]
+
+    def _query(self) -> "dict[str, str]":
+        from urllib.parse import parse_qs, urlparse
+
+        return {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items() if v}
+
+    def _api(self, fn) -> None:
+        """Run a replay-API call: its dict → 200 JSON, an :class:`ApiError` → its code."""
+        try:
+            body = fn()
+        except ApiError as exc:
+            self._json({"ok": False, "error": exc.error}, exc.code)
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 500)
+            return
+        self._json(body)
+
+    def _read_capped(self, cap: int) -> bytes:
+        """The request body, refusing (413) anything over ``cap`` bytes unread."""
+        try:
+            length = int(self.headers.get("Content-Length", 0) or 0)
+        except ValueError:
+            raise ApiError(400, "bad Content-Length") from None
+        if length < 0:
+            raise ApiError(400, "bad Content-Length")
+        if length > cap:
+            if length <= 4 * cap:  # drain it so the client reads the 413, not a reset
+                left = length
+                while left > 0:
+                    chunk = self.rfile.read(min(65536, left))
+                    if not chunk:
+                        break
+                    left -= len(chunk)
+            else:
+                self.close_connection = True  # far too large: left unread
+            raise ApiError(413, f"body too large (max {cap} bytes)")
+        return self.rfile.read(length) if length else b""
+
+    def _json_body(self) -> "dict":
+        raw = self._read_capped(_JSON_BODY_MAX)
+        try:
+            body = json.loads(raw or b"{}")
+        except (ValueError, TypeError):
+            raise ApiError(400, "body must be JSON") from None
+        if not isinstance(body, dict):
+            raise ApiError(400, "body must be a JSON object")
+        return body
+
+    def _sessions_post(self) -> None:
+        """``POST /sessions/<id>/notes | audio | accel | accel_cal``."""
+        sid, rest = self._session_parts()
+        if sid is None or len(rest) != 1:
+            self._json({"ok": False, "error": "not found"}, 404)
+            return
+        what = rest[0]
+        srv = self.server
+        if what == "notes":
+            self._api(lambda: srv.add_note(sid, self._json_body()))
+        elif what == "audio":
+            def _audio() -> dict:
+                try:
+                    srv.check_writable(sid)  # refuse before keeping a (large) body
+                except ApiError:
+                    try:
+                        self._read_capped(_AUDIO_CHUNK_MAX)  # discard it: a clean refusal
+                    except ApiError:
+                        pass
+                    raise
+                return srv.put_audio(sid, self._query(), self._read_capped(_AUDIO_CHUNK_MAX))
+            self._api(_audio)
+        elif what == "accel":
+            self._api(lambda: srv.put_accel(sid, self._json_body()))
+        elif what == "accel_cal":
+            self._api(lambda: srv.put_accel_cal(sid, self._json_body()))
+        else:
+            self._json({"ok": False, "error": "not found"}, 404)
+
+    def _send_audio(self, sid: str, track: str) -> None:
+        """``GET /sessions/<id>/audio/<track>`` with single-range HTTP Range support."""
+        try:
+            path, ctype = self.server.audio_file(sid, track)
+            size = os.path.getsize(path)
+        except ApiError as exc:
+            self._json({"ok": False, "error": exc.error}, exc.code)
+            return
+        except OSError:
+            self._json({"ok": False, "error": f"unknown track: {track}"}, 404)
+            return
+        rng = _parse_range(self.headers.get("Range"), size)
+        if rng == "invalid":
+            self.send_response(416)
+            self.send_header("Content-Range", f"bytes */{size}")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        start, end = rng if rng else (0, size - 1)
+        length = max(0, end - start + 1)
+        self.send_response(206 if rng else 200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Cache-Control", "no-cache")
+        if rng:
+            self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+        self.send_header("Content-Length", str(length))
+        self.end_headers()
+        with open(path, "rb") as fh:
+            fh.seek(start)
+            left = length
+            while left > 0:
+                chunk = fh.read(min(65536, left))
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+                left -= len(chunk)
 
     # ---- session logbook (public, filtered in public mode) ------------- #
     def _sessions_get(self) -> None:
@@ -430,9 +690,18 @@ class _Handler(BaseHTTPRequestHandler):
                 self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 500)
             return
         sid, rest = parts[0], parts[1:]
+        if rest and rest[0] == "audio" and len(rest) == 2 and _SESSION_ID.match(sid):
+            self._send_audio(sid, rest[1])
+            return
         if not _SESSION_ID.match(sid) or len(rest) > 1 or (
-                rest and rest[0] not in ("data", "export")):
+                rest and rest[0] not in ("data", "export", "events", "notes")):
             self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+            return
+        if rest and rest[0] == "events":
+            self._api(lambda: self.server.session_events(sid))
+            return
+        if rest and rest[0] == "notes":
+            self._api(lambda: self.server.list_notes(sid))
             return
         try:
             meta = store.meta(sid, public=public)  # KeyError → 404 (incl. filtered in public)
@@ -454,7 +723,7 @@ class _Handler(BaseHTTPRequestHandler):
                 fmt = (q.get("fmt", ["csv"])[0] or "").lower()
                 if fmt not in _EXPORT_FORMATS:
                     self._json({"ok": False, "error": f"unknown export format: {fmt!r} "
-                                f"(csv|vbo|gpx)"}, 400)
+                                f"(csv|vbo|gpx|notes)"}, 400)
                     return
                 filename, ctype, body = store.export(sid, fmt, public=public)
                 self._send_download(body, ctype, filename)
@@ -555,7 +824,7 @@ class _Handler(BaseHTTPRequestHandler):
 # at 8 s in the UI — even though they later succeed once the queue drains. They only
 # touch the server's own state (CsvLogger object, fault_every attribute).
 _INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutdown",
-                              "delete_session"})
+                              "delete_session", "recording_options", "split_session"})
 
 # Server-level commands handled on the poll thread (they release/establish sessions or
 # switch sources). Not module commands: the registry gate does not apply to them.
@@ -614,6 +883,10 @@ class DiagServer(ThreadingHTTPServer):
         gps=None,
         sessions_dir: "str | None" = None,
         record_sessions: bool = True,
+        audio: str = "off",
+        imu: "str | None" = None,
+        accel_hz: int = 25,
+        pi_audio=None,
     ) -> None:
         super().__init__((host, port), _Handler)
         # None/"" = admin ungated (local dev). Set = /admin + mapping endpoints
@@ -676,6 +949,24 @@ class DiagServer(ThreadingHTTPServer):
         self._rec_lock = threading.Lock()  # feed() on the poller vs close() on shutdown
         self._rec_closed = False
         self._init_logbook(record_sessions)
+        # Replay capture sources (ADR-0010): Pi audio (--audio off|pi; ``pi_audio`` injects a
+        # PiAudio-like object) and the Pi IMU (--imu auto|none|mock). Both are opt-in via the
+        # ``recording_options`` command; phone audio/acceleration arrive over HTTP. The
+        # recorder owns the per-session files (audio tracks, events, notes, Acc_* columns).
+        self._audio_mode = audio if audio in ("off", "pi") else "off"
+        self._pi_audio = pi_audio                 # handed to the recorder while audio == pi
+        self._pi_error: "str | None" = None       # PiAudio could not be built
+        self._imu_spec = imu or "none"
+        self._imu_source = None                   # opened IMU (or None) — see _probe_imu
+        self._imu_reason: "str | None" = None
+        self._imu_reader = None                   # running ImuReader while imu is on
+        self._rec_opts = {"audio": "off", "imu": "off",
+                          "accel_hz": accel_hz if accel_hz in _ACCEL_HZ else 25}
+        self._notes_lock = threading.Lock()
+        self._session_name: "str | None" = None   # recording_options ``name``
+        self._recent_capture: "tuple[float, str, dict, dict] | None" = None
+        self._tls = None                          # ssl.SSLContext once enable_tls() ran
+        self._init_sources()
         self.latest: "dict" = self._decorate({
             "status": "connecting", "source": self.source.name,
             "signals": {}, "faults": [],
@@ -775,7 +1066,22 @@ class DiagServer(ThreadingHTTPServer):
             except Exception as exc:  # noqa: BLE001
                 self._conn_log(f"logbook: feed failed ({type(exc).__name__}: {exc})")
             status = self._recording_status()
-        self.latest = {**self.latest, "recording": status}
+            self._feed_imu(rec, status)
+        self.latest = {**self.latest, "recording": status,
+                       "recording_sources": self.recording_sources()}
+
+    def _feed_imu(self, rec, status: "dict | None") -> None:
+        """Hand the IMU samples gathered since the last poll to the recorder (dropped
+        while nothing is recording). Caller holds ``_rec_lock``."""
+        reader = self._imu_reader
+        if reader is None:
+            return
+        try:
+            samples = reader.drain()
+            if samples and status and hasattr(rec, "feed_accel"):
+                rec.feed_accel(samples, "imu")
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log(f"imu: feed failed ({type(exc).__name__}: {exc})")
 
     def close_recorder(self) -> None:
         """End the open session (server shutdown). Idempotent."""
@@ -815,6 +1121,492 @@ class DiagServer(ThreadingHTTPServer):
         except (ValueError, PermissionError) as exc:
             return {"ok": False, "error": str(exc)}
         return {"ok": True, "deleted": sid}
+
+    # ---- recording sources (ADR-0010 §3) ------------------------------- #
+    def _init_sources(self) -> None:
+        """Build the Pi audio helper and probe the IMU once (never raises)."""
+        if self._audio_mode == "pi" and self._pi_audio is None:
+            try:
+                from ..logbook.audio import PiAudio
+                self._pi_audio = PiAudio()
+            except Exception as exc:  # noqa: BLE001
+                self._pi_error = f"Pi audio unavailable ({type(exc).__name__}: {exc})"
+        self._probe_imu()
+
+    def _probe_imu(self) -> None:
+        spec = self._imu_spec
+        if spec == "none":
+            self._imu_reason = "no IMU configured (start with --imu auto or mock)"
+            return
+        try:
+            from ..imu import reader as imu_reader
+            src = imu_reader.open_imu(spec, self._rec_opts["accel_hz"])
+        except Exception as exc:  # noqa: BLE001
+            self._imu_reason = f"IMU unavailable ({type(exc).__name__}: {exc})"
+            return
+        if src is None:
+            self._imu_reason = (getattr(imu_reader, "last_reason", None)
+                                or "no IMU found on /dev/i2c-1")
+            return
+        self._imu_source = src
+        self._imu_reason = None
+
+    def _pi_audio_state(self) -> "dict":
+        pi = self._pi_audio
+        if self._audio_mode != "pi":
+            return {"state": "unavailable", "reason": "Pi audio is off (start with --audio pi)"}
+        if self._recorder is None:
+            return {"state": "unavailable", "reason": "session recording is not available"}
+        if pi is None:
+            return {"state": "unavailable", "reason": self._pi_error or "Pi audio unavailable"}
+        if self._rec_opts["audio"] == "pi" and getattr(pi, "running", False):
+            return {"state": "on", "reason": None}
+        try:
+            ok, reason = pi.available()
+        except Exception as exc:  # noqa: BLE001
+            ok, reason = False, f"{type(exc).__name__}: {exc}"
+        if not ok:
+            return {"state": "unavailable", "reason": reason or "arecord unavailable"}
+        return {"state": "available", "reason": None}
+
+    def _imu_state(self) -> "dict":
+        if self._imu_reader is not None:
+            return {"state": "on", "reason": None}
+        if self._imu_source is None:
+            return {"state": "unavailable", "reason": self._imu_reason or "no IMU"}
+        return {"state": "available", "reason": None}
+
+    def recording_sources(self) -> "dict":
+        """Snapshot ``recording_sources``: what can be recorded right now."""
+        src = getattr(self.gps, "src", None) if self.gps is not None else None
+        gps = "none" if self.gps is None else ("usb" if src == "usb" else "mock")
+        return {"gps": gps, "pi_audio": self._pi_audio_state(), "imu": self._imu_state(),
+                "accel_hz": self._rec_opts["accel_hz"]}
+
+    def recording_options(self, params: "dict | None") -> "dict":
+        """``recording_options {audio: off|pi, imu: off|on, accel_hz: 10|25|50}`` →
+        ``{ok, options}``. A source that cannot be used refuses the whole change."""
+        params = params if isinstance(params, dict) else {}
+        opts = dict(self._rec_opts)
+        audio = params.get("audio", opts["audio"])
+        imu = params.get("imu", opts["imu"])
+        hz = params.get("accel_hz", opts["accel_hz"])
+        if audio not in ("off", "pi"):
+            return {"ok": False, "error": "audio must be off or pi", "options": opts}
+        if imu not in ("off", "on"):
+            return {"ok": False, "error": "imu must be off or on", "options": opts}
+        if isinstance(hz, bool) or hz not in _ACCEL_HZ:
+            return {"ok": False, "error": "accel_hz must be 10, 25 or 50", "options": opts}
+        name = params.get("name")
+        if name is not None and not isinstance(name, str):
+            return {"ok": False, "error": "name must be a string", "options": opts}
+        if audio == "pi" and opts["audio"] != "pi":
+            st = self._pi_audio_state()
+            if st["state"] == "unavailable":
+                return {"ok": False, "error": f"Pi audio unavailable: {st['reason']}",
+                        "options": opts}
+        if imu == "on" and self._imu_source is None:
+            return {"ok": False, "error": f"IMU unavailable: {self._imu_reason}",
+                    "options": opts}
+        self._rec_opts = {"audio": audio, "imu": imu, "accel_hz": int(hz)}
+        rec = self._recorder
+        if name is not None:
+            self._set_session_name(name)
+        if rec is not None and hasattr(rec, "accel_hz"):
+            rec.accel_hz = int(hz)  # header rate of the acceleration channels
+        # The IMU reader follows the switch and the rate.
+        if imu == "off":
+            self._stop_imu()
+        elif self._imu_reader is None:
+            self._start_imu()
+        elif int(hz) != opts["accel_hz"]:
+            self._imu_reader.set_hz(int(hz))
+        # Pi audio: the recorder records it for every session while it is set.
+        if audio != opts["audio"] and rec is not None:
+            try:
+                rec.set_pi_audio(self._pi_audio if audio == "pi" else None)
+            except Exception as exc:  # noqa: BLE001
+                self._conn_log(f"audio: {type(exc).__name__}: {exc}")
+        self.latest = {**self.latest, "recording_sources": self.recording_sources()}
+        return {"ok": True, "options": dict(self._rec_opts)}
+
+    def _set_session_name(self, name: str) -> None:
+        """The optional session name (meta ``name``). Handed to the recorder when it
+        supports it (``set_name``); otherwise accepted and kept here only."""
+        name = " ".join(name.split())[:80]
+        self._session_name = name or None
+        rec = self._recorder
+        fn = getattr(rec, "set_name", None) if rec is not None else None
+        if callable(fn):
+            try:
+                fn(self._session_name)
+            except Exception as exc:  # noqa: BLE001
+                self._conn_log(f"logbook: set_name failed ({type(exc).__name__}: {exc})")
+
+    def split_session(self) -> "dict":
+        """``split_session``: end the recording session (if any) and start a new one now.
+        Refused in public mode. → ``{ok, session}``."""
+        if self._public:
+            return {"ok": False, "error": "splitting sessions is not available in public mode"}
+        rec = self._recorder
+        if rec is None:
+            return {"ok": False, "error": "session recording is not available"}
+        with self._rec_lock:
+            if self._rec_closed:
+                return {"ok": False, "error": "session recording is not available"}
+            sid = rec.split(self.latest)
+            status = self._recording_status()
+        self.latest = {**self.latest, "recording": status}
+        return {"ok": True, "session": sid}
+
+    def _start_imu(self) -> None:
+        try:
+            from ..imu.reader import ImuReader
+            reader = ImuReader(self._imu_source, self._rec_opts["accel_hz"])
+            reader.start()
+            self._imu_reader = reader
+        except Exception as exc:  # noqa: BLE001
+            self._imu_reader = None
+            self._conn_log(f"imu: failed to start ({type(exc).__name__}: {exc})")
+
+    def _stop_imu(self, reopen: bool = True) -> None:
+        """Stop the reader (it closes its source), then reopen the source so the next
+        ``imu: on`` finds it again."""
+        reader, self._imu_reader = self._imu_reader, None
+        if reader is None:
+            return
+        try:
+            reader.stop()
+        except Exception:  # noqa: BLE001
+            pass
+        self._imu_source = None
+        if reopen:
+            self._probe_imu()
+
+    # ---- events stream hooks (spec §1) --------------------------------- #
+    def record_event(self, type_: str, **fields) -> None:
+        """Append an event to the recording session (no-op without one). Never raises."""
+        rec = self._recorder
+        if rec is None or self._rec_closed or not hasattr(rec, "event"):
+            return
+        try:
+            rec.event(type_, **fields)
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log(f"logbook: event failed ({type(exc).__name__}: {exc})")
+
+    def _record_command(self, action: str, result: "dict | None") -> None:
+        """A ``command`` event: action + outcome only — never params, never an identity
+        payload (``read_identity`` → ``{action, ok}``)."""
+        action = re.sub(r"[^A-Za-z0-9_.-]", "", str(action or ""))[:64]
+        if not action:
+            return
+        result = result if isinstance(result, dict) else {}
+        fields: "dict" = {"action": action, "ok": bool(result.get("ok"))}
+        if not _IDENTITY_ACTION.search(action):
+            for key in ("message", "error"):
+                v = result.get(key)
+                if isinstance(v, str) and v:
+                    fields[key] = v[:200]
+        self.record_event("command", **fields)
+
+    # ---- session paths ------------------------------------------------- #
+    def _session_path(self, sid: str, public: bool) -> "tuple[str, dict]":
+        """(directory, meta) of a session; :class:`ApiError` 404 when unknown or (in
+        public mode) not synthetic."""
+        store = self.session_store
+        if store is None:
+            raise ApiError(404, "session logbook not available")
+        if not isinstance(sid, str) or not _SESSION_ID.match(sid):
+            raise ApiError(404, f"unknown session: {sid}")
+        try:
+            path, _demo, meta = store._resolve(sid, public)
+        except KeyError:
+            raise ApiError(404, f"unknown session: {sid}") from None
+        return path, meta
+
+    def check_writable(self, sid: str) -> "tuple[str, dict]":
+        """(directory, meta) of a session that may be written: refused (403) in public
+        mode and for synthetic sessions; 404 when unknown."""
+        if self._public:
+            raise ApiError(403, _PUBLIC_REFUSAL)
+        path, meta = self._session_path(sid, False)
+        if meta.get("synthetic"):
+            raise ApiError(403, _SYNTHETIC_REFUSAL)
+        return path, meta
+
+    def _require_recording(self, sid: str) -> "dict":
+        status = self._recording_status()
+        if not status or status.get("session") != sid:
+            raise ApiError(409, f"session {sid} is not being recorded")
+        return status
+
+    # ---- events -------------------------------------------------------- #
+    def session_events(self, sid: str) -> "dict":
+        """``GET /sessions/<id>/events`` → ``{id, events}`` (public filter applies)."""
+        _path, meta = self._session_path(sid, self._public)
+        rec = self._recorder
+        if rec is not None and (self._recording_status() or {}).get("session") == sid:
+            flush = getattr(rec, "flush", None)  # the open session syncs at most once a second
+            if callable(flush):
+                try:
+                    flush()
+                except Exception:  # noqa: BLE001
+                    pass
+        try:
+            events = self.session_store.events(sid, public=self._public)
+        except KeyError:
+            raise ApiError(404, f"unknown session: {sid}") from None
+        return {"id": meta.get("id", sid), "events": events}
+
+    # ---- notes (spec §2) ----------------------------------------------- #
+    def _note_call(self, fn, *args, **kw):
+        """Run a store note write, mapping its exceptions onto HTTP codes."""
+        try:
+            with self._notes_lock:
+                return fn(*args, **kw)
+        except KeyError as exc:
+            raise ApiError(404, f"unknown note: {exc.args[0] if exc.args else ''}") from None
+        except PermissionError as exc:
+            raise ApiError(403, str(exc)) from None
+        except ValueError as exc:
+            raise ApiError(400, str(exc)) from None
+
+    def list_notes(self, sid: str) -> "dict":
+        _path, meta = self._session_path(sid, self._public)
+        try:
+            notes = self.session_store.notes(sid, public=self._public)
+        except KeyError:
+            raise ApiError(404, f"unknown session: {sid}") from None
+        return {"id": meta.get("id", sid), "notes": notes}
+
+    def add_note(self, sid: str, body: "dict") -> "dict":
+        self.check_writable(sid)
+        f = _note_fields(body, partial=False)
+        kind = body.get("kind") or "note"
+        if kind not in _NOTE_KINDS:
+            raise ApiError(400, "kind must be mark, note or capture")
+        src = body.get("source") or "retro"
+        if src not in _NOTE_SOURCES:
+            raise ApiError(400, "source must be live or retro")
+        capture = _capture_value(body.get("capture")) if kind == "capture" else None
+        note = self._note_call(self.session_store.add_note, sid, f["t"], text=f["text"],
+                               tags=f["tags"], kind=kind, source=src, t_end=f.get("t_end"),
+                               capture=capture)
+        return {"ok": True, "note": note, "session": sid}
+
+    def edit_note(self, sid: str, nid: str, body: "dict") -> "dict":
+        self.check_writable(sid)
+        if not _NOTE_ID.match(nid or ""):
+            raise ApiError(404, f"unknown note: {nid}")
+        f = _note_fields(body, partial=True)
+        if not f:
+            raise ApiError(400, "nothing to change (text, tags, t, t_end)")
+        note = self._note_call(self.session_store.edit_note, sid, nid, **f)
+        return {"ok": True, "note": note, "session": sid}
+
+    def delete_note(self, sid: str, nid: str) -> "dict":
+        self.check_writable(sid)
+        if not _NOTE_ID.match(nid or ""):
+            raise ApiError(404, f"unknown note: {nid}")
+        self._note_call(self.session_store.delete_note, sid, nid)
+        return {"ok": True}
+
+    def live_note(self, body: "dict") -> "dict":
+        """``POST /notes/live``: a note stamped "now" in the recording session (a session
+        is started first when nothing is recording)."""
+        if self._public:
+            raise ApiError(403, _PUBLIC_REFUSAL)
+        kind = body.get("kind") or "mark"
+        if kind not in _NOTE_KINDS:
+            raise ApiError(400, "kind must be mark, note or capture")
+        f = _note_fields({k: body[k] for k in ("text", "tags") if k in body}, partial=True)
+        capture = _capture_value(body.get("capture")) if kind == "capture" else None
+        rec = self._recorder
+        if rec is None:
+            raise ApiError(503, "session recording is not available")
+        with self._rec_lock:
+            if self._rec_closed:
+                raise ApiError(503, "session recording is not available")
+            if capture is not None:  # the same capture via /capture and /notes/live → one
+                recent, sid = self._recent_capture, getattr(rec, "session_id", None)
+                if recent and recent[1] == sid and recent[2] == capture and \
+                        time.monotonic() - recent[0] < 10.0:
+                    return {"ok": True, "note": recent[3], "session": sid}
+            try:
+                sid, note = rec.note(text=f.get("text", ""), tags=f.get("tags", []), kind=kind,
+                                     capture=capture, snapshot=self.latest)
+            except ValueError as exc:
+                raise ApiError(400, str(exc)) from None
+            if capture is not None:
+                self._recent_capture = (time.monotonic(), sid, capture, note)
+            status = self._recording_status()
+        self.latest = {**self.latest, "recording": status}
+        return {"ok": True, "note": note, "session": sid}
+
+    def capture_note(self, body: "dict") -> None:
+        """``/capture`` also lands as a ``capture`` note in the recording session (if one is
+        open — a capture never starts a session). Never raises."""
+        if self._public or not self._recording_status():
+            return
+        try:
+            cap = _capture_value({"module": body.get("module"), "lid": body.get("lid"),
+                                  "raw": body.get("raw"),
+                                  "value": body.get("value", body.get("text"))})
+            self.live_note({"kind": "capture", "text": cap["value"], "capture": cap})
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log(f"logbook: capture note failed ({type(exc).__name__}: {exc})")
+
+    def captures(self, module: "str | None") -> "dict":
+        """``GET /captures?module=`` (admin): the store's capture notes from every session
+        merged with ``labeled_captures.jsonl``; a row also saved as a note appears once
+        (the note, which carries ``t``/``session``)."""
+        store = self.session_store
+        if store is None:
+            return {"captures": []}
+        with _capture_lock:
+            rows = store.captures(module, labeled_path=self.captures_path)
+        out: "list[dict]" = []
+        seen: "set[tuple]" = set()
+        for r in sorted(rows, key=lambda r: r.get("session") is None):  # notes first
+            key = (_store_module_for(str(r.get("module") or "").lower()),
+                   str(r.get("lid") or "").strip().lower(),
+                   " ".join(str(r.get("raw") or "").lower().split()),
+                   str(r.get("value") or "").strip())
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(r)
+        return {"captures": out}
+
+    # ---- audio (spec §3) ----------------------------------------------- #
+    def put_audio(self, sid: str, query: "dict", data: bytes) -> "dict":
+        """``POST /sessions/<id>/audio?track=&seq=&mime=&start=[&end=1]``: one chunk of a
+        phone track into the session being recorded (``end=1`` closes the track)."""
+        self.check_writable(sid)
+        track = query.get("track") or ""
+        if not _TRACK_ID.match(track):
+            raise ApiError(400, "track must be 1-64 letters, digits, dashes or underscores")
+        try:
+            seq = int(query.get("seq", ""))
+        except ValueError:
+            raise ApiError(400, "seq must be an integer") from None
+        if seq < 0:
+            raise ApiError(400, "seq must be ≥ 0")
+        mime = (query.get("mime") or "audio/webm").strip()
+        start = query.get("start")
+        try:
+            start_ms = float(start) if start not in (None, "") else None
+        except ValueError:
+            raise ApiError(400, "start must be epoch ms") from None
+        end = query.get("end") in ("1", "true")
+        rec = self._recorder
+        if rec is None or self._rec_closed:
+            raise ApiError(409, f"session {sid} is not being recorded")
+        try:
+            entry = rec.audio_put(track, seq, data, mime=mime, start_ms=start_ms, session=sid,
+                                  source="phone")
+            if end:
+                entry = rec.audio_stop(track) or entry
+        except KeyError:
+            raise ApiError(409, f"session {sid} is not being recorded") from None
+        except (ValueError, OSError) as exc:
+            raise ApiError(400, str(exc)) from None
+        return {"ok": True, "track": track, "seq": seq, "bytes": entry.get("bytes", 0),
+                "closed": end}
+
+    def audio_file(self, sid: str, track: str) -> "tuple[str, str]":
+        """(path, content type) of a session's audio track. Never in public mode (404)."""
+        if self._public:
+            raise ApiError(404, "not found")
+        self._session_path(sid, False)
+        if not _TRACK_ID.match(track or ""):
+            raise ApiError(404, f"unknown track: {track}")
+        try:
+            path = self.session_store.audio_path(sid, track, public=False)
+        except KeyError:
+            raise ApiError(404, f"unknown track: {track}") from None
+        return path, self.session_store.audio_mime(path)
+
+    # ---- acceleration (spec §3) ---------------------------------------- #
+    def put_accel(self, sid: str, body: "dict") -> "dict":
+        """``POST /sessions/<id>/accel {source, samples: [[epoch_ms, ax, ay, az], …]}``
+        into the session being recorded."""
+        self.check_writable(sid)
+        source = body.get("source") or "phone"
+        if source not in ("phone", "imu"):
+            raise ApiError(400, "source must be phone or imu")
+        samples = body.get("samples")
+        if not isinstance(samples, list):
+            raise ApiError(400, "samples must be a list of [epoch_ms, ax, ay, az]")
+        if len(samples) > _ACCEL_SAMPLES_MAX:
+            raise ApiError(413, f"at most {_ACCEL_SAMPLES_MAX} samples per request")
+        clean = []
+        for s in samples:
+            if (not isinstance(s, (list, tuple)) or len(s) != 4 or any(
+                    isinstance(x, bool) or not isinstance(x, (int, float)) or x != x
+                    for x in s)):
+                raise ApiError(400, "each sample must be [epoch_ms, ax, ay, az] numbers")
+            clean.append((float(s[0]), float(s[1]), float(s[2]), float(s[3])))
+        self._require_recording(sid)
+        with self._rec_lock:
+            if self._rec_closed:
+                raise ApiError(409, f"session {sid} is not being recorded")
+            try:
+                rows = self._recorder.feed_accel(clean, source, session=sid)
+            except KeyError:
+                raise ApiError(409, f"session {sid} is not being recorded") from None
+            except (ValueError, TypeError) as exc:
+                raise ApiError(400, f"{type(exc).__name__}: {exc}") from None
+        return {"ok": True, "samples": len(clean), "rows": rows}
+
+    def put_accel_cal(self, sid: str, body: "dict") -> "dict":
+        """``POST /sessions/<id>/accel_cal {matrix: 3×3, source, method}``."""
+        self.check_writable(sid)
+        m = body.get("matrix")
+        if (not isinstance(m, list) or len(m) != 3 or not all(
+                isinstance(r, list) and len(r) == 3 and all(
+                    isinstance(x, (int, float)) and not isinstance(x, bool) and x == x
+                    for x in r) for r in m)):
+            raise ApiError(400, "matrix must be 3×3 numbers")
+        matrix = [[float(x) for x in r] for r in m]
+        source = body.get("source") or "phone"
+        if source not in ("phone", "imu"):
+            raise ApiError(400, "source must be phone or imu")
+        method = body.get("method") or "manual"
+        if not isinstance(method, str) or not re.fullmatch(r"[A-Za-z0-9+_-]{1,32}", method):
+            raise ApiError(400, "method must be a short name (level, level+gps, manual)")
+        self._require_recording(sid)
+        with self._rec_lock:
+            if self._rec_closed:
+                raise ApiError(409, f"session {sid} is not being recorded")
+            try:  # also writes meta.accel_cal and the accel_cal event
+                cal = self._recorder.set_accel_cal(matrix, source, method)
+            except ValueError as exc:
+                raise ApiError(400, str(exc)) from None
+        return {"ok": True, "accel_cal": cal}
+
+    # ---- TLS (ADR-0010: phone mic/motion need HTTPS) ------------------- #
+    def enable_tls(self, certfile: str, keyfile: str) -> None:
+        """Serve HTTPS with this certificate/key (stdlib ``ssl``). The handshake runs on
+        the request thread, so a slow or plain-HTTP client never blocks ``accept``."""
+        import ssl
+
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(certfile, keyfile)
+        self.socket = ctx.wrap_socket(self.socket, server_side=True,
+                                      do_handshake_on_connect=False)
+        self._tls = ctx
+
+    def finish_request(self, request, client_address) -> None:
+        if self._tls is not None:
+            import ssl
+            try:
+                request.settimeout(10.0)
+                request.do_handshake()
+                request.settimeout(None)
+            except (ssl.SSLError, OSError):
+                return  # plain HTTP or a dropped client: shutdown_request closes it
+        super().finish_request(request, client_address)
 
     def _remember_engine(self, snap: "dict") -> None:
         """Save rpm/speed/battery from a TD5 snapshot (for _engine_note)."""
@@ -934,6 +1726,10 @@ class DiagServer(ThreadingHTTPServer):
             return self.shutdown_host(params)
         if action == "delete_session":
             return self.delete_session(params)
+        if action == "recording_options":
+            return self.recording_options(params)
+        if action == "split_session":
+            return self.split_session()
         return {"ok": False, "error": f"unknown command: {action}"}
 
     def _spawn_poweroff(self) -> None:
@@ -964,11 +1760,15 @@ class DiagServer(ThreadingHTTPServer):
         if action in _INLINE_COMMANDS:
             # Immediate reply — must not get stuck behind an ongoing connection in the poller.
             try:
-                return self._run_inline(action, cmd.get("params") or {})
+                res = self._run_inline(action, cmd.get("params") or {})
             except Exception as exc:  # noqa: BLE001
-                return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+                res = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+            self._record_command(action, res)
+            return res
         why = self.refusal(action, cmd.get("params") or {})
         if why:
+            if action not in _SERVER_COMMANDS:
+                self._record_command(action, {"ok": False, "error": why})
             return {"ok": False, "error": why}
         holder = {"result": None, "event": threading.Event()}
         self._commands.put((cmd, holder))
@@ -1101,6 +1901,7 @@ class DiagServer(ThreadingHTTPServer):
         snap["active_test"] = dict(self._active_test) if self._active_test else None
         snap["gps"] = self._gps_snapshot()
         snap["recording"] = self._recording_status()
+        snap["recording_sources"] = self.recording_sources()
         return snap
 
     # ---- latched tests ------------------------------------------------- #
@@ -1304,6 +2105,8 @@ class DiagServer(ThreadingHTTPServer):
                         holder["result"] = res
             except Exception as exc:  # noqa: BLE001
                 holder["result"] = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+            if action not in _SERVER_COMMANDS:  # module commands (inline ones: enqueue_command)
+                self._record_command(action, holder["result"])
             holder["event"].set()
 
     def _log_conn_transition(self, snap: "dict") -> None:
@@ -1401,7 +2204,10 @@ class DiagServer(ThreadingHTTPServer):
         self._stop.set()
         if self._poller.is_alive() and self._poller is not threading.current_thread():
             self._poller.join(timeout=self.poll_interval + 2.0)
-        self.close_recorder()  # idempotent; also covers a poller stuck in establishment
+        self._stop_imu(reopen=False)
+        # idempotent; also covers a poller stuck in establishment. Ending the session
+        # closes its audio tracks and stops Pi audio.
+        self.close_recorder()
         if self.gps is not None:
             try:
                 self.gps.stop()

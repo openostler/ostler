@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useApp } from "../state/app";
+import { READ_ONLY_ERROR, useReplay } from "../state/replay";
 import { command } from "./client";
 import type { CommandReply } from "./schemas";
 
@@ -8,11 +9,17 @@ import type { CommandReply } from "./schemas";
  * `params.trust = "experimental"` so the server may run experimental actions (it refuses
  * them otherwise, ADR-0008). A refusal (HTTP 400 {ok:false, error}) or a transport error
  * is shown as a toast; the reply (or null on transport error) is returned.
+ * While a session is replayed (ADR-0010) nothing is sent: every action is refused client-side.
  */
 export function useAction() {
   const { experimental, toast } = useApp();
+  const { active: replaying } = useReplay();
   return useCallback(
     async (action: string, params?: Record<string, unknown>, opts: { quiet?: boolean } = {}): Promise<CommandReply | null> => {
+      if (replaying) {
+        toast(READ_ONLY_ERROR, true);
+        return { ok: false, error: READ_ONLY_ERROR };
+      }
       const p = experimental ? { ...params, trust: "experimental" } : params;
       try {
         const r = await command(action, p);
@@ -24,6 +31,6 @@ export function useAction() {
         return null;
       }
     },
-    [experimental, toast],
+    [experimental, toast, replaying],
   );
 }

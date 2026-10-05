@@ -2,21 +2,41 @@ import { describe, expect, it } from "vitest";
 import sessionData from "../../api/fixtures/session-data.json";
 import { SessionData } from "../../api/schemas";
 import {
-  bboxOf, bearing, BUCKETS, bucketOf, cursorAt, defaultTraceChannel, legendGradient, lineColorExpression,
-  NO_VALUE_COLOR, RAMP, ramp, rangeOf, traceSegments,
+  bboxOf, bearing, BUCKETS, bucketOf, cursorAt, defaultTraceChannel, LANE_OFFSET, laneRamp, legendGradient, lineColorExpression,
+  luminance, NO_VALUE_COLOR, offsetPolyline, RAMP, ramp, RAMPS, rangeOf, simplifyTrack, traceSegments,
 } from "./trace";
 
-const lum = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16);
-  return 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
+/** WCAG contrast ratio between two colours. */
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
 };
 
 describe("trace colour buckets", () => {
-  it("has 20 distinct colours, light → dark (sequential)", () => {
-    expect(RAMP).toHaveLength(BUCKETS);
-    expect(new Set(RAMP).size).toBe(BUCKETS);
-    for (let i = 1; i < RAMP.length; i++) expect(lum(RAMP[i]!)).toBeLessThan(lum(RAMP[i - 1]!));
+  it.each(["plasma", "mako", "turbo"] as const)("%s has 20 distinct colours", (name) => {
+    expect(RAMPS[name]).toHaveLength(BUCKETS);
+    expect(new Set(RAMPS[name]).size).toBe(BUCKETS);
     expect(ramp(1)).toHaveLength(1);
+  });
+
+  it.each(["plasma", "mako"] as const)("%s runs dark → light with strong end contrast and no near-black end", (name) => {
+    const r = RAMPS[name];
+    for (let i = 1; i < r.length; i++) expect(luminance(r[i]!)).toBeGreaterThan(luminance(r[i - 1]!));
+    // bucket 0 vs 19: luminance difference and contrast ratio
+    expect(luminance(r[19]!) - luminance(r[0]!)).toBeGreaterThan(0.6);
+    expect(contrast(r[0]!, r[19]!)).toBeGreaterThan(7);
+    // trimmed: the low end is not near black (pure black is 0; #1a1a1a is ≈ 0.010)
+    expect(luminance(r[0]!)).toBeGreaterThan(0.03);
+  });
+
+  it("trace A is plasma, B mako; Classic makes both turbo", () => {
+    expect(RAMP).toBe(RAMPS.plasma);
+    expect(laneRamp("a")).toBe(RAMPS.plasma);
+    expect(laneRamp("b")).toBe(RAMPS.mako);
+    expect(laneRamp("a", true)).toBe(RAMPS.turbo);
+    expect(laneRamp("b", true)).toBe(RAMPS.turbo);
+    // the two lanes are told apart at every bucket (warm vs cool)
+    for (let i = 0; i < BUCKETS; i++) expect(RAMPS.plasma[i]).not.toBe(RAMPS.mako[i]);
   });
 
   it("buckets values into 0…19, nulls to none, flat channels to the middle", () => {
@@ -85,6 +105,46 @@ describe("trace segments", () => {
     const lons = d.track.map((p) => p[0]);
     const lats = d.track.map((p) => p[1]);
     expect(bboxOf(d.track)).toEqual([Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]);
+  });
+});
+
+describe("parallel lanes", () => {
+  it("A sits 3 px left of the line, B 3 px right", () => {
+    expect(LANE_OFFSET).toEqual({ a: -3, b: 3 });
+  });
+
+  it("offsets a straight line sideways by exactly d (right = +y when heading +x, screen y-down)", () => {
+    const line: [number, number][] = [[0, 0], [10, 0], [20, 0]];
+    expect(offsetPolyline(line, 3)).toEqual([[0, 3], [10, 3], [20, 3]]);
+    const left = offsetPolyline(line, -3);
+    left.forEach((p, i) => { expect(p[0]).toBeCloseTo(line[i]![0]); expect(p[1]).toBeCloseTo(-3); });
+  });
+
+  it("keeps the lanes parallel round a corner (each segment stays d away)", () => {
+    const corner: [number, number][] = [[0, 0], [10, 0], [10, 10]];
+    const o = offsetPolyline(corner, 3);
+    // first segment y = 3, last segment x = 7 (right of travel going +y is −x)
+    expect(o[0]![1]).toBeCloseTo(3);
+    expect(o[1]![0]).toBeCloseTo(7);
+    expect(o[1]![1]).toBeCloseTo(3);
+    expect(o[2]![0]).toBeCloseTo(7);
+    expect(offsetPolyline(corner, 0)).toEqual(corner);
+  });
+
+  it("Douglas–Peucker at ~1 m drops GPS jitter, keeps corners, ends and times", () => {
+    const m = 1 / 111_320; // ≈ 1 m of latitude in degrees
+    const track: [number, number, number][] = [];
+    for (let i = 0; i <= 20; i++) track.push([0, i * 10 * m + (i % 2 ? 0.3 * m : 0), i * 1000]); // north, 30 cm zig-zag
+    for (let i = 1; i <= 10; i++) track.push([i * 10 * m, 200 * m, 20_000 + i * 1000]); // then east
+    const s = simplifyTrack(track, 1);
+    expect(s[0]).toEqual(track[0]);
+    expect(s[s.length - 1]).toEqual(track[track.length - 1]);
+    expect(s.some((p) => p[2] === 20_000)).toBe(true); // the corner survives
+    expect(s.length).toBeLessThanOrEqual(4);
+    // a 5 m wiggle is real and survives
+    const bump = [[0, 0, 0], [5 * m, 50 * m, 1000], [0, 100 * m, 2000]] as [number, number, number][];
+    expect(simplifyTrack(bump, 1)).toHaveLength(3);
+    expect(simplifyTrack([[0, 0, 0]], 1)).toHaveLength(1);
   });
 });
 

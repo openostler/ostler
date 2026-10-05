@@ -1,13 +1,15 @@
 import { connOf, isNotLive, pillFor } from "../lib/connection";
 import { useApp } from "../state/app";
+import { useReplay } from "../state/replay";
 
 /** A compact, non-blocking strip on the module pages while the connection is not live
  * (lib/connection NOT_LIVE): the page stays usable, the button opens the ConnectionSheet.
- * Drive keeps the full StatusGate instead. */
+ * Drive keeps the full StatusGate instead. Suppressed in replay (the banner says where you are). */
 export function ConnectionNotice() {
   const { snap, linkUp, openConnection } = useApp();
+  const { active: replaying } = useReplay();
   const conn = connOf(snap);
-  if (!isNotLive(conn)) return null;
+  if (replaying || !isNotLive(conn)) return null;
   const [dot] = pillFor(conn, linkUp);
   return (
     <div className="connnotice" role="status">

@@ -1,8 +1,10 @@
 import type { Recording, SessionMeta } from "../../api/schemas";
 import { convertUnit, fmt, type Units } from "../../lib/format";
-import { formatDuration, formatPos, groupByDay, recordingMinutes, startTime } from "./sessionFormat";
+import { RecordingCard } from "../RecordingCard";
+import { formatDuration, formatPos, groupByDay, startTime } from "./sessionFormat";
 
-/** The session browser: a "Recording now" card, then sessions grouped by local day. */
+/** The session browser: the recording card (status, ⚑ Mark, Note…, Options), then sessions
+ * grouped by local day. */
 export function SessionList({ sessions, recording, nowS, units, onOpen }: {
   sessions: SessionMeta[];
   recording: Recording | null | undefined;
@@ -14,13 +16,7 @@ export function SessionList({ sessions, recording, nowS, units, onOpen }: {
   const groups = groupByDay(sessions);
   return (
     <div className="stack replay-sessions">
-      {recording ? (
-        <button className="card replay-rec" onClick={() => onOpen(recording.session)} aria-label={`Recording now, ${recordingMinutes(recording.since, nowS)} min — open`}>
-          <span className="replay-rec-dot" aria-hidden="true" />
-          <b>Recording now · {recordingMinutes(recording.since, nowS)} min</b>
-          <span className="muted small">{recording.rows} rows</span>
-        </button>
-      ) : null}
+      <RecordingCard recording={recording} nowS={nowS} onOpen={onOpen} />
       {groups.length === 0 ? <p className="muted">No sessions yet. A session is recorded whenever the car is connected.</p> : null}
       {groups.map((g) => (
         <section key={g.day} className="replay-day" aria-label={g.label}>

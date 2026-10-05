@@ -570,3 +570,45 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
 .srow.stale .s-value, .srow.stale .s-value .cv-unit { color: var(--text-3); }
 .srow.stale .s-viz { opacity: 0.45; }
 .srow .s-stale { grid-column: 1 / -1; color: var(--text-3); text-align: right; }
+
+/* ---- whole-app replay (ADR-0010): amber = "this is a recording, read-only" ----
+   Amber is the existing --warn token, always paired with the word REPLAY / "replay". */
+.replaybanner {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; padding: 6px 16px;
+  background: var(--warn-bg); border-bottom: 2px solid var(--warn); font-size: 12px; font-weight: 700;
+}
+.replaybanner-tag { letter-spacing: 1px; color: var(--text-1); }
+.replaybanner-txt { color: var(--text-1); font-variant-numeric: tabular-nums; }
+.replaybanner-note {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 1px 8px; border: 1px solid var(--warn); border-radius: 9999px; background: var(--surface); font-weight: 600;
+}
+.replaybanner-exit {
+  margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--warn); border-radius: 8px;
+  background: var(--surface); color: var(--text-1); font-size: 12px; font-weight: 700; cursor: pointer;
+}
+main.replay-edge { box-shadow: inset 4px 0 0 var(--warn), inset -4px 0 0 var(--warn); }
+.pill-replay { border-color: var(--warn); }
+.modctl-replay { cursor: default; }
+.replay-lock { white-space: nowrap; }
+
+/* replay on Outputs: the latched test at the cursor, and when each item last ran */
+.replay-item { display: flex; flex-direction: column; gap: 4px; }
+.replay-item > .card { flex: 1; }
+.replay-running > .card { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn); }
+.replay-itemnote { display: flex; align-items: center; gap: 6px; padding: 0 4px; color: var(--text-2); }
+.replay-itemnote.bad { color: var(--alarm); }
+
+/* the global transport: a bar above the tab bar on every tab while replaying */
+.gtransport { flex-shrink: 0; }
+.gtransport .replay-transport { position: static; margin: 0; border-top: 2px solid var(--warn); }
+.replay-rangewrap { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+.replay-rangewrap .replay-range { width: 100%; }
+.replay-ticks { position: absolute; left: 0; right: 0; top: 0; height: 8px; pointer-events: none; }
+.replay-tick {
+  position: absolute; top: 0; width: 4px; min-width: 4px; height: 8px; margin-left: -2px; padding: 0;
+  border: 0; border-radius: 2px; background: var(--warn); cursor: pointer; pointer-events: auto;
+}
+.replay-tick.range { margin-left: 0; opacity: 0.7; }
+/* a bigger hit area than the mark itself */
+.replay-tick::after { content: ""; position: absolute; inset: -10px -8px; }

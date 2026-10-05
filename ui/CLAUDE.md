@@ -14,6 +14,10 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/maplibre.ts` is the only
   module that imports `maplibre-gl`; it is reached through `import()` so the main chunk stays
   small (`maplibreChunk.test.ts` enforces it). `src/state/playback.ts` is the shared cursor.
+- `src/state/replay.tsx` + `replayState.ts` — whole-app replay (ADR-0010): while a session is open,
+  `useApp()` returns a snapshot synthesised at the cursor, every action is refused, and
+  `ReplayBanner` + `GlobalTransport` show on every tab. `lib/audio.ts`, `lib/motion.ts` and
+  `RecordingCard`/`RecordingOptions`/`MarkButton` are the recording side.
 - `src/lib/catalog.ts` — the Stable/Experimental visibility rules over `/catalog` (ADR-0008).
 - `src/layout.ts` — the only place that names signals (Drive tiles, body view, LID presets).
   Outputs, Settings and Utilities come from `/catalog`, never from a hard-coded list.

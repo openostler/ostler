@@ -87,6 +87,7 @@ export const Snapshot = z.object({
   active_test: ActiveTest.nullable().optional(),
   gps: GpsFix.nullable().optional(),
   recording: Recording.nullable().optional(),
+  recording_sources: z.lazy(() => RecordingSources).nullable().optional(),
 });
 export type Snapshot = z.infer<typeof Snapshot>;
 
@@ -323,12 +324,19 @@ export const CatalogModules = z.object({ modules: z.array(CatalogModule) });
 
 /* ---- /sessions (ADR-0009, specs/2026-10-05-session-logbook-design.md) ---- */
 
-export const SessionChannel = z.object({ name: z.string(), units: z.string().default(""), group: z.string().default("") });
+export const SessionChannel = z.object({
+  name: z.string(),
+  units: z.string().default(""),
+  group: z.string().default(""),
+  c: z.string().nullable().optional(), // store confidence; null for GPS/accel
+  limits: z.tuple([z.number(), z.number()]).nullable().optional(),
+});
 export type SessionChannel = z.infer<typeof SessionChannel>;
 const LonLat = z.tuple([z.number(), z.number()]);
 
 export const SessionMeta = z.object({
   id: z.string(),
+  name: z.string().nullable().optional(),
   start_utc: z.string(),
   end_utc: z.string().nullable(),
   duration_s: z.number(),
@@ -345,6 +353,8 @@ export const SessionMeta = z.object({
   synthetic: z.boolean(),
   recording: z.boolean(),
   source: z.string(), // "mock" | "live" | "demo"
+  audio: z.array(z.lazy(() => AudioTrack)).default([]),
+  accel_cal: z.lazy(() => AccelCal).nullable().optional(),
 });
 export type SessionMeta = z.infer<typeof SessionMeta>;
 export const SessionList = z.object({ sessions: z.array(SessionMeta) });
@@ -357,5 +367,62 @@ export const SessionData = z.object({
   ch: z.record(z.string(), z.array(z.number().nullable())),
   track: z.array(z.tuple([z.number(), z.number(), z.number()])),
   decimated: z.boolean(),
+  /** Text channels aligned with t (faults joined with "; ", module). */
+  text: z.record(z.string(), z.array(z.string().nullable())).optional(),
 });
 export type SessionData = z.infer<typeof SessionData>;
+
+/* ---- replay / notes / audio / accel (ADR-0010, specs/2026-10-05-replay-notes-capture-design.md) ---- */
+
+/** One line of events.jsonl: {t (session ms), type, ...fields}. Open: unknown types are kept. */
+export const SessionEvent = z.looseObject({ t: z.number(), type: z.string() });
+export type SessionEvent = z.infer<typeof SessionEvent>;
+export const SessionEvents = z.object({ id: z.string(), events: z.array(SessionEvent) });
+
+export const CaptureValue = z.object({ module: z.string(), lid: z.string(), raw: z.string(), value: z.string() });
+export const Note = z.object({
+  id: z.string(),
+  t: z.number(),
+  t_end: z.number().nullable().optional(),
+  text: z.string().default(""),
+  tags: z.array(z.string()).default([]),
+  kind: z.string(), // "mark" | "note" | "capture"
+  source: z.string(), // "live" | "retro"
+  created: z.string(),
+  edited: z.string().nullable().optional(),
+  capture: CaptureValue.nullable().optional(),
+});
+export type Note = z.infer<typeof Note>;
+export const NoteList = z.object({ id: z.string(), notes: z.array(Note) });
+export const NoteReply = z.looseObject({ ok: z.boolean().optional(), error: z.string().optional(), note: Note.optional(), session: z.string().optional() });
+
+export const AudioTrack = z.object({
+  track: z.string(),
+  mime: z.string(),
+  start_ms: z.number(),
+  end_ms: z.number().nullable().optional(),
+  source: z.string(), // "phone" | "pi"
+  bytes: z.number().default(0),
+});
+export type AudioTrack = z.infer<typeof AudioTrack>;
+
+export const AccelCal = z.object({
+  matrix: z.array(z.array(z.number())), // 3x3, phone/sensor frame -> vehicle frame
+  source: z.string(), // "phone" | "imu"
+  method: z.string(), // "level" | "level+gps" | "manual"
+});
+export type AccelCal = z.infer<typeof AccelCal>;
+
+/** What can be recorded right now (snapshot). Each source: available | unavailable | on, with a reason when unavailable. */
+export const SourceState = z.object({ state: z.string(), reason: z.string().nullable().optional() });
+export const RecordingSources = z.object({
+  gps: z.string(), // "usb" | "mock" | "none"
+  pi_audio: SourceState,
+  imu: SourceState,
+  accel_hz: z.number(),
+});
+export type RecordingSources = z.infer<typeof RecordingSources>;
+
+export const CaptureList = z.object({
+  captures: z.array(CaptureValue.extend({ t: z.number().nullable().optional(), session: z.string().nullable().optional() })),
+});

@@ -1,0 +1,24 @@
+/* Admin-only screens (Decode, Label): step header, glossary popover, help text.
+ * Uses the calm-instrument tokens from styles.css; no new colours. */
+.step-header { display: flex; flex-direction: column; gap: 8px; }
+.steps { list-style: none; margin: 0; padding: 10px 14px; display: grid; gap: 6px;
+  border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--raised); }
+.steps li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; color: var(--text-2); line-height: 1.4; }
+.step-n { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+.gloss { position: relative; }
+.gloss-btn { gap: 6px; }
+.gloss-word { font-size: 12px; }
+.gloss-pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: min(360px, calc(100vw - 32px));
+  max-height: 70vh; overflow-y: auto; padding: 12px 14px; border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md); background: var(--surface); color: var(--text-1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+.gloss-pop dl { margin: 0; display: grid; gap: 10px; }
+.gloss-pop dt { font-weight: 700; font-size: 13px; }
+.gloss-pop dd { margin: 2px 0 0; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+
+.help { font-size: 13px; color: var(--text-2); line-height: 1.45; margin: 0 0 8px; }
+.help code, .help .mono { font-family: var(--font-mono); }
+.labels-note { font-size: 12px; color: var(--text-3); }
+.label-list { display: flex; flex-direction: column; gap: 4px; }
+.label-list .item { font-size: 13px; word-break: break-word; }

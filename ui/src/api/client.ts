@@ -15,7 +15,11 @@ import {
   FieldsResponse,
   MapResponse,
   OkReply,
+  CaptureList,
+  NoteList,
+  NoteReply,
   SessionData,
+  SessionEvents,
   SessionList,
   SessionMeta,
   Snapshot,
@@ -77,6 +81,24 @@ export const api = {
   session: (id: string) => getJson(`/sessions/${encodeURIComponent(id)}`, SessionMeta),
   sessionData: (id: string, channels: string[], max = 2000) =>
     getJson(`/sessions/${encodeURIComponent(id)}/data?ch=${encodeURIComponent(channels.join(","))}&max=${max}`, SessionData),
+  sessionEvents: (id: string) => getJson(`/sessions/${encodeURIComponent(id)}/events`, SessionEvents),
+  notes: (id: string) => getJson(`/sessions/${encodeURIComponent(id)}/notes`, NoteList),
+  addNote: (id: string, note: { t: number; t_end?: number | null; text?: string; tags?: string[]; kind?: string }) =>
+    postJson(`/sessions/${encodeURIComponent(id)}/notes`, note, NoteReply),
+  editNote: async (id: string, nid: string, patch: Record<string, unknown>) =>
+    parse(await request(`/sessions/${encodeURIComponent(id)}/notes/${encodeURIComponent(nid)}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
+    }), NoteReply, "/notes"),
+  deleteNote: async (id: string, nid: string) =>
+    parse(await request(`/sessions/${encodeURIComponent(id)}/notes/${encodeURIComponent(nid)}`, { method: "DELETE" }),
+      NoteReply, "/notes"),
+  liveNote: (note: { text?: string; tags?: string[]; kind: "mark" | "note" | "capture"; capture?: Record<string, string> }) =>
+    postJson("/notes/live", note, NoteReply),
+  captures: (module?: string) =>
+    getJson(module ? `/captures?module=${encodeURIComponent(module)}` : "/captures", CaptureList),
+  /** Audio track URL (Range-capable; for an <audio> element). */
+  sessionAudioUrl: (id: string, track: string) =>
+    `/sessions/${encodeURIComponent(id)}/audio/${encodeURIComponent(track)}`,
   /** A download URL (the browser fetches it; not JSON). */
   sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx") =>
     `/sessions/${encodeURIComponent(id)}/export?fmt=${fmt}`,

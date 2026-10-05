@@ -118,15 +118,24 @@ test("Stable hides status chips and coverage; Experimental shows them", async ({
   await page.screenshot({ path: "test-results/outputs-experimental.png", fullPage: true });
 });
 
-test("admin mode shows coverage with the live sniff, and the docs", async ({ browser }) => {
+test("admin mode shows Decode with the live sniff and its help, Label, and the docs", async ({ browser }) => {
   const context = await browser.newContext({ httpCredentials: { username: "admin", password: "e2e" } });
   const page = await context.newPage();
   await returningUser(page);
   await page.goto("/admin");
-  await expect(page.getByRole("heading", { name: "Map" })).toBeVisible();
-  await expect(page.getByText(/reference-tool items mapped on TD5/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Decode" })).toBeVisible();
+  await expect(page.getByText(/match our values to the NanoCom/)).toBeVisible();
+  await expect(page.getByRole("list", { name: "How it works" }).getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByText(/NanoCom items decoded on TD5/)).toBeVisible();
   await expect(page.getByText(/ours: 7\d\d rpm/).first()).toBeVisible({ timeout: 10_000 });
-  await page.screenshot({ path: "test-results/admin-map.png", fullPage: false });
+  await page.getByRole("button", { name: "Glossary" }).click();
+  await expect(page.getByRole("region", { name: "Glossary terms" })).toContainText("ReadDataByLocalIdentifier");
+  await page.screenshot({ path: "test-results/admin-decode.png", fullPage: false });
+  await page.keyboard.press("Escape");
+  await page.getByRole("navigation").getByRole("button", { name: "Label", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Label" })).toBeVisible();
+  await expect(page.getByText(/teach the decoder what bytes mean/)).toBeVisible();
+  await expect(page.getByText("Read a LID directly", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Docs" }).click();
   await page.getByRole("button", { name: /Test backlog/ }).first().click();
   await expect(page.locator("article.doc h1")).toContainText("Test backlog");
