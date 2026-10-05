@@ -88,7 +88,8 @@ test("header: no title, one Module control, % mapped only in Experimental, fits 
   await page.screenshot({ path: "test-results/header-360.png" });
 });
 
-// The e2e server is connected and recording: Rewind opens the drive in progress 30 s back.
+// The e2e server is connected and recording: Rewind opens the drive in progress at its newest
+// sample and follows it as each 5 s refresh grows it (spec §8).
 test("Rewind opens the drive in progress on Analysis in replay; Exit to live returns", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
@@ -102,6 +103,20 @@ test("Rewind opens the drive in progress on Analysis in replay; Exit to live ret
   await expect(page.getByRole("region", { name: "Replay" })).toHaveCount(0); // no top banner
   await expect(nav(page, "Analysis")).toHaveAttribute("aria-current", "page");
   await expect(rewind).toHaveCount(0); // Exit to live takes its place
+  const slider = page.getByTestId("global-transport").getByRole("slider", { name: "Playback position" });
+  // read both in one go (a refresh between two reads would split them)
+  const at = () => slider.evaluate((el) => {
+    const r = el as unknown as { max: string; value: string };
+    return { max: Number(r.max), value: Number(r.value) };
+  });
+  await expect.poll(async () => (await at()).max).toBeGreaterThan(0);
+  const first = await at();
+  expect(first.value).toBe(first.max); // at the newest sample, not 30 s back
+  // following: the next refresh moves the end and the cursor with it
+  await expect.poll(async () => (await at()).max, { timeout: 12_000 }).toBeGreaterThan(first.max);
+  const later = await at();
+  expect(later.value).toBeGreaterThan(first.value);
+  expect(later.value).toBe(later.max);
   await page.screenshot({ path: "test-results/rewind-analysis.png" });
   await exit.click();
   await expect(exit).toHaveCount(0);

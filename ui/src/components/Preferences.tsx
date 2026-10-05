@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { api, command } from "../api/client";
 import { useApp } from "../state/app";
 import { confirmAction } from "./confirm";
 import { RadioOpt } from "./RadioOpt";
+import { RecordingOptions } from "./RecordingOptions";
 import { Sheet } from "./Sheet";
 
-/** ⚙ Preferences (per device): trust mode, sharing, display, units, admin link, power.
+/** ⚙ Preferences (per device): trust mode, sharing, display, units, "Recording & flags" (the
+ * recording options and the flag manager, reachable without a recording), admin link, power.
  * The serial port lives in the ConnectionSheet (there is no mock mode — ADR-0011). */
 export function Preferences({ onClose }: { onClose: () => void }) {
   const { prefs, setPrefs, snap, community, reloadCommunity, toast, admin } = useApp();
+  const [recOpts, setRecOpts] = useState(false);
   const share = community ? !!community.consent : prefs.share === true;
 
   const setShare = (v: boolean) => {
@@ -24,6 +28,8 @@ export function Preferences({ onClose }: { onClose: () => void }) {
     }
   };
 
+  // One sheet at a time: Recording & flags replaces Preferences and comes back to it on close.
+  if (recOpts) return <RecordingOptions onClose={() => setRecOpts(false)} />;
   return (
     <Sheet title="Preferences" onClose={onClose}>
       <section role="radiogroup" aria-label="Trust">
@@ -68,6 +74,13 @@ export function Preferences({ onClose }: { onClose: () => void }) {
             onClick={() => setPrefs({ units: { ...prefs.units, dist: "km" } })}>km · km/h</button>
           <button className={`btn ${prefs.units.dist === "mi" ? "accent" : ""}`} aria-pressed={prefs.units.dist === "mi"}
             onClick={() => setPrefs({ units: { ...prefs.units, dist: "mi" } })}>miles · mph</button>
+        </div>
+      </section>
+      <section>
+        <div className="kicker" style={{ marginBottom: 8 }}>Recording</div>
+        <button className="btn block" onClick={() => setRecOpts(true)}>Recording &amp; flags</button>
+        <div className="small muted pretty" style={{ marginTop: 6 }}>
+          Audio and accelerometer sources, and which flags show on the transport.
         </div>
       </section>
       {!admin ? (

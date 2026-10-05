@@ -128,11 +128,12 @@ describe("MarkButton (header ⚑)", () => {
     expect(calls[1]).toEqual({ path: "/sessions/S1/notes/abcd1234", method: "PATCH", body: { text: "clunk", tags: ["noise"] } });
   });
 
-  it("is hidden while the session is paused (no connection); an absent state means recording", () => {
+  it("is greyed while the session is paused (no connection); an absent state means recording", () => {
     stubServer();
     const paused = recordingSnap();
     const { unmount } = renderWithApp(<MarkButton />, { snap: { ...paused, recording: { ...paused.recording!, state: "paused" } } });
     expect(screen.queryByRole("button", { name: "Mark this moment" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Connect to the car to mark" })).toBeDisabled();
     unmount();
     renderWithApp(<MarkButton />, { snap: { ...paused, recording: { ...paused.recording!, state: "recording" } } });
     expect(screen.getByRole("button", { name: "Mark this moment" })).toBeInTheDocument();
@@ -281,7 +282,7 @@ describe("RecordingCard", () => {
     await waitFor(() => expect(calls.at(-1)).toMatchObject({ path: "/command", body: { action: "split_session" } }));
 
     fireEvent.click(screen.getByRole("button", { name: "Recording options" }));
-    expect(await screen.findByText("Recording options")).toBeInTheDocument();
+    expect(await screen.findByText("Recording & flags")).toBeInTheDocument();
   });
 
   it("offers Resume when this phone should be capturing but isn't", () => {

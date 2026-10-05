@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/client";
 import type { Note } from "../api/schemas";
+import { formatNoteTime } from "../lib/notes";
 import { useCaptureRunner } from "../lib/recordingOptions";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
@@ -14,19 +15,81 @@ const clock = (iso: string | undefined) => {
 };
 
 /**
- * Header ⚑ (spec §5). One tap saves a `mark` at once (the moment is never lost to typing),
- * then "What happened?" PATCHes the mark with text and tags. Shown only while the Pi is
- * recording (not paused) and not in replay. Always mounted: it also points phone audio/motion capture at
- * the session being recorded (lib/recordingOptions `useCaptureRunner`).
+ * Header ⚑ (spec §5, §8). Live while recording: one tap saves a `mark` at once (the moment is
+ * never lost to typing), then "What happened?" PATCHes the mark with text and tags. Paused (no
+ * connection): shown greyed, "Connect to the car to mark". In replay of an editable session: a
+ * retro mark at the cursor, then the same sheet. Hidden on demo logs, in public mode and when
+ * nothing is recording. Always mounted: it also points phone audio/motion capture at the
+ * session being recorded (lib/recordingOptions `useCaptureRunner`).
  */
 export function MarkButton() {
   const { snap, toast } = useApp();
   const replay = useReplay();
   const session = replay.active ? null : snap?.recording?.session ?? null;
   useCaptureRunner(session, replay.active);
+  if (replay.active) {
+    const meta = replay.session;
+    if (!meta || meta.synthetic || snap?.public) return null;
+    return <RetroMark key={meta.id} session={meta.id} toast={toast} />;
+  }
+  if (!session) return null;
   // Paused (no connection): the session stays open but nothing can be marked (spec §5).
-  if (!session || isPaused(snap?.recording)) return null;
+  if (isPaused(snap?.recording)) {
+    return (
+      <button className="chip mark-btn" aria-label="Connect to the car to mark" title="Connect to the car to mark"
+        disabled>⚑</button>
+    );
+  }
   return <Mark toast={toast} />;
+}
+
+/** Replay ⚑: saves a note at the cursor at once, then "What happened?" fills it in. */
+function RetroMark({ session, toast }: { session: string; toast: (m: string, bad?: boolean) => void }) {
+  const r = useReplay();
+  const [busy, setBusy] = useState(false);
+  const [mark, setMark] = useState<{ note: Note | null; t: number } | null>(null);
+
+  const tap = async () => {
+    if (busy) return;
+    const t = Math.round(r.t);
+    setBusy(true);
+    const note = await r.addNote({ t }).catch(() => null);
+    setBusy(false);
+    if (note) toast("⚑ Marked");
+    else toast("Could not save the mark — it will be saved with the note", true);
+    setMark({ note, t });
+  };
+
+  const save = async (text: string, tags: string[]) => {
+    if (!mark) return true;
+    if (mark.note && !text && !tags.length) return true; // the bare mark is already saved
+    try {
+      if (mark.note) {
+        const res = await api.editNote(session, mark.note.id, { text, tags });
+        if (res.ok === false || res.error) { toast(res.error ?? "Could not save the note", true); return false; }
+        r.refreshNotes();
+      } else if (!(await r.addNote({ t: mark.t, text, tags }))) {
+        toast("Could not save the note", true);
+        return false;
+      }
+      toast("Note saved");
+      return true;
+    } catch {
+      toast("Could not save the note", true);
+      return false;
+    }
+  };
+
+  return (
+    <>
+      <button className="chip mark-btn" aria-label="Mark at the cursor" title="Mark this moment at the cursor"
+        aria-busy={busy} onClick={tap}>⚑</button>
+      {mark ? (
+        <NoteSheet hint={mark.note ? `Marked at ${formatNoteTime(mark.t)}` : "Not saved yet — Save stores it now"}
+          onSave={save} onClose={() => setMark(null)} />
+      ) : null}
+    </>
+  );
 }
 
 function Mark({ toast }: { toast: (m: string, bad?: boolean) => void }) {
