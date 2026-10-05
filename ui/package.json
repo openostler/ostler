@@ -1,10 +1,10 @@
 {
-  "name": "d2diag-ui",
+  "name": "ostler-ui",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Dashboard for d2diag — Vite + React + TypeScript, built into src/d2diag/web/static.",
+  "description": "Ostler dashboard — Vite + React + TypeScript, built into src/openostler/web/static.",
   "engines": {
     "node": ">=22"
   },

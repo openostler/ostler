@@ -1,5 +1,5 @@
 /**
- * The HTTP contract with the Python server (src/d2diag/web/server.py), as Zod schemas.
+ * The HTTP contract with the Python server (src/openostler/web/server.py), as Zod schemas.
  *
  * Every response is validated at runtime, so a server change surfaces as a clear error
  * instead of `undefined` deep in a component. tests/test_ui_contract.py keeps the
@@ -266,7 +266,7 @@ export const CatalogCoverage = z.object({
 });
 export type CatalogCoverage = z.infer<typeof CatalogCoverage>;
 
-/** One runnable (or planned/gated) action from the command registry (src/d2diag/commands.py). */
+/** One runnable (or planned/gated) action from the command registry (src/openostler/commands.py). */
 export const CatalogAction = z.object({
   action: z.string(),
   label: z.string(),

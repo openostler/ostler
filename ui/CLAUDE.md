@@ -1,7 +1,7 @@
 # ui/
 
 The dashboard: Vite + React + TypeScript. `npm run build` writes to
-`src/d2diag/web/static/`, which is committed so the Pi needs no Node (ADR-0004).
+`src/openostler/web/static/`, which is committed so the Pi needs no Node (ADR-0004).
 
 ## Files
 

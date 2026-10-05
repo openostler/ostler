@@ -17,7 +17,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     // Committed build output, shipped as package-data: the Pi never needs Node.
-    outDir: fileURLToPath(new URL("../src/d2diag/web/static", import.meta.url)),
+    outDir: fileURLToPath(new URL("../src/openostler/web/static", import.meta.url)),
     emptyOutDir: true,
     sourcemap: false,
     // MapLibre is reached only through `import("./components/replay/maplibre")`, so Rollup

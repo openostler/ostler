@@ -19,7 +19,7 @@ export default defineConfig({
   },
   webServer: {
     command: `${python} ../tests/e2e_server.py --host 127.0.0.1 --port ${PORT} --interval 0.3 --replay e2e/sniff-demo.txt --admin-password e2e`,
-    env: { PYTHONPATH: "../src:.." }, // d2diag + the tests package (tests/fake_sources.py)
+    env: { PYTHONPATH: "../src:.." }, // openostler + the tests package (tests/fake_sources.py)
     url: `http://127.0.0.1:${PORT}/snapshot`,
     reuseExistingServer: false,
     timeout: 20_000,
