@@ -2,7 +2,7 @@
 
 ``DEMO_ROOT`` resolves lazily to ``active_pack().demo.sessions_dir`` (``None`` when the
 pack has no demo). For the Discovery 2 pack that is
-``d2diag/vehicles/lr_d2/demo/sessions/``: "Demo log 1" (``20261005T090000Z``, Rannoch
+``d2diag/demo/sessions/``: "Demo log 1" (``20261005T090000Z``, Rannoch
 Moor) and "Demo log 2" (``20261004T153000Z``, north Dartmoor, SLABS), built by
 ``tools/make_demo_session.py``. Never edit those files by hand: regenerate them. Each route
 is a parametric loop over empty moorland, not a real drive (ADR-0009, ADR-0011). They are

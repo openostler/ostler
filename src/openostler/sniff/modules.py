@@ -1,9 +1,9 @@
 """Single source of truth for module detection across every sniffed bus.
 
-Both the capture parser (:mod:`d2diag.sniff.capture`) and the live LID store
-(:mod:`d2diag.sniff.decoder`) need to know which ECU a stretch of sniffed bytes
+Both the capture parser (:mod:`openostler.sniff.capture`) and the live LID store
+(:mod:`openostler.sniff.decoder`) need to know which ECU a stretch of sniffed bytes
 belongs to. Detection is generic; the facts come from the active vehicle pack's
-:class:`d2diag.pack.SniffSpec` (or an explicit ``spec``):
+:class:`openostler.pack.SniffSpec` (or an explicit ``spec``):
 
 - **Fast init** — an addressed StartCommunication ``81 <addr> <tester> 81``. The address
   is named from ``spec.fast_init``/``spec.slow_init``; one we do not recognise is tagged

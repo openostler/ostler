@@ -1,6 +1,6 @@
 """The K-Line layer: fast init, frame I/O, echo handling, timeout and retries.
 
-Sits on top of a :class:`~d2diag.transport.base.Transport` and below KWP2000.
+Sits on top of a :class:`~openostler.transport.base.Transport` and below KWP2000.
 K-Line is half-duplex: every sent byte echoes back and is swallowed before the reply is read.
 
 Td5 flow: ``fast_init()`` sends the *addressed* StartCommunication frame;

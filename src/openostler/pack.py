@@ -10,12 +10,12 @@ Pack resolution (:func:`active_pack`, cached, always lazy, never at import time)
 1. a pack set with :func:`set_active_pack` / :func:`use_pack` (tests) wins;
 2. otherwise the ``openostler.vehicle`` entry points (legacy ``ostler.vehicle`` also read): ``OSTLER_VEHICLE`` picks one by name (or
    names a ``module:attr`` directly); without it there must be exactly one;
-3. with no entry point at all, the built-in fallback ``d2diag.vehicles.lr_d2:PACK`` (the
-   repo runs uninstalled: pytest, the Dockerfile and ``tools/``). Phase 0 only: it is
-   deleted at the repo split.
+3. with no entry point at all, a :class:`NoVehiclePackError` that names the group and
+   how to install a pack (the Phase 0 built-in fallback was removed at the repo split,
+   ADR-0015).
 
 See ``specs/2026-10-06-phase0-vehiclepack-decoupling-design.md`` §1. This module never
-imports ``d2diag.vehicles``.
+imports a vehicle pack by name.
 """
 from __future__ import annotations
 
@@ -34,7 +34,14 @@ ENTRY_POINT_GROUP = "openostler.vehicle"
 # Read too, for one release: the group name used before ADR-0014.
 LEGACY_ENTRY_POINT_GROUPS = ("ostler.vehicle",)
 ENV_VAR = "OSTLER_VEHICLE"
-_BUILTIN_FALLBACK = "d2diag.vehicles.lr_d2:PACK"
+# Shown when no pack is installed: the reference pack and how to install it.
+INSTALL_HINT = ('pip install "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag" '
+                '(the Land Rover Discovery 2 pack), or any package registering an '
+                f'"{ENTRY_POINT_GROUP}" entry point')
+
+
+class NoVehiclePackError(LookupError):
+    """No vehicle pack is installed (no ``openostler.vehicle`` entry point)."""
 
 
 # ------------------------------------------------------------------ contract -- #
@@ -233,7 +240,9 @@ def _resolve() -> VehiclePack:
         names = ", ".join(sorted(f"{ep.name} ({ep.value})" for ep in eps))
         raise RuntimeError(f"several {ENTRY_POINT_GROUP!r} vehicle packs are installed: {names}; "
                            f"set {ENV_VAR} to pick one")
-    return _check(_load_ref(_BUILTIN_FALLBACK), f"built-in fallback {_BUILTIN_FALLBACK!r}")
+    raise NoVehiclePackError(
+        f"no vehicle pack installed: no {ENTRY_POINT_GROUP!r} entry point found. "
+        f"Install one, e.g. {INSTALL_HINT}; or set {ENV_VAR}=module:attr")
 
 
 _resolving = False
@@ -282,7 +291,8 @@ def canonical_module(mid: "str | None") -> "str | None":
 
 
 __all__ = [
-    "PACK_API_VERSION", "ENTRY_POINT_GROUP", "LEGACY_ENTRY_POINT_GROUPS", "ENV_VAR", "ModuleSpec", "FaultReader", "Detector",
+    "PACK_API_VERSION", "ENTRY_POINT_GROUP", "LEGACY_ENTRY_POINT_GROUPS", "ENV_VAR",
+    "NoVehiclePackError", "ModuleSpec", "FaultReader", "Detector",
     "SniffSpec", "DemoSpec", "DocSource", "VehiclePack", "active_pack", "set_active_pack",
     "use_pack", "canonical_module",
 ]

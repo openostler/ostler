@@ -166,7 +166,7 @@ def to_vbo(rows: "list[dict]", meta: dict, notes=None) -> str:
            "", "s", "min", "min", "km/h", "deg", "m",
            *[units.get(c) or ch.UNITS.get(c, "") or "-" for c in extra],
            *["-" for _ in ev_names], "",
-           "[comments]", f"Session {meta.get('id', '')} exported by d2diag.",
+           "[comments]", f"Session {meta.get('id', '')} exported by Ostler (openostler).",
            "Latitude and longitude are in minutes; longitude is positive West.",
            "Time is UTC hhmmss.ss.", *comments, "",
            "[column names]",
@@ -237,7 +237,7 @@ def to_gpx(rows: "list[dict]", meta: dict, notes=None) -> str:
     Each note becomes a ``<wpt>`` at the GPS point nearest its time (when GPS exists)."""
     sid = escape(str(meta.get("id", "")))
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
-           '<gpx version="1.1" creator="d2diag" xmlns="http://www.topografix.com/GPX/1/1">',
+           '<gpx version="1.1" creator="openostler" xmlns="http://www.topografix.com/GPX/1/1">',
            "  <metadata>", f"    <name>{sid}</name>"]
     if meta.get("start_utc"):
         out.append(f"    <time>{escape(str(meta['start_utc']))}</time>")

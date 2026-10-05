@@ -4,7 +4,7 @@ The module decoders (:mod:`d2diag.td5.faults`, :mod:`d2diag.slabs.faults`,
 :mod:`d2diag.airbag.faults`) already turn a raw status block into a stable **key + name**
 per fault. This layer adds the *meaning* — description, likely cause, severity, the ECU
 system, and an inferred OBD-II P-code — without bloating the decoders, exactly as
-:mod:`d2diag.signals` separates field data from the comms core.
+:mod:`openostler.signals` separates field data from the comms core.
 
 One ``dtc/<module>.json`` per ECU, a JSON array of records keyed by that module's stable
 fault key:

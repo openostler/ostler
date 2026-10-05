@@ -1,6 +1,6 @@
 """Passive sniff feed for the Mapping/Map tab.
 
-A background thread feeds a :class:`~d2diag.sniff.decoder.LidStore` with lines from
+A background thread feeds a :class:`~openostler.sniff.decoder.LidStore` with lines from
 either a real ESP32 serial port (live, RX-only) or a replayed log file (for
 development/demo without a car). The web server reads ``snapshot()`` — which also
 carries **freshness** (frames/s, age of the last frame, status) so the interface can

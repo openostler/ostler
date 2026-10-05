@@ -1,10 +1,10 @@
-"""Regenerate the offline place-name table ``src/d2diag/geo/places.tsv.gz`` from GeoNames.
+"""Regenerate the offline place-name table ``src/openostler/geo/places.tsv.gz`` from GeoNames.
 
     PYTHONPATH=src python3 tools/build_places.py [--cache DIR] [--out FILE] [--no-download]
 
 Downloads ``cities1000.zip``, ``admin1CodesASCII.txt``, ``admin2Codes.txt`` and
 ``countryInfo.txt`` into the cache dir (skipped when present), then writes the trimmed,
-deterministic table. Data: GeoNames, CC BY 4.0. Logic lives in ``d2diag.geo.build``.
+deterministic table. Data: GeoNames, CC BY 4.0. Logic lives in ``openostler.geo.build``.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from d2diag.geo.build import DEFAULT_CACHE, DEFAULT_OUT, build, download  # noqa: E402
+from openostler.geo.build import DEFAULT_CACHE, DEFAULT_OUT, build, download  # noqa: E402
 
 
 def main(argv: "list[str] | None" = None) -> int:

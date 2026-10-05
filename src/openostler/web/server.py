@@ -2,7 +2,7 @@
 
 A background thread polls the data source and updates ``latest``; ``/events``
 streams it via Server-Sent Events. ``/command`` runs server commands and module actions;
-every module action passes the command gate (:func:`d2diag.commands.refusal`, ADR-0008)
+every module action passes the command gate (:func:`openostler.commands.refusal`, ADR-0008)
 first. ``/catalog`` serves the per-module UI catalog (specs/2026-10-05-ui-overhaul-design.md).
 ``/sessions*`` serves the always-on session logbook (specs/2026-10-05-session-logbook-design.md,
 ADR-0009); the poll loop feeds every snapshot (plus the GPS fix) to the ``SessionRecorder``.
@@ -817,7 +817,7 @@ class _Handler(BaseHTTPRequestHandler):
         if self._admin_ok():
             return True
         self.send_response(401)
-        self.send_header("WWW-Authenticate", 'Basic realm="d2diag admin"')
+        self.send_header("WWW-Authenticate", 'Basic realm="Ostler admin"')
         self.send_header("Content-Length", "0")
         self.end_headers()
         return False
@@ -962,7 +962,7 @@ class DiagServer(ThreadingHTTPServer):
             self._modules = {_store_module_for(source.name) or source.name: source}
         else:
             raise ValueError("DiagServer requires a source")
-        # "Read all fault codes": d2diag.faultscan.read_all(port) unless injected (tests).
+        # "Read all fault codes": openostler.faultscan.read_all(port) unless injected (tests).
         self._fault_scan = fault_scan
         active = _store_module_for(active) if active else active
         self._active = active if active in self._modules else next(iter(self._modules))
@@ -2124,7 +2124,7 @@ class DiagServer(ThreadingHTTPServer):
 
     def legacy_menu(self, store_module: str) -> "list | None":
         """The admin Map view of a module (items with ok/maybe/todo), derived by
-        :func:`d2diag.catalog.legacy_menu`; the raw menu while the catalog is missing.
+        :func:`openostler.catalog.legacy_menu`; the raw menu while the catalog is missing.
         None = no menu known for this module."""
         if store_module not in self._menus:
             return None
@@ -2148,7 +2148,7 @@ class DiagServer(ThreadingHTTPServer):
 
         Server commands and the generic ``clear_faults``/``read_block`` are not module
         commands. Everything else that is registered goes through
-        :func:`d2diag.commands.refusal`; an unregistered action that looks like a module
+        :func:`openostler.commands.refusal`; an unregistered action that looks like a module
         command (``output_*``, ``injector_*``, a SLABS actuator name …) is refused as unknown.
         While disconnected, no source command runs.
         """

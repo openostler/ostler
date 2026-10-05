@@ -1,17 +1,17 @@
 """Catalog: every NanoCom function per module, each with one derived status and a safety class.
 
 ADR-0008 and ``specs/2026-10-05-ui-overhaul-design.md`` are the contract. The module
-menus (the active vehicle pack's ``menus``, see :mod:`d2diag.menus`) say *what exists*; this
+menus (the active vehicle pack's ``menus``, see :mod:`openostler.menus`) say *what exists*; this
 module derives *how far we are* from what each item links to, never from a hand copy:
 
 1. ``sig``: the signal-store record (``at`` = ``"LID@offset"`` picks among same-name
    length variants, otherwise the first) → ``proven`` = verified, ``candidate`` = candidate.
-2. ``actions``: the command registry (:mod:`d2diag.commands`). All gated → ``sniff`` and
+2. ``actions``: the command registry (:mod:`openostler.commands`). All gated → ``sniff`` and
    safety ``gated``; otherwise the worst non-gated action (planned → sniff, experimental →
    candidate, all verified → verified). Safety = the most severe action safety.
 3. Otherwise the hand ``status`` (``verified`` only for session and fault items).
 
-Module ids and display names come from the active pack (:func:`d2diag.pack.active_pack`);
+Module ids and display names come from the active pack (:func:`openostler.pack.active_pack`);
 nothing here names a vehicle module. Core module: data only, no I/O beyond reading the
 signal store, never imports ``web``.
 """
@@ -36,7 +36,7 @@ _LEGACY = {"verified": "ok", "candidate": "maybe"}
 
 
 def store_module_for(ui_id: "str | None") -> "str | None":
-    """Deprecated: use :func:`d2diag.pack.canonical_module` (a legacy alias → its module id)."""
+    """Deprecated: use :func:`openostler.pack.canonical_module` (a legacy alias → its module id)."""
     return canonical_module(ui_id)
 
 

@@ -6,7 +6,7 @@ the next. Returns a normalized report ``[{module, status, faults, note}]`` where
 ``unimplemented`` (no reading comms class yet).
 
 Generic: the readers come from the active vehicle pack (``VehiclePack.faultscan``, one
-:class:`d2diag.pack.FaultReader` per readable module, each owning its establish/release),
+:class:`openostler.pack.FaultReader` per readable module, each owning its establish/release),
 and the rows without a reader from ``VehiclePack.faultscan_unimplemented``.
 """
 from __future__ import annotations

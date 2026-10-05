@@ -25,7 +25,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from d2diag.signals import load_signals  # noqa: E402
+from openostler.signals import load_signals  # noqa: E402
 
 _RX = re.compile(r"\bRX\b\s+([0-9A-Fa-f ]+)")
 

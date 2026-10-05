@@ -52,7 +52,7 @@ def decode_known(module: str, lid: int, data: bytes) -> "list[dict]":
     """Our current decoding of a LID (for comparison against the reference tool screen).
 
     Module-generic: reads the field definitions from the declarative store
-    (:mod:`d2diag.signals`). A field with ``states`` (e.g. any_door) gives its
+    (:mod:`openostler.signals`). A field with ``states`` (e.g. any_door) gives its
     state label as ``value``; the rest give their numeric value."""
     out: "list[dict]" = []
     for s in load_signals(module):

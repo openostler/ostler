@@ -9,7 +9,7 @@ prints who answered with which key bytes — to confirm or rule out the asserted
 modules (cruise, HEVAC, instrument pack, IDM, the 0x18 responder) before a NanoCom
 rental. **Read-only by construction:** it sends only init and StopCommunication, and
 releases the link after every probe (see ``CONSTITUTION.md``). The logic is in
-:mod:`d2diag.modscan` so it is unit-tested against the fake ECU.
+:mod:`openostler.modscan` so it is unit-tested against the fake ECU.
 
 Ignition on, car stationary. This takes a while — each address gets a quiet settle so a
 link can die before the next init.
@@ -20,10 +20,10 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from d2diag.kline import KLine  # noqa: E402
-from d2diag.kwp2000 import KWP2000  # noqa: E402
-from d2diag.modscan import DEFAULT_FAST, DEFAULT_SLOW, AddressScanner, render_table  # noqa: E402
-from d2diag.transport import EspTransport, SerialTransport  # noqa: E402
+from openostler.kline import KLine  # noqa: E402
+from openostler.kwp2000 import KWP2000  # noqa: E402
+from openostler.modscan import DEFAULT_FAST, DEFAULT_SLOW, AddressScanner, render_table  # noqa: E402
+from openostler.transport import EspTransport, SerialTransport  # noqa: E402
 
 
 def _addrs(spec: "str | None", default: "list[int]") -> "list[int]":
@@ -43,7 +43,7 @@ def main() -> int:
 
     port = args.port
     if not args.esp:
-        from d2diag.ports import resolve_serial_port
+        from openostler.ports import resolve_serial_port
         port = resolve_serial_port(args.port)
         if port != args.port:
             print(f"Using cable at {port}")

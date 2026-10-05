@@ -3,7 +3,7 @@
 Reads esp32_read logs, splits into length-prefixed KWP frames with checksum validation,
 classifies services and pairs request→response. Tracks the active module via the
 fast-init signature. Non-KWP protocols (Autobox `72…`, BCU EKA `CC`) are recognised
-separately in :mod:`d2diag.sniff.library`.
+separately in the vehicle pack (the D2 pack's ``d2diag.sniff.library``).
 """
 from __future__ import annotations
 

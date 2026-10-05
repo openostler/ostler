@@ -1,7 +1,7 @@
 """Solve scale/offset from (raw value, reference tool displayed value) samples.
 
 Model: ``displayed = raw · scale + bias`` (least-squares). Also formats a suggested
-:class:`d2diag.signals.Signal` row (the store itself is written via ``upsert_field``).
+:class:`openostler.signals.Signal` row (the store itself is written via ``upsert_field``).
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def _fmt_num(v: float) -> str:
 def suggest_signal(
     name: str, lid: int, offset: int, kind: str, scale: float, bias: float, unit: str = ""
 ) -> str:
-    """Format a ``Signal(...)`` row (a :class:`d2diag.signals.Signal` constructor call)."""
+    """Format a ``Signal(...)`` row (a :class:`openostler.signals.Signal` constructor call)."""
     parts = [f'"{name}"', f"0x{lid:02X}", str(offset)]
     if kind != "u16":
         parts.append(f'"{kind}"')

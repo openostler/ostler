@@ -21,7 +21,8 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
         --tls-cert pi.crt --tls-key pi.key
 
     # a sniff feed for the admin Decode tab without a car (the homelab runs this):
-    PYTHONPATH=src python3 tools/dashboard.py --replay src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt
+    # ``pack`` loops the installed vehicle pack's demo sniff log (``demo.sniff_log``)
+    PYTHONPATH=src python3 tools/dashboard.py --replay pack
 
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """
@@ -32,8 +33,20 @@ import sys
 # Make the tool runnable as "python3 tools/dashboard.py" without PYTHONPATH=src.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
-from d2diag.pack import active_pack, canonical_module  # noqa: E402
-from d2diag.web.server import DiagServer  # noqa: E402
+from openostler.pack import active_pack, canonical_module  # noqa: E402
+from openostler.web.server import DiagServer  # noqa: E402
+
+
+REPLAY_PACK = "pack"
+
+
+def pack_replay_log(pack) -> "str | None":
+    """The pack's demo sniff log (``--replay pack``), or None when it ships none. Keeps
+    deploys (Dockerfile, compose) free of site-packages paths."""
+    demo = pack.demo
+    if demo is None or demo.sniff_log is None or not os.path.exists(demo.sniff_log):
+        return None
+    return str(demo.sniff_log)
 
 
 def build_docs(pack, dict_path: "str | None" = None, extra_dirs=()):
@@ -41,7 +54,7 @@ def build_docs(pack, dict_path: "str | None" = None, extra_dirs=()):
 
     ``dict_path`` (``--dict``) replaces the path of the pack's optional answer-key source;
     any other optional source whose path is missing is skipped."""
-    from d2diag.web.docs import DocLibrary
+    from openostler.web.docs import DocLibrary
 
     docs = DocLibrary()
     for src in pack.docs:
@@ -96,8 +109,9 @@ def main() -> int:
                     help="extra directory of .md files to show in the Docs tab (repeatable)")
     ap.add_argument("--sniff", metavar="PORT",
                     help="ESP32 sniff port for the Map tab (passive RX-only; reference tool polls)")
-    ap.add_argument("--replay", metavar="FILE",
-                    help="replay a sniff log in the Map tab (for testing without a vehicle)")
+    ap.add_argument("--replay", metavar="FILE|pack",
+                    help="replay a sniff log in the Map tab (for testing without a vehicle); "
+                         "'pack' replays the vehicle pack's demo sniff log")
     ap.add_argument("--raw-log", action="store_true",
                     help="log ALL raw TX/RX to logs/raw-<module>-<time>.log (for mapping). "
                          "Appends across reconnects; one file per module per run.")
@@ -131,7 +145,7 @@ def main() -> int:
                  "use tests/e2e_server.py for a simulated car")
     geocoder = args.geocoder
     if geocoder is None:
-        from d2diag.geo.nominatim import DEFAULT_URL
+        from openostler.geo.nominatim import DEFAULT_URL
         geocoder = DEFAULT_URL
     if geocoder.strip().lower() in ("", "off", "none"):
         geocoder = None
@@ -149,7 +163,7 @@ def main() -> int:
     gps_spec = args.gps
     gps = None
     try:
-        from d2diag.gps.reader import open_gps
+        from openostler.gps.reader import open_gps
         gps = open_gps(gps_spec)
     except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
         print(f"GPS: unavailable for {gps_spec!r} ({type(exc).__name__}: {exc}) — continuing without")
@@ -166,7 +180,7 @@ def main() -> int:
         stamp = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         log_path = os.path.join(args.log_dir, f"session-{stamp}.jsonl")
     if log_path:
-        from d2diag.web.logger import SnapshotLogger
+        from openostler.web.logger import SnapshotLogger
         logger = SnapshotLogger(log_path, min_interval=args.log_interval)
 
     # The Docs tab mirrors the CANONICAL source files the pack lists (not a copy).
@@ -176,11 +190,15 @@ def main() -> int:
     # Map tab: passive sniff feed (live ESP32 or replayed log).
     sniffer = None
     if args.sniff:
-        from d2diag.web.sniffer import SnifferFeed
+        from openostler.web.sniffer import SnifferFeed
         sniffer = SnifferFeed.from_serial(args.sniff)
         print(f"Sniff (live): {args.sniff} → Map tab")
     elif args.replay:
-        from d2diag.web.sniffer import SnifferFeed
+        from openostler.web.sniffer import SnifferFeed
+        if args.replay == REPLAY_PACK:
+            args.replay = pack_replay_log(pack)
+            if args.replay is None:
+                ap.error(f"--replay {REPLAY_PACK}: the {pack.name} pack ships no demo sniff log")
         # looping replay so the freshness badge shows "LIVE" in the preview
         sniffer = SnifferFeed.from_file(args.replay, delay=0.008, loop=True)
         print(f"Sniff (replay): {args.replay} → Map tab (freshness demo)")
@@ -191,7 +209,7 @@ def main() -> int:
 
     csv_dir = os.path.join(repo_root, "logs")
     sessions_dir = args.sessions_dir or os.path.join(csv_dir, "sessions")
-    from d2diag.community import Community  # opt-in community sharing (default OFF)
+    from openostler.community import Community  # opt-in community sharing (default OFF)
     community = Community()
     srv = DiagServer(
         host=args.host, port=args.port,

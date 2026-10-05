@@ -3,9 +3,9 @@
 The menus themselves are pack data (``VehiclePack.menus``: ``{module id: [group, …]}`` in
 display order). Each group (``id``, ``page``, ``cat``, optional ``parent`` and ``nanocom``)
 holds items that link a signal-store field (``sig``), registry actions (``actions``) or,
-when unlinked, carry a hand ``status``. :mod:`d2diag.catalog` derives each item's status
+when unlinked, carry a hand ``status``. :mod:`openostler.catalog` derives each item's status
 and safety from those links and serves ``/catalog``; the admin Map tab keeps its legacy
-shape through :func:`d2diag.catalog.legacy_menu`.
+shape through :func:`openostler.catalog.legacy_menu`.
 
 ``MENUS`` is resolved on access (module ``__getattr__``), never at import time, so tests
 can switch the active pack.

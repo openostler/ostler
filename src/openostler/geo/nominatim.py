@@ -22,11 +22,11 @@ from typing import Callable, Optional
 
 try:
     from importlib.metadata import version as _pkg_version
-    _VERSION = _pkg_version("d2diag")
+    _VERSION = _pkg_version("openostler")
 except Exception:  # not installed (running from a checkout)
     _VERSION = "dev"
 
-USER_AGENT = f"discovery2-diag/{_VERSION} (+https://github.com/JamesWrightDavid/discovery2-diag)"
+USER_AGENT = f"openostler/{_VERSION} (+https://github.com/openostler/ostler)"
 DEFAULT_URL = "https://nominatim.openstreetmap.org"
 TIMEOUT_S = 10
 MIN_INTERVAL_S = 1.0

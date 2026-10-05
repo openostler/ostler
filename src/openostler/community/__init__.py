@@ -1,7 +1,7 @@
 """Community contribution client — **opt-in, anonymous, PII-free**.
 
 Manages a single consent choice + a random anonymous install ID, and uploads
-readings to the d2diag contribution endpoint (``/register`` + ``/contribute``).
+readings to the community contribution endpoint (``/register`` + ``/contribute``).
 
 Nothing is sent unless the user has opted in. The payload is built by
 **whitelist** — only protocol/reading fields and a coarse vehicle descriptor
@@ -35,12 +35,18 @@ def _ssl_context():
 TOOL_VERSION = "0.1.0"
 DEFAULT_ENDPOINT = os.environ.get("D2DIAG_ENDPOINT", "https://www.driftwoodstudios.se/d2diag")
 _VEHICLE_KEYS = ("model", "year", "engine", "market")
+_LEGACY_CONFIG_DIR = "d2diag"  # the config dir name before the repo split (ADR-0015)
 _MAX_OUTBOX = 200  # cap the offline queue so it can't grow unbounded
 
 
 def _default_config_path() -> str:
     base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    return os.path.join(base, "d2diag", "community.json")
+    path = os.path.join(base, "openostler", "community.json")
+    # Consent given before the repo split lives under the old directory name: keep using it.
+    legacy = os.path.join(base, _LEGACY_CONFIG_DIR, "community.json")
+    if not os.path.exists(path) and os.path.exists(legacy):
+        return legacy
+    return path
 
 
 def _post(url: str, payload: dict, timeout: float = 8.0) -> dict:

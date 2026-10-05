@@ -106,7 +106,7 @@ class DataSource(abc.ABC):
 
     name: str = "source"
     # The signal-store / command-registry module this source talks to (td5, slabs, …);
-    # the server uses it for the command gate (d2diag.commands.refusal).
+    # the server uses it for the command gate (openostler.commands.refusal).
     store_module: "str | None" = None
     on_progress = None  # callback(str): live status during blocking establishment (base: none)
     # sleep hook for the establishment's wait times (the SLABS quiet period is 28 s). The server

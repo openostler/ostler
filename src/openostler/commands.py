@@ -16,7 +16,7 @@ specs/2026-10-05-ui-overhaul-design.md):
   user ticks); ``typed`` (the user types the item name).
 
 The server refuses unknown, gated, planned and (without ``trust=experimental``)
-experimental actions; the catalog (:mod:`d2diag.catalog`) derives each menu item's status
+experimental actions; the catalog (:mod:`openostler.catalog`) derives each menu item's status
 from the actions it links to. The rows themselves come from the active vehicle pack
 (``VehiclePack.actions``); :func:`registry` indexes them per pack. Data only: no I/O, no
 web imports.
