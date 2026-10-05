@@ -2,7 +2,7 @@
 title: "Platform direction — from D2 Td5 tool to open vehicle platform (diagnostics · logger · telemetry · tracker/alarm) — design"
 area: specs
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md]
 summary: >
@@ -92,7 +92,7 @@ Each phase gets its own spec and tests.
 2. **The alarm is notify-only.** Actuation (OEM disarm, immobiliser, remote start) stays a
    moonshot, and each item needs its own ADR and gate.
 3. **The Security slot shows "Map"** when no guardian is fitted.
-4. **The working brand is "Ostler"**, pending an official UKIPO/EUIPO search in classes
+4. **The working brand is "Ostler"** (ostler.tech; handles `openostler`, npm `@ostler`, Bluesky `@ostler.tech` — ADR-0014), pending an official UKIPO/EUIPO search in classes
    9, 12, 38 and 42. Naming research is in ADR-0013.
 
 ## Displays are thin clients; cameras live on our infrastructure
@@ -135,10 +135,10 @@ The owner's direction:
 
 | Repo | Visibility, licence | Role |
 |---|---|---|
-| `ostler` (new) | public, AGPL + commercial | Platform: core comms, snapshot contract, VehiclePack SDK, logbook/replay, integrations, web server, **the main UI** |
+| `openostler/ostler` (new) | public, AGPL + commercial | Platform: core comms, snapshot contract, VehiclePack SDK, logbook/replay, integrations, web server, **the main UI** |
 | `discovery2-diag` (this repo) | public, AGPL code + CC BY-SA data | Becomes the **Land Rover Discovery 2 pack** |
-| `ostler-firmware` (new) | public, AGPL | ESP32 guardian and add-on modules |
-| `ostler-cloud` (new) | **private, closed** | Ostler Cloud |
+| `openostler/ostler-firmware` (new) | public, AGPL | ESP32 guardian and add-on modules |
+| `openostler/ostler-cloud` (new) | **private, closed** | Ostler Cloud |
 | Later | — | `ostler-hardware` (CERN-OHL-S) and `ostler-android` |
 | HEVAC | owner's separate project | Not part of this platform |
 
@@ -153,3 +153,4 @@ The owner's direction:
 
 - 2026-10-06: v0.1, a draft from the October 2026 research pass.
 - 2026-10-06: v0.2, owner answers (closed cloud, notify-only alarm, Map slot, working name Ostler); displays as thin clients with cameras on our infrastructure; repository map.
+- 2026-10-06: v0.3, handles per ADR-0014 (GitHub org and Python package `openostler`).

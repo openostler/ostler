@@ -24,7 +24,7 @@ where = ["src"]
                            "slabs/*.json", "demo/*.txt", "demo/sessions/*/*"]
 
 # Vehicle packs (ADR-0013): the platform resolves its pack through this group.
-[project.entry-points."ostler.vehicle"]
+[project.entry-points."openostler.vehicle"]
 lr_d2 = "d2diag.vehicles.lr_d2:PACK"
 
 [tool.pytest.ini_options]

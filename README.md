@@ -256,3 +256,5 @@ Contributing data or code? Add yourself here.
 - Versions published before 2026-10-06 were MIT-licensed; copies obtained under those
   terms keep them. Third-party components retain their own licences — see
   [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). Decision: ADR-0012.
+- **Trademarks:** "Ostler" and "OpenOstler" are trademarks; the licences grant no rights to
+  the names — see [TRADEMARKS.md](TRADEMARKS.md).

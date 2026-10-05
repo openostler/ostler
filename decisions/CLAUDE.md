@@ -17,6 +17,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0011-no-demo-mode-live-only-recording-place-names.md` — no mock mode (demo logs instead); record only while connected; GeoNames + OSM place names.
 - `adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md` — AGPL-3.0-or-later code + commercial licence; CC BY-SA 4.0 vehicle data; CLA.
 - `adr-0013-repo-split-and-vehicle-pack-contract.md` — split into `ostler` platform, this repo as the D2 pack, `ostler-firmware`, private `ostler-cloud`; VehiclePack contract.
+- `adr-0014-ostler-handles.md` — handles: GitHub org/PyPI/import `openostler`, npm `@ostler`, entry point `openostler.vehicle`, `@ostler.tech`; trademark policy.
 
 ## Editing rules
 

@@ -300,3 +300,28 @@ def test_modscan_names_addresses_from_the_pack(fake):
                                                                               slow=[])
     assert [(r["module"], r["status"]) for r in rows] == [("alpha", "responded"),
                                                           ("unknown:0x11", "silent")]
+
+
+def test_entry_points_read_the_new_and_the_legacy_group(monkeypatch):
+    """ADR-0014: ``openostler.vehicle`` is the group; ``ostler.vehicle`` is still read for one
+    release, and a pack registered under both is listed once."""
+    from importlib import metadata
+
+    class EP:
+        def __init__(self, name, value):
+            self.name, self.value = name, value
+
+    groups = {
+        "openostler.vehicle": [EP("lr_d2", "d2diag.vehicles.lr_d2:PACK")],
+        "ostler.vehicle": [EP("old", "x:PACK"), EP("lr_d2", "d2diag.vehicles.lr_d2:PACK")],
+    }
+
+    class EPs:
+        def select(self, group):
+            return groups.get(group, [])
+
+    monkeypatch.setattr(metadata, "entry_points", lambda: EPs())
+    found = [(e.name, e.value) for e in pack._entry_points()]
+    assert found == [("lr_d2", "d2diag.vehicles.lr_d2:PACK"), ("old", "x:PACK")]
+    assert pack.ENTRY_POINT_GROUP == "openostler.vehicle"
+    assert pack.LEGACY_ENTRY_POINT_GROUPS == ("ostler.vehicle",)

@@ -8,7 +8,7 @@ them and never imports a pack directly.
 Pack resolution (:func:`active_pack`, cached, always lazy, never at import time):
 
 1. a pack set with :func:`set_active_pack` / :func:`use_pack` (tests) wins;
-2. otherwise the ``ostler.vehicle`` entry points: ``OSTLER_VEHICLE`` picks one by name (or
+2. otherwise the ``openostler.vehicle`` entry points (legacy ``ostler.vehicle`` also read): ``OSTLER_VEHICLE`` picks one by name (or
    names a ``module:attr`` directly); without it there must be exactly one;
 3. with no entry point at all, the built-in fallback ``d2diag.vehicles.lr_d2:PACK`` (the
    repo runs uninstalled: pytest, the Dockerfile and ``tools/``). Phase 0 only: it is
@@ -30,7 +30,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from .commands import Command
 
 PACK_API_VERSION = 1
-ENTRY_POINT_GROUP = "ostler.vehicle"
+ENTRY_POINT_GROUP = "openostler.vehicle"
+# Read too, for one release: the group name used before ADR-0014.
+LEGACY_ENTRY_POINT_GROUPS = ("ostler.vehicle",)
 ENV_VAR = "OSTLER_VEHICLE"
 _BUILTIN_FALLBACK = "d2diag.vehicles.lr_d2:PACK"
 
@@ -175,14 +177,17 @@ _cached: "VehiclePack | None" = None
 
 
 def _entry_points() -> list:
-    """The ``ostler.vehicle`` entry points, de-duplicated (Python 3.9+)."""
+    """The ``openostler.vehicle`` entry points (plus the legacy ``ostler.vehicle`` group),
+    de-duplicated (Python 3.9+)."""
     from importlib import metadata
 
     eps = metadata.entry_points()
-    if hasattr(eps, "select"):             # Python 3.10+
-        found = list(eps.select(group=ENTRY_POINT_GROUP))
-    else:                                  # Python 3.9: a dict of group → entry points
-        found = list(eps.get(ENTRY_POINT_GROUP, ()))
+    found = []
+    for group in (ENTRY_POINT_GROUP, *LEGACY_ENTRY_POINT_GROUPS):
+        if hasattr(eps, "select"):         # Python 3.10+
+            found += list(eps.select(group=group))
+        else:                              # Python 3.9: a dict of group → entry points
+            found += list(eps.get(group, ()))
     out, seen = [], set()
     for ep in found:
         key = (ep.name, ep.value)
@@ -277,7 +282,7 @@ def canonical_module(mid: "str | None") -> "str | None":
 
 
 __all__ = [
-    "PACK_API_VERSION", "ENTRY_POINT_GROUP", "ENV_VAR", "ModuleSpec", "FaultReader", "Detector",
+    "PACK_API_VERSION", "ENTRY_POINT_GROUP", "LEGACY_ENTRY_POINT_GROUPS", "ENV_VAR", "ModuleSpec", "FaultReader", "Detector",
     "SniffSpec", "DemoSpec", "DocSource", "VehiclePack", "active_pack", "set_active_pack",
     "use_pack", "canonical_module",
 ]

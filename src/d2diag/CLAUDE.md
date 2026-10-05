@@ -7,7 +7,7 @@ The Python package: comms core → interpretation → web consumer. The map is i
 
 - `transport/`, `kline/`, `kwp2000/`, `session.py`, `ports.py` — the comms core.
 - `pack.py` — the `VehiclePack` contract and loader (`active_pack()`, entry point
-  `ostler.vehicle`, built-in fallback `vehicles.lr_d2`); module ids are canonical, aliases
+  `openostler.vehicle` (legacy `ostler.vehicle` still read), built-in fallback `vehicles.lr_d2`); module ids are canonical, aliases
   are migrated on read (ADR-0013).
 - `vehicles/lr_d2/` — the Discovery 2 pack: `td5/`, `slabs/`, `bcu/`, `airbag/`, `ace/`,
   `autobox/` module layers, `signals/*.json` (single source of truth for LID mappings —
