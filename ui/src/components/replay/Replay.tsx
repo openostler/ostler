@@ -15,6 +15,7 @@ import { Chart, type Lane } from "./Chart";
 import { ChannelPicker } from "./ChannelPicker";
 import { pickerChannels } from "./channels";
 import { GGPanel } from "./GGPanel";
+import { InlineEdit } from "./InlineEdit";
 import { channelLabel, channelUnits, showValue } from "./labels";
 import { TraceLegend, type LegendTrace } from "./Legend";
 import { NotesPanel, type NoteRequest } from "./NotesPanel";
@@ -26,6 +27,11 @@ import {
 import { TraceMap, type MapTrace } from "./TraceMap";
 
 const MAX_LANES = 3;
+/** Server caps (spec §3 PATCH /sessions/<id>). */
+const NAME_MAX = 80;
+const DESC_MAX = 2000;
+/** The word typed to confirm a delete (case-sensitive, spec §5). */
+export const DELETE_WORD = "Delete";
 const CLASSIC_KEY = "d2diag.classicRamp";
 
 function loadClassic(): boolean {
@@ -53,7 +59,7 @@ export function Replay({ onDeleted }: { onDeleted: () => void }) {
 }
 
 function ReplayView({ meta, data, onDeleted }: { meta: SessionMeta; data: SessionData; onDeleted: () => void }) {
-  const { fields, prefs, snap } = useApp();
+  const { fields, prefs, snap, toast } = useApp();
   const replay = useReplay();
   const time = replay.t;
   const names = useMemo(() => plottable(meta).filter((n) => data.ch[n]), [meta, data]);
@@ -94,6 +100,18 @@ function ReplayView({ meta, data, onDeleted }: { meta: SessionMeta; data: Sessio
   const start = data.t[0] ?? 0;
   const end = data.t[data.t.length - 1] ?? 0;
   const canNote = !meta.synthetic && !snap?.public;
+  /** Name, description and Delete: never on a demo log or in public mode (spec §3, §5). */
+  const canEdit = !meta.synthetic && !snap?.public;
+  const place = meta.place?.label ?? null;
+  const save = async (patch: { name?: string | null; description?: string | null }) => {
+    try {
+      const r = await api.updateSession(meta.id, patch);
+      if (!r.ok) throw new Error(r.error ?? "could not save");
+    } catch (e) {
+      toast(`Not saved: ${(e as Error).message}`, true);
+      throw e;
+    }
+  };
   const speedCh = names.includes("speed") ? "speed" : names.includes("GPS_Speed") ? "GPS_Speed" : null;
 
   const legend: LegendTrace[] = [
@@ -139,15 +157,19 @@ function ReplayView({ meta, data, onDeleted }: { meta: SessionMeta; data: Sessio
       <div className="replay-head">
         <button className="rchip replay-back" onClick={replay.exit}>‹ Sessions</button>
         <div className="replay-title">
-          <h2>{date} · {startTime(meta)}</h2>
-          <span className="muted small">
-            {formatDuration(meta.duration_s)}
+          <InlineEdit as="h2" className="replay-name" value={meta.name} placeholder="Untitled session" label="Session name"
+            maxLength={NAME_MAX} readOnly={!canEdit} onSave={(v) => save({ name: v })} />
+          <span className="muted small replay-when">
+            {date} · {startTime(meta)} · {formatDuration(meta.duration_s)}
+            {place ? <> · {place}</> : null}
             {meta.synthetic ? <span className="replay-chip-demo">demo</span> : null}
             {meta.recording ? <span className="replay-chip-live">recording</span> : null}
             {data.decimated ? <span title="Long session: each point keeps the min and max of its span"> · overview</span> : null}
           </span>
+          <InlineEdit as="p" className="replay-desc small" value={meta.description} placeholder="Add a description" label="Description"
+            multiline maxLength={DESC_MAX} readOnly={!canEdit} hideEmpty onSave={(v) => save({ description: v })} />
         </div>
-        <SessionActions meta={meta} canDelete={!meta.synthetic && !snap?.public} onDeleted={onDeleted} />
+        <SessionActions meta={meta} canDelete={canEdit} onDeleted={onDeleted} />
       </div>
 
       {meta.has_gps || data.track.length ? (
@@ -199,7 +221,7 @@ function SessionActions({ meta, canDelete, onDeleted }: { meta: SessionMeta; can
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
-  const ready = confirmReady("typed", { ticked: [], typed, name: meta.id });
+  const ready = confirmReady("typed", { ticked: [], typed, name: DELETE_WORD });
 
   const del = async () => {
     setBusy(true);
@@ -230,8 +252,9 @@ function SessionActions({ meta, canDelete, onDeleted }: { meta: SessionMeta; can
       {canDelete && confirming ? (
         <div className="confirm card replay-confirm" role="group" aria-label="Confirm delete session">
           <label className="stack small" style={{ gap: 6 }}>
-            <span>Deleting removes this session from the device. Type <b className="mono">{meta.id}</b> to confirm.</span>
-            <input className="input mono" value={typed} aria-label={`Type ${meta.id} to confirm`} onChange={(e) => setTyped(e.target.value)} />
+            <span>Deleting removes this session from the device. Type <b className="mono">{DELETE_WORD}</b> to confirm.</span>
+            <input className="input mono" value={typed} autoComplete="off" autoCapitalize="off" spellCheck={false}
+              aria-label={`Type ${DELETE_WORD} to confirm`} onChange={(e) => setTyped(e.target.value)} />
           </label>
           <div className="btn-row" style={{ marginTop: 10 }}>
             <button className="btn" onClick={() => { setConfirming(false); setTyped(""); }}>Cancel</button>

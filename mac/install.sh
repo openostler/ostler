@@ -64,10 +64,10 @@ make_launcher() {
 }
 
 make_launcher "1 TEST WITHOUT CAR.command" \
-'echo "Starting the test dashboard (no car needed)…"
+'echo "Starting the dashboard (no car needed): open the Logs tab and replay Demo log 1 or 2."
 echo "A browser window will open. Close this black window to stop."
 ( sleep 3 ; open http://localhost:8080 ) &
-PYTHONPATH=src python3 tools/dashboard.py --mock'
+PYTHONPATH=src python3 tools/dashboard.py'
 
 make_launcher "2 READ THE CAR.command" \
 'echo "Make sure: cable in the car’s OBD socket + USB in the Mac, ignition ON, car stationary."

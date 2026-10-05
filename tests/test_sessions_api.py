@@ -6,6 +6,7 @@ recorder/store/exports themselves are tested in their own files. Polls are drive
 (``poll_once`` + ``record_poll``) so nothing depends on thread timing.
 """
 import json
+import os
 import threading
 import time
 import urllib.error
@@ -13,7 +14,7 @@ import urllib.request
 
 import pytest
 
-from d2diag.web import MockDataSource, MockSlabsDataSource
+from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 from d2diag.web.server import DiagServer
 
 
@@ -79,7 +80,7 @@ def _server(tmp_path, public=False, gps="default", **kw):
     _make_synthetic(tmp_path / "sessions")
     if gps == "default":
         gps = FakeGps(FakeFix())
-    src = MockDataSource(gps=gps)
+    src = FakeTd5Source(gps=gps)
     srv = DiagServer(src, host="127.0.0.1", port=0, csv_dir=str(tmp_path), public=public,
                      gps=gps, **kw)
     return srv
@@ -212,16 +213,16 @@ def test_record_sessions_off_never_writes(tmp_path):
 
 
 def test_mock_speed_follows_gps():
-    d = MockDataSource(gps=FakeGps(FakeFix(speed_kmh=63.0))).poll()
+    d = FakeTd5Source(gps=FakeGps(FakeFix(speed_kmh=63.0))).poll()
     assert d["signals"]["speed"]["v"] == pytest.approx(63.0, abs=0.5)
     assert d["signals"]["rpm"]["v"] > 1500  # driving, not idling
-    parked = MockDataSource(gps=FakeGps(FakeFix(speed_kmh=0.0))).poll()
+    parked = FakeTd5Source(gps=FakeGps(FakeFix(speed_kmh=0.0))).poll()
     assert parked["signals"]["speed"]["v"] == 0
     # no GPS / no fix → the old self-contained mock behaviour
-    assert "speed" in MockDataSource().poll()["signals"]
-    assert "speed" in MockDataSource(gps=FakeGps(None)).poll()["signals"]
-    s = MockSlabsDataSource(gps=FakeGps(FakeFix(speed_kmh=30.0))).poll()["signals"]
-    assert s["wheel_speed_fl"]["v"] > MockSlabsDataSource().poll()["signals"]["wheel_speed_fl"]["v"]
+    assert "speed" in FakeTd5Source().poll()["signals"]
+    assert "speed" in FakeTd5Source(gps=FakeGps(None)).poll()["signals"]
+    s = FakeSlabsSource(gps=FakeGps(FakeFix(speed_kmh=30.0))).poll()["signals"]
+    assert s["wheel_speed_fl"]["v"] > FakeSlabsSource().poll()["signals"]["wheel_speed_fl"]["v"]
 
 
 def test_no_vin_or_identity_in_any_session_file(tmp_path):
@@ -365,50 +366,326 @@ def test_delete_session_deletes_a_closed_real_session(tmp_path, served):
     assert get(f"/sessions/{real}")[0] == 404
 
 
-# ---- dashboard CLI -------------------------------------------------------- #
+# ---- dashboard CLI (ADR-0011: always live) --------------------------------- #
 
-def test_dashboard_mock_docker_run_is_not_public_and_uses_mock_gps(tmp_path, monkeypatch):
-    """The Docker/homelab command (`--mock --host 0.0.0.0`) is mock, NOT public, with the
-    mock GPS and the recorder on (sessions there are mock-generated)."""
+def _load_dashboard(monkeypatch):
     import importlib.util
     import pathlib
-    import sys
+    import signal
 
     from d2diag.web import server as server_mod
 
     captured = {}
-
-    def fake_serve(self):
-        captured["srv"] = self
-
-    monkeypatch.setattr(server_mod.DiagServer, "serve", fake_serve)
-    import signal
+    monkeypatch.setattr(server_mod.DiagServer, "serve", lambda self: captured.update(srv=self))
     monkeypatch.setattr(signal, "signal", lambda *a: None)  # keep pytest's SIGTERM handling
     path = pathlib.Path(__file__).resolve().parent.parent / "tools" / "dashboard.py"
     spec = importlib.util.spec_from_file_location("_dashboard_under_test", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    monkeypatch.setattr(sys, "argv", ["dashboard.py", "--mock", "--host", "127.0.0.1",
-                                      "--port", "0", "--sessions-dir", str(tmp_path / "s")])
-    assert mod.main() == 0
-    srv = captured["srv"]
-    try:
-        assert srv._public is False and srv._mode == "mock"
-        assert srv.gps is not None and srv.gps.src == "mock"
-        assert srv._sessions_dir == str(tmp_path / "s")
-        assert srv._recorder is not None
-    finally:
-        srv.stop()
-        srv.server_close()
+    return mod, captured
 
-    # --gps none → no GPS source, snapshot gps null
-    monkeypatch.setattr(sys, "argv", ["dashboard.py", "--mock", "--gps", "none", "--host",
-                                      "127.0.0.1", "--port", "0",
+
+@pytest.mark.parametrize("argv", [["--mock"], ["--gps", "mock"], ["--imu", "mock"]])
+def test_dashboard_has_no_demo_mode(argv, monkeypatch, capsys):
+    import sys
+
+    mod, captured = _load_dashboard(monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["dashboard.py", *argv, "--port", "0"])
+    with pytest.raises(SystemExit) as exc:
+        mod.main()
+    assert exc.value.code == 2 and "srv" not in captured  # argparse error, nothing served
+    assert "usage:" in capsys.readouterr().err
+
+
+def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
+    """The Docker/homelab command: live sources, not public, recorder on, OSM geocoder on."""
+    import sys
+
+    from d2diag.geo.nominatim import DEFAULT_URL
+    from d2diag.web.sources import InfoDataSource, SlabsDataSource, Td5DataSource
+
+    mod, captured = _load_dashboard(monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
+                                      "--gps", "none", "--imu", "none",
                                       "--sessions-dir", str(tmp_path / "s")])
     assert mod.main() == 0
     srv = captured["srv"]
     try:
+        assert srv._public is False and "mode" not in srv.latest
+        assert isinstance(srv._modules["motor"], Td5DataSource)
+        assert isinstance(srv._modules["slabs"], SlabsDataSource)
+        assert all(isinstance(srv._modules[m], InfoDataSource)
+                   for m in ("airbag", "ace", "autobox", "bcu"))
         assert srv.gps is None and srv.latest["gps"] is None
+        assert srv._sessions_dir == str(tmp_path / "s") and srv._recorder is not None
+        assert srv._index_path == os.path.join(str(tmp_path / "s"), "index.sqlite")
+        assert srv._enricher is not None and srv._enricher.url == DEFAULT_URL
     finally:
         srv.stop()
+        srv.server_close()
+
+    for extra, has in ((["--geocoder", "off"], False), (["--public"], False),
+                       (["--geocoder", "http://geo.invalid"], True)):
+        monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
+                                          "--gps", "none", "--imu", "none",
+                                          "--sessions-dir", str(tmp_path / "s"), *extra])
+        assert mod.main() == 0
+        srv = captured["srv"]
+        try:
+            assert (srv._enricher is not None) is has, extra
+        finally:
+            srv.stop()
+            srv.server_close()
+
+
+# ---- paging, search, histogram (spec 2026-10-06 §3) ------------------------ #
+
+DAY = 86_400.0
+_WORDS = ("alpha", "bravo", "charlie", "delta", "echo", "foxtrot")
+
+
+def _make_real(root, start_s: float, name=None, fix=None, synthetic=False) -> str:
+    """A closed session in ``root`` starting at ``start_s`` (epoch s)."""
+    from d2diag.logbook.recorder import SessionRecorder
+
+    clock = {"t": start_s, "m": 100.0}
+    rec = SessionRecorder(str(root), clock=lambda: clock["t"], mono=lambda: clock["m"],
+                          synthetic=synthetic, source="live")
+    for _ in range(4):
+        rec.feed({"conn": "connected", "status": "connected", "module": "motor",
+                  "signals": {"rpm": {"v": 900, "u": "rpm"}}, "faults": []}, fix)
+        if fix is not None:
+            fix.lat += 0.001
+            fix.utc_ms += 500
+        clock["t"] += 0.5
+        clock["m"] += 0.5
+    sid = rec.status()["session"]
+    rec.close()
+    if name is not None:
+        from d2diag.logbook.store import SessionStore
+        SessionStore(str(root)).update_meta(sid, name=name)
+    return sid
+
+
+def _logbook(tmp_path, n=5, **kw):
+    """A server over ``n`` closed real sessions one day apart (2025-01-01 … ) + demos."""
+    root = tmp_path / "sessions"
+    base = 1_735_725_600.0  # 2025-01-01T10:00:00Z
+    ids = [_make_real(root, base + i * DAY, name=f"Drive {_WORDS[i]}") for i in range(n)]
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path), **kw)
+    return srv, ids
+
+
+def _req(served, srv):
+    get, _ = served(srv)
+    base = f"http://127.0.0.1:{srv.server_address[1]}"
+
+    def call(method, path, body=None):
+        data = json.dumps(body).encode() if body is not None else None
+        r = urllib.request.Request(base + path, data=data, method=method,
+                                   headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(r, timeout=10) as resp:
+                return resp.status, json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read())
+    return call
+
+
+def test_sessions_are_keyset_paged_newest_first(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=5)
+    call = _req(served, srv)
+    seen, cursor = [], None
+    while True:
+        code, body = call("GET", "/sessions?limit=2" + (f"&before={cursor}" if cursor else ""))
+        assert code == 200 and set(body) == {"sessions", "next"}
+        assert len(body["sessions"]) <= 2
+        seen += [m["id"] for m in body["sessions"]]
+        cursor = body["next"]
+        if cursor is None:
+            break
+    real = [i for i in seen if i in ids]
+    assert real == sorted(ids, reverse=True)       # newest first, each exactly once
+    assert len(seen) == len(set(seen))
+    assert any(i not in ids for i in seen)          # the committed demo logs are listed too
+    assert srv.session_store.index is srv._index is not None
+    assert os.path.exists(tmp_path / "sessions" / "index.sqlite")
+    code, body = call("GET", "/sessions")           # default limit 50 → everything
+    assert code == 200 and body["next"] is None and len(body["sessions"]) == len(seen)
+
+
+def test_sessions_filters_and_bad_parameters(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=4)
+    call = _req(served, srv)
+    code, body = call("GET", "/sessions?q=charlie")
+    assert code == 200 and [m["id"] for m in body["sessions"]] == [ids[2]]
+    code, body = call("GET", "/sessions?from=2025-01-02&to=2025-01-03")
+    assert code == 200 and sorted(m["id"] for m in body["sessions"]) == ids[1:3]
+    code, body = call("GET", "/sessions?module=motor&min_km=0")
+    assert code == 200 and set(ids) <= {m["id"] for m in body["sessions"]}
+    code, body = call("GET", "/sessions?has_notes=1")
+    assert code == 200 and not set(ids) & {m["id"] for m in body["sessions"]}
+    code, body = call("GET", "/sessions?limit=1000")  # capped at 200, not refused
+    assert code == 200
+    for bad in ("limit=lots", "limit=0", "from=yesterday", "to=2025-13", "min_km=far",
+                "before=not%20a%20cursor"):
+        code, body = call("GET", f"/sessions?{bad}")
+        assert code == 400 and body["ok"] is False, bad
+
+
+def test_sessions_histogram(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=3)
+    call = _req(served, srv)
+    code, body = call("GET", "/sessions/histogram")
+    assert code == 200 and body["group"] == "month"
+    by = {b["key"]: b for b in body["buckets"]}
+    assert by["2025-01"]["count"] == 3 and set(by["2025-01"]) == {"key", "count", "km"}
+    code, body = call("GET", "/sessions/histogram?group=day&year=2025")
+    assert code == 200 and body["group"] == "day"
+    assert {b["key"] for b in body["buckets"]} == {"2025-01-01", "2025-01-02", "2025-01-03"}
+    # the scrubber jumps with before=<end of a month> (an ISO date)
+    code, body = call("GET", "/sessions?before=2025-01-02T23:59:59Z")
+    assert code == 200 and {m["id"] for m in body["sessions"]} & set(ids) == set(ids[:2])
+    assert call("GET", "/sessions/histogram?group=week")[0] == 400
+    assert call("GET", "/sessions/histogram?group=day&year=soon")[0] == 400
+
+
+def test_public_paging_and_histogram_list_only_synthetic(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=3, public=True)
+    call = _req(served, srv)
+    code, body = call("GET", "/sessions?limit=200")
+    assert code == 200 and body["sessions"] and all(m["synthetic"] for m in body["sessions"])
+    assert not set(ids) & {m["id"] for m in body["sessions"]}
+    code, body = call("GET", "/sessions/histogram?group=day&year=2025")
+    assert code == 200 and body["buckets"] == []
+
+
+# ---- PATCH /sessions/<id> ---------------------------------------------------- #
+
+def test_patch_session_name_and_description(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=2)
+    call = _req(served, srv)
+    sid = ids[0]
+    code, body = call("PATCH", f"/sessions/{sid}",
+                      {"name": "  Glen   Coe run  ", "description": "  cold start\nrough idle  "})
+    assert code == 200 and body["ok"] is True
+    assert body["meta"]["name"] == "Glen Coe run"
+    assert body["meta"]["description"] == "cold start\nrough idle"
+    assert json.loads((tmp_path / "sessions" / sid / "meta.json").read_text())["name"] == \
+        "Glen Coe run"
+    # the index follows: search finds the new name, the old one is gone
+    assert [m["id"] for m in call("GET", "/sessions?q=Glen")[1]["sessions"]] == [sid]
+    assert sid not in [m["id"] for m in call("GET", "/sessions?q=alpha")[1]["sessions"]]
+    # caps, empty → null, partial updates
+    code, body = call("PATCH", f"/sessions/{sid}", {"name": "x" * 200})
+    assert code == 200 and len(body["meta"]["name"]) == 80
+    assert body["meta"]["description"] == "cold start\nrough idle"   # untouched
+    code, body = call("PATCH", f"/sessions/{sid}", {"description": "y" * 3000, "name": "   "})
+    assert code == 200 and body["meta"]["name"] is None
+    assert len(body["meta"]["description"]) == 2000
+
+
+def test_patch_session_refusals(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=1)
+    call = _req(served, srv)
+    demo = _synthetic_id(srv)
+    assert call("PATCH", f"/sessions/{demo}", {"name": "mine"}) == (
+        403, {"ok": False, "error": "synthetic sessions are read-only"})
+    assert call("PATCH", f"/sessions/{ids[0]}", {"name": 5})[0] == 400
+    assert call("PATCH", f"/sessions/{ids[0]}", {})[0] == 400
+    assert call("PATCH", f"/sessions/{ids[0]}", {"colour": "red"})[0] == 400
+    assert call("PATCH", "/sessions/20000101T000000Z", {"name": "x"})[0] == 404
+    assert call("PATCH", "/sessions/..%2Fetc", {"name": "x"})[0] == 404
+
+
+def test_patch_session_refused_in_public_mode(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=1, public=True)
+    call = _req(served, srv)
+    for sid in (ids[0], _synthetic_id(srv)):
+        assert call("PATCH", f"/sessions/{sid}", {"name": "x"}) == (
+            403, {"ok": False, "error": "not available in public mode"})
+    assert json.loads((tmp_path / "sessions" / ids[0] / "meta.json").read_text())["name"] \
+        == "Drive alpha"
+
+
+def test_delete_session_leaves_the_index(tmp_path, served):
+    srv, ids = _logbook(tmp_path, n=2)
+    call = _req(served, srv)
+    assert ids[0] in [m["id"] for m in call("GET", "/sessions")[1]["sessions"]]
+    res = srv.enqueue_command({"action": "delete_session", "params": {"id": ids[0]}})
+    assert res["ok"], res
+    assert ids[0] not in [m["id"] for m in call("GET", "/sessions")[1]["sessions"]]
+
+
+# ---- place-name enrichment (spec 2026-10-06 §2) ----------------------------- #
+
+class FakeEnricher:
+    def __init__(self):
+        self.submitted, self.started, self.stopped = [], False, False
+
+    def start(self):
+        self.started = True
+
+    def stop(self):
+        self.stopped = True
+
+    def submit(self, key, lat, lon, callback):
+        self.submitted.append((key, lat, lon, callback))
+
+
+def test_closed_session_points_go_to_the_enricher(tmp_path, served):
+    enr = FakeEnricher()
+    gps = FakeGps(FakeFix(speed_kmh=30.0, lat=56.6500, lon=-4.9000))
+    srv = DiagServer(FakeTd5Source(gps=gps), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                     gps=gps, enricher=enr)
+    call = _req(served, srv)
+    srv.index(wait=5)
+    _record(srv, 4)
+    sid = _real_session(srv)
+    assert enr.submitted == []                       # nothing while it is recording
+    srv.close_recorder()
+    keys = {k: (lat, lon, cb) for k, lat, lon, cb in enr.submitted}
+    assert set(keys) == {f"{sid}|start", f"{sid}|end"}
+    meta = srv.session_store.meta(sid)
+    lat, lon, cb = keys[f"{sid}|start"]
+    assert (round(lat, 3), round(lon, 3)) == (meta["start_pos"][1], meta["start_pos"][0])
+    cb(f"{sid}|start", "Glencoe, Highland")
+    cb(f"{sid}|end", None)                           # no result: nothing written
+    meta = srv.session_store.meta(sid)
+    assert meta["place_start"]["label"] == "Glencoe, Highland"
+    assert meta["place_start"]["source"] == "osm"
+    assert (meta.get("place_end") or {}).get("source") != "osm"
+    assert [m["id"] for m in call("GET", "/sessions?q=Glencoe")[1]["sessions"]] == [sid]
+    srv.stop()
+    assert enr.stopped
+
+    # a restart queues what still lacks an OSM label (the end point), never demo logs
+    enr2 = FakeEnricher()
+    srv2 = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                      enricher=enr2)
+    try:
+        srv2.start_polling()
+        assert srv2.index(wait=5) is not None
+        deadline = time.monotonic() + 5
+        while not enr2.submitted and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert [k for k, *_ in enr2.submitted] == [f"{sid}|end"]
+        assert enr2.started
+    finally:
+        srv2.stop()
+        srv2.server_close()
+
+
+def test_no_enricher_in_public_mode_or_when_off(tmp_path):
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                     public=True, enricher=FakeEnricher(), geocoder="http://geo.invalid")
+    try:
+        assert srv._enricher is None
+    finally:
+        srv.server_close()
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
+                     geocoder="off")
+    try:
+        assert srv._enricher is None
+    finally:
         srv.server_close()

@@ -5,6 +5,7 @@ import { applyOptions, gpsLabel, loadOptions, usePhoneAudio, usePhoneMotion } fr
 import { useApp } from "../state/app";
 import "../recording.css";
 import { NoteSheet } from "./NoteSheet";
+import { isPaused } from "./replay/sessionFormat";
 import { RecordingOptions } from "./RecordingOptions";
 
 /** "45 s", "12 min", "1 h 05 min" from seconds. */
@@ -19,7 +20,9 @@ type Src = { key: string; label: string; tone?: "on" | "lost" };
 /**
  * The Logs "Recording now" card (spec §5): duration, modules, sources, then ⚑ Mark, Note…,
  * ⚙ Options (RecordingOptions) and Split. Sources include this phone's mic/motion state; a
- * lost phone source is shown with ⚠ and a Resume button (the browser needs a tap).
+ * lost phone source is shown with ⚠ and a Resume button (the browser needs a tap). While the
+ * server has paused the session (no connection, logs-at-scale spec §1, §5) the card says
+ * "Paused — no connection" and offers only Options: nothing can be marked or split.
  */
 export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
   /** The session being recorded; null/undefined renders nothing. */
@@ -107,18 +110,20 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
 
   const mods = modules?.length ? modules : module ? [module] : [];
   const elapsed = dur(nowS - recording.since);
+  const paused = isPaused(recording);
+  const title = paused ? "Paused — no connection" : `Recording now · ${elapsed}`;
   const head = (
     <>
-      <span className="rec-dot" aria-hidden="true" />
-      <b>Recording now · {elapsed}</b>
+      <span className={`rec-dot${paused ? " paused" : ""}`} aria-hidden="true" />
+      <b>{title}</b>
       <span className="muted small">{recording.rows} rows{mods.length ? ` · ${mods.join(", ")}` : ""}</span>
     </>
   );
   return (
-    <section className="card rec-card" aria-label="Recording now">
+    <section className={`card rec-card${paused ? " paused" : ""}`} aria-label={paused ? "Recording paused" : "Recording now"}>
       {onOpen ? (
         <button className="rec-head rec-open"
-          onClick={() => onOpen(recording.session)} aria-label={`Recording now, ${elapsed} — open`}>{head}</button>
+          onClick={() => onOpen(recording.session)} aria-label={`${paused ? "Paused — no connection" : `Recording now, ${elapsed}`} — open`}>{head}</button>
       ) : <div className="rec-head">{head}</div>}
       <div className="rec-sources" aria-label="Sources">
         {srcs.map((s) => <span key={s.key} className={`rec-src ${s.tone ?? ""}`}>{s.label}</span>)}
@@ -126,14 +131,21 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
       {wantsPhone ? (
         <button className="btn" onClick={resume}>Resume phone capture</button>
       ) : null}
-      <div className="rec-actions">
-        <button className="btn" onClick={mark} aria-label="Mark this moment">⚑ Mark</button>
-        <button className="btn" onClick={() => setSheet("note")}>Note…</button>
-        <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options">⚙ Options</button>
-        <button className="btn" onClick={split} aria-label="Split — start a new session">Split</button>
-      </div>
-      {sheet === "note" ? <NoteSheet title="Add a note" onSave={saveNote} onClose={() => setSheet(null)} /> : null}
-      {sheet === "mark" ? <NoteSheet hint="Marked — add what happened" onSave={saveMark} onClose={() => setSheet(null)} /> : null}
+      {paused ? (
+        <div className="rec-actions paused">
+          <p className="muted small">Nothing is written until the car is connected again.</p>
+          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options">⚙ Options</button>
+        </div>
+      ) : (
+        <div className="rec-actions">
+          <button className="btn" onClick={mark} aria-label="Mark this moment">⚑ Mark</button>
+          <button className="btn" onClick={() => setSheet("note")}>Note…</button>
+          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options">⚙ Options</button>
+          <button className="btn" onClick={split} aria-label="Split — start a new session">Split</button>
+        </div>
+      )}
+      {sheet === "note" && !paused ? <NoteSheet title="Add a note" onSave={saveNote} onClose={() => setSheet(null)} /> : null}
+      {sheet === "mark" && !paused ? <NoteSheet hint="Marked — add what happened" onSave={saveMark} onClose={() => setSheet(null)} /> : null}
       {sheet === "options" ? <RecordingOptions onClose={() => setSheet(null)} /> : null}
     </section>
   );

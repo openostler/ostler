@@ -54,7 +54,8 @@ const events: SessionEvent[] = [
 describe("event folding", () => {
   it("starts from the state line and applies changes up to t", () => {
     const s = foldEvents(events, 0);
-    expect(s).toMatchObject({ conn: "connected", status: "connected", module: "motor", mode: "mock", active_test: null, fault_watch: false });
+    expect(s).toMatchObject({ conn: "connected", status: "connected", module: "motor", active_test: null, fault_watch: false });
+    expect(s).not.toHaveProperty("mode");
     expect(s.lastCommand).toEqual({});
   });
 
@@ -80,6 +81,12 @@ describe("event folding", () => {
   it("sorts out-of-order events and survives an empty stream", () => {
     expect(foldEvents([...events].reverse(), 61_000).module).toBe("slabs");
     expect(foldEvents([], 5).module).toBeNull();
+  });
+
+  it("tolerates old sessions' mode events (ADR-0011: no modes) without tracking them", () => {
+    const s = foldEvents([...events, { t: 62_000, type: "mode", mode: "live" }], 70_000);
+    expect(s).not.toHaveProperty("mode");
+    expect(s.module).toBe("slabs");
   });
 
   it("a later part's state line does not forget earlier commands", () => {
@@ -118,6 +125,7 @@ describe("snapshot synthesis", () => {
     const before = synthesise({ meta: meta(), data: data(), events, t: 30_000 });
     expect(before.module).toBe("motor");
     expect(before.snap.module).toBe("motor");
+    expect(before.snap).not.toHaveProperty("mode");
     const slabsFields = { height_fl: { limits: null, unit: "mm", c: "candidate" } as unknown as Field };
     const after = synthesise({ meta: meta(), data: data(), events, t: 70_000, fields: slabsFields });
     expect(after.module).toBe("slabs");

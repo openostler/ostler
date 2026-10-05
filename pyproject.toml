@@ -21,7 +21,8 @@ where = ["src"]
 "d2diag.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*",
                 "demo/*.txt"]
 "d2diag.signals" = ["*.json"]
-"d2diag.logbook.demo" = ["*/*.csv", "*/*.json"]
+"d2diag.logbook.demo" = ["*/*.csv", "*/*.json", "*/*.jsonl"]
+"d2diag.geo" = ["*.tsv.gz"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

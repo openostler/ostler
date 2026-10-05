@@ -36,8 +36,8 @@ extend to the Rover V8 platforms over time. Start at
   (emergency key access) code turned out to be **gated behind SecurityAccess**
   (Valeo seed→key unknown), so it can't be read — see the [BCU knowledge-base page](docs/discovery-2-td5/bcu.md).
 - **Mobile-first web dashboard** — a React + TypeScript app in [`ui/`](ui/)
-  (Drive · Connect · Faults · Inputs · Outputs · Utilities), mock ↔ live switchable at
-  runtime, with a one-click fault scan across every module. A password-gated
+  (Drive · Connect · Faults · Inputs · Outputs · Utilities). It always runs live (there
+  is no mock or demo mode), with a one-click fault scan across every module. A password-gated
   **`/admin` mapping console** (coverage map with live sniff, labelled capture, docs)
   is the *same app* with the reverse-engineering tabs revealed. The built app is
   committed, so running the dashboard needs Python only.
@@ -102,18 +102,41 @@ Tests run without hardware against a simulated half-duplex ECU (pyserial's
 Run the dashboard:
 
 ```bash
-# Try it with no car (mock data):
-PYTHONPATH=src python3 tools/dashboard.py --mock
-
 # Against the real vehicle (ignition on, stationary):
 PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX
 ```
 
 Then open <http://localhost:8080> — from the same machine, or from your phone on
-the same network. You can switch mock ↔ live in Settings. To work on the UI itself
-(hot reload against the mock server), see [`ui/CLAUDE.md`](ui/CLAUDE.md). The machine with
-the cable runs the server; the phone is just a browser (it never touches the
-cable).
+the same network. The machine with the cable runs the server; the phone is just a
+browser (it never touches the cable).
+
+**No car? Replay the demo.** The dashboard has no mock or demo mode: it always runs
+live and shows "No connection" until a car is connected. The demo is two committed,
+read-only synthetic sessions, "Demo log 1" and "Demo log 2" (`src/d2diag/logbook/demo/`).
+Open one from the Logs tab and replay it through the whole app
+([ADR-0011](decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md)).
+
+**Working on the UI without a car:** `PYTHONPATH=src python3 tests/e2e_server.py`
+starts the dashboard against the test-only simulated sources (the same server
+Playwright drives). The simulated ECU lives in `tests/` and never ships in the
+product. For hot reload, see [`ui/CLAUDE.md`](ui/CLAUDE.md).
+
+### Session logbook
+
+- **Recording only while connected.** A session opens when the car connects. While
+  the car is disconnected the session is *paused*: no rows are written, not even GPS,
+  and it ends after 5 minutes. GPS movement alone never records anything.
+- **Place names.** Sessions are named by where they started and ended. Offline, the
+  name comes from a trimmed GeoNames `cities1000` table (nearest town within a reach
+  that scales with population, else the region). When the Pi is online, OSM Nominatim
+  refines the name: at most 1 request per second, a custom User-Agent, and every
+  result cached in `logs/geocache.json`. `--geocoder URL|off` sets or disables the
+  endpoint. Only one rounded point per session start and end is sent. The Logs footer
+  credits "Place names © OpenStreetMap contributors (ODbL) · GeoNames (CC BY 4.0)".
+- **Session index.** A local SQLite index (`logbook/index.py`) serves the Logs
+  browser: newest-first paging, search over names, descriptions, places and notes,
+  filters, and a month scrubber. Names and descriptions are editable in place. The
+  index rebuilds itself from the session files when it is missing or out of date.
 
 ### Running on a Raspberry Pi (in the car)
 

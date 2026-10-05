@@ -57,7 +57,13 @@ export const GpsFix = z.object({
 export type GpsFix = z.infer<typeof GpsFix>;
 
 /** The session being recorded right now (null when idle). */
-export const Recording = z.object({ session: z.string(), since: z.number(), rows: z.number() });
+export const Recording = z.object({
+  session: z.string(),
+  since: z.number(),
+  rows: z.number(),
+  /** "recording" while connected; "paused" while the car is disconnected (no rows written). */
+  state: z.string().optional(), // absent = "recording" (older servers)
+});
 export type Recording = z.infer<typeof Recording>;
 
 /** The snapshot pushed over /events every poll (and returned by /snapshot). */
@@ -334,9 +340,21 @@ export const SessionChannel = z.object({
 export type SessionChannel = z.infer<typeof SessionChannel>;
 const LonLat = z.tuple([z.number(), z.number()]);
 
+export const Place = z.object({
+  label: z.string(),
+  source: z.string(), // "geonames" | "osm"
+  label_offline: z.string().nullable().optional(),
+});
+export type Place = z.infer<typeof Place>;
+
 export const SessionMeta = z.object({
   id: z.string(),
   name: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  place: Place.nullable().optional(),
+  place_start: Place.nullable().optional(),
+  place_end: Place.nullable().optional(),
+  note_count: z.number().optional(),
   start_utc: z.string(),
   end_utc: z.string().nullable(),
   duration_s: z.number(),
@@ -357,7 +375,13 @@ export const SessionMeta = z.object({
   accel_cal: z.lazy(() => AccelCal).nullable().optional(),
 });
 export type SessionMeta = z.infer<typeof SessionMeta>;
-export const SessionList = z.object({ sessions: z.array(SessionMeta) });
+export const SessionList = z.object({ sessions: z.array(SessionMeta), next: z.string().nullable().optional() });
+export const SessionHistogram = z.object({
+  group: z.string(), // "month" | "day"
+  buckets: z.array(z.object({ key: z.string(), count: z.number(), km: z.number() })),
+});
+export type SessionHistogram = z.infer<typeof SessionHistogram>;
+export const SessionMetaReply = z.looseObject({ ok: z.boolean(), error: z.string().optional(), meta: SessionMeta.optional() });
 
 /** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; track = [lon, lat, t_ms]. */
 export const SessionData = z.object({

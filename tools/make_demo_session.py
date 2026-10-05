@@ -1,11 +1,11 @@
-"""Regenerate the committed synthetic demo session (ADR-0009, ADR-0010).
+"""Regenerate the committed synthetic demo logs (ADR-0009, ADR-0010, ADR-0011).
 
     PYTHONPATH=src python3 tools/make_demo_session.py [--out DIR]
 
-Writes ``src/d2diag/logbook/demo/<id>/`` (data CSV parts, meta.json, events.jsonl and
-notes.jsonl) deterministically: the
-same code always produces byte-identical files. The logic lives in
-``d2diag.logbook.synth``.
+Writes "Demo log 1" and "Demo log 2" to ``src/d2diag/logbook/demo/<id>/`` (data CSV
+parts, meta.json with name, description and offline place names, events.jsonl and
+notes.jsonl) deterministically: the same code and gazetteer always produce byte-identical
+files. The logic lives in ``d2diag.logbook.synth``.
 """
 from __future__ import annotations
 
@@ -23,10 +23,10 @@ def main(argv: "list[str] | None" = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", default=DEMO_ROOT, help="target root (default: the package demo dir)")
     args = ap.parse_args(argv)
-    sid = generate(args.out)
-    path = os.path.join(args.out, sid)
-    size = sum(os.path.getsize(os.path.join(path, f)) for f in os.listdir(path))
-    print(f"wrote {path} ({size / 1024:.0f} KiB)")
+    for sid in generate(args.out):
+        path = os.path.join(args.out, sid)
+        size = sum(os.path.getsize(os.path.join(path, f)) for f in os.listdir(path))
+        print(f"wrote {path} ({size / 1024:.0f} KiB)")
     return 0
 
 

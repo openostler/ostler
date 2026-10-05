@@ -5,7 +5,7 @@ import { RadioOpt } from "./RadioOpt";
 import { Sheet } from "./Sheet";
 
 /** ⚙ Preferences (per device): trust mode, sharing, display, units, admin link, power.
- * Mock/live and the serial port live in the ConnectionSheet. */
+ * The serial port lives in the ConnectionSheet (there is no mock mode — ADR-0011). */
 export function Preferences({ onClose }: { onClose: () => void }) {
   const { prefs, setPrefs, snap, community, reloadCommunity, toast, admin } = useApp();
   const share = community ? !!community.consent : prefs.share === true;

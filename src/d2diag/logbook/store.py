@@ -6,6 +6,13 @@ with the committed synthetic demo session(s). ``public=True`` hides every non-sy
 session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
 their notes are read-only (``PermissionError``); every note write is refused in public
 mode. Audio is never available in public mode (``KeyError``).
+
+ADR-0011 (spec 2026-10-06-logs-at-scale): ``SessionStore(root, demo_root, index_path=None)``
+attaches a ``SessionIndex`` (``self.index``) that is synced on every change made through
+the store (``update_meta``, ``set_place``, note writes, ``delete``) and by ``sync(sid)``,
+which the recorder's ``on_change`` calls when a session opens or closes. Meta carries
+``name``, ``description``, ``place_start``/``place_end``/``place`` and a computed
+``note_count``.
 """
 from __future__ import annotations
 
@@ -21,12 +28,19 @@ from . import channels as ch
 from . import export as _export
 from .audio import mime_for, track_file
 from .demo import DEMO_ROOT
+from . import places as _places
 from .notes import NoteLog, read_notes
-from .recorder import MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions
+from .recorder import (MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions,
+                       write_json_atomic)
 
 _SAFE_ID = re.compile(r"^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$")
 MAX_TRACK = 5000
 LIVE_GRACE_S = 90.0  # a "recording" meta newer than this is the live session
+MAX_NAME = 80
+MAX_DESCRIPTION = 2000
+_UNSET = object()
+_PLACE_WHICH = {"start": "place_start", "place_start": "place_start",
+                "end": "place_end", "place_end": "place_end"}
 
 _EXPORTS = {
     "csv": (_export.to_csv, "text/csv; charset=utf-8", "csv"),
@@ -161,7 +175,23 @@ def _complete_meta(meta: dict) -> dict:
     meta = {**meta, "channels": chans}
     meta.setdefault("audio", [])
     meta.setdefault("accel_cal", None)
+    meta.setdefault("name", None)
+    meta.setdefault("description", None)
+    for k in _places.PLACE_KEYS:
+        meta.setdefault(k, None)
     return meta
+
+
+def _clean_text(v, cap: int, single_line: bool) -> "str | None":
+    """Trimmed text capped at ``cap`` characters; empty → None. ``ValueError`` for a
+    non-string."""
+    if v is None:
+        return None
+    if not isinstance(v, str):
+        raise ValueError("must be a string or null")
+    v = " ".join(v.split()) if single_line else v.replace("\r\n", "\n").strip()
+    v = v[:cap].strip()
+    return v or None
 
 
 # --------------------------------------------------------------- reduction -- #
@@ -255,9 +285,14 @@ def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
 # -------------------------------------------------------------------- store -- #
 
 class SessionStore:
-    def __init__(self, root: str, demo_root: "str | None" = DEMO_ROOT) -> None:
+    def __init__(self, root: str, demo_root: "str | None" = DEMO_ROOT,
+                 index_path: "str | None" = None) -> None:
         self.root = str(root)
         self.demo_root = str(demo_root) if demo_root else None
+        self.index = None
+        if index_path:
+            from .index import SessionIndex  # noqa: PLC0415 — index imports store lazily
+            self.index = SessionIndex(index_path, self)
 
     # ---- lookup ---- #
 
@@ -273,13 +308,21 @@ class SessionStore:
                     out[d] = (p, demo)
         return out
 
-    def _resolve(self, sid: str, public: bool) -> "tuple[str, bool, dict]":
+    def session_dirs(self) -> "dict[str, tuple[str, bool]]":
+        """Every session: id → (directory, is_demo) (for the index)."""
+        return self._dirs()
+
+    def _locate(self, sid: str) -> "tuple[str, bool] | None":
+        """One session's (path, is_demo) by direct lookup (no directory scan)."""
         if not isinstance(sid, str) or not _SAFE_ID.match(sid):
-            raise KeyError(sid)
-        hit = self._dirs().get(sid)
-        if hit is None:
-            raise KeyError(sid)
-        path, demo = hit
+            return None
+        for base, demo in ((self.root, False), (self.demo_root, True)):
+            if base and os.path.isfile(os.path.join(base, sid, "meta.json")):
+                return os.path.join(base, sid), demo
+        return None
+
+    @staticmethod
+    def _load(path: str, demo: bool, public: bool, sid: str) -> dict:
         meta = _read_meta(os.path.join(path, "meta.json"))
         if meta is None:
             raise KeyError(sid)
@@ -288,16 +331,36 @@ class SessionStore:
                     "recording": False}
         if public and not meta.get("synthetic"):
             raise KeyError(sid)
-        return path, demo, _complete_meta(meta)
+        meta = _complete_meta(meta)
+        meta["note_count"] = len(read_notes(path))
+        return meta
+
+    def _resolve(self, sid: str, public: bool) -> "tuple[str, bool, dict]":
+        hit = self._locate(sid)
+        if hit is None:
+            raise KeyError(sid)
+        path, demo = hit
+        return path, demo, self._load(path, demo, public, sid)
+
+    def _sync(self, sid: str) -> None:
+        if self.index is not None:
+            try:
+                self.index.sync(sid)
+            except Exception:  # noqa: BLE001 — the index is a cache; never fail a write
+                pass
+
+    def sync(self, sid: str) -> None:
+        """Re-index one session (missing → removed). The recorder's ``on_change``."""
+        self._sync(sid)
 
     # ---- API ---- #
 
     def list(self, public: bool = False) -> "list[dict]":
         """Every session's meta, newest first; public → synthetic sessions only."""
         out = []
-        for sid in self._dirs():
+        for sid, (path, demo) in self._dirs().items():
             try:
-                out.append(self._resolve(sid, public)[2])
+                out.append(self._load(path, demo, public, sid))
             except KeyError:
                 continue
         out.sort(key=lambda m: (str(m.get("start_utc") or ""), str(m.get("id"))), reverse=True)
@@ -305,6 +368,88 @@ class SessionStore:
 
     def meta(self, sid: str, public: bool = False) -> dict:
         return self._resolve(sid, public)[2]
+
+    def _writable(self, sid: str, public: bool) -> "tuple[str, dict]":
+        if public:
+            raise PermissionError("sessions are read-only in public mode")
+        path, demo, meta = self._resolve(sid, False)
+        if demo or meta.get("synthetic") or meta.get("source") == "demo":
+            raise PermissionError("demo and synthetic sessions are read-only")
+        return path, meta
+
+    def update_meta(self, sid: str, name=_UNSET, description=_UNSET,
+                    public: bool = False) -> dict:
+        """Set ``name`` (≤80 chars, whitespace collapsed) and/or ``description`` (≤2000
+        chars, trimmed); empty → null; an omitted field is unchanged. Returns the new
+        meta. ``KeyError`` (unknown), ``PermissionError`` (public mode, demo/synthetic),
+        ``ValueError`` (not a string or null)."""
+        path, _ = self._writable(sid, public)
+        changes = {}
+        if name is not _UNSET:
+            changes["name"] = _clean_text(name, MAX_NAME, True)
+        if description is not _UNSET:
+            changes["description"] = _clean_text(description, MAX_DESCRIPTION, False)
+        if changes:
+            self._patch_meta(path, sid, changes)
+            self._sync(sid)
+        return self.meta(sid)
+
+    def _patch_meta(self, path: str, sid: str, changes: dict) -> dict:
+        p = os.path.join(path, "meta.json")
+        raw = _read_meta(p)
+        if raw is None:
+            raise KeyError(sid)
+        raw.update(changes)
+        write_json_atomic(p, raw)
+        return raw
+
+    def set_place(self, sid: str, which: str, label: str, source: str = "osm") -> dict:
+        """Enrichment hook: replace ``place_start`` (``which`` "start") or ``place_end``
+        ("end") with ``{label, source, label_offline}`` (the offline label is kept) and
+        recompute ``place``. Demo sessions are committed files (``PermissionError``)."""
+        key = _PLACE_WHICH.get(which)
+        if key is None:
+            raise ValueError("which must be 'start' or 'end'")
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError("label must be a non-empty string")
+        hit = self._locate(sid)
+        if hit is None:
+            raise KeyError(sid)
+        path, demo = hit
+        if demo:
+            raise PermissionError("demo sessions are read-only")
+        raw = _read_meta(os.path.join(path, "meta.json"))
+        if raw is None:
+            raise KeyError(sid)
+        old = raw.get(key) if isinstance(raw.get(key), dict) else {}
+        offline = old.get("label_offline") or (
+            old.get("label") if old.get("source", "geonames") == "geonames" else None)
+        new = {"label": " ".join(label.split())[:200], "source": str(source or "osm"),
+               "label_offline": offline}
+        raw[key] = new
+        raw["place"] = _places.combined(raw)
+        self._patch_meta(path, sid, {key: new, "place": raw["place"]})
+        self._sync(sid)
+        return self.meta(sid)
+
+    def ensure_places(self, sid: str) -> bool:
+        """Write the offline place names of a recorded session that has none yet (older
+        sessions). True when the meta changed. Demo sessions carry theirs committed."""
+        hit = self._locate(sid)
+        if hit is None or hit[1]:
+            return False
+        path = hit[0]
+        raw = _read_meta(os.path.join(path, "meta.json"))
+        if raw is None or "place_start" in raw or raw.get("recording"):
+            return False
+        found = _places.places_for(raw.get("start_pos"), raw.get("end_pos"))
+        if found is None:  # gazetteer unavailable: try again on a later pass
+            return False
+        try:
+            self._patch_meta(path, sid, found)
+        except OSError:
+            return False
+        return True
 
     def rows(self, sid: str, public: bool = False) -> "tuple[dict, list[dict]]":
         """(meta, rows as dicts) for exports and tools."""
@@ -353,6 +498,11 @@ class SessionStore:
             if age < LIVE_GRACE_S:
                 raise PermissionError("session is being recorded")
         shutil.rmtree(path)
+        if self.index is not None:
+            try:
+                self.index.remove(sid)
+            except Exception:  # noqa: BLE001
+                pass
 
     def export(self, sid: str, fmt: str, public: bool = False) -> "tuple[str, str, bytes]":
         """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | notes."""
@@ -393,15 +543,20 @@ class SessionStore:
                  public: bool = False) -> dict:
         """Add a note. ``KeyError`` (unknown session), ``PermissionError`` (public mode or
         a synthetic session), ``ValueError`` (bad fields)."""
-        return self._note_log(sid, public).add(t, text=text, tags=tags, kind=kind,
+        note = self._note_log(sid, public).add(t, text=text, tags=tags, kind=kind,
                                                source=source, t_end=t_end, capture=capture)
+        self._sync(sid)
+        return note
 
     def edit_note(self, sid: str, nid: str, public: bool = False, **fields) -> dict:
         """Change any of ``text, tags, t, t_end``; ``KeyError`` for an unknown note."""
-        return self._note_log(sid, public).edit(nid, **fields)
+        note = self._note_log(sid, public).edit(nid, **fields)
+        self._sync(sid)
+        return note
 
     def delete_note(self, sid: str, nid: str, public: bool = False) -> None:
         self._note_log(sid, public).delete(nid)
+        self._sync(sid)
 
     # ---- audio (ADR-0010; never public) ---- #
 
@@ -470,7 +625,10 @@ class SessionStore:
     def rotate(self, min_free_bytes: int = MIN_FREE_BYTES, usage=shutil.disk_usage,
                keep=()) -> "list[str]":
         """Delete the oldest non-synthetic recorded sessions until ``min_free_bytes`` free."""
-        return rotate_sessions(self.root, min_free_bytes, usage=usage, keep=keep)
+        gone = rotate_sessions(self.root, min_free_bytes, usage=usage, keep=keep)
+        for sid in gone:
+            self._sync(sid)
+        return gone
 
 
 __all__ = ["SessionStore", "read_part", "read_rows", "read_events", "rdp", "reduce_track"]

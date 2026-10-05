@@ -8,13 +8,15 @@
 #
 # Secret: D2DIAG_ADMIN_PW gates the /admin mapping endpoints — set it in the Dokploy stack
 # env, never hardcoded here. logs/ is a writable private volume (the app creates logs/ at
-# startup; may hold VIN/EKA data in live mode — keep it private).
+# startup; may hold VIN/EKA data once a car is connected — keep it private).
 services:
   d2diag:
     build: .
-    # Same as the Dockerfile CMD: mock mode plus the committed demo sniff feed (Decode tab).
-    command: ["python", "tools/dashboard.py", "--mock", "--host", "0.0.0.0", "--port", "8080",
-              "--replay", "src/d2diag/web/demo/sniff-demo.txt"]
+    # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the committed demo sniff
+    # feed (Decode tab) and the OSM geocoder on.
+    command: ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080",
+              "--replay", "src/d2diag/web/demo/sniff-demo.txt",
+              "--geocoder", "https://nominatim.openstreetmap.org"]
     restart: unless-stopped
     networks:
       - dokploy-network

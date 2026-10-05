@@ -165,4 +165,14 @@ describe("ConnectionSheet", () => {
       { snap: { status: "error", conn: "error", signals: {}, faults: [] } });
     expect(screen.getByText("No connection for 1 m 20 s")).toBeInTheDocument();
   });
+
+  it("has no Data source block or mode row (ADR-0011: live only), even from an old server", () => {
+    const oldSnap = { status: "connected", conn: "connected", signals: {}, faults: [], mode: "mock", modes: ["mock", "live"], source: "usb" };
+    renderWithApp(<ConnectionSheet onClose={vi.fn()} />, { snap: oldSnap });
+    expect(screen.queryByText("Data source")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mock" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Live vehicle" })).not.toBeInTheDocument();
+    expect(screen.queryByText("MODE")).not.toBeInTheDocument();
+    expect(screen.getByText("SOURCE")).toBeInTheDocument();
+  });
 });

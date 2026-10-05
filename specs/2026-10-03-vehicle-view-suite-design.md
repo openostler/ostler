@@ -2,8 +2,8 @@
 title: "Vehicle-view diagnostic suite — Design"
 area: specs
 status: draft
-version: 1.0
-updated: 2026-10-03
+version: 1.1
+updated: 2026-10-05
 depends_on: [specs/2026-10-01-web-ui-design.md, references/menus/bcu-inputs.md, references/nanocom/feature_map.md]
 summary: >
   Grow the dashboard into a diagnostic suite where each module has an elegant vehicle-view
@@ -73,7 +73,7 @@ In **live with no decode**, all zones are neutral "awaiting mapping" until sniff
 ## Later slices (same base)
 - **Airbag/SRS:** airbag + pretensioner zones (driver/passenger/side/curtain) with per-zone
   fault status (read-only, faults only).
-- **Auto gearbox (EAT):** PRND selector, oil-temp gauge, turbine/output speed, pressures.
+- **EAT (auto gearbox):** PRND selector, oil-temp gauge, turbine/output speed, pressures.
 - **SLABS:** refactor `SlabsCar` onto `VehicleBase` for a shared silhouette.
 - **TD5:** keep Drive tiles; optional under-bonnet inset.
 
@@ -98,3 +98,4 @@ tests from these pages) stays in the Outputs tab behind `confirm.ts`, unchanged.
 
 ## Changelog
 - 2026-10-03 — Initial design drafted (research: Tesla Service Mode, Polestar HMI).
+- 2026-10-05 — Module display names aligned with the catalog: "EAT (auto gearbox)" and "SRS (airbag)" (internal ids `autobox`, `airbag` unchanged).

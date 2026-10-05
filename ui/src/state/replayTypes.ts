@@ -33,7 +33,6 @@ export interface ReplayEventState {
   conn: string | null;
   status: string | null;
   module: string | null;
-  mode: string | null;
   active_test: { action: string; label?: string; since?: number; stop?: string } | null;
   fault_watch: boolean;
   logging: { recording: boolean; file?: string } | null;

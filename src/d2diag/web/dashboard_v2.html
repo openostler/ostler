@@ -888,9 +888,9 @@ function renderFaults(){
 const MODULES = [
   {id:"motor", name:"TD5 — Engine ECU", desc:"Faults, inputs, outputs. Validated on the car.", tag:"verified", connectable:true},
   {id:"slabs", name:"SLABS — ABS + Air Suspension", desc:"Faults, heights, actuator tests, ABS bleed.", tag:"verified", connectable:true},
-  {id:"airbag", name:"Airbag / SRS", desc:"Read-only by construction. Faults only.", tag:"experimental", connectable:false},
+  {id:"airbag", name:"SRS (airbag)", desc:"Read-only by construction. Faults only.", tag:"experimental", connectable:false},
   {id:"ace", name:"ACE — Active Cornering", desc:"Fault block isolated, decoding in progress.", tag:"partial", connectable:false},
-  {id:"autobox", name:"Auto gearbox (EAT)", desc:"ReadFaults confirmed, payload undecoded.", tag:"partial", connectable:false},
+  {id:"autobox", name:"EAT (auto gearbox)", desc:"ReadFaults confirmed, payload undecoded.", tag:"partial", connectable:false},
   {id:"bcu", name:"BCU — Body Control", desc:"EKA read. No conventional fault memory.", tag:"partial", connectable:false},
 ];
 const TAGCOL = {verified:["var(--bg-green)","var(--ic-green)"], experimental:["var(--bg-yellow)","var(--ic-yellow)"], partial:["var(--bg-muted)","var(--fg-dis)"]};

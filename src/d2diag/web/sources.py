@@ -1,17 +1,17 @@
 """Data sources for the dashboard.
 
 A ``DataSource`` supplies a snapshot (``poll()``) with status, signals
-(name → value/unit) and fault codes. ``MockDataSource`` simulates a car for
-UI development without hardware. ``Td5DataSource`` reads the real Td5 ECU.
+(name → value/unit) and fault codes. ``Td5DataSource`` reads the real Td5 ECU and
+``SlabsDataSource`` the SLABS; ``InfoDataSource`` stands in for modules not readable yet.
+There is no simulated source in the product (ADR-0011): the fakes the tests and the UI
+end-to-end server use live in ``tests/fake_sources.py``.
 """
 from __future__ import annotations
 
 import abc
 import datetime as _dt
 import json
-import math
 import os
-import random
 import time
 
 from ..ports import resolve_serial_port  # re-exported: core port resolver (moved out of web)
@@ -19,7 +19,7 @@ from ..signals import load_signals
 from ..td5.identifiers import BY_NAME, signal_status
 from ..td5.td5 import INJECTOR_CYLINDERS, OUTPUT_NAMES
 
-# Td5 module actions the sources dispatch (live and mock). Must match the td5 entries of
+# Td5 module actions the Td5 source dispatches. Must match the td5 entries of
 # ``d2diag.commands.REGISTRY`` that are not planned — tests/test_commands.py checks both ways.
 TD5_ACTIONS: "frozenset[str]" = frozenset(
     [f"output_{n}" for n in OUTPUT_NAMES]
@@ -84,7 +84,7 @@ def _raw_log_path(module: str, raw_log_dir: "str | None") -> "str | None":
 def _transport(port: str, raw_log_path: "str | None"):
     """SerialTransport, optionally wrapped in LoggingTransport for a raw TX/RX log.
 
-    Lazy import so the Mock sources can run without pyserial. When raw logging is on,
+    Lazy import so the package imports without pyserial. When raw logging is on,
     LoggingTransport sits transparently under KLine and captures every byte both ways."""
     from ..transport import SerialTransport
     inner = SerialTransport(port, timeout=1.0)
@@ -300,7 +300,7 @@ class DataSource(abc.ABC):
     on_sleep = None
 
     def is_connected(self) -> bool:
-        """Does the source have a live session? Base: no (mock always reports connected via poll)."""
+        """Does the source have a live session? Base: no."""
         return False
 
     @abc.abstractmethod
@@ -313,7 +313,7 @@ class DataSource(abc.ABC):
 
     def set_port(self, spec: str) -> None:
         """Use this serial port spec (``auto`` or a device path) from the next connect.
-        Base: no port (mock/info sources)."""
+        Base: no port (info sources)."""
 
     def menu_map(self) -> "list":
         """Reference/coverage map (reference tool menu + our status). Base: empty."""
@@ -329,222 +329,25 @@ class DataSource(abc.ABC):
         return {"ok": False, "error": f"unknown command: {action}"}
 
 
-def _mock_gps_speed(gps) -> "float | None":
-    """Speed (km/h) of an optional GPS source's latest fix, for the mock sources to follow.
-    None when there is no source, no fix yet, or the source misbehaves (never fails a poll)."""
-    if gps is None:
-        return None
-    try:
-        fix = gps.latest()
-    except Exception:  # noqa: BLE001
-        return None
-    v = getattr(fix, "speed_kmh", None) if fix is not None else None
-    if isinstance(v, bool) or not isinstance(v, (int, float)):
-        return None
-    return max(0.0, float(v))
-
-
-class MockDataSource(DataSource):
-    """Simulated car for UI dev: reasonable, moving values + one active fault."""
-
-    name = "mock"
-    store_module = "td5"
-
-    _ACTIVE_FAULT = "inlet air temp. circuit (Current)"
-    _LOGGED_FAULT = "air flow circuit (Logged Low)"
-
-    def __init__(self, gps=None) -> None:
-        self._t = 0.0
-        self._coolant = 20.0  # cold start, warming up
-        self._faults = [self._LOGGED_FAULT, self._ACTIVE_FAULT]
-        self._cleared_ticks = 0  # >0 = just cleared, faults temporarily gone
-        # Optional GPS source (gps.reader.MockGps …): when it has a speed, the mock
-        # "drives" along with it so mock `speed` ≈ GPS speed in recorded sessions.
-        self._gps = gps
-        self._last_signals: "dict" = {}  # last poll, for the mock read_block
-
-    def poll(self) -> "dict":
-        self._t += 1
-        gps_speed = _mock_gps_speed(self._gps)
-        if gps_speed is not None:
-            # follow the GPS: a plausible rpm for the speed (≈ 4th/5th gear), boost on load
-            speed = gps_speed
-            rpm = 780 + speed * 24 + random.uniform(-30, 30) if speed > 1 else (
-                800 + random.uniform(-40, 60))
-            revving = speed > 1
-        else:
-            # idle with a little variation, and a "throttle blip" pulse now and then
-            revving = (int(self._t) % 30) in (10, 11, 12, 13)
-            base = 2200 if revving else 800
-            rpm = base + random.uniform(-40, 60)
-            speed = max(0.0, (rpm - 800) / 45) if revving else 0.0
-        self._coolant = min(88.0, self._coolant + 0.15)  # creeps towards working temp
-        manifold = 1.0 + (0.25 if revving else 0.0) + random.uniform(-0.01, 0.01)
-        signals = {
-            "rpm": rpm,
-            "speed": speed,
-            "battery": 14.1 + random.uniform(-0.15, 0.15),
-            "coolant_temp": self._coolant,
-            "air_temp": 120.0,  # locked → mirrors the IAT fault on the real car
-            "fuel_temp": self._coolant - 6 + random.uniform(-1, 1),
-            "manifold_press": manifold,
-            "ambient_press_1": 1.01,
-            # Fuel economy (L/100km) so the Drive tab preview shows L/mil; live values
-            # come from the real fuel computer in Td5DataSource.
-            "economy": 8.2 + random.uniform(-0.4, 0.4),
-            "trip_economy": 7.9 + random.uniform(-0.1, 0.1),
-            "lifetime_economy": 8.5 + random.uniform(-0.05, 0.05),
-            "rpm_error": random.uniform(-8, 8),
-            "balance_1": random.uniform(-4, 4),
-            "balance_2": random.uniform(-4, 4),
-            "balance_3": random.uniform(-4, 4),
-            "balance_4": random.uniform(-4, 4),
-            "balance_5": random.uniform(-4, 4),
-        }
-        # After clearing, the list is empty for a few polls, then the ACTIVE
-        # fault returns (still faulty) — demonstrates "clear and see if it comes back".
-        if self._cleared_ticks > 0:
-            self._cleared_ticks -= 1
-            if self._cleared_ticks == 0:
-                self._faults = [self._ACTIVE_FAULT]
-        self._last_signals = _sig(signals)
-        return {
-            "status": "connected",
-            "source": self.name,
-            "signals": self._last_signals,
-            "faults": list(self._faults),
-        }
-
-    def command(self, action: str, params: "dict | None" = None) -> "dict":
-        if action == "read_block":
-            if not self._last_signals:
-                self.poll()
-            return _mock_read_block_cmd("td5", self._last_signals, params)
-        if action == "clear_faults":
-            self._faults = []
-            self._cleared_ticks = 4  # empty for ~4 polls, then the active fault returns
-            return {"ok": True, "message": "Fault codes cleared (mock)"}
-        if action in TD5_ACTIONS:
-            return _mock_td5_action(action)
-        return {"ok": False, "error": f"unknown command: {action}"}
-
-    def menu_map(self) -> "list":
-        from ..td5.menu import TD5_MENU
-        return TD5_MENU
-
-
-def _mock_td5_action(action: str) -> "dict":
-    """Demo replies for the Td5 module actions (never touches a bus)."""
-    if action == "security_status":
-        return {"ok": True, "message": _security_message(0x03) + " (mock)",
-                "raw": "c0 03", "status": 0x03}
-    if action == "read_identity":
-        # Synthetic values only: no real VIN exists in mock mode either.
-        return {"ok": True, "message": "ECU identity (mock)", "identity": {
-            "part_no": "NNN000130", "vin_masked": "*************0000",
-            "build_date": "2002-11-14", "software_no": "NNW500140",
-            "id_9b": "01", "id_9c": "01",
-            "candidate_fields": ["vin_masked", "build_date", "software_no"]}}
-    if action.startswith("injector_"):
-        return {"ok": True, "message": f"Injector {action[len('injector_'):]} pulse (mock)"}
-    return {"ok": True, "message": f"Output test: {action[len('output_'):]} (mock)"}
-
-
 class InfoDataSource(DataSource):
     """A module that has no live-signal reader yet (airbag/ACE/EAT/BCU).
 
     The UI already lists these modules; this source makes them *selectable* without
-    pretending they stream live data. In **mock** mode it reports ``connected`` with a
-    seeded fault list so the demo is browsable (Faults, clear-and-return). In **live**
-    mode it reports honestly that the module is not readable on the car yet — no
-    fabricated data (data-honesty rule). It carries no signals, so the Drive/Inputs/
-    Outputs tabs fall back to their empty/"Coming" state.
+    pretending they stream live data: it reports honestly that the module is not readable
+    on the car yet, with no fabricated data (data-honesty rule). It carries no signals, so
+    the Drive/Inputs/Outputs tabs fall back to their empty/"Coming" state. Simulated
+    variants exist only in the tests (tests/fake_sources.py, ADR-0011).
     """
 
-    def __init__(self, module: str, *, mock: bool, faults: "list[str] | None" = None,
-                 live_message: "str | None" = None,
-                 signal_gen: "Callable[[int], dict] | None" = None) -> None:
+    def __init__(self, module: str, *, live_message: "str | None" = None) -> None:
         self.name = module
         self.store_module = module
-        self._mock = mock
-        self._seed = list(faults or [])
-        self._faults = list(self._seed)
-        self._cleared = 0
         self._live_message = live_message or (
-            f"{module} is not readable on the car yet — selectable in mock/demo only.")
-        # Optional demo-only signal generator (mock mode): tick -> {name: {v,u,s,c}}.
-        # Lets the vehicle-view pages animate without claiming decoded data; every signal it
-        # emits is tagged confidence "candidate" so it is never mistaken for a proven reading.
-        self._signal_gen = signal_gen
-        self._tick = 0
+            f"{module} is not readable on the car yet.")
 
     def poll(self) -> "dict":
-        if not self._mock:
-            return {"status": "error", "source": self.name, "signals": {},
-                    "faults": [], "error": self._live_message}
-        # After a mock clear, the list is empty for a few polls, then the seed returns
-        # (mirrors "clear and see if it comes back", like the other mock sources).
-        if self._cleared > 0:
-            self._cleared -= 1
-            if self._cleared == 0:
-                self._faults = list(self._seed)
-        self._tick += 1
-        signals = self._signal_gen(self._tick) if self._signal_gen else {}
-        return {"status": "connected", "source": self.name, "signals": signals,
-                "faults": list(self._faults)}
-
-    def command(self, action: str, params: "dict | None" = None) -> "dict":
-        if self._mock and action == "clear_faults":
-            self._faults = []
-            self._cleared = 4
-            return {"ok": True, "message": f"Fault codes cleared (mock {self.name})"}
-        return {"ok": False, "error": f"unknown command: {action}"}
-
-
-def _flag(v: bool) -> "dict":
-    """A boolean body state as a snapshot signal. Confidence is always 'candidate' — these
-    are demo/mock states or NanoCom-known fields, never a proven decode."""
-    return {"v": 1 if v else 0, "u": "", "s": None, "c": "candidate"}
-
-
-def mock_bcu_signals(tick: int) -> "dict":
-    """Demo-only BCU body states for the vehicle-view Body page (mock mode).
-
-    A gentle scripted scene: ignition on, dipped beams, indicators blinking, a door that opens
-    now and then, wipers sweeping. Names match the Body page's zone→signal map in the UI's
-    layout.ts. Every value is tagged 'candidate' so it is never read as a proven measurement.
-    """
-    blink = (tick // 2) % 2 == 0          # ~1 Hz indicator blink
-    door_open = (tick % 40) in range(6, 14)  # driver door opens briefly, periodically
-    wiping = (tick % 20) < 6
-    sig = {
-        # doors / openings
-        "door_driver": _flag(door_open),
-        "door_passenger": _flag(False),
-        "bonnet": _flag(False),
-        "tailgate": _flag(False),
-        # lamps
-        "side_lights": _flag(True),
-        "dipped": _flag(True),
-        "main_beam": _flag(False),
-        "front_fog": _flag(False),
-        "rear_fog": _flag(False),
-        "indicator_left": _flag(blink),
-        "indicator_right": _flag(False),
-        "hazard": _flag(False),
-        "brake_light": _flag((tick % 16) < 3),
-        "reverse_light": _flag(False),
-        # windows / wash-wipe / heated screen
-        "window_front_left": _flag(False),
-        "window_front_right": _flag(False),
-        "wiper_front": _flag(wiping),
-        "wiper_rear": _flag(False),
-        "heated_screen": _flag(False),
-        # supply (numeric)
-        "battery": {"v": round(12.6 + 0.1 * math.sin(tick / 9), 2), "u": "V", "s": "ok", "c": "candidate"},
-        "ignition_pos": {"v": 2, "u": "", "s": None, "c": "candidate"},
-    }
-    return sig
+        return {"status": "error", "source": self.name, "signals": {},
+                "faults": [], "error": self._live_message}
 
 
 def _parse_lids(params: "dict | None") -> "list[int]":
@@ -579,75 +382,10 @@ def _read_block_cmd(session, params: "dict | None") -> "dict":
     return {"ok": True, "raws": {k: v.hex() for k, v in raws.items()}}
 
 
-# Integer range per store field kind (for encoding a mock value back into raw bytes).
-_KIND_RANGE = {"u8": (0, 0xFF), "u16": (0, 0xFFFF), "u16le": (0, 0xFFFF),
-               "s16": (-0x8000, 0x7FFF), "s16le": (-0x8000, 0x7FFF)}
-
-
-def _encode_field(buf: bytearray, sig, value: float) -> None:
-    """Write ``value`` into ``buf`` the way ``Signal.decode`` reads it back."""
-    if sig.kind == "bit":
-        mask = 1 << (sig.bit or 0)
-        if value:
-            buf[sig.offset] |= mask
-        else:
-            buf[sig.offset] &= ~mask & 0xFF
-        return
-    lo, hi = _KIND_RANGE.get(sig.kind, (0, 0xFFFF))
-    raw = int(round((float(value) - sig.bias) / (sig.scale or 1.0)))
-    raw = max(lo, min(hi, raw)) & (0xFF if sig.kind == "u8" else 0xFFFF)
-    if sig.kind == "u8":
-        buf[sig.offset] = raw
-    elif sig.kind.endswith("le"):
-        buf[sig.offset], buf[sig.offset + 1] = raw & 0xFF, raw >> 8
-    else:
-        buf[sig.offset], buf[sig.offset + 1] = raw >> 8, raw & 0xFF
-
-
-def mock_read_block(module: str, values: "dict[str, float]", lids: "list[int]") -> "dict[str, str]":
-    """Deterministic mock LID blocks built from the signal store and the mock values.
-
-    For every requested LID with store fields, a data block is laid out from the fields'
-    offsets/kinds (the longest reply-length variant when a LID has several) and each field
-    is encoded from ``values`` (the last mock poll; a field the mock does not simulate reads
-    as raw 0). A LID the store does not know is skipped, as a real ECU would refuse it.
-    Returns ``{lidhex: hex}`` like the live ``read_block``. Mock only: never a car value."""
-    width = {"u8": 1, "bit": 1}
-    by_lid: "dict[int, list]" = {}
-    for sig in load_signals(module):
-        by_lid.setdefault(sig.lid, []).append(sig)
-    out: "dict[str, str]" = {}
-    for lid in lids:
-        sigs = by_lid.get(lid)
-        if not sigs:
-            continue
-        lengths = [s.length for s in sigs if s.length is not None]
-        length = max(lengths) if lengths else None
-        use = [s for s in sigs if s.length is None or s.length == length]
-        size = max([s.offset + width.get(s.kind, 2) for s in use] + [length or 0])
-        buf = bytearray(size)
-        for sig in use:
-            v = values.get(sig.name)
-            if isinstance(v, bool) or not isinstance(v, (int, float)):
-                continue
-            _encode_field(buf, sig, v)
-        out[f"{lid:02x}"] = bytes(buf).hex()
-    return out
-
-
-def _mock_read_block_cmd(module: str, signals: "dict", params: "dict | None") -> "dict":
-    try:
-        lids = _parse_lids(params)
-    except ValueError as exc:
-        return {"ok": False, "error": str(exc)}
-    values = {k: (s.get("v") if isinstance(s, dict) else s) for k, s in (signals or {}).items()}
-    return {"ok": True, "raws": mock_read_block(module, values, lids), "mock": True}
-
-
 class Td5DataSource(DataSource):
     """Real Td5 ECU. Establishes the session lazily and re-reads on error.
 
-    Requires hardware; imports heavy dependencies locally so Mock can run standalone.
+    Requires hardware; imports heavy dependencies locally.
     """
 
     name = "td5"
@@ -839,7 +577,7 @@ def _slabs_faults_flat(f: "dict[str, list]") -> "list[str]":
     return [x + " (Logged)" for x in logged] + [x + " (Current)" for x in current]
 
 
-# Actuator actions (web → SLABS). Name → English label (for mock responses/UI).
+# Actuator actions (web → SLABS). Name → English label (for responses/UI).
 _SLABS_ACTUATORS = {
     "buzzer": "Buzzer test", "compressor": "Compressor test", "exhaust": "Exhaust valve test",
     "pump_on": "ABS pump on", "pump_off": "ABS pump off",
@@ -879,65 +617,6 @@ def _slabs_do(slabs, action: str) -> None:
     else:
         raise ValueError(f"unknown command: {action}")
 
-
-class MockSlabsDataSource(DataSource):
-    """Simulated SLABS for UI dev: moving heights + the baseline's two logged faults."""
-
-    name = "slabs"
-    store_module = "slabs"
-
-    def __init__(self, gps=None) -> None:
-        self._t = 0.0
-        self._gps = gps  # optional GPS source: wheel speeds follow its speed (see poll)
-        self._faults = {
-            "logged": [
-                "right front wheel speed sensor — output too low",
-                "shuttle valve switch — electrical failure",
-            ],
-            "current": [],
-        }
-        self._cleared = 0
-        self._last_signals: "dict" = {}  # last poll, for the mock read_block
-
-    def poll(self) -> "dict":
-        self._t += 1
-        hl = 143 + 2 * math.sin(self._t / 10)
-        hr = 157 + 2 * math.cos(self._t / 12)
-        vals = {
-            "height_left": hl, "height_right": hr,
-            "height_left_mm": hl * 1.4, "height_right_mm": hr * 1.4,
-        }
-        # Wheel speed raw (~124 at rest, scale unknown on the car). With a GPS the mock
-        # adds the GPS km/h so the wheels visibly move with the drive — illustrative only.
-        moving = _mock_gps_speed(self._gps) or 0.0
-        for w in ("fl", "fr", "rl", "rr"):  # wheel: speed + sensor voltage
-            vals[f"wheel_speed_{w}"] = 124.0 + moving
-            vals[f"abs_sensor_{w}"] = round(2.3 + random.uniform(-0.05, 0.05), 2)
-        signals = _slabs_sig(vals)
-        self._last_signals = signals
-        if self._cleared > 0:
-            self._cleared -= 1
-            if self._cleared == 0:
-                self._faults = {"logged": [], "current": []}
-        return {"status": "connected", "source": self.name,
-                "signals": signals, "faults": _slabs_faults_flat(self._faults)}
-
-    def command(self, action: str, params: "dict | None" = None) -> "dict":
-        if action == "read_block":
-            if not self._last_signals:
-                self.poll()
-            return _mock_read_block_cmd("slabs", self._last_signals, params)
-        if action == "clear_faults":
-            self._faults = {"logged": [], "current": []}
-            self._cleared = 4
-            return {"ok": True, "message": "Fault codes cleared (mock)"}
-        if action in _SLABS_ACTUATORS:
-            return {"ok": True, "message": f"{_SLABS_ACTUATORS[action]} (mock)"}
-        return {"ok": False, "error": f"unknown command: {action}"}
-
-    def menu_map(self) -> "list":
-        from ..slabs.menu import SLABS_MENU
-        return SLABS_MENU
 
 
 _SLABS_EMPTY_GRACE = 3  # empty bus calls in a row tolerated before reconnect

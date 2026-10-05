@@ -27,7 +27,7 @@ export function isSignalChannel(c: Pick<SessionChannel, "name" | "group">): bool
 }
 
 export function initialEventState(): ReplayEventState {
-  return { conn: null, status: null, module: null, mode: null, active_test: null, fault_watch: false, logging: null, lastCommand: {} };
+  return { conn: null, status: null, module: null, active_test: null, fault_watch: false, logging: null, lastCommand: {} };
 }
 
 const str = (v: unknown): string | null => (typeof v === "string" ? v : null);
@@ -50,7 +50,8 @@ function loggingOf(v: unknown): ReplayEventState["logging"] {
   return { recording: !!o.recording, ...(typeof o.file === "string" ? { file: o.file } : {}) };
 }
 
-/** Apply one event to the state (returns a new state). Unknown types are ignored. */
+/** Apply one event to the state (returns a new state). Unknown types are ignored — including
+ * `mode` events and a `state` line's `mode` from sessions recorded before ADR-0011. */
 export function applyEvent(s: ReplayEventState, e: SessionEvent): ReplayEventState {
   const ev = e as Record<string, unknown>;
   switch (e.type) {
@@ -60,7 +61,6 @@ export function applyEvent(s: ReplayEventState, e: SessionEvent): ReplayEventSta
         conn: "conn" in ev ? str(ev.conn) : s.conn,
         status: "status" in ev ? str(ev.status) : s.status,
         module: "module" in ev ? str(ev.module) ?? s.module : s.module,
-        mode: "mode" in ev ? str(ev.mode) : s.mode,
         active_test: "active_test" in ev ? activeTestOf(ev.active_test) : s.active_test,
         fault_watch: "fault_watch" in ev ? !!ev.fault_watch : s.fault_watch,
         logging: "logging" in ev ? loggingOf(ev.logging) : s.logging,
@@ -68,7 +68,6 @@ export function applyEvent(s: ReplayEventState, e: SessionEvent): ReplayEventSta
     case "conn": return { ...s, conn: str(ev.conn) };
     case "status": return { ...s, status: str(ev.status) };
     case "module": return { ...s, module: str(ev.module) ?? s.module };
-    case "mode": return { ...s, mode: str(ev.mode) };
     case "active_test": return { ...s, active_test: activeTestOf(ev.active_test) };
     case "fault_watch": return { ...s, fault_watch: !!ev.on };
     case "logging": return { ...s, logging: loggingOf(ev) };
@@ -188,7 +187,7 @@ export function moduleOf(state: ReplayEventState, meta?: SessionMeta, fallback =
 }
 
 /** Device-level snapshot fields carried over from the live stream (not car state). */
-const CARRY = ["public", "allow_shutdown", "modes", "recording", "recording_sources", "source", "port"] as const;
+const CARRY = ["public", "allow_shutdown", "recording", "recording_sources", "source", "port"] as const;
 
 /**
  * The snapshot + live history every screen sees at session time `t`.
@@ -210,7 +209,7 @@ export function synthesise(args: {
   const at = state.active_test;
   const offset = utcAt(data);
   const snap: Snapshot = {
-    status, module, mode: state.mode, signals, faults,
+    status, module, signals, faults,
     logging: state.logging ?? { recording: false },
     fault_watch: state.fault_watch,
     active_test: at ? { action: at.action, label: at.label ?? at.action, since: at.since ?? 0, stop: at.stop ?? "" } : null,

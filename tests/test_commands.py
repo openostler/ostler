@@ -13,13 +13,11 @@ from d2diag import commands
 from d2diag.td5.td5 import _OUTPUTS
 from d2diag.web.sources import (
     TD5_ACTIONS,
-    InfoDataSource,
-    MockDataSource,
-    MockSlabsDataSource,
+    _SLABS_ACTUATORS,
     SlabsDataSource,
     Td5DataSource,
-    _SLABS_ACTUATORS,
 )
+from tests.fake_sources import FakeInfoSource, FakeSlabsSource, FakeTd5Source
 
 
 class _StubTd5:
@@ -65,9 +63,9 @@ def _live_slabs():
 def _sources(module: str):
     """(live, mock) sources for a store module, or None when no source exists yet."""
     if module == "td5":
-        return _live_td5(), MockDataSource()
+        return _live_td5(), FakeTd5Source()
     if module == "slabs":
-        return _live_slabs(), MockSlabsDataSource()
+        return _live_slabs(), FakeSlabsSource()
     return None
 
 
@@ -100,8 +98,8 @@ def test_every_module_action_the_sources_handle_is_registered():
                          ids=lambda c: f"{c.module}:{c.action}")
 def test_planned_and_gated_actions_are_not_implemented_by_any_source(cmd):
     """Gated means never sent: no source may even know how to send it."""
-    for src in (_live_td5(), MockDataSource(), _live_slabs(), MockSlabsDataSource(),
-                InfoDataSource(cmd.module, mock=True)):
+    for src in (_live_td5(), FakeTd5Source(), _live_slabs(), FakeSlabsSource(),
+                FakeInfoSource(cmd.module)):
         r = src.command(cmd.action, {})
         assert not r.get("ok"), f"{type(src).__name__} handles planned {cmd.action}"
 
@@ -109,7 +107,7 @@ def test_planned_and_gated_actions_are_not_implemented_by_any_source(cmd):
 @pytest.mark.parametrize("action", ["output_frobnicate", "injector_6", "injector_0",
                                     "raise_centre", "wheel_xx", "pump_maybe"])
 def test_unregistered_lookalikes_are_unknown_to_sources(action):
-    for src in (_live_td5(), MockDataSource(), _live_slabs(), MockSlabsDataSource()):
+    for src in (_live_td5(), FakeTd5Source(), _live_slabs(), FakeSlabsSource()):
         assert not src.command(action, {}).get("ok")
 
 

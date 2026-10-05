@@ -9,7 +9,12 @@ ADR-0009); the poll loop feeds every snapshot (plus the GPS fix) to the ``Sessio
 The replay routes (session events, notes, audio, acceleration, ``/captures``) and the
 ``recording_options`` command follow specs/2026-10-05-replay-notes-capture-design.md
 (ADR-0010): public mode refuses every write and never serves audio, and synthetic
-sessions are read-only.
+sessions are read-only. Logs at scale (specs/2026-10-06-logs-at-scale-design.md, ADR-0011):
+there is no demo mode (the sources are always the car; tests inject fakes); ``/sessions``
+is keyset-paged and filtered through the SQLite ``SessionIndex``, ``/sessions/histogram``
+feeds the scrubber, ``PATCH /sessions/<id>`` edits name/description; live notes and
+``split_session`` are refused (409) unless a session is ``recording``; closed sessions'
+start/end points go to the optional OSM enricher (``--geocoder``).
 """
 from __future__ import annotations
 
@@ -52,10 +57,31 @@ _JSON_BODY_MAX = 2 * 1024 * 1024     # bytes of a JSON body on the replay routes
 _ACCEL_SAMPLES_MAX = 5000            # samples per POST /accel
 _ACCEL_HZ = (10, 25, 50)
 _PUBLIC_REFUSAL = "not available in public mode"
+# Live notes / split need an open session in the "recording" state (ADR-0011).
+NOT_RECORDING = "Not recording — connect to the car first"
+_NAME_MAX = 80
+_DESCRIPTION_MAX = 2000
+_PAGE_LIMIT_MAX = 200
+_INDEX_WAIT_S = 5.0         # a /sessions request waits this long for a building index
+_INDEX_RESYNC_S = 30.0      # the recording session's index row is refreshed this often
+_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SYNTHETIC_REFUSAL = "synthetic sessions are read-only"
 # Command actions whose outcome text could carry an identity payload: only {action, ok}
 # reaches the events stream (spec §1 — the VIN never lands in a session).
 _IDENTITY_ACTION = re.compile(r"identity|vin|eka|serial", re.IGNORECASE)
+
+
+class _NoSuchError(Exception):
+    """Stands in for ``logbook.recorder.NotRecording`` if the recorder lacks it."""
+
+
+def _not_recording_error() -> "type[Exception]":
+    """``logbook.recorder.NotRecording`` (raised by ``note``/``split`` while paused)."""
+    try:
+        from ..logbook.recorder import NotRecording
+        return NotRecording
+    except ImportError:
+        return _NoSuchError
 
 
 class ApiError(Exception):
@@ -527,6 +553,12 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_PATCH(self) -> None:  # noqa: N802
         sid, rest = self._session_parts()
+        if sid is not None and not rest:  # PATCH /sessions/<id> {name?, description?}
+            if not _SESSION_ID.match(sid):
+                self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+                return
+            self._api(lambda: self.server.patch_session(sid, self._json_body()))
+            return
         if sid is None or len(rest) != 2 or rest[0] != "notes":
             self._json({"ok": False, "error": "not found"}, 404)
             return
@@ -666,7 +698,8 @@ class _Handler(BaseHTTPRequestHandler):
 
     # ---- session logbook (public, filtered in public mode) ------------- #
     def _sessions_get(self) -> None:
-        """``/sessions``, ``/sessions/<id>``, ``/sessions/<id>/data``, ``/sessions/<id>/export``.
+        """``/sessions`` (paged), ``/sessions/histogram``, ``/sessions/<id>``,
+        ``/sessions/<id>/data``, ``/sessions/<id>/export``.
 
         Public routes; in public mode the store only exposes synthetic sessions, so a real
         (location-bearing) session answers 404 exactly like an unknown id (ADR-0009)."""
@@ -679,15 +712,17 @@ class _Handler(BaseHTTPRequestHandler):
         public = self.server._public
         if store is None:
             if not parts:
-                self._json({"sessions": []})
+                self._json({"sessions": [], "next": None})
+            elif parts == ["histogram"]:
+                self._json({"group": "month", "buckets": []})
             else:
                 self._json({"ok": False, "error": "session logbook not available"}, 404)
             return
-        if not parts:
-            try:
-                self._json({"sessions": store.list(public=public)})
-            except Exception as exc:  # noqa: BLE001
-                self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 500)
+        if not parts:  # paged + filtered through the SessionIndex (spec 2026-10-06 §3)
+            self._api(lambda: self.server.sessions_page(self._query()))
+            return
+        if parts == ["histogram"]:
+            self._api(lambda: self.server.sessions_histogram(self._query()))
             return
         sid, rest = parts[0], parts[1:]
         if rest and rest[0] == "audio" and len(rest) == 2 and _SESSION_ID.match(sid):
@@ -828,7 +863,7 @@ _INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutd
 
 # Server-level commands handled on the poll thread (they release/establish sessions or
 # switch sources). Not module commands: the registry gate does not apply to them.
-_SERVER_COMMANDS = frozenset({"select_module", "set_mode", "read_all_faults",
+_SERVER_COMMANDS = frozenset({"select_module", "read_all_faults",
                               "connect", "disconnect", "set_port"})
 # Generic per-source commands every module offers (not in the command registry).
 _GENERIC_SOURCE_COMMANDS = frozenset({"clear_faults", "read_block"})
@@ -871,8 +906,6 @@ class DiagServer(ThreadingHTTPServer):
         docs: "DocLibrary | None" = None,
         sniffer=None,
         captures_path: "str | None" = None,
-        variants: "dict | None" = None,
-        mode: "str | None" = None,
         scan_port: str = "auto",
         csv_dir: str = "logs",
         community=None,
@@ -887,6 +920,10 @@ class DiagServer(ThreadingHTTPServer):
         imu: "str | None" = None,
         accel_hz: int = 25,
         pi_audio=None,
+        fault_scan=None,
+        geocoder: "str | None" = None,
+        enricher=None,
+        index_path: "str | None" = None,
     ) -> None:
         super().__init__((host, port), _Handler)
         # None/"" = admin ungated (local dev). Set = /admin + mapping endpoints
@@ -907,26 +944,18 @@ class DiagServer(ThreadingHTTPServer):
         self.docs = docs or DocLibrary()  # markdown view (Documents tab)
         self.sniffer = sniffer  # passive sniff feed (Mapping tab), optional
         self.captures_path = captures_path  # labelled live captures → JSONL
-        # ``variants`` = {module: {mode: DataSource}} → mock/live can be chosen in the UI
-        # and switched at runtime. ``source`` (a single DataSource or {module: DataSource})
-        # is backwards-compatible (no mode selection). Only ONE module is active at a time
-        # (K-line = shared bus) → a tab switch releases the old session and establishes a new one.
-        if variants:
-            self._variants: "dict | None" = {n: dict(v) for n, v in variants.items()}
-            self._modes = sorted({m for v in self._variants.values() for m in v})
-            self._mode: "str | None" = mode if mode in self._modes else self._modes[0]
-            self._modules: "dict[str, DataSource]" = {
-                n: (v.get(self._mode) or next(iter(v.values()))) for n, v in self._variants.items()}
+        # ``source`` = a single DataSource or {module: DataSource}. Always the car (ADR-0011:
+        # no demo mode; the tests inject their fakes here). Only ONE module is active at a
+        # time (K-line = shared bus) → a tab switch releases the old session and
+        # establishes a new one.
+        if isinstance(source, dict) and source:
+            self._modules: "dict[str, DataSource]" = dict(source)
+        elif source is not None and not isinstance(source, dict):
+            self._modules = {source.name: source}
         else:
-            self._variants = None
-            self._modes = []
-            self._mode = None
-            if isinstance(source, dict):
-                self._modules = dict(source)
-            elif source is not None:
-                self._modules = {source.name: source}
-            else:
-                raise ValueError("DiagServer requires source or variants")
+            raise ValueError("DiagServer requires a source")
+        # "Read all fault codes": d2diag.faultscan.read_all(port) unless injected (tests).
+        self._fault_scan = fault_scan
         self._active = active if active in self._modules else next(iter(self._modules))
         self.source = self._modules[self._active]
         self.poll_interval = poll_interval
@@ -934,7 +963,7 @@ class DiagServer(ThreadingHTTPServer):
         self.logger = logger  # optional SnapshotLogger → logs every poll to file
         # Connection state machine (snapshot `conn`): see _next_conn.
         self._conn = "connecting"
-        self._ever_connected = False  # since the last (re)start: module/mode/port switch, connect
+        self._ever_connected = False  # since the last (re)start: module/port switch, connect
         self._paused = False          # True after `disconnect` until `connect`/`set_port`
         # A latched test that is on ({action,label,since,stop}), or None.
         self._active_test: "dict | None" = None
@@ -949,8 +978,11 @@ class DiagServer(ThreadingHTTPServer):
         self._rec_lock = threading.Lock()  # feed() on the poller vs close() on shutdown
         self._rec_closed = False
         self._init_logbook(record_sessions)
+        # Session index (logs/sessions.sqlite next to the sessions dir) + place-name
+        # enrichment (spec 2026-10-06 §2-3). Built in the background when missing.
+        self._init_index(index_path, geocoder, enricher)
         # Replay capture sources (ADR-0010): Pi audio (--audio off|pi; ``pi_audio`` injects a
-        # PiAudio-like object) and the Pi IMU (--imu auto|none|mock). Both are opt-in via the
+        # PiAudio-like object) and the Pi IMU (--imu auto|none; tests inject "mock"). Both are opt-in via the
         # ``recording_options`` command; phone audio/acceleration arrive over HTTP. The
         # recorder owns the per-session files (audio tracks, events, notes, Acc_* columns).
         self._audio_mode = audio if audio in ("off", "pi") else "off"
@@ -1005,7 +1037,8 @@ class DiagServer(ThreadingHTTPServer):
             return
         try:
             from ..logbook.recorder import SessionRecorder
-            self._recorder = SessionRecorder(self._sessions_dir)
+            self._recorder = SessionRecorder(self._sessions_dir,
+                                             on_change=self._recorder_changed)
         except Exception as exc:  # noqa: BLE001
             self._conn_log_early(f"logbook: recorder unavailable ({type(exc).__name__}: {exc})")
 
@@ -1067,6 +1100,7 @@ class DiagServer(ThreadingHTTPServer):
                 self._conn_log(f"logbook: feed failed ({type(exc).__name__}: {exc})")
             status = self._recording_status()
             self._feed_imu(rec, status)
+        self._track_session(status)
         self.latest = {**self.latest, "recording": status,
                        "recording_sources": self.recording_sources()}
 
@@ -1122,6 +1156,287 @@ class DiagServer(ThreadingHTTPServer):
             return {"ok": False, "error": str(exc)}
         return {"ok": True, "deleted": sid}
 
+    # ---- session index + place names (spec 2026-10-06 §2-3) ------------ #
+    def _init_index(self, index_path: "str | None", geocoder: "str | None", enricher) -> None:
+        """Open the SessionIndex (synchronously when its file exists, else built in a
+        background thread) and set up the OSM enricher (never in public mode: the public
+        server lists only the synthetic demo logs, which are never geocoded)."""
+        self._index = None
+        self._index_lock = threading.RLock()
+        self._index_ready = threading.Event()
+        self._index_path = index_path or os.path.join(self._sessions_dir, "index.sqlite")
+        self._enricher = None
+        self._geo_pending: "set[str]" = set()
+        self._geo_lock = threading.Lock()
+        self._rec_sid: "str | None" = None       # the session the recorder had last poll
+        self._rec_synced = 0.0                   # monotonic time of its last index sync
+        self._index_started = False
+        if self.session_store is None:
+            self._index_started = True
+            self._index_ready.set()
+            return
+        if not self._public:
+            if enricher is not None:
+                self._enricher = enricher
+            elif geocoder and geocoder != "off":
+                try:
+                    from ..geo.nominatim import Enricher
+                    cache = os.path.join(os.path.dirname(self._sessions_dir.rstrip("/\\"))
+                                         or ".", "geocache.json")
+                    self._enricher = Enricher(geocoder, cache)
+                except Exception as exc:  # noqa: BLE001 — no geocoder must never stop serving
+                    self._conn_log_early(f"geo: enricher unavailable ({type(exc).__name__}: {exc})")
+
+    def _start_index(self) -> None:
+        """Open the index once: synchronously when its file exists, else built in a
+        background thread (a large logbook must not delay serving). Runs at startup
+        (``start_polling``) or on first use."""
+        with self._index_lock:
+            if self._index_started:
+                return
+            self._index_started = True
+        if os.path.exists(self._index_path):
+            self._open_index()
+        else:
+            threading.Thread(target=self._open_index, name="session-index",
+                             daemon=True).start()
+
+    def _open_index(self) -> None:
+        """Attach the SessionIndex to the store (``store.index``): from then on every store
+        write (meta edits, places, notes, deletes) and ``store.sync`` keep it current."""
+        idx = None
+        try:
+            from ..logbook.index import SessionIndex
+            os.makedirs(os.path.dirname(self._index_path) or ".", exist_ok=True)
+            idx = SessionIndex(self._index_path, self.session_store)
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log_early(f"logbook: index unavailable ({type(exc).__name__}: {exc})")
+        with self._index_lock:
+            self._index = idx
+            if idx is not None:
+                self.session_store.index = idx
+        self._index_ready.set()
+        if idx is not None:
+            self._enrich_backlog()
+
+    def index(self, wait: float = 0.0):
+        """The SessionIndex once it is ready (waiting up to ``wait`` s), else None."""
+        self._start_index()
+        if not self._index_ready.is_set() and wait > 0:
+            self._index_ready.wait(wait)
+        return self._index
+
+    def _index_sync(self, sid: str) -> None:
+        """``store.sync(sid)`` (re-index; a missing session leaves the index). Never raises."""
+        if not sid or self.session_store is None:
+            return
+        try:
+            self.session_store.sync(sid)
+        except Exception as exc:  # noqa: BLE001 — the index is a cache; never fail the caller
+            self._conn_log(f"logbook: index sync {sid} failed ({type(exc).__name__}: {exc})")
+
+    def _recorder_changed(self, sid: str) -> None:
+        """``SessionRecorder.on_change``: a session opened, closed, was renamed or got a
+        live note. Re-index it; once it is closed, ask for its OSM place names. A session
+        the recorder discarded (nothing recorded) leaves the index."""
+        if not sid or not hasattr(self, "_index_lock"):
+            return
+        self._index_sync(sid)
+        try:
+            meta = self.session_store.meta(sid)
+        except Exception:  # noqa: BLE001 — removed (empty) or unreadable
+            return
+        if not meta.get("recording"):
+            self._enrich(meta)
+
+    def _track_session(self, status: "dict | None") -> None:
+        """Refresh the open session's index row (rows, distance …) every 30 s."""
+        sid = (status or {}).get("session")
+        now = time.monotonic()
+        if sid != self._rec_sid:
+            self._rec_sid, self._rec_synced = sid, now
+        elif sid and now - self._rec_synced >= _INDEX_RESYNC_S:
+            self._rec_synced = now
+            self._index_sync(sid)
+
+    def _enrich_backlog(self) -> None:
+        """Queue every closed real session that lacks an OSM label (at index startup)."""
+        if self._enricher is None:
+            return
+        try:
+            metas = self.session_store.list(public=False)
+        except Exception:  # noqa: BLE001
+            return
+        for meta in metas:
+            self._enrich(meta)
+
+    def _enrich(self, meta: "dict") -> None:
+        """Submit a closed real session's start/end points to the enricher (once each)."""
+        enricher = self._enricher
+        if enricher is None or self._public or not isinstance(meta, dict):
+            return
+        if meta.get("synthetic") or meta.get("recording"):
+            return
+        sid = meta.get("id")
+        if not isinstance(sid, str) or not _SESSION_ID.match(sid):
+            return
+        for which in ("start", "end"):
+            place = meta.get(f"place_{which}")
+            if isinstance(place, dict) and place.get("source") == "osm":
+                continue
+            pos = meta.get(f"{which}_pos")  # [lon, lat]
+            if (not isinstance(pos, (list, tuple)) or len(pos) != 2 or not all(
+                    isinstance(x, (int, float)) and not isinstance(x, bool) for x in pos)):
+                continue
+            key = f"{sid}|{which}"
+            with self._geo_lock:
+                if key in self._geo_pending:
+                    continue
+                self._geo_pending.add(key)
+            try:
+                enricher.submit(key, float(pos[1]), float(pos[0]), self._on_place)
+            except Exception as exc:  # noqa: BLE001
+                with self._geo_lock:
+                    self._geo_pending.discard(key)
+                self._conn_log(f"geo: submit failed ({type(exc).__name__}: {exc})")
+
+    def _on_place(self, key: str, label: "str | None") -> None:
+        """Enricher callback (its thread): store the OSM label, then re-index."""
+        with self._geo_lock:
+            self._geo_pending.discard(key)
+        if not label or not isinstance(key, str) or "|" not in key:
+            return
+        sid, which = key.rsplit("|", 1)
+        try:  # the store re-indexes the session itself
+            self.session_store.set_place(sid, which, label, source="osm")
+        except PermissionError:
+            return  # a demo log: committed, never geocoded
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log(f"geo: set_place {sid} failed ({type(exc).__name__}: {exc})")
+
+    def sessions_page(self, query: "dict[str, str]") -> "dict":
+        """``GET /sessions?limit=&before=&q=&from=&to=&module=&has_notes=&min_km=``."""
+        kw: "dict" = {}
+        try:
+            limit = int(query.get("limit", 50))
+        except ValueError:
+            raise ApiError(400, "limit must be an integer") from None
+        if limit < 1:
+            raise ApiError(400, "limit must be ≥ 1")
+        kw["limit"] = min(limit, _PAGE_LIMIT_MAX)
+        before = query.get("before")
+        if before:  # a cursor from ``next``, or an ISO date/datetime (the scrubber)
+            if len(before) > 120:
+                raise ApiError(400, "before must be a cursor from next or an ISO date")
+            kw["before"] = before
+        filters: "dict" = {}
+        if query.get("q", "").strip():
+            filters["q"] = query["q"].strip()[:200]
+        for arg, name in (("from", "frm"), ("to", "to")):
+            v = query.get(arg)
+            if v:
+                if not _ISO_DATE.match(v):
+                    raise ApiError(400, f"{arg} must be an ISO date (YYYY-MM-DD)")
+                filters[name] = v
+        if query.get("module"):
+            filters["module"] = query["module"]
+        hn = query.get("has_notes")
+        if hn is not None and hn.lower() in ("1", "true", "yes"):
+            filters["has_notes"] = True
+        if query.get("min_km"):
+            try:
+                filters["min_km"] = float(query["min_km"])
+            except ValueError:
+                raise ApiError(400, "min_km must be a number") from None
+        idx = self.index(wait=_INDEX_WAIT_S)
+        if idx is None:
+            if filters:
+                raise ApiError(503, "the session index is not ready — try again shortly")
+            return self._fallback_page(kw["limit"], kw.get("before"))
+        try:
+            return idx.page(public=self._public, **kw, **filters)
+        except ValueError as exc:
+            raise ApiError(400, str(exc)) from None
+
+    def _fallback_page(self, limit: int, before: "str | None") -> "dict":
+        """Unfiltered keyset paging straight from the store (no index available)."""
+        import datetime as _dt
+
+        def start_ms(m: dict) -> int:
+            try:
+                t = _dt.datetime.fromisoformat(str(m.get("start_utc")).replace("Z", "+00:00"))
+                return int(t.timestamp() * 1000)
+            except ValueError:
+                return 0
+
+        rows = sorted(((start_ms(m), str(m.get("id")), m)
+                       for m in self.session_store.list(public=self._public)),
+                      key=lambda r: (r[0], r[1]), reverse=True)
+        if before:
+            ms, _, bid = before.partition(":")
+            try:
+                key = (int(ms), bid)
+            except ValueError:
+                raise ApiError(503, "the session index is not ready — try again shortly") from None
+            rows = [r for r in rows if (r[0], r[1]) < key]
+        page = rows[:limit]
+        nxt = f"{page[-1][0]}:{page[-1][1]}" if len(rows) > limit else None
+        return {"sessions": [r[2] for r in page], "next": nxt}
+
+    def sessions_histogram(self, query: "dict[str, str]") -> "dict":
+        """``GET /sessions/histogram?group=month`` or ``?group=day&year=YYYY``."""
+        group = query.get("group", "month")
+        if group not in ("month", "day"):
+            raise ApiError(400, "group must be month or day")
+        year = None
+        if query.get("year"):
+            try:
+                year = int(query["year"])
+            except ValueError:
+                raise ApiError(400, "year must be an integer") from None
+        idx = self.index(wait=_INDEX_WAIT_S)
+        if idx is None:
+            raise ApiError(503, "the session index is not ready — try again shortly")
+        try:
+            return idx.histogram(group=group, year=year, public=self._public)
+        except ValueError as exc:
+            raise ApiError(400, str(exc)) from None
+
+    def patch_session(self, sid: str, body: "dict") -> "dict":
+        """``PATCH /sessions/<id> {name?, description?}`` → ``{ok, meta}``. Trimmed, capped
+        (80 / 2000 characters), empty → null. 403 in public mode and for synthetic sessions."""
+        if self._public:
+            raise ApiError(403, _PUBLIC_REFUSAL)
+        fields: "dict" = {}
+        for key, cap in (("name", _NAME_MAX), ("description", _DESCRIPTION_MAX)):
+            if key not in body:
+                continue
+            v = body[key]
+            if v is None:
+                fields[key] = None
+                continue
+            if not isinstance(v, str):
+                raise ApiError(400, f"{key} must be a string")
+            v = " ".join(v.split()) if key == "name" else v.strip()
+            fields[key] = v[:cap].strip() or None
+        if not fields:
+            raise ApiError(400, "nothing to change (name, description)")
+        self.check_writable(sid)  # 404 unknown, 403 synthetic
+        store = self.session_store
+        try:
+            with self._notes_lock:
+                meta = store.update_meta(sid, **fields)
+        except KeyError:
+            raise ApiError(404, f"unknown session: {sid}") from None
+        except PermissionError as exc:
+            raise ApiError(403, str(exc) or _SYNTHETIC_REFUSAL) from None
+        except ValueError as exc:
+            raise ApiError(400, str(exc)) from None
+        # (The recorder adopts this edit on its next meta write of an open session.)
+        if not isinstance(meta, dict):
+            meta = store.meta(sid)
+        return {"ok": True, "meta": meta}
+
     # ---- recording sources (ADR-0010 §3) ------------------------------- #
     def _init_sources(self) -> None:
         """Build the Pi audio helper and probe the IMU once (never raises)."""
@@ -1136,7 +1451,7 @@ class DiagServer(ThreadingHTTPServer):
     def _probe_imu(self) -> None:
         spec = self._imu_spec
         if spec == "none":
-            self._imu_reason = "no IMU configured (start with --imu auto or mock)"
+            self._imu_reason = "no IMU configured (start with --imu auto)"
             return
         try:
             from ..imu import reader as imu_reader
@@ -1244,8 +1559,8 @@ class DiagServer(ThreadingHTTPServer):
                 self._conn_log(f"logbook: set_name failed ({type(exc).__name__}: {exc})")
 
     def split_session(self) -> "dict":
-        """``split_session``: end the recording session (if any) and start a new one now.
-        Refused in public mode. → ``{ok, session}``."""
+        """``split_session``: end the recording session and start a new one now. Refused in
+        public mode and unless a session is ``recording`` (ADR-0011). → ``{ok, session}``."""
         if self._public:
             return {"ok": False, "error": "splitting sessions is not available in public mode"}
         rec = self._recorder
@@ -1254,10 +1569,20 @@ class DiagServer(ThreadingHTTPServer):
         with self._rec_lock:
             if self._rec_closed:
                 return {"ok": False, "error": "session recording is not available"}
-            sid = rec.split(self.latest)
+            if not self.is_recording():
+                return {"ok": False, "error": NOT_RECORDING}
+            try:
+                sid = rec.split(self.latest)
+            except _not_recording_error() as exc:
+                return {"ok": False, "error": str(exc) or NOT_RECORDING}
             status = self._recording_status()
         self.latest = {**self.latest, "recording": status}
         return {"ok": True, "session": sid}
+
+    def is_recording(self) -> bool:
+        """A session is open and in the ``recording`` state (not ``paused``)."""
+        st = self._recording_status()
+        return bool(st) and st.get("state", "recording") == "recording"
 
     def _start_imu(self) -> None:
         try:
@@ -1412,8 +1737,8 @@ class DiagServer(ThreadingHTTPServer):
         return {"ok": True}
 
     def live_note(self, body: "dict") -> "dict":
-        """``POST /notes/live``: a note stamped "now" in the recording session (a session
-        is started first when nothing is recording)."""
+        """``POST /notes/live``: a note stamped "now" in the recording session. Refused with
+        409 unless a session is ``recording`` (ADR-0011: never while paused or idle)."""
         if self._public:
             raise ApiError(403, _PUBLIC_REFUSAL)
         kind = body.get("kind") or "mark"
@@ -1427,6 +1752,8 @@ class DiagServer(ThreadingHTTPServer):
         with self._rec_lock:
             if self._rec_closed:
                 raise ApiError(503, "session recording is not available")
+            if not self.is_recording():
+                raise ApiError(409, NOT_RECORDING)
             if capture is not None:  # the same capture via /capture and /notes/live → one
                 recent, sid = self._recent_capture, getattr(rec, "session_id", None)
                 if recent and recent[1] == sid and recent[2] == capture and \
@@ -1435,6 +1762,8 @@ class DiagServer(ThreadingHTTPServer):
             try:
                 sid, note = rec.note(text=f.get("text", ""), tags=f.get("tags", []), kind=kind,
                                      capture=capture, snapshot=self.latest)
+            except _not_recording_error() as exc:
+                raise ApiError(409, str(exc) or NOT_RECORDING) from None
             except ValueError as exc:
                 raise ApiError(400, str(exc)) from None
             if capture is not None:
@@ -1445,8 +1774,8 @@ class DiagServer(ThreadingHTTPServer):
 
     def capture_note(self, body: "dict") -> None:
         """``/capture`` also lands as a ``capture`` note in the recording session (if one is
-        open — a capture never starts a session). Never raises."""
-        if self._public or not self._recording_status():
+        ``recording`` — a capture never starts a session). Never raises."""
+        if self._public or not self.is_recording():
             return
         try:
             cap = _capture_value({"module": body.get("module"), "lid": body.get("lid"),
@@ -1657,8 +1986,7 @@ class DiagServer(ThreadingHTTPServer):
         the currently active one is used. The difference matters mid module-switch,
         where a snapshot from the old module would otherwise be labelled with the new.
         """
-        line = (f"{time.strftime('%Y-%m-%d %H:%M:%S')} "
-                f"[{module or self._active}/{self._mode}] {msg}")
+        line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} [{module or self._active}] {msg}"
         try:
             print(line, flush=True)  # → the task/stderr log
         except Exception:  # noqa: BLE001
@@ -1696,8 +2024,6 @@ class DiagServer(ThreadingHTTPServer):
         }
 
     def _all_sources(self) -> list:
-        if self._variants:
-            return [s for v in self._variants.values() for s in v.values()]
         return list(self._modules.values())
 
     def _apply_fault_watch(self) -> None:
@@ -1859,7 +2185,7 @@ class DiagServer(ThreadingHTTPServer):
         return "lost" if self._conn == "connected" else "reconnecting"
 
     def _restart_conn(self) -> None:
-        """A new target (module, mode or port) or a manual connect: start over."""
+        """A new target (module or port) or a manual connect: start over."""
         self._ever_connected = False
         self._conn = "disconnected" if self._paused else "connecting"
 
@@ -1882,11 +2208,9 @@ class DiagServer(ThreadingHTTPServer):
         return info
 
     def _decorate(self, snap: "dict", module: "str | None" = None) -> "dict":
-        """Add the server-level snapshot fields (module/mode/…, conn, ts, battery_v, port,
-        active_test) to a source snapshot."""
+        """Add the server-level snapshot fields (module, conn, ts, battery_v, port,
+        active_test, gps, recording …) to a source snapshot."""
         snap["module"] = module or self._active  # which tab the data belongs to
-        snap["mode"] = self._mode  # active data-source mode (mock/live)
-        snap["modes"] = self._modes  # selectable modes (for the UI toggle)
         snap["logging"] = self._csv.status() if self._csv is not None else {"recording": False}
         snap["public"] = self._public  # the UI is simplified in public mode
         snap["fault_watch"] = self._fault_watch  # fast fault-polling on/off
@@ -1922,8 +2246,8 @@ class DiagServer(ThreadingHTTPServer):
                        "active_test": dict(self._active_test) if self._active_test else None}
 
     def _stop_active_test(self) -> None:
-        """Send the stop action of a latched test before the session goes away (module or
-        mode switch, disconnect, port change). Best effort; the banner clears either way."""
+        """Send the stop action of a latched test before the session goes away (module
+        switch, disconnect, port change). Best effort; the banner clears either way."""
         test = self._active_test
         if not test:
             return
@@ -2010,41 +2334,26 @@ class DiagServer(ThreadingHTTPServer):
             self._active = name
             self.source = self._modules[name]
             self._restart_conn()
-            # preserve public/fault_watch/logging/modes — otherwise the UI loses public mode
+            # preserve public/fault_watch/logging — otherwise the UI loses public mode
             self.latest = self._decorate({**self.latest, "status": "connecting",
                                           "source": self.source.name, "signals": {},
                                           "faults": [], "connect_phase": None, "error": ""},
                                          module=name)
         return {"ok": True, "message": f"module: {name}", "module": name}
 
-    def _set_mode(self, mode: "str | None") -> "dict":
-        """Switch data source mock↔live at runtime (without restart). Releases the
-        active session and repoints all modules to the chosen mode's variant."""
-        if not self._variants or mode not in self._modes:
-            return {"ok": False, "error": f"unknown mode: {mode}"}
-        if mode != self._mode:
-            self._release_source()  # stop a latched test, release the session, then switch
-            self._mode = mode
-            self._modules = {n: (v.get(mode) or next(iter(v.values())))
-                             for n, v in self._variants.items()}
-            self.source = self._modules[self._active]
-            self._restart_conn()
-            self.latest = self._decorate({**self.latest, "status": "connecting",
-                                          "source": self.source.name, "signals": {},
-                                          "faults": [], "connect_phase": None, "error": ""})
-        return {"ok": True, "message": f"mode: {mode}", "mode": mode}
-
     def _read_all_faults(self) -> "dict":
         """Basic mode: read fault codes from all modules sequentially. Releases the
         active session first (frees the K-line port), scans, then lets normal
         polling reconnect. Runs on the poller thread → serialized with the bus."""
         self._release_source()  # stop a latched test, free the port before the scan
-        from ..faultscan import read_all
+        scan = self._fault_scan
+        if scan is None:
+            from ..faultscan import read_all as scan
         try:
-            report = read_all(self._mode or "mock", self._scan_port)
+            report = scan(self._scan_port)
         except Exception as exc:  # noqa: BLE001
             return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
-        return {"ok": True, "mode": self._mode or "mock", "report": report}
+        return {"ok": True, "report": report}
 
     def start_csv(self, path: "str | None" = None) -> "dict":
         """Start logging live data to a CSV file (for the user — following temps etc.).
@@ -2080,9 +2389,6 @@ class DiagServer(ThreadingHTTPServer):
                 if action == "select_module":
                     params = cmd.get("params") or {}
                     holder["result"] = self._select(params.get("module") or cmd.get("module"))
-                elif action == "set_mode":
-                    params = cmd.get("params") or {}
-                    holder["result"] = self._set_mode(params.get("mode") or cmd.get("mode"))
                 elif action == "read_all_faults":
                     holder["result"] = self._read_all_faults()
                 elif action == "disconnect":
@@ -2112,7 +2418,7 @@ class DiagServer(ThreadingHTTPServer):
     def _log_conn_transition(self, snap: "dict") -> None:
         """Log only when the status actually changes (connected↔error) or when
         the error text changes — otherwise a dropped cable would spam every ~0.5 s.
-        Mock sources (always connected without a real session) aren't logged.
+        Simulated sources (``simulated = True``, test fakes) aren't logged.
 
         The transition is keyed on (MODULE, status): if you switch from one connected
         module to another, the status is "connected" at both ends, and a plain status
@@ -2121,8 +2427,8 @@ class DiagServer(ThreadingHTTPServer):
         made the log outright misleading during debugging.
         """
         status = snap.get("status")
-        if self._mode == "mock" or type(self.source).__name__.startswith("Mock"):
-            return  # mock is always "connected" without a real session → nothing to log
+        if getattr(self.source, "simulated", False):
+            return  # a fake is always "connected" without a real session → nothing to log
         err = snap.get("error") or ""
         key = (snap.get("module"), status)
         if key == self._last_conn_status and err == self._last_conn_error:
@@ -2191,6 +2497,12 @@ class DiagServer(ThreadingHTTPServer):
         self.close_recorder()
 
     def start_polling(self) -> None:
+        self._start_index()
+        if self._enricher is not None:
+            try:
+                self._enricher.start()
+            except Exception as exc:  # noqa: BLE001 — no geocoder must never stop the dashboard
+                self._conn_log(f"geo: start failed ({type(exc).__name__}: {exc})")
         if self.gps is not None:
             try:
                 self.gps.start()
@@ -2211,6 +2523,11 @@ class DiagServer(ThreadingHTTPServer):
         if self.gps is not None:
             try:
                 self.gps.stop()
+            except Exception:  # noqa: BLE001
+                pass
+        if self._enricher is not None:
+            try:
+                self._enricher.stop()
             except Exception:  # noqa: BLE001
                 pass
 

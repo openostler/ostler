@@ -55,10 +55,10 @@ def test_waits_for_signals_before_writing_header(tmp_path):
 
 
 def test_server_start_stop_csv_commands(tmp_path):
-    from d2diag.web import MockDataSource
+    from tests.fake_sources import FakeTd5Source
     from d2diag.web.server import DiagServer
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
         assert srv._csv is None
         r = srv.start_csv()
@@ -82,10 +82,10 @@ def test_csv_commands_do_not_queue_behind_the_poller(tmp_path):
     # now it responds inline.
     import time as _time
 
-    from d2diag.web import MockDataSource
+    from tests.fake_sources import FakeTd5Source
     from d2diag.web.server import DiagServer
 
-    srv = DiagServer(MockDataSource(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
+    srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path))
     try:
         t0 = _time.monotonic()
         r = srv.enqueue_command({"action": "start_csv"})

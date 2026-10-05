@@ -2,7 +2,20 @@
   "sessions": [
     {
       "id": "20261005T090000Z",
-      "name": null,
+      "name": "Demo log 1",
+      "description": "A synthetic demo drive, not a real recording: a 12-minute loop drawn over empty moorland on Rannoch Moor in the Scottish Highlands (not a road). The engine (Td5) is read for the first six minutes, then the brakes and suspension (SLABS), including an ABS pump test while stopped.",
+      "place_start": {
+        "label": "Highland, Scotland",
+        "source": "geonames"
+      },
+      "place_end": {
+        "label": "Highland, Scotland",
+        "source": "geonames"
+      },
+      "place": {
+        "label": "Highland, Scotland",
+        "source": "geonames"
+      },
       "start_utc": "2026-10-05T09:00:00.000Z",
       "end_utc": "2026-10-05T09:12:00.000Z",
       "duration_s": 720,
@@ -213,12 +226,17 @@
       "recording": false,
       "source": "demo",
       "audio": [],
-      "accel_cal": null
+      "accel_cal": null,
+      "note_count": 3
     },
     {
-      "id": "20261005T002421Z",
+      "id": "20261005T010717Z",
       "name": null,
-      "start_utc": "2026-10-05T00:24:21.069Z",
+      "description": null,
+      "place_start": null,
+      "place_end": null,
+      "place": null,
+      "start_utc": "2026-10-05T01:07:17.896Z",
       "end_utc": null,
       "duration_s": 0,
       "rows": 0,
@@ -235,9 +253,178 @@
       "end_pos": null,
       "synthetic": false,
       "recording": true,
-      "source": "mock",
+      "source": "live",
       "audio": [],
-      "accel_cal": null
+      "accel_cal": null,
+      "note_count": 0
+    },
+    {
+      "id": "20261004T153000Z",
+      "name": "Demo log 2",
+      "description": "A synthetic demo drive, not a real recording: a 7-minute loop drawn over open moorland on north Dartmoor in Devon (not a road). Only the brakes and suspension (SLABS) are read: ride heights during a parked raise/lower test, a rough section where the front-right wheel speed drops out, and two faults.",
+      "place_start": {
+        "label": "near Okehampton, Devon",
+        "source": "geonames"
+      },
+      "place_end": {
+        "label": "near Okehampton, Devon",
+        "source": "geonames"
+      },
+      "place": {
+        "label": "near Okehampton, Devon",
+        "source": "geonames"
+      },
+      "start_utc": "2026-10-04T15:30:00.000Z",
+      "end_utc": "2026-10-04T15:37:00.000Z",
+      "duration_s": 420,
+      "rows": 840,
+      "parts": [
+        "data.csv"
+      ],
+      "modules": [
+        "slabs"
+      ],
+      "channels": [
+        {
+          "name": "GPS_Latitude",
+          "units": "deg",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_Longitude",
+          "units": "deg",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_Speed",
+          "units": "km/h",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_Heading",
+          "units": "deg",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_Altitude",
+          "units": "m",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_Nsat",
+          "units": "",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_HDOP",
+          "units": "",
+          "group": "gps",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_LonAcc",
+          "units": "g",
+          "group": "accel",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "GPS_LatAcc",
+          "units": "g",
+          "group": "accel",
+          "c": null,
+          "limits": null
+        },
+        {
+          "name": "height_left",
+          "units": "",
+          "group": "ride height",
+          "c": "proven",
+          "limits": null
+        },
+        {
+          "name": "height_right",
+          "units": "",
+          "group": "ride height",
+          "c": "proven",
+          "limits": null
+        },
+        {
+          "name": "battery",
+          "units": "V",
+          "group": "electrical",
+          "c": "proven",
+          "limits": [
+            11.5,
+            15.5
+          ]
+        },
+        {
+          "name": "wheel_speed_fl",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_fr",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_rl",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        },
+        {
+          "name": "wheel_speed_rr",
+          "units": "",
+          "group": "wheels",
+          "c": "candidate",
+          "limits": null
+        }
+      ],
+      "has_gps": true,
+      "distance_km": 2.63,
+      "max_speed_kmh": 45.0,
+      "bbox": [
+        -3.9718,
+        50.62242,
+        -3.96149,
+        50.63089
+      ],
+      "start_pos": [
+        -3.961,
+        50.627
+      ],
+      "end_pos": [
+        -3.961,
+        50.627
+      ],
+      "synthetic": true,
+      "recording": false,
+      "source": "demo",
+      "audio": [],
+      "accel_cal": null,
+      "note_count": 2
     }
-  ]
+  ],
+  "next": null
 }

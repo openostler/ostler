@@ -288,6 +288,26 @@ describe("overhaul navigation", () => {
     expect(within(await screen.findByRole("dialog")).getByText("Connection")).toBeInTheDocument();
   });
 
+  it("opens the connection sheet immediately on load with no connection (live only, no Mock/Live)", async () => {
+    installFakeServer({ snapshot: { ...connected, status: "error", conn: "error", error: "no answer" } });
+    render(<App path="/" />);
+    // AUTO_OPEN_MS = 0: well inside findBy's 1 s window (it used to wait 3 s)
+    const sheet = await screen.findByRole("dialog", {}, { timeout: 500 });
+    expect(within(sheet).getByText("Connection")).toBeInTheDocument();
+    expect(within(sheet).getByRole("button", { name: "Retry" })).toBeInTheDocument();
+    expect(within(sheet).queryByText("Data source")).not.toBeInTheDocument();
+    expect(within(sheet).queryByRole("button", { name: "Mock" })).not.toBeInTheDocument();
+    expect(within(sheet).queryByText("MODE")).not.toBeInTheDocument();
+  });
+
+  it("does not open the connection sheet by itself while connected", async () => {
+    installFakeServer({ snapshot: { ...connected, conn: "connected" } });
+    render(<App path="/" />);
+    expect(await screen.findByText("Connected")).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("shows no connection notice while connected", async () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
@@ -531,5 +551,17 @@ describe("whole-app replay", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("opens the connection sheet immediately on leaving a replay while not live", async () => {
+    const user = userEvent.setup();
+    installReplayServer({ snapshot: { ...connected, conn: "error", status: "error" } });
+    render(<App path="/" replay="s1" />);
+    const banner = await screen.findByRole("region", { name: "Replay" });
+    await screen.findByTestId("global-transport");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.click(within(banner).getByRole("button", { name: "Exit to live" }));
+    const sheet = await screen.findByRole("dialog", {}, { timeout: 500 });
+    expect(within(sheet).getByText("Connection")).toBeInTheDocument();
   });
 });

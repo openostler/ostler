@@ -9,7 +9,8 @@ import pytest
 
 from d2diag import ports
 from d2diag.web.server import CONN_STATES, DiagServer
-from d2diag.web.sources import DataSource, MockDataSource, MockSlabsDataSource, Td5DataSource
+from d2diag.web.sources import DataSource, Td5DataSource
+from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
 
 class _Scripted(DataSource):
@@ -163,9 +164,7 @@ def test_disconnect_over_the_poll_thread(make_server):
 
 def test_set_port_repoints_every_live_source_and_reconnects(make_server):
     td5_live, slabs_live = Td5DataSource("auto"), _Scripted(["ok"])
-    variants = {"motor": {"mock": MockDataSource(), "live": td5_live},
-                "slabs": {"mock": MockSlabsDataSource(), "live": slabs_live}}
-    srv = make_server(variants=variants, mode="mock", active="motor")
+    srv = make_server({"motor": td5_live, "slabs": slabs_live}, active="slabs")
     srv.poll_once()
     _cmd(srv, "disconnect")
     r = _cmd(srv, "set_port", port="/dev/ttyUSB7")
@@ -183,7 +182,7 @@ def test_set_port_repoints_every_live_source_and_reconnects(make_server):
 
 # ---- snapshot additions ---------------------------------------------------- #
 def test_snapshot_carries_ts_battery_port_and_active_test(make_server):
-    srv = make_server(MockDataSource())
+    srv = make_server(FakeTd5Source())
     snap = srv.poll_once()
     assert isinstance(snap["ts"], float) and snap["ts"] > 1e9
     assert 13.0 < snap["battery_v"] < 15.0                    # mock Td5 battery
@@ -193,13 +192,13 @@ def test_snapshot_carries_ts_battery_port_and_active_test(make_server):
 
 
 def test_battery_v_is_null_without_a_battery_signal(make_server):
-    srv = make_server(MockSlabsDataSource())
+    srv = make_server(FakeSlabsSource())
     assert srv.poll_once()["battery_v"] is None
 
 
 # ---- active_test ----------------------------------------------------------- #
 def _recording_slabs():
-    src = MockSlabsDataSource()
+    src = FakeSlabsSource()
     sent = []
     orig = src.command
 
@@ -226,7 +225,7 @@ def test_latched_test_sets_and_clears_the_banner(make_server):
 
 def test_module_switch_stops_a_latched_test_first(make_server):
     slabs, sent = _recording_slabs()
-    srv = make_server({"slabs": slabs, "motor": MockDataSource()}, active="slabs")
+    srv = make_server({"slabs": slabs, "motor": FakeTd5Source()}, active="slabs")
     assert _cmd(srv, "bleed_power_on")["ok"]
     assert srv.latest["active_test"]["stop"] == "bleed_power_off"
     assert _cmd(srv, "select_module", module="motor")["ok"]

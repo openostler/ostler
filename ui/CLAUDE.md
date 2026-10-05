@@ -22,11 +22,11 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/layout.ts` — the only place that names signals (Drive tiles, body view, LID presets).
   Outputs, Settings and Utilities come from `/catalog`, never from a hard-coded list.
 - `src/styles.css` — the calm-instrument tokens (auto day/night) and all styles.
-- `e2e/` — Playwright smoke test against `tools/dashboard.py --mock`.
+- `e2e/` — Playwright smoke test against the test-only server `tests/e2e_server.py` (simulated car; ADR-0011).
 
 ## Editing rules
 
-- Dev: `PYTHONPATH=src python3 tools/dashboard.py --mock` in the repo root, then `npm run dev`.
+- Dev: `PYTHONPATH=src python3 tests/e2e_server.py` (test-only simulated car) in the repo root, then `npm run dev`. The product itself always runs live.
 - Never hard-code signal labels, groups or units — they come from `/fields` (the signal store).
 - A server response change → `UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py`, then
   update `schemas.ts`.

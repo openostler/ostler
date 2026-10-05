@@ -2,8 +2,8 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.3
-updated: 2026-10-05
+version: 1.4
+updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the code: the bottom-up protocol stack, the seams to understand before
@@ -26,9 +26,12 @@ pytest -q                        # whole suite, no hardware needed
 pytest tests/test_slabs.py -q    # one file
 pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 
-# Dashboard: mock (no car) / live (ignition on, stationary)
-PYTHONPATH=src python3 tools/dashboard.py --mock
-PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--slabs] [--fault-watch] [--csv]
+# Dashboard: always live (ignition on, stationary); there is no mock/demo mode
+PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--slabs] [--fault-watch] [--csv] [--geocoder URL|off]
+
+# UI development without a car: the test-only server on simulated sources
+# (the same one Playwright drives)
+PYTHONPATH=src python3 tests/e2e_server.py
 
 # Read-only sanity check against a module
 PYTHONPATH=src python3 tools/verify_ecu.py td5|slabs /dev/cu.usbserial-XXXX
@@ -49,7 +52,8 @@ K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, 
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 Module layer   td5/ slabs/ airbag/ (+ bcu/ ace/ autobox/ menu stubs)
-Side inputs    gps/ (NMEA fixes) → logbook/ (session recorder + store + exports, ADR-0009)
+Side inputs    gps/ (NMEA fixes) → logbook/ (session recorder + store + index + exports,
+               ADR-0009/0011); geo/ (offline GeoNames + OSM Nominatim place names)
 Web            web/: stdlib HTTP + SSE server; serves the built UI from web/static
 UI             ui/: Vite + React + TypeScript app → npm run build → web/static (committed)
 ```
@@ -75,7 +79,9 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - Each field carries `confidence`, either `proven` or `candidate`.
 - **`web/sources.py` is the protocol/UI boundary.**
   - Each `DataSource.poll()` returns `{status, signals, faults}`.
-  - Mock and live sources are interchangeable at runtime.
+  - The product always uses live sources; there are no server modes (ADR-0011). The
+    simulated sources live only in `tests/` (`tests/fake_sources.py`), used by the tests
+    and by `tests/e2e_server.py`.
   - Adding a module to the dashboard means adding a source pair, not touching the server.
 - **Two command paths in `web/server.py`.**
   - `_INLINE_COMMANDS` (CSV start/stop, fault-watch) run on the HTTP thread.
@@ -86,6 +92,24 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
   groups and descriptions come from `/fields`, which reads the signal store plus
   `sources.DERIVED_FIELDS`. The UI never hard-codes them.
+- **Session logbook (`logbook/`, ADR-0009/0011).**
+  - The recorder opens a session only while the car is connected. While disconnected
+    it is *paused*: no data rows (not even GPS), and it ends after 300 s.
+  - The demo is two committed, read-only synthetic sessions in `logbook/demo/`
+    ("Demo log 1", "Demo log 2"), replayed through the whole app. The public server
+    lists only these.
+  - `logbook/index.py` `SessionIndex` is a stdlib-`sqlite3` index (FTS5 where available)
+    behind `GET /sessions` (keyset paging, search, filters), `/sessions/histogram` (the
+    month scrubber) and `PATCH /sessions/<id>` (name and description). It rebuilds itself
+    from the session files when missing or on a schema change.
+- **Place names (`geo/`).**
+  - `geo.offline.label(lat, lon)` names a point from a trimmed GeoNames `cities1000`
+    table (`geo/places.tsv.gz`, built by `tools/build_places.py`, CC BY 4.0).
+  - `geo.nominatim.Enricher` refines it from OSM Nominatim when online, within the usage
+    policy: at most 1 request/s, a custom User-Agent, results cached in
+    `logs/geocache.json`, exponential back-off. `--geocoder URL|off` sets the endpoint;
+    tests use `off`.
+  - The Logs footer credits OpenStreetMap contributors (ODbL) and GeoNames (CC BY 4.0).
 - **`faultscan.py`** reads every module strictly in sequence: establish → read → release.
 - **`web/docs.py`** serves the canonical markdown fresh on every request, with the
   frontmatter stripped. It is a window on the source. Never cache or duplicate it.
@@ -127,3 +151,6 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-01 — Added the React/TypeScript UI layer and its contract.
 - 2026-10-05 — Added `gps/` and `logbook/`: the server feeds every poll and the latest GPS fix
   to the session recorder; `/sessions*` serves replay data (ADR-0009).
+- 2026-10-06 — No mock/demo mode: always live, demo logs replayed, simulated sources
+  test-only (`tests/e2e_server.py` for UI work); record only while connected; `geo/` place
+  names and the SQLite session index (ADR-0011).

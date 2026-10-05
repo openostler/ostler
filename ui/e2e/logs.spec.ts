@@ -10,10 +10,20 @@ async function returningUser(page: Page) {
   });
 }
 
+async function openLogs(page: Page) {
+  await page.getByRole("navigation", { name: "Screens" }).getByRole("button", { name: "Logs", exact: true }).click();
+  await expect(page.locator("button.replay-row").first()).toBeVisible();
+}
+
+/** A row the user may edit and delete: not a demo log and not being recorded (the e2e server
+ * creates one, logs-at-scale spec Testing). */
+const ownRows = (page: Page) =>
+  page.locator("button.replay-row").filter({ hasNot: page.locator(".replay-chip-demo") }).filter({ hasNot: page.locator(".replay-chip-live") });
+
 /** Open the Logs tab and the synthetic demo session (always listed, ADR-0009). */
 async function openDemo(page: Page) {
-  await page.getByRole("navigation", { name: "Screens" }).getByRole("button", { name: "Logs", exact: true }).click();
-  const demoRow = page.locator("button.replay-row", { hasText: "demo" }).first();
+  await openLogs(page);
+  const demoRow = page.locator("button.replay-row", { hasText: "Demo log 1" }).first();
   await expect(demoRow).toBeVisible();
   await demoRow.click();
   // the global transport (on every tab while in replay)
@@ -111,4 +121,87 @@ test("the global transport follows to another tab; ‹ Sessions exits replay", a
   await page.getByRole("button", { name: "‹ Sessions" }).click();
   await expect(page.locator("button.replay-row").first()).toBeVisible();
   await expect(page.getByTestId("global-transport")).toHaveCount(0);
+});
+
+test("the demo logs are listed by name; search finds Demo log 2", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await openLogs(page);
+  const rows = page.locator("button.replay-row");
+  await expect(rows.filter({ hasText: "Demo log 1" })).toHaveCount(1);
+  await expect(rows.filter({ hasText: "Demo log 2" })).toHaveCount(1);
+  await expect(page.getByText("Place names © OpenStreetMap contributors (ODbL) · GeoNames (CC BY 4.0)")).toBeVisible();
+
+  await page.getByRole("searchbox", { name: "Search sessions" }).fill("Demo log 2");
+  await expect(rows.filter({ hasText: "Demo log 1" })).toHaveCount(0);
+  await expect(rows.filter({ hasText: "Demo log 2" })).toHaveCount(1);
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  await expect(rows.filter({ hasText: "Demo log 1" })).toHaveCount(1);
+
+  // the month scrubber shows when sessions span two months or more
+  const scrub = page.getByRole("slider", { name: "Jump to month" });
+  if (await scrub.count()) {
+    await scrub.focus();
+    await page.keyboard.press("End");
+    await expect(page.getByRole("button", { name: "Back to newest" })).toBeVisible();
+    await expect(rows.first()).toBeVisible();
+    await page.getByRole("button", { name: "Back to newest" }).click();
+  }
+  await page.screenshot({ path: "test-results/logs-browser.png", fullPage: true });
+});
+
+test("a demo log's name is read-only", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await openDemo(page);
+  await expect(page.getByRole("heading", { name: "Demo log 1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Edit Session name/ })).toHaveCount(0);
+});
+
+test("inline edit of a session's name and description", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await openLogs(page);
+  const own = ownRows(page);
+  test.skip((await own.count()) === 0, "the server lists no editable (non-demo, idle) session");
+  const id = await own.first().getAttribute("data-session");
+  await own.first().click();
+  await expect(page.getByTestId("global-transport")).toBeVisible();
+
+  await page.getByRole("button", { name: /^Edit Session name/ }).click();
+  const name = page.getByRole("textbox", { name: "Session name" });
+  await name.fill("E2E test drive");
+  await name.press("Enter");
+  await expect(page.getByRole("heading", { name: /E2E test drive/ })).toBeVisible();
+
+  await page.getByRole("button", { name: /^Edit Description/ }).click();
+  const desc = page.getByRole("textbox", { name: "Description" });
+  await desc.fill("Written by the e2e test.");
+  await desc.press("Enter");
+  await expect(page.getByText("Written by the e2e test.")).toBeVisible();
+
+  // persisted: the browser lists it by its new name
+  await page.getByRole("button", { name: "‹ Sessions" }).click();
+  await expect(page.locator(`button.replay-row[data-session="${id}"]`)).toContainText("E2E test drive");
+});
+
+// Last: it deletes the e2e server's editable session.
+test("Delete on a non-demo session needs the word Delete", async ({ page }) => {
+  await returningUser(page);
+  await page.goto("/");
+  await openLogs(page);
+  const own = ownRows(page);
+  test.skip((await own.count()) === 0, "the server lists no deletable (non-demo, idle) session");
+  const id = await own.first().getAttribute("data-session");
+  await own.first().click();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  const go = page.getByRole("button", { name: "Delete session" });
+  const box = page.getByRole("textbox", { name: "Type Delete to confirm" });
+  await box.fill("delete");
+  await expect(go).toBeDisabled();
+  await box.fill("Delete");
+  await expect(go).toBeEnabled();
+  await go.click();
+  await expect(page.locator("button.replay-row").first()).toBeVisible();
+  await expect(page.locator(`button.replay-row[data-session="${id}"]`)).toHaveCount(0);
 });

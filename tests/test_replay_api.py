@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from d2diag.web import MockDataSource, MockSlabsDataSource
+from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 from d2diag.web.server import DiagServer, _parse_range
 
 DEMO = "20261005T090000Z"  # the committed synthetic demo session
@@ -27,7 +27,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 def _server(tmp_path, **kw):
     kw.setdefault("csv_dir", str(tmp_path))
-    return DiagServer(MockDataSource(), host="127.0.0.1", port=0, **kw)
+    return DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, **kw)
 
 
 def _record(srv, n=3):
@@ -201,20 +201,80 @@ def test_public_mode_refuses_writes_and_hides_real_sessions(tmp_path, http):
     assert not (Path(srv._sessions_dir) / sid / "notes.jsonl").exists()
 
 
-def test_live_note_starts_a_session(tmp_path, http):
+NOT_RECORDING = "Not recording — connect to the car first"
+
+
+def test_live_note_refused_when_not_recording(tmp_path, http):
+    """ADR-0011: a live note never starts a session — 409 until the car is connected."""
     srv = _server(tmp_path)
     assert srv.latest.get("recording") is None  # nothing polled: nothing recording
     req = http(srv)
+    for body in ({"kind": "mark"}, {"kind": "capture", "text": "x",
+                                    "capture": {"module": "td5", "lid": "09", "raw": "01"}}):
+        assert _j(req("POST", "/notes/live", body)) == (409, {"ok": False,
+                                                              "error": NOT_RECORDING})
+    assert srv._recording_status() is None  # still nothing recording
+    assert not list(Path(srv._sessions_dir).glob("2*"))  # no session directory either
+
+
+def test_live_note_into_the_recording_session(tmp_path, http):
+    srv = _server(tmp_path)
+    _record(srv)
+    sid = _sid(srv)
+    req = http(srv)
     code, body = _j(req("POST", "/notes/live", {"kind": "mark"}))
-    assert code == 200 and body["ok"]
-    sid = body["session"]
+    assert code == 200 and body["ok"] and body["session"] == sid
     assert body["note"]["source"] == "live" and body["note"]["kind"] == "mark"
-    assert srv.latest["recording"]["session"] == sid
     code, body = _j(req("POST", "/notes/live", {"kind": "note", "text": "noise", "tags": ["noise"]}))
     assert code == 200 and body["session"] == sid
     notes = _j(req("GET", f"/sessions/{sid}/notes"))[1]["notes"]
     assert [n["kind"] for n in notes] == ["mark", "note"]
     assert req("POST", "/notes/live", {"kind": "nope"})[0] == 400
+
+
+def test_live_note_refused_while_paused(tmp_path, http):
+    """A session that is open but ``paused`` (no connection) takes no live note, no split
+    and no /capture note; ``recording`` passes the state through to the snapshot."""
+    srv = _server(tmp_path, captures_path=str(tmp_path / "c.jsonl"))
+    _record(srv)
+    sid = _sid(srv)
+    assert srv.latest["recording"]["state"] == "recording"
+    srv._disconnect()          # the car goes away: the open session pauses
+    _record(srv, 1)
+    assert srv.latest["recording"]["session"] == sid
+    assert srv.latest["recording"]["state"] == "paused"
+    req = http(srv)
+    assert _j(req("POST", "/notes/live", {"kind": "mark"})) == (
+        409, {"ok": False, "error": NOT_RECORDING})
+    res = srv.enqueue_command({"action": "split_session"})
+    assert res == {"ok": False, "error": NOT_RECORDING}
+    assert _j(req("POST", "/capture", {"module": "td5", "lid": "09", "raw": "02",
+                                       "text": "1"}))[0] == 200
+    assert _j(req("GET", f"/sessions/{sid}/notes"))[1]["notes"] == []
+    srv._connect()             # connected again: the same session records
+    _record(srv, 1)
+    assert srv.latest["recording"] == {**srv.latest["recording"], "session": sid,
+                                       "state": "recording"}
+    assert _j(req("POST", "/notes/live", {"kind": "mark"}))[0] == 200
+
+
+def test_live_note_maps_the_recorders_not_recording_to_409(tmp_path, http):
+    from d2diag.web.server import _not_recording_error
+
+    srv = _server(tmp_path)
+    _record(srv)
+    exc = _not_recording_error()
+
+    def refuse(**_kw):
+        raise exc()
+
+    srv._recorder.note = refuse
+    srv._recorder.split = lambda *_a, **_k: refuse()
+    req = http(srv)
+    assert _j(req("POST", "/notes/live", {"kind": "mark"})) == (
+        409, {"ok": False, "error": NOT_RECORDING})
+    assert srv.enqueue_command({"action": "split_session"}) == {"ok": False,
+                                                                "error": NOT_RECORDING}
 
 
 def test_live_note_without_recorder(tmp_path, http):
@@ -391,7 +451,7 @@ def test_recording_sources_unavailable(tmp_path):
 def test_mock_read_block_round_trips_through_the_store():
     from d2diag.signals import load_signals
 
-    src = MockDataSource()
+    src = FakeTd5Source()
     snap = src.poll()
     res = src.command("read_block", {"lids": ["09", "10", "1a", "ee"]})
     assert res["ok"] and set(res["raws"]) == {"09", "10", "1a"}  # unknown LID skipped
@@ -405,7 +465,7 @@ def test_mock_read_block_round_trips_through_the_store():
     assert again["raws"]["09"] == res["raws"]["09"]  # deterministic per poll
     assert src.command("read_block", {"lids": ["zz"]}) == {
         "ok": False, "error": 'invalid lids (expected hex strings such as "09")'}
-    slabs = MockSlabsDataSource()
+    slabs = FakeSlabsSource()
     s_snap = slabs.poll()
     res = slabs.command("read_block", {"lids": ["54"]})
     ssig = {s.name: s for s in load_signals("slabs")}
@@ -505,7 +565,7 @@ def test_tls_serves_https(tmp_path, http):
 
 
 def test_dashboard_tls_flags_must_come_together():
-    r = subprocess.run([sys.executable, str(REPO / "tools/dashboard.py"), "--mock",
+    r = subprocess.run([sys.executable, str(REPO / "tools/dashboard.py"),
                         "--tls-cert", "x.pem"], capture_output=True, text=True, timeout=60,
                        env={**os.environ, "PYTHONPATH": str(REPO / "src")})
     assert r.returncode == 2 and "--tls-cert and --tls-key must be given together" in r.stderr
@@ -538,10 +598,11 @@ def test_split_session(tmp_path):
     assert _sid(srv) == res["session"]
     srv.stop()
     srv.server_close()
-    # nothing recording: a split just starts one
+    # nothing recording: a split is refused and starts nothing (ADR-0011)
     srv2 = _server(tmp_path / "b")
     res = srv2.enqueue_command({"action": "split_session"})
-    assert res["ok"] and srv2.latest["recording"]["session"] == res["session"]
+    assert res == {"ok": False, "error": NOT_RECORDING}
+    assert srv2._recording_status() is None
     srv2.stop()
     srv2.server_close()
 

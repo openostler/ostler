@@ -4,7 +4,7 @@ from __future__ import annotations
 from d2diag import catalog
 from d2diag.menus import MENUS
 from d2diag.web.server import DiagServer
-from d2diag.web.sources import MockDataSource, MockSlabsDataSource
+from tests.fake_sources import FakeTd5Source, FakeSlabsSource
 
 
 def test_all_modules_have_populated_maps():
@@ -25,7 +25,7 @@ def test_all_modules_have_populated_maps():
 
 def test_coverage_counts_match_maps():
     srv = DiagServer(
-        {"motor": MockDataSource(), "slabs": MockSlabsDataSource()},
+        {"motor": FakeTd5Source(), "slabs": FakeSlabsSource()},
         port=0, menus=MENUS, active="slabs",
     )
     try:

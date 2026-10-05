@@ -5,7 +5,7 @@ import os
 import pytest
 
 from d2diag.logbook.notes import NoteLog, read_notes
-from d2diag.logbook.recorder import SessionRecorder
+from d2diag.logbook.recorder import NotRecording, SessionRecorder
 from d2diag.logbook.store import SessionStore
 
 T0 = 1791277200.0
@@ -97,22 +97,47 @@ def test_store_notes_crud_and_refusals(tmp_path):
     assert store.notes(sid) == []
 
 
-def test_live_note_starts_session_and_keeps_it(tmp_path):
+def test_live_note_needs_a_recording_session_and_keeps_it(tmp_path):
     c = {"t": 0.0}
     r = SessionRecorder(str(tmp_path / "sessions"), clock=lambda: T0 + c["t"],
                         mono=lambda: c["t"], min_free_bytes=0)
     assert r.status() is None
+    with pytest.raises(NotRecording):  # a live note never starts a session (ADR-0011)
+        r.note(kind="mark")
+    assert r.status() is None
+    sid = r.start()
     c["t"] = 2.0
-    sid, note = r.note(kind="mark")
-    assert r.status()["session"] == sid and note["source"] == "live" and note["t"] == 0
+    sid1, note = r.note(kind="mark")
+    assert sid1 == sid and note["source"] == "live" and note["t"] == 2000
     c["t"] = 4.5
     sid2, note2 = r.note("noise", tags=["noise"], kind="note")
-    assert sid2 == sid and note2["t"] == 2500
+    assert sid2 == sid and note2["t"] == 4500
     r.close()  # no data rows, but the notes keep the session
     store = SessionStore(str(tmp_path / "sessions"), demo_root=None)
     assert [n["id"] for n in store.notes(sid)] == [note["id"], note2["id"]]
+    assert store.meta(sid)["note_count"] == 2
     ev = store.events(sid)
     assert ev[0]["type"] == "state"
+
+
+def test_live_note_refused_while_paused(tmp_path):
+    c = {"t": 0.0}
+    r = SessionRecorder(str(tmp_path / "sessions"), clock=lambda: T0 + c["t"],
+                        mono=lambda: c["t"], min_free_bytes=0)
+    r.feed({"conn": "connected", "signals": {"rpm": {"v": 800}}}, None)
+    c["t"] = 1.0
+    r.feed({"conn": "lost", "signals": {}}, None)
+    assert r.status()["state"] == "paused"
+    with pytest.raises(NotRecording) as exc:
+        r.note("x")
+    assert "connect to the car" in str(exc.value) and isinstance(exc.value, RuntimeError)
+    with pytest.raises(NotRecording):
+        r.split()
+    c["t"] = 2.0
+    r.feed({"conn": "connected", "signals": {"rpm": {"v": 810}}}, None)
+    assert r.status()["state"] == "recording"
+    assert r.note("ok")[0] == r.status()["session"]
+    r.close()
 
 
 def test_captures_merge_notes_and_jsonl(tmp_path):

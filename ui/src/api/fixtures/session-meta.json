@@ -1,6 +1,19 @@
 {
   "id": "20261005T090000Z",
-  "name": null,
+  "name": "Demo log 1",
+  "description": "A synthetic demo drive, not a real recording: a 12-minute loop drawn over empty moorland on Rannoch Moor in the Scottish Highlands (not a road). The engine (Td5) is read for the first six minutes, then the brakes and suspension (SLABS), including an ABS pump test while stopped.",
+  "place_start": {
+    "label": "Highland, Scotland",
+    "source": "geonames"
+  },
+  "place_end": {
+    "label": "Highland, Scotland",
+    "source": "geonames"
+  },
+  "place": {
+    "label": "Highland, Scotland",
+    "source": "geonames"
+  },
   "start_utc": "2026-10-05T09:00:00.000Z",
   "end_utc": "2026-10-05T09:12:00.000Z",
   "duration_s": 720,
@@ -211,5 +224,6 @@
   "recording": false,
   "source": "demo",
   "audio": [],
-  "accel_cal": null
+  "accel_cal": null,
+  "note_count": 3
 }

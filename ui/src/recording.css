@@ -25,6 +25,10 @@
 .rec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rec-open { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
 .rec-dot { width: 10px; height: 10px; border-radius: 9999px; background: var(--alarm); flex: 0 0 10px; }
+/* paused (no connection): neutral, not an alarm — nothing is being written */
+.rec-dot.paused { background: var(--fg-dis); }
+.rec-actions.paused { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.rec-actions.paused p { margin: 0; flex: 1 1 160px; }
 .rec-sources { display: flex; flex-wrap: wrap; gap: 6px; }
 .rec-src {
   display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px;

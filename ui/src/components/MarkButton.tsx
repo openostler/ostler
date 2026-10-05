@@ -6,6 +6,7 @@ import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
 import "../recording.css";
 import { NoteSheet } from "./NoteSheet";
+import { isPaused } from "./replay/sessionFormat";
 
 const clock = (iso: string | undefined) => {
   const d = iso ? new Date(iso) : new Date();
@@ -15,7 +16,7 @@ const clock = (iso: string | undefined) => {
 /**
  * Header ⚑ (spec §5). One tap saves a `mark` at once (the moment is never lost to typing),
  * then "What happened?" PATCHes the mark with text and tags. Shown only while the Pi is
- * recording and not in replay. Always mounted: it also points phone audio/motion capture at
+ * recording (not paused) and not in replay. Always mounted: it also points phone audio/motion capture at
  * the session being recorded (lib/recordingOptions `useCaptureRunner`).
  */
 export function MarkButton() {
@@ -23,7 +24,8 @@ export function MarkButton() {
   const replay = useReplay();
   const session = replay.active ? null : snap?.recording?.session ?? null;
   useCaptureRunner(session, replay.active);
-  if (!session) return null;
+  // Paused (no connection): the session stays open but nothing can be marked (spec §5).
+  if (!session || isPaused(snap?.recording)) return null;
   return <Mark toast={toast} />;
 }
 
