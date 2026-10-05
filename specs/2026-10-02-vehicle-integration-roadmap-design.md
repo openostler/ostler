@@ -2,8 +2,8 @@
 title: "Vehicle integration roadmap — Design"
 area: specs
 status: draft
-version: 1.0
-updated: 2026-10-02
+version: 1.1
+updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md, hardware/README.md]
 summary: >
   Umbrella plan for the next wave of Discovery 2 projects beyond diagnostics — CAN
@@ -14,6 +14,13 @@ summary: >
 ---
 
 # Vehicle integration roadmap — Design
+
+> **2026-10-06:** the wider direction now lives in
+> [2026-10-06-platform-direction-design.md](2026-10-06-platform-direction-design.md) (draft).
+> HEVAC control (spec #3) **moves to a separate ESP32 project**; this repo only talks to it.
+> The hardware platform is revised in
+> [references/research/hardware.md](../references/research/hardware.md): an ESP32 guardian
+> with Linux on demand, built from an off-the-shelf development kit first.
 
 ## Why this exists
 
@@ -114,3 +121,4 @@ before its ADR is approved and its safety design reviewed.
 ## Changelog
 
 - 2026-10-02 — Initial roadmap drafted from the hardware/architecture design conversation.
+- 2026-10-06: v1.1, points at the platform direction spec; HEVAC moves out of scope.

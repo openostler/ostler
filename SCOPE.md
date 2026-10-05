@@ -2,8 +2,8 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.0
-updated: 2026-09-30
+version: 1.1
+updated: 2026-10-06
 summary: >
   States the project's core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers.
 ---
@@ -64,7 +64,26 @@ is exactly what caused the MAF mis-map (the store and the ESP drifted apart).
   car-test backlog.
 - InfluxDB / Grafana / the raw-log collector live on a separate server, not in this repo.
 
+## Direction: core · vehicle packs · integrations (2026-10-06, draft)
+
+The project is growing into an open vehicle platform, covering diagnostics, logging,
+telemetry, tracking and an alarm. See
+[specs/2026-10-06-platform-direction-design.md](specs/2026-10-06-platform-direction-design.md)
+(draft) and [references/research/](references/research/platform.md).
+
+The layering stays as above. Two names are added:
+
+- **Vehicle packs** are declarative per-vehicle data plus small code hooks. They sit inside
+  INTERPRETATION. The D2 Td5 is the reference pack.
+- **Integrations** are opt-in consumers and add-ons, such as MQTT/Home Assistant, the
+  tracker and the alarm. Every one of them is off by default.
+
+The hard rule doesn't change: core never imports from vehicle packs or integrations.
+
 ## Deliberately out of scope (for now)
+
+- **HEVAC (climate) control** lives in a separate ESP32 project. This repo only talks to
+  it, for example over the add-on CAN bus.
 
 - Splitting the repo into a standalone core library + a separate hub repo. The layering is
   enforced *inside* this repo first; a physical split is a later step if it earns its keep.
