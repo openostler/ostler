@@ -20,12 +20,18 @@ async function openLogs(page: Page) {
 const ownRows = (page: Page) =>
   page.locator("button.replay-row").filter({ hasNot: page.locator(".replay-chip-demo") }).filter({ hasNot: page.locator(".replay-chip-live") });
 
-/** Open the Logs tab and the synthetic demo session (always listed, ADR-0009). */
+const navButton = (page: Page, name: string) =>
+  page.getByRole("navigation", { name: "Screens" }).getByRole("button", { name, exact: true });
+
+/** Open the Logs tab and the synthetic demo session (always listed, ADR-0009): it lands on
+ * the Analysis tab (spec §7). */
 async function openDemo(page: Page) {
   await openLogs(page);
   const demoRow = page.locator("button.replay-row", { hasText: "Demo log 1" }).first();
   await expect(demoRow).toBeVisible();
   await demoRow.click();
+  await expect(navButton(page, "Analysis")).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "Demo log 1" })).toBeVisible();
   // the global transport (on every tab while in replay)
   await expect(page.getByTestId("global-transport").getByRole("button", { name: "Play" })).toBeVisible();
 }
@@ -110,15 +116,16 @@ test("traces A and B through the channel picker, then the satellite toggle", asy
   await page.screenshot({ path: "test-results/logs-traces.png", fullPage: true });
 });
 
-test("the global transport follows to another tab; ‹ Sessions exits replay", async ({ page }) => {
+test("opening a demo log lands on Analysis; the transport follows to another tab; ‹ Sessions returns to Logs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   await openDemo(page);
-  const nav = page.getByRole("navigation", { name: "Screens" });
-  await nav.getByRole("button", { name: "Drive", exact: true }).click();
+  await expect(page.locator("[data-map-status]")).toBeVisible();
+  await navButton(page, "Drive").click();
   await expect(page.getByTestId("global-transport")).toBeVisible();
-  await nav.getByRole("button", { name: "Logs", exact: true }).click();
+  await navButton(page, "Analysis").click();
   await page.getByRole("button", { name: "‹ Sessions" }).click();
+  await expect(navButton(page, "Logs")).toHaveAttribute("aria-current", "page");
   await expect(page.locator("button.replay-row").first()).toBeVisible();
   await expect(page.getByTestId("global-transport")).toHaveCount(0);
 });
@@ -166,6 +173,7 @@ test("inline edit of a session's name and description", async ({ page }) => {
   test.skip((await own.count()) === 0, "the server lists no editable (non-demo, idle) session");
   const id = await own.first().getAttribute("data-session");
   await own.first().click();
+  await expect(navButton(page, "Analysis")).toHaveAttribute("aria-current", "page");
   await expect(page.getByTestId("global-transport")).toBeVisible();
 
   await page.getByRole("button", { name: /^Edit Session name/ }).click();
@@ -202,6 +210,7 @@ test("Delete on a non-demo session needs the word Delete", async ({ page }) => {
   await box.fill("Delete");
   await expect(go).toBeEnabled();
   await go.click();
+  await expect(navButton(page, "Logs")).toHaveAttribute("aria-current", "page");
   await expect(page.locator("button.replay-row").first()).toBeVisible();
   await expect(page.locator(`button.replay-row[data-session="${id}"]`)).toHaveCount(0);
 });

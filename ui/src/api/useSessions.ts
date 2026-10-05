@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./client";
-import type { SessionHistogram, SessionMeta } from "./schemas";
+import type { SessionData, SessionHistogram, SessionMeta } from "./schemas";
 
 /** A session being recorded is re-fetched this often while replayed (its trace grows; state/replay.tsx). */
 export const LIVE_REFRESH_MS = 5_000;
@@ -125,3 +125,38 @@ export function useSessionHistogram(group: "month" | "day", year?: number, refre
  * switch without another request). Text channels never come back as numbers. */
 const SKIP = new Set(["module", "faults"]);
 export const replayChannels = (meta: SessionMeta) => meta.channels.map((c) => c.name).filter((n) => !SKIP.has(n));
+
+/** Points fetched for the live Analysis view (as for replay; the data route decimates past it). */
+export const LIVE_MAX_POINTS = 3000;
+
+export type LiveSession = { meta: SessionMeta | null; data: SessionData | null; error: string | null };
+
+/**
+ * The session being recorded, for the live Analysis tab (spec §7): its meta and data
+ * (every numeric channel), re-fetched every LIVE_REFRESH_MS while `id` is set. The previous
+ * fetch stays shown until the next one lands; a new `id` starts empty.
+ */
+export function useLiveSession(id: string | null): LiveSession {
+  const [state, setState] = useState<LiveSession & { id: string | null }>({ id: null, meta: null, data: null, error: null });
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!id) return;
+    const timer = window.setInterval(() => setTick((n) => n + 1), LIVE_REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    api.session(id)
+      .then((meta) => api.sessionData(id, replayChannels(meta), LIVE_MAX_POINTS).then((data) => ({ meta, data })))
+      .then(
+        (r) => alive && setState({ id, meta: r.meta, data: r.data, error: null }),
+        (e: Error) => alive && setState((s) => (s.id === id ? { ...s, error: e.message } : { id, meta: null, data: null, error: e.message })),
+      );
+    return () => { alive = false; };
+  }, [id, tick]);
+
+  return state.id === id && id ? { meta: state.meta, data: state.data, error: state.error } : { meta: null, data: null, error: null };
+}

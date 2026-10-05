@@ -25,6 +25,8 @@ export type AppContext = {
   admin: boolean;
   community: Community | null;
   reloadCommunity: () => void;
+  /** Switch the active tab by screen id (registry.ts: "drive", "logs", "analysis", …).
+   * Stable identity; an unknown id falls back to the first screen. */
   goTo: (tab: string) => void;
   toast: Toast;
   ackedFaults: Set<string>;

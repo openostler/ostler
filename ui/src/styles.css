@@ -228,6 +228,7 @@ nav.tabs button {
   align-items: center; gap: 3px; padding: 6px 0;
 }
 nav.tabs button[aria-current="page"] { color: var(--fg); }
+/* 7+ tabs (8 public with Analysis): 8 × 48 px fits a 393 px phone; narrower, the bar scrolls */
 nav.tabs.many button { min-width: 48px; }
 nav.tabs .ti { font-size: 16px; line-height: 18px; }
 nav.tabs .ts { display: none; }
@@ -479,7 +480,12 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
 .pill-word { white-space: nowrap; }
 /* phones: no clock; "Module" stacks above the name, and the % pill keeps its word for
    screen readers only — the module name gets the room */
+/* Rewind (spec §7): icon + word; icon only on phones (aria-label keeps the word) */
+.chip.hrewind { width: auto; padding: 0 10px; gap: 6px; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.chip.hrewind:disabled { color: var(--fg-dis); cursor: default; }
 @media (max-width: 480px) {
+  .chip.hrewind { width: 36px; padding: 0; }
+  .hrewind-w { display: none; }
   .hdr-clock { display: none; }
   .modctl { padding: 0 6px 0 8px; gap: 4px; }
   .modctl-txt { flex-direction: column; align-items: flex-start; gap: 0; }
@@ -587,7 +593,9 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
   margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid var(--warn); border-radius: 8px;
   background: var(--surface); color: var(--text-1); font-size: 12px; font-weight: 700; cursor: pointer;
 }
-main.replay-edge { box-shadow: inset 4px 0 0 var(--warn), inset -4px 0 0 var(--warn); }
+/* replay frame: a border on the scroll container itself stays put while the content scrolls,
+   so all four sides stay visible between the banner and the transport bar */
+main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .pill-replay { border-color: var(--warn); }
 .modctl-replay { cursor: default; }
 .replay-lock { white-space: nowrap; }

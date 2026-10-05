@@ -13,7 +13,7 @@ const contrast = (a: string, b: string) => {
 };
 
 describe("trace colour buckets", () => {
-  it.each(["plasma", "mako", "turbo"] as const)("%s has 20 distinct colours", (name) => {
+  it.each(["plasma", "mako", "classicA", "classicB"] as const)("%s has 20 distinct colours", (name) => {
     expect(RAMPS[name]).toHaveLength(BUCKETS);
     expect(new Set(RAMPS[name]).size).toBe(BUCKETS);
     expect(ramp(1)).toHaveLength(1);
@@ -29,12 +29,20 @@ describe("trace colour buckets", () => {
     expect(luminance(r[0]!)).toBeGreaterThan(0.03);
   });
 
-  it("trace A is plasma, B mako; Classic makes both turbo", () => {
+  it("Classic colours are plain two-colour gradients: A blue → red, B green → purple", () => {
+    expect(RAMPS.classicA[0]).toBe("#2166ac");
+    expect(RAMPS.classicA[BUCKETS - 1]).toBe("#b2182b");
+    expect(RAMPS.classicB[0]).toBe("#1b7837");
+    expect(RAMPS.classicB[BUCKETS - 1]).toBe("#762a83");
+  });
+
+  it("trace A is plasma, B mako; Classic gives each lane its own two-colour gradient", () => {
     expect(RAMP).toBe(RAMPS.plasma);
     expect(laneRamp("a")).toBe(RAMPS.plasma);
     expect(laneRamp("b")).toBe(RAMPS.mako);
-    expect(laneRamp("a", true)).toBe(RAMPS.turbo);
-    expect(laneRamp("b", true)).toBe(RAMPS.turbo);
+    expect(laneRamp("a", true)).toBe(RAMPS.classicA);
+    expect(laneRamp("b", true)).toBe(RAMPS.classicB);
+    for (let i = 0; i < BUCKETS; i++) expect(RAMPS.classicA[i]).not.toBe(RAMPS.classicB[i]);
     // the two lanes are told apart at every bucket (warm vs cool)
     for (let i = 0; i < BUCKETS; i++) expect(RAMPS.plasma[i]).not.toBe(RAMPS.mako[i]);
   });

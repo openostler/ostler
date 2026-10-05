@@ -777,6 +777,9 @@ class SessionRecorder:
             fh, s.fh = s.fh, None
             fh.close()
             self._new_part(s, m, state_line=False)
+            # new channels → meta.channels now (not at the next 30 s rewrite), so a live view
+            # of the drive in progress can chart them straight away
+            self._write_meta(s, m)
 
     def _write_row(self, s: _Session, m: float, vals: dict) -> None:
         buf = io.StringIO()

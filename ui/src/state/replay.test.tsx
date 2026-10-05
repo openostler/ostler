@@ -13,7 +13,8 @@ import { AppCtx, type AppContext } from "./app";
 import { initialLive } from "./live";
 import { usePlaybackState } from "./playback";
 import { DEFAULT_PREFS } from "./prefs";
-import { INACTIVE, READ_ONLY_ERROR, ReplayCtx, ReplayProvider, useReplay, type Replay } from "./replay";
+import { LIVE_REFRESH_MS } from "../api/useSessions";
+import { INACTIVE, READ_ONLY_ERROR, ReplayCtx, ReplayProvider, startCursor, useReplay, type Replay } from "./replay";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -137,6 +138,69 @@ describe("ReplayProvider", () => {
     act(() => result.current.exit());
     expect(result.current.active).toBe(false);
     expect(result.current.data).toBeUndefined();
+  });
+
+  const meta = (recording: boolean) => ({ id: "s1", start_utc: "2026-10-05T09:00:00Z", end_utc: null, duration_s: 90,
+    rows: 91, has_gps: false, distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null,
+    synthetic: false, recording, source: "mock", channels: [{ name: "rpm", units: "rpm" }] });
+  /** /sessions/s1 whose data is `0 … lastS` seconds, growing by `grow` s on every data fetch. */
+  const sessionServer = (lastS: number, recording = false, grow = 0) => {
+    let n = lastS;
+    vi.stubGlobal("fetch", vi.fn(async (input: string) => {
+      const url = new URL(input, "http://x");
+      let body: unknown = meta(recording);
+      if (url.pathname.endsWith("/data")) {
+        const t = Array.from({ length: n + 1 }, (_, i) => i * 1000);
+        n += grow;
+        body = { id: "s1", t, utc: t.map(() => null), ch: { rpm: t.map(() => 800) }, track: [], decimated: false };
+      } else if (url.pathname.endsWith("/events")) body = { id: "s1", events: [] };
+      else if (url.pathname.endsWith("/notes")) body = { id: "s1", notes: [] };
+      return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+    }));
+  };
+  const hook = () => renderHook(() => useReplay(), { wrapper: ({ children }) => <ReplayProvider>{children}</ReplayProvider> });
+
+  it("enter(id, {at}) starts the cursor at a session time once the data loads", async () => {
+    sessionServer(90);
+    const { result } = hook();
+    act(() => result.current.enter("s1", { at: 42_000 }));
+    await vi.waitFor(() => expect(result.current.data).toBeTruthy());
+    await vi.waitFor(() => expect(result.current.t).toBe(42_000));
+    expect(result.current.playing).toBe(false);
+  });
+
+  it("enter(id) without at starts at the first sample", async () => {
+    sessionServer(90);
+    const { result } = hook();
+    act(() => result.current.enter("s1"));
+    await vi.waitFor(() => expect(result.current.data).toBeTruthy());
+    expect(result.current.t).toBe(0);
+  });
+
+  it("enter(id, {at: \"end-30s\"}) starts 30 s before the last sample (never before 0)", async () => {
+    expect(startCursor([0, 1000, 90_000], "end-30s")).toBe(60_000);
+    expect(startCursor([0, 1000, 10_000], "end-30s")).toBe(0);
+    expect(startCursor([], "end-30s")).toBe(0);
+    expect(startCursor([0, 1000], 500)).toBe(500);
+    sessionServer(90);
+    const { result } = hook();
+    act(() => result.current.enter("s1", { at: "end-30s" }));
+    await vi.waitFor(() => expect(result.current.t).toBe(60_000));
+  });
+
+  it("a still-recording session's refresh never moves the cursor after end-30s", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    try {
+      sessionServer(90, true, 20);
+      const { result } = hook();
+      act(() => result.current.enter("s1", { at: "end-30s" }));
+      await vi.waitFor(() => expect(result.current.t).toBe(60_000));
+      act(() => { vi.advanceTimersByTime(LIVE_REFRESH_MS); });
+      await vi.waitFor(() => expect(result.current.data?.t.at(-1)).toBe(110_000));
+      expect(result.current.t).toBe(60_000);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("usePlaybackState rewinds and pauses when resetKey changes", () => {

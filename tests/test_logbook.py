@@ -845,3 +845,17 @@ def test_ensure_places_fills_old_sessions(tmp_path):
     m = store.meta(sid)
     assert m["place"]["label"] == "Highland, Scotland" and m["place_end"] is None
     assert store.ensure_places(sid) is False  # once
+
+
+def test_first_channels_reach_meta_immediately(tmp_path):
+    """A live view must see the channels of the drive in progress before the 30 s meta rewrite."""
+    import json
+    from d2diag.logbook.recorder import SessionRecorder
+    clock = [1_000.0]
+    rec = SessionRecorder(str(tmp_path), clock=lambda: clock[0], mono=lambda: clock[0])
+    rec.feed({"conn": "connected", "status": "connected", "signals": {"rpm": {"v": 800, "u": "rpm"}},
+              "faults": [], "module": "motor"}, None)
+    sid = rec.status()["session"]
+    names = [c["name"] for c in json.loads((tmp_path / sid / "meta.json").read_text())["channels"]]
+    assert "rpm" in names
+    rec.close()

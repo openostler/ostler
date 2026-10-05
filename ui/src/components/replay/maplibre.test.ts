@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type Layer = { id: string; type: string; source?: string; layout?: Record<string, unknown>; paint?: Record<string, unknown> };
 
-const fake = vi.hoisted(() => ({ map: null as null | FakeMapT }));
+const fake = vi.hoisted(() => ({ map: null as null | FakeMapT, loaded: true }));
 type FakeMapT = {
   layers: Layer[];
   sources: Record<string, Record<string, unknown> & { setData: ReturnType<typeof vi.fn> }>;
@@ -33,7 +33,7 @@ vi.mock("maplibre-gl", () => {
     constructor() { fake.map = this as unknown as FakeMapT; }
     addControl() { return this; }
     on(ev: string, fn: (e: unknown) => void) { (this.handlers[ev] ??= []).push(fn); return this; }
-    isStyleLoaded() { return true; }
+    isStyleLoaded() { return fake.loaded; }
     getStyle() { return { layers: this.layers.map((l) => ({ id: l.id, type: l.type })) }; }
     addSource(id: string, s: Record<string, unknown>) { this.sources[id] = { ...s, setData: vi.fn() }; }
     getSource(id: string) { return this.sources[id]; }
@@ -78,7 +78,7 @@ const ids = (m: FakeMapT) => m.layers.map((l) => l.id);
 const vis = (m: FakeMapT, id: string) => m.layers.find((l) => l.id === id)!.layout?.visibility;
 
 describe("replay map handle", () => {
-  beforeEach(() => { fake.map = null; });
+  beforeEach(() => { fake.map = null; fake.loaded = true; });
 
   it("adds both lanes with ±3 px line-offset, round joins, casings below their lines, imagery below the labels", () => {
     const { map } = make();
@@ -130,11 +130,51 @@ describe("replay map handle", () => {
     expect(map.layers.find((l) => l.id === "trace-b")!.paint!["line-color"]).toEqual(["match", 9]);
   });
 
-  it("an imagery tile error does not drop the basemap; a style error does", () => {
-    const { map } = make();
+  it("once the style has loaded, tile/glyph/paint errors never blank the map", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const { h, map } = make();
     for (const fn of map.handlers.error ?? []) fn({ sourceId: "satellite" });
+    for (const fn of map.handlers.error ?? []) fn({ sourceId: "openmaptiles", error: new Error("tile 404") });
+    for (const fn of map.handlers.error ?? []) fn({ error: new Error("glyphs") });
     expect(map.setStyle).not.toHaveBeenCalled();
-    for (const fn of map.handlers.error ?? []) fn({ sourceId: "openmaptiles" });
+    expect(h.isBlank()).toBe(false);
+    warn.mockRestore();
+  });
+
+  it("a failure of the base style itself (before it loads) falls back to the trace only; Retry re-applies the online style", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    fake.loaded = false;
+    const onBlank = vi.fn();
+    const h = createTraceMap({
+      container: document.createElement("div"), bbox: [0, 0, 1, 1],
+      traces: { a: fc(3), b: null }, colors: { a: ["match", 1], b: "#9aa1a9" },
+      basemap: "streets", satellite: ESRI_IMAGERY, onBlank,
+    });
+    const map = fake.map!;
+    for (const fn of map.handlers.error ?? []) fn({ error: new Error("style fetch failed") });
     expect(map.setStyle).toHaveBeenCalledTimes(1);
+    expect(onBlank).toHaveBeenCalledTimes(1);
+    expect(h.isBlank()).toBe(true);
+    h.retry();
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty", { diff: false });
+    expect(h.isBlank()).toBe(false);
+    h.destroy();
+    warn.mockRestore();
+  });
+
+  it("an absent trace B never gets an empty (invalid) colour expression; enabling it later colours it", () => {
+    const h = createTraceMap({
+      container: document.createElement("div"), bbox: [0, 0, 1, 1],
+      traces: { a: fc(3), b: null }, colors: { a: ["match", 1], b: [] },
+      basemap: "streets", satellite: ESRI_IMAGERY,
+    });
+    const map = fake.map!;
+    const b = () => map.layers.find((l) => l.id === "trace-b")!;
+    expect(b().paint!["line-color"]).toBe("#9aa1a9");
+    h.setTrace("b", fc(5));
+    h.setColor("b", ["match", ["get", "b"], 5, "#123456", "#9aa1a9"]);
+    expect(b().paint!["line-color"]).toEqual(["match", ["get", "b"], 5, "#123456", "#9aa1a9"]);
+    h.setColor("b", []);
+    expect(b().paint!["line-color"]).toBe("#9aa1a9");
   });
 });

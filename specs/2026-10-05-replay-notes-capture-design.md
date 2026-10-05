@@ -2,8 +2,8 @@
 title: "Whole-app replay, notes, audio and accelerometer recording, replay map v2, Decode/Label admin — design"
 area: specs
 status: stable
-version: 1.0
-updated: 2026-10-05
+version: 1.1
+updated: 2026-10-06
 depends_on: [specs/2026-10-05-session-logbook-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
   Sessions record an events stream so every page can be replayed read-only from a root-level replay context with a global transport and Exit to live; live (⚑) and retrospective notes on the timeline (Capture labels become notes); opt-in phone/Pi audio and phone/Pi/GPS accelerometer from a recording-options modal; replay map gains two side-by-side traces, CVD-safe high-contrast ramps, a satellite switcher and a tiered channel picker; admin Map/Capture become Decode/Label with plain-English steps.
@@ -212,6 +212,29 @@ Each tab gets a three-step header and a glossary popover explaining LID, `21 xx`
 
 All errors are in English.
 
+## 7. Analysis tab and Rewind (v1.1)
+
+**Analysis tab** (`screens/Analysis.tsx`):
+- It holds the whole analysis view (`components/replay/AnalysisView.tsx`): map, trace legend, channel picker, chart, G-G and notes.
+- **Replay:** it follows the global cursor.
+- **Live:**
+  - The view shows the recording session's data, re-fetched every 5 s, with the cursor pinned to the newest sample.
+  - The marker follows `snap.gps`, and the readouts come from the live snapshot.
+  - There's no transport bar.
+  - **GPS but no recording:** the map sits at the live position with the hint "Recording starts when the car connects".
+  - **Nothing at all:** an empty state offering Rewind.
+- **Logs:** keeps only the session browser. Opening a session enters replay and switches to Analysis. "‹ Sessions" exits replay and returns to Logs.
+
+**Rewind** is a header button placed before the connection pill:
+- **While recording:** `enter(recording.session, {at: "end-30s"})`.
+- **Otherwise:** it enters the newest session at its start.
+- Afterwards it switches to Analysis.
+- It is hidden during replay (Exit to live takes its place) and disabled when no logs exist.
+
+**`ReplayState.enter(id, opts?: {at?: number | "end-30s"})`:**
+- `at` is the start cursor in session ms.
+- `"end-30s"` means 30 s before the session's last sample.
+
 ## Testing
 
 - **pytest:**
@@ -251,3 +274,4 @@ All errors are in English.
 ## Changelog
 
 - 2026-10-05: v1.0, approved.
+- 2026-10-06: v1.1, Analysis tab (live + replay) and the header Rewind button (§7).

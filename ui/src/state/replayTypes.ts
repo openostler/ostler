@@ -17,7 +17,9 @@ export interface ReplayState {
   playing: boolean;
   /** 1 | 2 | 4 | 8 */
   speed: number;
-  enter(id: string): void;
+  /** Open a session for replay. `at`: the start cursor in session ms, or "end-30s" (30 s
+   * before the last sample — Rewind on the drive in progress). Default: the start. */
+  enter(id: string, opts?: { at?: number | "end-30s" }): void;
   exit(): void;
   seek(t: number): void;
   play(): void;

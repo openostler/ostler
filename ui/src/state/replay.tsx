@@ -9,7 +9,7 @@
  * While a session is open the provider also supplies `PlaybackCtx`, so `usePlayback()` (the
  * transport, the Logs chart) reads the same clock.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api } from "../api/client";
 import type { Note, SessionData, SessionEvent, SessionMeta } from "../api/schemas";
 import { LIVE_REFRESH_MS, replayChannels } from "../api/useSessions";
@@ -67,8 +67,21 @@ export async function loadSession(id: string): Promise<Omit<Loaded, "error">> {
   return { id, meta, data, events, notes };
 }
 
+/** Rewind's look-back from the newest sample. */
+export const REWIND_MS = 30_000;
+
+/** The cursor for `enter(id, {at})`: a session time, or "end-30s" = 30 s before the last
+ * sample (never before 0). */
+export function startCursor(t: readonly number[], at: number | "end-30s"): number {
+  if (at === "end-30s") return t.length ? Math.max(0, t[t.length - 1]! - REWIND_MS) : 0;
+  return at;
+}
+
 export function ReplayProvider({ children, initial = null }: { children: ReactNode; initial?: string | null }) {
   const [id, setId] = useState<string | null>(initial);
+  /** The start cursor asked for by `enter()`, applied once when that session's data first
+   * arrives (a still-recording session's 5 s refresh never moves the cursor again). */
+  const [startAt, setStartAt] = useState<{ id: string; at: number | "end-30s" } | null>(null);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [tick, setTick] = useState(0);
   const cur = loaded && loaded.id === id ? loaded : null;
@@ -98,13 +111,25 @@ export function ReplayProvider({ children, initial = null }: { children: ReactNo
   const events = cur?.events;
   const state = useMemo(() => foldEvents(events ?? [], pb.time), [events, pb.time]);
 
-  const enter = useCallback((next: string) => setId(next), []);
-  const { pause } = pb;
+  const enter = useCallback((next: string, opts?: { at?: number | "end-30s" }) => {
+    setId(next);
+    setStartAt(opts?.at != null ? { id: next, at: opts.at } : null);
+  }, []);
+  const { pause, seek: pbSeek } = pb;
   const exit = useCallback(() => {
     pause();
     setId(null);
     setLoaded(null);
+    setStartAt(null);
   }, [pause]);
+
+  // apply the requested start cursor once the session's samples are in
+  const applied = useRef<typeof startAt>(null);
+  useEffect(() => {
+    if (!startAt || !data || startAt.id !== id || applied.current === startAt) return;
+    applied.current = startAt;
+    pbSeek(startCursor(data.t, startAt.at));
+  }, [startAt, data, id, pbSeek]);
 
   const refreshNotes = useCallback(() => {
     if (!id) return;

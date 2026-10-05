@@ -14,6 +14,7 @@ import { ModuleSelect } from "./components/ModuleSelect";
 import { Preferences } from "./components/Preferences";
 import { ReplayAudio } from "./components/replay/ReplayAudio";
 import { ReplayBanner } from "./components/ReplayBanner";
+import { RewindButton } from "./components/RewindButton";
 import { moduleName } from "./layout";
 import { clockHHMM, faultLookup, fmt } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
@@ -67,6 +68,8 @@ function AppShell({ path }: { path: string }) {
   const admin = isAdminPath(path);
   const screens = useMemo(() => screensFor(admin), [admin]);
   const [tab, setTab] = useState(admin ? "map" : "drive");
+  // goTo(): any screen (Logs → Analysis, Rewind, a health link) switches the tab by id
+  const goTo = useCallback((id: string) => setTab(id), []);
   const [prefs, setPrefs] = usePrefs();
   const [toast, showToast] = useToast();
   const [prefsOpen, setPrefsOpen] = useState(false);
@@ -140,7 +143,7 @@ function AppShell({ path }: { path: string }) {
   const ctx: AppContext = {
     snap, live: synth?.live ?? (replay.active ? { ...initialLive, module } : live), linkUp, module, catalog,
     fields: fields ?? {}, faultMeaning, refresh, prefs, setPrefs,
-    experimental, admin, community, reloadCommunity, goTo: setTab, toast: showToast, ackedFaults,
+    experimental, admin, community, reloadCommunity, goTo, toast: showToast, ackedFaults,
     showFaultSheet: setManualFaults,
     openConnection: replay.active ? () => showToast(READ_ONLY_ERROR, true) : connSheet.show,
   };
@@ -169,6 +172,7 @@ function AppShell({ path }: { path: string }) {
                 <span aria-hidden="true">⚡</span>{fmt(snap.battery_v, 1)}<span className="u">V</span>
               </span>
             ) : null}
+            <RewindButton />
             <ConnectionPill />
             <button className="chip" aria-label="Preferences" onClick={() => setPrefsOpen(true)}>⚙</button>
           </div>
