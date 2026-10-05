@@ -20,7 +20,9 @@ import {
   NoteReply,
   SessionData,
   SessionEvents,
+  SessionHistogram,
   SessionList,
+  SessionMetaReply,
   SessionMeta,
   Snapshot,
   SniffResponse,
@@ -77,7 +79,20 @@ export const api = {
   snapshot: () => getJson("/snapshot", Snapshot),
   catalog: (module: string) => getJson(`/catalog?module=${encodeURIComponent(module)}`, Catalog),
   catalogModules: () => getJson("/catalog", CatalogModules),
-  sessions: () => getJson("/sessions", SessionList),
+  /** One page of sessions, newest first (keyset paging: pass `next` back as `before`). */
+  sessions: (q: { limit?: number; before?: string | null; q?: string; from?: string; to?: string;
+    module?: string; has_notes?: boolean; min_km?: number } = {}) => {
+    const p = new URLSearchParams();
+    for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== null && v !== "" && v !== false) p.set(k, v === true ? "1" : String(v));
+    const qs = p.toString();
+    return getJson(qs ? `/sessions?${qs}` : "/sessions", SessionList);
+  },
+  sessionHistogram: (group: "month" | "day" = "month", year?: number) =>
+    getJson(`/sessions/histogram?group=${group}${year ? `&year=${year}` : ""}`, SessionHistogram),
+  updateSession: async (id: string, patch: { name?: string | null; description?: string | null }) =>
+    parse(await request(`/sessions/${encodeURIComponent(id)}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
+    }), SessionMetaReply, "/sessions"),
   session: (id: string) => getJson(`/sessions/${encodeURIComponent(id)}`, SessionMeta),
   sessionData: (id: string, channels: string[], max = 2000) =>
     getJson(`/sessions/${encodeURIComponent(id)}/data?ch=${encodeURIComponent(channels.join(","))}&max=${max}`, SessionData),
