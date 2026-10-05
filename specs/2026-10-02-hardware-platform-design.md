@@ -35,7 +35,7 @@ power domains.
 
 | Role | Part | Power domain | Runs when |
 |------|------|--------------|-----------|
-| Brain: Python `d2diag` + React UI + (optional) CAN emit | **Pi Zero 2 W** (or CM4 for eMMC/no-SD) | KL15 (ignition-switched) | key on |
+| Brain: Python `openostler` + React UI + (optional) CAN emit | **Pi Zero 2 W** (or CM4 for eMMC/no-SD) | KL15 (ignition-switched) | key on |
 | Real-time I/O: K-line timing, CAN, I2C sniff, pulse count | **RP2040 / Pico** (PIO) | KL15 | key on |
 | Always-on: GPS, cellular, accelerometer, alarm taps, fob/relay actuation | **ESP32** (deep-sleep) | **constant 12V + low-voltage cutoff** | car off, parked |
 
@@ -103,7 +103,7 @@ The D2 diagnostic K-line is a single shared half-duplex wire (pin 7) — see
 - **A1** Breadboard Pi + Pico, both power domains from a bench supply; verify rails,
   boot, and the Pico↔Pi link.
 - **A2** Move the proven L9637D K-line front-end onto the Pico; reproduce fast init and a
-  `21 xx` read; cross-check vs the USB-KKL + `d2diag`.
+  `21 xx` read; cross-check vs the USB-KKL + `openostler`.
 - **A3** Tracker ESP32 bring-up on constant-12V + LVC; confirm deep-sleep current.
 - **A4** Decide WiFi-bridge vs standalone firmware split (hardware identical).
 

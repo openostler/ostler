@@ -30,7 +30,7 @@ The owner approved this on 2026-10-06. Research sources:
 - **`split_session`:** refused unless the state is `recording`.
 - **Explicit start:** `start()` still exists for tests and tools, but no server route starts a session without a connection.
 
-## 2. Place names (`src/d2diag/geo/`)
+## 2. Place names (`src/openostler/geo/`)
 
 ### Offline lookup
 
@@ -121,7 +121,7 @@ The owner approved this on 2026-10-06. Research sources:
 - The homelab runs live with `--replay` of the demo sniff and the geocoder on.
 
 **Demo logs:**
-- `src/d2diag/logbook/demo/` holds two synthetic sessions:
+- The pack's demo sessions dir (for the D2 pack `src/d2diag/demo/sessions/`, ADR-0015) holds two synthetic sessions:
   - **"Demo log 1"**: the Rannoch Moor drive.
   - **"Demo log 2"**: a second synthetic route on open moorland away from any address. It is SLABS-focused, with height changes, faults and two notes.
 - Each has a `description` and an offline `place`, and is read-only.

@@ -1,114 +1,68 @@
 ---
-title: "TODO — discovery2-diag"
+title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 1.1
-updated: 2026-10-01
+version: 2.0
+updated: 2026-10-06
 summary: >
-  Code and infrastructure to-do list (not car tests). Decode ACE/EAT/BCU, comms_glitch tagging, packaging, NanoCom tooling, retiring the legacy dashboard pages, data-hub ideas.
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, data-hub ideas. Vehicle work lives in each pack.
 ---
 
-# TODO — discovery2-diag
+# TODO — Ostler platform
 
-Updated 2026-10-01. Check off when done.
+Updated 2026-10-06. Check off when done.
 
-> **Scope:** this repo is the tool. The car's actual faults and maintenance
-> work are handled in the sister project `../Discovery 2/` — fault codes we
-> read out belong there, not here.
+> **Scope:** this repo is the platform. Vehicle work (decoding modules, car tests, fault
+> data) lives in the vehicle packs: for the Discovery 2, the
+> [discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag) repo and its
+> `TODO.md` and `references/test_plan.md`.
 
-## Status
+## Repo split follow-ups (ADR-0015)
 
-TD5 and SLABS both work reliably since the init pulse was corrected 2026-08-19
-(TiniH was ~32 ms instead of 25 ± 1 — see `references/slabs/init-timing.md`).
-The dashboard connects to both on the first attempt and switches module without
-trouble. The test suite is green in CI.
-
-## Next time in the car
-
-**See `references/test_plan.md`** — that is the living backlog of what to test in the
-car (or with a borrowed diagnostic tool), with procedure and decision rule per item, and
-a Resolved log. Car-test items live there and nowhere else; this file covers code and
-infrastructure only.
+- [ ] Create the `openostler` GitHub org (ADR-0014 checklist) and push this repo as
+      `openostler/ostler`; update the URLs in `pyproject.toml`, `README.md`,
+      `mac/install.sh` and the geocoder User-Agent if the name differs.
+- [ ] Switch CI and the Dockerfile default from the pack's `split-pack` branch to `main`
+      (`PACK_REF` in `.github/workflows/ci.yml`) once it is merged.
+- [ ] Publish `openostler` to PyPI (placeholder 0.0.1 first) so packs can depend on it
+      without a git URL; then drop `--no-deps` from the pack installs.
+- [ ] **UI composition root:** `ui/src/main.tsx` imports `./vehicles/lr_d2` (the D2
+      views ship built into the platform UI). Decide how packs ship UI views (a pack
+      bundle loaded via `/pack`, or an npm `@ostler/*` package) and move `lr_d2` out.
+- [ ] Split `tests/test_logbook.py` and `tests/test_web.py` into platform tests on
+      `FAKE_PACK` plus thin `needs_pack` integration tests, so more of the platform is
+      covered without the D2 pack.
+- [ ] Rename the `D2DIAG_ADMIN_PW` / `D2DIAG_ENDPOINT` environment variables (keep the
+      old names as fallbacks for one release) and the Pi's `d2diag.service` unit.
+- [ ] Move `server/` (community endpoint) into the private `ostler-cloud` repo with its
+      history (it was left out of this repo at the split).
 
 ## Code / offline
 
-- [ ] **ACE, EAT and BCU** — material exists in the sniffs but is unimplemented.
-      EAT ReadFaults is confirmed: `72 05 04 00 73` → `72 09 60 01 00 00 00 00 1B`
-      (the response's meaning unknown — don't interpret as a fault counter yet).
-- [ ] **Airbag** is read-only and experimental; unverified live.
-- [ ] **Distinguish comms glitches from real sensor faults** (found 2026-08-21
-      analysing two Td5 drive logs). Signals that share a LID are read in ONE
-      request, so a bad read corrupts them together; a single bad signal whose
-      LID-mates are valid is a real per-channel (sensor/wiring) fault. Concretely
-      `air_temp`, `coolant_temp`, `fuel_temp` all live in **LID 0x1A**:
-      - **whole-LID corrupt** (all its signals out-of-range / read failed) = a
-        **comms** glitch — our tolerant K-line read occasionally drops a whole LID
-        (~1 % baseline). Should be flagged/filtered, not counted as a sensor fault.
-      - **one signal out-of-range while LID-mates are valid** = a real **sensor/
-        circuit** fault — corroborate with the ECU's own DTC (e.g. `inlet air temp
-        circuit (Current)`). On the motorway log 130/131 air_temp dropouts were of
-        this kind + 126 ECU DTC rows = genuine intermittent IAT fault; on the
-        evening log 6/6 were whole-LID = pure comms, 0 DTC.
-      - **Action:** tag snapshots/CSV rows with a `comms_glitch` marker when a whole
-        LID reads bad, and have the analysis classify junk as comms vs sensor (and
-        cross-check the DTC). Stops us mistaking tool noise for a car fault. Belongs
-        to the car register only as the *conclusion*, not the mechanism.
-- [x] **React + TypeScript dashboard** (ADR-0004, `specs/2026-10-01-web-ui-design.md`):
-      `ui/` serves `/` and `/admin`. Delete `dashboard.html` / `dashboard_v2.html`
-      (now at `/legacy/*`) once T-24 confirms parity in the car.
-- [ ] **NanoCom capture readiness** (ADR-0005): spec, module detection for BCU/airbag/
-      ACE/EAT in `sniff/`, and an importer that feeds `automap` with labelled captures.
+- [ ] **Distinguish comms glitches from real sensor faults.** Signals that share a LID
+      are read in one request, so a bad read corrupts them together; a single bad signal
+      whose LID-mates are valid is a real per-channel fault. Tag snapshots and CSV rows
+      with a `comms_glitch` marker when a whole LID reads bad, and have the analysis
+      classify junk as comms vs sensor (cross-checking the ECU's own DTC).
+- [ ] **Retire the legacy pages** `web/dashboard.html` / `dashboard_v2.html` (served at
+      `/legacy/*`) once the React UI's parity is confirmed in the car.
 - [ ] **PyInstaller distribution** (.app/.exe) for non-technical users.
-- [ ] **Torque proxy:** find the TD5's fuel quantity/demand LID (mg/stroke = the
-      ECU's torque command, in the same session as rpm/temp/throttle).
-- [x] Translate code comments, docstrings, filenames and the confidence values to English
-      (2026-10-01; see ADR-0006 and `specs/2026-10-01-docs-restructure-design.md`).
-- [ ] Possibly reintroduce store-driven SLABS reading — but within the 1 Hz budget,
-      which is what makes the session stable.
 
-## Pi (discopi)
+## Roadmap — data-hub direction (not scheduled)
 
-- [ ] Key-based login (`ssh-copy-id`), static IP, working `discopi.local`.
-- [ ] Deploy the repo, run `pytest`, start the dashboard → reach it from the phone in the car.
+The architecture is already hub-shaped (`DataSource` + the signal store as a normalized
+name/unit/confidence model + SSE). North star: a SignalK-inspired vehicle data hub, built
+one reversible step at a time. See
+[specs/2026-10-06-platform-direction-design.md](specs/2026-10-06-platform-direction-design.md).
 
-## Hardware
+- [ ] **Phone GPS** as a second source (zero hardware).
+- [ ] **MQTT source-bus** on the Pi as the internal spine; SSE stays for the browser.
+- [ ] **K-line as its own ESP32 node** (ostler-firmware), publishing signals.
+- [ ] **A time-series store** fed from the raw/CSV/JSONL logs.
 
-- [ ] **ESP32 in master mode** — the sketch exists (`esp32/kline_test/`) and
-      bit-bangs the pulse with microsecond precision. No longer necessary for SLABS,
-      but the only way to measure the **physical** edges (we only see our software side)
-      and a more stable alternative to USB-KKL.
-- [ ] OBD splitter with pin 7 wired through for continued sniffing.
+## Method lessons
 
-## Roadmap — data-hub direction (discussion 2026-08-23, not scheduled)
-
-The architecture is already hub-shaped (`DataSource` + the signal store as a
-normalized name/unit/confidence model + SSE). North star: evolve it toward a
-SignalK-inspired vehicle data hub — kept in mind while we work, built one
-reversible step at a time. Not a commitment; the lean live tool stays the product.
-
-- [ ] **Phone GPS** as a second source (zero hardware — the phone already reaches
-      the Pi). Proves the "remote source → hub → normalized signal → UI/log" chain.
-      Gives location/altitude/real distance (true L/mil, hill-vs-load). Do this first.
-- [ ] **MQTT source-bus** (mosquitto on the Pi — light) as the internal spine; SSE
-      stays for the browser. A "network `DataSource`" type receives pushed data.
-- [ ] **K-line as its own ESP32 node** (sketches exist in `esp32/`) — isolates the
-      one-session-at-a-time bus so it never blocks the hub; it just publishes signals.
-- [ ] **Engine-bay ESP32** for analog data (EGT, oil, real boost, voltages).
-- [ ] **InfluxDB on the Pi** (or a lighter TSDB — Influx is RAM-heavy on a 3B) as a
-      queryable history/knowledge store, fed from the raw/CSV/JSONL logs, so we query
-      trends instead of digging through log files.
-
-Discipline: borrow SignalK's ideas, don't rebuild it; each node must earn its place.
-
-## Method lessons (cost a whole day 2026-08-19)
-
-- **Never lock an experiment to one variant before the question is settled.** A run
-  locked to `physical/F7` gave 0/50 and looked as if the module had stopped responding.
-- **Mix the order.** A fixed variant order meant we measured the attempt number and
-  thought it was the addressing mode.
-- **Don't run conditions as separate time blocks** — then you measure the clock. A
-  "significant" difference (p=0.017) turned out to be two different points in time.
-- **Measure what you claim to measure.** Several hypotheses fell because the measured
-  value contained something else (the echo in the burst, the burst read in `to_frame_ms`,
-  `sleep` overshoot in P4).
-
+- **Never lock an experiment to one variant before the question is settled.**
+- **Mix the order**, so you do not measure the attempt number.
+- **Don't run conditions as separate time blocks**, or you measure the clock.
+- **Measure what you claim to measure.**

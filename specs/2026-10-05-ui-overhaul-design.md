@@ -66,7 +66,7 @@ See ADR-0008. Every item has exactly one status:
 
 Each item also has a safety class: `read | actuator | service | gated`.
 
-**Derivation, in `src/d2diag/catalog.py`.** The first rule that applies wins:
+**Derivation, in `src/openostler/catalog.py`.** The first rule that applies wins:
 
 1. **`sig` (signal-store name):**
    - Pick the record: the one whose `lid@offset` equals the item's `at` (for example
@@ -94,7 +94,7 @@ for the admin Map tab:
 
 `catalog.legacy_status()` converts: verified→ok, candidate→maybe, sniff/untranscribed→todo.
 
-## Menu data model (`src/d2diag/*/menu.py`)
+## Menu data model (`src/openostler/*/menu.py`)
 
 The module menus remain lists of groups.
 

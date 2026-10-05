@@ -7,17 +7,17 @@ licensed separately under AGPL-3.0-or-later (see LICENSE).
 
 "Vehicle data" means:
 
-  - src/d2diag/signals/*.json   — signal definitions (addresses, offsets, scaling,
-                                  units, ranges, confidence, sources)
-  - src/d2diag/dtc/*.json       — fault-code meanings
-  - references/*_fault_codes.md — fault-code reference tables
-  - any future vehicle packs    — e.g. vehicles/**/ ECU, signal, DTC and menu
-                                  definitions (JSON/YAML data files)
+  - tests/fixtures/**/*.json    — fixture signal, DTC and session data
+  - vehicle-pack data           — ECU, signal, DTC and menu definitions (JSON/YAML
+                                  data files) in vehicle packs that adopt this licence.
+                                  The Discovery 2 pack's signals/ and dtc/ moved to
+                                  its own repository at the repo split (ADR-0015).
 
 Third-party data bundled here keeps its own licence (e.g. GeoNames place names in
-src/d2diag/geo/ are CC BY 4.0) — see THIRD_PARTY_LICENSES.md.
+src/openostler/geo/ are CC BY 4.0) — see THIRD_PARTY_LICENSES.md.
 
-Attribution: "discovery2-diag contributors" with a link to the repository.
+Attribution: "OpenOstler contributors" (formerly "discovery2-diag contributors") with
+a link to the repository.
 Share-alike: if you adapt this data, share your adaptation under CC BY-SA 4.0.
 
 Data published before 2026-10-06 was also released under the MIT licence; copies

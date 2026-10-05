@@ -60,7 +60,7 @@ snapshot.signals ── value + confidence (c) per signal ──▶ zone state: 
 
 ## Body (BCU) page — the first slice
 
-Zones driven by the BCU read-inputs ([menus/bcu-inputs.md](../references/menus/bcu-inputs.md)):
+Zones driven by the BCU read-inputs ([menus/bcu-inputs.md](https://github.com/JamesWrightDavid/discovery2-diag/blob/main/references/menus/bcu-inputs.md), in the D2 pack repo):
 - **Doors/openings:** driver, passenger, (rear ×2 if present), bonnet, tailgate → open/closed.
 - **Lamps:** side, main beam, dipped, front/rear fog, left/right indicator, hazard, brake,
   reverse → lit when on.
@@ -82,7 +82,7 @@ In **live with no decode**, all zones are neutral "awaiting mapping" until sniff
   `AirbagCar.tsx`, `GearboxCar.tsx`).
 - Updated: `ui/src/screens/Drive.tsx` (dispatch by module), `ui/src/layout.ts` (zone maps),
   `ui/src/styles.css` (shared vehicle classes), `ui/src/components/SlabsCar.tsx` (later).
-- Backend (mock only): `src/d2diag/web/sources.py` — `InfoDataSource` gains an optional mock
+- Backend (mock only): `src/openostler/web/sources.py` — `InfoDataSource` gains an optional mock
   signal generator; `tools/dashboard.py` wires the BCU mock to emit body states.
 - Reuse: `SlabsCar.tsx` pattern, `RangeBar`/`StatTile`/`Value`, the feature map + bcu-inputs.
 

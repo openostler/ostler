@@ -1,32 +1,36 @@
 # CLAUDE.md — Entry Point
 
-Open diagnostics for the Land Rover Discovery 2 Td5 over **K-line** (pre-CAN), using a
-cheap KKL cable or an ESP32 tap. It is reverse-engineered from sniffed bus traffic. This
-repo follows the [Vibes as Code](https://github.com/JamesWrightDavid/Vibes-as-Code)
-method: orient cheaply, then load on demand.
+**Ostler — the open vehicle platform** (OpenOstler; ADR-0013, ADR-0014, ADR-0015). This
+repo is the vehicle-agnostic platform: the K-line/KWP2000 comms core, the `VehiclePack`
+contract, the session logbook and the dashboard. Vehicle specifics live in separate
+vehicle packs; the reference pack is the Land Rover Discovery 2 pack `d2diag`
+([discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag)). This repo
+follows the [Vibes as Code](https://github.com/JamesWrightDavid/Vibes-as-Code) method:
+orient cheaply, then load on demand.
 
 ## Read first, every session
 
 1. **[INDEX.md](INDEX.md)** is the manifest: every doc's path, area, status and
    ~100-token summary, plus reading paths.
 2. **[CONSTITUTION.md](CONSTITUTION.md)** holds the hard rules (layering, protocol,
-   safety, data honesty). Load it in full and never summarize it.
+   safety, data honesty). Load it in full and never summarize it. It is shared with the
+   packs.
 
 ## Then load on demand
 
 - The code map, commands and key seams: [docs/architecture.md](docs/architecture.md).
 - Mission and layering boundary: [SCOPE.md](SCOPE.md).
-- What is proven, candidate or open per module:
-  [references/protocol_state_handoff.md](references/protocol_state_handoff.md).
-- What to test next in the car: [references/test_plan.md](references/test_plan.md).
+- What moved where at the split: [ADR-0015](decisions/adr-0015-repo-split-executed.md).
 - Why a choice was made: [decisions/](decisions/CLAUDE.md).
 - Designs in progress: [specs/](specs/CLAUDE.md).
+- Vehicle knowledge and the car-test backlog: the pack's repo (for the D2,
+  `references/protocol_state_handoff.md` and `references/test_plan.md` there).
 
 ## Working rules
 
 - Design before code: write a spec in `specs/` and get it approved before implementing.
-- Run `pytest -q` before committing code. It needs no hardware.
+- Run `pytest -q` before committing code. It needs no hardware. Install the D2 pack
+  (`pip install --no-deps -e <pack checkout>`) so the `needs_pack` tests run too.
+- The platform never imports a pack (`tests/test_layering.py`).
 - After editing docs, run `python3 skill/scripts/validate_frontmatter.py`, then
   `python3 skill/scripts/build_index.py`. `INDEX.md` is generated, so never hand-edit it.
-- Record car and capture findings in `references/` and the signal store in the same
-  commit as the code change. Close out the matching `references/test_plan.md` item.

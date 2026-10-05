@@ -1,69 +1,17 @@
 # Third-party licenses and sources
 
-## td5keygen — SecurityAccess seed→key
-
-`src/d2diag/vehicles/lr_d2/td5/keygen.py` is a Python port of the algorithm in
-[pajacobson/td5keygen](https://github.com/pajacobson/td5keygen).
-
-> BSD 2-Clause License
->
-> Copyright (c) 2017, paul@discotd5.com
-> Python-variant (keytool.py): Copyright (c) 2017, xabiergarmendia@gmail.com
-> All rights reserved.
->
-> Redistribution and use in source and binary forms, with or without
-> modification, are permitted provided that the following conditions are met:
->
-> 1. Redistributions of source code must retain the above copyright notice, this
->    list of conditions and the following disclaimer.
-> 2. Redistributions in binary form must reproduce the above copyright notice,
->    this list of conditions and the following disclaimer in the documentation
->    and/or other materials provided with the distribution.
->
-> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-> ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-> ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-## Ekaitza_Itzali — protocol reference (no code used)
-
-[EA2EGA/Ekaitza_Itzali](https://github.com/EA2EGA/Ekaitza_Itzali) has been used as a
-**reference for protocol facts** (frame format, ECU addresses, init sequence,
-identifiers + scaling, plus the fault-code map for `21 3B` — offset/bitmask →
-fault text, which are facts about the ECU's diagnostics). No source code from there is
-copied — the repo has no license, so only non-protectable facts about the protocol have been used.
-The init/session/security/fault-code sequences are moreover verified against the repo's
-sniff logs (`Sniffing/*.log`). Credits in that project go to OffTrack
-(ECU disassembly) and Luca72 (Arduino reference).
-
-The Td5 fault-code map (`21 3B`) is additionally **cross-validated against a public,
-community-spread list of Td5 fault codes** — same names on the same offset/bit,
-which also yielded the more precise status distinction Logged Low / Logged High /
-Current. Only factual data (offset/bit → fault text) has been used.
-
-## BinOwl_Td5Gauge — protocol reference (GPL-3.0, no code used)
-
-[k0sci3j/BinOwl_Td5Gauge](https://github.com/k0sci3j/BinOwl_Td5Gauge) — an ESP32 Td5
-gauge, **GPL-3.0**. Reviewed 2026-08-25 as a **reference for protocol facts only**
-(LID -> field offsets and scalings, frame lengths, init/keepalive sequence); see
-`references/td5-external-findings.md`. When this was reviewed the project
-was MIT-licensed, so only non-protectable facts about the ECU protocol were used, each
-verified against our own captures. Since ADR-0012 the project is AGPL-3.0-or-later, which
-is compatible with GPL-3.0: code could now be reused **with** its GPL-3.0 notice and
-attribution recorded here — none has been so far.
+Vehicle-specific sources (the Td5 seed→key port of pajacobson/td5keygen, BSD-2-Clause;
+the Ekaitza_Itzali and BinOwl_Td5Gauge protocol references; fault-code lists) moved with the
+Discovery 2 pack at the repo split (ADR-0015). Their notices live in that pack's
+`THIRD_PARTY_LICENSES.md`:
+<https://github.com/JamesWrightDavid/discovery2-diag>.
 
 ## muki01/OBD2_K-line_Reader — K-line reference (MIT)
 
 [muki01/OBD2_K-line_Reader](https://registry.platformio.org/libraries/muki01/OBD2%20K-Line)
 — OBD2 K-line library (ISO 9141 / ISO 14230) for Arduino/ESP32, **MIT license**.
-An archived copy (Basic_Code + Schematics) is in `references/muki01_OBD2_K-line_Reader/`
-as a reference for the ESP32 port (fast init timing, burst reading, L9637D interface). MIT
+Used as a reference for K-line timing (fast init, burst reading, L9637D interface); an
+archived copy lives in the Discovery 2 pack's `references/` for the ESP32 port. MIT
 allows reuse with the copyright and license notice retained; keep this
 attribution if code from there is ported in.
 
@@ -100,7 +48,7 @@ The Figtree font is loaded from Google Fonts (SIL Open Font License).
 
 ## GeoNames — offline place names (CC BY 4.0)
 
-`src/d2diag/geo/places.tsv.gz` is trimmed from the [GeoNames](https://www.geonames.org/)
+`src/openostler/geo/places.tsv.gz` is trimmed from the [GeoNames](https://www.geonames.org/)
 `cities1000` and admin-name dumps, licensed **CC BY 4.0** (ADR-0011). Attribution is shown
 in the Logs footer. Online refinement uses OpenStreetMap Nominatim (data © OpenStreetMap
 contributors, ODbL); results are cached on the device only and are not shipped.

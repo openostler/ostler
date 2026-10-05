@@ -7,7 +7,7 @@ updated: 2026-10-05
 depends_on: [decisions/adr-0004-react-typescript-ui.md, decisions/adr-0003-signal-store-source-of-truth.md]
 summary: >
   Design for replacing the two hand-written dashboard pages with one Vite + React +
-  TypeScript app in ui/, built into src/d2diag/web/static and served by the unchanged
+  TypeScript app in ui/, built into src/openostler/web/static and served by the unchanged
   Python server, with a fixture-checked API contract and signal metadata from the store.
 ---
 
@@ -25,7 +25,7 @@ Pi's Node-free install stay as they are.
 | Decision | Choice |
 | -------- | ------ |
 | Tooling | Vite, React 18, TypeScript (strict), Zod, Vitest + Testing Library, Playwright smoke test, ESLint |
-| Location | `ui/` (source) → `npm run build` → `src/d2diag/web/static/` (committed, package-data) |
+| Location | `ui/` (source) → `npm run build` → `src/openostler/web/static/` (committed, package-data) |
 | Routing | A screen registry (as in v2). `/admin` turns on the admin screens; no router library. |
 | Styling | Plain CSS carrying v2's Astryx light/dark variables; no CSS framework |
 | Signal metadata | `label`, `group` and `description` live in `signals/*.json`. Derived fields live in `web/sources.py::DERIVED_FIELDS`. `/fields` returns both. |

@@ -2,7 +2,7 @@
 title: "Discovery 2 Td5 diagnostics — Mac tester guide"
 area: docs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 summary: >
   Non-programmer guide for a Mac tester: check the KKL cable, one-paste install, desktop launchers. Read-only.
@@ -44,7 +44,7 @@ In that same Terminal window, copy the line below, paste it (**⌘V**), and pres
 Copy the **whole** line. It downloads the tool and sets everything up for you.
 
 ```
-curl -fsSL https://raw.githubusercontent.com/Leijoma/discovery2-diag/main/mac/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openostler/ostler/main/mac/install.sh | bash
 ```
 
 Wait until it finishes (about a minute). When it's done it prints **"All set!"** and you'll have
@@ -134,13 +134,14 @@ it updates everything and refreshes the Desktop icons.
 
 ### Appendix — for the technically curious (optional)
 The one-line installer does no magic: it checks for `python3`, installs `pyserial` + `pytest` with
-`python3 -m pip install --user` (no virtualenv), clones/updates the repo to `~/discovery2-diag`,
-and writes the three `.command` launchers to your Desktop. You can read it first at
+`python3 -m pip install --user` (no virtualenv), clones/updates the platform to `~/ostler` and
+the Discovery 2 pack to `~/discovery2-diag` (installing the pack with `pip --user`), and writes
+the three `.command` launchers to your Desktop. You can read it first at
 [`mac/install.sh`](../mac/install.sh). To run things by hand instead:
 ```
-cd ~/discovery2-diag
+cd ~/ostler
 PYTHONPATH=src python3 tools/dashboard.py                 # dashboard (no car: replay a Demo log)
 PYTHONPATH=src python3 tools/dashboard.py --serial auto   # live dashboard
-PYTHONPATH=src python3 tools/verify_ecu.py td5 auto       # one-shot fault read
+PYTHONPATH=src python3 ~/discovery2-diag/tools/verify_ecu.py td5 auto   # one-shot fault read
 pytest -q                                                 # run the test suite
 ```

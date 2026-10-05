@@ -2,13 +2,13 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
-  Developer map of the code: the bottom-up protocol stack, the seams to understand before
-  changing things (frame formats, EcuSession, signal store, DataSource boundary, the two
-  command paths) and the dev commands.
+  Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
+  the seams to understand before changing things (frame formats, EcuSession, signal store,
+  DataSource boundary, the two command paths) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -21,20 +21,19 @@ broken are in [CONSTITUTION.md](../CONSTITUTION.md). This page is the working ma
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"          # only runtime dep is pyserial
+# the Discovery 2 reference pack (integration tests, the dashboard, e2e)
+pip install --no-deps "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag"
 
 pytest -q                        # whole suite, no hardware needed
-pytest tests/test_slabs.py -q    # one file
+pytest -m "not needs_pack" -q    # platform-only (fake pack)
 pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 
 # Dashboard: always live (ignition on, stationary); there is no mock/demo mode
-PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--slabs] [--fault-watch] [--csv] [--geocoder URL|off]
+PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--replay FILE|pack]
 
 # UI development without a car: the test-only server on simulated sources
 # (the same one Playwright drives)
 PYTHONPATH=src python3 tests/e2e_server.py
-
-# Read-only sanity check against a module
-PYTHONPATH=src python3 tools/verify_ecu.py td5|slabs /dev/cu.usbserial-XXXX
 ```
 
 `pyproject.toml` sets `pythonpath = ["src", "."]`, so `pytest` works without
@@ -51,7 +50,8 @@ Transport      transport/base.py: raw bytes in/out (SerialTransport, LoggingTran
 K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, echo, retries)
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
-Module layer   td5/ slabs/ airbag/ (+ bcu/ ace/ autobox/ menu stubs)
+VehiclePack    pack.py: the contract + loader (entry-point group "openostler.vehicle");
+               module layers (D2: td5/ slabs/ airbag/ …) live in the pack repo
 Side inputs    gps/ (NMEA fixes) → logbook/ (session recorder + store + index + exports,
                ADR-0009/0011); geo/ (offline GeoNames + OSM Nominatim place names)
 Web            web/: stdlib HTTP + SSE server; serves the built UI from web/static
@@ -60,6 +60,14 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 
 ## Key seams
 
+- **The `VehiclePack` seam (`pack.py`, ADR-0013/0015).**
+  - `active_pack()` resolves the installed pack from the `openostler.vehicle` entry points
+    (legacy `ostler.vehicle` read for one release); `OSTLER_VEHICLE` picks one when several
+    are installed. With none it raises `NoVehiclePackError` naming the group and the fix.
+  - Everything vehicle-specific (modules, sources, stores, actions, menus, fault readers,
+    sniff detection, demo data, docs, the UI `layout`) comes from the pack. The platform
+    imports no pack; `tests/test_layering.py` enforces it.
+  - Platform tests run against `tests/fake_pack.py`; `needs_pack` tests use the D2 pack.
 - **Two frame formats.**
   - Addressed framing (`0x8n`, target+source) is used only for StartCommunication and
     fast init.
@@ -73,7 +81,7 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     sets `_keepalive_sub = None` so it gets a bare `3E`.
 - **`EcuSession.read_block(lids) -> {lid_hex: bytes}`** has exactly the shape
   `sniff/automap.py` consumes. That lets a live session feed the differential mapper.
-- **Signal store (`src/d2diag/vehicles/lr_d2/signals/*.json`).**
+- **Signal store (each pack's `signals/*.json`, loaded by `signals/`).**
   - Decoders, the dashboard and automap all read it.
   - Confirmed mappings are written back with `upsert_field`.
   - Each field carries `confidence`, either `proven` or `candidate`.
@@ -95,9 +103,9 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - **Session logbook (`logbook/`, ADR-0009/0011).**
   - The recorder opens a session only while the car is connected. While disconnected
     it is *paused*: no data rows (not even GPS), and it ends after 300 s.
-  - The demo is two committed, read-only synthetic sessions in `logbook/demo/`
-    ("Demo log 1", "Demo log 2"), replayed through the whole app. The public server
-    lists only these.
+  - The demo is the pack's committed, read-only synthetic sessions (`pack.demo`, for the D2
+    pack "Demo log 1" and "Demo log 2"), replayed through the whole app. The public
+    server lists only these.
   - `logbook/index.py` `SessionIndex` is a stdlib-`sqlite3` index (FTS5 where available)
     behind `GET /sessions` (keyset paging, search, filters), `/sessions/histogram` (the
     month scrubber) and `PATCH /sessions/<id>` (name and description). It rebuilds itself
@@ -113,13 +121,14 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - **`faultscan.py`** reads every module strictly in sequence: establish → read → release.
 - **`web/docs.py`** serves the canonical markdown fresh on every request, with the
   frontmatter stripped. It is a window on the source. Never cache or duplicate it.
-- **`server/endpoint.py`** is the separate community-contribution service (stdlib +
-  sqlite3), paired with `community/`. Both are whitelist-based and PII-free.
+- **`community/`** is the opt-in contribution client. Its service (the former
+  `server/endpoint.py`) moved to the private `ostler-cloud` seed at the split; both are
+  whitelist-based and PII-free.
 
 ## Why the protocol rules exist
 
 - **SLABS load.** Block-reading many LIDs every 0.5 s killed the SLABS session after
-  ~15 s ([references/slabs/overview.md](../references/slabs/overview.md)).
+  ~15 s (the D2 pack's `references/slabs/overview.md`).
 - **What `7F 81 10` means.** A generalReject on StartCommunication means a link is still
   open on the shared bus. There are two teardowns:
   - `20` StopDiagnosticSession ends a Td5 diagnostic session.
@@ -133,15 +142,11 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - static bytes,
   - a sequence,
   - a `callable(count)`, when a test needs different values between reads.
-- **Comments explain *why*.** Say which sniff or log a protocol fact came from. When you
-  learn something from the car or a capture, record it in the relevant
-  `references/*.md` alongside the code change.
-- **`references/test_plan.md` is the living test backlog.** Every open hardware question
-  goes there, with a procedure and a decision rule written before the test. When a result
-  arrives:
-  - route it to its permanent home (the signal store, `references/`, or the sister
-    project for the car's own faults),
-  - move the item to **Resolved** with the date and outcome.
+- **Comments explain *why*.** Say which sniff or log a protocol fact came from. Vehicle
+  findings from the car or a capture are recorded in the pack's `references/*.md`.
+- **The car-test backlog is per pack** (D2: `references/test_plan.md` in the pack repo).
+  Every open hardware question goes there, with a procedure and a decision rule written
+  before the test.
 - **`TODO.md`** is code and infrastructure only.
 
 ## Changelog
@@ -154,3 +159,6 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-06 — No mock/demo mode: always live, demo logs replayed, simulated sources
   test-only (`tests/e2e_server.py` for UI work); record only while connected; `geo/` place
   names and the SQLite session index (ADR-0011).
+- 2026-10-06 — Repo split (ADR-0015): this is the platform (`openostler`); the
+  `VehiclePack` seam; module layers, the signal store data and the car-test backlog live in
+  the packs; `needs_pack` integration tests; `--replay pack`.

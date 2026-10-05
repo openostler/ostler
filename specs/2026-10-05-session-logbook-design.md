@@ -104,7 +104,7 @@ Each session is a directory `logs/sessions/<id>/`, where `<id>` is `YYYYMMDDTHHM
 
 ### Demo session
 
-- `tools/make_demo_session.py` deterministically generates `src/d2diag/logbook/demo/<id>/`.
+- `tools/make_demo_session.py` deterministically generates the pack's demo sessions (`pack.demo.sessions_dir/<id>/`; for the D2 pack `src/d2diag/demo/sessions/` in its repo).
 - The drive is about 12 minutes on a **synthetic** route: a parametric loop away from any real address, in an empty area.
 - Speed, rpm, coolant, boost and battery follow a consistent profile at 5 Hz.
 - It is marked `synthetic: true, source: "demo"`.

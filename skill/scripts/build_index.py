@@ -25,11 +25,12 @@ READING_PATHS = """\
 - **New here?** Read [README.md](README.md), then [docs/README.md](docs/README.md).
 - **Changing code?** Read [CONSTITUTION.md](CONSTITUTION.md), then
   [docs/architecture.md](docs/architecture.md).
-- **Going to the car?** Read [references/test_plan.md](references/test_plan.md) and
-  [references/protocol_state_handoff.md](references/protocol_state_handoff.md).
-- **Sniffing with a NanoCom?** Read [decisions/](decisions/CLAUDE.md) ADR-0005,
-  [references/reference_tool_sniff_plan.md](references/reference_tool_sniff_plan.md) and
-  [references/menus/overview.md](references/menus/overview.md).
+- **Writing or changing a vehicle pack?** Read
+  [ADR-0013](decisions/adr-0013-repo-split-and-vehicle-pack-contract.md),
+  [ADR-0015](decisions/adr-0015-repo-split-executed.md) and the
+  [Phase 0 spec](specs/2026-10-06-phase0-vehiclepack-decoupling-design.md) (the contract).
+- **Going to the car?** The car-test backlog lives in the vehicle pack's repo (for the
+  Discovery 2: the test plan in the discovery2-diag repo).
 - **Unfamiliar term?** Read [GLOSSARY.md](GLOSSARY.md).
 - **Want the why behind a choice?** Read [decisions/](decisions/CLAUDE.md).
 """

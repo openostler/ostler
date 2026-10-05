@@ -1,21 +1,16 @@
 # docs/
 
-The public, curated knowledge base. Every fact carries a confidence tag
-(🟢 proven · 🟡 assumed · 🔴 unknown) and its evidence.
+Platform documentation. Vehicle knowledge bases (module pages, fault dictionaries,
+capability inventories) live in each vehicle pack's repo, not here (ADR-0015).
 
 ## Files
 
-- `README.md` — hub and legend.
-- `architecture.md` — code map, commands and key seams (for developers and agents).
-- `discovery-2-td5/` — one page per module, plus the shared K-line layer.
-- `capability-inventory/` — consolidated per-module inventory (start at `overview.md`).
-- `tester_quickstart.md` — non-programmer Mac guide.
+- `README.md` — hub, and pointers to the pack knowledge bases.
+- `architecture.md` — code map, the `VehiclePack` seam, commands and key seams.
+- `tester_quickstart.md` — non-programmer Mac guide (platform + Discovery 2 pack).
 - `https_on_the_pi.md` — local HTTPS (mkcert) so the phone mic and motion sensors work.
-- `rover-v8/` — roadmap only.
 
 ## Editing rules
 
-- This is the canonical public copy. `references/` holds working notes that should link
-  here rather than repeat it.
-- Never raise a confidence tag without car evidence (see `references/test_plan.md`).
+- Never raise a confidence tag without car evidence (that lives in the pack's test plan).
 - Frontmatter is required. Rebuild INDEX.md after edits.

@@ -67,7 +67,7 @@ always-on subsystem protects the battery:
 KL15 (ignition-switched)            CONSTANT 12V (+ low-voltage cutoff)
 ┌─────────────────────────┐        ┌───────────────────────────────┐
 │ Pi (brain)              │        │ Tracker ESP32 (deep-sleep)    │
-│  Python d2diag + React  │        │  GPS + LTE-M + accelerometer  │
+│  Python ostler + React  │        │  GPS + LTE-M + accelerometer  │
 │  CAN emit (optional)    │        │  alarm signal taps            │
 │ RP2040/Pico (real-time) │        │  fob-emulation (disarm)       │
 │  K-line timing, CAN,    │        │  remote-start relays + bypass │

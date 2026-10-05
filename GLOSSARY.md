@@ -33,7 +33,9 @@ summary: >
 | **proven** | Confidence level: verified against the car, with the date and evidence recorded. |
 | **candidate** | Confidence level: derived, inferred or unverified. It is shown dimmed or as "exp" in the UI. |
 | **Reference tool** | A commercial diagnostic tool (e.g. NanoCom) whose traffic is sniffed passively to learn the protocol. |
-| **Signal store** | `src/d2diag/vehicles/lr_d2/signals/*.json`, the single source of truth for LID field mappings. |
+| **Signal store** | A pack's `signals/*.json` (Discovery 2: `d2diag/signals/`), the single source of truth for LID field mappings. |
+| **Vehicle pack** | A separate distribution registering a `VehiclePack` under the `openostler.vehicle` entry point (ADR-0013). The reference pack is `d2diag`. |
+| **Ostler / OpenOstler** | The product brand (Ostler™) and the open-source code and community (ADR-0014). |
 | **Capture / sniff** | A passive ESP32 RX-only log of K-line traffic, `[ms] hh hh…`, with `>>> marker` lines. |
 
 Legacy terms: older captures and community uploads may use `belagt` (= proven),
