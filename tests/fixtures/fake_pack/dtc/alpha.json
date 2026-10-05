@@ -1,0 +1,12 @@
+[
+  {
+    "key": "A1",
+    "name": "alpha fault one",
+    "description": "The fake pack's only fault.",
+    "cause": "Nothing real.",
+    "severity": "logged",
+    "system": "fake",
+    "source": "fake pack fixture",
+    "confidence": "candidate"
+  }
+]

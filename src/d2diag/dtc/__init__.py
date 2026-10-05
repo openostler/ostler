@@ -39,7 +39,18 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-_DIR = Path(__file__).resolve().parent
+# The store directory. ``None`` (the default) means the active vehicle pack's
+# ``dtc_dir``; tests monkeypatch ``_DIR`` to a temporary directory.
+_DIR: "Path | None" = None
+
+
+def _dir() -> Path:
+    """The fault-meaning store directory: ``_DIR`` if set, else ``active_pack().dtc_dir``."""
+    if _DIR is not None:
+        return Path(_DIR)
+    from ..pack import active_pack
+
+    return Path(active_pack().dtc_dir)
 
 
 @dataclass(frozen=True)
@@ -61,7 +72,7 @@ class FaultMeaning:
 
 
 def _path(module: str) -> Path:
-    return _DIR / f"{module}.json"
+    return _dir() / f"{module}.json"
 
 
 def load_records(module: str) -> "list[dict]":
@@ -108,7 +119,7 @@ def upsert_meaning(module: str, record: dict) -> None:
     else:
         rows.append(rec)
     p = _path(module)
-    fd, tmp = tempfile.mkstemp(dir=str(_DIR), suffix=".tmp")
+    fd, tmp = tempfile.mkstemp(dir=str(_dir()), suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(rows, f, ensure_ascii=False, indent=2)

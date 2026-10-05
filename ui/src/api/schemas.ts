@@ -450,3 +450,21 @@ export type RecordingSources = z.infer<typeof RecordingSources>;
 export const CaptureList = z.object({
   captures: z.array(CaptureValue.extend({ t: z.number().nullable().optional(), session: z.string().nullable().optional() })),
 });
+
+/** GET /pack — the active vehicle pack's manifest (Phase 0, ADR-0013). */
+export const PackModule = z.object({
+  id: z.string(),
+  name: z.string(),
+  aliases: z.array(z.string()),
+  live: z.boolean(),
+});
+export const PackSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  api_version: z.number(),
+  default_module: z.string(),
+  modules: z.array(PackModule),
+  aliases: z.record(z.string(), z.string()),
+  layout: z.record(z.string(), z.unknown()),
+});
+export type Pack = z.infer<typeof PackSchema>;

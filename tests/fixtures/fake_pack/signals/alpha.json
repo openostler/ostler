@@ -1,0 +1,32 @@
+[
+  {
+    "name": "alpha_speed",
+    "lid": "01",
+    "offset": 0,
+    "kind": "u16",
+    "scale": 1.0,
+    "bias": 0.0,
+    "unit": "rpm",
+    "confidence": "proven",
+    "limits": [0, 5000],
+    "source": "fake pack fixture",
+    "label": "Alpha speed",
+    "group": "Engine",
+    "description": "A proven fake field."
+  },
+  {
+    "name": "alpha_temp",
+    "lid": "02",
+    "offset": 1,
+    "kind": "u8",
+    "scale": 1.0,
+    "bias": -40.0,
+    "unit": "°C",
+    "confidence": "candidate",
+    "limits": null,
+    "source": "fake pack fixture",
+    "label": "Alpha temp",
+    "group": "Temperatures",
+    "description": "A candidate fake field."
+  }
+]

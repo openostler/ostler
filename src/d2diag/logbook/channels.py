@@ -7,7 +7,6 @@ Exports use AiM-style names via ``export_name``: known channels map to their AiM
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 GPS_CHANNELS = ("GPS_Latitude", "GPS_Longitude", "GPS_Speed", "GPS_Heading",
                 "GPS_Altitude", "GPS_Nsat", "GPS_HDOP")
@@ -75,7 +74,9 @@ def _store_records() -> "dict[str, dict]":
     global _STORE
     if _STORE is None:
         recs_by_name: "dict[str, dict]" = {}
-        root = Path(__file__).resolve().parent.parent / "signals"
+        from .. import signals
+
+        root = signals._dir()
         for p in sorted(root.glob("*.json"), key=lambda q: (q.stem != "td5", q.name)):
             try:
                 recs = json.loads(p.read_text(encoding="utf-8"))

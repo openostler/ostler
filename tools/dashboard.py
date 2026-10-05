@@ -21,7 +21,7 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
         --tls-cert pi.crt --tls-key pi.key
 
     # a sniff feed for the admin Decode tab without a car (the homelab runs this):
-    PYTHONPATH=src python3 tools/dashboard.py --replay src/d2diag/web/demo/sniff-demo.txt
+    PYTHONPATH=src python3 tools/dashboard.py --replay src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt
 
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """

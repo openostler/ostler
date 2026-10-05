@@ -1,9 +1,9 @@
 """Read side of the logbook: list, meta, columnar replay data, delete, export (ADR-0009),
 plus events, notes, audio and capture labels (ADR-0010).
 
-``SessionStore(root, demo_root=DEMO_ROOT)`` merges the recorded sessions under ``root``
-with the committed synthetic demo session(s). ``public=True`` hides every non-synthetic
-session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
+``SessionStore(root, demo_root=<the active pack's demo sessions>)`` merges the recorded
+sessions under ``root`` with the committed synthetic demo session(s). ``public=True`` hides
+every non-synthetic session (``KeyError`` as if unknown). Demo and synthetic sessions cannot be deleted, and
 their notes are read-only (``PermissionError``); every note write is refused in public
 mode. Audio is never available in public mode (``KeyError``).
 
@@ -27,7 +27,7 @@ import time
 from . import channels as ch
 from . import export as _export
 from .audio import mime_for, track_file
-from .demo import DEMO_ROOT
+from . import demo as _demo_pkg
 from . import places as _places
 from .notes import NoteLog, read_notes
 from .recorder import (MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions,
@@ -39,6 +39,7 @@ LIVE_GRACE_S = 90.0  # a "recording" meta newer than this is the live session
 MAX_NAME = 80
 MAX_DESCRIPTION = 2000
 _UNSET = object()
+_PACK = object()  # SessionStore default: the active vehicle pack's demo sessions
 _PLACE_WHICH = {"start": "place_start", "place_start": "place_start",
                 "end": "place_end", "place_end": "place_end"}
 
@@ -285,8 +286,10 @@ def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
 # -------------------------------------------------------------------- store -- #
 
 class SessionStore:
-    def __init__(self, root: str, demo_root: "str | None" = DEMO_ROOT,
+    def __init__(self, root: str, demo_root: "str | None" = _PACK,  # type: ignore[assignment]
                  index_path: "str | None" = None) -> None:
+        if demo_root is _PACK:
+            demo_root = _demo_pkg.demo_root()
         self.root = str(root)
         self.demo_root = str(demo_root) if demo_root else None
         self.index = None

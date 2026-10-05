@@ -15,7 +15,7 @@ services:
     # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the committed demo sniff
     # feed (Decode tab) and the OSM geocoder on.
     command: ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080",
-              "--replay", "src/d2diag/web/demo/sniff-demo.txt",
+              "--replay", "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt",
               "--geocoder", "https://nominatim.openstreetmap.org"]
     restart: unless-stopped
     networks:

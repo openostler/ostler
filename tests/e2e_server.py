@@ -32,7 +32,7 @@ for _p in (os.path.join(_REPO, "src"), _REPO):
 from d2diag.web.server import DiagServer  # noqa: E402
 from tests.fake_sources import FakeGps, fake_fault_report, fake_modules  # noqa: E402
 
-DEMO_SNIFF = os.path.join(_REPO, "src", "d2diag", "web", "demo", "sniff-demo.txt")
+DEMO_SNIFF = os.path.join(_REPO, "src", "d2diag", "vehicles", "lr_d2", "demo", "sniff-demo.txt")
 SEED_START_S = 1_788_250_000.0  # 2026-09-01 — the seeded editable session
 
 

@@ -21,8 +21,12 @@ _CORE = [
     "gps", "logbook",  # ADR-0009: session logbook + GPS are core (stdlib + pyserial)
     "geo",  # ADR-0011: place names (offline GeoNames + OSM enrichment)
     "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
+    "pack.py", "_compat.py",  # ADR-0013: the VehiclePack contract and the import shim
+    "vehicles",  # the Discovery 2 pack (td5, slabs, bcu, airbag, ace, autobox, sniff, …)
 ]
 _FORBIDDEN = {"web", "apps"}
+# The pack's data-source module is the consumer boundary (it builds web DataSources).
+_CORE_EXCEPT = {"vehicles/lr_d2/sources.py"}
 
 
 def _core_files() -> "list[pathlib.Path]":
@@ -33,7 +37,7 @@ def _core_files() -> "list[pathlib.Path]":
             out += sorted(p.rglob("*.py"))
         elif p.exists():
             out.append(p)
-    return out
+    return [p for p in out if p.relative_to(_SRC).as_posix() not in _CORE_EXCEPT]
 
 
 def _imported_modules(path: pathlib.Path):
@@ -65,3 +69,10 @@ def test_logbook_gps_and_imu_are_scanned():
     # ADR-0009/0010: the new core packages must be part of the scan, not silently skipped.
     names = {p.relative_to(_SRC).parts[0] for p in _core_files()}
     assert {"gps", "logbook", "imu"} <= names
+
+
+def test_vehicle_pack_is_scanned():
+    # ADR-0013: the moved Discovery 2 module layers must stay under the guard.
+    rel = {p.relative_to(_SRC).as_posix() for p in _core_files()}
+    assert "vehicles/lr_d2/td5/td5.py" in rel and "vehicles/lr_d2/slabs/slabs.py" in rel
+    assert "vehicles/lr_d2/sources.py" not in rel

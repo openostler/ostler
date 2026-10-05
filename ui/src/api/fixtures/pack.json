@@ -1,0 +1,309 @@
+{
+  "id": "lr_d2",
+  "name": "Land Rover Discovery 2 Td5",
+  "api_version": 1,
+  "default_module": "td5",
+  "modules": [
+    {
+      "id": "td5",
+      "name": "TD5 (engine)",
+      "aliases": [
+        "motor"
+      ],
+      "live": true
+    },
+    {
+      "id": "slabs",
+      "name": "SLABS (ABS + air suspension)",
+      "aliases": [],
+      "live": true
+    },
+    {
+      "id": "bcu",
+      "name": "BCU (body control)",
+      "aliases": [],
+      "live": false
+    },
+    {
+      "id": "ace",
+      "name": "ACE (active cornering)",
+      "aliases": [],
+      "live": false
+    },
+    {
+      "id": "autobox",
+      "name": "EAT (auto gearbox)",
+      "aliases": [
+        "eat",
+        "gearbox"
+      ],
+      "live": false
+    },
+    {
+      "id": "airbag",
+      "name": "SRS (airbag)",
+      "aliases": [],
+      "live": false
+    }
+  ],
+  "aliases": {
+    "motor": "td5",
+    "eat": "autobox",
+    "gearbox": "autobox"
+  },
+  "layout": {
+    "group_order": [
+      "Engine",
+      "Temperatures",
+      "Fuelling",
+      "Pressures",
+      "Accelerator",
+      "Ride height",
+      "Wheels",
+      "Electrical",
+      "Inputs",
+      "Other"
+    ],
+    "drive": {
+      "td5": {
+        "kind": "tiles",
+        "tiles": [
+          {
+            "signal": "manifold_press",
+            "label": "Boost",
+            "gauge": true,
+            "dec": 2
+          },
+          {
+            "signal": "coolant_temp",
+            "label": "Coolant",
+            "gauge": true,
+            "dec": 0
+          },
+          {
+            "signal": "battery",
+            "label": "Battery",
+            "dec": 1
+          },
+          {
+            "signal": "air_temp",
+            "label": "Intake air",
+            "dec": 0
+          },
+          {
+            "signal": "economy",
+            "label": "Fuel now",
+            "scale": 0.1,
+            "unit": "L/mil",
+            "dec": 2
+          },
+          {
+            "signal": "trip_economy",
+            "label": "Trip",
+            "scale": 0.1,
+            "unit": "L/mil",
+            "dec": 2
+          }
+        ]
+      },
+      "slabs": {
+        "kind": "slabs_car",
+        "health": true
+      },
+      "bcu": {
+        "kind": "body_car"
+      }
+    },
+    "body": {
+      "signals": {
+        "side": "side_lights",
+        "dipped": "dipped",
+        "main": "main_beam",
+        "frontFog": "front_fog",
+        "rearFog": "rear_fog",
+        "indL": "indicator_left",
+        "indR": "indicator_right",
+        "hazard": "hazard",
+        "brake": "brake_light",
+        "reverse": "reverse_light",
+        "doorDriver": "door_driver",
+        "doorPassenger": "door_passenger",
+        "bonnet": "bonnet",
+        "tailgate": "tailgate",
+        "winFL": "window_front_left",
+        "winFR": "window_front_right",
+        "wiperF": "wiper_front",
+        "wiperR": "wiper_rear",
+        "heated": "heated_screen",
+        "ignition": "ignition_pos",
+        "battery": "battery"
+      },
+      "groups": [
+        {
+          "title": "Lighting",
+          "items": [
+            {
+              "signal": "side_lights",
+              "label": "Side lights",
+              "kind": "flag"
+            },
+            {
+              "signal": "dipped",
+              "label": "Dipped beam",
+              "kind": "flag"
+            },
+            {
+              "signal": "main_beam",
+              "label": "Main beam",
+              "kind": "flag"
+            },
+            {
+              "signal": "front_fog",
+              "label": "Front fog",
+              "kind": "flag"
+            },
+            {
+              "signal": "rear_fog",
+              "label": "Rear fog",
+              "kind": "flag"
+            },
+            {
+              "signal": "indicator_left",
+              "label": "Left indicator",
+              "kind": "flag"
+            },
+            {
+              "signal": "indicator_right",
+              "label": "Right indicator",
+              "kind": "flag"
+            },
+            {
+              "signal": "hazard",
+              "label": "Hazard",
+              "kind": "flag"
+            },
+            {
+              "signal": "brake_light",
+              "label": "Brake lights",
+              "kind": "flag"
+            },
+            {
+              "signal": "reverse_light",
+              "label": "Reverse light",
+              "kind": "flag"
+            }
+          ]
+        },
+        {
+          "title": "Doors & openings",
+          "items": [
+            {
+              "signal": "door_driver",
+              "label": "Driver door",
+              "kind": "flag"
+            },
+            {
+              "signal": "door_passenger",
+              "label": "Passenger door",
+              "kind": "flag"
+            },
+            {
+              "signal": "bonnet",
+              "label": "Bonnet",
+              "kind": "flag"
+            },
+            {
+              "signal": "tailgate",
+              "label": "Tailgate",
+              "kind": "flag"
+            }
+          ]
+        },
+        {
+          "title": "Windows",
+          "items": [
+            {
+              "signal": "window_front_left",
+              "label": "Front left",
+              "kind": "flag"
+            },
+            {
+              "signal": "window_front_right",
+              "label": "Front right",
+              "kind": "flag"
+            }
+          ]
+        },
+        {
+          "title": "Wash / wipe",
+          "items": [
+            {
+              "signal": "wiper_front",
+              "label": "Front wiper",
+              "kind": "flag"
+            },
+            {
+              "signal": "wiper_rear",
+              "label": "Rear wiper",
+              "kind": "flag"
+            }
+          ]
+        },
+        {
+          "title": "Climate",
+          "items": [
+            {
+              "signal": "heated_screen",
+              "label": "Heated screen",
+              "kind": "flag"
+            }
+          ]
+        },
+        {
+          "title": "Power",
+          "items": [
+            {
+              "signal": "ignition_pos",
+              "label": "Ignition position",
+              "kind": "num",
+              "dec": 0
+            },
+            {
+              "signal": "battery",
+              "label": "Battery",
+              "kind": "num",
+              "unit": "V",
+              "dec": 1
+            }
+          ]
+        }
+      ]
+    },
+    "util_lids": {
+      "td5": {
+        "example": "09 0D 10 1A 1B 1C 40",
+        "note": "09 rpm · 1A temps · 1B pedal · 1C boost · 40 injector balance"
+      },
+      "slabs": {
+        "example": "54 43 50 44 56",
+        "note": "54 heights · 43 wheel speeds · 50 ABS sensors · 44 supply · 56 door"
+      }
+    },
+    "notices": {
+      "slabs": {
+        "record_confirm": "SLABS only communicates while stationary — comms drop as soon as the car moves.\nThis log will NOT capture a drive. To log a drive (rpm, speed, boost, temps), switch to TD5 first.\n\nStart the SLABS log anyway?",
+        "inputs_banner": "SLABS only communicates while stationary — to log a drive (rpm, boost, temps), switch to TD5."
+      }
+    },
+    "replay": {
+      "group_categories": {
+        "chassis": "Chassis/SLABS",
+        "slabs": "Chassis/SLABS",
+        "wheels": "Chassis/SLABS",
+        "ride height": "Chassis/SLABS",
+        "brakes": "Chassis/SLABS",
+        "suspension": "Chassis/SLABS"
+      }
+    }
+  }
+}

@@ -32,5 +32,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 # tab has a feed (no car data in it). The OSM geocoder is on (the default
 # https://nominatim.openstreetmap.org; ≤1 request/s, cached in logs/geocache.json).
 CMD ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080", \
-     "--replay", "src/d2diag/web/demo/sniff-demo.txt", \
+     "--replay", "src/d2diag/vehicles/lr_d2/demo/sniff-demo.txt", \
      "--geocoder", "https://nominatim.openstreetmap.org"]
