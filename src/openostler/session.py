@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared ECU session base for the module layers (Td5, Slabs, …).
 
 Collects what every module layer does the same way on top of :class:`KWP2000`:

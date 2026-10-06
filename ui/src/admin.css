@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2026 OpenOstler contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 /* Admin-only screens (Decode, Label): step header, glossary popover, help text.
  * Uses the calm-instrument tokens from styles.css; no new colours. */
 .step-header { display: flex; flex-direction: column; gap: 8px; }

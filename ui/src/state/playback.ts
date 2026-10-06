@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Replay playback: one clock over a session's time base (`t`, session ms) that drives the
  * map cursor, the chart cursor and the readouts (specs/2026-10-05-session-logbook-design.md).

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session place names (ADR-0011; spec 2026-10-06-logs-at-scale §2). Core: never imports web.
 
 The meta fields ``place_start`` / ``place_end`` are ``{label, source}`` (``source`` is

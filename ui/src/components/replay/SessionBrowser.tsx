@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The Logs browser (specs/2026-10-06-logs-at-scale-design.md §5): the recording card, search
  * and filter chips, the "This year" heatmap, the paged list with sticky year/month headers,

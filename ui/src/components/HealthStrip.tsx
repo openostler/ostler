@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { summarize } from "../lib/health";
 import { useApp } from "../state/app";
 

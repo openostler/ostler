@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Regenerate the offline place-name table ``src/openostler/geo/places.tsv.gz`` from GeoNames.
 
     PYTHONPATH=src python3 tools/build_places.py [--cache DIR] [--out FILE] [--no-download]

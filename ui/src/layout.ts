@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Layout accessors — the screen layout comes from the active vehicle pack (GET /pack →
  * `layout`), never from this file. Signal labels, groups and descriptions come from the

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The ONLY module that imports MapLibre GL. It is loaded with `import("./maplibre")` from
  * TraceMap, so MapLibre (and its CSS and worker) live in lazy chunks, never the main one

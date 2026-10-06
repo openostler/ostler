@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The vehicle id seam (UI spec §4.1, specs/2026-10-06-u0-seams-design.md §A).
 
 ``logs/vehicle.json`` holds the local ``vid``; new sessions carry it; a legacy session

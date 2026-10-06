@@ -1,0 +1,96 @@
+# Ostler event API: the Server-Sent Events stream of src/openostler/web/server.py (_Handler._sse).
+# AsyncAPI 3.0 (ADR-0017). Payload schemas are shared with api/openapi.yaml by $ref, so the
+# snapshot has one definition. MQTT channels (Home Assistant discovery, the OVMS alias tree,
+# OwnTracks) arrive with U5. tests/test_api_contracts.py checks this file. See api/README.md.
+asyncapi: 3.0.0
+info:
+  title: Ostler
+  version: 0.0.1
+  description: |
+    The live event stream the Ostler server pushes to its UI.
+
+    **Today:** one SSE channel, `GET /events`. The server writes one unnamed message,
+    `data: <Snapshot JSON>\n\n`, every `stream_interval` seconds (default 0.5 s) until the
+    client disconnects. It sends no `event:`, `id:` or `retry:` fields, so a browser
+    `EventSource` delivers every message to `onmessage` and reconnects by itself. Each
+    message is the whole current snapshot, not a delta. The UI primes itself from
+    `GET /snapshot`, which returns the same object (`ui/src/api/useSnapshot.ts`).
+
+    **Wire conventions** are those of `api/openapi.yaml`
+    (`components.x-ostler-wire-conventions`): RFC 3339 UTC `Z` timestamps for new fields,
+    COVESA VSS units (ADR-0016), GeoJSON (RFC 7946) positions and traces, `vid` on
+    sessions. The snapshot's `ts`, `recording.since` and `active_test.since` are legacy
+    epoch seconds.
+
+    **Coming:** MQTT 3.1.1 channels at U5 (standards research §2 and §8.2).
+  license:
+    name: AGPL-3.0-or-later
+    url: https://spdx.org/licenses/AGPL-3.0-or-later.html
+  tags:
+    - name: live
+defaultContentType: application/json
+
+servers:
+  device:
+    host: localhost:8080
+    protocol: http
+    description: >
+      The Ostler server on the device (a Pi in the car, or a laptop); local HTTPS per
+      ADR-0021. The stream is public and also served in public mode.
+
+channels:
+  events:
+    address: /events
+    title: Live snapshots (SSE)
+    description: >
+      `GET /events` answers `200 text/event-stream` with `Cache-Control: no-cache` and
+      `Connection: keep-alive`. The address is matched exactly: a query string answers 404.
+    servers:
+      - $ref: "#/servers/device"
+    messages:
+      snapshot:
+        $ref: "#/components/messages/snapshot"
+
+operations:
+  receiveSnapshot:
+    action: receive
+    title: Receive the live snapshot
+    summary: The client receives the whole current snapshot every poll interval.
+    channel:
+      $ref: "#/channels/events"
+    messages:
+      - $ref: "#/channels/events/messages/snapshot"
+
+components:
+  messages:
+    snapshot:
+      name: snapshot
+      title: Snapshot
+      summary: The live state of the active module, connection, GPS and recording.
+      description: >
+        Sent as the SSE `data:` field (no `event:` name, so the SSE event type is
+        `message`). The object is open: clients ignore unknown fields.
+      contentType: application/json
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/Snapshot"
+      examples:
+        - name: connected
+          summary: Td5 connected, idle, not recording (trimmed).
+          payload:
+            status: connected
+            source: td5
+            module: td5
+            signals:
+              rpm: {v: 777.21, u: rpm, s: ok, c: proven}
+              coolant_temp: {v: 20.15, u: "°C", s: ok, c: proven}
+            faults: []
+            logging: {recording: false}
+            public: false
+            fault_watch: false
+            allow_shutdown: false
+            conn: connected
+            ts: 1791226936.05
+            battery_v: 14.07
+            active_test: null
+            gps: null
+            recording: null

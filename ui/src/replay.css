@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2026 OpenOstler contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 /* Logs tab: session browser + map replay (specs/2026-10-05-session-logbook-design.md).
    Uses the styles.css tokens. The transport bar styles here also serve GlobalTransport (ADR-0010). Chart series = dataviz reference categorical slots 1-3, validated
    with validate_palette.js against --surface in both modes (light aqua < 3:1 → every lane is

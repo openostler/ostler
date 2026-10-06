@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { bodyLayout } from "../../layout";
 import type { SignalValue } from "../../api/schemas";
 import { fmt } from "../../lib/format";

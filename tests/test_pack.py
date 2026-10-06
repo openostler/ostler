@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The VehiclePack contract and the platform modules package A made generic, run against
 FAKE_PACK (a second, non-Discovery pack) so nothing here passes by accident of D2 data
 (specs/2026-10-06-phase0-vehiclepack-decoupling-design.md §1, §4, §6)."""

@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Document library for the dashboard's Documents tab.
 
 The registry points at the **canonical** markdown files (the fault-code dictionary

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Per-session notes (ADR-0010; spec 2026-10-05-replay-notes-capture §2). Core: never imports web.
 
 Contract:
@@ -74,7 +78,7 @@ def _capture(cap) -> "dict | None":
 
 def _read_lines(path: str) -> "list[dict]":
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             text = fh.read()
     except OSError:
         return []

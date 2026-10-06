@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared capture parsing — the basis for analysis tools and the protocol library.
 
 Reads esp32_read logs, splits into length-prefixed KWP frames with checksum validation,

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The command registry (openostler.commands) matches what the data sources dispatch, both ways.
 
 A new module action needs a registry entry (status + safety) before the server will run it

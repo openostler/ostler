@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session logbook (ADR-0009): always-on recording, the session store and exports.
 Core layer: never imports ``web``.
 

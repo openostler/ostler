@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session logbook over HTTP (specs/2026-10-05-session-logbook-design.md, ADR-0009).
 
 The server side only: routes, the public-mode filter, 404/400, ``delete_session``

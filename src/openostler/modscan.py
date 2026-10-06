@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Read-only address scan — who answers on the K-line, and how.
 
 Before the NanoCom rental we want to know which of the *asserted-only* modules (cruise

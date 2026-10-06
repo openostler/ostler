@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """JSON Schemas for the platform's file formats (ADR-0017, specs/2026-10-06-u0-seams-design.md §A).
 
 Every schema in ``schemas/`` is a valid JSON Schema 2020-12 document with an ``$id`` under

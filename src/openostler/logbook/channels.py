@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Channel names, units and groups for session files and exports (ADR-0009).
 
 Session files use the signal store names (``rpm``, ``coolant_temp``) and ``GPS_*``.

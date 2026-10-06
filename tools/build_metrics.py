@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Build ``src/openostler/metrics.json`` and ``src/openostler/vss_leaves.json`` from the
 pinned COVESA VSS release and the Ostler overlay (ADR-0016).
 

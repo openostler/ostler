@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /** Land Rover Discovery 2 Td5 (pack "lr_d2"): the Drive views its layout.json names. */
 import { registerViews } from "../registry";
 import { BodyCar } from "./BodyCar";

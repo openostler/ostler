@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Auto-map a reference tool field from PLAINTEXT readings + sniffed raw bytes.
 
 Premise: the user only sees plaintext in the reference tool (can't specify offset/type).
@@ -13,7 +18,7 @@ reading and **searches on its own** for the right field:
 """
 from __future__ import annotations
 
-from .calib import _fmt_num, suggest_signal
+from .calib import suggest_signal
 
 CLEAN_SCALES = [
     1.0, 0.5, 0.25, 0.1, 0.05, 0.04, 0.02, 0.01, 0.005, 0.001, 0.0001,

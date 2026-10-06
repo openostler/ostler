@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session exports: AiM-named CSV, Racelogic VBO, GPX 1.1 (ADR-0009)."""
 
 import pytest
@@ -150,7 +154,8 @@ def test_vbo_comments_and_event_column():
     assert "Note bbbb0002 at 0.5-0.9s: mark" in comments
     cols = lines[c1 + 1].split(" ")
     assert cols[-1] == "event1"
-    h0, h1 = lines.index("[header]"), lines.index("[channel units]")
+    assert "[header]" in lines
+    h1 = lines.index("[channel units]")
     assert lines[h1 - 2] == "event1"
     data = [ln.split(" ") for ln in lines[lines.index("[data]") + 1:] if ln]
     assert [d[-1] for d in data] == ["1", "1"]  # 240 ms → the 0 ms line, 480 ms → 500 ms

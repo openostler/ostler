@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """LoggingTransport — decorates another Transport and logs all raw TX/RX.
 
 Fulfils the requirement "all packets shall be loggable … saved to file". Format:

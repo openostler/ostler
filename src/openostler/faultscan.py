@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Basic mode — read fault codes from all modules sequentially.
 
 K-line is a shared bus → one module at a time: establish → read faults → close, then

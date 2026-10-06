@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The replay session header on the Analysis tab (spec §7): "‹ Sessions" (exit replay, back to
  * Logs), the inline name and description, when/where, Export and Delete. The analysis body

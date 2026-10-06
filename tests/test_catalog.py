@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The catalog (ADR-0008): derivation rules on synthetic menus + invariants on the real ones."""
 from __future__ import annotations
 

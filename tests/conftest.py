@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared pytest wiring: the Discovery 2 reference pack as an optional test dependency.
 
 Platform tests run against ``tests/fake_pack.py`` and need no pack. Integration tests that

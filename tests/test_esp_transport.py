@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """EspTransport — the ESP32 bridge used as a Transport (protocol mapping, no hardware).
 
 Proven live on the ESP over USB; these lock the send/receive/fast-init mapping so the

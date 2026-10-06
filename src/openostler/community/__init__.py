@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Community contribution client — **opt-in, anonymous, PII-free**.
 
 Manages a single consent choice + a random anonymous install ID, and uploads

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Pi IMU: the LSM6DS driver against a fake i2c-dev fd, the mock IMU and the reader
 (ADR-0010; replay-notes-capture spec §3)."""
 import struct

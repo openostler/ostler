@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { CatalogItem, CommandReply } from "../api/schemas";
 import { useAction } from "../api/useAction";
 import { actionLocked, actionVisible } from "../lib/catalog";

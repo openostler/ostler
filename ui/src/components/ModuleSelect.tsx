@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { command } from "../api/client";
 import { useCatalogModules } from "../api/useCatalog";
 import { canonicalModule, moduleName, moduleNames } from "../layout";

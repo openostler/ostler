@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session exports: AiM-named CSV, Racelogic VBO and GPX 1.1 (ADR-0009).
 
 Every exporter takes ``rows`` — a list of ``{channel: value}`` dicts in time order, with

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { ReactNode } from "react";
 import { moduleName } from "../layout";
 import { useApp } from "../state/app";

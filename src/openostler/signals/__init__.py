@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Declarative signal store — the single source of truth for LID field mappings.
 
 One ``<module>.json`` per ECU describes each field (offset, type, scale, bias, unit,

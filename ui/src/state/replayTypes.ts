@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The whole-app replay contract (ADR-0010, specs/2026-10-05-replay-notes-capture-design.md §4).
  * `state/replay.tsx` implements it; every screen reads replay only through `useApp()` (which

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { defineConfig, devices } from "@playwright/test";
 
 // Smoke test against the REAL Python server wired to the simulated sources by the test-only

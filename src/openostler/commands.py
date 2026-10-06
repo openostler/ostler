@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Command registry: every module action the dashboard can send, with its status and safety.
 
 The single source of truth for **what an action is** (ADR-0008,

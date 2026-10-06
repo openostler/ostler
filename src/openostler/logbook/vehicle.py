@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The local vehicle id (``vid``, UI spec §4.1, U0). Core: stdlib only, never imports web.
 
 A ``vid`` names one vehicle, not a pack: two Discovery 2s share the pack ``lr_d2`` but
@@ -61,7 +65,7 @@ def _active_pack_id() -> "str | None":
 
 def _read(path: str) -> "dict | None":
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             rec = json.load(fh)
     except (OSError, ValueError):
         return None

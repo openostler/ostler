@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Vehicle view registry (platform). A pack's UI code registers the components its layout
  * names by `kind` (layout.drive[module].kind); Drive looks them up for the active pack.

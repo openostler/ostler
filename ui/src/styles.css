@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 OpenOstler contributors
+ * SPDX-FileCopyrightText: Meta Platforms, Inc. and affiliates
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later AND MIT
+ */
+
 /* Astryx neutral theme (ported from the legacy v2 page). Light + dark token sets;
    <html data-theme> picks one. Figtree is loaded from Google Fonts — offline in the
    garage, the system-font fallback applies. */

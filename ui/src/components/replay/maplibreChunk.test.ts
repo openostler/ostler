@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Build-free guard for the spec rule "MapLibre is lazy-loaded with import(), never in the main
  * chunk": only replay/maplibre.ts may import maplibre-gl, and nothing may import that module

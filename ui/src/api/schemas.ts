@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The HTTP contract with the Python server (src/openostler/web/server.py), as Zod schemas.
  *

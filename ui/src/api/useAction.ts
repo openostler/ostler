@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useCallback } from "react";
 import { useApp } from "../state/app";
 import { READ_ONLY_ERROR, useReplay } from "../state/replay";

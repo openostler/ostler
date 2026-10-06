@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Write BUILD_COMMIT and BUILD_TIME into a source tree (the Docker build's meta stage).
 
 The image keeps no ``.git``, so ``openostler.version`` reads these files instead. The commit

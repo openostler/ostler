@@ -1,9 +1,12 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Per-session notes and capture labels (ADR-0010; replay-notes-capture spec §2)."""
 
 import pytest
 
 import json
-import os
 
 from openostler.logbook.notes import NoteLog, read_notes
 from openostler.logbook.recorder import NotRecording, SessionRecorder

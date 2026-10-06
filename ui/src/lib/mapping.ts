@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { AutomapReply, MapItem } from "../api/schemas";
 
 /** Signal name for a menu row without an explicit `sig`: "3. Road Speed (km/h)" → "road_speed". */

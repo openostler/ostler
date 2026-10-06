@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Pure helpers for whole-app replay (ADR-0010, specs/2026-10-05-replay-notes-capture-design.md §4):
  * fold the events stream to the state at `t`, and synthesise the `snap` + `live` every screen

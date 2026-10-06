@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useEffect, useState } from "react";
 
 /** The current time (ms), re-rendering every `everyMs` — for "last seen N s ago". */

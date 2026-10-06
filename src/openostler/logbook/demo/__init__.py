@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The committed synthetic demo logs, now shipped by the vehicle pack (ADR-0013).
 
 ``DEMO_ROOT`` resolves lazily to ``active_pack().demo.sessions_dir`` (``None`` when the

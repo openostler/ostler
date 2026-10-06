@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Whole-app replay (ADR-0010, specs/2026-10-05-replay-notes-capture-design.md §4).
  *

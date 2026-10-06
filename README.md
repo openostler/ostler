@@ -151,6 +151,9 @@ conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabula
   designs.
 - [ADR-0015](decisions/adr-0015-repo-split-executed.md) records what moved where at the
   repo split.
+- [CHANGELOG.md](CHANGELOG.md) lists notable changes and the versioning policy.
+- [SECURITY.md](SECURITY.md) says how to report a vulnerability, privately.
+- [CONTRIBUTING.md](CONTRIBUTING.md) covers licences, the CLA and the checks to run.
 
 ## Credits
 
@@ -171,6 +174,9 @@ what was used. Vehicle-specific credits live in each pack.
   embedded use without the AGPL obligations) is available from the maintainer.
 - **Data** (vehicle data in packs, bundled data sets): [CC BY-SA 4.0](LICENSE-DATA),
   unless a third-party licence says otherwise.
+- **Per file:** the repo follows [REUSE](https://reuse.software/). Each file's licence
+  is in its SPDX header or in [REUSE.toml](REUSE.toml), and the texts are in
+  [LICENSES/](LICENSES/).
 - **Contributions** are accepted under the [Contributor License Agreement](CLA.md). See
   [CONTRIBUTING.md](CONTRIBUTING.md).
 - Versions published before 2026-10-06 were MIT-licensed; copies obtained under those

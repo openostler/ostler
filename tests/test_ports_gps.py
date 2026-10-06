@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """K-line port auto-detection never picks a GPS receiver (ADR-0009)."""
 from openostler import ports
 

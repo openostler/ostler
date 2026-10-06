@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Online place-name enrichment via OSM Nominatim (ADR-0011; spec 2026-10-06-logs-at-scale §2).
 
 ``Enricher`` is one daemon thread draining one queue, within the Nominatim usage policy:

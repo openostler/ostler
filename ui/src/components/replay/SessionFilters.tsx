@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The Logs search box and filter chips (spec §5): search (debounced 300 ms → `q`), date range
  * (`from`/`to`), module, has notes, minimum distance. Every change goes to the parent at once

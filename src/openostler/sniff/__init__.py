@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Passive sniff calibration — read reference tool traffic (RX-only) and map LID fields.
 
 Since our ESP32 tap never transmits, the reference tool must be connected and polling;

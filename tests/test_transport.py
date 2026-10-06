@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for the transport layer. Runs without hardware via pyserial's ``loop://``."""
 from openostler.transport import LoggingTransport, SerialTransport
 

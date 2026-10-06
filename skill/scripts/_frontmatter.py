@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared helpers for Vibes as Code tooling (stdlib only).
 
 Parses the minimal YAML frontmatter subset this repo uses and decides which
@@ -111,7 +115,7 @@ def parse_frontmatter(text: str):
 def load(path: str):
     """Read a file and parse its frontmatter. Returns (data, error)."""
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             return parse_frontmatter(fh.read())
     except OSError as exc:  # pragma: no cover - defensive
         return None, f"could not read file: {exc}"

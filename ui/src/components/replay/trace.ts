@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The map trace: GPS track → line segments colour-bucketed by a channel, the legend, and the
  * cursor position/heading. Pure (no MapLibre), so the maths is unit-tested in jsdom.

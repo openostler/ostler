@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The MapLibre handle against a fake maplibre-gl (jsdom has no WebGL): the two offset trace
  * lanes, the satellite raster under the labels, and a basemap switch that only toggles

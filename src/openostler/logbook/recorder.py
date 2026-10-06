@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Always-on session recording (ADR-0009, specs/2026-10-05-session-logbook-design.md).
 
 ``SessionRecorder.feed(snapshot, gps)`` is called once per poll. A session opens only
@@ -134,7 +138,7 @@ def write_json_atomic(path: str, obj: dict) -> None:
 
 def _read_meta(path: str) -> "dict | None":
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             m = json.load(fh)
         return m if isinstance(m, dict) else None
     except (OSError, ValueError):
