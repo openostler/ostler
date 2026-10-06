@@ -45,6 +45,40 @@ jobs:
           python -c "import vss_tools" || { echo "vss-tools missing: the [dev] extra installs it on Python >= 3.11"; exit 1; }
           python tools/build_metrics.py --check
 
+  # SocketCanLink and KernelIsoTpChannel on a real vcan0 (CanLink spec §9). The test job
+  # skips these; here a skip is a failure (OSTLER_REQUIRE_VCAN).
+  vcan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - name: Load vcan (and can-isotp if the runner kernel has it), bring up vcan0
+        run: |
+          if ! sudo modprobe vcan; then
+            sudo apt-get update -q
+            sudo apt-get install -y -q "linux-modules-extra-$(uname -r)"
+            sudo modprobe vcan
+          fi
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+          ip -details link show vcan0
+          # Kernel ISO-TP is optional (KernelIsoTpChannel): required here only if it loads.
+          if sudo modprobe can-isotp; then
+            echo "OSTLER_REQUIRE_CAN_ISOTP=1" >> "$GITHUB_ENV"
+          else
+            echo "::warning::can-isotp did not load on $(uname -r); the kernel ISO-TP vcan test will skip"
+          fi
+      - name: needs_vcan tests (a skip fails the job)
+        run: pytest -q -rs -m needs_vcan tests/test_can_backends.py
+        env:
+          OSTLER_REQUIRE_VCAN: "1"
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
