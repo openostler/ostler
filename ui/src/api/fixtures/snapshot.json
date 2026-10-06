@@ -1,6 +1,7 @@
 {
   "status": "connected",
   "source": "td5",
+  "source_kind": "serial",
   "signals": {
     "rpm": {
       "v": 777.21,

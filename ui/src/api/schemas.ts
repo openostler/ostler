@@ -16,12 +16,27 @@ import { z } from "zod";
 export const Confidence = z.string(); // "proven" | "candidate"; open so a new level doesn't crash the UI
 export type Confidence = z.infer<typeof Confidence>;
 
-/** One live value in a snapshot: v value, u unit, s range status, c confidence. */
+/** One live value in a snapshot: v value, u unit, s range status, c confidence. A node
+ * source (NodeSource spec §6.3, §6.4) adds where it came from and how old it is. */
 export const SignalValue = z.object({
   v: z.number().nullable(),
   u: z.string().default(""),
   s: z.string().nullable().optional(), // "ok" | "low" | "high" | "suspect" | null
   c: Confidence.optional(),
+  /** Node source: the COVESA VSS path it was published under. */
+  m: z.string().optional(),
+  m_unknown: z.boolean().optional(),
+  /** Node source: the field's enumeration label ("closed"). */
+  label: z.string().optional(),
+  raw: z.number().optional(),
+  /** Node source: RFC 3339 UTC when the node read it (null before SNTP). */
+  ts_utc: z.string().nullable().optional(),
+  /** Node source: seconds since the node read it; null = unknown. */
+  age_s: z.number().nullable().optional(),
+  /** Node source: a last known value, never shown as live. */
+  stale: z.boolean().optional(),
+  src: z.string().optional(),
+  before_restart: z.boolean().optional(),
 });
 export type SignalValue = z.infer<typeof SignalValue>;
 
@@ -90,10 +105,51 @@ export const KLineLink = z.object({
 });
 export type KLineLink = z.infer<typeof KLineLink>;
 
+/** A node's ADR-0040 power record. */
+export const NodePower = z.object({
+  state: z.string(), // "awake" | "held" | "waking" | "asleep" | "shutting_down"
+  since: z.string().nullable().optional(),
+  since_us: z.number().optional(),
+  class: z.string().optional(),
+  next_checkin: z.string().nullable().optional(),
+  est_ma: z.number().nullable().optional(),
+  reason: z.string().optional(),
+});
+
+/** The node that serves the active module (a node source only). */
+export const NodeState = z.object({
+  device: z.string().nullable(),
+  status: z.string().nullable(), // "online" | "offline" | null
+  power: NodePower.nullable(),
+  boot: z.number().nullable().optional(),
+  last_seen_utc: z.string().nullable(),
+  broker: z.object({ connected: z.boolean(), host: z.string() }),
+  tap: z.null().optional(),
+});
+export type NodeState = z.infer<typeof NodeState>;
+
+/** One VSS path from the nodes, with the selected source's value on top. */
+export const VssReading = z.object({
+  sel: z.string(),
+  value: z.number().nullable(),
+  unit: z.string(),
+  ts_utc: z.string().nullable().optional(),
+  age_s: z.number().nullable().optional(),
+  stale: z.boolean(),
+  c: Confidence.optional(),
+  sources: z.record(z.string(), z.object({ v: z.number().nullable(), stale: z.boolean() }).passthrough()),
+});
+
 /** The snapshot pushed over /events every poll (and returned by /snapshot). */
 export const Snapshot = z.object({
-  status: z.string(), // "connected" | "connecting" | "error" | "no-cable" | "needs-detect"
+  status: z.string(), // "connected" | "connecting" | "error" | "no-cable" | "needs-detect" | "asleep" | "broker-down"
   source: z.string().optional(),
+  /** "serial" | "kline" | "node" (NodeSource reads the node's MQTT messages). */
+  source_kind: z.string().optional(),
+  node: NodeState.nullable().optional(),
+  vss: z.record(z.string(), VssReading).optional(),
+  devices: z.array(z.string()).optional(),
+  faults_note: z.string().optional(),
   module: z.string().optional(), // canonical module id (a /pack module id)
   mode: z.string().nullable().optional(), // "mock" | "live"
   modes: z.array(z.string()).optional(),

@@ -1,7 +1,9 @@
 # Ostler event API: the Server-Sent Events stream of src/openostler/web/server.py (_Handler._sse).
 # AsyncAPI 3.0 (ADR-0017). Payload schemas are shared with api/openapi.yaml by $ref, so the
-# snapshot has one definition. MQTT channels (Home Assistant discovery, the OVMS alias tree,
-# OwnTracks) arrive with U5. tests/test_api_contracts.py checks this file. See api/README.md.
+# snapshot has one definition. The node's MQTT 5 channels the Brain consumes (NodeSource,
+# specs/2026-10-06-node-source-design.md §8) are here too; the outbound MQTT exports (Home
+# Assistant discovery, the OVMS alias tree, OwnTracks) arrive with U5.
+# tests/test_api_contracts.py checks this file. See api/README.md.
 asyncapi: 3.0.0
 info:
   title: Ostler
@@ -24,7 +26,16 @@ info:
     `active_test.since` are deprecated and go in 0.2.0. The stream's response sends
     `Deprecation` (RFC 9745) and a `Link rel="deprecation"` while they remain.
 
-    **Coming:** MQTT 3.1.1 channels at U5 (standards research §2 and §8.2).
+    **Node channels (MQTT 5, consumed by the Brain).** A node publishes its state on the
+    `brain-broker` server (the Brain's Mosquitto, bridged to the node's broker; or the
+    node's own broker in the lab): `status`, `power` and one retained `vss/<leaf>` topic per
+    value. The Brain's NodeSource subscribes read-only (No Local on, Retain As Published
+    off, Retain Handling 0, clean start, session expiry 0) and turns them into the snapshot
+    (NodeSource spec §4, §6). The module-bus message spec will own these schemas; they move
+    there when it lands. Tap, manifest, role, wake and request channels arrive with their
+    phases (P2 to P4).
+
+    **Coming:** the outbound MQTT exports at U5 (standards research §2 and §8.2).
   license:
     name: AGPL-3.0-or-later
     url: https://spdx.org/licenses/AGPL-3.0-or-later.html
@@ -39,6 +50,18 @@ servers:
     description: >
       The Ostler server on the device (a Pi in the car, or a laptop); local HTTPS per
       ADR-0021. The stream is public and also served in public mode.
+  brain-broker:
+    host: brain.local:8883
+    protocol: secure-mqtt
+    protocolVersion: "5"
+    description: >
+      The Brain's MQTT 5 broker (Mosquitto, an OS service; ADR-0027 §3), bridged to the
+      node's parked broker while the Brain is awake. TLS 1.2+ with a client certificate
+      from the Brain's local CA (mTLS, also on loopback; no passwords) and a per-device ACL
+      (ADR-0026): the Brain reads only its own vehicle's state topics. Found by mDNS or a
+      configured URL, never a hard-coded address.
+    security:
+      - $ref: "#/components/securitySchemes/mtls"
 
 channels:
   events:
@@ -53,7 +76,81 @@ channels:
       snapshot:
         $ref: "#/components/messages/snapshot"
 
+  nodeStatus:
+    address: "ostler/v1/{vid}/{device}/status"
+    title: Node liveness
+    description: >
+      Retained, QoS 1, plain text (not JSON): `online` on connect; the node's will sets
+      `offline` when its connection drops without a normal DISCONNECT (keep-alive 10 s).
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      status:
+        $ref: "#/components/messages/nodeStatus"
+  nodePower:
+    address: "ostler/v1/{vid}/{device}/power"
+    title: Node power state
+    description: Retained, QoS 1. The ADR-0040 power record.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      power:
+        $ref: "#/components/messages/nodePower"
+  nodeVss:
+    address: "ostler/v1/{vid}/{device}/vss/{leaf}"
+    title: Node values
+    description: >
+      Retained, QoS 0, one topic per value. `leaf` is a COVESA VSS path
+      (`Vehicle.Speed`) or, for a pack field with no VSS path, `<pack>.<module>.<field>`
+      with the platform's pack id (`lr_d2.td5.air_temp`).
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      leaf:
+        description: A VSS path or `<pack>.<module>.<field>` (one topic level).
+    messages:
+      value:
+        $ref: "#/components/messages/nodeVss"
+
 operations:
+  receiveNodeStatus:
+    action: receive
+    title: The Brain receives node liveness
+    channel:
+      $ref: "#/channels/nodeStatus"
+    messages:
+      - $ref: "#/channels/nodeStatus/messages/status"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodePower:
+    action: receive
+    title: The Brain receives node power states
+    channel:
+      $ref: "#/channels/nodePower"
+    messages:
+      - $ref: "#/channels/nodePower/messages/power"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodeVss:
+    action: receive
+    title: The Brain receives node values
+    channel:
+      $ref: "#/channels/nodeVss"
+    messages:
+      - $ref: "#/channels/nodeVss/messages/value"
+    bindings:
+      mqtt: {qos: 0}
+    x-ostler-consumer: brain
   receiveSnapshot:
     action: receive
     title: Receive the live snapshot
@@ -64,7 +161,57 @@ operations:
       - $ref: "#/channels/events/messages/snapshot"
 
 components:
+  securitySchemes:
+    mtls:
+      type: X509
+      description: TLS client certificate issued by the Brain's local CA (ADR-0021, ADR-0027 §8).
+  parameters:
+    vid:
+      description: The vehicle id (never a VIN; a VIN-shaped vid is refused).
+    device:
+      description: The publishing device's id (its node config `node.name`).
   messages:
+    nodeStatus:
+      name: nodeStatus
+      title: Node status
+      contentType: text/plain
+      payload:
+        type: string
+        enum: [online, offline]
+    nodePower:
+      name: nodePower
+      title: Node power record
+      contentType: application/json
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/NodePower"
+      examples:
+        - name: awake
+          payload: {state: awake, since: "2026-10-06T10:00:00.000Z", since_us: 1000000, class: always,
+                    wake_paths: [], next_checkin: null, leases: [], est_ma: null, reason: polling}
+    nodeVss:
+      name: nodeVss
+      title: One node value
+      contentType: application/json
+      payload:
+        type: object
+        required: [value, unit, ts, t_us, source]
+        properties:
+          value: {type: number}
+          unit: {type: string, description: "The pack store's display unit today (`°C`, `kg/hr`); converted to the VSS unit at U3."}
+          ts: {type: [string, "null"], description: "RFC 3339 UTC when the node read it; null until SNTP."}
+          t_us: {type: integer, minimum: 0, description: "The node's monotonic clock (µs)."}
+          boot: {type: integer, minimum: 0, description: "The node's boot counter (the raw-tap header's boot_id); exact reboot detection. Absent on older nodes."}
+          source: {type: string, description: "`<bus_id>/<module>/<request>`, e.g. `kline-diag/td5/21 09`."}
+          name: {type: string, description: "The pack field name."}
+          c: {type: string, description: "proven | candidate"}
+          raw: {type: number}
+          state: {type: string, description: "The field's enumeration label, when it has one."}
+        additionalProperties: true
+      examples:
+        - name: rpm
+          payload: {value: 780, unit: rpm, ts: "2026-10-06T10:00:00.000Z", t_us: 2490181, boot: 7,
+                    source: "kline-diag/td5/21 09", name: rpm, c: proven, raw: 780}
+
     snapshot:
       name: snapshot
       title: Snapshot

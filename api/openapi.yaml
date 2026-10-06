@@ -234,9 +234,12 @@ paths:
         gated, planned); 403 `public_mode` (refused on the public server) or `read_only`
         (`delete_session` of a synthetic session); 404 `not_found` (an unknown session);
         409 `not_recording` (`split_session`), `disconnected` or `conflict` (shutdown not
-        enabled, the session is being recorded); 500 `internal`; 502 `car_refused` (the
+        enabled, the session is being recorded, or a node source is active and the command
+        would open the serial port: `read_all_faults`, `set_port`, the probes; the Brain
+        never touches the car, ADR-0032); 500 `internal`; 502 `car_refused` (the
         ECU answered with a negative response; `nrc` carries its code); 503 `unavailable`
-        (no session recorder); 504 `car_timeout` (the poll thread did not answer in time).
+        (no session recorder, or a module action on a node source: the node takes no
+        requests yet); 504 `car_timeout` (the poll thread did not answer in time).
       x-ostler-access: public
       x-ostler-public-mode: partial
       requestBody:
@@ -268,7 +271,7 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/ErrorReply"}
         "503":
-          description: "Session recording is not available (`code: unavailable`)."
+          description: "Session recording is not available, or a node source takes no module actions yet (`code: unavailable`)."
           content:
             application/json:
               schema: {$ref: "#/components/schemas/ErrorReply"}
@@ -1498,13 +1501,29 @@ components:
     # ---- snapshot ----
     SignalValue:
       type: object
-      description: "One live value: v value, u unit, s range status, c confidence."
+      description: >
+        One live value: v value, u unit, s range status, c confidence. A node source
+        (NodeSource spec §6.3, §6.4) adds where the value came from and how old it is; a
+        cable source leaves those fields out.
       required: [v]
       properties:
         v: {type: [number, "null"]}
         u: {$ref: "#/components/schemas/VssUnit"}
         s: {type: [string, "null"], description: "ok | low | high | suspect | null"}
         c: {$ref: "#/components/schemas/Confidence"}
+        m: {type: string, description: "Node source: the COVESA VSS path the value was published under."}
+        m_unknown: {type: boolean, description: "Node source: `m` is not a known VSS or overlay path (kept, flagged)."}
+        label: {type: string, description: "Node source: the field's enumeration label (e.g. `closed`)."}
+        raw: {type: number, description: "Node source: the undecoded raw value (for decode work; not shown to drivers)."}
+        ts_utc:
+          description: "Node source: when the node read the value (null until the node's clock is set by SNTP)."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        age_s: {type: [number, "null"], description: "Node source: seconds since the node read it, on the node's own clock; null when unknown."}
+        stale: {type: boolean, description: "Node source: true for a last known value (retained at subscribe time, past 3 × its interval, or before a node restart). Never shown as live."}
+        src: {type: string, description: "Node source: `<device>/<source tag>`, e.g. `node/kline-diag/td5/21 09`."}
+        before_restart: {type: boolean, description: "Node source: read before the node last restarted."}
       additionalProperties: true
     Logging:
       type: object
@@ -1586,7 +1605,19 @@ components:
       description: The live state, pushed over `/events` every poll and returned by `/snapshot`.
       required: [status]
       properties:
-        status: {type: string, description: "connected | connecting | error | no-cable | needs-detect (a K-line source with no profile: nothing is sent until a Parked detect_protocol)"}
+        status: {type: string, description: "connected | connecting | error | no-cable | needs-detect (a K-line source with no profile: nothing is sent until a Parked detect_protocol) | asleep (a node source: the node sleeps cleanly) | broker-down (a node source: the Brain cannot reach the MQTT broker)"}
+        source_kind: {type: string, description: "serial (a pack's cable source) | kline (the generic K-line link source) | node (NodeSource: the node's MQTT messages)"}
+        node:
+          description: A node source's node; absent for cable sources.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeState"}
+        vss:
+          type: object
+          description: "A node source: every `Vehicle.*` path the nodes publish, with each source and the selected one (NodeSource spec §6.5)."
+          additionalProperties: {$ref: "#/components/schemas/VssReading"}
+        devices: {type: array, items: {type: string}, description: "A node source: every device seen under the vehicle id."}
+        faults_note: {type: string, description: "Why `faults` is empty when it is not read (a node source: `not read by the node yet`)."}
         source: {type: string}
         module: {type: string, description: A canonical module id (a /pack module id).}
         mode: {type: [string, "null"]}
@@ -1634,6 +1665,78 @@ components:
           oneOf:
             - {type: "null"}
             - {$ref: "#/components/schemas/KLineLink"}
+      additionalProperties: true
+    NodePower:
+      type: object
+      description: The node's ADR-0040 power record, as published on its `power` topic.
+      required: [state]
+      properties:
+        state: {type: string, description: "awake | held | waking | asleep | shutting_down"}
+        since: {type: [string, "null"], description: "RFC 3339 UTC when the state began; null until the node's clock is set."}
+        since_us: {type: integer, description: "The node's monotonic clock when the state began."}
+        class: {type: string}
+        wake_paths: {type: array}
+        next_checkin: {type: [string, "null"]}
+        leases: {type: array}
+        est_ma: {type: [number, "null"]}
+        reason: {type: string}
+      additionalProperties: true
+    NodeState:
+      type: object
+      description: The node that serves the active module (NodeSource spec §8, §10).
+      required: [device, status, power, last_seen_utc, broker]
+      properties:
+        device: {type: [string, "null"], description: "The device id in the node's topics; null before any is seen."}
+        status: {type: [string, "null"], description: "online | offline (its will) | null (never seen)"}
+        power:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodePower"}
+        boot: {type: [integer, "null"], description: "The node's boot counter (from its VSS payloads)."}
+        last_seen_utc:
+          description: When the Brain last received a live message from the device; null when it has only stored ones.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        broker:
+          type: object
+          required: [connected, host]
+          properties:
+            connected: {type: boolean}
+            host: {type: string}
+          additionalProperties: true
+        tap: {type: "null", description: "The raw-tap session (phase P2); null until then."}
+      additionalProperties: true
+    VssReading:
+      type: object
+      description: One VSS path from the nodes; the selected source's value at the top level.
+      required: [sel, value, unit, stale, sources]
+      properties:
+        sel: {type: string, description: The selected source (`<device>/<source tag>`).}
+        value: {type: [number, "null"]}
+        unit: {$ref: "#/components/schemas/VssUnit"}
+        ts_utc:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        age_s: {type: [number, "null"]}
+        stale: {type: boolean}
+        c: {$ref: "#/components/schemas/Confidence"}
+        sources:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              v: {type: [number, "null"]}
+              u: {type: string}
+              ts_utc:
+                oneOf:
+                  - {type: "null"}
+                  - {$ref: "#/components/schemas/Rfc3339Utc"}
+              age_s: {type: [number, "null"]}
+              stale: {type: boolean}
+              c: {$ref: "#/components/schemas/Confidence"}
+            additionalProperties: true
       additionalProperties: true
     KLineLink:
       type: object

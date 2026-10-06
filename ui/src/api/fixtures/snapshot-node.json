@@ -1,0 +1,351 @@
+{
+  "source": "slabs",
+  "source_kind": "node",
+  "signals": {
+    "battery": {
+      "v": 6.75,
+      "u": "V",
+      "s": "suspect",
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 2.106,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 44",
+      "raw": 108,
+      "m": "Vehicle.LowVoltageBattery.CurrentVoltage"
+    },
+    "height_left": {
+      "v": 144.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 4.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 54",
+      "raw": 144,
+      "m": "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw"
+    },
+    "height_right": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 11.116,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 54",
+      "raw": 0,
+      "m": "Vehicle.Ostler.Chassis.RideHeight.RearRightRaw"
+    },
+    "transfer_low": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 6.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 42",
+      "label": "high or neutral",
+      "raw": 0,
+      "m": "Vehicle.Powertrain.Transmission.IsLowRangeEngaged"
+    },
+    "abs_sensor_fl": {
+      "v": 2.8000000000000003,
+      "u": "V",
+      "s": "ok",
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 0.115,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 50",
+      "raw": 140
+    },
+    "abs_sensor_fr": {
+      "v": 3.62,
+      "u": "V",
+      "s": "high",
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 0.115,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 50",
+      "raw": 181
+    },
+    "abs_sensor_rl": {
+      "v": 4.44,
+      "u": "V",
+      "s": "high",
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 0.115,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 50",
+      "raw": 222
+    },
+    "abs_sensor_rr": {
+      "v": 0.0,
+      "u": "V",
+      "s": "low",
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 7.115,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 50",
+      "raw": 0
+    },
+    "any_door": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 10.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 56",
+      "label": "closed",
+      "raw": 0
+    },
+    "brake_analog": {
+      "v": 0.0,
+      "u": "raw",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 5.116,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 48",
+      "raw": 0
+    },
+    "diff_lock": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 6.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 42",
+      "label": "disengaged",
+      "raw": 0
+    },
+    "ecu_supply": {
+      "v": 0.0,
+      "u": "V",
+      "s": "suspect",
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 9.105,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 44",
+      "raw": 0
+    },
+    "neutral_gear": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 6.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 42",
+      "label": "not neutral",
+      "raw": 0
+    },
+    "reverse_gear": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "proven",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 6.117,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 42",
+      "label": "not reverse",
+      "raw": 0
+    },
+    "wheel_speed_fl": {
+      "v": 43135.0,
+      "u": "",
+      "s": null,
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 1.112,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 43",
+      "raw": 43135
+    },
+    "wheel_speed_fr": {
+      "v": 64209.0,
+      "u": "",
+      "s": null,
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 1.112,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 43",
+      "raw": 64209
+    },
+    "wheel_speed_rl": {
+      "v": 19491.0,
+      "u": "",
+      "s": null,
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 1.112,
+      "stale": false,
+      "src": "node/kline-diag/slabs/21 43",
+      "raw": 19491
+    },
+    "wheel_speed_rr": {
+      "v": 0.0,
+      "u": "",
+      "s": null,
+      "c": "candidate",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 8.111,
+      "stale": true,
+      "src": "node/kline-diag/slabs/21 43",
+      "raw": 0
+    }
+  },
+  "vss": {
+    "Vehicle.LowVoltageBattery.CurrentVoltage": {
+      "sel": "node/kline-diag/slabs/21 44",
+      "value": 6.75,
+      "unit": "V",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 2.106,
+      "stale": true,
+      "c": "proven",
+      "sources": {
+        "node/kline-diag/slabs/21 44": {
+          "v": 6.75,
+          "u": "V",
+          "ts_utc": "2026-10-06T10:00:00.000Z",
+          "age_s": 2.106,
+          "stale": true,
+          "c": "proven"
+        }
+      }
+    },
+    "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw": {
+      "sel": "node/kline-diag/slabs/21 54",
+      "value": 144.0,
+      "unit": "",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 4.117,
+      "stale": true,
+      "c": "proven",
+      "sources": {
+        "node/kline-diag/slabs/21 54": {
+          "v": 144.0,
+          "u": "",
+          "ts_utc": "2026-10-06T10:00:00.000Z",
+          "age_s": 4.117,
+          "stale": true,
+          "c": "proven"
+        }
+      }
+    },
+    "Vehicle.Ostler.Chassis.RideHeight.RearRightRaw": {
+      "sel": "node/kline-diag/slabs/21 54",
+      "value": 0.0,
+      "unit": "",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 11.116,
+      "stale": true,
+      "c": "proven",
+      "sources": {
+        "node/kline-diag/slabs/21 54": {
+          "v": 0.0,
+          "u": "",
+          "ts_utc": "2026-10-06T10:00:00.000Z",
+          "age_s": 11.116,
+          "stale": true,
+          "c": "proven"
+        }
+      }
+    },
+    "Vehicle.Powertrain.Transmission.IsLowRangeEngaged": {
+      "sel": "node/kline-diag/slabs/21 42",
+      "value": 0.0,
+      "unit": "",
+      "ts_utc": "2026-10-06T10:00:00.000Z",
+      "age_s": 6.117,
+      "stale": true,
+      "c": "proven",
+      "sources": {
+        "node/kline-diag/slabs/21 42": {
+          "v": 0.0,
+          "u": "",
+          "ts_utc": "2026-10-06T10:00:00.000Z",
+          "age_s": 6.117,
+          "stale": true,
+          "c": "proven"
+        }
+      }
+    }
+  },
+  "faults": [],
+  "faults_note": "not read by the node yet",
+  "node": {
+    "device": "node",
+    "status": "online",
+    "power": {
+      "state": "awake",
+      "since": "2026-10-06T10:00:00.000Z",
+      "since_us": 1000000,
+      "class": "always",
+      "wake_paths": [],
+      "next_checkin": null,
+      "leases": [],
+      "est_ma": null,
+      "reason": "polling"
+    },
+    "boot": 7,
+    "last_seen_utc": "2026-10-06T19:39:36.720Z",
+    "broker": {
+      "connected": true,
+      "host": "127.0.0.1:1883"
+    },
+    "tap": null
+  },
+  "devices": [
+    "node"
+  ],
+  "status": "connected",
+  "module": "slabs",
+  "logging": {
+    "recording": false
+  },
+  "public": false,
+  "fault_watch": false,
+  "allow_shutdown": false,
+  "conn": "connected",
+  "ts": 1791315576.8361588,
+  "ts_utc": "2026-10-06T19:39:36.836Z",
+  "battery_v": null,
+  "port": {
+    "spec": "auto",
+    "resolved": null,
+    "candidates": []
+  },
+  "active_test": null,
+  "gps": null,
+  "recording": null,
+  "recording_sources": {
+    "gps": "none",
+    "pi_audio": {
+      "state": "unavailable",
+      "reason": "Pi audio is off (start with --audio pi)"
+    },
+    "imu": {
+      "state": "unavailable",
+      "reason": "no IMU configured (start with --imu auto)"
+    },
+    "accel_hz": 25
+  },
+  "link": null
+}

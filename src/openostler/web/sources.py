@@ -122,6 +122,18 @@ class DataSource(abc.ABC):
     # sleep hook for the establishment's wait times (the SLABS quiet period is 28 s). The server
     # sets an interruptible variant so a module switch doesn't have to wait it out.
     on_sleep = None
+    # The snapshot ``source_kind`` (NodeSource spec §8): ``serial`` for the cable sources
+    # (the pack's), ``kline`` for the generic link source, ``node`` for NodeSource.
+    source_kind: str = "serial"
+    # False for a source that must never cause a car-bus access on this host (NodeSource:
+    # the Brain never touches the car, ADR-0032); the server then refuses the commands that
+    # open the serial port itself (the fault scan, port changes, probes).
+    touches_car: bool = True
+
+    def conn_for(self, status: "str | None") -> "str | None":
+        """The snapshot ``conn`` for this ``status`` when the source defines it (NodeSource,
+        spec §10); None (the base) lets the server's connection state machine decide."""
+        return None
 
     def is_connected(self) -> bool:
         """Does the source have a live session? Base: no."""

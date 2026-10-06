@@ -17,7 +17,10 @@ Playwright (run from ui/) and UI development without a car:
         --replay e2e/sniff-demo.txt --admin-password e2e
 
 ``--start disconnected`` starts with polling paused (snapshot ``conn: disconnected``), for
-the connection-sheet flows. Never deploy this: it fabricates every value it serves.
+the connection-sheet flows. ``--node`` serves the car through NodeSource instead: an
+in-process fake MQTT broker and a simulated node replaying the firmware's fixtures
+(``tests/fixtures/node/``), read-only and not recording (NodeSource spec P1). Never deploy
+this: it fabricates every value it serves.
 """
 from __future__ import annotations
 
@@ -73,6 +76,22 @@ def seed_session(root: str) -> "str | None":
     return sid
 
 
+def node_modules(pack) -> dict:
+    """NodeSource over a fake broker fed by a simulated node (``--node``)."""
+    from openostler.metrics import is_known
+    from openostler.web.node_source import NodeFeed, node_sources, store_lookup
+    from tests.fake_broker import FakeBroker
+    from tests.fake_node import VID, FakeNode
+
+    broker = FakeBroker().start()
+    FakeNode(broker.host, broker.port).connect().start_loop()
+    feed = NodeFeed(VID, broker.host, broker.port, client_id="e2e-nodesource",
+                    pack_id=pack.id, lookup=store_lookup(), canonical=pack.canonical,
+                    is_known=is_known)
+    feed.start()
+    return node_sources(feed, pack.module_ids())
+
+
 def build(args) -> DiagServer:
     sessions_dir = args.sessions_dir or os.path.join(tempfile.mkdtemp(prefix="ostler-e2e-"),
                                                      "sessions")
@@ -90,8 +109,9 @@ def build(args) -> DiagServer:
         sniffer = SnifferFeed.from_file(replay, delay=0.008, loop=True)
     from openostler.menus import MENUS
     docs = build_docs(pack)  # the Docs tab from the pack's sources, as tools/dashboard.py does
+    modules = node_modules(pack) if args.node else fake_modules(gps=gps)
     srv = DiagServer(
-        fake_modules(gps=gps), host=args.host, port=args.port,
+        modules, host=args.host, port=args.port, record_sessions=not args.node,
         poll_interval=args.interval, stream_interval=args.interval,
         active="slabs" if args.slabs else "td5", menus=MENUS, docs=docs, sniffer=sniffer,
         captures_path=os.path.join(os.path.dirname(sessions_dir), "labeled_captures.jsonl"),
@@ -118,6 +138,8 @@ def main(argv: "list[str] | None" = None) -> int:
     ap.add_argument("--no-seed", action="store_true", help="do not seed an editable session")
     ap.add_argument("--no-gps", action="store_true", help="no simulated GPS")
     ap.add_argument("--imu", action="store_true", help="a simulated Pi IMU")
+    ap.add_argument("--node", action="store_true",
+                    help="read through NodeSource (fake broker + simulated node), not a cable")
     ap.add_argument("--start", choices=("connected", "disconnected"), default="connected")
     args = ap.parse_args(argv)
     srv = build(args)

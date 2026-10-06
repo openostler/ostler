@@ -30,6 +30,8 @@ _CORE = [
     "obd",  # J1979 service layer (specs/2026-10-06-j1979-service-layer-design.md §1)
     "testing",  # shipped test fakes (packs spec §2.9), stdlib only
     "can",  # CanLink, detection, ISO-TP, TxGate (specs/2026-10-06-canlink-isotp-design.md §1)
+    "mqtt",  # the stdlib MQTT 5 client (specs/2026-10-06-node-source-design.md §3, §12)
+    "node",  # the device table (specs/2026-10-06-node-source-design.md §3)
 ]
 _FORBIDDEN = {"web", "apps"}
 _CORE_EXCEPT: "set[str]" = set()
@@ -104,6 +106,25 @@ def test_can_imports_only_the_obd_protocol_and_scrub():
                     f"{path.relative_to(_SRC)} imports {mod!r}"
             else:
                 assert top == "can", f"{path.relative_to(_SRC)} imports {mod!r}"
+
+
+def test_mqtt_and_node_import_only_the_stdlib_and_each_other():
+    # NodeSource spec §3: openostler.mqtt is stdlib only; openostler.node uses nothing but
+    # the stdlib (the MQTT connection, the pack and the store reach it from web/ as
+    # callables). No runtime dependency is added (ADR-0035, owner answer 1).
+    import sys
+
+    stdlib = set(sys.stdlib_module_names) | {"__future__"}
+    for pkg, allowed in (("mqtt", {"mqtt"}), ("node", {"node"})):
+        files = sorted((_SRC / pkg).rglob("*.py"))
+        assert files, pkg
+        for path in files:
+            for _ln, mod in _absolute_imports(path):
+                parts = mod.split(".")
+                if parts[0] == "openostler":
+                    assert parts[1] in allowed, f"{path.relative_to(_SRC)} imports {mod!r}"
+                else:
+                    assert parts[0] in stdlib, f"{path.relative_to(_SRC)} imports {mod!r}"
 
 
 def test_logbook_gps_and_imu_are_scanned():

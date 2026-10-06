@@ -1,6 +1,7 @@
 {
   "status": "connected",
   "source": "td5",
+  "source_kind": "kline",
   "signals": {},
   "faults": [],
   "link": {

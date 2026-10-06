@@ -55,6 +55,13 @@ export function reduceSnapshot(state: LiveState, snap: Snapshot, now: number): L
   const seen = fresh ? { ...base.seen } : base.seen;
   for (const [name, s] of Object.entries(snap.signals)) {
     if (typeof s.v !== "number" || !fresh) continue;
+    if (s.stale) {
+      // A node's last known value (NodeSource spec §6.4): never a fresh reading. With a
+      // known age it shows "last seen N s ago" (at least STALE_MS, so it is never drawn
+      // live); with none it keeps what was seen before, or stays "not live".
+      if (typeof s.age_s === "number") seen[name] = now - Math.max(s.age_s * 1000, STALE_MS + 1);
+      continue;
+    }
     seen[name] = now;
     const h = [...(next[name] ?? []), { t: now, v: s.v }];
     next[name] = h.length > HISTORY_LEN ? h.slice(h.length - HISTORY_LEN) : h;

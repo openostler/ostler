@@ -59,6 +59,7 @@ BARE_SESSION = {"get", "patch"}
 FIXTURE_ROUTES = {
     "snapshot": ("/snapshot", "get", "200"),
     "snapshot-kline": ("/snapshot", "get", "200"),
+    "snapshot-node": ("/snapshot", "get", "200"),
     "pack": ("/pack", "get", "200"),
     "version": ("/version", "get", "200"),
     "fields-td5": ("/fields", "get", "200"),

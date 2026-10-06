@@ -40,6 +40,8 @@ class KeyBytesMismatch(Exception):
 
 
 class KLineLinkSource(DataSource):
+    source_kind = "kline"  # the generic K-line link source (snapshot ``source_kind``)
+
     def __init__(self, port: str = "auto", *, name: str = "kline",
                  profile: "KLineProfile | None" = None, origin: str = "pack",
                  transport_factory: "Callable | None" = None,
