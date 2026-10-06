@@ -2,7 +2,7 @@
 title: "CanLink, passive bitrate detection and ISO-TP — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/canbus_headunit.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/README.md, references/research/ui/decode_pipeline.md]
 summary: >
@@ -206,7 +206,9 @@ Every frame any `CanLink.send()` emits passes `TxGate.check(frame, grant, state)
    (re-read from the injected driving-state callable at send time); and a **`TxGrant`** minted
    by the server gate for that entry's action and tier, short-lived and single-use. Mode 04
    (`7DF 01 04`) is such an entry in `generic_obd2`. Discovery sweeps (`10 01`, physical
-   `3E`) are allowlisted Parked-only reads (UI spec §8.1).
+   `3E`) are allowlisted Parked-only reads (UI spec §8.1). A single physical `3E` to one
+   ECU stays a Tier 0 read in any state (owner, 2026-10-06): it changes nothing and is
+   rate-limited; a sweep of `3E` across ECU ids is the Parked-only discovery read.
 4. **Never:** a frame from a remote path (the server mints no grant for one), Tier 4
    services (`27 2E 2F 31 3B 11 14 28 85` on UDS) unless an ADR enables them, or anything
    on a link opened by `MqttCanLink`.
@@ -391,3 +393,5 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
   state dir), the Pi unit's `CAP_NET_ADMIN` and the optional `can-isotp` module note, a CI
   job with `vcan`, `MqttCanLink`, the pack `vehicle.json` schema, and the C port running
   the shared vectors.
+- 2026-10-06 — v0.5: owner confirmed the UDS `3E` reading (§7): a single physical `3E` is a
+  Tier 0 read in any state, rate-limited; `3E` sweeps across ECU ids stay Parked-only.

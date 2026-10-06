@@ -1,17 +1,17 @@
 ---
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15). A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
-# NodeSource — the Brain ingests node data over MQTT — design (draft)
+# NodeSource — the Brain ingests node data over MQTT — design
 
-**Status:** draft v0.1 for owner review; nothing is built before approval. It applies
+**Status:** approved v0.2 (owner, 2026-10-06; answers in §15). Build in phases P1–P4. It applies
 [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) §3 ("the brain consumes the
 node's VSS messages over IP") to the platform's server, and changes no ADR. Where it needs a
 decision it lists it in §15.
@@ -375,28 +375,28 @@ other (§7 files, ADR-0010): read-only, the active link untouched, no request pu
 while a replay is open; re-decoding a session's tap with the Python reference decoder is a
 decode-lab feature for a later spec.
 
-## 15. Open questions for the owner
+## 15. Owner answers (2026-10-06)
 
-1. **Client.** Stdlib MQTT 5 client (recommended) or `openostler[mqtt]` with paho under a
-   new ADR (§12)?
-2. **Units on the wire.** Should the node convert to the VSS unit before publishing
-   (ADR-0016 "store and send in the VSS unit"), or does the Brain convert at U3 for both
-   paths (drafted)?
-3. **Pack id in topics.** Align the node plan's `d2` with the platform's `lr_d2`, or carry an
-   alias in pack data (§6.2)?
-4. **Boot id in VSS payloads.** Add `boot` (as the tap header has) so reboots are exact
-   rather than inferred from `t_us` (§6.4)?
-5. **Loopback listener.** Keep mTLS on the Brain's loopback listener for NodeSource
-   (drafted), or allow a Unix-socket listener with OS user checks?
-6. **Request topics.** Requester-owned `<brain>/act/<id>` (drafted) for actions, while
-   `lab/req` and `tap/ctl` stay node-owned per ADR-0039; or move those to the requester-owned
-   shape too, for one ACL rule?
-7. **KKL beside a node.** Refuse a serial source on a vehicle whose node holds the K-line
-   gate (drafted), or only warn on the bench?
-8. **Session end on sleep.** End the session at once on `asleep` (drafted) or keep the 300 s
-   idle rule for every disconnect?
-9. **Tap retention.** Record tap batches only during a recorded session (drafted) or keep a
-   rolling buffer for "what just happened" captures?
+The owner took the recommendations on every question.
+
+1. **Client:** a stdlib MQTT 5 client in `openostler/mqtt/` behind a client interface (§12).
+   No new dependency and no ADR. A paho adapter under an `openostler[mqtt]` extra, with its
+   own ADR, is the fallback only if the stdlib client fails conformance against Mosquitto.
+2. **Units on the wire:** the node keeps publishing its display units; the Brain converts to
+   the VSS unit at U3, for both the node and the serial path.
+3. **Pack id in topics:** the node aligns to the platform's id, `lr_d2`. No alias. The
+   firmware node plan and its defaults change to match.
+4. **Boot id:** VSS payloads gain `boot` (as the tap header has), so reboots are exact.
+   Inference from `t_us` stays as the fallback for nodes without it (§6.4).
+5. **Loopback listener:** mTLS stays on the Brain's loopback listener. No Unix socket.
+6. **Request topics:** the split stays: actions on the requester-owned `<brain>/act/<id>`,
+   with `lab/req` and `tap/ctl` node-owned per ADR-0039.
+7. **KKL beside a node:** a serial source refuses to start on a vehicle whose node holds the
+   K-line gate.
+8. **Session end on sleep:** the session ends at once on `asleep`; the 300 s idle rule stays
+   for other disconnects.
+9. **Tap retention:** tap batches are recorded only during a recorded session. No rolling
+   buffer.
 
 ## Notes on sources
 
@@ -414,3 +414,7 @@ decode-lab feature for a later spec.
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft for owner review.
+- 2026-10-06 — v0.2: approved by the owner with the recommended answers (§15): stdlib
+  MQTT 5 client, Brain converts units at U3, node pack id aligns to `lr_d2`, `boot` id in
+  VSS payloads, mTLS on loopback, request-topic split kept, serial source refuses beside a
+  gate-holding node, session ends on `asleep`, tap recorded only in sessions.
