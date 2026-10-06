@@ -2,13 +2,14 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
-  DataSource boundary, the two command paths) and the dev commands.
+  DataSource boundary, the two command paths, the API contracts in api/) and the dev
+  commands.
 ---
 
 # Architecture and key seams
@@ -100,6 +101,15 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
   groups and descriptions come from `/fields`, which reads the signal store plus
   `sources.DERIVED_FIELDS`. The UI never hard-codes them.
+- **The API contracts (`api/`, ADR-0017).** `api/openapi.yaml` (OpenAPI 3.1.1) documents
+  every HTTP route of `web/server.py`: parameters, bodies, response schemas, errors,
+  admin gating (`x-ostler-access`) and public-mode behaviour (`x-ostler-public-mode`).
+  `api/asyncapi.yaml` (AsyncAPI 3.0) documents the `/events` SSE stream and reuses the
+  OpenAPI `Snapshot` schema. `components.x-ostler-wire-conventions` holds the wire rules
+  (RFC 3339 UTC `Z`, VSS units, GeoJSON, `vid`). `tests/test_api_contracts.py` reads the
+  routes from the server's source, so adding or removing a route without updating
+  `openapi.yaml` fails, and it validates the UI fixtures against the response schemas.
+  How to view and maintain them: [api/README.md](../api/README.md).
 - **Session logbook (`logbook/`, ADR-0009/0011).**
   - The recorder opens a session only while the car is connected. While disconnected
     it is *paused*: no data rows (not even GPS), and it ends after 300 s.
@@ -162,3 +172,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-06 — Repo split (ADR-0015): this is the platform (`openostler`); the
   `VehiclePack` seam; module layers, the signal store data and the car-test backlog live in
   the packs; `needs_pack` integration tests; `--replay pack`.
+- 2026-10-06 — Added the API contracts (`api/openapi.yaml`, `api/asyncapi.yaml`) and their
+  route-documentation test (ADR-0017).

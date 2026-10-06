@@ -3,7 +3,7 @@ title: Index
 area: root
 status: stable
 version: 1.0
-updated: 2026-10-05
+updated: 2026-10-06
 summary: >
   Generated manifest of every document in this repo — path, area,
   status, version, updated date, and a ~100-token summary — plus reading paths.
@@ -27,7 +27,7 @@ summary: >
 | [SCOPE.md](SCOPE.md) | root | stable | 1.2 | 2026-10-06 | States the project's core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. |
 | [TODO.md](TODO.md) | root | draft | 2.0 | 2026-10-06 | Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, data-hub ideas. Vehicle work lives in each pack. |
 | [TRADEMARKS.md](TRADEMARKS.md) | root | stable | 1.0 | 2026-10-06 | Ostler™ and OpenOstler™ are trademarks; the AGPL code licence and the CC BY-SA data licence grant no rights to the names or logos, so forks and redistributions must use a different name unless permitted. |
-| [docs/architecture.md](docs/architecture.md) | docs | stable | 1.5 | 2026-10-06 | Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam, the seams to understand before changing things (frame formats, EcuSession, signal store, DataSource boundary, the two command paths) and the dev commands. |
+| [docs/architecture.md](docs/architecture.md) | docs | stable | 1.6 | 2026-10-06 | Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam, the seams to understand before changing things (frame formats, EcuSession, signal store, DataSource boundary, the two command paths, the API contracts in api/) and the dev commands. |
 | [docs/https_on_the_pi.md](docs/https_on_the_pi.md) | docs | stable | 1.0 | 2026-10-05 | Phones only allow the microphone and motion sensors on HTTPS pages. How to make a local certificate with mkcert, trust it on the phone once, and start the dashboard with --tls-cert/--tls-key. |
 | [docs/tester_quickstart.md](docs/tester_quickstart.md) | docs | stable | 1.1 | 2026-10-06 | Non-programmer guide for a Mac tester: check the KKL cable, one-paste install, desktop launchers. Read-only. |
 | [references/research/canbus_headunit.md](references/research/canbus_headunit.md) | references | stable | 1.0 | 2026-10-06 | Surveys CAN adapters (STN/ELM, WiCAN, gs_usb, Pi HATs, ESP32), their APIs (SocketCAN, slcan, GVRET, can327, ISO-TP/UDS, J2534) and scanner UIs, and how aftermarket Android head units take vehicle data from CAN-box decoders over a 38400-baud UART (Raise 0x2E, Hiworld 0x5A A5). Recommends a frame-level `CanLink` beside the byte-level `Transport` (SocketCAN first), a Raise-protocol ESP32 CAN-box emulator fed from Ostler (not from vehicle CAN), and the order kiosk PWA → CAN-box emulator → launcher, with Android Auto, CarPlay and AAOS apps as hard-limited or deferred. |
