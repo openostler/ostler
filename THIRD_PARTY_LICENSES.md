@@ -19,6 +19,11 @@ MIT snapshot lives in the Discovery 2 pack's `references/` for the ESP32 port. M
 allows reuse with the copyright and license notice retained; keep this
 attribution if code from there is ported in.
 
+No muki01 code was used in the J1979 service layer (`src/openostler/obd/`): its defects
+became test fixtures written in our own words, and its facts come from SAE J1979 and the
+ISO transport standards (ADR-0025). The OBDb `SAEJ1979` pin belongs to the
+`generic_obd2` pack.
+
 ## Astryx — UI theme tokens (dashboard visual design)
 
 The web dashboard's neutral colour/spacing tokens are adapted from

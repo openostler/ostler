@@ -2,7 +2,7 @@
 title: "J1979 service layer — modes 01–0A over K-line and CAN — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/muki01/README.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/obd2_kline_reader.md, references/research/ui/vehicle_data_model.md, references/research/ui/decode_pipeline.md]
 summary: >
@@ -404,3 +404,37 @@ codes (Q12, [packs spec §2.6](2026-10-06-vehicle-packs-generic-obd2-bmw-e-desig
   `OSTLER_ALLOW_REMOTE_CONTROL` install override. This layer is the lab/reference for a
   later C link layer on the node (ADR-0032) with shared test vectors (§10.1). Tests
   F16a–F16d added.
+- 2026-10-06 — v0.4: first implementation step (fakes only; no D2 behaviour change).
+  Built: `obd/` (`link.py`, `decode.py`, `pids.py`, `diagnostics.py`, `vin.py`,
+  `j1979.py`, `uas.json`), the K-line adapter `kline/obd_link.py` (ISO 9141-2 and
+  KWP2000 functional `C2 33 F1` / physical framing, `78` read-on, Mode 09 read-on to
+  `expect_messages`, keep-alive), `openostler.testing.FakeObdLink`, store kinds `s8` and
+  `u32`, the layering guard for `obd`, and tests F1a–F17 plus golden `SupportReport`s.
+  Shared vectors (bytes in, results out, Mode 04 gate cases) are in `tests/vectors/j1979/`
+  with their format in its README. Implementation notes:
+  - **`obd/clear.py`** (not in the §1 table) holds the Mode 04 policy: `plan()` (the one
+    confirmation, the safety warning by pack tag or by code category, `C` and `B00xx`)
+    and `ClearGate` (driving state, role or category, local link or the env override read
+    once at start, confirmation) minting a short-lived single-use `ClearGrant`;
+    `J1979.clear_dtcs` redeems it with a driving-state re-check. No server route mints a
+    grant yet (U2), so nothing in the app can clear.
+  - **Read-only ECUs:** when the pack lists any read-only ECU, `04` goes out physically to
+    each ECU to clear instead of one functional request, so a functional `04` can never
+    reach an SRS ECU.
+  - **Mode 06 on CAN** is decoded as 9-byte records that each repeat the MID
+    (`MID TID UASID value min max`, ISO 15765-4); `uas.json` holds the UASIDs we could
+    state as facts, `candidate`; an unknown UASID decodes raw with `unknown_uasid`.
+  - **Identity:** the scrub patterns also cover `49 04` (CALID), per ADR-0036 §1; the
+    decoded CALID and CVN stay in the in-memory `SupportReport` as §4.6 says. The "before
+    clear" snapshot holds no identity data at all.
+  - **PID data:** `PidTable.from_records` (alias `from_signals`) reads store records with
+    `x-obd {service, pid, len}`; offsets count from data byte A. Platform tests use
+    `tests/fixtures/j1979/pids.json`; PID `31` is read through the table for
+    `DistanceSinceDtcClear` (a record still in `km` is converted).
+  - `supported()` sends no Mode 05 request (§7 lists none).
+  Remaining: the CAN adapter `can/obd.py` and the ISO-TP halves of F1c/F11 on
+  `FakeCanBus` (with CanLink); wiring the scrub into `LoggingTransport` and
+  `LoggingCanLink` with the ADR-0036 opt-in; the U2 route, `Command(clears=True)` and
+  install-config override; the U3 capability builder and `etag`; the `generic_obd2` pack
+  and importer (U4) re-running the value fixtures through its store; Mode 05 and K-line
+  Mode 06 decoding; the C port running the shared vectors in CI; J1979-2.

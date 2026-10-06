@@ -1,0 +1,63 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "mode06",
+  "description": "Mode 06 on CAN: 9-byte records MID TID UASID value min max, scaled through src/openostler/obd/uas.json (spec §4.5). Values compare within 1e-6.",
+  "source": "Written from SAE J1979 / ISO 15031-5, ISO 15765-4 and ISO 9141-2 (CC BY-SA 4.0); muki01 defects as fixtures, no muki01 code or output copied.",
+  "cases": [
+    {
+      "id": "F15",
+      "flavor": "can11",
+      "ecu": "7E8",
+      "message": "46 01 01 0A 0B B0 0B 70 0B C2 01 02 16 03 20 00 00 05 DC 01 03 81 FF 9C FF CE 00 32 01 04 50 00 01 00 00 00 02",
+      "expect": {
+        "tests": [
+          {
+            "mid": "01",
+            "tid": "01",
+            "uasid": "0A",
+            "value": 365.024,
+            "min": 357.216,
+            "max": 367.22,
+            "unit": "mV",
+            "passed": true,
+            "warning": null
+          },
+          {
+            "mid": "01",
+            "tid": "02",
+            "uasid": "16",
+            "value": 40.0,
+            "min": -40.0,
+            "max": 110.0,
+            "unit": "Celsius",
+            "passed": true,
+            "warning": null
+          },
+          {
+            "mid": "01",
+            "tid": "03",
+            "uasid": "81",
+            "value": -100.0,
+            "min": -50.0,
+            "max": 50.0,
+            "unit": "",
+            "passed": false,
+            "warning": null
+          },
+          {
+            "mid": "01",
+            "tid": "04",
+            "uasid": "50",
+            "value": 1.0,
+            "min": 0.0,
+            "max": 2.0,
+            "unit": "",
+            "passed": true,
+            "warning": "unknown_uasid"
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

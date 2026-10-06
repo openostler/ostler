@@ -6,6 +6,12 @@ The platform package (`openostler`): comms core → interpretation → web consu
 ## Files
 
 - `transport/`, `kline/`, `kwp2000/`, `session.py`, `ports.py` — the comms core.
+- `obd/` — the SAE J1979 (OBD-II) service layer shared by K-line and CAN: request model and
+  pacing (`link.py`), pure decoders (`decode.py`), `PidTable` from a pack's store
+  (`pids.py`), `Vehicle.Ostler.Diagnostics.*` (`diagnostics.py`), VIN handling and identity
+  scrub (`vin.py`), the Mode 04 gate (`clear.py`) and `J1979` (`j1979.py`). It imports no
+  transport; the K-line adapter is `kline/obd_link.py`. Mode 08 is never sent.
+- `testing/` — shipped stdlib test fakes (`FakeObdLink`) for the platform and pack tests.
 - `pack.py` — the `VehiclePack` contract and loader (`active_pack()`, entry-point group
   `openostler.vehicle`, legacy `ostler.vehicle` still read; no pack installed →
   `NoVehiclePackError`); module ids are canonical, aliases are migrated on read

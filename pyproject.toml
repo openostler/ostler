@@ -41,6 +41,7 @@ where = ["src"]
 "openostler" = ["metrics.json", "vss_leaves.json"]
 "openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*"]
 "openostler.geo" = ["*.tsv.gz"]
+"openostler.obd" = ["uas.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

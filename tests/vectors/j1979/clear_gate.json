@@ -1,0 +1,370 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "clear_gate",
+  "description": "Mode 04 gate cases (spec \u00a75, ADR-0033): a context, the current codes and the confirmation \u2192 a grant or a refusal reason.",
+  "source": "Written from the spec and ADR-0033 (CC BY-SA 4.0).",
+  "cases": [
+    {
+      "id": "parked",
+      "note": "Parked: granted (F16b).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true
+      }
+    },
+    {
+      "id": "idling",
+      "note": "Idling: granted (F16b).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "idling"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true
+      }
+    },
+    {
+      "id": "moving",
+      "note": "Moving: refused (F16b).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "moving"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": false,
+        "reason": "moving"
+      }
+    },
+    {
+      "id": "unconfirmed",
+      "note": "No confirmation: refused.",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": false,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": false,
+        "reason": "unconfirmed"
+      }
+    },
+    {
+      "id": "viewer",
+      "note": "Viewer: refused.",
+      "context": {
+        "user": "u1",
+        "role": "viewer",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": false,
+        "reason": "role"
+      }
+    },
+    {
+      "id": "mechanic",
+      "note": "Mechanic: granted.",
+      "context": {
+        "user": "u1",
+        "role": "mechanic",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true
+      }
+    },
+    {
+      "id": "kiosk",
+      "note": "Unsigned head-unit kiosk session: refused.",
+      "context": {
+        "user": null,
+        "role": "kiosk",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": false,
+        "reason": "not_signed_in"
+      }
+    },
+    {
+      "id": "remote",
+      "note": "Remote path without the install override: refused (F16d).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "tailscale",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": false,
+        "reason": "remote"
+      }
+    },
+    {
+      "id": "remote-override",
+      "note": "Remote path with OSTLER_ALLOW_REMOTE_CONTROL set: granted (F16d).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "cloud",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": true,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true
+      }
+    },
+    {
+      "id": "node-ap",
+      "note": "The node's Wi-Fi AP is a local link.",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "node_ap",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true
+      }
+    },
+    {
+      "id": "srs-only",
+      "note": "Only a read-only SRS ECU has codes: nothing can be cleared (F16c).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E9",
+          "kind": "stored",
+          "codes": [
+            "B0001"
+          ]
+        }
+      ],
+      "read_only_ecus": [
+        "7E9"
+      ],
+      "expect": {
+        "allowed": false,
+        "reason": "read_only"
+      }
+    },
+    {
+      "id": "safety-warning",
+      "note": "An ABS code adds the safety warning to the one confirmation (F16c).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        },
+        {
+          "ecu": "7E9",
+          "kind": "stored",
+          "codes": [
+            "C0035"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true,
+        "warning": true,
+        "ecus": [
+          "7E8",
+          "7E9"
+        ]
+      }
+    },
+    {
+      "id": "no-warning",
+      "note": "A powertrain code only: no warning (F16c).",
+      "context": {
+        "user": "u1",
+        "role": "driver",
+        "device": "head-unit-1",
+        "link": "head_unit",
+        "driving_state": "parked"
+      },
+      "confirmed": true,
+      "allow_remote": false,
+      "reads": [
+        {
+          "ecu": "7E8",
+          "kind": "stored",
+          "codes": [
+            "P0133"
+          ]
+        }
+      ],
+      "read_only_ecus": [],
+      "expect": {
+        "allowed": true,
+        "warning": false,
+        "ecus": [
+          "7E8"
+        ]
+      }
+    }
+  ]
+}

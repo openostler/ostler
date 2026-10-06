@@ -1,0 +1,72 @@
+{
+  "flavor": "can11",
+  "ecus": {
+    "7E8": {
+      "modes": {
+        "01": [
+          "01",
+          "04",
+          "05",
+          "0C",
+          "0D",
+          "1C",
+          "20",
+          "21",
+          "31",
+          "40",
+          "41",
+          "51"
+        ],
+        "02": [
+          "02",
+          "05",
+          "0C"
+        ],
+        "06": [
+          "01"
+        ],
+        "09": [
+          "02",
+          "04",
+          "06",
+          "0A"
+        ],
+        "0A": []
+      },
+      "partial": [],
+      "calid": [
+        "OSTLERCAL0001"
+      ],
+      "cvn": [
+        "12345678"
+      ],
+      "name": {
+        "acronym": "ECM",
+        "name": "EngineControl"
+      },
+      "obd_standard": 6,
+      "fuel_type": 1
+    },
+    "7E9": {
+      "modes": {
+        "01": [
+          "01",
+          "05",
+          "0D"
+        ],
+        "09": [
+          "0A"
+        ]
+      },
+      "partial": [],
+      "calid": [],
+      "cvn": [],
+      "name": {
+        "acronym": "TCM",
+        "name": "TransControl"
+      },
+      "obd_standard": null,
+      "fuel_type": null
+    }
+  }
+}

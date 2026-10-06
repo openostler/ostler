@@ -1,0 +1,173 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "readiness",
+  "description": "PID 01 / 41 bytes A-D → MIL, count, ignition type and monitors as [supported, complete] (spec §4.3). An incomplete bit counts only for a supported monitor.",
+  "source": "Written from SAE J1979 / ISO 15031-5, ISO 15765-4 and ISO 9141-2 (CC BY-SA 4.0); muki01 defects as fixtures, no muki01 code or output copied.",
+  "cases": [
+    {
+      "id": "F10-spark",
+      "pid": "01",
+      "ecu": "7E8",
+      "message": "41 01 83 27 65 06",
+      "expect": {
+        "mil": true,
+        "dtc_count": 3,
+        "ignition": "spark",
+        "monitors": {
+          "misfire": [
+            true,
+            true
+          ],
+          "fuel_system": [
+            true,
+            false
+          ],
+          "components": [
+            true,
+            true
+          ],
+          "catalyst": [
+            true,
+            true
+          ],
+          "heated_catalyst": [
+            false,
+            null
+          ],
+          "evap": [
+            true,
+            false
+          ],
+          "secondary_air": [
+            false,
+            null
+          ],
+          "ac_refrigerant": [
+            false,
+            null
+          ],
+          "o2_sensor": [
+            true,
+            true
+          ],
+          "o2_sensor_heater": [
+            true,
+            true
+          ],
+          "egr": [
+            false,
+            null
+          ]
+        },
+        "incomplete": [
+          "evap",
+          "fuel_system"
+        ]
+      }
+    },
+    {
+      "id": "F10-diesel",
+      "pid": "01",
+      "ecu": "7E8",
+      "message": "41 01 00 0F E9 40",
+      "expect": {
+        "mil": false,
+        "dtc_count": 0,
+        "ignition": "compression",
+        "monitors": {
+          "misfire": [
+            true,
+            true
+          ],
+          "fuel_system": [
+            true,
+            true
+          ],
+          "components": [
+            true,
+            true
+          ],
+          "nmhc_catalyst": [
+            true,
+            true
+          ],
+          "nox_scr": [
+            false,
+            null
+          ],
+          "boost_pressure": [
+            true,
+            true
+          ],
+          "exhaust_gas_sensor": [
+            true,
+            true
+          ],
+          "pm_filter": [
+            true,
+            false
+          ],
+          "egr_vvt": [
+            true,
+            true
+          ]
+        },
+        "incomplete": [
+          "pm_filter"
+        ]
+      }
+    },
+    {
+      "id": "F10-pid41",
+      "pid": "41",
+      "ecu": "7E8",
+      "message": "41 41 00 0F E9 40",
+      "expect": {
+        "mil": null,
+        "dtc_count": null,
+        "ignition": "compression",
+        "monitors": {
+          "misfire": [
+            true,
+            true
+          ],
+          "fuel_system": [
+            true,
+            true
+          ],
+          "components": [
+            true,
+            true
+          ],
+          "nmhc_catalyst": [
+            true,
+            true
+          ],
+          "nox_scr": [
+            false,
+            null
+          ],
+          "boost_pressure": [
+            true,
+            true
+          ],
+          "exhaust_gas_sensor": [
+            true,
+            true
+          ],
+          "pm_filter": [
+            true,
+            false
+          ],
+          "egr_vvt": [
+            true,
+            true
+          ]
+        },
+        "incomplete": [
+          "pm_filter"
+        ]
+      }
+    }
+  ]
+}

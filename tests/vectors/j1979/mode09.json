@@ -1,0 +1,81 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "mode09",
+  "description": "Mode 09 CALID, CVN and ECU name (spec §4.6). VIN vectors are never stored: tests build them from parts.",
+  "source": "Written from SAE J1979 / ISO 15031-5, ISO 15765-4 and ISO 9141-2 (CC BY-SA 4.0); muki01 defects as fixtures, no muki01 code or output copied.",
+  "cases": [
+    {
+      "id": "F11-calid-can",
+      "flavor": "can11",
+      "infotype": "04",
+      "messages": [
+        "49 04 02 4F 53 54 4C 45 52 43 41 4C 30 30 30 31 00 00 00 4F 53 54 4C 45 52 43 41 4C 30 30 30 32 00 00 00"
+      ],
+      "expect": {
+        "calid": [
+          "OSTLERCAL0001",
+          "OSTLERCAL0002"
+        ]
+      }
+    },
+    {
+      "id": "F11-cvn-can",
+      "flavor": "can11",
+      "infotype": "06",
+      "messages": [
+        "49 06 02 12 34 56 78 9A BC DE F0"
+      ],
+      "expect": {
+        "cvn": [
+          "12345678",
+          "9ABCDEF0"
+        ]
+      }
+    },
+    {
+      "id": "ecu-name-can",
+      "flavor": "can11",
+      "infotype": "0A",
+      "messages": [
+        "49 0A 01 45 43 4D 00 2D 45 6E 67 69 6E 65 43 6F 6E 74 72 6F 6C 00 00"
+      ],
+      "expect": {
+        "name": {
+          "acronym": "ECM",
+          "name": "EngineControl"
+        }
+      }
+    },
+    {
+      "id": "F11-calid-kline",
+      "flavor": "iso9141",
+      "infotype": "04",
+      "count_message": "49 03 01 04",
+      "messages": [
+        "49 04 04 31 00 00 00",
+        "49 04 01 4F 53 54 4C",
+        "49 04 03 4C 30 30 30",
+        "49 04 02 45 52 43 41"
+      ],
+      "expect": {
+        "calid": [
+          "OSTLERCAL0001"
+        ]
+      }
+    },
+    {
+      "id": "F11-cvn-kline",
+      "flavor": "iso9141",
+      "infotype": "06",
+      "count_message": "49 05 01 01",
+      "messages": [
+        "49 06 01 DE AD BE EF"
+      ],
+      "expect": {
+        "cvn": [
+          "DEADBEEF"
+        ]
+      }
+    }
+  ]
+}
