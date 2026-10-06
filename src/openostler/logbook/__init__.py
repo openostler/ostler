@@ -36,4 +36,9 @@ Contract (specs/2026-10-05-session-logbook-design.md):
   ``histogram``, ``sync``, ``remove``, ``rebuild``, ``reconcile``). Meta gains
   ``description``, ``place_start``/``place_end``/``place`` (``places.py``) and a computed
   ``note_count``. ``synth.generate(root) -> [id]`` builds "Demo log 1" and "Demo log 2".
+* U0 (specs/2026-10-06-u0-seams-design.md): ``vehicle.ensure_vehicle(state_dir)`` and
+  ``vehicle.local_vid(state_dir)`` (``logs/vehicle.json``, ``OSTLER_VEHICLE_ID``);
+  ``SessionRecorder(..., vid=None, state_dir=None)`` stamps ``vid`` into every new
+  non-synthetic session; ``SessionStore(..., vid=None, state_dir=None)`` reads a session
+  without one as the local vid; the index (schema 3) has a ``vid`` column.
 """
