@@ -2,11 +2,11 @@
 title: "Feature backlog from the research — tagged core / add-on / moonshot"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/platform.md, references/research/landscape.md]
 summary: >
-  Ideas the research surfaced, each tagged core / add-on / moonshot with the open-source project to build on: TPMS via rtl_433, Meshtastic convoy tracking, GoPro telemetry sync, dashcam ingest, log-format import/export, OVMS/OwnTracks interop, CAN intrusion detection, camera streaming, lap timing, and more. A parking lot, not a commitment — each needs a spec.
+  Ideas the research surfaced, each tagged core / add-on / moonshot with the open-source project to build on: TPMS via rtl_433, Meshtastic convoy tracking, GoPro telemetry sync, dashcam ingest, log-format import/export, OVMS/OwnTracks interop, CAN intrusion detection, camera streaming, lap timing, and (from the muki01 audits, v1.1) K-line profiles and auto-detect, a shared J1979 layer, passive CAN bitrate detection, screen-driven polling, BMW I/K-Bus and a BMW E-series pack. A parking lot, not a commitment — each needs a spec.
 ---
 
 # Feature backlog from the research
@@ -54,3 +54,13 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 27 | **Ostler Android launcher**: auto-start, camera view on reverse, CarPlay/AA via a wireless dongle (Carlinkit-type) | add-on | — | About 90% of a custom head unit. A custom ROM only if the launcher hits real limits. |
 | 28 | **Camera system**: dashcam, parking/alarm clips, reversing, underbody; go2rtc + Frigate (Pi 5 AI HAT) | add-on | go2rtc (MIT), Frigate (MIT), ESP32-CAM_MJPEG2SD (AGPL ✓) | Constraints: reverse latency vs Pi boot, a pre-event buffer while parked, wired cameras for continuous recording |
 | 29 | **Gauge display module**: an ESP32-S3 round/bar screen for always-visible coolant, boost, EAT temperature, flags and alarm state | add-on | Waveshare / LilyGO touch displays (£30–60) | Optional, alongside the main screen |
+| 30 | **K-line protocol profiles and auto-detect** (ISO 9141-2, KWP slow/fast; profiles as data, init as its own axis) | core | muki01 KLine library design, facts only ([muki01](muki01/README.md)) | Needs an ADR on probe order and Parked-only probing. Unlocks `generic_obd2` on a KKL cable. |
+| 31 | **J1979 service layer shared by K-line and CAN** (modes 01–0A, multi-frame, multi-ECU, support bitmaps) | core | SAE J1979 / OBDb SAEJ1979 (CC BY-SA); muki01 bugs as test fixtures | The engine of #16; test-first from the muki01 defect list |
+| 32 | **Passive CAN bitrate detection and ISO-TP** before the first request | core | ISO 15765-4; can-isotp (MIT) | Amends ADR-0020: listen first, then one `01 00`; a silent-bus probe is Parked only |
+| 33 | **Poll only what is on screen** (visible-signals subscription) | core | muki01 reader page-driven polling (idea) | U3; K-line bandwidth follows the screen |
+| 34 | **Freeze frame, readiness and coverage in Diagnose** (snapshot in fault detail, Home readiness card, support counts) | core | J1979 Modes 01/02/09 | U3/U4; masked VIN only |
+| 35 | **Manufacturer K-line protocols**: KW1281, BMW DS2, Opel KW82, Honda | add-on | Facts from muki01 KLine library (non-commercial headers); kw1281test (MIT) | U7, one per pack, each with a fixture |
+| 36 | **BMW I/K-Bus framer and capture** (passive) | add-on | muki01 BMW_IBus_KBus (facts only); node-bmw-client (MIT) | Starts in the BMW pack; becomes platform only when a second body-bus pack (L322) needs it |
+| 37 | **BMW E-series pack**, read-only first (doors, lamps, odometer, speed, temperatures, key fob, ignition) | add-on | node-bmw-client (MIT), muki01 frames re-verified on a car | Feeds alarm triggers (notify-only). Body-bus transmit (lights, locks, automations, CDC emulation) waits for its own ADR |
+| 38 | **Performance timing** (0–100 from logged speed, armed Parked) | add-on | muki01 Diagnostic UI (idea) | Computed after the run, never a stopwatch while Moving |
+| 39 | **Device settings template and signed OTA** for our ESP32 add-ons | core | muki01 Diagnostic UI (MIT; anti-patterns avoided) | U5, after the threat model; no default AP password |
