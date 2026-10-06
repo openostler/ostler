@@ -163,6 +163,10 @@ The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (
 
 ## Path to our own hardware
 
+> **Module bus decided (2026-10-06):** our own modules talk over 10BASE-T1S, not CAN alone; see
+> [ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md) and the
+> [T1S research](t1s_module_bus.md). CAN stays for µA-wake nodes.
+
 - **One board** combining:
   - CM5 (or i.MX93);
   - ESP32-S3;
