@@ -2,11 +2,11 @@
 title: "Add-ons catalogue — module ideas with transport, standards and phase"
 area: references
 status: draft
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/vision.md, references/research/ecosystem_architecture.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/features_backlog.md]
 summary: >
-  A catalogue of add-on module ideas for the Ostler ecosystem (the guardian as a node hardware variant, cameras and dashcam, 360 view, own relay boards later, sensor nodes (fast tacho, EGT, boost/oil, wideband AFR, accelerometers) and sensor pods, buttons, displays and head unit, gauges, TPMS, LoRa/Meshtastic convoy messaging, Wi-Fi HaLow link to home, B.A.T.M.A.N.-adv/802.11s convoy mesh, GNSS/RTK, cellular and Starlink gateway, CAN/T1S bridges, leisure battery and solar via Victron VE.Direct, EV charger via OCPP/ISO 15118, camper and overland kit, tracker, OBD dongle, winch and lights, weather station, trailer, motorcycles via a Lite node with the phone or a guardian-variant node, and more), each with what it does, its transport, the open standards it should use and a phase (now / next / later / idea), plus rules every add-on follows and live-checked facts (October 2026) with sources.
+  A catalogue of add-on module ideas for the Ostler ecosystem (the guardian as a node hardware variant, cameras and dashcam, 360 view, own relay boards later, sensor nodes (fast tacho, EGT, boost/oil, wideband AFR, accelerometers) and sensor pods, buttons, displays and head unit, gauges, TPMS, a Meshtastic-compatible LoRa add-on behind a thin VSS bridge (mesh is car-to-car, base or off-grid only, a remote path, ADR-0038 draft), Wi-Fi HaLow link to home, a richer car-to-car mesh layer (MeshCore or Reticulum/LXMF, bench test) and Babel if a Wi-Fi IP mesh is wanted, GNSS/RTK, cellular and Starlink gateway, CAN/T1S bridges, leisure battery and solar via Victron VE.Direct, EV charger via OCPP/ISO 15118, camper and overland kit, tracker, OBD dongle, winch and lights, weather station, trailer, motorcycles via a Lite node with the phone or a guardian-variant node, and more), each with what it does, its transport, the open standards it should use and a phase (now / next / later / idea), plus rules every add-on follows and live-checked facts (October 2026) with sources.
 ---
 
 # Add-ons catalogue
@@ -84,10 +84,11 @@ not scheduled; **idea** = worth recording.
 |---|---|---|---|---|
 | **Cellular / Starlink gateway** | No SIM by default; uplinks: car/head-unit Wi-Fi, phone hotspot, home Wi-Fi, any 3G/4G USB dongle, an OpenWrt high-speed gateway, Starlink, the node's optional 4G (an official option, each device with its own IoT SIM); Auto failover or a pinned source, metered with data-cap alerts. Remote access: LAN default, then Tailscale, Ostler Cloud, HA Cloud | USB, Eth, Wi-Fi | USB NCM/RNDIS/QMI, ModemManager, OpenWrt; Tailscale (WireGuard) | next ([ADR-0028](../../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md)) |
 | **Wi-Fi HaLow link to home** | A long-range, low-rate link from the parked car to the house: alarm events, telemetry, a low-rate camera still | HaLow | IEEE 802.11ah; MQTT over it | later |
-| **LoRa / Meshtastic convoy messaging** | Text and positions between vehicles and riders with no phone signal: overlanders, off-road groups, bikers | LoRa (868 MHz EU, 915 MHz US) | Meshtastic (its serial/protobuf or MQTT interface) | later |
-| **Car-to-car convoy mesh** | An IP mesh between the nodes or brains of vehicles in a convoy: shared positions, messages, a shared uplink | Wi-Fi (or HaLow) | batman-adv over 802.11s or ad-hoc | idea |
+| **Meshtastic-compatible LoRa add-on** | Text, positions, alarm state and alerts between vehicles, riders and a camp with no phone signal. Step one: any Meshtastic radio the owner has (USB, BLE, TCP); step two: our own board on stock Meshtastic firmware over UART or T1S. A thin VSS bridge with **no actions** (Read and alerts out, data in); position off by default, coarse when on; a separate GPL-3 program, never in core or node firmware ([mesh research](mesh_networking.md), [ADR-0038](../../decisions/adr-0038-mesh-car-to-car-and-off-grid.md), draft) | LoRa (868 MHz EU, 915 MHz US); its own non-IP network, bridged at the brain or a gateway | Meshtastic client API (serial/BLE/TCP protobufs) or its MQTT; "works with Meshtastic" naming | next |
+| **Richer car-to-car mesh** | Groups, rides and convoys for the social layer (ADR-0029 P4): store-and-forward messages, positions, shared media at low rate. Bench-test MeshCore (MIT) and Reticulum/LXMF (run unmodified on the brain); Styrene and Ratspeak are references only ([mesh research §3](mesh_networking.md#3-per-project-notes)) | LoRa; any IP link for Reticulum | MeshCore companion protocol; RNS/LXMF | later |
+| **Wi-Fi IP mesh (car-to-car, camp)** | A shared uplink or bulk sync between brains at camp; its own routed subnet, never bridged into a car | Wi-Fi (802.11s or ad-hoc), or HaLow | Babel (RFC 8966, babeld MIT) preferred; batman-adv only behind the routed edge (L2 floods mDNS, MTU cost) | idea |
 | **CAN / T1S bridges** | Joins a CAN-only node or a second T1S segment to the IP network | CAN, T1S | SocketCAN; listen-only to any vehicle bus by default | next |
-| **Matter bridge** | Shows the car's sensors to Matter ecosystems, read-only | Wi-Fi/Eth (home side) | Matter bridge device type | later |
+| **Matter bridge** | Shows the car to Matter ecosystems: Read entities plus alarm arming; Comfort switches only with the install override; every command through the node gate; a remote path; never for the module bus or a mesh. Today via HA and Matterbridge; a certified Ostler bridge later ([ADR-0027 proposed amendment](../../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md#proposed-amendment-2026-10-06-pending-owner-answers-matter-bridge-only)) | Wi-Fi/Eth (home side) | Matter bridge device type | later |
 
 ## 3. Vehicle extras
 
@@ -117,7 +118,7 @@ not scheduled; **idea** = worth recording.
 |---|---|---|---|---|
 | **Bike: Lite node + phone** | An Ostler Lite node with the phone as the screen: diagnostics where the bike allows it (many older bikes use K-line, (U) per make), lean angle and IMU logging, GNSS | BLE/Wi-Fi to the phone; no module bus | VSS, MQTT; the same `VehiclePack` contract | later |
 | **Bike: guardian-variant node** | Hidden, battery-backed tracker and movement/tilt alarm; probably the natural bike product | 4G (IoT SIM) or LoRa | OwnTracks, Traccar OsmAnd | later |
-| **Group rides** | Positions and messages within a riding group, with or without phone signal | LoRa (Meshtastic) and the phone | Meshtastic; the social layer of [vision §6](../vision.md#6-many-vehicles-many-people) | later |
+| **Group rides** | Positions and messages within a riding group, with or without phone signal; coarse positions unless a live ride is opted in | LoRa (Meshtastic-compatible add-on, ADR-0038 draft) and the phone | Meshtastic; the social layer of [vision §6](../vision.md#6-many-vehicles-many-people) | later |
 | **Bike TPMS** | Two-wheel tyre pressure | 433 MHz or BLE | rtl_433 or BLE | idea |
 
 ## 6. Live checks (October 2026)
@@ -134,6 +135,11 @@ not scheduled; **idea** = worth recording.
 - **B.A.T.M.A.N. advanced** (batman-adv) is a Linux kernel module that routes at layer 2,
   so the mesh looks like one switch; it runs over 802.11s, ad-hoc or wired links and is
   packaged for OpenWrt.
+- **Mesh projects (2026-10-06):** MeshCore is MIT with learned routes; Reticulum and LXMF
+  carry the "Reticulum License" (MIT plus use restrictions) and the author has stepped
+  back; Styrene is an early solo Rust platform on Reticulum with remote exec and reboot;
+  Ratspeak is an AGPL client on Reticulum, not a new protocol; Babel's babeld is MIT. See
+  the [mesh research](mesh_networking.md).
 - **Victron VE.Direct** has a documented text mode in which the device sends its run-time
   fields periodically without being asked; a HEX mode adds requests. Victron points to a
   list of open-source projects using it.
@@ -157,6 +163,12 @@ Sources: [Morse Micro chips](https://morsemicro.com/chips),
 [LF Energy and NEVI](https://lfenergy.org/u-s-joint-office-of-energy-and-transportation-partners-with-linux-foundation-energy-to-improve-ev-charging-nationally/).
 
 ## Changelog
+
+- 2026-10-06: v1.2, mesh and Matter (ADR-0038 draft, ADR-0027 proposed amendment): the
+  LoRa row becomes a Meshtastic-compatible LoRa add-on behind a thin VSS bridge (phase
+  next); the batman-adv convoy row is replaced by a richer car-to-car mesh row and a
+  Babel-first Wi-Fi IP mesh row; the Matter bridge row gains the entity set and the gate
+  rule; a mesh live-check bullet links the new research.
 
 - 2026-10-06: v1.1, node/brain direction (ADR-0032/0033): the guardian row becomes a node
   hardware variant; the relay box becomes our own I/O / relay boards later with an ADR per

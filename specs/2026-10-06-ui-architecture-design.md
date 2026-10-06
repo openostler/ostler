@@ -163,6 +163,51 @@ reach the car except through the gate (§7). **Nothing is built before U1**; U1 
 seams. Detail and open questions: [app-model spec](2026-10-06-app-model-design.md) (draft);
 evidence: [app model research](../references/research/ui/app_model.md).
 
+### 3.7 Proposed amendment (2026-10-06, pending owner answers): Network page, peer view and cluster view
+
+*Not yet decided; §3.4 and §6 stand until the owner answers. Roles and handover:
+[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md) (proposed); evidence:
+[cluster view research](../references/research/cluster_view.md).*
+
+**More → Devices becomes More → Network.** One page for the whole cluster, filled by the
+Network core app (app-model spec §3), with these sections:
+
+| Section | Shows | Source |
+|---|---|---|
+| **Devices** | every paired device: name, kind and variant (node, guardian, brain, add-on), model, firmware and manifest `etag`, IPv6/IPv4 addresses and mDNS name, "reached via" (T1S segment, Ethernet, Wi-Fi, BLE through the phone), health and last seen, an **Open device page** link; tap → the device page (today's More → Devices → *device*, with add-on app contributions) | retained manifests and `status` (ADR-0037 §3) |
+| **Transports and links** | T1S segments (PLCA on, coordinator, node count, CRC errors), Ethernet, Wi-Fi (AP clients, RSSI), BLE, LoRa or other mesh links (ADR-0038, proposed; a mesh is its own subnet, Read and alerts only), CAN fallback; health per link | device link counters |
+| **Roles** | each single-holder role (transmit gate per bus, parked broker, time source, PLCA coordinator per segment, uplink manager): holder, since, term, candidates in order, last handover and why; "No holder" in amber, "No gate for this bus" where it applies | role claims (ADR-0037) |
+| **Uplinks and metering** | sources, Auto or pinned, failover order, metered flag, budget and usage (ADR-0028 §3–4) | uplink policy API, byte counters |
+| **Remote access** | the tiers in use (LAN, Tailscale, Ostler Cloud, HA Cloud) and the "Remote control enabled" badge (ADR-0033 §6) | install config, read-only |
+| **Certificates and pairing** | device certificates (issuer, expiry, fingerprint), pairing a new device, revoking one, nearby unpaired Ostler devices shown as "nearby" with no data (ADR-0029 §6) | local CA or pairing store |
+
+- **Data is decentralised; the view is built.** Any full-app host (brain, cloud, phone)
+  builds the cluster from each device's published manifest, status and role claims; no
+  device holds a master list. The brain builds it in the car, the phone builds it on Lite
+  (through the node's peer table over BLE or the AP), the cloud builds it remotely from the
+  opt-in bridge.
+- **Authority is not.** Nothing on this page approves a car action. Pairing, revoking and
+  uplink changes are owner-role operations on the device that holds them; car actions stay
+  in their destinations and are checked by the gate that executes them (§7, ADR-0033 §3).
+  Over a remote path the page is read-only (ADR-0033 §6).
+- **Honest states.** A device not heard from shows its age, never "OK"; when the host's
+  inputs are stale the whole view is read-only with an age banner (research §1).
+- **Driving state.** Parked and Idling: full. Moving: locked ("Available when parked"); a
+  lost role holder appears only as a row in the Link chip's sheet (§3.2), never as a new chip.
+
+**Every device's own page shows its peers.** The local web page each device hosts
+(ADR-0028 §7, ADR-0032 §6) gains a small, read-only **Network** section: the peers it sees
+by mDNS (`_ostler-mod._tcp`) and on its broker, each with variant, firmware, health and the
+roles it claims, and a link to that peer's own page. Opening a hidden guardian's page shows
+the diagnostic node, the relay box, the brain and so on. It never acts on a peer; each peer's
+own page acts under its own gate. Shape: one shared `peers` view (a subset of the Network
+page's Devices and Roles rows), served by the firmware; see the app-model spec's proposed
+amendment for how it relates to the shell.
+
+**Changes if accepted:** §3.4's More row reads "Network" for "Devices"; §6's "More → Devices"
+pages become "More → Network → *device*"; the capability manifest (§5.1) gains `roles` and
+`transmit` per bus (ADR-0037 Consequences).
+
 ## 4. The vehicle model in the UI
 
 ### 4.1 Garage and active-vehicle switcher
@@ -622,3 +667,8 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   [app-model spec](2026-10-06-app-model-design.md).
 - 2026-10-06: v0.6 (stays approved). §8.4 and §3.6: Decode lab is a core app in the platform
   repo, shown only in service mode (owner answer to app-model spec Q5).
+- 2026-10-06: proposed amendment, pending owner answers (no version change; nothing above
+  is changed): §3.7 renames More → Devices to a Network page (devices, transports and link
+  health, role holders, uplinks and metering, remote access, certificates and pairing), adds
+  a read-only peer view to every device's own page, and builds the cluster view from each
+  device's published manifest (ADR-0037, proposed).

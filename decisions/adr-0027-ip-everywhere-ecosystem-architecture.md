@@ -2,7 +2,7 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -161,6 +161,7 @@ Video never crosses the T1S segment.
 - The car reaches Matter ecosystems through a **bridge**: Home Assistant with an open-source
   bridge today, and possibly a native, opt-in, read-only bridge on the Pi later.
 - Certification is decided only if hardware sales justify it.
+- *See the [proposed Matter amendment](#proposed-amendment-2026-10-06-pending-owner-answers-matter-bridge-only) (pending).*
 
 ## Confirmation
 
@@ -251,3 +252,44 @@ above are marked where they changed.
   "one server gate" for car-touching actions are superseded in part by
   [ADR-0032](adr-0032-one-node-optional-brain.md): the ESP32 node replaces the buddy and
   holds the only transmit gate; the guardian is a node variant.
+
+## Proposed amendment (2026-10-06, pending owner answers): Matter, bridge only
+
+*Not yet accepted; §12 stands until the owner answers. Evidence: live checks of 2026-10-06
+([CSA membership](https://csa-iot.org/become-member/),
+[esp-matter](https://github.com/espressif/esp-matter),
+[Matterbridge](https://github.com/Luligu/matterbridge)).*
+
+- **Today: a bridge we do not certify.** Home Assistant picks up our MQTT discovery, and
+  Matterbridge (Apache-2.0, 3.10.12 on 2026-10-02) or the community Home Assistant Matter
+  Hub add-on (original archived January 2026, a fork continues; U) re-exposes it to Matter
+  controllers. Nothing in our code speaks Matter.
+- **Later: a certified Ostler bridge** on the brain, a separate process (matter.js or
+  connectedhomeip, Apache-2.0). Live costs: Adopter **$7,500 a year** and **$3,000 per
+  product** ($2,500 per derivative); Participant $21,500 a year with $2,000 per product
+  ($1,500 derivative); Promoter $112,500 a year plus initiation; Associate free but only
+  white-labels a certified product ($2,500 plus $500 a year). Test-lab fees are extra (U).
+  Matter 1.6 shipped on 2026-06-17.
+- **Exposed entities, each declaring category and tier (ADR-0033):**
+
+  | Entity | Category, tier | Matter mapping (U where no exact type) |
+  |---|---|---|
+  | Battery voltage; EV charge | Read, 0 | Power Source cluster on a bridged endpoint |
+  | Fuel level | Read, 0 | No fitting cluster (U); omitted until one exists |
+  | Cabin temperature | Read, 0 | Temperature sensor |
+  | "Car is home" | Read, 0 | Occupancy or contact sensor |
+  | Alarm state | Read, 0 | Contact or boolean state; no alarm-panel type (U) |
+  | Arm the software alarm | Security, 1 | On/off switch, arming only by default |
+  | Preheat, aux heater | Comfort, 1 | On/off switch, **only with the install override** |
+
+- **Every command goes through the node gate** (ADR-0032), which re-checks role, category,
+  tier, driving state and transport. **Matter is a remote path** (ADR-0033 §6): Read plus
+  alarm arming; disarming and Comfort switches are refused unless
+  `OSTLER_ALLOW_REMOTE_CONTROL` is set on the node, and nothing above Tier 1 is ever exposed.
+  A Matter fabric has no per-user identity, so the bridge acts under one owner-issued
+  token with a narrowed role.
+- **Never** for the in-car module bus or the car-to-car mesh
+  ([ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), draft).
+- **Native Matter add-on modules** (Espressif ESP-Matter SDK, Apache-2.0, release v1.6
+  with v1.7 on main) stay a later option for home-side devices only, each certified as its
+  own product.

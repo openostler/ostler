@@ -217,3 +217,111 @@ supported path until it passes.
 - **Port everything to C now.** Rejected: decoding is still open; the Python lab stays until
   the facts are stable.
 - **Cloud-only Lite.** Rejected: the car must work offline with a phone.
+
+## Proposed amendment (2026-10-06, pending owner answers)
+
+*Not yet decided; §5, §6, §13 and §14 stand until the owner answers. Owner items 2 (GPS
+split) and 3 (sensor detection on nodes), 2026-10-06. Research: [hardware research, GPS
+split](../references/research/hardware.md#gps-split-two-receivers-two-jobs-2026-10-06) and
+[node sensors](../references/research/node_sensors.md). Related draft:
+[ADR-0037](adr-0037-role-holders-and-handover.md) (time source role).*
+
+### A. GPS split: two receivers, two jobs
+
+**A1. Receivers.**
+- **Guardian GNSS** (the LilyGO's built-in SIM7670G today): security tracking, geofences,
+  check-ins and theft tracking. It is **1 Hz only** (the modem accepts no other rate), L1
+  GPS/GLONASS/Galileo/BeiDou; its accuracy and TTFF are unpublished and must be measured. It
+  gets its own **hidden active antenna**, separate from the node's, so removing the node
+  leaves the guardian seeing the sky.
+- **A 10 Hz u-blox** (MAX-M10S or NEO-M9N class; NEO-M9V with dead reckoning as an option):
+  drive logging, replay, Drive mode, the driving-state fallback and the speed-vs-wheel-speed
+  check. It sits **on the diagnostic node** (UART, time pulse to a node GPIO), so it works on
+  Ostler Lite, gives the node gate its own fast speed source, and makes the node the best
+  clock. A USB u-blox on the brain stays a dev path and an option. When the guardian replaces
+  the node, it carries the u-blox on its I²C port.
+
+**A2. Every fix is a tagged reading.** Fixes publish as `Vehicle.CurrentLocation.*` (with
+`GNSSReceiver.FixType`, `HorizontalAccuracy`) plus speed, each with:
+`source` = {device id, receiver id}, the **GNSS time of fix** (UTC), the **receive time on
+the shared clock**, horizontal and speed accuracy, satellites used, the receiver's rate, and
+`dr: true` when a dead-reckoning receiver is coasting.
+
+**A3. Shared time.** GNSS time is the reference. The device holding the time role (ADR-0037
+draft) disciplines its clock from GNSS, with PPS where wired, and serves SNTP on the car
+LAN; with the u-blox on the node, the node is the best clock whether or not a brain is
+present. Readings from a device with no synced clock carry `time: unsynced` and are merged
+by receive order only, never across devices by timestamp.
+
+**A4. Selection (best fix, not fusion, in v1).** A fix is **usable** when its fix type is 3D
+(or 2D for the guardian while parked), its age is under two of its own periods (u-blox
+about 200 ms at 10 Hz; guardian about 2 s), and its horizontal accuracy is under a set limit
+(proposed 25 m, tuned on the car). Then:
+
+| Situation | Selected source |
+|---|---|
+| Ignition on or Moving, u-blox usable | u-blox |
+| Ignition on or Moving, u-blox not usable | guardian (marked `degraded_rate`) |
+| Parked, ignition off | guardian; the u-blox and its antenna are powered down |
+| Node offline (offline will or missed heartbeats) | guardian, with a node-loss alert when armed (§5) |
+| Neither usable | no position; the last fix is kept with its age, never re-dated |
+
+- **Hysteresis:** switch back to the u-blox only after it has been usable for 3 s; switch
+  away after 1 s unusable. The merged stream names the source it picked.
+- **Disagreement:** when both are usable and more than max(3 × the sum of their stated
+  accuracies, 50 m) apart for over 10 s, publish a `position_disagreement` event (a fault,
+  jamming or spoofing); while parked the guardian's fix wins.
+- **Recording:** each receiver is logged as its own channel set, plus the merged stream;
+  replay prefers the u-blox channels. Fused (filtered) positions are a later option.
+- **Who merges:** whichever device holds the merge for the moment (§11, §13): the node when
+  it sees both, the brain or the cloud otherwise. The rules live in one documented algorithm
+  with shared test vectors, run by the C firmware and the Python server alike (as §8 does for
+  decoding).
+
+**A5. Speed checks.** On steady, straight segments above 30 km/h, bus wheel speed against
+u-blox ground speed gives a speedometer or tyre-size ratio (Read only, logged). The driving
+state keeps the UI spec order: vehicle speed, then GNSS speed (u-blox before guardian), then
+gear and handbrake signals. A gate decision never trusts a speed that arrived from another
+device's role; it uses its own bus or its own receiver.
+
+### B. Sensor detection: one firmware, manifest from hardware
+
+**B1. Two inputs, one manifest.**
+- **Detected:** I²C chips by address and ID register (IMUs, pressure sensors, MCP9600-type
+  thermocouple amps, power monitors), u-blox receivers by UBX poll, and the board's own
+  parts from its compiled-in **board profile**.
+- **Declared:** what cannot be detected (tacho and speed pulses with their wheel pattern,
+  analog senders, read-only taps, SPI parts such as the MAX31855, and outputs on I/O boards)
+  in a small **node config file** (JSON, validated by a JSON Schema) or by a **harness ID
+  resistor** that selects a built-in harness profile (for example "pin 12 = crank pulse,
+  60-2 wheel").
+- Both feed one capability manifest. Each item says where it came from (`board`,
+  `detected`, `harness`, `config`) and its status (`ok`, `absent`, `fault`, `no_signal`,
+  `refused`). Declared SPI parts are confirmed by plausibility (the MAX31855 has no ID
+  register); a declared pulse input becomes `ok` once plausible pulses arrive.
+
+**B2. Rules.**
+- **Probing is read-only:** only ID registers are read until a chip has matched; undeclared
+  SPI chip selects and GPIOs are never driven.
+- **Taps are read-only and isolated** (§14): the config cannot make a tap an output; inputs
+  go through optocouplers or high-impedance conditioners.
+- **Every output declares its category and tier** (ADR-0033 §1). A board profile with
+  outputs disallowed (the guardian, every diagnostic node) refuses a declared output and lists
+  it as `refused`; car-switching functions still need their own ADR.
+- **Budgets are checked at boot:** a declaration that needs ADC2 while Wi-Fi is on, a pin the
+  board reserves, more pulse inputs than PCNT and MCPWM capture provide, or a sensor that
+  would break the parked-current budget is refused with a reason.
+- **Sensors are Read, Tier 0,** with source tags and shared time (§13).
+- **Per-tooth crank timing** runs on an engine-bay sensor node; a diagnostic node may count
+  tacho pulses (PCNT) beside K-line. Both cores are planned: radio and network on one, link
+  layer, gate, decoder and sensor interrupts on the other.
+
+**B3. Where it is specified.** The boot sequence, the config schema and the harness ID
+scheme go in the `ostler-firmware` spec `docs/specs/sensor-detection.md` (ADR-0034). The
+manifest additions (`origin`, `status`, `problems`) go to the module-bus message spec and the
+UI spec's §5 device entries.
+
+**Open questions for the owner:** u-blox on the node (recommended) or on the brain; MAX-M10S
+or NEO-M9N, and whether to pay for dead reckoning (NEO-M9V); the accuracy limit and
+hysteresis values; JSON (recommended) or TOML for the node config; resistor harness ID now
+with an EEPROM later; whether per-tooth timing may ever run on the diagnostic node.

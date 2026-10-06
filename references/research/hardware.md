@@ -2,11 +2,11 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
-  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS node (ADR-0032; the guardian is its hidden battery-backed variant), 10 Hz u-blox for logging, KKL K-line, WiCAN Pro, Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own boards (a node board with a guardian variant, a separate brain board); risks. Updated 2026-10-06 for ADR-0032/0033: one ESP32 node with an optional Pi brain, no buddy, the guardian as a hidden node variant with no outputs, KKL dev-only.
+  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS node (ADR-0032; the guardian is its hidden battery-backed variant), 10 Hz u-blox for logging, KKL K-line, WiCAN Pro, Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own boards (a node board with a guardian variant, a separate brain board); risks. Updated 2026-10-06 for ADR-0032/0033: one ESP32 node with an optional Pi brain, no buddy, the guardian as a hidden node variant with no outputs, KKL dev-only. v1.4 adds the GPS split (owner, 2026-10-06): the guardian's built-in SIM7670G GNSS at 1 Hz (fixed; GPS/GLONASS/Galileo/BeiDou) with a hidden active antenna for security, and a 10 Hz u-blox (MAX-M10S or NEO-M9N) on the diagnostic node for drive logging, with prices, antennas and the merge recommendation.
 ---
 
 # Hardware research: a development kit now, our own hardware later
@@ -67,8 +67,8 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 | Linux computer | **Raspberry Pi 5, 2 GB** (£74.40), or the current Pi 4 | 0–74 | Production guaranteed to January 2038. The 1–2 GB models largely escaped the 2026 RAM price rises. A halted Pi 5 draws about 0.01 W (`POWER_OFF_ON_HALT`). |
 | Car power for the Pi | **[CarPiHAT PRO 5](https://thepihut.com/products/carpihat-pro-5-car-interface-dac-for-raspberry-pi-5)** | 110 | 12 V → 5 V at 5 A; ignition sense with a safe-shutdown latch; draws <1 mA when off; RTC; 1× CAN (SocketCAN); opto-isolated inputs; 2× 12 V high-side outputs |
 | Always-on guardian | **[LilyGO T-SIM7670G-S3](https://wiki.lilygo.cc/products/t-sim-series/t-sim7670g-s3/)** on its own 18650 (alternative: Waveshare ESP32-S3-SIM7670G, ~$49) | 28–40 | ESP32-S3; Cat-1 LTE (best UK coverage) and GNSS; 147 µA in deep sleep. It charges only while the ignition is on, so it takes about nothing from the car while parked. |
-| GPS for tracking and alarm | The guardian's **built-in SIM7670G GNSS**, plus an external active antenna | 8 | About 1 Hz, which is enough for check-ins, geofences and theft tracking. It passes its last fix to the Pi at boot, so the Pi knows where it is straight away. |
-| GPS for drive logging | **A dedicated u-blox at 10 Hz**: keep the current USB GPS, or use a **[SparkFun MAX-M10S Qwiic](https://www.sparkfun.com/sparkfun-gnss-receiver-breakout-max-m10s-qwiic.html)**, plus an antenna | 0–55 | The logger needs 10 Hz (map, speed traces, G-G). The modem's GNSS is about 1 Hz and may have to share time with LTE (U). |
+| GPS for tracking and alarm | The guardian's **built-in SIM7670G GNSS**, plus an external active antenna | 8 | 1 Hz only (fixed), which is enough for check-ins, geofences and theft tracking ([GPS split](#gps-split-two-receivers-two-jobs-2026-10-06)). It passes its last fix to the Pi at boot, so the Pi knows where it is straight away. |
+| GPS for drive logging | **A dedicated u-blox at 10 Hz**: keep the current USB GPS, or use a **[SparkFun MAX-M10S Qwiic](https://www.sparkfun.com/sparkfun-gnss-receiver-breakout-max-m10s-qwiic.html)**, plus an antenna | 0–55 | The logger needs 10 Hz (map, speed traces, G-G). The modem's GNSS is 1 Hz only. Production: on the diagnostic node ([GPS split](#gps-split-two-receivers-two-jobs-2026-10-06)). |
 | Wake and alarm inputs | PC817 4-channel opto board (screw terminals) and **[Adafruit LSM6DSOX](https://adafruit.com/product/4438)** (STEMMA, plus one jumper wire for the interrupt pin) | 15 | Ignition, OEM alarm/siren and doors; wake on motion |
 | Guardian → Pi link | One GPIO driving a CarPiHAT input through an opto/relay board, plus a UART link | 5 | Check the CarPiHAT's power-on logic first (U). Fallback: **[Witty Pi 5 HAT+](https://thepihut.com/products/witty-pi-5-hat-real-time-clock-and-power-management-for-raspberry-pi)**. |
 | K-line (Td5) | **Keep the KKL USB cable** on the Pi for development only; production K-line runs on the node (ADR-0032) | 0 | Proven |
@@ -88,6 +88,113 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 | **Total** | **About 1–4 mA** |
 
 The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (U).
+
+## GPS split: two receivers, two jobs (2026-10-06)
+
+Owner direction (item 2, 2026-10-06): the **guardian's built-in GNSS** does security
+tracking at about 1 Hz and saves battery while parked; a **10 Hz u-blox** does drive
+logging, replay, Drive mode and the speed-vs-wheel-speed check. Merging picks the best fix:
+the u-blox while driving, the guardian when parked or when the node is gone. Positions carry
+source tags and shared time. The merge rules are proposed in
+[ADR-0032's proposed amendment](../../decisions/adr-0032-one-node-optional-brain.md#proposed-amendment-2026-10-06-pending-owner-answers);
+sensor detection is in [node sensors](node_sensors.md). Checked live on 2026-10-06.
+
+### The guardian's receiver today (LilyGO T-SIM7670G-S3)
+
+| Item | Finding |
+|---|---|
+| Update rate | **1 Hz only.** The SIM767XX AT manual's NMEA-rate command accepts a single value, 1 Hz |
+| Constellations | GPS, GLONASS, Galileo, BeiDou, selectable (default all four); L1 band only |
+| Accuracy, TTFF, GNSS current | **Not published:** SIMCom's SIM7672X hardware design v1.01 leaves its GNSS performance table empty, and LilyGO lists modem power as "TBD". Typical L1 modem GNSS is a few metres CEP open-sky, hot start in seconds and cold start around 30 s (U); measure |
+| Antenna | IPEX socket; LilyGO requires an **active antenna** fed at 3.3 V (most take 2.5–5.5 V); antenna power is switched by the modem's GPIO1, so it can be off while parked |
+| Timing | The Standard edition routes the modem's GNSS NMEA port and **PPS (GPIO17)** to the ESP32-S3, so the guardian can discipline its clock |
+| Board editions | Two are sold: the original (H707, listed with 8 MB PSRAM, about $36) and the Standard (H802, about €52 in the EU; README says ESP32-S3-WROOM-1 with **2 MB quad PSRAM** and only GPIO2/3 free for I²C unless the camera pins are reused) (U: confirm which edition arrives) |
+| Battery | Single-cell 4.2 V Li-ion/LiPo only; **LiFePO4 is explicitly not supported** by the on-board charger |
+| Deep sleep | 147 µA (earlier listing, used in the kit table) vs 497 µA average (a 2026 reseller listing) (U: measure) |
+
+Verdict: fine for check-ins, geofences and theft tracking. It cannot do 10 Hz logging, and
+its accuracy is unknown until we measure it.
+
+**Newer LilyGO boards.** The T-SIM/T-A Standard series (A7670E/G/SA, SIM7000G, SIM7080G,
+SIM7600G, SIM7670G) all use the modem's own GNSS; none adds a u-blox (checked 2026-10-06).
+The **T-Beam Supreme** (ESP32-S3, 8 MB PSRAM, QMI8658 IMU, SX1262 LoRa, about $60) ships
+with an L76K or a **u-blox MAX-M10S**, but has no LTE: interesting for the off-grid / mesh
+work and the bike product, not as the guardian. The Freematics ONE+ (SIM7670 + u-blox M9)
+shows the "modem GNSS plus u-blox" pairing in one product. The guardian can also take a
+u-blox on its QWIIC I²C connector if a single-box product ever needs 10 Hz.
+
+### u-blox options for 10 Hz
+
+| Module | Max rate | Notes | Board and price (2026-10-06) |
+|---|---|---|---|
+| **MAX-M10S** | 10 Hz with 3 constellations (5 Hz with all 4); 18 Hz single constellation, raised to 25 Hz by later M10 firmware (U) | About 25 mW tracking; external antenna; I²C 0x42 and UART | SparkFun Qwiic breakout, £44.20 at The Pi Hut (sold out on the day) |
+| **NEO-M10S** | As MAX-M10S (same M10 engine) (U) | NEO footprint, drop-in for older NEO-M8 boards | Breakouts from smaller makers (U) |
+| **SAM-M10Q** | 5 Hz with 4 constellations; up to 18 Hz single | Built-in patch antenna: no cable, but must sit under the windscreen or roof plastic | SparkFun breakout, £49.50 at The Pi Hut (sold out) |
+| **NEO-M9N** | **25 Hz with 4 constellations** | About 31 mA tracking; the strongest pure-GNSS choice for logging | SparkFun SMA Qwiic breakout, $76.50 |
+| **NEO-M9V** (option) | Up to 50 Hz | Untethered and automotive dead reckoning (built-in IMU; wheel-tick input); keeps a position in tunnels and multi-storey car parks | gnss.store module, €77.99 |
+| **ZED-F9R** (option) | Multi-band RTK + dead reckoning | Centimetre class with corrections; the "GNSS/RTK later" add-on | About $470 as a Qwiic board |
+
+**Recommendation:** the **MAX-M10S** (or the NEO-M9N for 25 Hz headroom) at 10 Hz with
+GPS + Galileo + GLONASS, sending UBX-NAV-PVT (one message per epoch carries position,
+velocity, accuracy estimates, fix type and UTC time). The NEO-M9V is the upgrade if the
+owner wants positions to survive tunnels and wheel-speed fusion done inside the receiver.
+
+### Antennas
+
+| Use | Antenna | Price | Notes |
+|---|---|---|---|
+| Guardian (hidden) | Small adhesive active patch on a short lead, under the dash top, A-pillar trim or roof lining; never under metal | £8–15 (U) | 3.3 V active, IPEX/U.FL; its LNA is switched off parked |
+| u-blox on the node | Active magnetic or adhesive puck, e.g. Taoglas AA.162 (GPS/GLONASS/Galileo, 3 m RG-174, SMA) | about £14–24 | On the dash top or the windscreen edge; check the D2's windscreen has no metallic coating (U) |
+| Precision later | u-blox ANN-MB-00 multi-band (L1/L2) | about $35–65 | For the ZED-F9R / RTK add-on only |
+
+Keep **two separate antennas**. A splitter would save one, but then pulling the node's
+antenna lead would also blind the guardian, which defeats the point of a hidden tracker.
+
+### Where the u-blox goes: node or brain
+
+**Recommendation: on the diagnostic node** (UART with PPS to a node GPIO, or I²C on a dev
+kit), with the brain receiving fixes over MQTT like every other reading.
+- **Lite works.** Ostler Lite has no brain; the node records sessions itself (ADR-0032
+  §12), so 10 Hz logging and Drive mode on Lite need the receiver on the node.
+- **The gate needs speed.** The driving state falls back to GPS speed, and the node gate
+  re-checks it at execution (UI spec §3.5, ADR-0033 §3). During a SLABS session the Td5 speed
+  is absent, so the gate's own receiver should be the fast one.
+- **Time.** A u-blox time pulse on the node makes the node the best clock in the car, with
+  or without a brain.
+- **Load is small:** UBX-NAV-PVT is about 100 bytes, so 10 Hz is about 1 KB/s on a UART.
+- **Against:** the Pi already reads a USB u-blox today (ADR-0009, pyserial NMEA). That stays
+  as the **dev path**; a USB receiver on the brain remains a supported option for a node
+  without spare pins.
+- **When the guardian replaces the node** (ADR-0032 §5), the guardian is the only device, so
+  it carries the u-blox too, on its QWIIC I²C port.
+
+### Merge in brief
+
+- Each fix carries its **source tag** (device, receiver), fix type, horizontal and speed
+  accuracy, satellites used, GNSS time of fix and receive time on the shared clock.
+- **Driving or ignition on:** the u-blox when its fix is valid and fresh; otherwise the
+  guardian. **Parked:** the guardian; the u-blox is powered down. **Node gone** (offline
+  will, heartbeat lost): the guardian, and a node-loss alert if armed.
+- Hysteresis stops flapping; both raw streams are always logged, and the merged stream names
+  the source it picked. Disagreement between the two beyond their stated accuracy is flagged
+  (a possible fault, jamming or spoofing).
+- Bus wheel speed vs GNSS speed (u-blox only, 10 Hz, steady straight segments) gives a
+  speedometer or tyre-size error.
+
+Sources: [SIM767XX AT manual v1.01](https://files.waveshare.com/wiki/SIM7670G-LTE-Cat-1-GNSS-HAT/SIM767XX_Series_AT_Command_Manual_V1.01.pdf),
+[SIM7672X hardware design v1.01](https://files.waveshare.com/wiki/ESP32-S3-SIM7670G-4G/SIM7672X_Series_Hardware_Design_V1.01.pdf),
+[LilyGO T-SIM7670G-S3 Standard README](https://github.com/Xinyuan-LILYGO/LilyGo-Modem-Series/blob/main/docs/en/esp32s3/sim7670g-s3-standard/README.MD),
+[LilyGO product page](https://lilygo.cc/products/t-sim-7670g-s3),
+[OpenELAB Standard series listing](https://openelab.io/products/lilygo-t-sim-t-a-standard-series-with-gps),
+[T-Beam Supreme (Rokland)](https://store.rokland.com/collections/lilygo-boards/products/lilygo-t-beam-supreme-esp32-s3-lora-development-board-sx1262-915mhz-gps-l76k-or-u-blox),
+[MAX-M10S datasheet](https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf),
+[u-blox M10 rate PCN](https://shop.richardsonrfpd.com/docs/rfpd/u-blox_PCN_UBX-23006557.pdf),
+[SparkFun MAX-M10S at The Pi Hut](https://thepihut.com/products/sparkfun-gnss-receiver-breakout-max-m10s-qwiic),
+[SparkFun SAM-M10Q at The Pi Hut](https://thepihut.com/products/sparkfun-gps-breakout-chip-antenna-sam-m10q),
+[SparkFun NEO-M9N SMA](https://www.sparkfun.com/sparkfun-gps-breakout-neo-m9n-sma-qwiic.html),
+[NEO-M9V module (gnss.store)](https://gnss.store/products/elt0303),
+[Taoglas AA.162](https://www.mouser.co.za/new/taoglas/taoglas-aa-162-antenna),
+[ANN-MB-00 (Future Electronics)](https://futureelectronics.com/p/semiconductors--wireless-rf--antennas--gps-antennas/ann-mb-00-u-blox-6120194).
 
 ## Ready-made boards considered
 
