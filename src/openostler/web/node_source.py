@@ -17,7 +17,8 @@ phases P1 read-only ingest, P2 recording and raw tap, P3 Network page data).
 - **The raw tap (P2).** While a session records, :meth:`NodeFeed.start_tap` opens a second
   connection (client id ``<id>-tap``, session expiry 60 s so a short Brain hiccup does not
   lose QoS 1 batches; clean start on each new run, resumed on reconnects) subscribed to
-  ``tap/+/meta`` and ``tap/+/data``, and hands every message to the recorder's sink;
+  ``tap/+/meta`` and ``tap/+/data``, and hands every message, with its MQTT 5 properties
+  (a batch's content type and ``first_seq``, module-bus spec §8), to the recorder's sink;
   :meth:`NodeFeed.stop_tap` unsubscribes and closes it when the session ends (owner
   answer 9: no rolling buffer).
 - **The serial-source rule (P3, owner answer 7).** :func:`check_serial_beside_node` reads
@@ -121,7 +122,7 @@ class NodeFeed:
             f"{cid}-tap", keep_alive=KEEP_ALIVE_S, clean_start=True,
             session_expiry=TAP_SESSION_EXPIRY_S, ssl_context=ssl_context))
         self._tap: "MqttClient | None" = None
-        self._tap_sink: "Callable[[str, str, str, bytes], object] | None" = None
+        self._tap_sink: "Callable[[str, str, str, bytes, dict], object] | None" = None
         self._tap_session: "str | None" = None
         self._tap_last_rx: "float | None" = None
         self.tap_batches = 0
@@ -220,10 +221,12 @@ class NodeFeed:
     def tap_running(self) -> bool:
         return self._tap is not None
 
-    def start_tap(self, sink: "Callable[[str, str, str, bytes], object]") -> bool:
+    def start_tap(self, sink: "Callable[[str, str, str, bytes, dict], object]") -> bool:
         """Subscribe to the raw tap and hand each message to ``sink(device, session, part,
-        payload)`` (``part`` is ``meta`` or ``data``). Idempotent; never blocks (the
-        connection is made in the background). True when it started now."""
+        payload, properties)`` (``part`` is ``meta`` or ``data``; ``properties`` the
+        publish's MQTT 5 properties, where a batch's content type and ``first_seq`` are,
+        module-bus spec §8). Idempotent; never blocks (the connection is made in the
+        background). True when it started now."""
         with self._lock:
             self._tap_sink = sink
             if self._tap is not None:
@@ -299,7 +302,8 @@ class NodeFeed:
                 self.tap_batches += 1
                 self._tap_session, self._tap_last_rx = session, self._clock()
         if sink is not None:
-            sink(t.device, session, part, pkt.payload)
+            props = dict(getattr(pkt, "properties", None) or {})
+            sink(t.device, session, part, pkt.payload, props)
 
     def tap_state(self) -> "dict | None":
         """Snapshot ``node.tap``: null when the tap is not subscribed (no session is

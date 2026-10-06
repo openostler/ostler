@@ -72,6 +72,26 @@ their own changelogs.
   App Manifest (`/manifest.webmanifest`), `Intl` (CLDR) units in the shell. Playwright runs
   at 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and an axe WCAG 2.2
   AA scan per layout class (`@axe-core/playwright`, a pinned dev dependency, MPL-2.0).
+- **NodeSource follows node firmware 5971323** ([module-bus message
+  spec](specs/2026-10-06-module-bus-messages-design.md) v1.2; NodeSource spec v0.8). The
+  node fixtures are copied unchanged from `ostler-firmware` 5971323, now five files (new:
+  `slabs-vectors-no-priority.jsonl`, `gate-conflict.jsonl`), and a line may carry the
+  publish's MQTT 5 `properties`, which `tests/fake_node.py` sends. **Tap batch
+  properties:** the raw-tap connection hands each batch's properties to the recorder; a
+  content type other than `application/vnd.ostler.tap.v1` is refused (its records read as
+  a gap), a batch without one or without a readable `first_seq` is read as v1, and
+  `first_seq` is cross-checked with the batch's first record; `meta.json` `tap` entries
+  gain `refused`, `unlabelled` and `first_seq_mismatch` (OpenAPI `SessionTap`,
+  `schemas/session-meta.schema.json`). The tap header's `records` is read as an array of
+  record kinds (a v0 string as a one-item list). **The cluster view shows a device's own
+  `gate_conflict`** from its manifest's `problems`: the gate row reads `conflict` with no
+  holder and a `gate_conflict` alert with `by: "manifest"` names the device and the other
+  claimants; it clears when the problem leaves the manifest. Device rows gain `problems`
+  and alerts `by` (`claims` or `manifest`) and `claimants` (OpenAPI `Cluster`,
+  `NodeManifest.problems`). `api/asyncapi.yaml`: the tap batch documents its content type
+  and the `first_seq` user property, and the header's `records` is an array.
+  `status-power.jsonl` carries the parked power class like every real power record. No
+  change to the D2 cable path.
 - **NodeSource reads what the node firmware now publishes**
   ([spec](specs/2026-10-06-node-source-design.md) v0.7 §16; module-bus message spec v1.1).
   The node fixtures are the firmware's own (`ostler-firmware` 0426ea5: the two vector runs

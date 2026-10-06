@@ -21,6 +21,17 @@ the higher ``term`` wins, then the higher ``priority`` (ADR-0037 §5); the loser
 ``superseded``. **Two live gate claims on one bus are never resolved**: both are flagged
 ``conflict``, the bus has no holder, and an alert says both refuse to transmit.
 
+**A conflict the device reports itself** (sensor-detection amendment of 2026-10-06;
+module-bus spec §7.1): a device whose manifest's ``problems`` holds ``gate_conflict`` on
+the item serving a bus has seen another device's claim on that gate and transmits nothing
+on it until every other claim is released. Its firmware counts *any* claim, a void one
+included, so the Brain may see one live claim where the device sees two. The view shows
+the device's own word too: the gate row reads ``conflict`` with no holder, the device's
+claim is flagged ``conflict``, and a ``gate_conflict`` alert with ``by: "manifest"`` names
+the device and every other claimant (the claim-based alert has ``by: "claims"``). It
+clears when the device republishes its manifest without the problem. A device that is
+offline or asleep transmits nothing anyway; its retained report is not shown.
+
 **The serial-source rule** (owner answer 7): :func:`kline_gate_holders` lists the devices
 that hold, or by their manifest are wired to, a K-line transmit gate; a serial source on
 that vehicle refuses to start beside them.
@@ -122,6 +133,31 @@ def _priority(manifest: "dict | None", role: str) -> float:
     return float(p) if isinstance(p, (int, float)) and not isinstance(p, bool) else float("-inf")
 
 
+def problems(manifest: "dict | None") -> "list[dict]":
+    """The manifest's ``problems`` entries ``{item, code}`` that are objects with a text
+    ``code`` (sensor-detection §7); others are dropped."""
+    if not isinstance(manifest, dict):
+        return []
+    return [p for p in manifest.get("problems") or []
+            if isinstance(p, dict) and isinstance(p.get("code"), str)]
+
+
+def reported_gate_conflicts(manifest: "dict | None") -> "list[str]":
+    """The buses on which the device reports ``gate_conflict`` (another device claims its
+    gate): the ``bus`` of the item the problem names, else every bus it declares
+    ``transmit`` on (an item without a ``bus`` cannot say which)."""
+    items = {i.get("id"): i for i in (manifest or {}).get("items") or [] if isinstance(i, dict)}
+    buses: "list[str]" = []
+    for p in problems(manifest):
+        if p["code"] != "gate_conflict":
+            continue
+        bus = (items.get(p.get("item")) or {}).get("bus")
+        for b in ([bus] if isinstance(bus, str) else _transmit_buses(manifest)):
+            if b not in buses:
+                buses.append(b)
+    return buses
+
+
 def _asleep(dev: dict) -> bool:
     return dev.get("status") == "asleep" or (dev.get("power") or {}).get("state") in ASLEEP_STATES
 
@@ -207,22 +243,44 @@ def build(devices: "list[dict]", *, handovers: "dict | None" = None,
             row["void"] = bool(row["flags"])
             claim_rows.setdefault((role, scope), []).append({"device": dev["id"], "row": row})
             per_device[dev["id"]].append(row)
+    reported: "dict[str, list[str]]" = {}   # bus → devices reporting gate_conflict on it
+    for dev in devices:
+        if dev.get("status") == "offline" or _asleep(dev):
+            continue
+        for bus in reported_gate_conflicts(dev.get("manifest")):
+            reported.setdefault(bus, []).append(dev["id"])
     roles = []
-    for role, scope in _scopes(devices, buses):
+    for role, scope in _scopes(devices, [*buses, *reported]):
         claims = claim_rows.get((role, scope), [])
         live = [c for c in claims if not c["row"]["void"]]
         holder = None
         conflict = False
+        reporters = reported.get(scope, []) if role == GATE and scope is not None else []
         if role == GATE and len(live) > 1:
             conflict = True
             for c in live:
                 c["row"]["flags"].append("conflict")
-            alerts.append({"code": "gate_conflict", "role": role, "scope": scope,
-                           "devices": [c["device"] for c in live],
+            alerts.append({"code": "gate_conflict", "by": "claims", "role": role,
+                           "scope": scope, "devices": [c["device"] for c in live],
                            "message": f"Two devices claim the transmit gate for {scope}: "
                                       "both refuse to transmit until the owner removes one "
                                       "(ADR-0037 §5)"})
-        elif live:
+        if reporters:
+            conflict = True
+            for c in claims:
+                if c["device"] in reporters and "conflict" not in c["row"]["flags"]:
+                    c["row"]["flags"].append("conflict")
+            for dev_id in reporters:
+                others = sorted({c["device"] for c in claims if c["device"] != dev_id})
+                alerts.append({
+                    "code": "gate_conflict", "by": "manifest", "role": role, "scope": scope,
+                    "devices": [dev_id], "claimants": others,
+                    "message": f"{dev_id} reports another claim on the transmit gate for "
+                               f"{scope}"
+                               + (f" ({', '.join(others)})" if others else "")
+                               + ": it transmits nothing on that bus until every other "
+                                 "claim is released (ADR-0037 §5)"})
+        if live and not conflict:
             # Higher term, then higher priority (ADR-0037 §5), then the lowest device id.
             best = min(live, key=lambda c: (-c["row"]["term"],
                                             -(c["row"]["priority"] if c["row"]["priority"]
@@ -275,6 +333,7 @@ def build(devices: "list[dict]", *, handovers: "dict | None" = None,
             "transmit": [t for t in (m or {}).get("transmit") or [] if isinstance(t, dict)],
             "memory": (m or {}).get("memory"),
             "items": [i for i in (m or {}).get("items") or [] if isinstance(i, dict)],
+            "problems": problems(m),
             "claims": per_device[dev["id"]],
         })
     return {"devices": rows, "roles": roles, "alerts": alerts}
@@ -315,4 +374,4 @@ def serial_refusal(cluster: dict) -> "str | None":
 
 __all__ = ["ASLEEP_STATES", "GATE", "ORDER", "PBROKER", "PLCA", "ROLES", "TIME", "UPLINK",
            "VEHICLE_ROLES", "build", "declares", "device_class", "eligibility",
-           "kline_gate_holders", "serial_refusal"]
+           "kline_gate_holders", "problems", "reported_gate_conflicts", "serial_refusal"]

@@ -1398,13 +1398,15 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
             self._conn_log(f"node: raw tap {type(exc).__name__}: {exc}")
             return False
 
-    def _tap_sink(self, device: str, session: str, part: str, payload: bytes) -> None:
-        """Raw-tap messages from the MQTT thread into the open session (if any)."""
+    def _tap_sink(self, device: str, session: str, part: str, payload: bytes,
+                  props: "dict | None" = None) -> None:
+        """Raw-tap messages from the MQTT thread into the open session (if any), with the
+        publish's MQTT 5 properties (a batch's content type and ``first_seq``)."""
         rec = self._recorder
         if rec is None or self._rec_closed:
             return
         try:
-            rec.tap_message(device, session, part, payload)
+            rec.tap_message(device, session, part, payload, props)
         except Exception as exc:  # noqa: BLE001
             self._conn_log(f"logbook: tap write failed ({type(exc).__name__}: {exc})")
 

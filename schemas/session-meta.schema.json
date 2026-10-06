@@ -156,6 +156,9 @@
         "lost": { "type": "integer", "minimum": 0 },
         "overflow": { "type": "integer", "minimum": 0, "description": "overflow events from the node." },
         "time_marks": { "type": "integer", "minimum": 0, "description": "time events from the node (raw-tap §2.4): with at least one, readers map t_us to UTC; none keeps the node's clock only." },
+        "refused": { "type": "integer", "minimum": 0, "description": "batches refused whole for another MQTT 5 content type than application/vnd.ostler.tap.v1 (module-bus spec §8); their records read as a gap." },
+        "unlabelled": { "type": "integer", "minimum": 0, "description": "batches without a content type or a readable first_seq (a node from before the firmware set them), read as v1 by their records." },
+        "first_seq_mismatch": { "type": "integer", "minimum": 0, "description": "batches whose first_seq user property disagreed with their first record's seq (each a tap_error event; the records' seq is kept)." },
         "brain_scrubbed": { "type": "integer", "minimum": 0 },
         "brain_dropped": { "type": "integer", "minimum": 0 }
       }

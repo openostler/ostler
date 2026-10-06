@@ -199,17 +199,21 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     `role/#` claims (ADR-0037 §3); `node/cluster.py` (pure) builds `GET /cluster`: devices
     with power and last seen, role holders (higher term, then priority), candidates in the
     role's order, void claims flagged (offline, asleep, undeclared, ineligible), gate
-    conflicts never resolved, handovers only from live messages. It is built, never
+    conflicts never resolved (two live claims, or a device's own `gate_conflict` in its
+    manifest's `problems`), handovers only from live messages. It is built, never
     authoritative, and read-only. `check_serial_beside_node` reads it once so a serial
     source refuses to start beside a node holding the K-line gate (`tools/dashboard.py
     --mqtt`); it fails closed when the broker cannot be checked.
   - **Tap time.** `node/tap.py` `TimeMap` maps a tap's `t_us` to UTC from the node's
     `time` events (CBOR, decoded by a stdlib subset); the pcapng export stamps UTC when a
-    tap has them and the node clock otherwise.
-  - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/` (the two
-    vector runs and `lifecycle.jsonl`), plus hand-written lines only for what the node
-    cannot publish yet (`cluster.jsonl`, `status-power.jsonl`); `tests/fake_node.py`
-    replays them; `needs_broker` tests use a real Mosquitto (CI job).
+    tap has them and the node clock otherwise. A batch's MQTT 5 properties travel with it
+    to `logbook/tap.py` (`NodeFeed` → the server's tap sink → the recorder): another
+    content type is refused, `first_seq` is cross-checked with the first record.
+  - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/` (the
+    vector runs, `lifecycle.jsonl` and `gate-conflict.jsonl`, with each message's MQTT 5
+    properties), plus hand-written lines only for what the node cannot publish yet
+    (`cluster.jsonl`, `status-power.jsonl`); `tests/fake_node.py` replays them;
+    `needs_broker` tests use a real Mosquitto (CI job).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,

@@ -280,6 +280,32 @@ _BUS = {"transport", "kline", "kwp2000", "can", "session", "ports", "faultscan",
         "serial", "sniff", "commands"}
 
 
+def test_every_power_record_carries_the_parked_class_of_the_manifest():
+    """Sensor-detection amendment of 2026-10-06: ``power.class`` and ``wake_paths`` are the
+    device's parked ones, the same in the manifest and in every power record whatever its
+    ``state``. The firmware's sleeping build (``lifecycle.jsonl``) is ``check_in`` with
+    ``["timer"]`` (and ``asleep`` names its ``next_checkin``); the hand-written states the
+    node does not publish yet (``status-power.jsonl``) follow it. The bench runs (no sleep)
+    are ``always`` with no wake path, in their manifests and records alike."""
+    for name in ("lifecycle.jsonl", "td5-vectors.jsonl", "slabs-vectors.jsonl",
+                 "slabs-vectors-no-priority.jsonl", "gate-conflict.jsonl"):
+        msgs = load(name)
+        (parked,) = {json.dumps(json.loads(m["payload"])["power"]) for m in msgs
+                     if m["topic"].endswith("/manifest")}
+        for m in msgs:
+            if m["topic"].endswith("/power"):
+                p = json.loads(m["payload"])
+                assert json.dumps({"class": p["class"], "wake_paths": p["wake_paths"]}) == \
+                    parked, (name, p["state"])
+    lifecycle = json.loads(next(m for m in load("lifecycle.jsonl")
+                                if m["topic"].endswith("/manifest"))["payload"])["power"]
+    assert lifecycle == {"class": "check_in", "wake_paths": ["timer"]}
+    for state in ("awake", "asleep", "held", "waking", "off"):
+        p = json.loads(case(state)["payload"])
+        assert (p["state"], p["class"], p["wake_paths"]) == (state, "check_in", ["timer"])
+    assert json.loads(case("asleep")["payload"])["next_checkin"].endswith("Z")
+
+
 @pytest.mark.parametrize("path", sorted((SRC / "mqtt").glob("*.py")) + sorted((SRC / "node").glob("*.py"))
                          + [SRC / "web" / "node_source.py"], ids=lambda p: p.name)
 def test_no_node_source_path_reaches_a_car_bus(path):

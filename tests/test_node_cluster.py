@@ -7,9 +7,11 @@ claims into the device table, holders, candidates and void claims, the gate rule
 seen live only, ``GET /cluster`` against the OpenAPI contract, firmware and manifest
 ``etag`` in node session meta, and the serial source's refusal beside a node that holds the
 K-line gate (owner answer 7). The node's own manifest, gate claim, power and sleep are the
-firmware's (``tests/fixtures/node/lifecycle.jsonl``, ``ostler-firmware`` 0426ea5); the other
-devices, a second gate claim and the vehicle roles the node does not hold yet are
-hand-written (``tests/fixtures/node/cluster.jsonl``)."""
+firmware's (``tests/fixtures/node/lifecycle.jsonl``, ``ostler-firmware`` 5971323), as are
+an unset owner priority (``slabs-vectors-no-priority.jsonl``) and the node's own report of
+a second gate claim (``gate-conflict.jsonl``); the other devices, a second gate claim from
+a device with a manifest and the vehicle roles the node does not hold yet are hand-written
+(``tests/fixtures/node/cluster.jsonl``)."""
 from __future__ import annotations
 
 import hashlib
@@ -115,7 +117,8 @@ def test_the_cluster_fixture_and_its_manifests_follow_the_contracts():
     power_v = _validator(doc, "/components/schemas/NodePower")
     status_v = jsonschema.Draft202012Validator(msgs["nodeStatus"]["payload"])
     kinds = set()
-    real = [m for n in ("lifecycle.jsonl", "td5-vectors.jsonl", "slabs-vectors.jsonl")
+    real = [m for n in ("lifecycle.jsonl", "td5-vectors.jsonl", "slabs-vectors.jsonl",
+                         "slabs-vectors-no-priority.jsonl", "gate-conflict.jsonl")
             for m in load(n) if m["topic"].split("/")[4] in ("manifest", "role", "power", "status")]
     assert {m["topic"].split("/")[4] for m in real} == {"manifest", "role", "power", "status"}
     for m in load("cluster.jsonl") + real:
@@ -198,7 +201,13 @@ def test_a_device_row_is_the_peer_view_shape():
     assert node["board"] == "host-sim" and node["fw"] == "0.1.0" and node["model"]
     assert len(node["etag"]) == 64 and node["manifest_utc"].endswith("Z")
     assert node["links"] == [{"kind": "wifi"}]
-    assert node["power"]["state"] == "awake" and node["power"]["class"] == "always"
+    # one power class (sensor-detection amendment of 2026-10-06): the parked class and wake
+    # paths, the same in the manifest and in every power record, whatever the state
+    assert node["power"]["state"] == "awake" and node["power"]["class"] == "check_in"
+    assert node["power"]["wake_paths"] == ["timer"]
+    man = json.loads(next(d for d in node_awake() if d["topic"].endswith("/manifest"))["payload"])
+    assert man["power"] == {"class": "check_in", "wake_paths": ["timer"]}
+    assert node["problems"] == []
     assert node["since"] == node["power"]["since"]
     assert node["last_seen_utc"] is None  # stored messages only: never "seen" live
     assert node["transmit"] == [{"bus_id": "kline-diag"}]
@@ -218,6 +227,7 @@ def test_two_gate_claims_on_one_bus_leave_no_holder_and_an_alert():
     assert all("conflict" in c["flags"] for c in gate["claims"])
     alert = next(a for a in v["alerts"] if a["code"] == "gate_conflict")
     assert alert["devices"] == ["node", "node2"] and "both refuse to transmit" in alert["message"]
+    assert alert["by"] == "claims"
 
 
 def test_a_sleeping_or_offline_holders_claims_are_void():
@@ -340,19 +350,89 @@ def test_a_shutdown_releases_the_gate_without_changing_the_status():
 
 
 def test_an_unset_owner_priority_is_absent_from_the_manifest_and_null_in_the_claim():
-    """A node with no ``node.priority`` (firmware README): the manifest omits ``priority``
-    and the claim carries ``priority: null``. The gate still has its holder."""
-    f = Feeder().case("cluster")
-    m = json.loads(next(d for d in node_awake() if d["topic"].endswith("/manifest"))["payload"])
-    del m["priority"]
-    f.msg("node/manifest", m)
-    f.msg("node/role/gate/kline-diag", {"role": "gate", "scope": "kline-diag", "term": 1,
-                                        "priority": None, "since": "2026-10-06T10:00:00.000Z",
-                                        "reason": "wired"})
-    v = f.view()
+    """The firmware's run with no ``node.priority`` (``slabs-vectors-no-priority.jsonl``):
+    the manifest omits ``priority`` and the claim carries ``priority: null``. The gate
+    still has its holder."""
+    msgs = load("slabs-vectors-no-priority.jsonl")
+    manifests = [json.loads(m["payload"]) for m in msgs if m["topic"].endswith("/manifest")]
+    claims = [json.loads(m["payload"]) for m in msgs
+              if m["topic"].endswith("/role/gate/kline-diag") and m["payload"]]
+    assert manifests and all("priority" not in m for m in manifests)
+    assert claims and all("priority" in c and c["priority"] is None for c in claims)
+    t = DeviceTable(VID)
+    for i, m in enumerate(msgs):
+        if m["topic"].endswith("/role/gate/kline-diag") and not m["payload"]:
+            break  # the shutdown's release
+        t.ingest(m["topic"], m["payload"], m["retain"], float(i), 1_791_300_000.0 + i)
+    v = t.cluster()
     gate = role(v, "gate", "kline-diag")
     assert gate["holder"] == "node" and gate["claims"][0]["priority"] is None
-    assert parse_manifest(json.dumps(m).encode()).get("priority") is None
+    assert parse_manifest(json.dumps(manifests[-1]).encode()).get("priority") is None
+
+
+def test_the_node_reports_a_second_gate_claim_and_clears_it_on_release():
+    """The firmware's ``gate-conflict.jsonl``: another device (``node2``, no manifest or
+    status of its own) claims the K-line gate; the node goes listen-only and puts
+    ``{"item": "kline", "code": "gate_conflict"}`` in its manifest's ``problems``
+    (sensor-detection amendment of 2026-10-06), and drops it when the claim is released.
+    The cluster view shows the node's own word beside the claim rules: node2's claim alone
+    is void (no manifest), so no claim-based conflict, but the gate row reads ``conflict``
+    with no holder and a ``gate_conflict`` alert ``by: "manifest"`` names both."""
+    msgs = load("gate-conflict.jsonl")
+    t = DeviceTable(VID)
+    seen = []
+    for i, m in enumerate(msgs):
+        t.ingest(m["topic"], m["payload"], m["retain"], float(i), 1_791_300_000.0 + i)
+        v = t.cluster()
+        reported = [a for a in v["alerts"]
+                    if a["code"] == "gate_conflict" and a.get("by") == "manifest"]
+        seen.append((m["topic"].split("/", 3)[3], bool(reported)))
+        if m["topic"].endswith("node/manifest") and json.loads(m["payload"]).get("problems"):
+            node = device(v, "node")
+            assert node["problems"] == [{"code": "gate_conflict", "item": "kline"}]
+            gate = role(v, "gate", "kline-diag")
+            assert gate["conflict"] and gate["holder"] is None and gate["no_holder"]
+            mine = next(c for c in gate["claims"] if c["device"] == "node")
+            assert "conflict" in mine["flags"] and not mine["void"]
+            other = next(c for c in gate["claims"] if c["device"] == "node2")
+            assert other["void"] and other["flags"] == ["no_manifest"]
+            (alert,) = reported
+            assert (alert["devices"], alert["claimants"], alert["scope"]) == (
+                ["node"], ["node2"], "kline-diag")
+            assert "transmits nothing" in alert["message"]
+            assert not any(a["code"] == "gate_conflict" and a.get("by") == "claims"
+                           for a in v["alerts"])
+            # the serial-source rule still sees the node wired to the K-line gate
+            assert cl.kline_gate_holders(v)[0]["device"] == "node"
+    # shown from the node's report until its next manifest, not from node2's claim alone
+    flips = [(topic, on) for (topic, on), prev in zip(seen, [(None, False)] + seen)
+             if on != prev[1]]
+    assert flips == [("node/manifest", True), ("node/manifest", False)]
+    i_claim = next(i for i, m in enumerate(msgs) if m["topic"].split("/")[3] == "node2")
+    assert not seen[i_claim][1]   # node2's claim alone is void: no conflict yet
+    # cleared on release: the node's manifest is back to its earlier etag
+    v = t.cluster()
+    assert device(v, "node")["problems"] == []
+    manifests = [json.loads(m["payload"]) for m in msgs if m["topic"].endswith("node/manifest")]
+    assert manifests[-1]["etag"] == manifests[-3]["etag"] != manifests[-2]["etag"]
+
+
+def test_a_sleeping_or_offline_devices_retained_conflict_report_is_not_shown():
+    f = Feeder().case("cluster")
+    m = json.loads(next(d for d in node_awake() if d["topic"].endswith("/manifest"))["payload"])
+    m["problems"] = [{"item": "kline", "code": "gate_conflict"}, {"item": "x"}, "bad"]
+    f.msg("node/manifest", m)
+    v = f.view()
+    assert device(v, "node")["problems"] == [{"item": "kline", "code": "gate_conflict"}]
+    assert role(v, "gate", "kline-diag")["conflict"]
+    f.msg("node/status", "offline")
+    v = f.view()
+    assert not role(v, "gate", "kline-diag")["conflict"]
+    assert not any(a.get("by") == "manifest" for a in v["alerts"])
+    # an item without a bus: every bus the device transmits on
+    assert cl.reported_gate_conflicts({"items": [{"id": "k"}], "transmit": [{"bus_id": "kline-a"}],
+                                       "problems": [{"item": "k", "code": "gate_conflict"}]}) == [
+        "kline-a"]
 
 
 def test_the_kline_item_starts_unverified():

@@ -1713,8 +1713,8 @@ components:
         state: {type: string, description: "off | asleep | waking | awake | held | shutting_down (ADR-0040 §1)"}
         since: {type: [string, "null"], description: "RFC 3339 UTC when the state began; null until the node's clock is set."}
         since_us: {type: integer, description: "The node's monotonic clock when the state began."}
-        class: {type: string}
-        wake_paths: {type: array}
+        class: {type: string, description: "The parked reachability class (always | wakeable | check_in | none), the same as the manifest's `power.class` in every state."}
+        wake_paths: {type: array, description: "The parked wake paths, the same as the manifest's."}
         next_checkin: {type: [string, "null"]}
         leases: {type: array}
         est_ma: {type: [number, "null"]}
@@ -1827,11 +1827,22 @@ components:
         links: {type: array, items: {type: object, additionalProperties: true}, description: "How the device is reached (USB, T1S segment, Ethernet, Wi-Fi, BLE): `{kind, via?, segment?}`; the node sends `[{kind: wifi}]`."}
         power:
           type: object
+          description: "The device's parked reachability class and wake paths (ADR-0040 §1); every `power` record it publishes carries the same `class` and `wake_paths`, whatever its `state` (sensor-detection amendment of 2026-10-06)."
           properties:
             class: {type: string, enum: [always, wakeable, check_in, none]}
             wake_paths: {type: array, items: {type: string}}
             parked_ma: {type: number, description: "Optional; the node does not send it yet."}
           additionalProperties: true
+        problems:
+          type: array
+          description: "Absent when there is none (so the `etag` returns to its earlier value when a problem clears)."
+          items:
+            type: object
+            required: [item, code]
+            properties:
+              item: {type: string, description: The item's `id`.}
+              code: {type: string, description: "`gate_conflict` (on the item that holds a transmit gate): another device claims the gate of the same bus (ADR-0037 §5), so this device transmits nothing on it until every other claim is released; others as sensor-detection §7."}
+            additionalProperties: true
         actions:
           type: array
           items:
@@ -1913,6 +1924,10 @@ components:
         transmit: {type: array, items: {type: object, additionalProperties: true}}
         memory: {type: [object, "null"], additionalProperties: true}
         items: {type: array, items: {type: object, additionalProperties: true}}
+        problems:
+          type: array
+          description: "The manifest's `problems` (`{item, code}`; sensor-detection §7), e.g. `gate_conflict`: another device claims this device's transmit gate, so it transmits nothing on that bus."
+          items: {type: object, additionalProperties: true}
         claims: {type: array, items: {$ref: "#/components/schemas/ClusterClaim"}}
       additionalProperties: true
     ClusterRole:
@@ -1927,7 +1942,7 @@ components:
         term: {type: [integer, "null"]}
         since: {type: [string, "null"]}
         reason: {type: [string, "null"]}
-        conflict: {type: boolean, description: "Two live gate claims on one bus: both refuse to transmit (ADR-0037 §5)."}
+        conflict: {type: boolean, description: "Two live gate claims on one bus, or a device on it reports `gate_conflict` in its manifest: they refuse to transmit and the bus has no holder (ADR-0037 §5)."}
         no_holder: {type: boolean}
         hands_over: {type: boolean, description: "false for the transmit gate (tied to the wiring)."}
         candidates:
@@ -1989,9 +2004,14 @@ components:
             required: [code, message]
             properties:
               code: {type: string, enum: [gate_conflict, void_claim]}
+              by:
+                type: string
+                enum: [claims, manifest]
+                description: "`gate_conflict` only: `claims` when two live gate claims meet on one bus (ADR-0037 §5); `manifest` when a device reports `gate_conflict` in its manifest's `problems` (it saw another claim on its gate, void ones included, and transmits nothing on that bus)."
               role: {type: string}
               scope: {type: [string, "null"]}
               devices: {type: array, items: {type: string}}
+              claimants: {type: array, items: {type: string}, description: "`by: manifest`: the other devices with a claim (void or not) on that gate."}
               flags: {type: array, items: {type: string}}
               message: {type: string}
             additionalProperties: true
@@ -2670,6 +2690,9 @@ components:
         lost: {type: integer}
         overflow: {type: integer}
         time_marks: {type: integer, description: "The node's `time` events stored (raw-tap §2.4): with at least one the pcapng export stamps UTC; none keeps the node's clock since boot."}
+        refused: {type: integer, description: "Batches refused whole for another MQTT 5 content type than `application/vnd.ostler.tap.v1` (module-bus spec §8); their records read as a gap."}
+        unlabelled: {type: integer, description: "Batches without a content type or a readable `first_seq` (a node from before the firmware set them), read as v1 by their records."}
+        first_seq_mismatch: {type: integer, description: "Batches whose `first_seq` disagreed with their first record's `seq` (logged; the records' `seq` is kept)."}
         brain_scrubbed: {type: integer}
         brain_dropped: {type: integer}
       additionalProperties: true
