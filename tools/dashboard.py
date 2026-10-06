@@ -94,7 +94,9 @@ def main() -> int:
     ap.add_argument("--serial", help="serial port of the K-line cable (omit → auto-detect)")
     ap.add_argument("--mqtt", metavar="URL",
                     help="--source node: the broker, mqtts://host[:8883] (the Brain's broker, "
-                         "or the node's in the lab); there is no default address")
+                         "or the node's in the lab); there is no default address. With "
+                         "--source serial: check this broker first and refuse to start when "
+                         "a node on the vehicle holds the K-line transmit gate")
     ap.add_argument("--mqtt-ca", help="--source node: the CA certificate (PEM) of the broker")
     ap.add_argument("--mqtt-cert", help="--source node: this Brain's client certificate (PEM)")
     ap.add_argument("--mqtt-key", help="--source node: the client certificate's key (PEM)")
@@ -212,6 +214,26 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
         print(f"GPS: unavailable for {gps_spec!r} ({type(exc).__name__}: {exc}) — continuing without")
     feed = None
+    if args.source == "serial" and args.mqtt:
+        # Owner answer 7 (NodeSource spec §14): a cable never starts beside a node that
+        # holds, or is wired to, the K-line gate (one tester on a shared K-line; the node's
+        # gate is the only path to the car). Asked for and not checkable → refuse too.
+        from openostler.logbook.vehicle import local_vid, state_dir_for
+        from openostler.web.node_source import check_serial_beside_node
+        vid = args.vid or local_vid(state_dir_for(args.sessions_dir or
+                                                  os.path.join(_repo, "logs", "sessions")))
+        try:
+            refusal = check_serial_beside_node(
+                args.mqtt, vid, ca=args.mqtt_ca, cert=args.mqtt_cert, key=args.mqtt_key,
+                insecure_lab=args.mqtt_insecure_lab, client_id=args.mqtt_client_id,
+                log=lambda msg: None)
+        except (ValueError, OSError) as exc:
+            ap.error(f"--mqtt: cannot check for a node holding the K-line gate ({exc}); "
+                     "the serial source does not start unchecked")
+        if refusal:
+            ap.error(f"the serial source refuses to start: {refusal}")
+        print(f"K-line gate check: no node holds the K-line gate on vehicle {vid} "
+              f"({args.mqtt})")
     if args.source == "node":
         from openostler.logbook.vehicle import local_vid, state_dir_for
         from openostler.web.node_source import build_feed, node_sources

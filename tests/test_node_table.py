@@ -64,12 +64,15 @@ def test_vin_shaped_vid_is_refused():
             check_vid(bad)
 
 
-def test_the_p1_subscription_set_is_read_only():
+def test_the_subscription_set_is_read_only():
     subs = subscriptions(VID)
     assert subs == [(f"ostler/v1/{VID}/+/status", 1), (f"ostler/v1/{VID}/+/power", 1),
-                    (f"ostler/v1/{VID}/+/vss/+", 0)]
+                    (f"ostler/v1/{VID}/+/vss/+", 0), (f"ostler/v1/{VID}/+/manifest", 1),
+                    (f"ostler/v1/{VID}/+/role/#", 1)]
     for f, _ in subs:
-        assert "#" not in f and "/lab/" not in f and "/act/" not in f and "/tap/" not in f
+        # ``#`` only under ``role/`` (spec §4), never on the vehicle; no request topic
+        assert "#" not in f.removesuffix("/role/#")
+        assert "/lab/" not in f and "/act/" not in f and "/tap/" not in f and "/wake/" not in f
 
 
 def test_parse_topic_and_payloads():

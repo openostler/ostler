@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ostler.tech/schemas/session-meta.schema.json",
   "title": "Logbook session meta",
-  "description": "meta.json of one recorded session (<logs>/sessions/<id>/meta.json), written atomically by openostler.logbook.recorder (ADR-0009, ADR-0010, ADR-0011, U0). Timestamps are RFC 3339 in UTC with a Z suffix. Sessions recorded before U0 carry no vid; the store reads them as the local vid and never rewrites them. note_count is computed on read and is not stored. Sessions recorded from a node (source node; NodeSource spec §7) add devices, pack, tap and end_reason.",
+  "description": "meta.json of one recorded session (<logs>/sessions/<id>/meta.json), written atomically by openostler.logbook.recorder (ADR-0009, ADR-0010, ADR-0011, U0). Timestamps are RFC 3339 in UTC with a Z suffix. Sessions recorded before U0 carry no vid; the store reads them as the local vid and never rewrites them. note_count is computed on read and is not stored. Sessions recorded from a node (source node; NodeSource spec §7) add devices, device_info, pack, tap and end_reason.",
   "type": "object",
   "required": ["id", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules", "channels",
                "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos", "end_pos",
@@ -38,6 +38,15 @@
     "recording": { "type": "boolean" },
     "source": { "type": "string", "description": "live, node (recorded from a node's MQTT messages), demo, or a legacy mock." },
     "devices": { "type": "array", "items": { "type": "string" }, "description": "A node session: the device ids seen under the vehicle id." },
+    "device_info": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["fw", "etag"],
+        "properties": { "fw": { "type": ["string", "null"] }, "etag": { "type": ["string", "null"] } }
+      },
+      "description": "A node session: each device's firmware version and capability-manifest etag, from its retained manifest (the latest seen; every change is a node_manifest event). Devices with no manifest are absent."
+    },
     "pack": {
       "oneOf": [
         {

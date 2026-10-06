@@ -33,9 +33,11 @@ info:
     off, Retain Handling 0, clean start, session expiry 0) and turns them into the snapshot
     (NodeSource spec §4, §6). While a session records, a second connection (client id
     `<id>-tap`, session expiry 60 s) subscribes to the raw tap, `tap/<session>/meta` and
-    `tap/<session>/data` (P2; never `tap/ctl`), and unsubscribes when the session ends. The
-    module-bus message spec will own these schemas; they move there when it lands.
-    Manifest, role, wake and request channels arrive with their phases (P3, P4).
+    `tap/<session>/data` (P2; never `tap/ctl`), and unsubscribes when the session ends. P3
+    adds each device's retained capability `manifest` and its role claims
+    `role/<role>[/<scope>]` (ADR-0037 §3), read-only, for `GET /cluster`. The module-bus
+    message spec will own these schemas; they move there when it lands. Wake and request
+    channels arrive with P4.
 
     **Coming:** the outbound MQTT exports at U5 (standards research §2 and §8.2).
   license:
@@ -83,7 +85,8 @@ channels:
     title: Node liveness
     description: >
       Retained, QoS 1, plain text (not JSON): `online` on connect; the node's will sets
-      `offline` when its connection drops without a normal DISCONNECT (keep-alive 10 s).
+      `offline` when its connection drops without a normal DISCONNECT (keep-alive 10 s);
+      `asleep` before a clean sleep (ADR-0037 Amendment 8, ADR-0040 §1).
     servers:
       - $ref: "#/servers/brain-broker"
     parameters:
@@ -121,6 +124,58 @@ channels:
     messages:
       value:
         $ref: "#/components/messages/nodeVss"
+
+  nodeManifest:
+    address: "ostler/v1/{vid}/{device}/manifest"
+    title: Device capability manifest
+    description: >
+      Retained, QoS 1, JSON: the device's capability manifest (UI spec §5.1 device entry;
+      `ostler-firmware` `docs/specs/sensor-detection.md` §7), republished with a new `etag`
+      whenever it changes; an empty retained payload clears it. Topic name pending the
+      module-bus message spec (NodeSource spec §4). The node firmware does not publish it
+      yet.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      manifest:
+        $ref: "#/components/messages/nodeManifest"
+  nodeRole:
+    address: "ostler/v1/{vid}/{device}/role/{role}"
+    title: Role claim (vehicle-scoped roles)
+    description: >
+      Retained, QoS 1, JSON (ADR-0037 §3): the device's claim on a single-holder role
+      (`pbroker`, `time`, `uplink`); an empty retained payload releases it. Only that
+      device may publish here (per-device ACL, ADR-0026). The node firmware does not
+      publish claims yet.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      role: {$ref: "#/components/parameters/role"}
+    messages:
+      claim:
+        $ref: "#/components/messages/nodeRoleClaim"
+  nodeRoleScoped:
+    address: "ostler/v1/{vid}/{device}/role/{role}/{scope}"
+    title: Role claim (scoped roles)
+    description: >
+      As `nodeRole`, for roles with a scope: `gate/<bus_id>` (never hands over; ADR-0037
+      §2) and `plca/<segment>`.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      role: {$ref: "#/components/parameters/role"}
+      scope:
+        description: The role's scope (a bus id for `gate`, a T1S segment for `plca`).
+    messages:
+      claim:
+        $ref: "#/components/messages/nodeRoleClaim"
 
   nodeTapMeta:
     address: "ostler/v1/{vid}/{device}/tap/{session}/meta"
@@ -187,6 +242,36 @@ operations:
     bindings:
       mqtt: {qos: 0}
     x-ostler-consumer: brain
+  receiveNodeManifest:
+    action: receive
+    title: The Brain receives capability manifests
+    channel:
+      $ref: "#/channels/nodeManifest"
+    messages:
+      - $ref: "#/channels/nodeManifest/messages/manifest"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodeRole:
+    action: receive
+    title: The Brain receives role claims
+    channel:
+      $ref: "#/channels/nodeRole"
+    messages:
+      - $ref: "#/channels/nodeRole/messages/claim"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodeRoleScoped:
+    action: receive
+    title: The Brain receives scoped role claims (gate, PLCA)
+    channel:
+      $ref: "#/channels/nodeRoleScoped"
+    messages:
+      - $ref: "#/channels/nodeRoleScoped/messages/claim"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
   receiveNodeTapMeta:
     action: receive
     title: The Brain receives raw-tap headers (while a session records)
@@ -228,6 +313,8 @@ components:
       description: The publishing device's id (its node config `node.name`).
     tapSession:
       description: The node's tap session id (a ULID).
+    role:
+      description: "A single-holder role: gate, pbroker, time, plca or uplink (ADR-0037 §2)."
   messages:
     nodeStatus:
       name: nodeStatus
@@ -235,7 +322,7 @@ components:
       contentType: text/plain
       payload:
         type: string
-        enum: [online, offline]
+        enum: [online, offline, asleep]
     nodePower:
       name: nodePower
       title: Node power record
@@ -269,6 +356,31 @@ components:
         - name: rpm
           payload: {value: 780, unit: rpm, ts: "2026-10-06T10:00:00.000Z", t_us: 2490181, boot: 7,
                     source: "kline-diag/td5/21 09", name: rpm, c: proven, raw: 780}
+
+    nodeManifest:
+      name: nodeManifest
+      title: Capability manifest
+      contentType: application/json
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/NodeManifest"
+      examples:
+        - name: diag-node
+          payload: {schema: 1, id: node, kind: node, variant: diag-port, board: esp32-s3-devkitc,
+                    fw: "0.1.0", etag: "9f2c…", priority: 10, memory: {psram_kb: 8192},
+                    roles: [{role: pbroker, max_clients: 5}, {role: time}],
+                    transmit: [{bus_id: kline-diag}],
+                    power: {class: always, wake_paths: [ignition, door], parked_ma: 5},
+                    items: [{id: kline, kind: kline, origin: board, status: ok}]}
+    nodeRoleClaim:
+      name: nodeRoleClaim
+      title: Role claim
+      contentType: application/json
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/RoleClaim"
+      examples:
+        - name: gate
+          payload: {role: gate, scope: kline-diag, term: 1, priority: 10,
+                    since: "2026-10-06T10:00:01.000Z", reason: wired}
 
     nodeTapMeta:
       name: nodeTapMeta

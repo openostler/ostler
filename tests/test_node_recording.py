@@ -219,7 +219,7 @@ def test_a_cable_session_meta_is_unchanged(rec):
     rec.close()
     meta = meta_of(rec, sid)
     assert meta["source"] == "live"
-    assert not {"devices", "pack", "tap", "end_reason"} & set(meta)
+    assert not {"devices", "device_info", "pack", "tap", "end_reason"} & set(meta)
     assert rows_of(rec, sid)[1][0]["alpha_speed"] == 9
 
 
@@ -461,7 +461,8 @@ def test_a_short_brain_hiccup_loses_no_tap_batch(rr):
 
 def test_the_spec_acl_covers_the_tap_and_refuses_tap_ctl(tmp_path):
     acl = {"t-nodesource": {"read": [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
-                                     f"ostler/v1/{VID}/+/vss/+"], "write": []},
+                                     f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
+                                     f"ostler/v1/{VID}/+/role/#"], "write": []},
            "t-nodesource-tap": {"read": [f"ostler/v1/{VID}/+/tap/+/meta",
                                          f"ostler/v1/{VID}/+/tap/+/data"], "write": []},
            "node": {"read": [], "write": [f"ostler/v1/{VID}/node/#", "sync/x"]}}

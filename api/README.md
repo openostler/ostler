@@ -6,7 +6,7 @@ adopted by [ADR-0017](../decisions/adr-0017-open-standards-first.md):
 | File | Standard | What it covers |
 |---|---|---|
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3.1.1 (schemas are JSON Schema 2020-12) | Every HTTP route: parameters, request bodies, response schemas, errors, admin gating and public-mode behaviour |
-| [`asyncapi.yaml`](asyncapi.yaml) | AsyncAPI 3.0 | The `GET /events` Server-Sent Events stream, and the node's MQTT 5 channels the Brain consumes (`status`, `power`, `vss`; NodeSource). The outbound MQTT exports arrive with U5 |
+| [`asyncapi.yaml`](asyncapi.yaml) | AsyncAPI 3.0 | The `GET /events` Server-Sent Events stream, and the node's MQTT 5 channels the Brain consumes (`status`, `power`, `vss`, the raw `tap`, `manifest` and `role` claims; NodeSource). The outbound MQTT exports arrive with U5 |
 
 The UI's Zod schemas (`ui/src/api/schemas.ts`) remain what the browser checks at runtime.
 These files describe the same contract for everyone else (integrations, tooling, reviews),

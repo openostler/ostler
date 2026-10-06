@@ -25,6 +25,13 @@ Honesty rules carried here:
 Keys are ``(device, leaf, source)``: two modules of one node publishing the same VSS path
 (the Discovery 2 battery voltage from the Td5 and from SLABS) share one retained topic,
 and keeping the source in the key stops one module's live value replacing the other's.
+
+**The cluster (P3).** Each device's retained capability ``manifest`` and role claims
+(``role/<role>[/<scope>]``, ADR-0037 §3) are kept beside its ``status`` and ``power``;
+:meth:`DeviceTable.cluster` builds the ``GET /cluster`` view (:mod:`.cluster`). A handover
+is a change of holder (by the cluster rules, so void claims never hold) caused by a live
+``status``, ``power``, ``manifest`` or claim message; the retained copies a subscribe
+delivers never record one, so a reconnect never invents one.
 """
 from __future__ import annotations
 
@@ -33,7 +40,9 @@ import threading
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from .messages import POWER, STATUS, VSS, VssValue, parse_power, parse_status, parse_topic, parse_vss
+from . import cluster as _cluster
+from .messages import (MANIFEST, POWER, ROLE, STATUS, VSS, VssValue, parse_claim, parse_manifest,
+                       parse_power, parse_role_rest, parse_status, parse_topic, parse_vss)
 from .select import select
 
 STALE_FLOOR_S = 2.0
@@ -117,6 +126,9 @@ class Device:
     last_live_wall: "float | None" = None        # Brain wall time of the latest live message
     last_any_rx: "float | None" = None
     readings: "dict[tuple[str, str], Reading]" = field(default_factory=dict)
+    manifest: "dict | None" = None
+    manifest_wall: "float | None" = None          # Brain wall time the manifest arrived
+    claims: "dict[tuple[str, str | None], dict]" = field(default_factory=dict)
 
 
 class DeviceTable:
@@ -134,7 +146,9 @@ class DeviceTable:
         self._lock = threading.Lock()
         self._devices: "dict[str, Device]" = {}
         self._once: "set[str]" = set()
-        self.ignored = 0  # messages on topics P1 does not read (tap, manifest …)
+        # (role, scope) → the last holder change seen live: {from, to, term, at_utc, reason}
+        self._handovers: "dict[tuple[str, str | None], dict]" = {}
+        self.ignored = 0  # messages on topics the table does not read (tap …)
 
     # ---- reporting ---------------------------------------------------------------- #
     def _note(self, key: str, msg: str) -> None:
@@ -146,14 +160,29 @@ class DeviceTable:
         with self._lock:
             return sorted(self._devices)
 
+    def cluster(self) -> dict:
+        """The cluster view (spec §11): ``{devices, roles, alerts}``; see :mod:`.cluster`."""
+        with self._lock:
+            return _cluster_view(self)
+
+    def device_info(self) -> "dict[str, dict]":
+        """``{device: {fw, etag}}`` for every device with a manifest (session meta, §7)."""
+        with self._lock:
+            return {d.id: {"fw": d.manifest.get("fw"), "etag": d.manifest.get("etag")}
+                    for d in sorted(self._devices.values(), key=lambda d: d.id)
+                    if d.manifest is not None}
+
     def forget_liveness(self) -> None:
-        """A (re)connect to the broker: drop every device's ``status`` and ``power`` (the
-        broker re-sends the retained ones) and the node-clock anchors; readings stay, aged
+        """A (re)connect to the broker: drop every device's ``status``, ``power``,
+        ``manifest`` and role claims (the broker re-sends the retained ones; a claim
+        released meanwhile must not linger) and the node-clock anchors; readings stay, aged
         by their ``ts`` until live messages arrive."""
         with self._lock:
             for dev in self._devices.values():
                 dev.status = dev.power = None
                 dev.anchor = None
+                dev.manifest = dev.manifest_wall = None
+                dev.claims = {}
 
     # ---- ingest (MQTT reader thread) ------------------------------------------------ #
     def ingest(self, topic: str, payload: bytes, retain: bool, now: float,
@@ -166,7 +195,7 @@ class DeviceTable:
             return False
         with self._lock:
             dev = self._devices.get(t.device)
-            if t.kind not in (STATUS, POWER, VSS):
+            if t.kind not in (STATUS, POWER, VSS, MANIFEST, ROLE):
                 self.ignored += 1
                 return False
             if dev is None:
@@ -174,27 +203,86 @@ class DeviceTable:
             dev.last_any_rx = now
             if not retain:
                 dev.last_live_wall = wall
-            if t.kind == STATUS:
-                st = parse_status(payload)
-                if st is None:
-                    self._note(f"status:{t.device}", f"{t.device}: unreadable status payload")
-                    return False
-                dev.status = st
-                return True
-            if t.kind == POWER:
-                pw = parse_power(payload)
-                if pw is None:
-                    self._note(f"power:{t.device}", f"{t.device}: unreadable power record")
-                    return False
-                since_us = pw.get("since_us")
-                if (isinstance(since_us, int) and dev.since_us is not None
-                        and since_us < dev.since_us and not retain):
-                    self._reboot(dev, "power.since_us went backwards")
-                if isinstance(since_us, int):
-                    dev.since_us = since_us
-                dev.power = pw
-                return True
-            return self._ingest_vss(dev, t.rest, payload, retain, now)
+            if t.kind == VSS:
+                return self._ingest_vss(dev, t.rest, payload, retain, now)
+            # Role holders can change with a status, power, manifest or claim message; a
+            # live one that changes a holder is a handover (stored copies never are).
+            before = None if retain else self._holders()
+            used, why = self._ingest_state(dev, t, payload, retain, wall)
+            if used and before is not None:
+                self._track(before, why, wall)
+            return used
+
+    def _ingest_state(self, dev: Device, t, payload: bytes, retain: bool,
+                      wall: float) -> "tuple[bool, str | None]":
+        """A ``status``, ``power``, ``manifest`` or ``role`` message: ``(used, why)``,
+        ``why`` naming what a handover it causes is due to."""
+        if t.kind == STATUS:
+            st = parse_status(payload)
+            if st is None:
+                self._note(f"status:{t.device}", f"{t.device}: unreadable status payload")
+                return False, None
+            dev.status = st
+            return True, f"{dev.id} {st}"
+        if t.kind == POWER:
+            pw = parse_power(payload)
+            if pw is None:
+                self._note(f"power:{t.device}", f"{t.device}: unreadable power record")
+                return False, None
+            since_us = pw.get("since_us")
+            if (isinstance(since_us, int) and dev.since_us is not None
+                    and since_us < dev.since_us and not retain):
+                self._reboot(dev, "power.since_us went backwards")
+            if isinstance(since_us, int):
+                dev.since_us = since_us
+            dev.power = pw
+            return True, f"{dev.id} {pw['state']}"
+        if t.kind == MANIFEST:
+            return self._ingest_manifest(dev, payload, wall), f"{dev.id} manifest changed"
+        return self._ingest_claim(dev, t.rest, payload)
+
+    def _holders(self) -> "dict[tuple[str, str | None], tuple[str, int] | None]":
+        """Every role's holder now by the cluster rules (void claims never hold)."""
+        return {(r["role"], r["scope"]): ((r["holder"], r["term"]) if r["holder"] else None)
+                for r in _cluster_view(self)["roles"]}
+
+    def _track(self, before: dict, why: "str | None", wall: float) -> None:
+        after = self._holders()
+        for key in sorted(set(before) | set(after), key=lambda k: (k[0], k[1] or "")):
+            b, a = before.get(key), after.get(key)
+            if (b and b[0]) != (a and a[0]):
+                self._handovers[key] = {"from": b[0] if b else None, "to": a[0] if a else None,
+                                        "term": a[1] if a else None, "at_utc": utc(wall),
+                                        "reason": why}
+
+    def _ingest_manifest(self, dev: Device, payload: bytes, wall: float) -> bool:
+        if not payload:  # a cleared retained manifest (the device was removed)
+            dev.manifest = dev.manifest_wall = None
+            return True
+        m = parse_manifest(payload)
+        if m is None:
+            self._note(f"manifest:{dev.id}", f"{dev.id}: unreadable manifest (not a JSON object)")
+            return False
+        if isinstance(m.get("id"), str) and m["id"] != dev.id:
+            self._note(f"manifest-id:{dev.id}", f"{dev.id}: its manifest names device "
+                                                f"{m['id']!r}; the topic's id is used")
+        dev.manifest, dev.manifest_wall = m, wall
+        return True
+
+    def _ingest_claim(self, dev: Device, rest: str, payload: bytes) -> "tuple[bool, str | None]":
+        rs = parse_role_rest(rest)
+        if rs is None or rs[0] not in _cluster.ROLES:
+            self._note(f"role:{dev.id}/{rest}", f"{dev.id}: unknown role topic role/{rest}, ignored")
+            return False, None
+        claim = parse_claim(payload)
+        if claim is None:
+            self._note(f"claim:{dev.id}/{rest}", f"{dev.id}: unreadable role claim role/{rest}")
+            return False, None
+        if claim:
+            dev.claims[rs] = claim
+            return True, claim.get("reason") or f"{dev.id} claimed"
+        dev.claims.pop(rs, None)  # released (ADR-0037 §3: the retained claim is cleared)
+        return True, f"{dev.id} released"
 
     def _reboot(self, dev: Device, why: str) -> None:
         dev.epoch += 1
@@ -343,18 +431,47 @@ class DeviceTable:
             if serving:
                 dev_id = max(sorted(serving), key=lambda d: serving[d])
             else:
-                with_status = sorted(d for d, dv in self._devices.items()
-                                     if dv.status is not None or dv.power is not None)
-                dev_id = with_status[0] if with_status else None
+                # No device reads this module: the node that would, by its manifest (a
+                # Diagnostics node, or a device with no manifest yet, like the v0 node),
+                # before a guardian, an add-on or the brain (P3; P1 took the lowest id).
+                with_status = sorted(
+                    (_SERVE_RANK.get(_cluster.device_class(dv.manifest), 3), d)
+                    for d, dv in self._devices.items()
+                    if dv.status is not None or dv.power is not None)
+                dev_id = with_status[0][1] if with_status else None
             dev = self._devices.get(dev_id) if dev_id else None
             device = None
             if dev is not None:
                 device = {"device": dev.id, "status": dev.status,
                           "power": dict(dev.power) if dev.power else None,
                           "boot": dev.boot,
-                          "last_seen_utc": utc(dev.last_live_wall) if dev.last_live_wall else None}
+                          "last_seen_utc": utc(dev.last_live_wall) if dev.last_live_wall else None,
+                          "fw": (dev.manifest or {}).get("fw"),
+                          "etag": (dev.manifest or {}).get("etag")}
             return {"signals": signals, "vss": vss, "device": device,
                     "devices": sorted(self._devices)}
+
+
+_SERVE_RANK = {"node": 0, None: 1, "guardian": 2, "module": 3, "brain": 4}
+
+
+def _cluster_view(table: "DeviceTable") -> dict:
+    """``{devices, roles, alerts}`` from the table (its lock held by the caller)."""
+    buses: "set[str]" = set()
+    recs = []
+    for dev in table._devices.values():
+        for r in dev.readings.values():
+            bus = r.val.source.split("/", 1)[0] if r.val.source else ""
+            if bus and "/" in r.val.source:
+                buses.add(bus)
+        recs.append({"id": dev.id, "status": dev.status,
+                     "power": dict(dev.power) if dev.power else None,
+                     "last_seen_utc": utc(dev.last_live_wall) if dev.last_live_wall else None,
+                     "manifest": dev.manifest,
+                     "manifest_utc": utc(dev.manifest_wall) if dev.manifest_wall else None,
+                     "claims": {k: dict(v) for k, v in dev.claims.items()}})
+    return _cluster.build(recs, handovers={k: dict(v) for k, v in table._handovers.items()},
+                          buses=sorted(buses))
 
 
 def _rank(sig: dict, device: str):

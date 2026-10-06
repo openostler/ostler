@@ -161,12 +161,13 @@ def _kline_snapshot(_base):
 
 def _node_snapshot(_base):
     """A snapshot from NodeSource: a simulated node replays the firmware's SLABS fixture
-    through the fake broker (NodeSource spec §13, P1)."""
+    through the fake broker (NodeSource spec §13, P1), with its hand-written capability
+    manifest (P3: ``node.fw``, ``node.etag``, ``device_info``)."""
     from openostler.metrics import is_known
     from openostler.pack import active_pack
     from openostler.web.node_source import NodeFeed, node_sources, store_lookup
     from tests.fake_broker import FakeBroker
-    from tests.fake_node import VID, FakeNode, case, load
+    from tests.fake_node import VID, FakeNode, case, cluster_messages, load
 
     pack = active_pack()
     msgs = [m for m in load("slabs-vectors.jsonl") if "/vss/" in m["topic"]]
@@ -174,6 +175,7 @@ def _node_snapshot(_base):
         node = FakeNode(broker.host, broker.port).connect()
         for m in msgs:
             node.send(m)  # stored before the Brain subscribes
+        node.send(next(m for m in cluster_messages() if m["topic"].endswith("/node/manifest")))
         node.send(case("awake"))  # QoS 1: its PUBACK means the broker has stored them all
         feed = NodeFeed(VID, broker.host, broker.port, client_id="contract-nodesource",
                         pack_id=pack.id, lookup=store_lookup(), canonical=pack.canonical,

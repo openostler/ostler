@@ -2,17 +2,17 @@
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4, the P3 backend (manifest and role claims, GET /cluster, the serial source's refusal beside a gate-holding node) in v0.5; the Network page UI waits for U1. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
 # NodeSource — the Brain ingests node data over MQTT — design
 
 **Status:** approved v0.2 (owner, 2026-10-06; answers in §15); v0.3: P1 built, v0.4: P2
-built (§16). Build in phases P1–P4. It applies
+built, v0.5: the P3 backend built, its UI after U1 (§16). Build in phases P1–P4. It applies
 [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) §3 ("the brain consumes the
 node's VSS messages over IP") to the platform's server, and changes no ADR. Where it needs a
 decision it lists it in §15.
@@ -474,6 +474,77 @@ The owner took the recommendations on every question.
 - **Not in P2, in `TODO.md`:** UTC for tap timestamps from `time` events, parked periods
   and alarm events from the node, and the firmware and manifest `etag` in the meta (P3).
 
+### P3 (v0.5): backend only
+
+- **Code.** `node/cluster.py` (pure: device classes, declaration and eligibility, void
+  claims, holders, candidates, alerts, `kline_gate_holders`, `serial_refusal`);
+  `node/messages.py` gains `parse_manifest`, `parse_role_rest`, `parse_claim`, the
+  `asleep` status and the `manifest` and `role/#` subscriptions (QoS 1, same connection
+  and options as P1); `DeviceTable` keeps each device's manifest and claims,
+  `DeviceTable.cluster()` and `device_info()`; `NodeFeed.cluster()`, `probe_cluster`,
+  `check_serial_beside_node`; `GET /cluster` (`DiagServer.cluster`); `tools/dashboard.py
+  --serial … --mqtt URL`; `tests/fixtures/node/cluster.jsonl` (hand-written);
+  `tests/e2e_server.py --node` serves a cluster around the simulated node.
+- **§11 the view.** Devices: `id, kind, variant, class, model, board, fw, etag,
+  manifest_utc, links, status, power` (the whole record), `last_seen_utc, since` (=
+  `power.since`), `roles_declared, transmit, memory, items, claims`; the same row is the
+  peer view's (app-model §12.2). Roles: one row per `(role, scope)` for the vehicle roles
+  (`pbroker`, `time`, `uplink`, always listed once a device is seen), every declared or
+  claimed scope, and a gate row for every bus a reading came from (a source tag's
+  `bus_id`), so a bus read without a gate reads "No gate for this bus". Each row:
+  `holder, term, since, reason, conflict, no_holder, hands_over, candidates, claims,
+  last_handover`. `stale` while the broker is not connected (last known, never emptied);
+  `as_of_utc` is the last message's arrival. With a cable source the lists are empty and
+  `note` says why. Refused in public mode (403).
+- **Void claims and holders.** Void, with every reason in `flags`: `offline`, `asleep`
+  (status, or a power state `asleep`, `off` or `shutting_down`), `no_manifest`,
+  `not_declared` (the role is not in the manifest's `roles`, or a gate's bus not in its
+  `transmit`), `not_eligible` (ADR-0037 §2 orders: the brain is never a parked-broker or
+  PLCA candidate, a guardian or module never the uplink manager, a module never PLCA; an
+  add-on module holds the parked broker only with `power.class: always`, `memory.psram_kb`
+  ≥ 2048 and `max_clients` 1–5, Amendment 14), `mismatch` (the payload names another role
+  or scope). The holder is the live claim with the higher term, then the higher priority,
+  then the lowest device id; the others are `superseded`. Two live gate claims on one bus:
+  both `conflict`, no holder, a `gate_conflict` alert. Candidates: devices declaring the
+  role and eligible, in the role's order (parked broker node → guardian → module; PLCA
+  node → guardian; uplink brain → node), then the owner's priority (the role entry's, else
+  the manifest's `priority`), then the id.
+- **§15 answer 7.** `kline_gate_holders`: a device that claims a gate on a bus whose id
+  starts with `kline` (void or not: a claim says it is wired there), or whose manifest
+  declares `transmit` on one (the gate is the wiring and never hands over, so a node that
+  slept and released its claims still counts). `--source serial` with `--mqtt` reads the
+  vehicle's retained messages once (client id `<id>-check`, so a running NodeSource is
+  never taken over; it waits for the SUBACK and 0.3 s of quiet, at most 2 s) and refuses
+  to start when any is found; it also refuses when it cannot check (fails closed).
+  Without `--mqtt` there is nothing to check; P1's refusal of `--serial` with `--source
+  node` stays.
+- **§7 meta.** `meta.json` `device_info: {device: {fw, etag}}` (latest seen) for node
+  sessions; each first sight and change is a `node_manifest` event. The snapshot gains
+  `device_info` and `node.fw`, `node.etag`.
+- **§8.** No new SSE event (P1–P3). OpenAPI: `/cluster`, `Cluster`, `ClusterDevice`,
+  `ClusterRole`, `ClusterClaim`, `NodeManifest`, `RoleClaim`, `DeviceInfo`; AsyncAPI:
+  `nodeManifest`, `nodeRole` (`role/{role}`) and `nodeRoleScoped` (`role/{role}/{scope}`),
+  `nodeStatus` gains `asleep`. The UI fixture `snapshot-node.json` carries a manifest;
+  no UI code changed (Zod strips the new fields until the Network page, after U1).
+- **Judgement calls.** The owner's order (ADR-0037 §3) is read as the manifest's role
+  list, since the install configuration publishes only the roles the owner ordered; a
+  claim with no manifest yet is void (`no_manifest`) because it cannot be checked. A
+  handover is any change of holder a live `status`, `power`, `manifest` or claim message
+  causes (a stored copy never records one, so a reconnect invents none); for a gate it
+  only says the bus lost or regained its gate. A reconnect forgets manifests and claims
+  until the retained copies return (a claim released meanwhile must not linger). The
+  device class comes from `kind` and `variant` (`node` with `diag-port` or no variant is
+  the Diagnostics node; a guardian is `guardian` by kind or variant; a sensor node and
+  any other device are add-on modules; `brain`). `last_seen_utc` stays live messages only
+  (as P1); `manifest_utc` is the manifest's arrival. With several devices, the snapshot's
+  `node` is the device serving the module, else the Diagnostics node by its manifest (P1
+  took the lowest id, which became the brain). The node's own `status: asleep` makes the
+  snapshot `asleep`, which ends a recorded session as `power.state: asleep` does.
+- **Not in P3, in `TODO.md`:** the Network page UI (after U1); the firmware publishing the
+  manifest, claims and `asleep` (the fixture is hand-written); a running check after the
+  serial source has started; the manifest's `primary`, priority and `rate` in the §6.5
+  selection; the energy ledger and floors (P4 and firmware).
+
 ## Notes on sources
 
 - `ostler-firmware` at f59ac00 (2026-10-06): `firmware/README.md` (topics and payloads),
@@ -501,3 +572,8 @@ The owner took the recommendations on every question.
   a session is open, `.otap` files and `meta.json` `tap`, the Brain-side scrub with the
   install option `OSTLER_RECORD_IDENTITY`, `fmt=pcapng`, read-only replay, the CI
   `broker` job.
+- 2026-10-06 — v0.5: the P3 backend built (§16 P3): `manifest` and `role/#`, the cluster
+  view with void claims, gate conflicts and live handovers, `GET /cluster`, the serial
+  source's refusal beside a node holding the K-line gate (fails closed), `device_info` in
+  node session meta and the snapshot, the `asleep` status; the Network page UI waits for
+  U1 (UI spec §10).
