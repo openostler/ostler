@@ -140,8 +140,10 @@ Clearing is **Maintenance, Tier 1**. Drivers may clear.
 
 - **Local links:** the head unit, the in-car LAN, the node's Wi-Fi AP and BLE to the node.
   **Remote paths:** Tailscale, the Ostler Cloud relay, Home Assistant and MQTT from outside,
-  and device-to-device shares. **Remote paths are read-only** (Read, plus arming, never
-  disarming, the software alarm).
+  and device-to-device shares. **Remote paths are read-only** (Read, plus arming and disarming
+  the software alarm). *Amended 2026-10-06 (owner):* the alarm can be disarmed over the air,
+  by a user or token whose role grants Security; every remote disarm is audited and notified
+  to the owner. Disarming stays Parked-only, which a parked car satisfies.
 - **A phone may approve Tier 2–3** when all hold: it is a **paired device** (ADR-0029,
   ADR-0032 pairing) of a signed-in user whose role grants the category; it is on a **local
   link**; the node gate **re-checks Parked and the preconditions** at execution; the phone
