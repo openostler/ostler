@@ -21,6 +21,7 @@ _CORE = [
     "geo",  # ADR-0011: place names (offline GeoNames + OSM enrichment)
     "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
     "pack.py",  # ADR-0013: the VehiclePack contract
+    "metrics.py",  # ADR-0016: the VSS namespace (stdlib only)
 ]
 _FORBIDDEN = {"web", "apps"}
 _CORE_EXCEPT: "set[str]" = set()

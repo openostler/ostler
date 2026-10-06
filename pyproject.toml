@@ -16,7 +16,14 @@ Homepage = "https://ostler.tech"
 Source = "https://github.com/openostler/ostler"
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+# Dev-only (ADR-0002, ADR-0017): never needed on a Pi. vss-tools (ADR-0016) needs Python
+# >= 3.11, so it is skipped on older interpreters; tools/build_metrics.py and the
+# metrics.json freshness test need it, CI installs it.
+dev = [
+    "pytest>=7",
+    "jsonschema>=4.18",
+    "vss-tools==6.1.0; python_version >= '3.11'",
+]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack
@@ -26,6 +33,7 @@ dev = ["pytest>=7"]
 where = ["src"]
 
 [tool.setuptools.package-data]
+"openostler" = ["metrics.json", "vss_leaves.json"]
 "openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*"]
 "openostler.geo" = ["*.tsv.gz"]
 

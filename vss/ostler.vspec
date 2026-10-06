@@ -1,0 +1,258 @@
+# SPDX-License-Identifier: CC-BY-SA-4.0
+#
+# Ostler overlay over the pinned COVESA VSS release (vss/VERSION, vss/upstream/).
+# ADR-0016: this file is the single source of the alias attributes and of the
+# Vehicle.Ostler.* extension branch. tools/build_metrics.py applies it with vss-tools and
+# writes src/openostler/metrics.json; never hand-edit that file.
+#
+# Extended attributes (all optional, all strings):
+#   ostler_role      the Home role (UI spec §5.4): speed, rpm, coolant, battery, fuel,
+#                    range, consumption, health
+#   ovms             OVMS v3 metric name (main/metrics_standard.h, facts only, MIT)
+#   ha_device_class  Home Assistant device_class
+#   ha_state_class   Home Assistant state_class (measurement, total_increasing)
+#   obdb             OBDb signalset suggestedMetric (OBDb/SAEJ1979, CC BY-SA 4.0)
+#
+# Rules:
+#   - Unit keys are verbatim keys of vss/upstream/units.yaml (tests/test_metrics.py).
+#   - OVMS v.m.* means the electric motor, so no engine node gets a v.m.* alias.
+#   - Fuel is never published as v.b.soc, and no fuel node takes a v.b.* alias.
+#   - An existing node is restated with its own `type` so the overlay names it even when it
+#     carries no alias yet. vss-tools would accept a changed type silently, so
+#     tools/build_metrics.py fails if a restated type differs from the pinned tree.
+#   - The overlay never changes an upstream datatype, unit or description.
+
+# ---- the common set: existing VSS nodes, annotated ---------------------------------- #
+
+Vehicle.Speed:
+  type: sensor
+  ostler_role: speed
+  ovms: v.p.speed
+  ha_device_class: speed
+  ha_state_class: measurement
+  obdb: speed
+
+Vehicle.TraveledDistance:
+  type: sensor
+  ovms: v.p.odometer
+  ha_device_class: distance
+  ha_state_class: total_increasing
+  obdb: odometer
+
+Vehicle.Powertrain.CombustionEngine.Speed:
+  type: sensor
+  ostler_role: rpm
+  ha_state_class: measurement
+
+Vehicle.Powertrain.CombustionEngine.IsRunning:
+  type: sensor
+  ha_device_class: running
+
+Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature:
+  type: sensor
+  ostler_role: coolant
+  ha_device_class: temperature
+  ha_state_class: measurement
+  obdb: engineCoolantTemperature
+
+Vehicle.Powertrain.CombustionEngine.EngineOil.Temperature:
+  type: sensor
+  ha_device_class: temperature
+  ha_state_class: measurement
+  obdb: engineOilTemperature
+
+Vehicle.Powertrain.CombustionEngine.EOP:
+  type: sensor
+  ha_device_class: pressure
+  ha_state_class: measurement
+
+Vehicle.Powertrain.CombustionEngine.MAP:
+  type: sensor
+  ha_device_class: pressure
+  ha_state_class: measurement
+
+Vehicle.Powertrain.CombustionEngine.MAF:
+  type: sensor
+  ha_state_class: measurement
+  obdb: massAirFlow
+
+Vehicle.Powertrain.CombustionEngine.TPS:
+  type: sensor
+  ha_state_class: measurement
+  obdb: throttlePosition
+
+Vehicle.Chassis.Accelerator.PedalPosition:
+  type: sensor
+  ovms: v.e.throttle
+  ha_state_class: measurement
+
+Vehicle.Chassis.Brake.PedalPosition:
+  type: sensor
+  ovms: v.e.footbrake
+  ha_state_class: measurement
+
+Vehicle.Chassis.ParkingBrake.IsEngaged:
+  type: actuator
+  ovms: v.e.handbrake
+
+Vehicle.LowVoltageBattery.CurrentVoltage:
+  type: sensor
+  ostler_role: battery
+  ovms: v.b.12v.voltage
+  ha_device_class: voltage
+  ha_state_class: measurement
+  obdb: starterBatteryVoltage
+
+Vehicle.LowVoltageBattery.CurrentCurrent:
+  type: sensor
+  ovms: v.b.12v.current
+  ha_device_class: current
+  ha_state_class: measurement
+
+# Fuel: no OVMS alias on purpose (OVMS has no fuel names; ICE modules overload v.b.soc).
+Vehicle.Powertrain.FuelSystem.RelativeLevel:
+  type: sensor
+  ostler_role: fuel
+  ha_state_class: measurement
+  obdb: fuelTankLevel
+
+Vehicle.Powertrain.FuelSystem.Range:
+  type: sensor
+  ostler_role: range
+  ha_device_class: distance
+  ha_state_class: measurement
+
+Vehicle.Powertrain.FuelSystem.InstantConsumption:
+  type: sensor
+  ostler_role: consumption
+  ha_state_class: measurement
+
+Vehicle.Powertrain.Transmission.IsLowRangeEngaged:
+  type: actuator
+
+Vehicle.Powertrain.Transmission.CurrentGear:
+  type: sensor
+  ovms: v.e.gear
+
+Vehicle.Powertrain.Transmission.Temperature:
+  type: sensor
+  ha_device_class: temperature
+  ha_state_class: measurement
+
+Vehicle.Exterior.AirTemperature:
+  type: sensor
+  ovms: v.e.temp
+  ha_device_class: temperature
+  ha_state_class: measurement
+
+Vehicle.Cabin.HVAC.AmbientAirTemperature:
+  type: sensor
+  ovms: v.e.cabintemp
+  ha_device_class: temperature
+  ha_state_class: measurement
+
+Vehicle.Body.Lights.Beam.Low.IsOn:
+  type: actuator
+  ovms: v.e.headlights
+  ha_device_class: light
+
+Vehicle.CurrentLocation.Latitude:
+  type: sensor
+  ovms: v.p.latitude
+
+Vehicle.CurrentLocation.Longitude:
+  type: sensor
+  ovms: v.p.longitude
+
+Vehicle.CurrentLocation.Altitude:
+  type: sensor
+  ovms: v.p.altitude
+  ha_state_class: measurement
+
+Vehicle.CurrentLocation.Heading:
+  type: sensor
+  ovms: v.p.direction
+
+Vehicle.Acceleration.Longitudinal:
+  type: sensor
+  ovms: v.p.acceleration
+  ha_state_class: measurement
+
+Vehicle.Acceleration.Lateral:
+  type: sensor
+  ha_state_class: measurement
+
+Vehicle.Acceleration.Vertical:
+  type: sensor
+  ha_state_class: measurement
+
+# ---- Vehicle.Ostler.*: meanings VSS has no node for ---------------------------------- #
+
+Vehicle.Ostler:
+  type: branch
+  description: Ostler extensions where VSS has no signal.
+
+Vehicle.Ostler.Diagnostics:
+  type: branch
+  description: Diagnostic health derived from DTC and monitor services, or a pack equivalent.
+
+Vehicle.Ostler.Diagnostics.MilOn:
+  type: sensor
+  datatype: boolean
+  description: Malfunction indicator lamp requested (OBD 01 PID 01 bit A7, or a pack equivalent).
+  ostler_role: health
+  ha_device_class: problem
+  obdb: checkEngineLightOn
+
+Vehicle.Ostler.Diagnostics.DtcCount:
+  type: sensor
+  datatype: uint8
+  description: Stored (confirmed) DTC count across systems (OBD 01 PID 01 bits A0-A6, or a pack equivalent).
+  ostler_role: health
+  ha_state_class: measurement
+  obdb: storedDTCCount
+
+Vehicle.Ostler.Diagnostics.PendingDtcCount:
+  type: sensor
+  datatype: uint8
+  description: Pending (not yet confirmed) DTC count across systems (OBD service 07, or a pack equivalent).
+  ha_state_class: measurement
+
+Vehicle.Ostler.Diagnostics.IsReadinessComplete:
+  type: sensor
+  datatype: boolean
+  description: True when every supported readiness monitor has completed since the codes were cleared (OBD 01 PID 01 bytes B-D).
+  ostler_role: health
+
+Vehicle.Ostler.Diagnostics.ReadinessIncompleteCount:
+  type: sensor
+  datatype: uint8
+  description: Number of supported readiness monitors not yet complete since the codes were cleared.
+  ha_state_class: measurement
+
+Vehicle.Ostler.Diagnostics.DistanceSinceDtcClear:
+  type: sensor
+  datatype: uint32
+  unit: m
+  description: Distance travelled since the diagnostic trouble codes were last cleared (OBD 01 PID 31).
+  ha_device_class: distance
+  ha_state_class: total_increasing
+  obdb: distanceSinceDTCsCleared
+
+Vehicle.Ostler.Chassis:
+  type: branch
+  description: Ostler chassis extensions.
+
+Vehicle.Ostler.Chassis.RideHeight:
+  type: branch
+  description: Ride height as raw sensor counts, before any calibration to a length.
+
+Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw:
+  type: sensor
+  datatype: uint16
+  description: Rear left ride-height sensor reading in raw counts (uncalibrated, no unit).
+
+Vehicle.Ostler.Chassis.RideHeight.RearRightRaw:
+  type: sensor
+  datatype: uint16
+  description: Rear right ride-height sensor reading in raw counts (uncalibrated, no unit).

@@ -12,7 +12,8 @@
     "source": "fake pack fixture",
     "label": "Alpha speed",
     "group": "Engine",
-    "description": "A proven fake field."
+    "description": "A proven fake field.",
+    "metric": "Vehicle.Powertrain.CombustionEngine.Speed"
   },
   {
     "name": "alpha_temp",
