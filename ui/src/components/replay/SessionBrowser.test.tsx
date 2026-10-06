@@ -154,6 +154,9 @@ describe("SessionBrowser", () => {
     pages = (p) => (p.get("before") === "c1" ? { sessions: [s3], next: null } : { sessions: [s1, s2], next: "c1" });
     renderWithApp(browser());
     await screen.findByText("Demo log 1");
+    // The observer is created in an effect once the sentinel renders, which can land after
+    // the first rows: wait for it rather than firing a null callback.
+    await waitFor(() => expect(fire).not.toBeNull());
     await act(async () => { fire!(); });
     await screen.findByText("Ride height check");
     expect(listCalls().filter((c) => c.params.get("before") === "c1")).toHaveLength(1);

@@ -2,9 +2,9 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
-depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md]
+depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md]
 summary: >
   Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers plus a comfort class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams.
 ---
@@ -432,11 +432,16 @@ Phase 0, U5 in its Phase 2, U4 in its Phase 3.
 | **U0 Seams** | `vid` on every logbook session (old logs migrate to one vid); optional `metric` (VSS path) on store records via `upsert_field`; `metrics.json` common set; the D2 pack fills its set | unit tests; D2 coverage unchanged; no UI change |
 | **U1 Shell** | layout classes, strip, rail / bottom bar, five destinations holding today's screens (§3.4), Drive mode, module select into Diagnose, fault modal → telltale | Playwright at 1024×600, 1280×720, 1920×720, 393×852; target-size asserts |
 | **U2 Driving state** | platform driving state (vehicle → GPS), UI lockouts, server refusal of Tiers 1–3 while Moving, service mode with frame | Moving fixture locks actions, text and video; server tests |
-| **U3 Manifest** | Python-generated capabilities (D2 on tiers 2+3), field config onto signals, derived tiers, Scan all with seven states and reports | golden manifests for D2 and the fake pack; scan-state tests |
+| **U3 Manifest** | Python-generated capabilities (D2 on tiers 2+3), field config onto signals, derived tiers, Scan all with seven states and reports; the visible-signals poll subscription (rule below) | golden manifests for D2 and the fake pack; scan-state tests; a test that every recorded channel is still polled with no screen open |
 | **U4 Second pack** | `generic_obd2`, `generateViews()` (tier 1), single-system collapse, connect-time manifest, local VIN decode, unknown-vehicle banner | view snapshots; ELM fake; a test that no VIN reaches logs |
 | **U5 Devices** | guardian in `devices`, Security destination and chip; HEVAC then extracts `DevicePack`; cameras | device fake; "no device, no chrome" tests |
 | **U6 Garage** | `garage.json`, `VehicleSession` per vid, `/vehicles/<vid>/…` (old routes alias the active vid), switcher, Garage page | two fake vehicles on one port, never interleaved |
 | **U7 Decode** | evidence block, `fixtures`, `scrub` CI (D2 proven fields first), OBDb import/export, then Decode-mode screens | fixture and scrub CI |
+
+**Polling rule (U3).** The recording set is the baseline: every recorded channel is always
+polled, so whole-app recording and replay never starve. The visible-signals subscription only
+**raises** the priority or rate of what is on screen; it never removes a recorded channel. Signals
+that are neither recorded nor visible may be dropped, which is where the K-line saving comes from.
 
 U6 waits for a real second vehicle and `DevicePack` for the second device. U7's fixtures and scrub
 may move earlier if the owner wants evidence before the second pack.
@@ -452,7 +457,7 @@ Policy: [ADR-0017](../decisions/adr-0017-open-standards-first.md). The artefacts
 | **U1** | WCAG 2.2 AA with WAI-ARIA APG and an axe scan per layout class; W3C design tokens (`ui/tokens/*.tokens.json`); Material Symbols SVG subset; Web App Manifest; `Intl` (CLDR) for units |
 | **U2** | NHTSA / Android for Cars numbers as normative; ASVS L1 on the gate; refusals in the OpenAPI error schema |
 | **U3** | `capabilities.schema.json`, VISS-shaped datapoints `{value, ts}`, `etag`; golden manifests checked by pytest and vitest |
-| **U4** | OBDb SAEJ1979 import (ADR-0019); J1979 / J1979-2 as references; local VIN decode under GDPR minimisation; SocketCAN `CanLink` if CAN is used (ADR-0020) |
+| **U4** | OBDb SAEJ1979 import (ADR-0019); J1979 / J1979-2 as references; local VIN decode under GDPR minimisation; SocketCAN `CanLink` if CAN is used (ADR-0020). **Needs** K-line profiles and auto-detection ([ADR-0022](../decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md)) for the KKL path and passive CAN bitrate detection ([ADR-0023](../decisions/adr-0023-passive-can-bitrate-detection.md)) for the CAN path |
 | **U5** | **Needs the threat model first** (STRIDE + ASVS L2, `references/threat_model.md`); MQTT 3.1.1 with HA discovery, the OVMS alias tree, OwnTracks, Traccar OsmAnd, CloudEvents; AsyncAPI MQTT channels |
 | **U6** | `garage.schema.json`; SOVD as a naming reference for `/vehicles/<vid>/…`; HMAC VIN fingerprint |
 | **U7** | OBDb-compatible export; DBC import via cantools (dev-only); OVMS import behind the review gate (ADR-0019); REUSE on fixtures |
@@ -513,3 +518,7 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §10).
   ADR-0019, ADR-0020); §10.1 adds the standards plan per phase; §5.1 unit fixed to the VSS 6.1 key
   `Celsius`; §5.6 locked by ADR-0016; §6 adds the `comfort` class and 360° cameras as a future item; §7 adds imported actions (ADR-0019);
   local HTTPS decided (ADR-0021).
+- 2026-10-06: v0.3. §10 adds the U3 polling rule: the recording set is always polled, and the
+  visible-signals subscription only raises priority or rate, never removes a recorded channel;
+  §10.1 notes that U4 needs ADR-0022 (K-line profiles and detection) and ADR-0023 (passive CAN
+  bitrate detection).

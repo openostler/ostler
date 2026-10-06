@@ -11,8 +11,9 @@ Discovery 2 pack at the repo split (ADR-0015). Their notices live in that pack's
 [muki01/OBD2_K-line_Reader](https://github.com/muki01/OBD2_K-line_Reader) — OBD2 K-line
 scan-tool firmware (ISO 9141 / ISO 14230) for Arduino/ESP32, © 2023 Muksin Muksin.
 **MIT until `91ae045` (2026-10-01); GPL-3.0 (plus a commercial licence) since `aef63b4`
-(2026-10-03).** We use the MIT snapshot only and never port from upstream HEAD (ADR-0019).
-The companion OBD2_KLine_Library carries non-commercial headers: facts only.
+(2026-10-03).** The MIT snapshot may be used with this notice; current upstream code may be
+taken whole only into a module or pack marked GPL-3.0-or-later, never into core (ADR-0025).
+The companion OBD2_KLine_Library carries non-commercial headers: ideas only, no code.
 Used as a reference for K-line timing (fast init, burst reading, L9637D interface); the
 MIT snapshot lives in the Discovery 2 pack's `references/` for the ESP32 port. MIT
 allows reuse with the copyright and license notice retained; keep this
