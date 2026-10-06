@@ -125,6 +125,7 @@ Two cars or a car and a camp, 2–4 LoRa boards of one model per stack, EU868:
 ## Consequences
 
 - The module-bus message spec gains the mesh bridge topics and the mesh transport value.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§9, §16).
 - The add-ons catalogue's LoRa and mesh rows point here; the vision's batman-adv line is
   replaced by Babel-if-needed.
 - The UI's links view shows mesh links (UI spec §3.7, the Network page) with airtime and

@@ -119,6 +119,7 @@ Wi-Fi prototype stays on the bench: it never carries an alarm-critical link in a
 - A spec for the module-bus message mapping (topic tree, CAN mapping, certificates and
   ACLs, the CAN-fallback authentication) comes before any firmware; `asyncapi.yaml` gains
   the MQTT channels at U5.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (the CAN mapping and the CAN-fallback authentication stay open there, §17).
 - The Pi kernel needs `oa_tc6`, `microchip_t1s` and `lan865x` built as modules plus an
   overlay; we carry them until Pi OS enables them.
 - Each module board costs about £3 more than a CAN node.
