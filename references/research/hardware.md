@@ -2,7 +2,7 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
@@ -166,6 +166,13 @@ The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (
 > **Module bus decided (2026-10-06):** our own modules talk over 10BASE-T1S, not CAN alone; see
 > [ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md) and the
 > [T1S research](t1s_module_bus.md). CAN stays for µA-wake nodes.
+>
+> **Ecosystem network decided (2026-10-06):** every Ostler device speaks IP on an
+> automotive-Ethernet backbone (T1S for modules, standard Ethernet or PoE for cameras, Wi-Fi/USB
+> for displays, the Pi routing between them). The private-CAN "Add-on bus" row above is now the
+> dev-kit and µA-wake fallback only. See
+> [ADR-0027](../../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md) and the
+> [ecosystem research](ecosystem_architecture.md).
 
 - **One board** combining:
   - CM5 (or i.MX93);

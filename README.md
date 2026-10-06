@@ -1,9 +1,13 @@
-# Ostler — the open vehicle platform
+# Ostler — an open, smart-home-like ecosystem for your car
 
-**Ostler™** is an open vehicle platform: diagnostics, live data, a session logbook with
-replay, place names and GPS, and a mobile-first dashboard, for vehicles that a cheap cable
-and a Raspberry Pi can talk to. This repository is the **platform** (the OpenOstler code).
-Vehicle knowledge ships separately, as **vehicle packs**.
+> **Ostler: an open, smart-home-like ecosystem for your car. It connects the car you already
+> have, then lets you add on.**
+
+**Ostler™** starts from the car you already have. A base hardware pack talks to the car's
+own buses and makes its systems connected: diagnostics, live data, a session logbook with
+replay, place names and GPS, and a mobile-first dashboard. Add-on modules then join over
+standard IP networking, the way devices join a smart home. This repository is the
+**platform** (the OpenOstler code). Vehicle knowledge ships separately, as **vehicle packs**.
 
 - Website: **[ostler.tech](https://ostler.tech)**
 - Code and community: the **[openostler](https://github.com/openostler)** organisation
@@ -17,25 +21,32 @@ Vehicle knowledge ships separately, as **vehicle packs**.
 
 ## Goals
 
-Ostler aims to be **the Home Assistant of the automotive world**: one open, local-first
-hub for your vehicles, on hardware you own. The full statement is in **[GOALS.md](GOALS.md)**.
+Ostler is an open, local-first automotive ecosystem: a smart-home-like platform for your
+car, on hardware you own. The full statement is in **[GOALS.md](GOALS.md)**; the
+architecture is [ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md).
 
-- **Diagnostics for every car:** the Discovery 2 first, then other Land Rovers, any
-  OBD-II car, modern CAN/UDS and pre-OBD cars, each as a community vehicle pack.
-- **A data logger with telemetry**, a **GPS tracker** and a **notify-only alarm** on an
-  always-on ESP32 guardian with its own battery and IoT SIM.
-- **Add-on devices** on a private CAN bus (relay box, head-unit CAN/OBD emulator) and
-  **cameras** on our own infrastructure (dashcam, parking, reversing, underbody).
-- **Displays are thin clients:** one head-unit-first PWA, generated from per-vehicle
-  capability manifests, with a garage for several vehicles.
-- **Open standards:** COVESA VSS signal paths, OBDb-compatible data, MQTT with Home
-  Assistant discovery, OVMS and OwnTracks compatibility.
+- **A base hardware pack, with diagnostics and telemetry at the core.** It interfaces with
+  the car's own buses (K-line, CAN, OBD-II) at the edge and never replaces them. It covers
+  the Discovery 2 first, then other Land Rovers, any OBD-II car, modern CAN/UDS and pre-OBD
+  cars, each as a community vehicle pack.
+- **Add-on modules:** an always-on guardian (GPS tracker and **notify-only alarm**, with
+  its own battery and IoT SIM), relay boxes, sensor and button nodes, cameras (dashcam,
+  parking, reversing, underbody) and displays. Displays are thin clients of one
+  head-unit-first PWA.
+- **Standard networking:** every device speaks IP on an automotive-Ethernet backbone
+  (10BASE-T1S for modules, Ethernet for cameras, Wi-Fi/USB for screens). Devices are found
+  by mDNS and speak VSS-named MQTT. One module contract makes modules interchangeable,
+  third-party ones included.
+- **Integrations:** COVESA VSS signal paths, OBDb-compatible data, MQTT with Home Assistant
+  discovery, OVMS and OwnTracks compatibility. Matter ecosystems are reached through a
+  bridge. In smart-home terms, the comparison is "the Home Assistant of the automotive
+  world".
 - **A decode pipeline** that turns an unknown car into a pack with verified signals.
 - **Hard lines:** nothing writes to a car without the safety gates; no EKA or key
   programming; the VIN is never logged or uploaded; private by default, no cloud needed.
 - **Anti-bloat:** features are core, add-on (off by default) or moonshot (own ADR).
-- **Funding:** official hardware and an optional Ostler Cloud subscription, with AGPL code
-  plus a commercial licence.
+- **Funding:** official hardware (the base pack and add-on modules) and an optional Ostler
+  Cloud subscription, with AGPL code plus a commercial licence.
 
 Done so far: the `VehiclePack` decoupling, the platform/pack repo split, a dev server, a
 version tracker and the UI research. Next: the UI seams and head-unit shell, then opt-in
