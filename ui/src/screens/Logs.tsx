@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useState } from "react";
 import { SessionBrowser } from "../components/replay/SessionBrowser";
 import { EMPTY_VIEW, type BrowserView } from "../components/replay/sessionFormat";

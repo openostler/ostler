@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Lint frontmatter across the repo.
 
 Checks every manifest-eligible Markdown file for required fields, valid area/
@@ -49,7 +54,7 @@ def validate_file(path: str):
 
 def length_warning(path: str):
     """Return a warning string if the file exceeds the one-topic-per-file limit."""
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         n = sum(1 for _ in fh)
     if n > fm.MAX_LINES:
         return f"{n} lines (> {fm.MAX_LINES}): consider splitting along its seams"

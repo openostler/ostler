@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Data sources for the dashboard: the platform half of the snapshot boundary.
 
 A ``DataSource`` supplies a snapshot (``poll()``) with status, signals

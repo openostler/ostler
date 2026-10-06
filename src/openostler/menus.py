@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module menu registry: every function per module, from the active vehicle pack (ADR-0008).
 
 The menus themselves are pack data (``VehiclePack.menus``: ``{module id: [group, …]}`` in

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { formatClock, SKIP_MS, SPEEDS, usePlayback } from "../../state/playback";
 
 /** A note or flag on the scrubber: a tick (point) or a short bar (range); tapping it seeks there.

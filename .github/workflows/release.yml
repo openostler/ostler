@@ -1,0 +1,87 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Release (ADR-0017, standards research §5): on a v* tag, build the sdist and wheel,
+# generate SBOMs (CycloneDX for the Python package, SPDX for the repo including the UI's
+# npm lockfile), sign build provenance through Sigstore, and attach everything to a draft
+# GitHub release for the maintainer to review against CHANGELOG.md.
+# Verify a download with: gh attestation verify <file> --repo openostler/ostler
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      # Sigstore signing (OIDC) and the attestations API, for this job only.
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: The tag matches the package version
+        run: |
+          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "v${version}" = "${GITHUB_REF_NAME}" || { echo "tag ${GITHUB_REF_NAME} != v${version}"; exit 1; }
+      - name: Build the sdist and wheel
+        run: |
+          python -m pip install build
+          python -m build
+      - name: CycloneDX SBOM of the installed wheel
+        run: |
+          python -m pip install cyclonedx-bom
+          python -m venv --without-pip "$RUNNER_TEMP/sbom-env"
+          python -m pip --python "$RUNNER_TEMP/sbom-env/bin/python" install dist/*.whl
+          cyclonedx-py environment --pyproject pyproject.toml --mc-type application \
+            --of JSON -o "dist/openostler-${GITHUB_REF_NAME}.cdx.json" \
+            "$RUNNER_TEMP/sbom-env/bin/python"
+      - name: SPDX SBOM of the repository (Python and the UI's npm lockfile)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: spdx-json
+          output-file: dist/openostler-${{ github.ref_name }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Build provenance for the sdist and wheel
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            dist/*.whl
+            dist/*.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Create the GitHub release and upload its assets.
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist
+      - name: Draft a GitHub release with the packages and SBOMs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --draft --verify-tag --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md."

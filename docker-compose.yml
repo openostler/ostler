@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Dokploy git-source stack for the Pineshouse homelab.
 #
 # Routing: the container publishes host port 9110 (→ container 8080) on swarm-node1, and a

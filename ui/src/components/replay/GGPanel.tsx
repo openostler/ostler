@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The G-G panel (spec §5 "Map"): lateral vs inline acceleration, 0.5 g rings, each sample
  * coloured by speed (the mako ramp — speed is magnitude), and a dot at the replay cursor.

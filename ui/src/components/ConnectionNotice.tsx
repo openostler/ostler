@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { connOf, isNotLive, pillFor } from "../lib/connection";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";

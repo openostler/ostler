@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { Units } from "../../lib/format";
 import { showValue } from "./labels";
 import { legendGradient, type Range, type TraceLane } from "./trace";

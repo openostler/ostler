@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """FAKE_PACK: a minimal second vehicle pack, so platform tests prove the platform is
 generic (specs/2026-10-06-phase0-vehiclepack-decoupling-design.md §1, §6).
 

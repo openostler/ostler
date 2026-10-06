@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Frame parsing + LID layer for the passive sniff calibration.
 
 Ingests hex lines (ESP32 format ``[  t] 02 21 09 2c …`` or raw hex), tracks the

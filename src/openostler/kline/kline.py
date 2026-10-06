@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The K-Line layer: fast init, frame I/O, echo handling, timeout and retries.
 
 Sits on top of a :class:`~openostler.transport.base.Transport` and below KWP2000.

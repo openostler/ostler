@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """NMEA 0183 parsing: RMC, GGA and VTG from any talker, checksum-validated (ADR-0009).
 
 ``parse(line)`` turns one sentence into a dict of partial fix fields, or ``None`` when the

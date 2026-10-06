@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { getPack, setPack, usePack } from "../pack/store";

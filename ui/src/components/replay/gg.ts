@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * G-G diagram maths, pure (spec §5 "Map"): which acceleration channels to plot, the axis
  * limit, and the decimated point cloud. Conventions (ADR-0010, MoTeC/ISO): LateralAcc is

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The HTTP contract between the Python server and the React UI (ADR-0004).
 
 Real responses from a mock ``DiagServer`` are compared, by *shape*, against the JSON

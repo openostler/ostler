@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Typed access to the Python server. Every call validates the response with its Zod
  * schema and throws ApiError on transport or shape failure — callers show a toast.

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The /catalog rules the UI applies (ADR-0008, specs/2026-10-05-ui-overhaul-design.md
  * "Modes"): what is visible in Stable vs Experimental, page/group filtering and coverage

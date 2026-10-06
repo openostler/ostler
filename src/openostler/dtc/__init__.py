@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Fault-code **meaning** store — what each DTC means, in plain English.
 
 The module decoders (:mod:`d2diag.td5.faults`, :mod:`d2diag.slabs.faults`,

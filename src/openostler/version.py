@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """What is running: the platform and vehicle-pack versions and commits (``GET /version``).
 
 The Settings sheet shows this so a dev server can be matched to a commit at a glance.

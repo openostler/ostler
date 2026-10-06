@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useEffect, useId, useRef, useState } from "react";
 
 /** The words the admin Decode and Label tabs use, in plain English. */

@@ -8,13 +8,17 @@ licensed separately under AGPL-3.0-or-later (see LICENSE).
 "Vehicle data" means:
 
   - tests/fixtures/**/*.json    — fixture signal, DTC and session data
+  - tests/fixtures/**, ui/src/api/fixtures/**, ui/e2e/sniff-demo.txt
+                                — the other test and UI fixtures (session CSV/JSONL,
+                                  NMEA, API responses, a synthetic sniff log)
   - vehicle-pack data           — ECU, signal, DTC and menu definitions (JSON/YAML
                                   data files) in vehicle packs that adopt this licence.
                                   The Discovery 2 pack's signals/ and dtc/ moved to
                                   its own repository at the repo split (ADR-0015).
 
 Third-party data bundled here keeps its own licence (e.g. GeoNames place names in
-src/openostler/geo/ are CC BY 4.0) — see THIRD_PARTY_LICENSES.md.
+src/openostler/geo/ are CC BY 4.0; COVESA VSS files are MPL-2.0) — see
+THIRD_PARTY_LICENSES.md. REUSE.toml records the licence of every data file.
 
 Attribution: "OpenOstler contributors" (formerly "discovery2-diag contributors") with
 a link to the repository.

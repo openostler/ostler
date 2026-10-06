@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Ostler (+ the Discovery 2 pack) — one-paste Mac installer for non-technical testers.
 #
 # The tester pastes ONE line into Terminal:

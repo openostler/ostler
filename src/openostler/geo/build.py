@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Build ``places.tsv.gz`` from the GeoNames dumps (spec 2026-10-06-logs-at-scale §2).
 
 Thin CLI: ``tools/build_places.py``. The output is deterministic: the same cached inputs

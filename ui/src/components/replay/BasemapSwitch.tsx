@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { BASEMAPS, type Basemap } from "./basemap";
 
 /** Streets / Satellite / Hybrid, over the map's top-left corner (spec §5 "Map"). */

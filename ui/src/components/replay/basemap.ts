@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Basemap choice for the replay map (spec §5 "Map", ADR-0010): Streets (OpenFreeMap vector),
  * Satellite (raster imagery only) or Hybrid (imagery + the vector labels). Pure: the URL and

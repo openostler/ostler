@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # Deploy the working tree to the Pi and restart the service — so Mac and Pi run
 # the SAME version. Stamps the git commit on the Pi (DEPLOYED_VERSION) and checks
 # it matches the Mac. Runs a quick test sweep on the Pi before the restart.

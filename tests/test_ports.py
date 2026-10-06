@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Serial-port resolution (core, no web/pyserial) — openostler.ports.resolve_serial_port.
 
 Moved out of test_web when resolve_serial_port moved from web/sources to the core

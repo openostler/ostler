@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session audio: phone chunk ordering, Pi arecord, meta.audio, never public (ADR-0010)."""
 
 import pytest

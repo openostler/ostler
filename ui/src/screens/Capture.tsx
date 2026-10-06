@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import "../admin.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, command } from "../api/client";

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /** Session-browser formatting and grouping — pure, local time zone. */
 import type { Recording, SessionMeta } from "../../api/schemas";
 import type { SessionFilters } from "../../api/useSessions";

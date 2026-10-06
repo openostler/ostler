@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Regenerate the committed synthetic demo logs (ADR-0009, ADR-0010, ADR-0011).
 
     PYTHONPATH=src python3 tools/make_demo_session.py [--out DIR]

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Read-only K-line address scan: who is on the bus, and how do they init?
 
     PYTHONPATH=src python3 tools/module_scan.py auto

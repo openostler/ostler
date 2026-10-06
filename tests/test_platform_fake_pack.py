@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The server and the logbook run on a second, fake vehicle pack (Phase 0 spec §6).
 
 Everything here goes through ``tests/fake_pack.py::FAKE_PACK`` (modules ``alpha`` with the

@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """EspTransport — use an ESP32 in USB cable mode as a Transport.
 
 The ESP becomes "just another cable": it does the timing-critical fast-init pulse LOCALLY

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Recording options (per device) and the glue that applies them: server-side sources through
  * POST /command recording_options, phone mic and motion through lib/audio + lib/motion.

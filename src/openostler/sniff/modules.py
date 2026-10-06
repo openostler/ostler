@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Single source of truth for module detection across every sniffed bus.
 
 Both the capture parser (:mod:`openostler.sniff.capture`) and the live LID store

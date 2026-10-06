@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """GPS input (ADR-0009): NMEA parsing and fix sources. Core layer: never imports ``web``.
 
 Contract (specs/2026-10-05-session-logbook-design.md, "GPS"):

@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for the tolerant mode: burst reading that handles noise where strict fails.
 
 Proves against RECORDED bytes (real car 2026-08-03) and a simulated turnaround
@@ -11,8 +16,6 @@ pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see t
 
 
 from openostler.kline import (
-    TD5_ECU_ADDRESS,
-    TESTER_ADDRESS,
     KLine,
     KLineTimeout,
     encode,

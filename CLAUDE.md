@@ -26,6 +26,8 @@ orient cheaply, then load on demand.
 - What moved where at the split: [ADR-0015](decisions/adr-0015-repo-split-executed.md).
 - Why a choice was made: [decisions/](decisions/CLAUDE.md).
 - Designs in progress: [specs/](specs/CLAUDE.md).
+- Notable changes and the versioning policy: [CHANGELOG.md](CHANGELOG.md); reporting
+  vulnerabilities: [SECURITY.md](SECURITY.md).
 - Vehicle knowledge and the car-test backlog: the pack's repo (for the D2,
   `references/protocol_state_handoff.md` and `references/test_plan.md` there).
 
@@ -35,5 +37,7 @@ orient cheaply, then load on demand.
 - Run `pytest -q` before committing code. It needs no hardware. Install the D2 pack
   (`pip install --no-deps -e <pack checkout>`) so the `needs_pack` tests run too.
 - The platform never imports a pack (`tests/test_layering.py`).
+- Run `ruff check .` and `reuse lint` too (or `pre-commit install` once). New source
+  files need an SPDX header (`reuse annotate`); add notable changes to `CHANGELOG.md`.
 - After editing docs, run `python3 skill/scripts/validate_frontmatter.py`, then
   `python3 skill/scripts/build_index.py`. `INDEX.md` is generated, so never hand-edit it.

@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# pre-commit (ADR-0017, dev-only): `pip install pre-commit && pre-commit install`.
+# Hook repos are pinned by commit SHA (`pre-commit autoupdate --freeze`).
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: f12be1ebaa5351c1fc76472de98db2c3446c8253  # frozen: v0.16.10
+    hooks:
+      - id: ruff-check
+
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: a1bb792acda6fd0724936b4ebbdbc8eceb9c0459  # frozen: v6.2.0
+    hooks:
+      - id: reuse
+
+  - repo: local
+    hooks:
+      - id: validate-frontmatter
+        name: Doc frontmatter is valid
+        entry: python3 skill/scripts/validate_frontmatter.py
+        language: system
+        files: \.md$
+        pass_filenames: false
+      - id: index-fresh
+        name: INDEX.md is up to date
+        # Rebuild INDEX.md; a change other than the daily date line means it was stale.
+        entry: >-
+          bash -c 'python3 skill/scripts/build_index.py >/dev/null;
+          if git diff --quiet -I "^updated: " -- INDEX.md; then git checkout -q -- INDEX.md;
+          else echo "INDEX.md was stale: it has been rebuilt, review and stage it"; exit 1; fi'
+        language: system
+        files: \.md$
+        pass_filenames: false

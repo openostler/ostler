@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """HTTP + SSE server for the dashboard (stdlib, no external dependencies).
 
 A background thread polls the data source and updates ``latest``; ``/events``
@@ -479,7 +484,7 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            frag = self.server.docs.html((q.get("id", [""])[0]))
+            frag = self.server.docs.html(q.get("id", [""])[0])
             if frag is None:
                 self.send_error(404)
             else:
@@ -857,7 +862,7 @@ class _Handler(BaseHTTPRequestHandler):
         try:
             while True:
                 payload = json.dumps(self.server.latest)
-                self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
+                self.wfile.write(f"data: {payload}\n\n".encode())
                 self.wfile.flush()
                 time.sleep(self.server.stream_interval)
         except (BrokenPipeError, ConnectionResetError):

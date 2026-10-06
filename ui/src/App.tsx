@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api } from "./api/client";
 import type { Community, FaultMeaning, Field, Snapshot } from "./api/schemas";

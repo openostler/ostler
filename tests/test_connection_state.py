@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The server's connection state machine (snapshot `conn`), disconnect/connect/set_port,
 the latched-test banner (`active_test`) and the other snapshot additions
 (specs/2026-10-05-ui-overhaul-design.md, "Snapshot additions" and "Connection UX")."""

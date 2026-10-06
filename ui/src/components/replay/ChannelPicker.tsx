@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The channel picker (spec §5 "ChannelPicker"): a bottom sheet with pinned and recent chips,
  * search over label / unit / name with the matches highlighted, collapsible categories and a

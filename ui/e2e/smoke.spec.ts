@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { expect, test, type Page } from "@playwright/test";
 
 /** Skip the first-start consent screen (stored per device, like a returning user), and

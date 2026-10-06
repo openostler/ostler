@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { createContext, useContext } from "react";
 import type { Catalog, Community, FaultMeaning, Field, Snapshot } from "../api/schemas";
 import type { LiveState } from "./live";

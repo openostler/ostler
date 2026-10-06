@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """GPS fix sources: a USB NMEA receiver, a mock that drives the demo loop, and a file replay.
 
 Every source exposes ``start()``, ``stop()``, ``latest() -> Fix | None`` and ``src``.
@@ -233,7 +237,7 @@ def read_fixes(path: str) -> "list[tuple[int | None, Fix]]":
     merger = FixMerger()
     out: "list[tuple[int | None, Fix]]" = []
     cur_tod: "object" = object()
-    with open(path, "r", encoding="ascii", errors="replace") as fh:
+    with open(path, encoding="ascii", errors="replace") as fh:
         for line in fh:
             d = parse(line)
             if d is None:

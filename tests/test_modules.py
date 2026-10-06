@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Module detection across all buses (sniff/modules.py).
 
 Sample frames come straight from the D2 pack's protocol state handoff

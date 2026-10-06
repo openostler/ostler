@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The replay chart strip: up to 3 channels in stacked lanes on one time axis, a shared
  * cursor at the playback time. Tap or drag to seek; drag-select (Select mode or shift-drag)

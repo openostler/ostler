@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The machine-readable API contracts in ``api/`` (ADR-0017): OpenAPI 3.1.1 and AsyncAPI 3.0.
 
 - Every route ``web/server.py`` handles is in ``api/openapi.yaml`` and every documented

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Replay API over HTTP (specs/2026-10-05-replay-notes-capture-design.md, ADR-0010).
 
 The server side only: the events/notes/audio/accel routes, the public and synthetic

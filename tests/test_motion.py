@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Acceleration: rotation, sign conventions, GPS-derived acceleration and the recorder's
 accel channels (ADR-0010; replay-notes-capture spec §3)."""
 

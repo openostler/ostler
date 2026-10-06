@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useEffect, type ReactNode } from "react";
 
 /** Bottom sheet over the app. Tapping the scrim or pressing Escape closes it. */

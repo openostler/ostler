@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { CatalogCoverage } from "../api/schemas";
 import { STATUSES, STATUS_WORD } from "../lib/catalog";
 

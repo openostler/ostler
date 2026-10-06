@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Simulated data sources — TEST SCAFFOLDING ONLY (ADR-0011: no demo mode in the product).
 
 The former product ``MockDataSource`` & co. live here now. The unit tests import them, and

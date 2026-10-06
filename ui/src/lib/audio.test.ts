@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { describe, expect, it, vi } from "vitest";
 import { AudioCapture, BITRATE, chunkUrl, MP4, OPUS, pickMime, TIMESLICE_MS, trackTime, WakeLockKeeper, type AudioDeps } from "./audio";
 

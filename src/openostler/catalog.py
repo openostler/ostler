@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Catalog: every NanoCom function per module, each with one derived status and a safety class.
 
 ADR-0008 and ``specs/2026-10-05-ui-overhaul-design.md`` are the contract. The module
