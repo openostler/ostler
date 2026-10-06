@@ -126,6 +126,37 @@ def test_no_keepalive_when_the_profile_has_none():
     assert s.keepalive_if_due() is False and ecu.sent == []
 
 
+# ---- tester_present follows the profile (migration step 2) --------------------------- #
+TP_BARE = bytes.fromhex("013E3F")                       # 01 3E 3F (bare 3E)
+TP_SUB = bytes.fromhex("023E0141")                      # 02 3E 01 41
+
+
+class _BareSubSession(EcuSession):
+    _keepalive_sub = None                               # the legacy SLABS setting
+
+
+def test_tester_present_sends_the_profiles_bare_3e():
+    p = resolve("kwp2000_fast", {"keepalive": b"\x3E"})
+    ecu, k, s, clock = _kwp_link(p, responses={TP_BARE: bytes.fromhex("017E7F")})
+    s.tester_present()
+    assert ecu.sent == [TP_BARE]
+
+
+def test_tester_present_profile_wins_over_the_legacy_sub():
+    ecu, k, _s, clock = _kwp_link(responses={TP_SUB: bytes.fromhex("017E7F")})
+    s = _BareSubSession(_s._kwp, BUILTIN["kwp2000_fast"])
+    s.tester_present()
+    assert ecu.sent == [TP_SUB]                         # 3E 01 from the profile
+
+
+def test_tester_present_without_a_profile_keepalive_uses_the_legacy_sub():
+    p = resolve("kwp2000_fast", {"keepalive": None})
+    ecu, k, _s, clock = _kwp_link(p, responses={TP_BARE: bytes.fromhex("017E7F")})
+    _BareSubSession(_s._kwp, p).tester_present()
+    _BareSubSession(_s._kwp).tester_present()           # no profile at all
+    assert ecu.sent == [TP_BARE, TP_BARE]
+
+
 # ---- release and abandoned sessions (§4.2, §4.3) ------------------------------------ #
 def test_kwp_close_sends_82_and_a_confirmed_c2_means_only_w5():
     ecu, k, s, clock = _kwp_link()

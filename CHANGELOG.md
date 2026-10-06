@@ -118,6 +118,11 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- `EcuSession.tester_present()` sends the session profile's `keepalive` frame (`3E 01`, or
+  a bare `3E`) when the session has a profile with one; without a profile, or with
+  `keepalive: null`, the legacy `3E <_keepalive_sub>` applies as before (K-line profiles
+  spec §4.1, migration step 2). Same bytes for every existing caller; the D2 pack now
+  declares its modules' K-line behaviour as `ModuleSpec.kline` overrides.
 - HTTP API errors and statuses follow one table
   ([API consistency spec](specs/2026-10-06-api-consistency-design.md) §1-§2). This is a
   behaviour change for clients that key on the status; the UI reads the body whatever

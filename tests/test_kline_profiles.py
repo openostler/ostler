@@ -27,14 +27,18 @@ from tests.fakes import FakeKLineEcu
 
 SCHEMA = Path(__file__).resolve().parents[1] / "schemas" / "kline-profile.schema.json"
 
-# The Discovery 2 overrides from the spec §1 (migration step 2 moves them into the pack).
+# The Discovery 2 overrides of the spec §1, as the pack declares them since migration
+# step 2 (d2diag/kline_profiles.py): tester F7 everywhere, no link-level pre-init idle (the
+# pack's establish keeps its own settle and retry sleeps), no abandoned idle, no P3 guard.
 D2_TD5 = {"init_functional": False, "source": 0xF7, "header": "none", "length": "format",
-          "pre_init_idle": 5.0, "abandoned_idle": 0.0, "keepalive": b"\x3E\x01",
+          "pre_init_idle": 0.0, "abandoned_idle": 0.0, "keepalive": b"\x3E\x01",
           "timing": {"p3_min": 0.0}}
-D2_SLABS = {"init_functional": True, "source": 0xF1, "header": "none", "length": "format",
-            "pre_init_idle": 0.3, "abandoned_idle": 0.0, "keepalive": b"\x3E",
+D2_SLABS = {"init_functional": True, "source": 0xF7, "header": "none", "length": "format",
+            "pre_init_idle": 0.0, "abandoned_idle": 0.0, "keepalive": b"\x3E",
             "keepalive_interval": 1.0, "timing": {"p3_min": 0.0}}
-D2_AIRBAG = {"header": "physical", "confirm_address": "report", "timing": {"p3_min": 0.0}}
+D2_AIRBAG = {"source": 0xF7, "header": "physical", "length": "format",
+             "confirm_address": "report", "pre_init_idle": 0.0, "abandoned_idle": 0.0,
+             "timing": {"p3_min": 0.0}}
 
 
 # ---- built-ins ------------------------------------------------------------- #

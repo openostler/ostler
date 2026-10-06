@@ -2,11 +2,11 @@
 title: "K-line profiles and detection — design"
 area: specs
 status: stable
-version: 0.6
+version: 0.7
 updated: 2026-10-06
 depends_on: [decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/obd2_kline_reader.md, references/research/muki01/README.md, specs/2026-10-06-u0-seams-design.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06. Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server flag, a parked confirmation and a speed veto until U2); module-scan sweeps are Parked-only too, and a detected profile is remembered per vehicle (vid) so a re-init never probes. Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7. Amended for the node/brain direction (ADR-0032): the profile JSON schema is the canonical cross-language form the node's C link layer will read, the remembered profile also lives in node NVS for Ostler Diagnostics alone, the ESP32 node path becomes production and KKL dev-only, and a later step ports the link layer to C with shared test vectors.
+  Approved by the owner on 2026-10-06. Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server flag, a parked confirmation and a speed veto until U2); module-scan sweeps are Parked-only too, and a detected profile is remembered per vehicle (vid) so a re-init never probes. Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7. Amended for the node/brain direction (ADR-0032): the profile JSON schema is the canonical cross-language form the node's C link layer will read, the remembered profile also lives in node NVS for Ostler Diagnostics alone, the ESP32 node path becomes production and KKL dev-only, and a later step ports the link layer to C with shared test vectors. v0.7: migration step 2 is done — the D2 pack declares its modules as ModuleSpec.kline overrides (tester 0xF7, no link-level pre-init idle) and builds sessions from profiles, byte for byte as before.
 ---
 
 # K-line profiles and detection — design
@@ -98,22 +98,34 @@ data model](../references/research/ui/vehicle_data_model.md) `systems[].transpor
 `schemas/kline-profile.schema.json` validates both. This is not `logs/vehicle.json` (the
 U0 `vid` file).
 
-**D2 examples** (values the pack passes today, moved into data in migration step 2, §8):
+**D2 examples** (the values the pack declares since migration step 2, §8, in its
+`d2diag/kline_profiles.py`; corrected from the v0.2 draft so the wire stays byte for byte):
 
 ```python
 ModuleSpec("td5", …, address=0x13, init="fast", kline={
     "init_functional": False, "source": 0xF7, "header": "none", "length": "format",
-    "pre_init_idle": 5.0, "abandoned_idle": 0.0, "keepalive": b"\x3E\x01",
+    "pre_init_idle": 0.0, "abandoned_idle": 0.0, "keepalive": b"\x3E\x01",
     "timing": {"p3_min": 0.0}})                 # 81 13 F7 81 0C, then unaddressed frames
 ModuleSpec("slabs", …, address=0x29, init="fast", kline={
-    "init_functional": True, "source": 0xF1, "header": "none", "length": "format",
-    "pre_init_idle": 0.3, "abandoned_idle": 0.0, "keepalive": b"\x3E",   # bare 3E
+    "init_functional": True, "source": 0xF7, "header": "none", "length": "format",
+    "pre_init_idle": 0.0, "abandoned_idle": 0.0, "keepalive": b"\x3E",   # bare 3E
     "keepalive_interval": 1.0, "timing": {"p3_min": 0.0}})
+ModuleSpec("bcu", …, address=0x40, init="slow", kline={
+    "source": 0xF7, "header": "none", "length": "format", "keepalive": b"\x3E\x01",
+    "confirm_address": "report", "pre_init_idle": 0.0, "abandoned_idle": 0.0,
+    "timing": {"p3_min": 0.0}})
 ModuleSpec("airbag", …, address=0x5B, init="slow", kline={
-    "header": "physical", "confirm_address": "report", "timing": {"p3_min": 0.0}})
+    "source": 0xF7, "header": "physical", "length": "format",
+    "confirm_address": "report", "pre_init_idle": 0.0, "abandoned_idle": 0.0,
+    "timing": {"p3_min": 0.0}})                 # addressed 8x 5B F7 … on every frame
 ```
 
-SLABS's source cycling, `1A 8A` confirm and retry sleeps (8 s, 28 s) stay pack code.
+`source` is `0xF7` on every D2 module: the SLABS physical init variant and the airbag's
+addressed frames carry it. `pre_init_idle` is `0.0` because a profile link sleeps it before
+*every* init; the D2 settles once before its first attempt (Td5 5 s, SLABS 0.3 s) and
+then waits its retry quiet periods, so those idles stay in the pack's `establish`. SLABS's
+source cycling, `1A 8A` confirm and retry sleeps (8 s, 28 s; airbag/BCU 2 s) stay pack
+code.
 
 ## 2. `kline.detect()` (`src/openostler/kline/detect.py`)
 
@@ -209,8 +221,9 @@ clock. `EcuSession.keepalive_if_due()` and `Iso9141Session.keepalive_if_due()` s
 resets the timer, so a busy poll sends no extra frames. DataSources call it at the start
 of `poll()`, and the server's poll loop calls an optional `source.tick()` between polls,
 so a session idle for 10 s still gets keep-alive. A failed keep-alive is logged, never
-fatal on its own (as the D2 SLABS source does). The existing `_keepalive_sub` stays as the
-legacy path until migration step 2 replaces it with `profile.keepalive`.
+fatal on its own (as the D2 SLABS source does). Since migration step 2,
+`EcuSession.tester_present()` sends `profile.keepalive` too; `_keepalive_sub` is the legacy
+path for a session without a profile (or with `keepalive: null`).
 
 **4.2 Release.** KWP: `EcuSession.release()` sends `82` (unchanged) on exit, module switch
 and error paths; `_establish`'s best-effort `82` stays. ISO 9141 `release()` sends nothing.
@@ -379,3 +392,16 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
   ports the link layer to C with shared test vectors seeded from the golden tests.
 - 2026-10-06: v0.5, wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).
 - 2026-10-06 — v0.6, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
+- 2026-10-06 — v0.7: migration step 2 done. The D2 pack declares Td5, SLABS, BCU and
+  airbag as `ModuleSpec.kline` overrides (`d2diag/kline_profiles.py`) and builds every
+  module session (data sources, fault scan, tools) through `KLine.from_profile`,
+  `KWP2000.from_profile` and `EcuSession(profile=…)`; its golden test is unchanged and a
+  fake-clock trace of every send and sleep matches the legacy constructors. The §1 D2
+  examples are corrected: `source` is `0xF7` on every module (the draft's SLABS `0xF1` and
+  the airbag's default would change the init and addressed frames), and `pre_init_idle`
+  is `0.0` (a profile link applies it before each init, while the D2 settles once per
+  establish). Platform change: `EcuSession.tester_present()` follows `profile.keepalive`
+  (§4.1). The pack's `tools/module_scan.py` gains the Parked gate. Deferred: the D2 data
+  sources add no snapshot `link` yet; the airbag and BCU 5-baud inits stay on the legacy
+  `slow_init` (no `~address` check, `confirm_address: "report"`, open question 5); raising
+  `p3_min` or the abandoned idle for the D2 stays a car-test item.
