@@ -126,7 +126,7 @@ export function Utilities() {
           {admin ? (
             <div className="row" style={{ gap: 8 }}>
               <span className="small muted grow pretty">To say what these bytes mean, use the Label tab — it reads the same blocks and saves your labels.</span>
-              <button className="btn" onClick={() => { setOpen(null); goTo("capture"); }}>Label these bytes →</button>
+              <button className="btn" onClick={() => { setOpen(null); goTo("more.label"); }}>Label these bytes →</button>
             </div>
           ) : null}
           <button className="btn accent" onClick={() => setOpen(null)}>Done</button>

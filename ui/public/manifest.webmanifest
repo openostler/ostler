@@ -1,0 +1,19 @@
+{
+  "name": "Ostler",
+  "short_name": "Ostler",
+  "description": "The open vehicle platform: live data, diagnostics and the session logbook, on the head unit, phone, tablet and desktop.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#0e1012",
+  "theme_color": "#1b1b1b",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["utilities", "navigation"],
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" }
+  ]
+}

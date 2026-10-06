@@ -792,3 +792,18 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   the Brain", "Needs the Brain"). §5.1's device entries gain `memory` (`psram_kb`), and a
   `pbroker` role entry may carry `max_clients` (at most 5 until the bench), so an always-on
   add-on module with at least 2 MB of PSRAM can be the last parked-broker fallback.
+- 2026-10-06: as built, U1 Shell (no decision changed; the spec stays v0.9). Built in
+  `ui/src/shell/` and `ui/src/destinations/`: the six layout classes and the kiosk flag,
+  the strip as chip descriptors (worst telltale, Link with the system in session and the
+  node's power badge from §3.8, REC, 12 V, clock, Mark; the phone keeps 2–5 and 9), the
+  rail or bottom bar from a destination registry, Home / Diagnose / Logs / More holding
+  today's screens, Drive mode, module select into Diagnose (list pane on HU-9/10, HU-wide,
+  tablet, desktop; compact switcher on HU-7 and phone), the fault modal replaced by the
+  telltale, and the app-model §9 seams; tokens, Material Symbols, the manifest and `Intl`
+  per §10.1. Deferred by design: driving state and every lockout (U2; until then the state
+  is "unknown", landing is Home and the server gate decides), the Vehicle chip (U6),
+  Security and the device slot (registered, hidden until a node manifest, U5), Overview
+  and Scan all (U3), the Brain's state in the Link chip (no data yet), Network (later),
+  `driver_side` in the pack layout (rail on the left until the pack declares it).
+  Playwright covers 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and
+  an axe WCAG 2.2 AA scan per class.

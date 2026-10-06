@@ -30,7 +30,7 @@ export function useCatalog(module: string) {
   return { catalog: current ? state.catalog : null, error: current ? state.error : null, reload };
 }
 
-/** The header dropdown's module list with coverage (GET /catalog); null until loaded or
+/** Diagnose's system list with coverage (GET /catalog); null until loaded or
  * when the server has no /catalog (then the caller falls back to the known module names). */
 export function useCatalogModules(refreshKey: string) {
   const [mods, setMods] = useState<CatalogModule[] | null>(null);

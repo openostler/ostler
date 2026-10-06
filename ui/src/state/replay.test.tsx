@@ -9,8 +9,9 @@ import type { CatalogAction } from "../api/schemas";
 import { useAction } from "../api/useAction";
 import { ActionButton } from "../components/ActionButton";
 import { ConnectionNotice } from "../components/ConnectionNotice";
-import { ConnectionPill } from "../components/ConnectionPill";
 import { GlobalTransport } from "../components/GlobalTransport";
+import { Strip } from "../shell/Strip";
+import { stripChips } from "../shell/strip";
 import { renderWithApp } from "../test/renderWithApp";
 import { AppCtx, type AppContext } from "./app";
 import { initialLive } from "./live";
@@ -75,16 +76,21 @@ describe("read-only actions in replay", () => {
     expect(screen.getByRole("button", { name: "A/C Fan" })).toBeInTheDocument();
   });
 
-  it("the pill reads Replay · Exit to live, exits on click, and the connection notice is hidden", () => {
+  it("the strip's Link chip reads Replay · Exit to live and exits on click; the connection notice is hidden", () => {
     const r = replaying();
-    renderWithApp(withReplay(r, <><ConnectionPill /><ConnectionNotice /></>), {
-      snap: { status: "error", ts_utc: "2026-10-05T09:00:00.000Z", conn: "error", signals: {}, faults: [] },
+    const snap = { status: "error", ts_utc: "2026-10-05T09:00:00.000Z", conn: "error", signals: {}, faults: [] };
+    const chips = stripChips({
+      layout: "hu7", snap, linkUp: true, replaying: true, admin: false, systemName: "TD5 (engine)",
+      unacked: 0, clock: "09:00", quantity: (v, u) => `${v} ${u}`,
     });
+    const onOpen = vi.fn((o: string) => o === "exit-replay" && r.exit());
+    renderWithApp(withReplay(r, <><Strip chips={chips} onOpen={onOpen} /><ConnectionNotice /></>), { snap });
     const pill = screen.getByRole("button", { name: "Replay — Exit to live" });
-    expect(pill).toHaveTextContent("Replay · Exit to live");
-    expect(pill).toHaveClass("pill-replay");
+    expect(pill).toHaveTextContent("ReplayExit to live");
+    expect(pill).toHaveClass("tone-replay");
     expect(screen.queryByText("No connection")).not.toBeInTheDocument();
     fireEvent.click(pill);
+    expect(onOpen).toHaveBeenCalledWith("exit-replay");
     expect(r.exit).toHaveBeenCalled();
   });
 });

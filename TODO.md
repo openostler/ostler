@@ -38,6 +38,24 @@ Updated 2026-10-06. Check off when done.
 - [ ] Move `server/` (community endpoint) into the private `ostler-cloud` repo with its
       history (it was left out of this repo at the split).
 
+## UI shell (U1 follow-ups, [UI spec](specs/2026-10-06-ui-architecture-design.md) §10)
+
+- [ ] **`driver_side` in the pack layout:** the rail follows `layout.driver_side`
+      (`"left" | "right"`); the D2 pack's `layout.json` should say `"right"` (RHD), and
+      `schemas/layout.schema.json` must allow the key first. Until then the rail is on the
+      left unless the kiosk flag says `side=right`.
+- [ ] **The page title:** `ui/index.html` still reads `<title>D2 Diag</title>` because
+      `tests/test_web.py` asserts it; rename it to Ostler (the manifest's name) together
+      with those server tests.
+- [ ] **Head-unit type sizes for content:** the shell uses the 76 px targets and 24 px gap
+      on head units, but today's screens keep their phone-sized text; the 32/24 px type and
+      driver-safe templates arrive with U2's lockouts.
+- [ ] **Logs year heatmap:** its 10 px day cells are exempt from WCAG 2.5.8 only because the
+      Dates filter does the same job; the axe scan excludes `.logs-heat-grid`. Consider
+      larger cells on head units.
+- [ ] **Phone strip:** at 393 px the Mark chip shows its flag without the word (its
+      accessible name keeps "Mark"); revisit if the strip gets room.
+
 ## Code / offline
 
 - [ ] **Distinguish comms glitches from real sensor faults.** Signals that share a LID
@@ -118,8 +136,10 @@ are built. Open:
 - [ ] **Regenerate `tests/fixtures/node/*.jsonl`** from the firmware's `node-fixtures`
       target whenever its payloads change (copied from `ostler-firmware` ceb4cc7).
 - [ ] **UI states of §10** ("Node asleep · wakes on …", "Node offline", "Waiting for the
-      node", "Node not reading <module>", "before restart"): the snapshot carries them; the
-      UI shows only the generic connection states and stale ages so far.
+      node", "Node not reading <module>", "before restart"): the snapshot carries them. U1
+      shows the node's power state as a badge in the strip's Link chip (Asleep, Waking…,
+      Kept awake, Shutting down, Offline); the "wakes on …" detail and the other states
+      are still open.
 - [x] **Mosquitto conformance in CI:** the `broker` job installs Mosquitto on the runner
       and runs the `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`, mTLS and the ACL
       included.

@@ -2,15 +2,15 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.3
+version: 2.4
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
-  contracts in api/, NodeSource, the MQTT client, node recording with the raw tap and the
-  cluster view) and the dev commands.
+  contracts in api/, NodeSource, the MQTT client, node recording with the raw tap, the
+  cluster view and the U1 UI shell) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -72,7 +72,8 @@ VehiclePack    pack.py: the contract + loader (entry-point group "openostler.veh
 Side inputs    gps/ (NMEA fixes) → logbook/ (session recorder + store + index + exports,
                ADR-0009/0011); geo/ (offline GeoNames + OSM Nominatim place names)
 Web            web/: stdlib HTTP + SSE server; serves the built UI from web/static
-UI             ui/: Vite + React + TypeScript app → npm run build → web/static (committed)
+UI             ui/: Vite + React + TypeScript app → npm run build → web/static (committed);
+               ui/src/shell/ is the shell (layout classes, strip, rail, destinations)
 ```
 
 ## Key seams
@@ -209,6 +210,18 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
   groups and descriptions come from `/fields`, which reads the signal store plus
   `sources.DERIVED_FIELDS`. The UI never hard-codes them.
+- **The UI shell (U1, [UI spec](../specs/2026-10-06-ui-architecture-design.md) §3).**
+  `ui/src/shell/` turns today's screens into five destinations: `layoutClass.ts` picks
+  HU-7, HU-9/10, HU-wide, phone, tablet or desktop by aspect and height (the kiosk flag
+  `?display=headunit&side=` overrides); `strip.ts` builds the status strip as chip
+  descriptors and `Strip.tsx` draws them; `destinations.ts` is the registry (slot, order,
+  `requires`, trust, a lazy chunk each) the rail or bottom bar is built from;
+  `routes.ts` names every place (`goTo("diagnose.faults")`); `context.tsx` is
+  `useShell()`, the shell services split from the screen state in `useApp()`. The
+  destinations (`ui/src/destinations/`) wrap the existing screens. Sizes and colours are
+  W3C design tokens (`ui/tokens/*.tokens.json`), served as `virtual:design-tokens.css`.
+  The UI enforces no driving lockout yet: the state is "unknown" until U2, and the
+  server gate decides every action.
 - **Admin and public mode.** Admin routes sit behind HTTP Basic auth when an admin password
   is set (`_Handler._require_admin`); with none they are open, which is for local dev only.
   `--public` therefore refuses to start without a password, and public mode refuses
@@ -321,3 +334,4 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   (`node/tap.py`, `logbook/tap.py`, `logbook/pcapng.py`), the CI `broker` job.
 - 2026-10-06 — v2.3, NodeSource P3 (backend): `manifest` and `role/#`, `node/cluster.py`,
   `GET /cluster`, the serial source's refusal beside a gate-holding node, `device_info`.
+- 2026-10-06 — v2.4, UI U1 Shell: `ui/src/shell/`, the destinations, design tokens.

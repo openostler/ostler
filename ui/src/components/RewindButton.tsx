@@ -15,9 +15,9 @@ const LOOKUP = 5;
 const newestFinished = (sessions: SessionMeta[]) => sessions.find((s) => !s.recording) ?? null;
 
 /**
- * Header ⏪ Rewind (spec §7, §8), before the connection pill. While the Pi is recording it opens
+ * ⏪ Rewind (spec §7, §8), in the Logs destination (the header before U1, UI spec §3.2). While the Pi is recording it opens
  * the drive in progress at its newest sample, paused, and follows it as it grows; otherwise the
- * newest finished session at its last sample, paused. Then it switches to Analysis. Hidden in replay (Exit to live takes its place);
+ * newest finished session at its last sample, paused. Then it opens Analysis (route "logs.analysis"). Hidden in replay (Exit to live takes its place);
  * disabled ("No logs yet") when there are no sessions at all. The list is fetched lazily on
  * mount and again on each tap.
  */
@@ -44,7 +44,7 @@ export function RewindButton() {
     if (busy) return;
     if (recording) {
       enter(recording, { at: "end", follow: true });
-      goTo("analysis");
+      goTo("logs.analysis");
       return;
     }
     setBusy(true);
@@ -54,7 +54,7 @@ export function RewindButton() {
       const s = newestFinished(r.sessions) ?? r.sessions[0] ?? null;
       if (!s) { toast("No logs yet", true); return; }
       enter(s.id, { at: "end" });
-      goTo("analysis");
+      goTo("logs.analysis");
     } catch (e) {
       toast(`Could not load the logs: ${(e as Error).message}`, true);
     } finally {
@@ -66,14 +66,14 @@ export function RewindButton() {
   const disabled = !recording && hasLogs === false;
   return (
     <button
-      className="chip hrewind"
+      className="btn rewind-btn"
       aria-label="Rewind"
       title={disabled ? "No logs yet" : recording ? "Rewind to the latest sample" : "Open the last drive at its end"}
       disabled={disabled || busy}
       onClick={rewind}
     >
       <span aria-hidden="true">⏪</span>
-      <span className="hrewind-w" aria-hidden="true">Rewind</span>
+      <span aria-hidden="true">Rewind</span>
     </button>
   );
 }

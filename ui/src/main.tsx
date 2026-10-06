@@ -5,7 +5,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+// the design tokens (ui/tokens/*.tokens.json) first: styles.css builds on them
+import "virtual:design-tokens.css";
 import "./styles.css";
+// the shell after the shared styles: its sizes win over the generic .btn and .seg rules
+import "./shell/shell.css";
 // Composition root: each vehicle pack registers its Drive views (vehicles/registry.ts).
 import "./vehicles/lr_d2";
 

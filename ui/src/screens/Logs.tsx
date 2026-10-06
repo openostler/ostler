@@ -24,7 +24,7 @@ export function Logs() {
   // session enters replay there.
   const open = (id: string) => {
     if (id !== snap?.recording?.session) replay.enter(id);
-    goTo("analysis");
+    goTo("logs.analysis");
   };
   return (
     <div className="stack logs">

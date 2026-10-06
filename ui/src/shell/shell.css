@@ -1,0 +1,181 @@
+/*
+ * SPDX-FileCopyrightText: 2026 OpenOstler contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/* ---- The shell (U1; UI spec §3) -------------------------------------------------
+   .app carries the layout class (data-layout) and the rail side (data-side). The sizes per
+   class (--rail-w, --strip-h, --nav-item, --target, --gap, --type-*) are design tokens
+   (ui/tokens/size.tokens.json). Landscape classes: a full-height rail on the driver's side
+   and a column (strip, banners, page, replay transport). Phone: the column, then the bottom
+   bar; the 900 px cap stays only there. */
+.app {
+  position: relative; display: flex; flex-direction: row; height: 100vh; height: 100dvh;
+  background: var(--bg-body); overflow: hidden;
+}
+.app[data-layout="phone"], .app.app-plain { flex-direction: column; max-width: 900px; margin: 0 auto; }
+.column { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.body { flex: 1; min-height: 0; display: flex; }
+.body > main { min-width: 0; }
+
+/* ---- The status strip (§3.2): one row, never scrolls; chips ≥ 48 px with icon and word */
+.strip {
+  display: flex; flex-shrink: 0; align-items: center; gap: 8px; overflow: hidden;
+  min-height: var(--strip-h); padding: calc((var(--strip-h) - var(--chip-min-h)) / 2) 12px;
+  padding-top: max(calc((var(--strip-h) - var(--chip-min-h)) / 2), env(safe-area-inset-top));
+  background: var(--raised); border-bottom: 1px solid var(--line);
+}
+.schip {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0;
+  min-height: var(--chip-min-h); min-width: var(--chip-min-h); padding: 0 12px;
+  border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface);
+  color: var(--text-1); font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer;
+}
+span.schip { cursor: default; border-color: transparent; background: transparent; padding: 0 6px; }
+.schip-face { display: inline-flex; align-items: center; gap: 6px; }
+.schip:disabled { color: var(--text-3); cursor: default; }
+.schip .icon { flex: 0 0 auto; }
+.schip-word { font-variant-numeric: tabular-nums; }
+.schip-detail { font-weight: 600; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.schip-note {
+  display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; border-radius: 6px;
+  background: var(--sunken); color: var(--text-1); font-size: 12px; font-weight: 700;
+}
+/* the Link chip gives way first when the row is tight */
+.schip-link { flex-shrink: 1; min-width: var(--chip-min-h); overflow: hidden; }
+/* the right-hand group: 12 V and the clock, then Mark at the end */
+.schip-clock { margin-left: auto; }
+.schip-battery { margin-left: auto; }
+.schip-battery + .schip-clock { margin-left: 0; }
+.schip-slot { display: flex; flex-shrink: 0; }
+.schip-slot:empty { display: none; }
+/* ISO 2575 colours for telltales only: amber warning, red alarm, always with icon and word */
+.schip.tone-warn { border-color: var(--warn); background: var(--warn-bg); }
+.schip.tone-warn .icon { color: var(--warn); }
+.schip.tone-alarm { border-color: var(--alarm); background: var(--alarm-bg); }
+.schip.tone-alarm .icon { color: var(--alarm); }
+/* REC: the dot is red, the chip stays calm */
+.schip-rec.tone-alarm { border-color: var(--line-strong); background: var(--surface); }
+/* motion only for red alarms (§2.7): a new current fault pulses until the sheet is seen */
+.schip.attention.tone-alarm { animation: telltale-flash 1.2s ease-in-out infinite; }
+.schip.attention.tone-warn { box-shadow: 0 0 0 2px var(--warn); }
+@keyframes telltale-flash { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--alarm); } }
+/* replay: the Link chip is the way back, "Replay · Exit to live", flashing amber */
+.schip.tone-replay { border-color: var(--warn); background: var(--warn-bg); animation: replay-flash 1.6s ease-in-out infinite; }
+.schip.tone-replay .icon { color: var(--warn); }
+@media (prefers-reduced-motion: reduce) {
+  .schip.attention.tone-alarm, .schip.tone-replay { animation: none; }
+  .schip.attention.tone-alarm { box-shadow: 0 0 0 2px var(--alarm); }
+}
+.app[data-layout="phone"] .strip { gap: 6px; padding-left: 8px; padding-right: 8px; }
+.app[data-layout="phone"] .schip { padding: 0 10px; }
+.app[data-layout="phone"] .schip-detail { display: none; }
+.app[data-layout="phone"] .schip-slot-mark { margin-left: auto; }
+.app[data-layout="phone"] .schip-mark .schip-word, .app[data-layout="phone"] .mark-btn .schip-word { display: none; }
+@media (max-width: 380px) {
+  .app[data-layout="phone"] .schip-telltale .schip-word { font-size: 13px; }
+}
+
+/* ---- Destinations: the rail (landscape) and the bottom bar (phone), §3.3 ---------- */
+.rail {
+  flex: 0 0 var(--rail-w); width: var(--rail-w); display: flex; flex-direction: column; gap: 8px;
+  padding: 8px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom));
+  background: var(--raised); overflow: hidden;
+}
+.app[data-side="left"] .rail { order: -1; border-right: 1px solid var(--line); }
+.app[data-side="right"] .rail { border-left: 1px solid var(--line); }
+.navitem {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: var(--nav-item); padding: 6px 4px; border: 1px solid transparent; border-radius: 12px;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.rail .navitem { width: 100%; flex-shrink: 0; }
+.navitem[aria-current="page"] { background: var(--surface); color: var(--text-1); border-color: var(--line-strong); }
+.navitem[aria-current="page"] .icon { color: var(--accent); }
+.navlabel { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navdrive { margin-top: auto; color: var(--text-1); border-color: var(--line-strong); background: var(--surface); }
+.bar {
+  display: flex; flex-shrink: 0; background: var(--raised); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bar .navitem { flex: 1 1 0; min-width: 0; border-radius: 0; }
+.bar .navitem[aria-current="page"] { background: transparent; border-color: transparent; }
+
+/* ---- Head-unit sizes: 76 px targets and the 24 px gap -------------------------------- */
+.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) main { gap: var(--gap); padding: var(--gap); }
+.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .navitem { font-size: 15px; }
+
+/* HU-wide: the vehicle pane, always on (§3.1); main widens over the secondary pane until a
+   camera or mini-timeline fills it (U5) */
+.vehiclepane {
+  flex: 0 0 var(--vehicle-pane); width: var(--vehicle-pane); overflow-y: auto; padding: var(--gap);
+  display: flex; flex-direction: column; gap: 16px; border-right: 1px solid var(--line); background: var(--bg-body);
+}
+.vehiclepane > * { flex-shrink: 0; }
+
+/* ---- Drive mode (§3.5): full screen with the strip and a back target --------------- */
+.drivemode { gap: 16px; }
+.drivemode-back {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+  min-height: var(--target); min-width: var(--target); font-size: 16px;
+}
+.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .drivemode .drive2 { grid-template-columns: repeat(3, 1fr); }
+.drivemode .stat-value { font-size: max(56px, min(11vw, 72px)); }
+
+/* ---- Home (§3.4) ----------------------------------------------------------------- */
+.drive-btn {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  min-height: max(var(--target), 64px); font-size: var(--type-secondary); font-weight: 700;
+}
+.home-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.home-cards:empty { display: none; }
+.home-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: var(--target);
+  color: var(--text-1); font: inherit; text-align: left;
+}
+button.home-card { cursor: pointer; }
+.home-card .kicker { display: inline-flex; align-items: center; gap: 6px; }
+.home-card-title { font-size: 18px; font-weight: 700; }
+
+/* ---- Diagnose (§4.2): the system list beside the detail on wide classes -------------- */
+.diag-split { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: var(--gap); align-items: start; }
+.app[data-layout="tablet"] .diag-split { grid-template-columns: 360px minmax(0, 1fr); }
+.diag-detail { min-width: 0; }
+.syslist { display: flex; flex-direction: column; gap: 8px; }
+.sysrow {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--target);
+  padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+  color: var(--text-1); font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
+}
+.sysrow[aria-current="true"] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.sysrow:disabled { color: var(--text-3); cursor: default; }
+.sysrow-state { color: var(--text-2); white-space: nowrap; }
+.diag-id { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+.diag-id .modctl { height: 48px; }
+.diag-sysname { font-size: 18px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
+.areas { display: flex; gap: 6px; overflow-x: auto; }
+.area-tab {
+  flex: 1 0 auto; min-height: var(--target); padding: 0 12px; border: 1px solid var(--line-strong);
+  border-radius: 10px; background: var(--raised); color: var(--text-2); font: inherit; font-weight: 600; cursor: pointer;
+}
+.area-tab[aria-current="page"] { background: var(--text-1); color: var(--surface); border-color: var(--text-1); }
+.app[data-layout="phone"] .area-tab { padding: 0 8px; font-size: 13px; }
+
+/* ---- Sub-navigation (Logs views, Developer pages) and More's rows --------------------- */
+.subnav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.subnav .seg button { min-height: var(--target); padding: 0 16px; font-size: 14px; }
+.subnav .seg button[aria-current="page"] { background: var(--text-1); color: var(--surface); }
+.subnav-back { min-height: var(--target); }
+.rewind-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: var(--target); }
+.morelist { display: flex; flex-direction: column; gap: 8px; }
+.morerow {
+  display: flex; align-items: center; gap: 12px; min-height: var(--target); padding: 8px 16px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text-1);
+  font: inherit; font-size: 16px; font-weight: 600; text-align: left; cursor: pointer;
+}
+.morerow-txt { display: flex; flex-direction: column; gap: 2px; }
+.morerow-txt .small { font-weight: 500; }
+
+/* Home's vehicle card on landscape classes: more, smaller tiles (§3.1: HU-7 2×2 cards) */
+.app:not([data-layout="phone"]) .vehicle-card .drive2 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }

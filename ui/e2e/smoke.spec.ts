@@ -15,6 +15,16 @@ async function returningUser(page: Page) {
   });
 }
 
+/** A destination in the rail or bottom bar. */
+const dest = (page: Page, name: string) =>
+  page.getByRole("navigation", { name: "Destinations" }).getByRole("button", { name, exact: true });
+
+/** Open a Diagnose area (Faults, Inputs, Outputs, Utilities, Settings). */
+async function area(page: Page, name: string) {
+  await dest(page, "Diagnose").click();
+  await page.getByRole("navigation", { name: "Areas" }).getByRole("button", { name, exact: true }).click();
+}
+
 test("first start asks for consent before anything else", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("Before you connect")).toBeVisible();
@@ -23,14 +33,14 @@ test("first start asks for consent before anything else", async ({ page }) => {
   await expect(page.getByText("Before you connect")).toBeHidden();
 });
 
-test("simulated live data streams into Drive and Inputs", async ({ page }) => {
+test("simulated live data streams into Home and Inputs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
   await expect(page.locator('[data-signal="battery"]')).toContainText("V");
   await page.screenshot({ path: "test-results/drive.png", fullPage: true });
 
-  await page.getByRole("button", { name: "Inputs" }).click();
+  await area(page, "Inputs");
   await expect(page.getByText("Temperatures")).toBeVisible();
   const rpm = page.locator('.srow[data-signal="rpm"] .cv-num');
   const first = await rpm.textContent();
@@ -38,55 +48,64 @@ test("simulated live data streams into Drive and Inputs", async ({ page }) => {
   await page.screenshot({ path: "test-results/inputs.png", fullPage: true });
 });
 
-/** Pick a module in the header dropdown and wait for the server to switch. */
+/** Pick a module in Diagnose's switcher and wait for the server to switch. */
 async function switchModule(page: Page, id: string) {
   const select = page.getByRole("combobox", { name: "Module" });
+  if (!(await select.isVisible())) await dest(page, "Diagnose").click();
   await expect(select.locator(`option[value="${id}"]`)).toHaveCount(1);
   await select.selectOption(id);
   await expect(select).toHaveValue(id);
 }
 
-test("the eight tabs (Analysis after Logs), no Connect or Capabilities", async ({ page }) => {
+test("the destinations hold today's screens (UI spec §3.4), no Connect or Capabilities", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
-  const tabs = page.getByRole("navigation", { name: "Screens" }).getByRole("button");
-  await expect(tabs).toHaveCount(8);
-  for (const t of ["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]) {
-    await expect(page.getByRole("navigation").getByRole("button", { name: t, exact: true })).toBeVisible();
-  }
+  await expect(page.getByRole("navigation", { name: "Destinations" }).getByRole("button"))
+    .toHaveText(["Home", "Diagnose", "Logs", "More"]);
+  await dest(page, "Diagnose").click();
+  await expect(page.getByRole("navigation", { name: "Areas" }).getByRole("button"))
+    .toHaveText(["Faults", "Inputs", "Outputs", "Utilities", "Settings"]);
+  await dest(page, "Logs").click();
+  await expect(page.getByRole("navigation", { name: "Logs views" }).getByRole("button")).toHaveText(["Sessions", "Analysis"]);
+  await dest(page, "More").click();
+  await expect(page.getByRole("button", { name: /^Preferences/ })).toBeVisible();
   await expect(page.getByRole("button", { name: "Connect", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Capabilities" })).toHaveCount(0);
 });
 
-test("header: no title, one Module control, % mapped only in Experimental, fits 360 px", async ({ page }) => {
+test("strip: no title, fits 360 px; Diagnose: one Module control, % mapped only in Experimental", async ({ page }) => {
   await returningUser(page);
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/");
-  const header = page.locator("header");
+  const strip = page.locator("header");
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
-  await expect(header.getByText("D2 Diag")).toHaveCount(0);
-  await expect(header.getByRole("combobox", { name: "Module" })).toBeVisible();
-  await expect(header.locator(".modctl-v")).toHaveText("TD5 (engine)");
-  await expect(header.locator(".mappct")).toHaveCount(0);
-  const fits = async () => header.evaluate((h) => h.scrollWidth <= h.clientWidth);
+  await expect(strip.getByText("D2 Diag")).toHaveCount(0);
+  await expect(strip.getByRole("combobox")).toHaveCount(0); // module select moved to Diagnose
+  const fits = async () => strip.evaluate((h) => h.scrollWidth <= h.clientWidth);
   expect(await fits()).toBe(true);
-  // icon-only Rewind on a phone (the word stays in its aria-label)
-  await expect(header.getByRole("button", { name: "Rewind" })).toBeVisible();
-  await expect(header.locator(".hrewind-w")).toBeHidden();
-  // eight tabs at 48 px: 360 px scrolls; a 393 px phone fits them all
-  const tabsFit = () => page.locator("nav.tabs").evaluate((n) => n.scrollWidth <= n.clientWidth);
+  const barFits = () => page.locator("nav.bar").evaluate((n) => n.scrollWidth <= n.clientWidth);
+  expect(await barFits()).toBe(true);
+  await dest(page, "Diagnose").click();
+  const id = page.locator(".diag-id");
+  await expect(id.getByRole("combobox", { name: "Module" })).toBeVisible();
+  await expect(id.locator(".modctl-v")).toHaveText("TD5 (engine)");
+  await expect(id.locator(".mappct")).toHaveCount(0);
+  // Rewind lives in Logs now, with its word
+  await dest(page, "Logs").click();
+  await expect(page.getByRole("button", { name: "Rewind" })).toBeVisible();
   await page.setViewportSize({ width: 393, height: 852 });
-  expect(await tabsFit()).toBe(true);
   expect(await fits()).toBe(true);
+  expect(await barFits()).toBe(true);
   await page.setViewportSize({ width: 360, height: 780 });
 
   await page.addInitScript(() => localStorage.setItem("d2diag.v2",
     JSON.stringify({ consentDone: true, share: false, trust: "experimental" })));
   await page.reload();
-  await expect(header.locator(".mappct")).toHaveText(/^\d+% mapped$/);
+  await dest(page, "Diagnose").click();
+  await expect(id.locator(".mappct")).toHaveText(/^\d+% mapped$/);
   expect(await fits()).toBe(true);
   // Experimental lists every module, named ABBR (plain words)
-  const select = header.getByRole("combobox", { name: "Module" });
+  const select = id.getByRole("combobox", { name: "Module" });
   await expect(select.locator('option[value="autobox"]')).toHaveText("EAT (auto gearbox)");
   await expect(select.locator('option[value="airbag"]')).toHaveText("SRS (airbag)");
   await page.screenshot({ path: "test-results/header-360.png" });
@@ -98,14 +117,16 @@ test("Rewind opens the drive in progress on Analysis in replay; Exit to live ret
   await returningUser(page);
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
-  const rewind = page.locator("header").getByRole("button", { name: "Rewind" });
+  await dest(page, "Logs").click(); // Rewind moved from the header to Logs (U1)
+  const rewind = page.getByRole("button", { name: "Rewind" });
   await expect(rewind).toBeEnabled();
   await rewind.click();
   const exit = page.locator("header").getByRole("button", { name: "Replay — Exit to live" });
   await expect(exit).toBeVisible();
   await expect(exit).toContainText("Replay");
   await expect(page.getByRole("region", { name: "Replay" })).toHaveCount(0); // no top banner
-  await expect(nav(page, "Analysis")).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("navigation", { name: "Logs views" }).getByRole("button", { name: "Analysis" }))
+    .toHaveAttribute("aria-current", "page");
   await expect(rewind).toHaveCount(0); // Exit to live takes its place
   const slider = page.getByTestId("global-transport").getByRole("slider", { name: "Playback position" });
   // read both in one go (a refresh between two reads would split them)
@@ -128,10 +149,10 @@ test("Rewind opens the drive in progress on Analysis in replay; Exit to live ret
   await expect(rewind).toBeVisible();
 });
 
-test("switching to SLABS from the header keeps the tab", async ({ page }) => {
+test("switching to SLABS in Diagnose keeps the area", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
-  await page.getByRole("navigation").getByRole("button", { name: "Faults", exact: true }).click();
+  await area(page, "Faults");
   await switchModule(page, "slabs");
   await expect(page.getByRole("heading", { name: "Faults" })).toBeVisible();
   await expect(page.locator(".screen-head")).toContainText("SLABS");
@@ -162,13 +183,15 @@ test("the connection pill opens the connection sheet", async ({ page }) => {
 test("Stable hides status chips and coverage; Experimental shows them", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
-  await page.getByRole("navigation").getByRole("button", { name: "Outputs", exact: true }).click();
+  await area(page, "Outputs");
   await expect(page.getByRole("heading", { name: "Outputs" })).toBeVisible();
   await expect(page.locator(".stag")).toHaveCount(0);
   await expect(page.getByTestId("coverage-bar")).toHaveCount(0);
-  await page.getByRole("button", { name: "Preferences" }).click();
+  await dest(page, "More").click();
+  await page.getByRole("button", { name: /^Preferences/ }).click();
   await page.getByRole("radio", { name: /Experimental/ }).click();
   await page.getByRole("button", { name: "Done" }).click();
+  await area(page, "Outputs");
   await expect(page.getByText(/Experimental mode/)).toBeVisible();
   await expect(page.getByTestId("coverage-bar")).toBeVisible();
   await expect(page.locator(".stag").first()).toBeVisible();
@@ -189,7 +212,7 @@ test("admin mode shows Decode with the live sniff and its help, Label, and the d
   await expect(page.getByRole("region", { name: "Glossary terms" })).toContainText("ReadDataByLocalIdentifier");
   await page.screenshot({ path: "test-results/admin-decode.png", fullPage: false });
   await page.keyboard.press("Escape");
-  await page.getByRole("navigation").getByRole("button", { name: "Label", exact: true }).click();
+  await page.getByRole("navigation", { name: "Developer" }).getByRole("button", { name: "Label", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Label" })).toBeVisible();
   await expect(page.getByText(/teach the decoder what bytes mean/)).toBeVisible();
   await expect(page.getByText("Read a LID directly", { exact: false })).toBeVisible();
@@ -213,8 +236,6 @@ async function consentOnly(page: Page) {
 const dismissIfShown = (page: Page) =>
   page.getByRole("button", { name: "Dismiss" }).click({ timeout: 3000 }).catch(() => undefined);
 
-const nav = (page: Page, name: string) =>
-  page.getByRole("navigation").getByRole("button", { name, exact: true });
 
 for (const scheme of ["dark", "light"] as const) {
   test(`screenshots in ${scheme} mode`, async ({ browser }) => {
@@ -226,13 +247,13 @@ for (const scheme of ["dark", "light"] as const) {
     await page.waitForTimeout(2500); // let the sparklines fill
     await dismissIfShown(page);
     await page.screenshot({ path: `test-results/${scheme}-drive-td5.png` });
-    await nav(page, "Inputs").click();
+    await area(page, "Inputs");
     await page.waitForTimeout(300);
     await page.screenshot({ path: `test-results/${scheme}-inputs.png` });
-    await nav(page, "Faults").click();
+    await area(page, "Faults");
     await page.screenshot({ path: `test-results/${scheme}-faults.png` });
-    await nav(page, "Drive").click();
-    await switchModule(page, "slabs"); // the tab stays on Drive
+    await switchModule(page, "slabs");
+    await dest(page, "Home").click();
     await dismissIfShown(page); // SLABS has its own stored faults
     await expect(page.getByRole("img", { name: /Wheel speeds/ })).toBeVisible();
     await page.waitForTimeout(1500);
@@ -241,7 +262,7 @@ for (const scheme of ["dark", "light"] as const) {
     // leave the shared test server on TD5 for other tests
     await dismissIfShown(page);
     await switchModule(page, "td5");
-    await expect(page.getByRole("heading", { name: "Drive" })).toBeVisible();
+    await expect(page.locator(".diag-id .modctl-v")).toHaveText("TD5 (engine)");
     await context.close();
   });
 }
@@ -253,7 +274,7 @@ test("an unknown page gets the app's not-found view; an unknown API path the JSO
   expect(res?.status()).toBe(200); // the server answered the app shell (a deep link survives a reload)
   await expect(page.getByText("Page not found")).toBeVisible();
   await page.getByRole("link", { name: "Open the dashboard" }).click();
-  await expect(page.getByRole("navigation", { name: "Screens" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Destinations" })).toBeVisible();
 
   const api = await request.get("/no/such/page", { headers: { Accept: "application/json" } });
   expect(api.status()).toBe(404);
