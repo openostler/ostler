@@ -17,6 +17,7 @@ import bisect
 import time
 from xml.sax.saxutils import escape, quoteattr
 
+from ..timefmt import rfc3339_utc_ms
 from . import channels as ch
 from .recorder import fmt_num
 
@@ -204,9 +205,7 @@ def to_vbo(rows: "list[dict]", meta: dict, notes=None) -> str:
     return "\r\n".join(out) + "\r\n"
 
 
-def _iso_ms(utc_ms: float) -> str:
-    ms = int(round(utc_ms))
-    return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(ms // 1000)) + f".{ms % 1000:03d}Z"
+_iso_ms = rfc3339_utc_ms  # epoch ms → RFC 3339 UTC ``Z`` (openostler.timefmt)
 
 
 def _gpx_wpts(rows: "list[dict]", notes) -> "list[str]":
@@ -259,3 +258,56 @@ def to_gpx(rows: "list[dict]", meta: dict, notes=None) -> str:
         out.append(pt + "".join(inner) + "</trkpt>")
     out += ["    </trkseg>", "  </trk>", "</gpx>"]
     return "\n".join(out) + "\n"
+
+
+def _num_or_none(v) -> "float | None":
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+
+def to_geojson(rows: "list[dict]", meta: dict, notes=None) -> str:
+    """GeoJSON (RFC 7946) FeatureCollection (specs/2026-10-06-api-consistency-design.md §5).
+
+    One LineString Feature of every GPS point (full resolution, like GPX; positions
+    ``[lon, lat]``) whose properties carry ``coordTimes`` (RFC 3339 UTC ``Z`` per position,
+    the togeojson convention, from ``Utc`` or else ``start_utc`` + the session ms; null when
+    neither is known), ``t_ms`` (session ms per position), ``id`` and ``start_utc``. Plus a
+    Point Feature per note at the GPS point nearest its time (as GPX has ``<wpt>``), with
+    ``kind``, ``text``, ``tags``, ``t_ms`` and ``time``. No ``crs`` member (RFC 7946 §4).
+    """
+    import json
+
+    coords: "list[list[float]]" = []
+    times: "list[str | None]" = []
+    t_ms: "list[float]" = []
+    for r in rows:
+        lat, lon = _num_or_none(r.get("GPS_Latitude")), _num_or_none(r.get("GPS_Longitude"))
+        if lat is None or lon is None:
+            continue
+        t = float(r.get("Interval") or 0)
+        utc = _num_or_none(r.get("Utc"))
+        coords.append([lon, lat])
+        t_ms.append(int(t) if t.is_integer() else t)
+        times.append(_iso_ms(utc) if utc is not None else (_clock(meta, t) or None))
+    features: "list[dict]" = []
+    if len(coords) >= 2:  # a LineString needs two positions
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": coords},
+            "properties": {"id": meta.get("id"), "start_utc": meta.get("start_utc"),
+                           "coordTimes": times, "t_ms": t_ms},
+        })
+    if coords and notes:
+        for n in notes:
+            t = _num_or_none(n.get("t"))
+            if t is None:
+                continue
+            i = nearest_index(t_ms, t)
+            features.append({
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": coords[i]},
+                "properties": {"id": n.get("id"), "kind": n.get("kind") or "note",
+                               "text": n.get("text") or "", "tags": list(n.get("tags") or []),
+                               "t_ms": n.get("t"), "time": _clock(meta, t) or None},
+            })
+    return json.dumps({"type": "FeatureCollection", "features": features},
+                      ensure_ascii=False) + "\n"

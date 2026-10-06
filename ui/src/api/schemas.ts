@@ -41,7 +41,10 @@ export type PortInfo = z.infer<typeof PortInfo>;
 export const ActiveTest = z.object({
   action: z.string(),
   label: z.string(),
+  /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
   since: z.number(),
+  /** RFC 3339 UTC: when the test was started. */
+  since_utc: z.string().optional(),
   stop: z.string(),
 });
 export type ActiveTest = z.infer<typeof ActiveTest>;
@@ -63,7 +66,10 @@ export type GpsFix = z.infer<typeof GpsFix>;
 /** The session being recorded right now (null when idle). */
 export const Recording = z.object({
   session: z.string(),
+  /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
   since: z.number(),
+  /** RFC 3339 UTC: when the session started. */
+  since_utc: z.string().optional(),
   rows: z.number(),
   /** "recording" while connected; "paused" while the car is disconnected (no rows written). */
   state: z.string().optional(), // absent = "recording" (older servers)
@@ -88,8 +94,10 @@ export const Snapshot = z.object({
   connect_phase: z.string().nullable().optional(),
   /** Connection state (ADR-0008 spec): disconnected|connecting|connected|lost|reconnecting|error. */
   conn: z.string().optional(),
-  /** Server epoch seconds of this snapshot. */
+  /** @deprecated server epoch seconds of this snapshot; use ts_utc (removed in API 0.2.0) */
   ts: z.number().optional(),
+  /** RFC 3339 UTC instant of this snapshot. */
+  ts_utc: z.string().optional(),
   /** Car battery in volts, or null when unknown. */
   battery_v: z.number().nullable().optional(),
   port: PortInfo.optional(),
@@ -404,13 +412,30 @@ export const SessionHistogram = z.object({
 export type SessionHistogram = z.infer<typeof SessionHistogram>;
 export const SessionMetaReply = z.looseObject({ ok: z.boolean(), error: z.string().optional(), meta: SessionMeta.optional() });
 
-/** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; track = [lon, lat, t_ms]. */
+/** A GeoJSON (RFC 7946) LineString Feature: [lon, lat] positions, properties.t_ms = session ms each. */
+export const GeoJsonTrace = z.looseObject({
+  type: z.literal("Feature"),
+  geometry: z.looseObject({
+    type: z.literal("LineString"),
+    coordinates: z.array(z.tuple([z.number(), z.number()])),
+  }),
+  properties: z.looseObject({ t_ms: z.array(z.number()) }),
+});
+export type GeoJsonTrace = z.infer<typeof GeoJsonTrace>;
+
+/** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; trace = the GPS track. */
 export const SessionData = z.object({
   id: z.string(),
   t: z.array(z.number()),
+  /** @deprecated epoch ms per sample; use t0_utc + t (removed in API 0.2.0) */
   utc: z.array(z.number().nullable()),
+  /** RFC 3339 UTC instant of session ms 0 (null without a UTC time). */
+  t0_utc: z.string().nullable().optional(),
   ch: z.record(z.string(), z.array(z.number().nullable())),
+  /** @deprecated [lon, lat, t_ms]; use trace (removed in API 0.2.0) */
   track: z.array(z.tuple([z.number(), z.number(), z.number()])),
+  /** The GPS track as GeoJSON (null below two positions). */
+  trace: GeoJsonTrace.nullable().optional(),
   decimated: z.boolean(),
   /** Text channels aligned with t (faults joined with "; ", module). */
   text: z.record(z.string(), z.array(z.string().nullable())).optional(),

@@ -30,8 +30,9 @@ and the tests keep the three in step.
   - GeoJSON (RFC 7946) positions and traces;
   - `vid` on every session (U0-A, optional).
 
-  The existing deviations (epoch seconds in the snapshot) are listed there so they can be
-  migrated.
+  The remaining deviations (the deprecated epoch fields) are listed there with their
+  replacement and the release that removes them. A deprecated field or parameter carries
+  `deprecated: true` and `x-ostler-removed-in`.
 - `asyncapi.yaml` takes its payload by `$ref` from `openapi.yaml#/components/schemas/Snapshot`,
   so there is one snapshot definition.
 

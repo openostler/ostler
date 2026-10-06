@@ -40,6 +40,7 @@ from urllib.parse import parse_qs, urlsplit
 from ..kwp2000.kwp2000 import NegativeResponse
 from ..pack import active_pack, canonical_module
 from ..ports import list_serial_ports, resolve_serial_port
+from ..timefmt import rfc3339_utc
 from .docs import DocLibrary
 from .sources import DataSource
 
@@ -47,7 +48,7 @@ from .sources import DataSource
 # Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
 # is answered 404 before it reaches the store (no path traversal through the URL).
 _SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$")
-_EXPORT_FORMATS = ("csv", "vbo", "gpx", "notes")
+_EXPORT_FORMATS = ("csv", "vbo", "gpx", "geojson", "notes")
 _DEFAULT_MAX_POINTS = 2000
 
 # ---- replay API (ADR-0010) ---- #
@@ -253,13 +254,54 @@ def _calibrate(req: "dict") -> "dict":
 
 _capture_lock = threading.Lock()
 
+# RFC 9745: the responses that still carry a deprecated field say so. The deprecations of
+# specs/2026-10-06-api-consistency-design.md §6 date from 2026-10-06 (release 0.1.0); the
+# fields go in 0.2.0. The Link points at the CHANGELOG's Deprecated entry.
+_DEPRECATED_SINCE = 1791244800  # 2026-10-06T00:00:00Z
+_DEPRECATION_HEADERS = {
+    "Deprecation": f"@{_DEPRECATED_SINCE}",
+    "Link": '<https://github.com/openostler/ostler/blob/main/CHANGELOG.md>; '
+            'rel="deprecation"; type="text/markdown"',
+}
+
+
+def _stamp(now: float) -> "dict":
+    """The snapshot's time: ``ts_utc`` (RFC 3339 UTC ``Z``) and the deprecated ``ts``
+    (epoch seconds, removed in 0.2.0)."""
+    return {"ts": now, "ts_utc": rfc3339_utc(now)}
+
+
+def _audio_start_ms(query: "dict") -> "float | None":
+    """The track start of ``POST /sessions/<id>/audio`` in epoch ms: ``start_utc`` (RFC 3339
+    UTC) wins over the deprecated ``start`` (epoch ms); None when neither is given."""
+    import datetime as _dt
+
+    stamp = query.get("start_utc")
+    if stamp:
+        try:
+            t = _dt.datetime.fromisoformat(stamp.strip().replace("Z", "+00:00"))
+        except ValueError:
+            raise ApiError(400, "start_utc must be an RFC 3339 date-time") from None
+        if t.tzinfo is None:
+            raise ApiError(400, "start_utc must carry a UTC offset (Z)")
+        return t.timestamp() * 1000.0
+    start = query.get("start")
+    if start in (None, ""):
+        return None
+    try:
+        return float(start)
+    except ValueError:
+        raise ApiError(400, "start must be epoch ms") from None
+
 
 def _append_capture(path: "str | None", rec: "dict") -> "dict":
     """Append a labelled capture {module, lid, raw, text} to a JSONL file (durable
     dataset for mapping analysis)."""
     if not path:
         return {"ok": True, "stored": False}
-    row = {"t": time.strftime("%Y-%m-%d %H:%M:%S"),
+    # ``t`` is RFC 3339 UTC ``Z`` (spec §4). The file is append-only: rows written before
+    # 0.1.0 keep a local time without an offset, which a reader treats as unknown.
+    row = {"t": rfc3339_utc(time.time()),
            "module": rec.get("module"), "lid": rec.get("lid"),
            "raw": rec.get("raw"), "text": rec.get("text")}
     try:
@@ -513,7 +555,7 @@ class _Handler(BaseHTTPRequestHandler):
         elif path == "/events":
             self._sse()
         elif path == "/snapshot":
-            self._json(self.server.latest)
+            self._json(self.server.latest, headers=_DEPRECATION_HEADERS)
         elif path == "/map":
             if not self._require_admin():
                 return
@@ -896,7 +938,8 @@ class _Handler(BaseHTTPRequestHandler):
                 if max_points < 2:
                     self._error(400, "max must be ≥ 2", "bad_request")
                     return
-                self._json(store.data(sid, channels, max_points=max_points, public=public))
+                self._json(store.data(sid, channels, max_points=max_points, public=public),
+                           headers=_DEPRECATION_HEADERS)
             else:
                 fmt = (q.get("fmt", ["csv"])[0] or "").lower()
                 if fmt not in _EXPORT_FORMATS:
@@ -1008,6 +1051,8 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Connection", "keep-alive")
+        for name, value in _DEPRECATION_HEADERS.items():  # the snapshot's ts and since
+            self.send_header(name, value)
         self.end_headers()
         try:
             while True:
@@ -1986,8 +2031,10 @@ class DiagServer(ThreadingHTTPServer):
 
     # ---- audio (spec §3) ----------------------------------------------- #
     def put_audio(self, sid: str, query: "dict", data: bytes) -> "dict":
-        """``POST /sessions/<id>/audio?track=&seq=&mime=&start=[&end=1]``: one chunk of a
-        phone track into the session being recorded (``end=1`` closes the track)."""
+        """``POST /sessions/<id>/audio?track=&seq=&mime=&start_utc=[&end=1]``: one chunk of
+        a phone track into the session being recorded (``end=1`` closes the track). The
+        track start is ``start_utc`` (RFC 3339) or the deprecated ``start`` (epoch ms);
+        ``start_utc`` wins when both are given."""
         self.check_writable(sid)
         track = query.get("track") or ""
         if not _TRACK_ID.match(track):
@@ -1999,11 +2046,7 @@ class DiagServer(ThreadingHTTPServer):
         if seq < 0:
             raise ApiError(400, "seq must be ≥ 0")
         mime = (query.get("mime") or "audio/webm").strip()
-        start = query.get("start")
-        try:
-            start_ms = float(start) if start not in (None, "") else None
-        except ValueError:
-            raise ApiError(400, "start must be epoch ms") from None
+        start_ms = _audio_start_ms(query)
         end = query.get("end") in ("1", "true")
         rec = self._recorder
         if rec is None or self._rec_closed:
@@ -2197,7 +2240,7 @@ class DiagServer(ThreadingHTTPServer):
             "source": self.source.name,
             "connect_phase": phase,
             "conn": self._conn,
-            "ts": time.time(),
+            **_stamp(time.time()),
         }
 
     def _all_sources(self) -> list:
@@ -2407,7 +2450,7 @@ class DiagServer(ThreadingHTTPServer):
         snap["fault_watch"] = self._fault_watch  # fast fault-polling on/off
         snap["allow_shutdown"] = self._allow_shutdown  # Settings "Shut down Pi" button
         snap["conn"] = self._conn
-        snap["ts"] = time.time()
+        snap.update(_stamp(time.time()))
         bat = (snap.get("signals") or {}).get("battery")
         v = bat.get("v") if isinstance(bat, dict) else None
         snap["battery_v"] = (float(v) if isinstance(v, (int, float)) and not isinstance(v, bool)
@@ -2431,8 +2474,10 @@ class DiagServer(ThreadingHTTPServer):
         else:
             c = commands.get(self.store_module(), action)
             if c is not None and c.stop:
-                self._active_test = {"action": c.action, "label": c.label,
-                                     "since": time.time(), "stop": c.stop}
+                now = time.time()
+                # ``since`` (epoch s) is deprecated for ``since_utc``; removed in 0.2.0
+                self._active_test = {"action": c.action, "label": c.label, "since": now,
+                                     "since_utc": rfc3339_utc(now), "stop": c.stop}
         self.latest = {**self.latest,
                        "active_test": dict(self._active_test) if self._active_test else None}
 

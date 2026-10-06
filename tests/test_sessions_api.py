@@ -308,7 +308,7 @@ def test_export_is_an_attachment_and_bad_format_is_400(tmp_path, served):
     srv = _server(tmp_path)
     get, _ = served(srv)
     demo = _synthetic_id(srv)
-    for fmt in ("csv", "vbo", "gpx"):
+    for fmt in ("csv", "vbo", "gpx", "geojson"):
         code, headers, body = get(f"/sessions/{demo}/export?fmt={fmt}")
         assert code == 200, fmt
         cd = headers["Content-Disposition"]

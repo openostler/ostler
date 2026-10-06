@@ -173,6 +173,9 @@ paths:
       responses:
         "200":
           description: The latest snapshot.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             application/json:
               schema: {$ref: "#/components/schemas/Snapshot"}
@@ -191,6 +194,9 @@ paths:
       responses:
         "200":
           description: An endless SSE stream.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             text/event-stream:
               schema:
@@ -831,7 +837,7 @@ paths:
       parameters:
         - name: ch
           in: query
-          description: Comma-separated channel names; absent → none (time, UTC and track only).
+          description: Comma-separated channel names; absent → none (time, UTC and the trace only).
           schema: {type: string}
         - name: max
           in: query
@@ -839,6 +845,9 @@ paths:
       responses:
         "200":
           description: The data.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             application/json:
               schema: {$ref: "#/components/schemas/SessionData"}
@@ -854,13 +863,17 @@ paths:
     get:
       tags: [logbook]
       operationId: exportSession
-      summary: Download a session as CSV, VBO, GPX 1.1 or a notes CSV.
+      summary: Download a session as CSV, VBO, GPX 1.1, GeoJSON or a notes CSV.
       x-ostler-access: public
       x-ostler-public-mode: filtered
       parameters:
         - name: fmt
           in: query
-          schema: {type: string, enum: [csv, vbo, gpx, notes], default: csv}
+          description: >
+            `geojson` is an RFC 7946 FeatureCollection: one LineString Feature of every GPS
+            point with `coordTimes` (RFC 3339 UTC), `t_ms`, `id` and `start_utc`, plus a
+            Point Feature per note (`kind`, `text`, `tags`, `t_ms`, `time`).
+          schema: {type: string, enum: [csv, vbo, gpx, geojson, notes], default: csv}
       responses:
         "200":
           description: 'An attachment (`Content-Disposition: attachment; filename="…"`).'
@@ -874,6 +887,8 @@ paths:
               schema: {type: string, description: VBO (Racelogic).}
             application/gpx+xml:
               schema: {type: string}
+            application/geo+json:
+              schema: {type: object, description: A GeoJSON FeatureCollection.}
         "400":
           $ref: "#/components/responses/Error"
         "404":
@@ -1009,9 +1024,15 @@ paths:
         - name: mime
           in: query
           schema: {type: string, default: audio/webm}
+        - name: start_utc
+          in: query
+          description: The track's start, an RFC 3339 date-time in UTC. Wins over `start`.
+          schema: {$ref: "#/components/schemas/Rfc3339Utc"}
         - name: start
           in: query
-          description: The track's start, epoch milliseconds.
+          description: The track's start, epoch milliseconds. Use `start_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
           schema: {type: number}
         - name: end
           in: query
@@ -1180,19 +1201,31 @@ components:
       (`Rfc3339Utc`), optionally with fractional seconds. Durations and offsets inside a
       session are integer milliseconds from the session start (`SessionMs`). Epoch numbers
       appear only inside CSV columns.
+      Exempt: durations and session offsets in milliseconds (`t`, `t_ms`, `start_ms`), CSV
+      columns, and the acceleration samples `[epoch_ms, ax, ay, az]` of `POST
+      /sessions/{id}/accel`.
     timestamp-deviations:
-      - "Snapshot.ts, Recording.since, ActiveTest.since: epoch seconds (EpochSeconds)."
-      - "SessionData.utc and the audio `start` query: epoch milliseconds."
-      - "Captures file rows (`t` in labeled_captures.jsonl): local time without an offset."
+      - "Snapshot.ts (epoch seconds, EpochSeconds): deprecated for Snapshot.ts_utc; removed in 0.2.0."
+      - "Recording.since (epoch seconds): deprecated for Recording.since_utc; removed in 0.2.0."
+      - "ActiveTest.since (epoch seconds): deprecated for ActiveTest.since_utc; removed in 0.2.0."
+      - "SessionData.utc (epoch ms per sample): deprecated for SessionData.t0_utc + t; removed in 0.2.0."
+      - "The audio `start` query (epoch ms): deprecated for `start_utc`; removed in 0.2.0."
+      - "Captures file rows (`t` in labeled_captures.jsonl) written before 0.1.0: local time without an offset (read as unknown; new rows are RFC 3339 UTC)."
+    deprecation: >
+      A deprecated field or parameter carries `deprecated: true` and `x-ostler-removed-in`;
+      it stays for one minor release. Responses that still carry one (`/snapshot`,
+      `/events`, `/sessions/{id}/data`) send `Deprecation: @<epoch>` (RFC 9745) and a
+      `Link` with `rel="deprecation"` to the CHANGELOG.
     units: >
       Values are sent in the storage unit of their COVESA VSS metric (ADR-0016, VSS 6.1
       units file); the UI converts for display with Intl. Today's signal-store units
       (`u`, `unit`, `units`) are the pack's strings, migrating to VSS units at U0/U3.
     geo: >
       Positions are WGS 84 decimal degrees in GeoJSON (RFC 7946) order `[lon, lat]`.
-      Traces are GeoJSON LineStrings (`GeoJsonLineString`) where a standalone trace is
-      exchanged. `SessionData.track` is a compact columnar form `[lon, lat, t_ms]`: the
-      third member is session time, not altitude, so it is not a GeoJSON position as is.
+      Traces are GeoJSON LineStrings (`GeoJsonLineString`); `SessionData.trace` is a
+      LineString Feature whose `properties.t_ms` holds each position's session ms
+      (`GeoJsonTrace`). The deprecated `SessionData.track` (`[lon, lat, t_ms]`, removed in
+      0.2.0) is not GeoJSON: its third member is session time, not altitude.
     vehicle-id: >
       Every session carries `vid` (`Vid`), the vehicle it was recorded on; added by U0-A
       as an optional string and absent on older sessions.
@@ -1203,6 +1236,14 @@ components:
     openness: >
       Response objects are open (`additionalProperties: true`): clients must ignore
       unknown fields, as the UI's Zod schemas do.
+
+  headers:
+    Deprecation:
+      description: RFC 9745 — the response carries a deprecated field (since the given epoch seconds).
+      schema: {type: string, pattern: "^@[0-9]+$"}
+    DeprecationLink:
+      description: 'RFC 8288 link to the deprecation notes: `<…/CHANGELOG.md>; rel="deprecation"`.'
+      schema: {type: string}
 
   securitySchemes:
     adminBasic:
@@ -1340,7 +1381,7 @@ components:
       description: An RFC 3339 date-time in UTC with the `Z` suffix, e.g. `2026-10-05T09:00:00.000Z`.
     EpochSeconds:
       type: number
-      description: 'Legacy: seconds since the Unix epoch (see x-ostler-wire-conventions.timestamp-deviations).'
+      description: 'Deprecated: seconds since the Unix epoch. Every use is deprecated and goes in 0.2.0 (see x-ostler-wire-conventions.timestamp-deviations).'
     SessionMs:
       type: number
       minimum: 0
@@ -1373,6 +1414,30 @@ components:
         bbox:
           type: array
           items: {type: number}
+    GeoJsonTrace:
+      type: object
+      description: >
+        An RFC 7946 Feature with a LineString of `[lon, lat]` positions; `properties.t_ms`
+        holds each position's session ms, in the same order (the togeojson `coordTimes`
+        convention in session time: `t0_utc` + `t_ms` gives the instant).
+      required: [type, geometry, properties]
+      properties:
+        type: {const: Feature}
+        geometry:
+          allOf:
+            - $ref: "#/components/schemas/GeoJsonLineString"
+            - type: object
+              properties:
+                coordinates:
+                  type: array
+                  items: {type: array, maxItems: 2}
+        properties:
+          type: object
+          required: [t_ms]
+          properties:
+            t_ms: {type: array, items: {$ref: "#/components/schemas/SessionMs"}}
+          additionalProperties: true
+      additionalProperties: true
     NumberPair:
       type: [array, "null"]
       prefixItems: [{type: number}, {type: number}]
@@ -1449,11 +1514,16 @@ components:
       additionalProperties: true
     ActiveTest:
       type: object
-      required: [action, label, since, stop]
+      required: [action, label, since, since_utc, stop]
       properties:
         action: {type: string}
         label: {type: string}
-        since: {$ref: "#/components/schemas/EpochSeconds"}
+        since:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the test was started. Use `since_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        since_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         stop: {type: string}
       additionalProperties: true
     GpsFix:
@@ -1473,10 +1543,15 @@ components:
     Recording:
       type: object
       description: The session being recorded right now.
-      required: [session, since, rows]
+      required: [session, since, since_utc, rows]
       properties:
         session: {type: string}
-        since: {$ref: "#/components/schemas/EpochSeconds"}
+        since:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the session started. Use `since_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        since_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         rows: {type: number}
         state: {type: string, description: "recording | paused (absent = recording)"}
       additionalProperties: true
@@ -1520,7 +1595,12 @@ components:
         conn:
           type: string
           description: "disconnected | connecting | connected | lost | reconnecting | error"
-        ts: {$ref: "#/components/schemas/EpochSeconds"}
+        ts:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the snapshot was taken. Use `ts_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        ts_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         battery_v: {type: [number, "null"]}
         port: {$ref: "#/components/schemas/PortInfo"}
         active_test:
@@ -2134,14 +2214,21 @@ components:
     SessionData:
       type: object
       description: "Columnar replay data: `t` is session ms; `ch[name][i]` aligns with `t[i]`."
-      required: [id, t, utc, ch, track, decimated]
+      required: [id, t, utc, t0_utc, ch, track, trace, decimated]
       properties:
         id: {type: string}
         t: {type: array, items: {$ref: "#/components/schemas/SessionMs"}}
         utc:
           type: array
-          description: Epoch milliseconds per row (null when unknown).
+          description: Epoch milliseconds per row (null when unknown). Use `t0_utc` + `t`.
           items: {type: [number, "null"]}
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        t0_utc:
+          description: The wall-clock instant of session ms 0, from the first sample with a UTC time; null without one.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
         ch:
           type: object
           additionalProperties: {type: array, items: {type: [number, "null"]}}
@@ -2151,12 +2238,19 @@ components:
           additionalProperties: {type: array, items: {type: [string, "null"]}}
         track:
           type: array
-          description: "`[lon, lat, t_ms]` per GPS point (GeoJSON coordinate order; the third member is session ms)."
+          description: "`[lon, lat, t_ms]` per GPS point (GeoJSON coordinate order; the third member is session ms). Use `trace`."
           items:
             type: array
             prefixItems: [{type: number}, {type: number}, {type: number}]
             minItems: 3
             maxItems: 3
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        trace:
+          description: The GPS track as a GeoJSON LineString Feature (the same reduced points as `track`); null below two positions.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/GeoJsonTrace"}
         decimated: {type: boolean}
       additionalProperties: true
     SessionEvent:

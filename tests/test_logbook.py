@@ -9,9 +9,11 @@ import pytest
 pytestmark = pytest.mark.needs_pack
 pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see tests/conftest.py)")
 
+import calendar
 import json
 import os
 import re
+import time
 from collections import namedtuple
 
 
@@ -79,7 +81,8 @@ def test_starts_on_connect_and_ends_after_idle(tmp_path):
     c, r = make(tmp_path)
     r.feed(snap(rpm=800), None)
     st = r.status()
-    assert st == {"session": "20261006T090000Z", "since": T0, "rows": 1, "state": "recording"}
+    assert st == {"session": "20261006T090000Z", "since": T0,
+                  "since_utc": "2026-10-06T09:00:00.000Z", "rows": 1, "state": "recording"}
     m = meta_of(tmp_path, st["session"])
     assert set(m) == META_KEYS and m["recording"] is True and m["end_utc"] is None
     assert m["source"] == "live" and m["synthetic"] is False
@@ -138,7 +141,8 @@ def test_paused_then_reconnect_resumes_same_session(tmp_path):
     assert r.status()["state"] == "paused"
     c.t = 200.0
     r.feed(snap(rpm=900), None)
-    assert r.status() == {"session": sid, "since": T0, "rows": 2, "state": "recording"}
+    assert r.status() == {"session": sid, "since": T0, "since_utc": "2026-10-06T09:00:00.000Z",
+                          "rows": 2, "state": "recording"}
     c.t = 200.0 + IDLE_S - 1
     r.feed(snap(connected=False), None)
     assert r.status()["session"] == sid  # idle counts from the last connected poll
@@ -448,11 +452,28 @@ def test_store_unknown_and_public_hidden(tmp_path):
 def test_store_data_shape(tmp_path):
     sid = _recorded(tmp_path)
     d = SessionStore(str(tmp_path / "sessions"), demo_root=None).data(sid, "rpm,GPS_Speed,nope")
-    assert set(d) == {"id", "t", "utc", "ch", "text", "track", "decimated"}
+    assert set(d) == {"id", "t", "utc", "t0_utc", "ch", "text", "track", "trace", "decimated"}
     assert d["text"]["module"] == ["td5"] * 10 and d["text"]["faults"] == [None] * 10
     assert set(d["ch"]) == {"rpm", "GPS_Speed"} and d["decimated"] is False
     assert len(d["t"]) == len(d["utc"]) == len(d["ch"]["rpm"]) == 10
     assert d["track"][0] == [-4.68, 56.62, 0] and len(d["track"]) == 10
+    # the RFC 3339 / GeoJSON forms (api-consistency spec §4-§5): t0_utc + t = utc
+    assert d["t0_utc"] == "2026-10-06T09:00:00.000Z"
+    t0 = calendar.timegm(time.strptime(d["t0_utc"][:19], "%Y-%m-%dT%H:%M:%S")) * 1000
+    assert all(u == t0 + t for u, t in zip(d["utc"], d["t"]))
+    trace = d["trace"]
+    assert trace["type"] == "Feature" and trace["geometry"]["type"] == "LineString"
+    assert trace["geometry"]["coordinates"] == [p[:2] for p in d["track"]]
+    assert trace["properties"]["t_ms"] == [p[2] for p in d["track"]]
+
+
+def test_store_data_without_utc_or_gps_has_no_t0_or_trace(tmp_path):
+    from openostler.logbook.store import _t0_utc, trace_feature
+
+    assert _t0_utc([{"Interval": 0, "Utc": None}, {"Interval": 200}]) is None
+    assert _t0_utc([{"Interval": 0}, {"Interval": 500, "Utc": 1791277200500}]) \
+        == "2026-10-06T09:00:00.000Z"
+    assert trace_feature([]) is None and trace_feature([[-4.6, 56.6, 0]]) is None
 
 
 def test_decimation_keeps_min_and_max(tmp_path):

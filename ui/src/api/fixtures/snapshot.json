@@ -118,6 +118,7 @@
   "allow_shutdown": false,
   "conn": "connected",
   "ts": 1791226936.0540018,
+  "ts_utc": "2026-10-05T19:02:16.054Z",
   "battery_v": 14.07,
   "port": {
     "spec": "auto",

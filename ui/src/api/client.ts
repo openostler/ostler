@@ -130,7 +130,7 @@ export const api = {
   sessionAudioUrl: (id: string, track: string) =>
     `/sessions/${encodeURIComponent(id)}/audio/${encodeURIComponent(track)}`,
   /** A download URL (the browser fetches it; not JSON). */
-  sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx") =>
+  sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx" | "geojson") =>
     `/sessions/${encodeURIComponent(id)}/export?fmt=${fmt}`,
   fields: (module: string) => getJson(`/fields?module=${encodeURIComponent(module)}`, FieldsResponse),
   faults: (module: string) => getJson(`/faults?module=${encodeURIComponent(module)}`, FaultsResponse),

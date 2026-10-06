@@ -20,6 +20,13 @@ their own changelogs.
   `0.y.z` until the pack API is frozen: until then a minor bump (`0.y`) may break packs or
   the HTTP API, and a patch bump (`0.y.z`) does not. The version lives in
   `pyproject.toml`; release tags are `v<version>` and must match it.
+- **The HTTP/SSE API version is the platform version** (`info.version` in
+  `api/openapi.yaml` and `api/asyncapi.yaml`). While on `0.y.z`, a field, parameter or
+  route of the API is removed or renamed only after one minor release in which it is
+  marked deprecated (OpenAPI `deprecated: true` with `x-ostler-removed-in`, a *Deprecated*
+  entry here, and RFC 9745 `Deprecation`/`Link` headers on the responses that carry it).
+  Additions can come in any release. Status-code and error-body corrections are listed
+  under *Changed*.
 - **`PACK_API_VERSION`** (`src/openostler/pack.py`) is an integer major. It changes only
   when the `VehiclePack` contract breaks, and the platform refuses a pack built for
   another value.
@@ -52,6 +59,18 @@ their own changelogs.
   - This changelog and the versioning policy above.
 - THIRD_PARTY_LICENSES.md lists the UI libraries bundled in the committed build (React,
   zod, MapLibre GL JS).
+- RFC 3339 UTC timestamps and GeoJSON traces on the wire
+  ([API consistency spec](specs/2026-10-06-api-consistency-design.md) §4-§5, ADR-0017),
+  next to the fields they replace:
+  - the snapshot's `ts_utc`, `recording.since_utc` and `active_test.since_utc`;
+  - `GET /sessions/{id}/data`: `t0_utc` (the instant of session ms 0) and `trace`, a
+    GeoJSON LineString Feature with `properties.t_ms`;
+  - `POST /sessions/{id}/audio?start_utc=` (wins over `start`);
+  - `GET /sessions/{id}/export?fmt=geojson`: an RFC 7946 FeatureCollection with the
+    track (`coordTimes`, `t_ms`) and a Point per note;
+  - `openostler.timefmt.rfc3339_utc()`, the one formatter for wire timestamps;
+  - `labeled_captures.jsonl` rows are written with an RFC 3339 UTC `t` (older rows keep
+    their local time and are read as unknown).
 
 ### Changed
 - HTTP API errors and statuses follow one table
@@ -79,6 +98,13 @@ their own changelogs.
   `license-files`) and needs `setuptools>=77` to build.
 - Every GitHub Action is pinned to a full commit SHA; workflows default to
   `permissions: contents: read`.
+
+### Deprecated
+- Removed in 0.2.0 (API consistency spec §6): the snapshot's `ts`, `recording.since`
+  and `active_test.since` (epoch seconds; use the `_utc` fields), `SessionData.utc`
+  (use `t0_utc` + `t`), `SessionData.track` (use `trace`) and the audio `start` query
+  (use `start_utc`). `/snapshot`, `/events` and `/sessions/{id}/data` send
+  `Deprecation: @1791244800` (2026-10-06) and `Link: <…/CHANGELOG.md>; rel="deprecation"`.
 
 ### Fixed
 - A query string no longer turns an exact route into a 404 (`/snapshot?x`, `/events?x`,

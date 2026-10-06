@@ -25,6 +25,7 @@ import ast
 import base64
 import http.client
 import json
+import re
 import threading
 from pathlib import Path
 
@@ -741,3 +742,135 @@ def test_the_status_table_corrections(openapi, tmp_path, monkeypatch):
             srv.shutdown()
             srv.server_close()
             srv.stop()
+
+
+# ---------------------------------------------------------------- timestamps (spec §4) --- #
+RFC3339_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$")
+
+
+def _properties(schema: dict):
+    """(name, property schema) of every object property in a schema tree."""
+    if isinstance(schema, dict):
+        for name, prop in (schema.get("properties") or {}).items():
+            yield name, prop
+            yield from _properties(prop)
+        for key in ("items", "additionalProperties"):
+            if isinstance(schema.get(key), dict):
+                yield from _properties(schema[key])
+        for key in ("allOf", "oneOf", "anyOf", "prefixItems"):
+            for sub in schema.get(key) or []:
+                yield from _properties(sub)
+
+
+def test_utc_fields_are_rfc3339_and_epoch_fields_deprecated(openapi):
+    schemas = openapi["components"]["schemas"]
+    utc_ref = {"$ref": "#/components/schemas/Rfc3339Utc"}
+    bad = []
+    for sname, schema in schemas.items():
+        for name, prop in _properties(schema):
+            if name.endswith("_utc"):
+                refs = [prop] + list(prop.get("oneOf", [])) if isinstance(prop, dict) else []
+                if not any(r == utc_ref for r in refs):
+                    bad.append(f"{sname}.{name}: not Rfc3339Utc")
+            if isinstance(prop, dict) and prop.get("$ref") == "#/components/schemas/EpochSeconds":
+                bad.append(f"{sname}.{name}: a bare EpochSeconds (wrap it: deprecated: true)")
+            if isinstance(prop, dict) and any(
+                    s.get("$ref") == "#/components/schemas/EpochSeconds"
+                    for s in prop.get("allOf", [])):
+                if prop.get("deprecated") is not True or prop.get("x-ostler-removed-in") != "0.2.0":
+                    bad.append(f"{sname}.{name}: EpochSeconds without deprecated/removed-in")
+    assert not bad, "\n  ".join(bad)
+    for sname, prop in (("Snapshot", "ts_utc"), ("Recording", "since_utc"),
+                        ("ActiveTest", "since_utc"), ("SessionData", "t0_utc")):
+        assert prop in schemas[sname]["properties"], f"{sname}.{prop}"
+
+
+def _fixture_strings(obj, key=""):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            yield from _fixture_strings(v, k)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _fixture_strings(v, key)
+    elif isinstance(obj, str):
+        yield key, obj
+
+
+def test_every_utc_fixture_value_is_rfc3339_z():
+    bad = []
+    for path in sorted(FIXTURES.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        bad += [f"{path.name}: {k}={v!r}" for k, v in _fixture_strings(data)
+                if k.endswith("_utc") and not RFC3339_Z.match(v)]
+    assert not bad, "\n  ".join(bad)
+    snap = json.loads((FIXTURES / "snapshot.json").read_text(encoding="utf-8"))
+    assert RFC3339_Z.match(snap["ts_utc"])
+
+
+def test_the_captures_writer_stamps_rfc3339_utc(tmp_path):
+    from openostler.web.server import _append_capture
+
+    path = tmp_path / "labeled_captures.jsonl"
+    assert _append_capture(str(path), {"module": "alpha", "lid": "01", "raw": "00",
+                                       "text": "1"}) == {"ok": True, "stored": True}
+    row = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    assert RFC3339_Z.match(row["t"]), row["t"]
+
+
+def test_the_audio_start_accepts_start_utc_and_prefers_it():
+    from openostler.web.server import ApiError, _audio_start_ms
+
+    assert _audio_start_ms({}) is None
+    assert _audio_start_ms({"start": "1791277200000"}) == 1791277200000.0
+    assert _audio_start_ms({"start_utc": "2026-10-06T09:00:00.250Z"}) == 1791277200250.0
+    assert _audio_start_ms({"start": "5", "start_utc": "2026-10-06T09:00:00Z"}) \
+        == 1791277200000.0
+    for bad in ({"start_utc": "yesterday"}, {"start_utc": "2026-10-06T09:00:00"},
+                {"start": "soon"}):
+        with pytest.raises(ApiError):
+            _audio_start_ms(bad)
+
+
+def test_responses_with_deprecated_fields_say_so(fake_server):
+    """RFC 9745 ``Deprecation`` and a ``Link rel=deprecation`` on the snapshot, the stream
+    and the replay data (spec §6); the snapshot carries ``ts_utc``."""
+    for path in ("/snapshot", "/events"):
+        status, headers, body = _call(fake_server, "GET", path)
+        assert status == 200 and re.fullmatch(r"@\d+", headers["Deprecation"]), path
+        assert 'rel="deprecation"' in headers["Link"] and "CHANGELOG" in headers["Link"]
+    snap = json.loads(_call(fake_server, "GET", "/snapshot")[2])
+    assert RFC3339_Z.match(snap["ts_utc"])
+    assert "Deprecation" not in _call(fake_server, "GET", "/pack")[1]
+
+
+# ---------------------------------------------------------------- traces (spec §5) ------- #
+def test_the_session_data_trace_is_a_geojson_linestring_feature(openapi):
+    data = json.loads((FIXTURES / "session-data.json").read_text(encoding="utf-8"))
+    trace = data["trace"]
+    assert trace["type"] == "Feature"
+    v = _validator(openapi, "/components/schemas/GeoJsonLineString")
+    assert not list(v.iter_errors(trace["geometry"]))
+    coords = trace["geometry"]["coordinates"]
+    assert all(len(p) == 2 for p in coords)
+    assert len(trace["properties"]["t_ms"]) == len(coords)
+    assert not list(_validator(openapi, "/components/schemas/GeoJsonTrace").iter_errors(trace))
+    assert data["t0_utc"] is None or RFC3339_Z.match(data["t0_utc"])
+
+
+def test_to_geojson_validates_as_a_feature_collection(openapi):
+    from openostler.logbook.export import to_geojson
+
+    rows = [{"Interval": i * 500, "Utc": 1791277200000 + i * 500, "GPS_Latitude": 56.6 + i / 1e4,
+             "GPS_Longitude": -4.68 + i / 1e4} for i in range(3)]
+    fc = json.loads(to_geojson(rows, {"id": "s", "start_utc": "2026-10-06T09:00:00.000Z"},
+                               notes=[{"id": "aaaa0001", "t": 400, "kind": "mark"}]))
+    assert fc["type"] == "FeatureCollection" and "crs" not in fc
+    line = fc["features"][0]
+    v = _validator(openapi, "/components/schemas/GeoJsonLineString")
+    assert not list(v.iter_errors(line["geometry"]))
+    props = line["properties"]
+    assert len(props["coordTimes"]) == len(props["t_ms"]) == len(line["geometry"]["coordinates"])
+    assert all(RFC3339_Z.match(t) for t in props["coordTimes"])
+    point = fc["features"][1]
+    assert point["geometry"]["type"] == "Point" and len(point["geometry"]["coordinates"]) == 2
+    assert RFC3339_Z.match(point["properties"]["time"])
