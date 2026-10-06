@@ -16,8 +16,6 @@ pytest.importorskip("d2diag", reason="needs the Discovery 2 pack 'd2diag' (see t
 
 
 from openostler.kline import (
-    TD5_ECU_ADDRESS,
-    TESTER_ADDRESS,
     KLine,
     KLineTimeout,
     encode,

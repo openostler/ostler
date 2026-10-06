@@ -484,7 +484,7 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query)
-            frag = self.server.docs.html((q.get("id", [""])[0]))
+            frag = self.server.docs.html(q.get("id", [""])[0])
             if frag is None:
                 self.send_error(404)
             else:
@@ -862,7 +862,7 @@ class _Handler(BaseHTTPRequestHandler):
         try:
             while True:
                 payload = json.dumps(self.server.latest)
-                self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
+                self.wfile.write(f"data: {payload}\n\n".encode())
                 self.wfile.flush()
                 time.sleep(self.server.stream_interval)
         except (BrokenPipeError, ConnectionResetError):

@@ -82,7 +82,7 @@ def read_part(path: str) -> "tuple[list[tuple[str, str, float]], list[dict]]":
     """One CSV part → (header cells, rows as dicts). A last line without its newline
     (truncated by a power cut) and any row with the wrong cell count are ignored."""
     try:
-        with open(path, "r", encoding="utf-8", newline="") as fh:
+        with open(path, encoding="utf-8", newline="") as fh:
             text = fh.read()
     except OSError:
         return [], []
@@ -149,7 +149,7 @@ def read_rows(path: str, meta: dict) -> "tuple[list[tuple[str, str, float]], lis
 def read_events(path: str) -> "list[dict]":
     """``events.jsonl`` of a session directory; a truncated or malformed line is skipped."""
     try:
-        with open(os.path.join(path, "events.jsonl"), "r", encoding="utf-8") as fh:
+        with open(os.path.join(path, "events.jsonl"), encoding="utf-8") as fh:
             text = fh.read()
     except OSError:
         return []
@@ -627,7 +627,7 @@ class SessionStore:
                             "session": sid})
         if labeled_path:
             try:
-                with open(labeled_path, "r", encoding="utf-8") as fh:
+                with open(labeled_path, encoding="utf-8") as fh:
                     lines = fh.read().split("\n")
             except OSError:
                 lines = []

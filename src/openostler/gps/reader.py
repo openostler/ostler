@@ -237,7 +237,7 @@ def read_fixes(path: str) -> "list[tuple[int | None, Fix]]":
     merger = FixMerger()
     out: "list[tuple[int | None, Fix]]" = []
     cur_tod: "object" = object()
-    with open(path, "r", encoding="ascii", errors="replace") as fh:
+    with open(path, encoding="ascii", errors="replace") as fh:
         for line in fh:
             d = parse(line)
             if d is None:

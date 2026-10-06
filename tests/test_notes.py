@@ -7,7 +7,6 @@
 import pytest
 
 import json
-import os
 
 from openostler.logbook.notes import NoteLog, read_notes
 from openostler.logbook.recorder import NotRecording, SessionRecorder

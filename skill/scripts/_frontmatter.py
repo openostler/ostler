@@ -115,7 +115,7 @@ def parse_frontmatter(text: str):
 def load(path: str):
     """Read a file and parse its frontmatter. Returns (data, error)."""
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             return parse_frontmatter(fh.read())
     except OSError as exc:  # pragma: no cover - defensive
         return None, f"could not read file: {exc}"

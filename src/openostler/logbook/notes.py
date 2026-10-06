@@ -78,7 +78,7 @@ def _capture(cap) -> "dict | None":
 
 def _read_lines(path: str) -> "list[dict]":
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             text = fh.read()
     except OSError:
         return []

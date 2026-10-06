@@ -133,7 +133,7 @@ def write_json_atomic(path: str, obj: dict) -> None:
 
 def _read_meta(path: str) -> "dict | None":
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             m = json.load(fh)
         return m if isinstance(m, dict) else None
     except (OSError, ValueError):

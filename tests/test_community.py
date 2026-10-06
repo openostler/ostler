@@ -108,7 +108,7 @@ def test_offline_outbox_queues_then_flushes(tmp_path):
     assert c.consent is True and c.state()["registered"] is False
 
     r1 = c.contribute({"module": "td5", "name": "a"})
-    r2 = c.contribute({"module": "td5", "name": "b"})
+    c.contribute({"module": "td5", "name": "b"})
     assert r1["ok"] is False and r1["queued"] is True    # queued, never lost
     assert c.state()["pending"] == 2
 
