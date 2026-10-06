@@ -493,7 +493,7 @@ CAN links are listen-only by default ([ADR-0020](../decisions/adr-0020-can-links
 **Also decided on 2026-10-06:** the extension branch is `Vehicle.Ostler.*` (ADR-0016); the Pi serves
 local HTTPS so phones get service workers ([ADR-0021](../decisions/adr-0021-local-https-on-the-device.md));
 all OVMS vehicles and commands are imported, with commands disabled behind the gates (ADR-0019);
-EKA read/set stays in the D2 pack, gated and opt-in (GOALS §10).
+EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
 
 **Still open:** whether `docs/` is CC BY-SA; CRA legal advice before the first sale.
 

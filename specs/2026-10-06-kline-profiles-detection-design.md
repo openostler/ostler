@@ -1,15 +1,19 @@
 ---
 title: "K-line profiles and detection — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/obd2_kline_reader.md, references/research/muki01/README.md, specs/2026-10-06-u0-seams-design.md, CONSTITUTION.md]
 summary: >
-  Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server precondition until U2). Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7.
+  Approved by the owner on 2026-10-06. Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server flag, a parked confirmation and a speed veto until U2); module-scan sweeps are Parked-only too, and a detected profile is remembered per vehicle (vid) so a re-init never probes. Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7.
 ---
 
 # K-line profiles and detection — design
+
+**Status:** approved by the owner on 2026-10-06; the answers are in
+[Decisions](#decisions-2026-10-06). The questions the owner did not take up stay open and
+block nothing in the first step.
 
 ## Context
 
@@ -152,15 +156,32 @@ connects to status `needs-detect` and sends nothing.
 
 - **With U2:** `refusal()` asks the U2 driving state; only `parked` passes. Unknown speed
   counts as Moving on head-unit classes (ADR-0018 Q5).
-- **Until U2** (interim, removed by the U2 spec): `detect_protocol` is refused unless the
-  server was started with `--kline-detect`, the request carries
+- **Until U2** (interim, owner Q3, 2026-10-06; removed by the U2 spec): `detect_protocol`
+  is refused unless the server was started with `--kline-detect`, the request carries
   `params.confirm_parked: true` (the UI asks "Vehicle parked?"), and no evidence of motion
   exists (GPS fix speed ≥ 3 km/h, or a pack speed signal > 0, refuses). Refusal text:
   "probing an unknown car is allowed only when Parked".
-- **Re-init of a known profile** (pack-declared, or detected earlier in this connection)
-  after a link drop is allowed in every state, with backoff 1, 2, 4, 8 … capped at 30 s
-  unless the pack's own retry policy is set. "This connection" ends on `disconnect`, a port
-  change or a server restart; the detected profile is not persisted.
+- **Re-init of a known profile** (pack-declared, detected earlier, or remembered for this
+  vehicle) after a link drop or a restart is allowed in every state, with backoff 1, 2, 4,
+  8 … capped at 30 s unless the pack's own retry policy is set. A re-init uses only the
+  known profile's own init; it never falls back to the other init method.
+- **Remembered per vehicle** (owner Q5, 2026-10-06). A profile confirmed by `detect()` is
+  stored per `vid` (the U0 vehicle id, never the VIN; ADR-0018 Q7) in the server's state
+  directory beside the remembered CAN rate ([CanLink spec §4](2026-10-06-canlink-isotp-design.md)):
+  `{profile, key_bytes, address, detected_utc}`. On the next connect for that `vid` the
+  source starts from it (`origin: "remembered"`), so a reboot while driving re-inits
+  without probing. Key bytes that differ from the stored ones (a different car on the same
+  `vid`) end the session at once and count as a failure. If the remembered profile's init
+  fails three times, the source drops to
+  `needs-detect` and waits for a Parked `detect_protocol`; it never probes on its own. A
+  vehicle switch in the garage (U6) or `detect_protocol` replaces the entry; Developer can
+  forget it.
+- **Module-scan sweeps are probing** (owner Q4, 2026-10-06). `ModuleScanner.scan()` and
+  `probe_fast`/`probe_slow` sweeps (fast and slow init across addresses) run only under the
+  same Parked gate: through a queued server command, the U2 driving state once it exists
+  and the interim rules above until then. The `module_scan.py` tool refuses to start
+  without `--confirm-parked` (or a "Vehicle parked?" yes at its prompt) and states the
+  rule. A single pack-declared module init is not a sweep.
 - **Manual override:** only in Developer under service mode (U2). Until then a server flag
   `--kline-profile NAME` sets it for the process; no HTTP override.
 
@@ -176,7 +197,7 @@ connects to status `needs-detect` and sends nothing.
 - `KLine` selects the framer from `profile.framing`: `kwp2000` keeps today's `frame.py`
   and `_scan_for_frame` byte for byte; `iso9141` uses `converse()` with `gap = p1_max` +
   margin and `split()`. A thin `Iso9141Session` offers `request(data) -> list[frame]`,
-  `keepalive_if_due()` and `release()`. J1979 is U4's. `69 6A F1` is not adopted (Q3).
+  `keepalive_if_due()` and `release()`. J1979 is U4's. `69 6A F1` is not adopted (open question 3).
 
 ## 4. Session hygiene
 
@@ -234,7 +255,7 @@ returns the full result, and `confirm_address="require"` turns `confirmed=False`
   `LoggingTransport` already logs every byte; detection reads no VIN.
 - **Snapshot.** Sources add `link` (null when no K-line link):
   `{"bus": "kline", "profile": "kwp2000_fast", "protocol": "kwp2000" | "iso9141_2",
-  "init": "fast" | "5baud" | "none", "origin": "pack" | "detected" | "override",
+  "init": "fast" | "5baud" | "none", "origin": "pack" | "detected" | "remembered" | "override",
   "address": "0x33", "key_bytes": "E9 8F" | null, "timing": "normal" | "extended" | null,
   "since": <epoch s>}`. `status` gains `needs-detect`.
 - **Contracts.** `api/openapi.yaml`: a `KLineLink` component, `Snapshot.link` as
@@ -261,6 +282,8 @@ returns the full result, and `confirm_address="require"` turns `confirmed=False`
 | Release | KWP close → `82` sent; ISO 9141 close → nothing sent, next init waits P3max; confirmed `C2` → only W5 |
 | ISO 9141 framing | encode checksum; echo stripped; bad checksum rejected |
 | Server | `detect_protocol` refused without the flag, without `confirm_parked`, with GPS speed; allowed otherwise; re-init of a known profile is not refused while "moving"; no probe on connect |
+| Remembered | detect stores `{profile, …}` under the `vid`, never a VIN; restart with "moving" → re-init from it, nothing else sent; three failed re-inits → `needs-detect`, no probe |
+| Module scan | sweep refused without the Parked gate (server) or `--confirm-parked` (tool); allowed with it |
 | Contracts | `link` validates in OpenAPI and Zod; the profile schema accepts the D2 overrides |
 
 **muki01 regression fixtures (K-line only):** 4+ DTCs over two `48 6B` frames split into
@@ -284,17 +307,28 @@ ignored; any `~address` is not accepted; no 5.5 s idle before a first init.
 
 Manufacturer protocols (KW1281, DS2, KW82, Honda) and their framers are U7; only their
 schema fields exist here. Also out: J1979 (U4), the Link sheet UI, CAN and body buses
-(ADR-0020, ADR-0024), `modscan` changes, and persisting a detected profile.
+(ADR-0020, ADR-0024), and `modscan` changes beyond its Parked gate (§2).
 
-## Open questions for the owner
+## Decisions (2026-10-06)
 
-1. Interim gate until U2 (flag + `confirm_parked` + speed veto), or wait for U2?
-2. Should `modscan` (slow-init sweeps) count as probing and become Parked-only?
+The owner answered on 2026-10-06 (owner question numbers in brackets).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Interim gate until U2, or wait for U2? | (Q3) Yes: probing before U2 with the server flag, `confirm_parked` and the speed check (§2) |
+| 2 | Does `modscan` count as probing? | (Q4) Yes: module-scan sweeps are Parked-only (§2) |
+| 6 | Persist a detected profile per vehicle? | (Q5) Yes: remembered per `vid`, re-init without probing (§2) |
+
+**Still open** (not raised with the owner; none blocks migration step 1):
+
 3. `69 6A F1` for ISO 9141 modes 02/05 (needs a J1979 check)?
-4. Does the ESP32 bridge return the `~address` byte, or does detection over it need firmware work?
+4. Does the ESP32 bridge return the `~address` byte, or does detection over it need
+   firmware work? Until known, detection over it fails closed (§5).
 5. D2 airbag/BCU use `confirm_address: "report"`; should a car run move them to `require`?
-6. Persist a detected profile per vehicle fingerprint (ADR-0018 Q7) so that a reboot while driving re-inits without probing?
 
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft from ADR-0022.
+- 2026-10-06 — v0.2: approved by the owner. Interim pre-U2 gate confirmed; module-scan
+  sweeps Parked-only; detected profile remembered per `vid` (`origin: "remembered"`);
+  questions 3–5 stay open.

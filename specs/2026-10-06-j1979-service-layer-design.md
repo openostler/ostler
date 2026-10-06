@@ -1,15 +1,19 @@
 ---
 title: "J1979 service layer — modes 01–0A over K-line and CAN — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
-depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/muki01/README.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/obd2_kline_reader.md, references/research/ui/vehicle_data_model.md, references/research/ui/decode_pipeline.md]
+depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/muki01/README.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/obd2_kline_reader.md, references/research/ui/vehicle_data_model.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Draft. A stdlib-only, transport-agnostic SAE J1979 layer in src/openostler/obd/, shared by K-line (ISO 9141-2, KWP2000) and CAN (ISO 15765-4). It speaks to an ObdRequestLink that returns replies keyed by ECU address and does its own multi-frame work (ISO-TP on CAN, multi-message sequences on K-line). It covers chained support bitmaps for modes 01, 02, 06 and 09; decoders for modes 01–0A that read PID formulas as data (OBDb SAEJ1979, CC BY-SA, imported into the generic_obd2 pack's store); P/C/B/U DTCs for modes 03, 07 and 0A; freeze frame with its trigger DTC; readiness into Vehicle.Ostler.Diagnostics.*; Mode 06 results; and Mode 09 CALID, CVN and ECU name, with the VIN decoded locally and never logged. Mode 04 is a Tier 1 action. supported() feeds the connect-time capability manifest, values carry their store record's VSS metric and the platform derives Vehicle.Ostler.Diagnostics.*, and the tests are written first from the muki01 defects. J1979-2 (OBD on UDS) is noted for later.
+  Approved by the owner on 2026-10-06. A stdlib-only, transport-agnostic SAE J1979 layer in src/openostler/obd/, shared by K-line (ISO 9141-2, KWP2000) and CAN (ISO 15765-4). It speaks to an ObdRequestLink that returns replies keyed by ECU address and does its own multi-frame work (ISO-TP on CAN, multi-message sequences on K-line). It covers chained support bitmaps for modes 01, 02, 06 and 09; decoders for modes 01–0A that read PID formulas as data (OBDb SAEJ1979, CC BY-SA, imported into the generic_obd2 pack's store); P/C/B/U DTCs for modes 03, 07 and 0A; freeze frame with its trigger DTC; readiness into Vehicle.Ostler.Diagnostics.*; Mode 06 results; and Mode 09 CALID, CVN and ECU name, with the VIN decoded locally and never logged. Mode 04 is a Tier 1 action; Mode 08 is never sent; a CAN DTC reply whose count disagrees with its length falls back and warns. supported() feeds the connect-time capability manifest, values carry their store record's VSS metric and the platform derives Vehicle.Ostler.Diagnostics.*, and the tests are written first from the muki01 defects. J1979-2 (OBD on UDS) is noted for later.
 ---
 
 # J1979 service layer — design
+
+**Status:** approved by the owner on 2026-10-06; the answers are in
+[§12](#12-decisions-2026-10-06). The questions the owner did not take up stay open and
+block nothing before a car fixture.
 
 ## Context
 
@@ -101,11 +105,16 @@ class ObdRequestLink(Protocol):
 ## 3. PID data: read from the pack's store
 
 - **Vehicle data lives only in packs** (owner, 2026-10-06). The `generic_obd2` pack (a
-  separate distribution at `packs/generic_obd2/`, marked fallback) imports OBDb `SAEJ1979`
-  at a pinned SHA into its signal store
-  through `upsert_field`, with `x-obd {service, pid, freq}`, its corrections (`24`, `5D`,
-  muki01 fixture 19), the 18 O2 PIDs OBDb lacks and a `metric` on every record (packs spec
-  §2.3). The import copies data, never code. The platform ships no PID table, formulas or units: only the machinery (request engine, bitmaps, multi-ECU and multi-frame handling, DTC, freeze-frame, readiness and identity decode, Mode 04 gating). `obd/uas.json` is the J1979 Mode 06 unit-and-scaling convention, not vehicle data; open question 5 asks whether it moves too.
+  separate distribution at `packs/generic_obd2/` in the platform repo, marked fallback;
+  [ADR-0031](../decisions/adr-0031-generic-obd2-pack-in-platform.md)) imports OBDb
+  `SAEJ1979` at a pinned SHA into its signal store through `upsert_field`, with
+  `x-obd {service, pid, freq}`, its corrections (`24`, `5D`, muki01 fixture 19), the 18 O2
+  PIDs OBDb lacks, and a `metric` on the common set and the O2 and fuel-trim families first
+  (owner Q11; packs spec §2.3). The import copies data, never code.
+- The platform ships no PID table, formulas or units: only the machinery (request engine,
+  bitmaps, multi-ECU and multi-frame handling, DTC, freeze-frame, readiness and identity
+  decode, Mode 04 gating). `obd/uas.json` is the J1979 Mode 06 unit-and-scaling
+  convention, not vehicle data; still-open question 5 asks whether it moves too.
 - `PidTable.from_signals(signals)` groups records by `(service, pid)` and gives each PID a
   **response length** (`x-obd.len`, a field this spec adds, else the largest `offset + width`). Values decode with
   `Signal.decode`, so a multi-field PID yields every field, not only byte A, and signed
@@ -157,7 +166,8 @@ same decoder without MIL or count. Labels are our own words.
   `Dtc{code, raw, ecu, kind: stored|pending|permanent}`.
 - **On CAN** the byte after `43`/`47`/`4A` is the count. If `len == 2 + 2N` the reply is
   decoded counted. Otherwise the uncounted reading is tried (code pairs, dropping `00 00`
-  padding) and tagged `warning: count_mismatch`. muki01's `07 43 01 70 01 34 00 00` (F1b)
+  padding) and tagged `warning: count_mismatch` (owner Q7, 2026-10-06: fall back and warn,
+  never reject the reply as `malformed`). muki01's `07 43 01 70 01 34 00 00` (F1b)
   then yields `P0170` and `P0134` with the warning, and is never truncated to one code.
 - **On K-line** each message holds three codes with zero padding. Every message of every
   ECU is decoded. A header byte is never read as a code, because the adapter has already
@@ -214,13 +224,17 @@ Mode 04 also erases freeze frames, readiness and Mode 06 results. It reaches the
 4. **Re-read** 03, 07, 0A and PID 01, and log before and after with the action (UI spec §7).
    Remaining permanent codes are explained, not shown as a failure.
 
-Mode 08 is listed, `planned`, and never sent (inventory row 22).
+**Mode 08 is never sent** (owner Q6, 2026-10-06; inventory row 22), not even its `08 00`
+bitmap: it is listed as `planned` and not runnable. A guard test checks that no path builds
+a request whose service byte is `08`, alongside the Mode 04 guard.
 
 ## 6. VSS mapping through `metrics.json`
 
-- **PID values** carry their store record's `metric`, which the pack importer resolved
-  (the reverse of the `obdb` alias in `metrics.json`, then a reviewed map, then a proposed
-  `Vehicle.Ostler.OBD.*` node; packs spec §2.3). Unit conversion (`km` → `m`) is folded into
+- **PID values** carry their store record's `metric` where it has one, which the pack
+  importer resolved (the reverse of the `obdb` alias in `metrics.json`, then a reviewed
+  map, then a proposed `Vehicle.Ostler.OBD.*` node; packs spec §2.3). The common set and
+  the O2 and fuel-trim families get one first (owner Q11); a record without one decodes
+  under its pack name only. Unit conversion (`km` → `m`) is folded into
   the record's scale at import, so the store unit is the metric's VSS unit (ADR-0016).
 - **Diagnostics** are derived here, because they combine services and ECUs. Each ECU's
   value keeps its source tag, and the leaf takes the aggregate:
@@ -285,6 +299,7 @@ ISO 9141 / J1979 `FakeKLineEcu`.
 | F14 | multi-PID reply `41 0C … 0D … 05 …` and an unknown PID in the middle | walk stops, rest `malformed` |
 | F15 | Mode 06 CAN records across UASIDs | scaling and `passed` |
 | F16 | Mode 04 | refused without a grant; one functional `04`; re-read 03/07/0A/01; NRC `22` text |
+| F17 | Mode 08 guard | no code path builds a service `08` request, `08 00` included |
 
 Fixture VINs are built at test time from parts, so no VIN literal sits in the tree and the
 scrub CI (UI spec §8.3) needs no allowlist. Golden `SupportReport`s: a petrol K-line fake and
@@ -302,19 +317,30 @@ a two-ECU CAN fake.
 
 ## 11. Out of scope
 
-- J1979-2 / UDS (§8), J1939, J1850; Mode 08 control; decoding Mode 05 and K-line Mode 06
+- J1979-2 / UDS (§8), J1939, J1850; any Mode 08 request (never sent); decoding Mode 05 and K-line Mode 06
   beyond raw records; DTC description text (ADR-0025).
 - The local VIN decoder and WMI table (U4), the capability schema and route (U3), the
   driving state and server gate (U2), and the `generic_obd2` pack and its importer (U4).
 - Make or model overlays (UDS `22` DIDs from OBDb make repos) and polling-rate policy (U3).
 
-## 12. Open questions
+## 12. Decisions (2026-10-06)
 
-1. Read Mode 08's bitmap (`08 00`) for coverage, or never send Mode 08? Recommendation: never.
+The owner answered on 2026-10-06 (owner question numbers in brackets).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Read Mode 08's bitmap, or never send Mode 08? | (Q6) Never send Mode 08, `08 00` included (§5) |
+| 3 | `count_mismatch` fallback, or reject as `malformed`? | (Q7) Fall back and warn (§4.4) |
+
+Related owner answers: `generic_obd2` lives in the platform repo under `packs/` (Q10,
+[ADR-0031](../decisions/adr-0031-generic-obd2-pack-in-platform.md)), which is where §3's
+PID data goes; DTC text is codes, categories and our own short descriptions for common
+codes (Q12, [packs spec §2.6](2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md)).
+
+**Still open** (not raised with the owner; none blocks the fake-only work):
+
 2. Does `DistanceSinceDtcClear` come from the engine ECU only, or the largest value?
-3. Is the `count_mismatch` fallback (§4.4) right, or should a CAN reply whose count byte
-   disagrees with its length be rejected as `malformed`? Recommendation: fall back and warn,
-   because a dropped code is worse than a flagged one.
+   §6 drafts "the engine ECU, otherwise the largest value".
 4. Mode 05 and K-line Mode 06 stay raw until a car fixture exists. Is a K-line OBD car
    available for the test plan?
 5. `uas.json` (Mode 06 scaling IDs) is a J1979 convention, so it is drafted as platform
@@ -323,3 +349,5 @@ a two-ECU CAN fake.
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft.
+- 2026-10-06 — v0.2: approved by the owner. Mode 08 never sent (guard test F17); the
+  `count_mismatch` fallback confirmed; questions 2, 4 and 5 stay open.

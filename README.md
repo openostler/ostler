@@ -1,13 +1,19 @@
 # Ostler — an open, smart-home-like ecosystem for your car
 
-> **Ostler: an open, smart-home-like ecosystem for your car. It connects the car you already
-> have, then lets you add on.**
+> **Ostler: an open, smart-home-like ecosystem for your car. It reads your car's
+> diagnostics and live data, then grows with add-ons.**
 
-**Ostler™** starts from the car you already have. A base hardware pack talks to the car's
-own buses and makes its systems connected: diagnostics, live data, a session logbook with
-replay, place names and GPS, and a mobile-first dashboard. Add-on modules then join over
-standard IP networking, the way devices join a smart home. This repository is the
-**platform** (the OpenOstler code). Vehicle knowledge ships separately, as **vehicle packs**.
+**Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
+your car. A base hardware pack interfaces with the vehicle you already have and turns its
+existing systems into a connected IoT platform, with diagnostics and telemetry at the
+core. Add-on modules then join over standard networking, the way devices join a smart
+home: the alarm/guardian, cameras, relay boxes, sensors and displays. Every device speaks
+IP on an automotive-Ethernet backbone (10BASE-T1S for modules, faster Ethernet for
+cameras), and they all use the same VSS-named, MQTT-style messages, so modules are
+interchangeable and integrate with Home Assistant and the wider IoT world.
+
+This repository is the **platform** (the OpenOstler code). Vehicle knowledge ships
+separately, as **vehicle packs**.
 
 - Website: **[ostler.tech](https://ostler.tech)**
 - Code and community: the **[openostler](https://github.com/openostler)** organisation
@@ -21,30 +27,22 @@ standard IP networking, the way devices join a smart home. This repository is th
 
 ## Goals
 
-Ostler is an open, local-first automotive ecosystem: a smart-home-like platform for your
-car, on hardware you own. The full statement is in **[GOALS.md](GOALS.md)**; the
-architecture is [ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md).
+The goals, principles, hard lines and near-term roadmap are in **[GOALS.md](GOALS.md)**;
+the long-term picture (add-ons, garage and sharing, connectivity, AI-native access) is in
+**[references/vision.md](references/vision.md)**, with module ideas in the
+[add-ons catalogue](references/research/addons_catalogue.md). The architecture is
+[ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md).
 
-- **A base hardware pack, with diagnostics and telemetry at the core.** It interfaces with
-  the car's own buses (K-line, CAN, OBD-II) at the edge and never replaces them. It covers
-  the Discovery 2 first, then other Land Rovers, any OBD-II car, modern CAN/UDS and pre-OBD
-  cars, each as a community vehicle pack.
-- **Add-on modules:** an always-on guardian (GPS tracker and **notify-only alarm**, with
-  its own battery and IoT SIM), relay boxes, sensor and button nodes, cameras (dashcam,
-  parking, reversing, underbody) and displays. Displays are thin clients of one
-  head-unit-first PWA.
-- **Standard networking:** every device speaks IP on an automotive-Ethernet backbone
-  (10BASE-T1S for modules, Ethernet for cameras, Wi-Fi/USB for screens). Devices are found
-  by mDNS and speak VSS-named MQTT. One module contract makes modules interchangeable,
-  third-party ones included.
-- **Integrations:** COVESA VSS signal paths, OBDb-compatible data, MQTT with Home Assistant
-  discovery, OVMS and OwnTracks compatibility. Matter ecosystems are reached through a
-  bridge. In smart-home terms, the comparison is "the Home Assistant of the automotive
-  world".
-- **A decode pipeline** that turns an unknown car into a pack with verified signals.
+- **Base pack:** a Linux computer (a Raspberry Pi today) plus an ESP32 "buddy", with
+  diagnostics and telemetry at the core. It interfaces with the car's own buses (K-line,
+  CAN, OBD-II) at the edge and never replaces them: the Discovery 2 first, then other Land
+  Rovers, any OBD-II car, modern CAN/UDS and pre-OBD cars, each as a community vehicle pack.
+- **Add-ons:** the guardian (always-on, **notify-only** alarm and gateway), cameras, relay
+  boxes, sensors, buttons and displays, and more. Each module hosts its own small web page
+  and works on its own. We are making a Home Assistant for cars, not reinventing the wheel.
 - **Hard lines:** nothing writes to a car without the safety gates; no EKA or key
-  programming; the VIN is never logged or uploaded; private by default, no cloud needed.
-- **Anti-bloat:** features are core, add-on (off by default) or moonshot (own ADR).
+  programming in any default path; the VIN is never logged or uploaded; private by
+  default, no cloud needed.
 - **Funding:** official hardware (the base pack and add-on modules) and an optional Ostler
   Cloud subscription, with AGPL code plus a commercial licence.
 
@@ -155,7 +153,8 @@ conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabula
 
 ## Documentation
 
-- [GOALS.md](GOALS.md) says what the project is for and where it is going.
+- [GOALS.md](GOALS.md) says what the project is for and what comes next;
+  [references/vision.md](references/vision.md) says where it is going in the long term.
 - [INDEX.md](INDEX.md) lists every doc, and [CONSTITUTION.md](CONSTITUTION.md) holds the
   hard rules.
 - [decisions/](decisions/CLAUDE.md) holds the ADRs, and [specs/](specs/CLAUDE.md) the

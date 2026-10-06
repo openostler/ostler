@@ -2,7 +2,7 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
@@ -25,6 +25,13 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
   - Changing boards then means writing new drivers, and nothing else.
 - **Closed all-in-one products (AutoPi-class)** are a fallback only, not the plan.
 - **The Pi Zero 2 W is ruled out**, because of availability.
+
+> **Amended by [ADR-0028](../../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md) (2026-10-06):**
+> the always-on ESP32 described below is now the **base "buddy"**. It handles wake, the buses,
+> Pi power and a small parked MQTT broker; the base has no SIM, and any USB dongle works.
+> The **guardian** is an add-on: the always-on alarm and gateway, optionally with LTE.
+> The private CAN module bus is replaced by 10BASE-T1S, with CAN as fallback
+> ([ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md)). The kit and prices below still apply.
 
 ## Architecture: "ESP32 guardian + Linux on demand"
 

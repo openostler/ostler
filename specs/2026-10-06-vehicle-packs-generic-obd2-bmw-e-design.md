@@ -1,17 +1,20 @@
 ---
 title: "Vehicle packs: generic_obd2 (the OBD-II fallback) and bmw_e (BMW E-series I/K-Bus, read-only) — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
-depends_on: [CONSTITUTION.md, src/openostler/pack.py, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/README.md, references/research/muki01/bmw_ibus_kbus.md, references/research/ui/vehicle_data_model.md, references/research/ovms_reuse.md, vss/ostler.vspec]
+depends_on: [CONSTITUTION.md, src/openostler/pack.py, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/README.md, references/research/muki01/bmw_ibus_kbus.md, references/research/ui/vehicle_data_model.md, references/research/ovms_reuse.md, vss/ostler.vspec]
 summary: >
-  Implementation design for the first two packs after the D2. generic_obd2: a separate distribution kept in the platform repo (packs/generic_obd2/) and installed by default, marked fallback so the loader picks it only when no specific pack is installed; it imports OBDb SAEJ1979 (CC BY-SA, attributed) through a pinned importer, adds the 18 O2 PIDs OBDb lacks as candidates, gives every signal a VSS metric (new Vehicle.Ostler.OBD.* nodes proposed for review), builds its capability manifest at connect time from the J1979 support bitmaps, collapses to one system, gates Mode 04 as Tier 1 and never sees the full VIN. bmw_e: its own repo (openostler/ostler-pack-bmw-e), read-only, with the I/K-Bus framer inside the pack over the byte Transport, a module address table and message set reimplemented from facts, VSS mapping plus three or four Vehicle.Ostler.* event leaves, alarm triggers for the guardian, steering-wheel buttons later, no transmit, 117 checksum vectors and a FakeIbus. Covers pyproject, layout.json, CI, REUSE, docs and rollout for both.
+  Approved by the owner on 2026-10-06 for generic_obd2; bmw_e is deferred (no BMW car or bench, so it stays a candidate-only design and nothing in it may be proven). generic_obd2: a separate distribution kept in the platform repo (packs/generic_obd2/, ADR-0031) and installed by default, marked fallback so the loader picks it only when no specific pack is installed; it imports OBDb SAEJ1979 (CC BY-SA, attributed) through a pinned importer, adds the 18 O2 PIDs OBDb lacks as candidates, gives VSS metrics to the common set and the O2 and fuel-trim families first (new Vehicle.Ostler.OBD.* nodes proposed for review), ships codes, categories and our own short descriptions for common codes, builds its capability manifest at connect time from the J1979 support bitmaps, collapses to one system, gates Mode 04 as Tier 1 and never sees the full VIN. bmw_e (deferred): its own repo (ostler-pack-bmw-e), read-only, with the I/K-Bus framer inside the pack over the byte Transport, a module address table and message set reimplemented from facts, VSS mapping plus three or four Vehicle.Ostler.* event leaves, alarm triggers for the guardian, no transmit, 117 checksum vectors and a FakeIbus. Packs are named ostler-pack-<x>; BMW may appear descriptively.
 ---
 
 # Vehicle packs: `generic_obd2` and `bmw_e` — design
 
-**Status:** draft for owner review. Nothing here is built before approval (CONSTITUTION).
+**Status:** approved by the owner on 2026-10-06 for `generic_obd2`; the answers are in
+[§8](#8-decisions-2026-10-06). **`bmw_e` (§3) is deferred**: there is no BMW car or bench
+(owner Q13), so its design is kept, stays candidate-only, and is not built until one is
+available; nothing in it may be marked `proven`.
 It carries out rows 14–25 and 42–53 of the [muki01 synthesis](../references/research/muki01/README.md)
 (build-order steps 5 and 7) and the U4 "second pack" row of the
 [UI architecture](2026-10-06-ui-architecture-design.md) §10. The J1979 mechanics (request
@@ -28,8 +31,10 @@ this spec only says what the packs ask of it.
 - **Read-only first:** `generic_obd2` has one Tier 1 action (Mode 04); `bmw_e` has none.
 - **Each is a normal `VehiclePack`** (API 1) with the D2 pack's shape: lazy `PACK`, stores,
   `layout.json`, a contract test, CI that installs the platform first.
-- **Naming:** repo or directory, and distribution, `ostler-pack-<x>`; import `ostler_<x>`;
-  pack id `<x>`. The D2 pack keeps `d2diag`/`lr_d2`.
+- **Naming** (owner Q14, 2026-10-06): repo or directory, and distribution,
+  `ostler-pack-<x>`; import `ostler_<x>`; pack id `<x>`. A make may appear descriptively
+  (nominative use, e.g. `ostler-pack-bmw-e`), never in our brand. The D2 pack keeps
+  `d2diag`/`lr_d2`. Packs other than `generic_obd2` live in their own repos (ADR-0031).
 
 ## 2. `generic_obd2`
 
@@ -41,10 +46,12 @@ this spec only says what the packs ask of it.
 | **B. Its own repo** (`ostler-pack-generic-obd2`) | Clean boundary, like the D2 pack | It moves in lockstep with the platform's J1979 layer, CanLink and capability builder (U3/U4), so every change becomes two PRs and a pinned ref; a car with no pack works only if the installer remembers it |
 | **C. A separate distribution kept in the platform repo**, `packs/generic_obd2/` with its own `pyproject.toml`, installed by default | Same contract and import boundary as B (the loader finds it by entry point; `src/openostler/` never imports it); one PR when J1979 changes; platform CI tests it directly; Docker, `deploy.sh` and `mac/install.sh` install it, so every install has a safe default | Two distributions in one repo; a pip-only platform user still has to install it (the error hint says how) |
 
-**Recommendation: C.** It gives the UI spec §8.2 outcome (a car with no pack still works,
-the `NoVehiclePackError` dead end is gone on every supported install) without reopening
-ADR-0015: the platform still never imports a pack by name. It needs one loader change and
-an ADR that amends ADR-0015's loader paragraph:
+**Decision: C** (owner Q10, 2026-10-06;
+[ADR-0031](../decisions/adr-0031-generic-obd2-pack-in-platform.md)). It gives the UI spec
+§8.2 outcome (a car with no pack still works, the `NoVehiclePackError` dead end is gone on
+every supported install) while the platform still never imports a pack by name. ADR-0031
+amends ADR-0013/ADR-0015's repo split for this one fallback pack only, and needs one
+loader change:
 
 - `VehiclePack` gains `fallback: bool = False` (defaulted, so `PACK_API_VERSION` stays 1).
 - `_resolve()`: `OSTLER_VEHICLE` still wins. Otherwise, if exactly one **non-fallback**
@@ -68,7 +75,7 @@ packs/generic_obd2/  pyproject.toml README.md CLAUDE.md GOALS.md NOTICE referenc
   src/ostler_generic_obd2/
     __init__.py        PACK (lazy, as in d2diag), fallback=True
     signals/obd2.json  one store: OBDb import + O2 overlay, written via upsert_field
-    dtc/obd2.json      codes only, no descriptive text (§2.6)
+    dtc/obd2.json      codes, categories, our own short text for common codes (§2.6)
     obdb.lock.json     {repo, sha, file, imported_utc, signal_count}
     sources.py actions.py menus.py faultscan.py sniff_spec.py layout.json vehicle.json demo/
   tools/import_obdb.py dev-only importer (§2.3)
@@ -99,7 +106,12 @@ from the J1979 formulas in our own words (voltage and short-term trim; wide-rang
 with voltage; ratio with current), about 36 fields, `x-ostler.origin: "j1979-overlay"`,
 all `candidate`, each with a fixture. They are offered to OBDb as a PR.
 
-**Every signal gets a `metric`.** The importer resolves it in this order:
+**Metrics: the common set and the O2 and fuel-trim families first** (owner Q11,
+2026-10-06). The first import gives a `metric` to the common set (§2.3 item 4) and to the
+O2 sensor and fuel-trim families, which is a few dozen `Vehicle.Ostler.OBD.*` nodes rather
+than 150–200. Every other imported record is written without a metric: it decodes and
+shows under its pack name, has no VSS role, and gains a metric in a later reviewed batch.
+For a record that gets one, the importer resolves it in this order:
 1. the reverse of the overlay's `obdb` alias (`speed` → `Vehicle.Speed`);
 2. a reviewed `metric_map.json` for ids with a standard VSS leaf but no alias, only where
    the unit converts honestly;
@@ -108,18 +120,15 @@ all `candidate`, each with a fixture. They are offered to OBDb as a PR.
    named after the pre-6.0 VSS OBD branch so the tree stays familiar. These nodes are
    **proposed for review** as one PR to `vss/ostler.vspec` (ADR-0016: packs ship no
    overlays), regenerated into `metrics.json`. The importer refuses to write a record
-   whose metric is not `is_known`.
+   with a metric that is not `is_known`.
 4. The common-set Home roles come out right: `0D` speed, `0C` rpm, `05` coolant, `42`
    battery, `2F` fuel, `01` MIL/DTC count/readiness → `Vehicle.Ostler.Diagnostics.*`.
 
-**One table, not two.** The [J1979 spec](2026-10-06-j1979-service-layer-design.md) §3 and
-§12 Q1 put the same import (OBDb table, O2 overlay, corrections) in the platform at
-`obd/data/saej1979.json`. Only one may exist. This spec recommends **the pack**: the
-guardrail is that decoded vehicle data (PIDs) lives in packs (muki01 §c, ADR-0024), and
-ADR-0019 names `generic_obd2` as the importer; the platform then ships the `fmt` engine,
-bitmaps, DTCs and identity only. If the owner picks the platform instead, this section's
-importer, overlay and corrections move there unchanged and the pack store becomes a thin
-reviewed layer (metric, label, group, span) over that table.
+**One table, in the pack.** Only one SAEJ1979 table may exist, and it is this pack's
+store: decoded vehicle data (PIDs) lives in packs (owner, 2026-10-06; muki01 §c,
+ADR-0024), ADR-0019 names `generic_obd2` as the importer, and the
+[J1979 spec](2026-10-06-j1979-service-layer-design.md) §3 now reads the PIDs from this
+store. The platform ships the `fmt` engine, bitmaps, DTCs and identity only.
 
 ### 2.4 Capability manifest at connect time
 
@@ -151,11 +160,13 @@ modules. The id is `obd2`, not `obd`, so it cannot equal a platform string.
 | Readiness; distance with MIL on and since clear | `01 01`, `01 21`, `01 31` | 0 | health card |
 | Monitor results | `05` (K-line only), `06` | 0 | Diagnose › Tests |
 | **Clear codes** | **`04`** | **1** | `Command(safety="actuator", clears=True, status="experimental")`; Parked only; one confirm naming the consequence ("Clear 3 codes? Freeze frames and readiness monitors will be reset"); a report offered first; afterwards re-read `03`/`07`/`01` and show the result; refused while Moving, from a remote path or below the ECU-session rung |
-| Control of on-board system | `08` | — | listed as `planned`, never runnable, under its own review |
+| Control of on-board system | `08` | — | listed as `planned`, never runnable and never sent, `08 00` included (owner Q6, J1979 spec §5) |
 
 The platform derives the tier from `clears` (UI spec §7, U2); the pack never types one.
-**DTC text:** codes plus our own category words ("generic powertrain code"); J2012 wording
-and `errorCodes.js` are never copied (ADR-0025); our own descriptions may follow, reviewed.
+**DTC text** (owner Q12, 2026-10-06): codes, our own category words ("generic powertrain
+code"), and **our own short descriptions for common codes**, written and reviewed in
+`dtc/obd2.json`; codes without one show the code and category only. J2012 wording and
+`errorCodes.js` are never copied (ADR-0025).
 
 ### 2.7 Identity and VIN
 
@@ -178,7 +189,8 @@ for speed, rpm, coolant, battery and fuel (U4 replaces it with role-built Home).
 ### 2.9 Tests
 
 - **Importer:** a trimmed SAEJ1979 input → the expected store; idempotence; corrections;
-  identity skipped; every record has a known metric, a source and `candidate`. The importer
+  identity skipped; every record has a source and `candidate`; every metric is known, and
+  every common-set, O2 and fuel-trim record has one. The importer
   also converts SAEJ1979's YAML cases (`response` → `expected_values`) into
   `tests/fixtures/obdb/`, and pytest decodes each through our store.
 - **Our J1979 fixtures** (own words): muki01 (f) 1–11 and 19, plus the O2 overlay.
@@ -189,7 +201,12 @@ for speed, rpm, coolant, battery and fuel (U4 replaces it with role-built Home).
   clear; a VIN-bearing fake session leaves no VIN in logs, captures, sessions or fixtures
   (ISO 3779 pattern scan); the contract test; the loader-fallback tests.
 
-## 3. `bmw_e`
+## 3. `bmw_e` (deferred)
+
+**Deferred** (owner Q13, 2026-10-06: no BMW car or bench). This section is kept as the
+design for when a car or bench is available. Until then nothing in it is built, the repo
+is not created, every field stays `candidate`, and nothing may be marked `proven`. Only the
+generic platform changes it shares with `generic_obd2` (§4) go ahead, for their own sake.
 
 ### 3.1 Repo and names
 
@@ -325,14 +342,14 @@ Each goes to its own spec or PR in the platform repo; none names a pack.
 
 | Change | Needed by | Where |
 |---|---|---|
-| `VehiclePack.fallback` and loader order; ADR amending ADR-0015 | generic_obd2 | `pack.py`, new ADR |
+| `VehiclePack.fallback` and loader order | generic_obd2 | `pack.py`, [ADR-0031](../decisions/adr-0031-generic-obd2-pack-in-platform.md) |
 | J1979 layer, `supported()`, identity redaction | generic_obd2 | [J1979 spec](2026-10-06-j1979-service-layer-design.md) |
 | K-line profiles and detect; parity on `SerialTransport` | both | [K-line profiles spec](2026-10-06-kline-profiles-detection-design.md) |
 | CanLink, passive bitrate, ISO-TP | generic_obd2 (CAN path) | [CanLink spec](2026-10-06-canlink-isotp-design.md) |
 | Store kinds `s8`, `u24le`, `u32`, `ascii`, bit fields of any length | both | signal-store schema and decoder |
 | `Command.clears` and the Tier 1 gate | generic_obd2 | U2 |
 | Connect-time capability builder (`vehicle.json` `manifest`) | generic_obd2 | U3/U4 |
-| `Vehicle.Ostler.OBD.*` and the bmw_e event leaves | both | `vss/ostler.vspec` |
+| `Vehicle.Ostler.OBD.*` (common set, O2, fuel trim first); the bmw_e event leaves later | generic_obd2 (bmw_e deferred) | `vss/ostler.vspec` |
 | Shipped test fakes (`openostler.testing`: K-line, CAN, J1979) | both | platform, stdlib only |
 | Installers add generic_obd2 by default | generic_obd2 | Dockerfile, `deploy.sh`, `mac/install.sh` |
 
@@ -342,7 +359,7 @@ Each goes to its own spec or PR in the platform repo; none names a pack.
   `pip install -e packs/generic_obd2[dev]`, runs its tests and `import_obdb.py --check`.
   The D2 job runs with both packs installed and must still resolve `lr_d2`. Root
   `REUSE.toml` marks its `signals/`, `dtc/`, fixtures and `obdb.lock.json` CC-BY-SA-4.0.
-- **bmw_e:** the D2 pack's `ci.yml` (platform at `PLATFORM_REF`, then the pack, `pytest -q`),
+- **bmw_e (deferred):** the D2 pack's `ci.yml` (platform at `PLATFORM_REF`, then the pack, `pytest -q`),
   plus `reuse lint` and the docs job (frontmatter, links, INDEX). `REUSE.toml` marks data
   CC-BY-SA-4.0, code AGPL-3.0-or-later.
 - **Docs per pack:** `CLAUDE.md` (links the platform constitution; layout, commands, the
@@ -351,13 +368,14 @@ Each goes to its own spec or PR in the platform repo; none names a pack.
 
 ## 6. Rollout
 
-**generic_obd2:** (1) approve this spec and the fallback ADR; (2) J1979 layer and K-line
+**generic_obd2:** (1) approve this spec and the fallback ADR (done 2026-10-06); (2) J1979 layer and K-line
 profiles land with fakes; (3) store kinds, overlay PR for `Vehicle.Ostler.OBD.*`; (4)
 `packs/generic_obd2/` skeleton, importer, O2 overlay, contract tests; (5) loader fallback
 and installers; (6) KKL path on a first car, results in its test plan; (7) CAN path after the
 CanLink spec; (8) U4 UI: `generateViews()`, single-system collapse, unknown-vehicle banner.
 
-**bmw_e:** (1) approve; (2) serial format in the platform; (3) owner creates the repo; (4)
+**bmw_e: deferred** until a car or bench is available (owner Q13). Then: (1) re-confirm
+this design; (2) serial format in the platform; (3) owner creates the repo; (4)
 framer, `FakeIbus`, vectors; (5) address table, message set, overlay PR; (6) sources,
 layout, demo; (7) bench or car with the RX tap, promoting fields; (8) Phase 2 guardian
 triggers; U2 steering-wheel input; (9) the framer moves to the platform with a second
@@ -365,24 +383,36 @@ body-bus pack; transmit only under its own spec after ADR-0024 and U5.
 
 ## 7. Acceptance
 
-Both packs pass their contract tests against platform `main`; the loader picks `lr_d2` with
-D2 and generic_obd2 installed and generic_obd2 alone; every generic_obd2 record has a known
-metric, a source and `candidate`; no VIN reaches a log or fixture; bmw_e decodes all
-vectors, resyncs, and has no `send` call and no action.
+**generic_obd2:** it passes its contract tests against platform `main`; the loader picks
+`lr_d2` with D2 and generic_obd2 installed and generic_obd2 alone; every record has a
+source and `candidate`, every metric is known, and the common set, O2 and fuel-trim records
+all have one; no VIN reaches a log or fixture. **bmw_e (deferred):** when it is built, it
+decodes all vectors, resyncs, has no `send` call and no action, and promotes a field only
+from a car or bench result.
 
-## 8. Open questions
+## 8. Decisions (2026-10-06)
 
-1. Placement C and the ADR amending ADR-0015's loader: agreed?
-2. Where the SAEJ1979 table lives: the pack (this spec, §2.3) or the platform (J1979 spec
-   §12 Q1)? The two specs must agree before either is built.
-3. A metric on **every** OBD signal means roughly 150–200 `Vehicle.Ostler.OBD.*` nodes.
-   Acceptable, or only the common set plus the O2 and trim families?
-4. Pack naming convention `ostler-pack-<x>`, and "BMW" in a repo name (nominative use).
-5. Generic DTC text: ship codes and categories only, or write our own for common codes?
-6. `openostler.testing` as shipped fakes, or keep copying fakes into each pack?
-7. Which E-series car or bench the owner has; it decides when any bmw_e field can be proven.
-8. bmw_e infotainment: one grouped system or per-node systems?
+The owner answered on 2026-10-06 (owner question numbers in brackets).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Placement C and an ADR amending the repo split? | (Q10) Yes: `packs/generic_obd2/` in the platform repo, installed by default as the fallback; [ADR-0031](../decisions/adr-0031-generic-obd2-pack-in-platform.md) (§2.1) |
+| 2 | Where the SAEJ1979 table lives | The pack, per the owner's "vehicle data lives only in packs"; the J1979 spec agrees (§2.3) |
+| 3 | A metric on every OBD signal? | (Q11) The common set plus the O2 and fuel-trim families first; the rest later (§2.3) |
+| 4 | Naming `ostler-pack-<x>`; "BMW" in a repo name | (Q14) Yes; a make may appear descriptively (§1) |
+| 5 | Generic DTC text | (Q12) Codes and categories plus our own short descriptions for common codes (§2.6) |
+| 7 | Which E-series car or bench | (Q13) None: `bmw_e` is deferred, candidate-only, nothing proven (§3) |
+
+**Still open** (not raised with the owner):
+
+6. `openostler.testing` as shipped fakes, or keep copying fakes into each pack? §4 drafts
+   shipped fakes; it does not block the `generic_obd2` skeleton.
+8. bmw_e infotainment: one grouped system or per-node systems? Deferred with `bmw_e`.
 
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft.
+- 2026-10-06 — v0.2: approved by the owner for `generic_obd2` (placement C, ADR-0031;
+  naming; metrics for the common set, O2 and fuel trim first; our own short DTC text for
+  common codes; the SAEJ1979 table in the pack). `bmw_e` deferred, candidate-only, until a
+  car or bench exists. Questions 6 and 8 stay open.

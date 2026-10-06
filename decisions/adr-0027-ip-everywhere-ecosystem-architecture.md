@@ -2,11 +2,11 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
-depends_on: [references/research/ecosystem_architecture.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
+depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS, ADR-0026's command envelope, no default passwords) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules.
+  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS device certificates, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; ADR-0026 as amended) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules (a long-term goal). Amended by the owner on 2026-10-06 (ADR-0028): the base is the Pi plus an always-on ESP32 buddy and the guardian is an add-on; uplinks are existing in-car Wi-Fi, hotspots or any USB dongle, with selection, failover and metering; a parked broker on the buddy bridged to the Pi's Mosquitto; security is standard practice (TLS/mTLS, MQTT auth and ACLs, passkeys or passwords for people) rather than a custom envelope; modules host their own web pages.
 ---
 
 # ADR-0027 — IP everywhere: the ecosystem architecture
@@ -15,6 +15,10 @@ summary: >
 - **Status:** accepted (owner direction, 2026-10-06; from the
   [ecosystem research](../references/research/ecosystem_architecture.md)). **Builds on
   [ADR-0026](adr-0026-module-bus-10base-t1s.md)**, which stays the module-bus decision.
+  Amended by the owner on 2026-10-06 together with
+  [ADR-0028](adr-0028-base-hardware-connectivity-and-remote-access.md): base hardware,
+  uplinks, broker placement, security and Matter (see
+  [Amendments](#amendments-2026-10-06-owner-answers)).
 
 ## Context
 
@@ -72,14 +76,16 @@ summary: >
 | **Modules** | 10BASE-T1S with PLCA (ADR-0026) |
 | **Cameras** | Standard Ethernet now (100BASE-TX/GbE), with 12 V on separate wires by default and PoE where a camera needs it. **100BASE-T1** only when we build our own camera hardware |
 | **Displays and phones** | Wi-Fi from the Pi's access point, or USB tethering |
-| **Uplinks** | LTE or home Wi-Fi, opt-in |
+| **Uplinks** | ~~LTE or home Wi-Fi, opt-in~~ Amended: existing in-car Wi-Fi, a phone hotspot, home Wi-Fi or any USB 3G/4G dongle; Starlink, a high-speed gateway and guardian LTE as options; owner-selected or priority failover, with metering (ADR-0028). Outbound data stays opt-in |
 
 Video never crosses the T1S segment.
 
 **3. The Pi is the router and gateway.**
 - Each segment is its own routed subnet and IPv6 /64. The Pi does not bridge them.
 - The Pi firewalls between segments: cameras and clients cannot open connections to modules.
-- It runs the MQTT broker, the discovery proxy, NTP and the local CA.
+- It runs the MQTT broker, the discovery proxy, NTP and the local CA. *Amended:* the Pi's
+  broker serves while the Pi is awake; a parked broker on the base's always-on ESP32 buddy
+  serves a minimal set and is bridged by the Pi (ADR-0028 §5).
 - These are OS services, not Python dependencies.
 
 **4. Addressing.**
@@ -112,8 +118,11 @@ Video never crosses the T1S segment.
 - **Pairing:** the owner confirms it physically (a button, or a setup code). There are no
   default passwords (UK PSTI).
 - **The broker:** mTLS with per-node ACLs.
-- **ADR-0026's end-to-end envelope still applies** (per-node key, counter, MAC) to commands
-  and alarm-critical messages on every transport.
+- ~~ADR-0026's end-to-end envelope still applies (per-node key, counter, MAC) to commands
+  and alarm-critical messages on every transport.~~ *Amended:* standard network security
+  replaces a custom envelope on IP transports: TLS/mTLS with device certificates, MQTT 5
+  authentication with per-device ACLs, no trust from bus membership, and passkeys (WebAuthn)
+  or passwords for people. The CAN fallback's equivalent is open (ADR-0026 as amended).
 - MACsec on T1S is left to the **U5 threat model**.
 
 **9. The module contract.**
@@ -144,7 +153,8 @@ Video never crosses the T1S segment.
 - Wi-Fi never carries alarm-critical links.
 
 **12. Matter.**
-- Modules do not implement Matter.
+- Modules do not implement Matter. A Matter bridge is a **long-term goal** (owner,
+  2026-10-06).
 - The car reaches Matter ecosystems through a **bridge**: Home Assistant with an open-source
   bridge today, and possibly a native, opt-in, read-only bridge on the Pi later.
 - Certification is decided only if hardware sales justify it.
@@ -173,12 +183,16 @@ Video never crosses the T1S segment.
   ADR-0026). It covers:
   - the topic tree;
   - the manifest schema;
-  - the authentication envelope;
+  - ~~the authentication envelope~~ certificates, ACLs and the CAN-fallback authentication
+    (ADR-0026 as amended);
   - the CAN mapping;
-  - where the broker lives while parked.
+  - ~~where the broker lives while parked~~ the parked topic set and bridge patterns
+    (placement decided in ADR-0028).
 - The DevicePack contract is designed with it.
 - The base pack needs a router configuration: systemd-networkd, nftables, chrony, Mosquitto
-  and an mDNS proxy, carried as OS configuration in the deploy tooling.
+  and an mDNS proxy, carried as OS configuration in the deploy tooling. *Amended:* uplinks
+  are managed by NetworkManager and ModemManager with vnStat metering (ADR-0028); which
+  manager owns the internal segments is settled in that configuration work.
 - Cameras are bought, not built, until the camera segment's own hardware is justified. The
   direction spec's camera constraints (latency, pre-event buffer) stay open.
 - The phrase "private CAN bus" leaves the plans. Phase 4 becomes "add-on modules on the module
@@ -198,3 +212,35 @@ Video never crosses the T1S segment.
   heavier on an ESP32. Reference only.
 - **KUKSA databroker or LwM2M in the core.** Rejected: a second broker or server against
   ADR-0002. Either may come later as a bridge.
+
+## Amendments (2026-10-06, owner answers)
+
+The owner answered the open questions on the day this ADR was accepted. The details are in
+[ADR-0028](adr-0028-base-hardware-connectivity-and-remote-access.md) and the
+[connectivity research](../references/research/connectivity_uplink.md); the statements
+above are marked where they changed.
+
+- **Base and guardian.** The base hardware pack is the Pi plus an always-on **ESP32 buddy**
+  (wake, Pi power, bus listening while parked, basic alarm). The **guardian is an add-on**:
+  the always-on alarm system and gateway. The buddy is the base's always-powered node.
+- **Uplinks** (§2). The base has no internet of its own. It uses existing in-car Wi-Fi, a
+  phone hotspot, home Wi-Fi or any USB 3G/4G dongle, with Starlink, a high-speed gateway and
+  guardian LTE as options. The owner selects a source or a priority failover, and each
+  source can carry a metered flag and a data budget with alerts.
+- **Broker placement** (§3, Consequences). Espressif's Mosquitto port on the buddy hosts a
+  parked minimal set; Mosquitto on the Pi is the full broker when awake and bridges to it.
+  Always-on (EV) mode keeps the Pi broker up.
+- **Security** (§8). Standard practice instead of a custom bus scheme: TLS/mTLS for devices,
+  MQTT 5 authentication with per-device ACLs, no trust from bus membership, and passkeys
+  (WebAuthn) or passwords for people (accounts in ADR-0029). ADR-0026's per-node key,
+  counter and MAC envelope is dropped (ADR-0026 as amended). Per-node identity, physical
+  pairing and no default passwords stand.
+- **Discovery** (§6). `_ostler-mod._tcp` is to be registered with IANA; the draft request is
+  in the connectivity research §6, for the owner to submit.
+- **Displays and Wi-Fi** (§2). The Pi's access point and a Wi-Fi client share one radio on one
+  channel. Every module also hosts its own small web page and can work on its own; Wi-Fi
+  modules are provisioned with Improv Wi-Fi, with a captive-portal fallback.
+- **Remote access.** LAN only by default; Tailscale opt-in; an Ostler Cloud product that is
+  never the only option; Home Assistant Cloud through Home Assistant. Every remote path
+  passes the same server gate.
+- **Matter** (§12). A bridge is a long-term goal; modules still do not implement Matter.

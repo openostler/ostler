@@ -2,18 +2,20 @@
 title: "10BASE-T1S bench plan — 3 nodes, PLCA, MQTT, sleep, wake and cranking"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/t1s_module_bus.md, decisions/adr-0026-module-bus-10base-t1s.md, references/research/hardware.md]
 summary: >
-  A three-node 10BASE-T1S bench (Pi 5 + LAN8651 Click as PLCA coordinator; ESP32-S3 + LAN8651 Click; original ESP32 + LAN8670 RMII eval) with a priced parts list (about $357 without the Pi and bench supplies), wiring, setup (Pi kernel modules and overlay, ethtool PLCA, ESP-IDF lan865x/lan867x), eight tests (PLCA latency and jitter, throughput, MQTT round trip, idle and sleep current, wake by a separate wake wire, a 12 V to 6 V 40 ms cranking dip, cable length and EMI, coordinator loss) with pass/fail targets, and a results template. Passing it is ADR-0026's Confirmation.
+  A three-node 10BASE-T1S bench (Pi 5 + LAN8651 Click as PLCA coordinator; ESP32-S3 + LAN8651 Click; original ESP32 + LAN8670 RMII eval) with a priced parts list (about $357 without the Pi and bench supplies), wiring, setup (Pi kernel modules and overlay, ethtool PLCA, ESP-IDF lan865x/lan867x), eight tests (PLCA latency and jitter, throughput, MQTT round trip, idle and sleep current, wake by a separate wake wire, a 12 V to 6 V 40 ms cranking dip, cable length and EMI, coordinator loss) with pass/fail targets, and a results template. Amended 2026-10-06 (owner): ESP32 boards come from another supplier, an Ethernet or Wi-Fi prototype backbone may stand in when T1S parts are unavailable (it never confirms T1S), and MQTT runs over mTLS with per-device ACLs. Passing the T1S tests is ADR-0026's Confirmation.
 ---
 
 # 10BASE-T1S bench plan
 
 Background and sources: [T1S research](research/t1s_module_bus.md). Decision:
 [ADR-0026](../decisions/adr-0026-module-bus-10base-t1s.md), whose Confirmation is this
-plan. Prices are DigiKey USD, checked **October 2026**; **(U)** means unverified.
+plan. Prices are DigiKey USD, checked **October 2026**; **(U)** means unverified. ESP32
+boards come from **another supplier** than DigiKey, which is out of stock (owner,
+2026-10-06); where T1S parts cannot be had at all, see §7 (prototype backbone).
 
 ## 1. Bench layout
 
@@ -37,8 +39,8 @@ the coordinator is the guardian (ADR-0026); Test 8 covers losing it.
 | # | Item | Qty | Unit | Total | Link |
 |---|---|---|---|---|---|
 | 1 | MikroE Two-Wire ETH Click (MIKROE-5543, LAN8651) | 2 | $50.00 | $100.00 | [DigiKey](https://www.digikey.com/en/products/result?keywords=MIKROE-5543) |
-| 2 | ESP32-S3-DevKitC-1-N8R8 (or any ESP32-S3 board; DigiKey out of stock to 2027-06) | 1 | $15.00 | $15.00 | [DigiKey](https://www.digikey.com/en/products/result?keywords=ESP32-S3-DEVKITC-1-N8R8) |
-| 3 | ESP32-DevKitC-32E (original ESP32, has an EMAC) | 1 | $10.00 | $10.00 | [DigiKey](https://www.digikey.com/en/products/result?keywords=ESP32-DEVKITC-32E) |
+| 2 | ESP32-S3-DevKitC-1-N8R8 (or any ESP32-S3 board with the SPI pins free), **from another supplier** (Mouser, Farnell, the Espressif store or a distributor in stock; DigiKey is out of stock to 2027-06) | 1 | ≈ $15.00 (U) | ≈ $15.00 | price at the chosen supplier (U) |
+| 3 | ESP32-DevKitC-32E (original ESP32, has an EMAC), **from another supplier** as row 2 | 1 | ≈ $10.00 (U) | ≈ $10.00 | price at the chosen supplier (U) |
 | 4 | Microchip EVB-LAN8670-RMII (EV06P90A) | 1 | $44.61 | $44.61 | [DigiKey](https://www.digikey.com/en/products/result?keywords=EV06P90A) |
 | 5 | Nordic Power Profiler Kit II (current, 200 nA–1 A) | 1 | $113.74 | $113.74 | [DigiKey](https://www.digikey.com/en/products/result?keywords=NRF-PPK2) |
 | 6 | Pololu D24V10F5 5 V 1 A buck (5.1–36 V in) | 3 | $12.95 | $38.85 | [Pololu](https://www.pololu.com/product/2831) |
@@ -134,7 +136,7 @@ that echoes `bench/<node>/ping` to `bench/<node>/pong` and timestamps on a GPIO 
 |---|---|---|---|
 | 1 | **PLCA access latency and jitter** (3 nodes) | B toggles a GPIO and sends a 200-byte UDP frame every 10 ms; A's IRQ line and B's GPIO on the scope, 10,000 samples; repeat with C sending 1,500-byte frames as background | p99 ≤ 1 ms, jitter (p99−p1) ≤ 0.5 ms idle; p99 ≤ 3 ms with background (bound ≈ 2.5 ms, research §2); zero collisions counted with PLCA on |
 | 2 | **Throughput** | `iperf3` UDP A↔(EVB stick or B) then all three at once, 60 s | single stream ≥ 5 Mbit/s; sum of all senders ≥ 6 Mbit/s; loss ≤ 0.1 % below 80 % load |
-| 3 | **MQTT round trip** | B and C publish `ping` at 50 Hz, QoS 0 and QoS 1, 1 h; A echoes | p99 ≤ 10 ms; zero lost QoS 1 messages; no reconnects |
+| 3 | **MQTT round trip** | B and C publish `ping` at 50 Hz, QoS 0 and QoS 1, 1 h; A echoes. Run once over plain MQTT and once with mTLS device certificates, MQTT 5 auth and per-device ACLs (ADR-0026 as amended); record both | p99 ≤ 10 ms with mTLS on; zero lost QoS 1 messages; no reconnects; a client without a valid certificate, or publishing outside its ACL, is refused |
 | 4 | **Idle current** (link up, PLCA on, 1 Hz heartbeat) | PPK2 in series with each node's 3.3 V rail, plus total at 12 V | recorded per node; LAN8651 rail ≤ 50 mA (U, no datasheet figure found); total at 12 V recorded for the drain budget |
 | 5 | **Sleep current** | Node B: S3 in deep sleep, Click rail switched off, wake armed on the wake wire; PPK2 on 3.3 V for 10 min. Optional: LAN8651 TC10 sleep via register writes, Click rail on | ≤ 200 µA on node B's 3.3 V rail (USB-UART unpowered); TC10 variant informative, target ≤ 60 µA on the Click rail |
 | 6 | **Wake by the wake wire** | A pulls the wake wire low 100 ms; B wakes, powers the Click, joins PLCA, publishes `bench/b/awake`; 100 cycles | 100/100 woken; wire edge to first MQTT message ≤ 500 ms (p95), ≤ 1 s max |
@@ -150,12 +152,29 @@ LAN8651 B0 or B1, EVB LAN8670 revision) from `dmesg` or the boot log.
 |---|---|---|---|---|---|---|
 | 1 | | | | p50 / p99 / jitter: | | |
 | 2 | | | | single / summed / loss: | | |
-| 3 | | | | p50 / p99 / lost / reconnects: | | |
+| 3 | | | | plain and mTLS: p50 / p99 / lost / reconnects; refusals: | | |
 | 4 | | | | A / B / C mA; 12 V total mA: | | |
 | 5 | | | | B µA (switched); B µA (TC10): | | |
 | 6 | | | | woken n/100; p95 / max ms: | | |
 | 7 | | | | resets; recovery ms; lost; duplicates: | | |
 | 8 | | | | errors 1 m / 25 m / noise; reconverge s: | | |
 
-When every row passes, ADR-0026's Confirmation is met; record the result and any changed
-target in this file, and carry the findings into the module-bus spec.
+When every row passes on T1S hardware, ADR-0026's Confirmation is met; record the result
+and any changed target in this file, and carry the findings into the module-bus spec.
+Rows run on a prototype backbone (§7) are marked as such and never count.
+
+## 7. Prototype backbone (interim, owner 2026-10-06)
+
+When T1S parts (the Clicks, the EVB) cannot be sourced, the bench may run on **100BASE-TX
+Ethernet** (a switch, with USB or SPI Ethernet on the ESP32s, or the original ESP32's EMAC
+with a 100BASE-TX PHY) **or Wi-Fi**. This is valid because the message model is
+transport-agnostic (ADR-0026): firmware, the topic tree, MQTT 5 with mTLS and ACLs,
+pairing, the wake-wire logic and the deep-sleep side of Test 5 can be developed and tried
+on it.
+
+It **does not confirm T1S**. Every row of §5 counts only when run on T1S hardware; the
+T1S-specific ones (Test 1 PLCA latency and jitter, Test 4 MAC-PHY rail current, Test 6
+PLCA join after wake, Test 7 cranking dip, Test 8 cable length, EMC and coordinator loss)
+have no stand-in on Ethernet or Wi-Fi. Prototype results go in the template with the
+backbone named in the setup notes. A Wi-Fi prototype stays on the bench; alarm-critical
+links never use Wi-Fi in a car (ADR-0026).

@@ -2,18 +2,19 @@
 title: "ADR-0026 — Module bus: 10BASE-T1S, with CAN and Wi-Fi as fallback"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
-depends_on: [references/research/t1s_module_bus.md, references/t1s_bench_plan.md, references/research/hardware.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md]
+depends_on: [references/research/t1s_module_bus.md, references/t1s_bench_plan.md, references/research/hardware.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md]
 summary: >
-  Two network tiers: IP for the computer tier (Pi, head unit, phones, cameras, cloud) and 10BASE-T1S (IEEE 802.3cg, PLCA) for our own module bus once we build hardware, on the Microchip LAN8651 SPI MAC-PHY. CAN or Wi-Fi are the dev-kit and fallback module transports; CAN stays for nodes that must sleep at µA and wake on the bus until T1S wake is proven. One transport-agnostic message model: VSS-named, MQTT-style topics. The car's own buses are out of scope. No Wi-Fi for alarm-critical links. Commands and alarm messages are authenticated; telemetry may be trusted-local until the U5 threat model. Confirmation is the T1S bench plan's pass/fail criteria.
+  Two network tiers: IP for the computer tier (Pi, head unit, phones, cameras, cloud) and 10BASE-T1S (IEEE 802.3cg, PLCA) for our own module bus once we build hardware, on the Microchip LAN8651 SPI MAC-PHY. CAN or Wi-Fi are the dev-kit and fallback module transports; CAN stays for nodes that must sleep at µA and wake on the bus until T1S wake is proven. One transport-agnostic message model: VSS-named, MQTT-style topics. The car's own buses are out of scope. No Wi-Fi for alarm-critical links. Security is standard practice, amended by the owner on 2026-10-06: every module authenticates with TLS/mTLS and a device certificate, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; people sign in with passkeys (WebAuthn) or passwords; the µA CAN fallback's equivalent is open. Bench boards come from another supplier, and Ethernet or Wi-Fi may stand in as a prototype backbone, but T1S is confirmed only by the T1S bench plan's pass/fail criteria.
 ---
 
 # ADR-0026 — Module bus: 10BASE-T1S, with CAN and Wi-Fi as fallback
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
-  [T1S research](../references/research/t1s_module_bus.md))
+  [T1S research](../references/research/t1s_module_bus.md)). Amended by the owner on
+  2026-10-06: security and bench sourcing (see [Amendments](#amendments-2026-10-06)).
 
 ## Context
 
@@ -66,14 +67,23 @@ wires with them, and nothing bridges module-bus topics onto a vehicle bus.
 the Pi and siren or immobiliser outputs use a wire (T1S, CAN, the wake wire or a GPIO).
 Wi-Fi may carry convenience and telemetry only.
 
-**Security.** The module bus is physically reachable by anyone in the car.
-- **Commands and alarm-critical messages are authenticated** end to end (per-node key,
-  monotonic counter, MAC over topic and payload), whatever the transport.
-- **Telemetry may be treated as trusted-local** until the **U5 threat model** decides
-  otherwise.
-- The U5 threat model sets the scheme (keys, provisioning, MACsec or application-level),
-  covers a rogue node on the pair and replay over CAN, and may tighten this rule. No
-  actuator command is accepted from the module bus without authentication meanwhile.
+**Security: standard practice, not a bus-specific scheme** (amended 2026-10-06). The
+module bus is physically reachable by anyone in the car, so being on it earns no trust.
+- **Every module authenticates** with TLS (mTLS) using a **device certificate**, whatever
+  the IP transport (T1S, Ethernet, Wi-Fi). A node with no valid certificate gets no
+  connection.
+- **The broker uses MQTT 5 authentication with per-device ACLs:** each module may publish
+  and subscribe only to its own topics; commands and alarm messages are accepted only from
+  an authenticated client whose ACL allows them.
+- **No trust from bus membership alone**, for telemetry as much as for commands, and **no
+  default passwords**; any password is set by the owner at pairing.
+- **People authenticate with passkeys (WebAuthn) or passwords**, through the user accounts
+  of [ADR-0029](adr-0029-accounts-multi-vehicle-sharing-and-social.md). Modules use certificates, never a person's credentials.
+- **Open: the µA CAN fallback nodes** cannot run TLS. They need an equivalent, for example
+  a gateway that terminates TLS for them and authenticates their CAN frames (key, counter
+  and MAC per frame). This is not decided; until it is, no actuator command or alarm-arm
+  change is accepted from a CAN-only node, and the **U5 threat model** settles it along
+  with replay, provisioning and MACsec on T1S.
 
 ## Confirmation
 
@@ -92,13 +102,25 @@ criterion it lists, in particular:
 The T1S part of this decision is confirmed when those pass; **T1S for µA wake nodes**
 needs its own bench pass (TC10 in a driver) before CAN is dropped for them.
 
+**A prototype backbone does not confirm T1S** (amended 2026-10-06). Where T1S parts are
+unavailable, modules may be prototyped on 100BASE-TX Ethernet or Wi-Fi. That is valid for
+firmware, the message model, MQTT and security work, because the message model is
+transport-agnostic. The T1S-specific measurements (PLCA latency and jitter, the cranking
+dip, cable length and EMC) still have to pass on T1S hardware before T1S is confirmed. A
+Wi-Fi prototype stays on the bench: it never carries an alarm-critical link in a car.
+
 ## Consequences
 
-- A spec for the module-bus message mapping (topic tree, CAN mapping, authentication
-  envelope) comes before any firmware; `asyncapi.yaml` gains the MQTT channels at U5.
+- A spec for the module-bus message mapping (topic tree, CAN mapping, certificates and
+  ACLs, the CAN-fallback authentication) comes before any firmware; `asyncapi.yaml` gains
+  the MQTT channels at U5.
 - The Pi kernel needs `oa_tc6`, `microchip_t1s` and `lan865x` built as modules plus an
   overlay; we carry them until Pi OS enables them.
 - Each module board costs about £3 more than a CAN node.
+- Every module needs a device certificate and a provisioning step at pairing, and the Pi
+  runs a local CA (the ADR-0021 trust question) and an MQTT 5 broker with ACLs.
+- Bench ESP32 boards are bought from another supplier than the out-of-stock one; the bench
+  plan lists the substitutes.
 
 ## Alternatives considered
 
@@ -107,3 +129,18 @@ needs its own bench pass (TC10 in a driver) before CAN is dropped for them.
 - **Wi-Fi only.** Rejected: not for alarm-critical links; drain and coexistence.
 - **10BASE-T1L or 100BASE-T1.** Rejected: point-to-point, so a switch per branch.
 - **RS-485/Modbus.** Rejected: no IP, bespoke framing.
+- **Custom bus signing with trusted-local telemetry** (the first text of this ADR: per-node
+  key, counter and MAC over commands and alarms, telemetry trusted until U5). Replaced on
+  2026-10-06 by standard TLS/mTLS, MQTT 5 auth and ACLs, at the owner's direction; a
+  per-frame MAC survives only as one option for the CAN fallback.
+
+## Amendments (2026-10-06)
+
+The owner amended this ADR on the day it was accepted:
+1. **Security.** The custom signing envelope and the trusted-local telemetry rule are
+   dropped for standard practice: TLS/mTLS device certificates, MQTT 5 authentication with
+   per-device ACLs, no trust from bus membership, no default passwords, passkeys
+   (WebAuthn) or passwords for people (ADR-0029). The CAN fallback's equivalent is open.
+2. **Bench parts.** ESP32 boards come from another supplier; when T1S parts cannot be had,
+   an Ethernet or Wi-Fi backbone may stand in for prototyping. T1S is still confirmed only
+   by the T1S measurements of the bench plan.
