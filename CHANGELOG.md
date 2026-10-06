@@ -44,6 +44,14 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **`driver_side` in the pack layout** ([UI spec](specs/2026-10-06-ui-architecture-design.md)
+  §3.3; owner, 2026-10-06): `schemas/layout.schema.json` and the OpenAPI `Pack` layout gain
+  `driver_side` (`"left" | "right"`). The shell puts the rail on that side (the kiosk flag
+  `side=` still overrides; absent or invalid means left). The D2 pack declares `"right"`.
+  The UI contract test compares `pack.json` without it, so a pack that omits it still passes.
+- **UI: the Off power badge** (UI spec §3.8): a node whose `power.state` is `off` shows
+  "Off" in the Link chip, also while its status is offline (the power owner reports it, so
+  it is not an unexpected loss).
 - **UI U1 Shell** ([UI spec](specs/2026-10-06-ui-architecture-design.md) §3, §10; app-model
   spec §9). One shell over today's screens: layout classes by aspect and height (HU-7
   1024×600, HU-9/10, HU-wide, phone, tablet, desktop; kiosk flag
@@ -256,6 +264,8 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **The page title reads "Ostler"** (was "D2 Diag"), the Web App Manifest's name; a vitest
+  keeps the two in step. The legacy `/legacy/v2` page is unchanged.
 - **CAN `TxGate`: `grant_invalid` and the `3E` sweep guard**
   ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md) v0.6 §7; owner, 2026-10-06,
   platform first so the node's C gate can match). New refusal `grant_invalid` for a grant

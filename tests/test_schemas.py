@@ -62,6 +62,15 @@ def test_fake_pack_store_and_layout_validate():
     _validate("layout", dict(FAKE_PACK.layout))
 
 
+def test_layout_driver_side_is_left_or_right():
+    """UI spec §3.3: the rail follows the vehicle's driver side; absent means left."""
+    assert not _errors("layout", {})
+    for side in ("left", "right"):
+        assert not _errors("layout", {"driver_side": side})
+    for bad in ("centre", "RHD", "Right", None, 1):
+        assert _errors("layout", {"driver_side": bad}), bad
+
+
 def test_signal_store_schema_rejects_bad_records():
     ok = {"name": "rpm", "lid": "09", "offset": 0}
     assert not _errors("signal-store", [ok])

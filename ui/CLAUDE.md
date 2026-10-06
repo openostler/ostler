@@ -8,7 +8,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/api/` — `schemas.ts` (Zod contract), `client.ts`, `useSnapshot`/`useSniff`/`useCatalog`,
   `useAction` (every module action; adds `trust: "experimental"` in Experimental mode), `fixtures/`.
 - `src/shell/` — the shell (U1, UI spec §3): `layoutClass.ts` (HU-7, HU-9/10, HU-wide, phone,
-  tablet, desktop; kiosk flag `?display=headunit&side=left|right`), `strip.ts` (the status strip
+  tablet, desktop; kiosk flag `?display=headunit&side=left|right`; the rail side from the pack
+  layout's `driver_side`), `strip.ts` (the status strip
   as chip descriptors; `Strip.tsx` draws them), `destinations.ts` (the registry the rail or
   bottom bar is built from: `slot`, `order`, `requires`, `trust`, a lazy chunk), `routes.ts`
   (route names), `landing.ts` (driving state and landing), `context.tsx` (`useShell()`),

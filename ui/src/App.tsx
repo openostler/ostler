@@ -103,7 +103,7 @@ function AppShell({ path }: { path: string }) {
   const pack = usePack();
   const kiosk = useMemo(() => parseKiosk(window.location.search), []);
   const layout = useLayoutClass(kiosk);
-  const side = railSide(kiosk, (pack?.layout as { driver_side?: unknown } | undefined)?.driver_side);
+  const side = railSide(kiosk, pack?.layout.driver_side);
   // Parked / Idling / Moving come from the server in U2; until then the state is unknown and
   // the server gate alone decides every action (shell/landing.ts).
   const driving: DrivingState = "unknown";

@@ -112,6 +112,8 @@ Rewind to Logs, the cog to More. Service mode and replay add a strip badge.
 Landscape classes use a **vertical rail on the driver's side**: wide-screen production systems keep
 status and controls nearest the driver, and a bottom bar wastes the short axis of a 600 px screen.
 The side comes from the vehicle's `driver_side` (the D2 is RHD), with the kiosk flag as override.
+Until the garage holds it per vehicle (§4.1, U6), it is the pack layout's `driver_side`
+(`"left" | "right"`, `schemas/layout.schema.json`); absent means left.
 Portrait uses a **bottom bar** for thumb reach (five items at 72–86 px fit 393 px). The rail holds
 only the five destinations, plus a Drive-mode button on head units, so it never scrolls.
 
@@ -235,7 +237,9 @@ Amendments B).
 always icon plus word: **Awake**, **Asleep** (with last seen and how it wakes: "wakes on
 wire", "checks in ≈ 6 min"), **Waking…** (elapsed seconds against the expected time),
 **Kept awake** (by whom, until when), **Shutting down**, **Off**, and **Offline** (amber,
-only for an unexpected loss). An asleep device keeps its last values in stale grey with their
+only for an unexpected loss; **Off** is the power owner's report for a cut device, so a device
+that is off and unreachable reads Off, never Offline — note of 2026-10-06, as built in the
+Link chip). An asleep device keeps its last values in stale grey with their
 age, never zero and never "Unavailable" (§2 honest states).
 
 **Status strip (no new chip).** The brain's state lives in the **Link** chip (§3.2):
@@ -807,3 +811,10 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   `driver_side` in the pack layout (rail on the left until the pack declares it).
   Playwright covers 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and
   an axe WCAG 2.2 AA scan per class.
+- 2026-10-06: as built, U1 follow-ups (owner's approval of 2026-10-06; no decision changed,
+  the spec stays v0.9). §3.3: `schemas/layout.schema.json` gains `driver_side`
+  (`"left" | "right"`) and the shell reads it from the pack layout (the kiosk flag still
+  overrides; absent means left); the D2 pack declares `"right"`. §3.8: the Link chip's power
+  badge gains **Off**, the word already in the badge list, with the note that Off wins over
+  Offline because the power owner reports it. The page title reads **Ostler** (was "D2 Diag"),
+  the Web App Manifest's name.

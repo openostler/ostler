@@ -372,7 +372,7 @@ def test_server_serves_snapshot_and_html():
         assert snap["status"] == "connected"
         assert "rpm" in snap["signals"]
         html = urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=2).read().decode()
-        assert "<title>" in html and "D2 Diag" in html
+        assert "<title>Ostler</title>" in html
         # The app (built React UI, or the legacy v2 fallback) streams /events. In the
         # built app that code lives in the referenced bundle, which is served too.
         import re
@@ -406,7 +406,7 @@ def test_admin_gate_requires_password_when_set():
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
         # "/" (v2) is open, no auth
-        assert "D2 Diag" in urllib.request.urlopen(base + "/", timeout=2).read().decode()
+        assert "<title>Ostler</title>" in urllib.request.urlopen(base + "/", timeout=2).read().decode()
         # /admin without password → 401
         with pytest.raises(urllib.error.HTTPError) as ei:
             urllib.request.urlopen(base + "/admin", timeout=2)
@@ -414,7 +414,7 @@ def test_admin_gate_requires_password_when_set():
         # /admin with the correct password → same v2 app (admin mode reveals mapping tabs)
         cred = base64.b64encode(b"x:hemligt").decode()
         req = urllib.request.Request(base + "/admin", headers={"Authorization": f"Basic {cred}"})
-        assert "D2 Diag" in urllib.request.urlopen(req, timeout=2).read().decode()
+        assert "<title>Ostler</title>" in urllib.request.urlopen(req, timeout=2).read().decode()
         # /v1 with the correct password → the old console (kept as reference)
         req1 = urllib.request.Request(base + "/v1", headers={"Authorization": f"Basic {cred}"})
         assert "Discovery 2" in urllib.request.urlopen(req1, timeout=2).read().decode()
@@ -454,7 +454,7 @@ def test_admin_ungated_without_password():
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
         # without a password /admin is open (local dev / backwards compatible) — serves v2
-        assert "D2 Diag" in urllib.request.urlopen(base + "/admin", timeout=2).read().decode()
+        assert "<title>Ostler</title>" in urllib.request.urlopen(base + "/admin", timeout=2).read().decode()
     finally:
         srv.shutdown()
         srv.server_close()
@@ -791,7 +791,7 @@ def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkey
     from openostler.web import server as srvmod
 
     (tmp_path / "assets").mkdir()
-    (tmp_path / "index.html").write_text("<title>D2 Diag app</title>", encoding="utf-8")
+    (tmp_path / "index.html").write_text("<title>Ostler app</title>", encoding="utf-8")
     (tmp_path / "assets" / "index-abc123.js").write_text("console.log(1)", encoding="utf-8")
     (tmp_path / "assets" / "index-abc123.css").write_text("body{}", encoding="utf-8")
     (tmp_path / "favicon.svg").write_text("<svg/>", encoding="utf-8")
@@ -803,7 +803,7 @@ def test_static_app_served_with_types_cache_and_traversal_guard(tmp_path, monkey
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
         for path in ("/", "/v2", "/admin"):
-            assert "D2 Diag app" in urllib.request.urlopen(base + path, timeout=2).read().decode()
+            assert "Ostler app" in urllib.request.urlopen(base + path, timeout=2).read().decode()
         js = urllib.request.urlopen(base + "/assets/index-abc123.js", timeout=2)
         assert js.headers["Content-Type"].startswith("text/javascript")
         assert "immutable" in js.headers["Cache-Control"]

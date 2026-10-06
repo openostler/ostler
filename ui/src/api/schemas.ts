@@ -112,7 +112,7 @@ export type KLineLink = z.infer<typeof KLineLink>;
 
 /** A node's ADR-0040 power record. */
 export const NodePower = z.object({
-  state: z.string(), // "awake" | "held" | "waking" | "asleep" | "shutting_down"
+  state: z.string(), // "awake" | "held" | "waking" | "asleep" | "shutting_down" | "off"
   since: z.string().nullable().optional(),
   since_us: z.number().optional(),
   class: z.string().optional(),
@@ -637,6 +637,8 @@ export const ModuleNotices = z.looseObject({
   inputs_banner: z.string().optional(),
 });
 export const PackLayout = z.looseObject({
+  // schemas/layout.schema.json: the rail's side (UI spec §3.3); any other value reads as absent
+  driver_side: z.enum(["left", "right"]).optional().catch(undefined),
   group_order: z.array(z.string()).optional(),
   drive: z.record(z.string(), DriveView).optional(),
   body: z.object({ signals: z.record(z.string(), z.string()), groups: z.array(BodyGroup) }).optional(),

@@ -335,13 +335,13 @@ describe("overhaul navigation", () => {
     installFakeServer({ snapshot: connected });
     const { unmount } = render(<App path="/" />);
     const strip = await screen.findByRole("banner", { name: "Status" });
-    expect(within(strip).queryByText(/D2 Diag/)).not.toBeInTheDocument();
+    expect(within(strip).queryByText(/D2 Diag|Ostler/)).not.toBeInTheDocument();
     expect(within(strip).queryByRole("combobox")).not.toBeInTheDocument(); // module select moved to Diagnose
     await dest(user, "Diagnose");
     const header = (await screen.findByRole("combobox", { name: "Module" })).closest(".diag-id") as HTMLElement;
     await waitFor(() => expect(header.querySelector(".modctl-v")).toHaveTextContent("TD5 (engine)"));
     expect(within(header).getByText("Module")).toBeInTheDocument();
-    expect(within(header).queryByText(/D2 Diag/)).not.toBeInTheDocument();
+    expect(within(header).queryByText(/D2 Diag|Ostler/)).not.toBeInTheDocument();
     expect(header.querySelector(".mappct")).toBeNull();
     expect(within(header).queryByText("admin")).not.toBeInTheDocument();
     unmount();

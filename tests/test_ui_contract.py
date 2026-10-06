@@ -270,6 +270,17 @@ def base_tmp(got):
     return str(Path(path).parent) if path else None
 
 
+# Scalar pack-layout keys the layout schema defines and a pack may leave out (the UI falls
+# back when absent). The fixture carries them so the UI tests exercise them; the contract
+# compares the rest, so a pack that declares or omits them both pass.
+OPTIONAL_LAYOUT_KEYS = ("driver_side",)
+
+
+def _without_optional_layout(pack: dict) -> dict:
+    layout = {k: v for k, v in (pack.get("layout") or {}).items() if k not in OPTIONAL_LAYOUT_KEYS}
+    return {**pack, "layout": layout}
+
+
 @pytest.mark.parametrize("name", list(CASES))
 def test_response_matches_ui_fixture(base, name):
     got = CASES[name](base)
@@ -283,6 +294,8 @@ def test_response_matches_ui_fixture(base, name):
         path.write_text(text.replace(tmp, "/tmp/d2diag-test") + "\n", encoding="utf-8")
         return
     want = json.loads(path.read_text(encoding="utf-8"))
+    if name == "pack":
+        want, got = _without_optional_layout(want), _without_optional_layout(got)
     errs = _compatible(_shape(want), _shape(got))
     assert not errs, f"{name}: the server no longer matches the UI contract:\n  " + \
         "\n  ".join(errs) + "\nRegenerate: UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py"

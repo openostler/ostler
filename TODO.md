@@ -40,13 +40,12 @@ Updated 2026-10-06. Check off when done.
 
 ## UI shell (U1 follow-ups, [UI spec](specs/2026-10-06-ui-architecture-design.md) §10)
 
-- [ ] **`driver_side` in the pack layout:** the rail follows `layout.driver_side`
-      (`"left" | "right"`); the D2 pack's `layout.json` should say `"right"` (RHD), and
-      `schemas/layout.schema.json` must allow the key first. Until then the rail is on the
-      left unless the kiosk flag says `side=right`.
-- [ ] **The page title:** `ui/index.html` still reads `<title>D2 Diag</title>` because
-      `tests/test_web.py` asserts it; rename it to Ostler (the manifest's name) together
-      with those server tests.
+- [x] **`driver_side` in the pack layout:** `schemas/layout.schema.json` allows
+      `driver_side` (`"left" | "right"`), the rail follows it (the kiosk flag overrides;
+      absent means left), and the D2 pack declares `"right"` (RHD) in its own PR.
+- [x] **The page title:** `ui/index.html` reads `<title>Ostler</title>`, the Web App
+      Manifest's name (a vitest keeps them in step); `tests/test_web.py` and the e2e smoke
+      test assert it. The legacy `/legacy/v2` page keeps its old title.
 - [ ] **Head-unit type sizes for content:** the shell uses the 76 px targets and 24 px gap
       on head units, but today's screens keep their phone-sized text; the 32/24 px type and
       driver-safe templates arrive with U2's lockouts.
@@ -138,7 +137,7 @@ are built. Open:
 - [ ] **UI states of §10** ("Node asleep · wakes on …", "Node offline", "Waiting for the
       node", "Node not reading <module>", "before restart"): the snapshot carries them. U1
       shows the node's power state as a badge in the strip's Link chip (Asleep, Waking…,
-      Kept awake, Shutting down, Offline); the "wakes on …" detail and the other states
+      Kept awake, Shutting down, Off, Offline; Off wins over Offline); the "wakes on …" detail and the other states
       are still open.
 - [x] **Mosquitto conformance in CI:** the `broker` job installs Mosquitto on the runner
       and runs the `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`, mTLS and the ACL
@@ -154,7 +153,8 @@ are built. Open:
       mapping, the mesh bridge's QoS and ACL.
 - [ ] **`grant_invalid`** in the platform's Python gate and the shared CAN vectors (owner,
       2026-10-06), so both report the same code as the node.
-- [ ] **`power.state: off`** is not accepted by `node/messages.py` `parse_power` yet.
+- [ ] **`power.state: off`** is not accepted by `node/messages.py` `parse_power` yet; the
+      UI already shows it as the **Off** badge once the snapshot carries it.
 - [ ] **AsyncAPI** follows the spec as channels are built (`act/`, `wake/`, `lab/`).
 
 ## Roadmap — data-hub direction (not scheduled)

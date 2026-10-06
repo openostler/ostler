@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { describe, expect, it } from "vitest";
-import type { Snapshot } from "../api/schemas";
+import { PackLayout, type Snapshot } from "../api/schemas";
 import { DESTINATIONS, destinationsFor, MAX_DESTINATIONS, meets } from "./destinations";
 import { landingFor } from "./landing";
 import { hasRail, isHeadUnit, layoutClassFor, parseKiosk, railSide, type Viewport } from "./layoutClass";
@@ -40,6 +40,15 @@ describe("layout classes (UI spec §3.1)", () => {
     expect(railSide({ display: null, side: null }, "right")).toBe("right");
     expect(railSide({ display: null, side: null }, undefined)).toBe("left");
     expect(railSide({ display: "headunit", side: "left" }, "right")).toBe("left");
+  });
+
+  it("reads driver_side from the pack layout; a value outside the schema reads as absent", () => {
+    expect(PackLayout.parse({ driver_side: "right" }).driver_side).toBe("right");
+    expect(PackLayout.parse({}).driver_side).toBeUndefined();
+    const odd = PackLayout.parse({ driver_side: "centre", group_order: ["a"] });
+    expect(odd.driver_side).toBeUndefined();
+    expect(odd.group_order).toEqual(["a"]);
+    expect(railSide({ display: null, side: null }, odd.driver_side)).toBe("left");
   });
 
   it("has a rail on every class but the phone, and three head-unit classes", () => {
@@ -127,6 +136,9 @@ describe("the status strip as data (§3.2)", () => {
     expect(powerNote(node("asleep"))).toEqual({ word: "Asleep", icon: "bedtime" });
     expect(powerNote(node("waking"))?.word).toBe("Waking…");
     expect(powerNote(node("held"))?.word).toBe("Kept awake");
+    expect(powerNote(node("shutting_down"))?.word).toBe("Shutting down");
+    expect(powerNote(node("off"))).toEqual({ word: "Off", icon: "power_settings_new" });
+    expect(powerNote(node("off", "offline"))?.word).toBe("Off"); // the power owner's report: expected, not a loss
     expect(powerNote(node("awake"))).toBeNull();
     expect(powerNote(node("asleep", "offline"))?.word).toBe("Offline");
     expect(powerNote(snap())).toBeNull();
@@ -152,5 +164,19 @@ describe("the status strip as data (§3.2)", () => {
     const battery = stripChips(input({ snap: snap({ battery_v: 12.64 }) })).find((c) => c.id === "battery")!;
     expect(battery).toMatchObject({ kind: "status", word: "12.6 V", label: "Car battery 12.6 V" });
     expect(stripChips(input({ snap: snap({ battery_v: null }) })).some((c) => c.id === "battery")).toBe(false);
+  });
+});
+
+describe("the page title", () => {
+  // index.html and the Web App Manifest as text (Vite glob, so no Node APIs are needed)
+  const files = import.meta.glob<string>(["/index.html", "/public/manifest.webmanifest"], {
+    query: "?raw", import: "default", eager: true,
+  });
+
+  it("is Ostler, the Web App Manifest's name", () => {
+    const manifest = JSON.parse(files["/public/manifest.webmanifest"] ?? "{}") as { name: string; short_name: string };
+    expect(manifest.name).toBe("Ostler");
+    expect(manifest.short_name).toBe("Ostler");
+    expect(files["/index.html"]).toContain(`<title>${manifest.name}</title>`);
   });
 });

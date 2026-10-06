@@ -65,10 +65,12 @@ export type StripInput = {
 const PHONE: ReadonlySet<ChipDescriptor["id"]> = new Set(["admin", "telltale", "link", "rec", "mark"]);
 
 /** A node's power record as a badge, icon and word (ADR-0040, §3.8); null when awake or
- * unknown. Asleep is not offline: Offline is only an unexpected loss. */
+ * unknown. Asleep is not offline: Offline is only an unexpected loss. Off is reported by the
+ * device's power owner, so a device that is off and unreachable reads Off, not Offline. */
 export function powerNote(snap: Snapshot | null): { word: string; icon: SymbolName } | null {
   const node = snap?.node;
   if (!node) return null;
+  if (node.power?.state === "off") return { word: "Off", icon: "power_settings_new" };
   if (node.status === "offline") return { word: "Offline", icon: "warning" };
   switch (node.power?.state) {
     case "asleep": return { word: "Asleep", icon: "bedtime" };
