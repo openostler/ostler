@@ -236,6 +236,18 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **CAN `TxGate`: `grant_invalid` and the `3E` sweep guard**
+  ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md) v0.6 §7; owner, 2026-10-06,
+  platform first so the node's C gate can match). New refusal `grant_invalid` for a grant
+  with a bad signature or unknown key, distinct from `grant_used`: `TxGate` takes an
+  injectable `grant_verifier` (checked after `no_grant`, before `grant_used`; one that
+  raises fails closed), `TxGrant` gains an optional `token`, and the default verifier
+  accepts the lab's unsigned in-process grants as before. Only a physical `3E` is now a
+  Tier 0 read in every driving state: while not Parked a functional `3E` (`7DF`,
+  `18DB33F1`) and a `3E` to a third distinct ECU within 5 s are refused as
+  `sweep_not_parked`; Parked is unchanged and the per-id rate limit stays. New gate vectors
+  T8j–T8m; the vectors README documents the exact check order for the C port. The D2 pack
+  is untouched (it has no CAN).
 - `EcuSession.tester_present()` sends the session profile's `keepalive` frame (`3E 01`, or
   a bare `3E`) when the session has a profile with one; without a profile, or with
   `keepalive: null`, the legacy `3E <_keepalive_sub>` applies as before (K-line profiles

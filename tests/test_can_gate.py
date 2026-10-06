@@ -77,6 +77,37 @@ def test_entry_rate_limit():
     gate.check(fr, gate.issue("sweep", 1), rate_ok=True)
 
 
+def test_grant_verifier_seam():
+    clear = CanFrame(0x7DF, False, pad(b"\x01\x04"))
+    gate = TxGate(EXAMPLE[:1], clock=lambda: 0.0, driving_state=lambda: "parked")
+    with pytest.raises(TxRefused) as ei:              # default: a token it cannot check
+        gate.check(clear, gate.issue("obd_clear", 1, token="eyJ.x.y"), rate_ok=True)
+    assert ei.value.code == "grant_invalid"
+    assert gate.check(clear, gate.issue("obd_clear", 1), rate_ok=True).allowed
+
+    seen: "list[str]" = []
+
+    def verifier(g):
+        seen.append(g.token)
+        return "ok" if g.token == "good" else "invalid"
+    gate = TxGate(EXAMPLE[:1], clock=lambda: 0.0, driving_state=lambda: "parked",
+                  grant_verifier=verifier)
+    bad = gate.issue("obd_clear", 1, token="bad")
+    assert gate.decide(clear, bad, rate_ok=True, commit=True).reason == "grant_invalid"
+    assert gate.decide(clear, bad, rate_ok=True, commit=True).reason == "grant_invalid"
+    assert gate.decide(clear, gate.issue("obd_clear", 1, token="good"), rate_ok=True,
+                       commit=True).reason == "allowlist"
+    assert seen == ["bad", "bad", "good"]
+    gate.check(CanFrame(0x7E0, False, pad(b"\x03\x22\xF4\x0D")), rate_ok=True)  # Tier 0
+
+    def broken(g):
+        raise RuntimeError("verifier down")
+    gate = TxGate(EXAMPLE[:1], clock=lambda: 0.0, driving_state=lambda: "parked",
+                  grant_verifier=broken)
+    assert gate.decide(clear, gate.issue("obd_clear", 1), rate_ok=True).reason == \
+        "grant_invalid"                               # fails closed
+
+
 def test_remote_override_is_read_once_and_fixed(monkeypatch):
     monkeypatch.setenv("OSTLER_ALLOW_REMOTE_CONTROL", "1")
     on = TxGate()

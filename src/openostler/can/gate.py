@@ -13,10 +13,17 @@ Every frame any :meth:`CanLink.send` emits passes :meth:`TxGate.check`:
 3. **Tier 0** in every driving state (ADR-0020 as amended): a single-frame read (OBD
    ``01 02 03 06 07 09 0A``; UDS ``22 19 3E``) on a diagnostic request id (``7DF``,
    ``7E0``–``7E7``, ``18DB33F1``, ``18DAxxF1``), at most one per ``tier0_min_gap`` per id;
-   or a flow-control frame for a reply to such a request (the FC window).
+   or a flow-control frame for a reply to such a request (the FC window). The sweep guard
+   (owner, 2026-10-06): while not Parked, a functional ``3E`` and a physical ``3E`` to a
+   third distinct ECU within ``sweep_window`` are refused (``sweep_not_parked``).
 4. **Everything else** needs all three: a matching **allowlist** entry, the driving state
    in the entry's ``states`` (default Parked; re-read at send time) and a valid
-   **TxGrant** for the entry's action and tier, short-lived and single-use.
+   **TxGrant** for the entry's action and tier, short-lived and single-use. The grant
+   passes the injected ``grant_verifier`` first (``grant_invalid``: bad signature or
+   unknown key; the default accepts only the lab's unsigned in-process grants).
+
+The exact order of the checks, and so which refusal code wins, is listed in
+``tests/vectors/can/README.md``; the node's C port mirrors it.
 
 The silent-bus probe (spec §4) has its own check: :meth:`TxGate.probe_grant` (Parked
 only) and :meth:`TxGate.check_probe` (one-shot capable link, the exact ``7DF 02 01 00``
@@ -49,6 +56,9 @@ REMOTE_OVERRIDE_ENV = "OSTLER_ALLOW_REMOTE_CONTROL"
 _TRUE = frozenset({"1", "true", "yes", "on"})
 
 FUNC_11, FUNC_29 = 0x7DF, 0x18DB33F1
+FUNCTIONAL = frozenset({(FUNC_11, False), (FUNC_29, True)})
+TESTER_PRESENT = 0x3E
+GRANT_OK, GRANT_INVALID = "ok", "invalid"
 
 
 class Tier0:
@@ -71,13 +81,21 @@ TIER0 = Tier0()
 @dataclass(frozen=True)
 class TxGrant:
     """Minted by the server gate (in the lab, :meth:`TxGate.issue`) for one action and
-    tier; short-lived and single-use. On the node it becomes a signed token (§7.1)."""
+    tier; short-lived and single-use. On the node it becomes a signed token (§7.1), carried
+    in ``token`` and checked by the gate's injected ``grant_verifier``."""
 
     action: str
     tier: int
     expires: float
     nonce: str
     origin: str = "local"           # "local" | "remote"
+    token: str = ""                 # the signed token (§7.1); "" = an unsigned lab grant
+
+
+def accept_unsigned(grant: TxGrant) -> str:
+    """The default grant verifier: the lab's unsigned in-process grants (no token) pass;
+    a grant carrying a token this gate cannot check is ``invalid`` (fail closed)."""
+    return GRANT_OK if not grant.token else GRANT_INVALID
 
 
 @dataclass(frozen=True)
@@ -166,6 +184,8 @@ class TxGate:
     tier0_min_gap: float = 0.050
     fc_window: float = 5.5          # P2* plus margin: FCs follow a Tier 0 request this long
     grant_ttl: float = 10.0
+    sweep_window: float = 5.0       # a 3E to a third distinct ECU within this, not Parked
+    grant_verifier: Callable[[TxGrant], str] = accept_unsigned
     _entries: "List[AllowEntry]" = field(default_factory=list, repr=False)
     _issued: "Dict[str, TxGrant]" = field(default_factory=dict, repr=False)
     _probes: "Dict[str, ProbeGrant]" = field(default_factory=dict, repr=False)
@@ -173,6 +193,7 @@ class TxGate:
     _last_entry: "Dict[int, float]" = field(default_factory=dict, repr=False)
     _fc_until: "Dict[object, float]" = field(default_factory=dict, repr=False)
     _tx_open: "Dict[Tuple[int, bool], Tuple[int, str]]" = field(default_factory=dict, repr=False)
+    _last3e: "Dict[Tuple[int, bool], float]" = field(default_factory=dict, repr=False)
 
     def __post_init__(self) -> None:
         self._entries = [e if isinstance(e, AllowEntry) else AllowEntry.from_dict(e)
@@ -194,7 +215,7 @@ class TxGate:
 
     # ---- grants ----------------------------------------------------------- #
     def issue(self, action: str, tier: int, *, origin: str = "local",
-              ttl: "float | None" = None) -> TxGrant:
+              ttl: "float | None" = None, token: str = "") -> TxGrant:
         """Mint a grant (the lab stand-in for the server gate). A remote path gets none
         unless the install override is on; Tier 4 never."""
         if tier >= 4:
@@ -202,7 +223,7 @@ class TxGate:
         if origin != "local" and not self._remote:  # type: ignore[attr-defined]
             raise TxRefused("remote", "no grant is minted for a remote path")
         g = TxGrant(action, int(tier), self.clock() + (self.grant_ttl if ttl is None else ttl),
-                    secrets.token_hex(8), origin)
+                    secrets.token_hex(8), origin, token)
         self._issued[g.nonce] = g
         return g
 
@@ -255,11 +276,17 @@ class TxGate:
         if diag and pci == 3 and self._fc_open(frame, now):
             return GateDecision(True, "fc")
         if diag and pci == 0 and svc in (OBD_READS | UDS_READS):
+            if svc == TESTER_PRESENT and self._sweep(key, now):
+                return GateDecision(False, "sweep_not_parked")
             last = self._last0.get(key)
             if last is not None and now - last < self.tier0_min_gap - 1e-9:
                 return GateDecision(False, "rate_limited")
             if commit:
                 self._last0[key] = now
+                if svc == TESTER_PRESENT and key not in FUNCTIONAL:
+                    self._last3e = {k: t for k, t in self._last3e.items()
+                                    if now - t < self.sweep_window}
+                    self._last3e[key] = now
                 self._open_fc(frame, now)
             return GateDecision(True, "tier0")
         # ---- a consecutive frame of a message the gate already permitted ---- #
@@ -280,6 +307,8 @@ class TxGate:
             return GateDecision(False, "driving_state")
         if not isinstance(grant, TxGrant):
             return GateDecision(False, "no_grant")
+        if not self._grant_valid(grant):
+            return GateDecision(False, "grant_invalid")
         mine = self._issued.get(grant.nonce)
         if mine is None or mine != grant:
             return GateDecision(False, "grant_used")
@@ -329,6 +358,27 @@ class TxGate:
             self._refused(d.reason, frame, "probe")
         return d
 
+    def _grant_valid(self, grant: TxGrant) -> bool:
+        try:
+            return self.grant_verifier(grant) == GRANT_OK
+        except Exception:                   # a verifier that fails, refuses (fail closed)
+            log.exception("can grant verifier failed")
+            return False
+
+    # ---- the sweep guard -------------------------------------------------- #
+    def _sweep(self, key: "Tuple[int, bool]", now: float) -> bool:
+        """True when a ``3E`` on ``key`` would be a sweep while not Parked: a functional
+        ``3E``, or a physical one while permitted physical ``3E`` frames to two *other*
+        ECU ids fall within ``sweep_window`` (so this would be the third distinct ECU;
+        owner, 2026-10-06). Physical ``3E`` frames permitted while Parked count too."""
+        if self.state() == PARKED:
+            return False
+        if key in FUNCTIONAL:
+            return True
+        others = sum(1 for k, t in self._last3e.items()
+                     if k != key and now - t < self.sweep_window - 1e-9)
+        return others >= 2
+
     # ---- the FC window ---------------------------------------------------- #
     def _open_fc(self, frame: CanFrame, now: float) -> None:
         key: object = (frame.id, frame.extended)
@@ -365,5 +415,6 @@ def load_allowlist(doc: "Iterable[Mapping]") -> "List[AllowEntry]":
 
 __all__ = ["TxGate", "TxGrant", "ProbeGrant", "Tier0", "TIER0", "AllowEntry",
            "GateDecision", "load_allowlist", "is_diag_request_id", "frame_service",
-           "remote_override_from_env", "PARKED", "IDLING", "MOVING", "OBD_READS",
-           "UDS_READS", "TIER4_UDS", "FUNC_11", "FUNC_29"]
+           "remote_override_from_env", "accept_unsigned", "PARKED", "IDLING", "MOVING",
+           "OBD_READS", "UDS_READS", "TIER4_UDS", "FUNC_11", "FUNC_29", "TESTER_PRESENT",
+           "GRANT_OK", "GRANT_INVALID"]

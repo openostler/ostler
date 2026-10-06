@@ -2,11 +2,11 @@
 title: "CanLink, passive bitrate detection and ISO-TP — design"
 area: specs
 status: stable
-version: 0.5.1
+version: 0.6
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/canbus_headunit.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/README.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Approved by the owner on 2026-10-06. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe per rate on a silent bus, 500k then 250k automatically; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (our own pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN; can-isotp only as a dev-time test reference, superseding that detail of ADR-0020) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k). Amended for the node/brain direction (ADR-0032, ADR-0034): this Python CanLink and TxGate are the lab/reference; production CAN I/O is the node's TWAI in C and the production gate is the node's C TxGate, the only path to the car, verifying grants minted by the brain or a paired phone; SocketCAN, slcan and python-can on the Pi are lab/dev paths. v0.4: the first implementation step is built on fakes (src/openostler/can/, tests T1–T17, shared vectors in tests/vectors/can/); server wiring and the Pi unit remain. v0.5.1: a CI job runs the needs_vcan tests on a real vcan0.
+  Approved by the owner on 2026-10-06. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe per rate on a silent bus, 500k then 250k automatically; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (our own pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN; can-isotp only as a dev-time test reference, superseding that detail of ADR-0020) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k). Amended for the node/brain direction (ADR-0032, ADR-0034): this Python CanLink and TxGate are the lab/reference; production CAN I/O is the node's TWAI in C and the production gate is the node's C TxGate, the only path to the car, verifying grants minted by the brain or a paired phone; SocketCAN, slcan and python-can on the Pi are lab/dev paths. v0.4: the first implementation step is built on fakes (src/openostler/can/, tests T1–T17, shared vectors in tests/vectors/can/); server wiring and the Pi unit remain. v0.5.1: a CI job runs the needs_vcan tests on a real vcan0. v0.6 (owner, 2026-10-06): a new refusal grant_invalid (bad signature or unknown key) behind an injectable grant verifier, and the 3E sweep guard: only a physical 3E is Tier 0 in any state; not Parked, a functional 3E or a 3E to a third distinct ECU within 5 s is sweep_not_parked.
 ---
 
 # CanLink, passive bitrate detection and ISO-TP — design
@@ -202,13 +202,27 @@ Every frame any `CanLink.send()` emits passes `TxGate.check(frame, grant, state)
    (`0x7DF`, `0x7E0`–`0x7E7`, `0x18DB33F1`, `0x18DAxxF1`) and the frame is either a single
    frame whose service is a read (OBD `01 02 03 06 07 09 0A`; UDS `22 19 3E`) or an FC for
    an ISO-TP message we are receiving in reply to such a request. Rate-limited per ECU.
+   **The `3E` sweep guard** (owner, 2026-10-06, from the node CAN spec's open question 3):
+   only a *physical* `3E` (one ECU id) is a Tier 0 read in every driving state. While not
+   Parked the gate refuses, as `sweep_not_parked`, a functional `3E` (`0x7DF`,
+   `0x18DB33F1`, which reaches every ECU) and a physical `3E` to a third distinct ECU id
+   within 5 s of permitted `3E` frames to two others. Parked is unchanged: a functional
+   `3E` and `3E` to any number of ECUs pass as Tier 0, still rate-limited per id.
 3. **Everything else needs all three:** a **pack allowlist** entry that matches; **Parked**
    (re-read from the injected driving-state callable at send time); and a **`TxGrant`** minted
    by the server gate for that entry's action and tier, short-lived and single-use. Mode 04
    (`7DF 01 04`) is such an entry in `generic_obd2`. Discovery sweeps (`10 01`, physical
    `3E`) are allowlisted Parked-only reads (UI spec §8.1). A single physical `3E` to one
    ECU stays a Tier 0 read in any state (owner, 2026-10-06): it changes nothing and is
-   rate-limited; a sweep of `3E` across ECU ids is the Parked-only discovery read.
+   rate-limited; a sweep of `3E` across ECU ids is the Parked-only discovery read, which
+   the sweep guard in step 2 enforces at the gate.
+   **Grant verification** (owner, 2026-10-06, from the node CAN spec's open question 2):
+   the gate first passes the grant to an injected verifier; a bad signature or an unknown
+   key is refused as `grant_invalid`, distinct from `grant_used` (a nonce or challenge
+   already spent or never issued). The Python reference's default verifier accepts its
+   own unsigned in-process grants and refuses any grant carrying a token it cannot check;
+   it implements no signature scheme (no new runtime dependency), and tests inject a fake
+   verifier.
 4. **Never:** a frame from a remote path (the server mints no grant for one), Tier 4
    services (`27 2E 2F 31 3B 11 14 28 85` on UDS) unless an ADR enables them, or anything
    on a link opened by `MqttCanLink`.
@@ -216,8 +230,12 @@ Every frame any `CanLink.send()` emits passes `TxGate.check(frame, grant, state)
 **Allowlist** (pack `vehicle.json` `can.tx_allowlist`, `schemas/can-tx-allowlist.schema.json`):
 `{bus, id, extended, dlc, data` (hex with `xx` wildcards)`, max_rate_hz, action, tier,
 states` (default `["parked"]`)`}`. `TxGrant` is a plain core dataclass (`action, tier,
-expires, nonce`) so the web layer can mint it without core importing `web`. Every refusal
-is logged with its reason; every permitted non-Tier-0 frame is logged with the action.
+expires, nonce, origin, token`) so the web layer can mint it without core importing
+`web`; `token` is empty for an unsigned lab grant. Every refusal is logged with its
+reason; every permitted non-Tier-0 frame is logged with the action. The exact order of
+the checks, which decides the refusal code when several rules fail, is listed in
+[`tests/vectors/can/README.md`](../tests/vectors/can/README.md) and mirrored by the C
+port.
 
 ### 7.1 Production: the node's TWAI and C TxGate
 
@@ -234,8 +252,8 @@ approved, in Python, and it becomes the **lab/reference** implementation:
   "never" list) and re-reads the driving state on the node at send time.
 - **Grants are minted by the brain or a paired phone and verified by the node.** A
   `TxGrant` becomes a signed, short-lived, single-use token for one action and tier; the
-  node checks the signature, the expiry, the nonce and its own state before any frame
-  leaves. Grants are minted only over local links; a remote path mints none unless the
+  node checks the signature (`grant_invalid`), the nonce (`grant_used`), the expiry and
+  its own state before any frame leaves. Grants are minted only over local links; a remote path mints none unless the
   install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is set (ADR-0033).
 - **SocketCAN, slcan and python-can on the Pi are lab/dev paths** (bench work, decoding,
   sniffing and the reference tests), not the production route to the car.
@@ -398,3 +416,14 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
 - 2026-10-06 — v0.5.1: the `vcan` CI job loads `vcan` (and `can-isotp` when the runner
   kernel has it) and runs the `needs_vcan` tests, now including `KernelIsoTpChannel` on
   `vcan0`; `OSTLER_REQUIRE_VCAN=1` turns their skip into a failure there (§9).
+- 2026-10-06 — v0.6: owner approval of the node CAN spec's open questions 2 and 3
+  (`ostler-firmware` `docs/specs/node-can.md` §11), platform first so the C port can
+  match (§7). **`grant_invalid`:** `TxGate(grant_verifier=…)` takes an injectable
+  verifier (`"ok"` or `"invalid"`; one that raises counts as invalid), checked after
+  `no_grant` and before `grant_used`; `TxGrant` gains `token` and `issue()` a `token`
+  argument; the default `accept_unsigned` passes the lab's unsigned grants and refuses a
+  token it cannot check, so nothing else changes. **The `3E` sweep guard:** while not
+  Parked a functional `3E` and a physical `3E` to a third distinct ECU within 5 s
+  (`sweep_window`) are refused as `sweep_not_parked`, before the per-id rate limit;
+  Parked is unchanged. Gate vectors T8j–T8m added; the T8a rate-limit step moved from a
+  functional `3E` to `01 0C`; the vectors README now lists the exact check order.

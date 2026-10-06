@@ -1,13 +1,14 @@
 {
   "format": "ostler-can-vectors/1",
   "kind": "gate",
-  "description": "TxGate decisions (CanLink spec \u00a77, \u00a77.1; tests T4, T5, T8, T17): every step is one frame offered to the gate at time t in a driving state, with the expected decision. State carries across the steps of a case (single-use grants, the FC window, the Tier 0 rate limit).",
+  "description": "TxGate decisions (CanLink spec \u00a77, \u00a77.1; tests T4, T5, T8, T17): every step is one frame offered to the gate at time t in a driving state, with the expected decision. State carries across the steps of a case (single-use grants, the FC window, the Tier 0 rate limit, the 3E sweep window).",
   "source": "Written from ADR-0020, ADR-0023, ADR-0033 and the CanLink spec (CC BY-SA 4.0).",
   "defaults": {
     "tier0_min_gap": 0.05,
     "fc_window": 5.5,
     "link_kind": "socketcan",
     "rate_ok": true,
+    "sweep_window": 5.0,
     "allow_remote": false
   },
   "cases": [
@@ -98,7 +99,7 @@
           "frame": {
             "id": "7DF",
             "ext": false,
-            "data": "01 3E 55 55 55 55 55 55"
+            "data": "02 01 0C 55 55 55 55 55"
           },
           "grant": "tier0",
           "expect": {
@@ -706,6 +707,517 @@
           "expect": {
             "allowed": false,
             "reason": "not_allowlisted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8j",
+      "description": "grant_invalid: a grant with a bad signature or an unknown key is refused before single use, expiry and the action match are looked at; a validly signed grant this gate never minted is grant_used; the driving state is checked first",
+      "allowlist": [
+        {
+          "id": "7DF",
+          "data": "01 04",
+          "action": "obd_clear",
+          "tier": 1,
+          "category": "maintenance",
+          "states": [
+            "parked",
+            "idling"
+          ]
+        }
+      ],
+      "grants": {
+        "bad": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "signature": "bad"
+        },
+        "unk": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "signature": "unknown_key"
+        },
+        "bad_exp": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 1,
+          "signature": "bad"
+        },
+        "f1": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "forged": true
+        },
+        "ok": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "bad",
+          "expect": {
+            "allowed": false,
+            "reason": "driving_state"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "bad",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "unk",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "bad_exp",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "f1",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_used"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "ok",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "obd_clear"
+          }
+        },
+        {
+          "t": 3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "ok",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_used"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8k",
+      "description": "a functional 3E (7DF, 18DB33F1) is Tier 0 only while Parked; not Parked it is refused as sweep_not_parked and opens no FC window",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        },
+        {
+          "t": 0.1,
+          "driving_state": "idling",
+          "frame": {
+            "id": "18DB33F1",
+            "ext": true,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 0.2,
+          "driving_state": "idling",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 3E 55 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 0.3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "18DB33F1",
+            "ext": true,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8l",
+      "description": "physical 3E while Moving: two ECUs and repeats to them pass; a third distinct ECU (11- or 29-bit) within 5 s is sweep_not_parked; other reads are not guarded; the window slides; the per-id rate limit still applies",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.1,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E1",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.2,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.3,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 0.3,
+          "driving_state": "moving",
+          "frame": {
+            "id": "18DA17F1",
+            "ext": true,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 0.4,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 01 0C 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 5.05,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 5.15,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 5.16,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "rate_limited"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8m",
+      "description": "Parked is unchanged: physical 3E to many ECUs and a functional 3E pass, rate-limited per id; leaving Parked within 5 s of that sweep, a 3E to any ECU of it is sweep_not_parked until the window clears",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "rate_limited"
+          }
+        },
+        {
+          "t": 0.1,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E1",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "18DA28F1",
+            "ext": true,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.4,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 1,
+          "driving_state": "idling",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 1,
+          "driving_state": "idling",
+          "frame": {
+            "id": "7E3",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "sweep_not_parked"
+          }
+        },
+        {
+          "t": 5.25,
+          "driving_state": "idling",
+          "frame": {
+            "id": "7E2",
+            "ext": false,
+            "data": "02 3E 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
           }
         }
       ]
