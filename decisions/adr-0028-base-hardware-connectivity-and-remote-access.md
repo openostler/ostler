@@ -154,6 +154,7 @@ cloud payload exclude the VIN.
   their owners).
 - The module-bus message spec gains: the parked topic set, the bridge patterns, the buddy's
   compiled ACL and the wake-and-republish fallback.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§12–§13).
 - The router-configuration work adds NetworkManager/ModemManager uplink profiles, vnStat,
   an uplink policy API in the server, and Connectivity signals in the VSS overlay.
 - Firmware gains a shared "module web page" and Improv component.

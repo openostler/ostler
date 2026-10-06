@@ -188,6 +188,7 @@ work (ADR-0040 draft, pending).
 
 - The module-bus message spec gains the `status` and `role/#` topics, the claim payload, the
   TXT keys and the timeouts; `asyncapi.yaml` gains the channels at U5.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§4, §7, §14, §15).
 - The capability manifest (UI spec §5.1, ADR-0032 §6) gains `roles` (roles a device can
   hold, with scope) and `transmit` per `bus_id`.
 - The guardian, when alongside a node, gains standby duties (broker, PLCA if wired, time),

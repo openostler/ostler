@@ -265,6 +265,7 @@ model and a controllable clock:
 
 - The module-bus message spec gains the `power` and `wake/#` topics, the `asleep` status, the
   lease and outcome payloads, and the timeouts; `asyncapi.yaml` gains the channels at U5.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§4–§5, §11, §15).
 - The capability manifest gains `power` per device and `runs_on`, `needs_brain` and
   `queueable` per action (UI spec §5.1 amendment).
 - The app SDK's `actions.request` gains wake and expiry options and the new outcomes

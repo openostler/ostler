@@ -71,7 +71,8 @@ are built. Open:
       `node.tap` snapshot field.
 - [ ] **Tap time to UTC:** the pcapng export stamps the node's `t_us` (µs since boot); map
       it to UTC from the tap's `time` events (raw-tap §2.4, CBOR) once the node emits them
-      (decode lab, spec §14).
+      (decode lab, spec §14). The owner confirmed the node will emit them (2026-10-06,
+      spec §15 second round); that is firmware work, then the Brain maps them.
 - [ ] **Parked periods and alarm events** in the logbook from the node's `power` and alarm
       topics (ADR-0010 amendment; spec §7 "in a later spec").
 - [x] **Firmware and manifest `etag` in node session meta:** `meta.json` `device_info`
@@ -93,12 +94,11 @@ are built. Open:
 - [ ] **Firmware: publish the manifest and role claims** (`ostler-firmware`): the node
       publishes no `manifest` and no `role/…` claims yet, and no `asleep` status; the P3
       tests use the hand-written `tests/fixtures/node/cluster.jsonl`. When it does,
-      regenerate the fixture from a host-test dump. The manifest topic name and the claim
-      payload are for the module-bus message spec (spec §4).
-- [ ] **Serial refusal while running:** the check runs at start only, and only with
-      `--mqtt`; a node that appears later (or a lab laptop with no broker) is not seen.
-      Decide whether a serial source keeps a watch on the broker, or a Brain install
-      remembers the vehicle's gate holder.
+      regenerate the fixture from a host-test dump. The manifest topic and the claim
+      payload are confirmed as drafted and specified in the [module-bus message spec](specs/2026-10-06-module-bus-messages-design.md) §7.
+- [x] **Serial refusal while running:** decided (owner, 2026-10-06, spec §15 second
+      round): it stays a start-time check when `--mqtt` is given; no change now. A node
+      that appears later, or a lab laptop with no broker, is still not seen.
 - [ ] **§6.5 with the manifest:** the manifest's `primary` and the owner's priority in the
       selection, and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
       interval. Waits for the firmware's manifest to fix the field shapes.
@@ -114,7 +114,7 @@ are built. Open:
 - [ ] **Firmware topic collision:** the node publishes two modules' readings of one VSS
       path (the D2 battery voltage from the Td5 and SLABS) on one retained topic, so only
       the last survives as a stored value. NodeSource keeps both live (keyed by source);
-      the module-bus message spec should decide the topic shape.
+      the topic shape is open question 9 of the [module-bus message spec](specs/2026-10-06-module-bus-messages-design.md).
 - [ ] **Regenerate `tests/fixtures/node/*.jsonl`** from the firmware's `node-fixtures`
       target whenever its payloads change (copied from `ostler-firmware` ceb4cc7).
 - [ ] **UI states of §10** ("Node asleep · wakes on …", "Node offline", "Waiting for the
@@ -124,6 +124,18 @@ are built. Open:
       and runs the `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`, mTLS and the ACL
       included.
 - [ ] Unit conversion to VSS units happens at U3 for the node and serial paths alike.
+
+## Module-bus messages ([spec](specs/2026-10-06-module-bus-messages-design.md))
+
+- [ ] **Open questions §17** for the owner: the challenge exchange for grants, grants for
+      queued Tier 1 actions, `tap/ctl` and `lab/` details, bridge patterns for answers, the
+      parked allow-list, `off` and the shutdown message, event and alarm topics,
+      `faults/<module>`, one VSS path from two modules, TXT key names, the CAN fallback
+      mapping, the mesh bridge's QoS and ACL.
+- [ ] **`grant_invalid`** in the platform's Python gate and the shared CAN vectors (owner,
+      2026-10-06), so both report the same code as the node.
+- [ ] **`power.state: off`** is not accepted by `node/messages.py` `parse_power` yet.
+- [ ] **AsyncAPI** follows the spec as channels are built (`act/`, `wake/`, `lab/`).
 
 ## Roadmap — data-hub direction (not scheduled)
 

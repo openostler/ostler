@@ -2,17 +2,18 @@
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4, the P3 backend (manifest and role claims, GET /cluster, the serial source's refusal beside a gate-holding node) in v0.5; the Network page UI waits for U1. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4, the P3 backend (manifest and role claims, GET /cluster, the serial source's refusal beside a gate-holding node) in v0.5; the Network page UI waits for U1. v0.6 records the owner's second-round answers (§15): the manifest topic and claim payload as drafted, now in the module-bus message spec; every kline* bus is a K-line gate bus; the node will emit tap time events. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
 # NodeSource — the Brain ingests node data over MQTT — design
 
 **Status:** approved v0.2 (owner, 2026-10-06; answers in §15); v0.3: P1 built, v0.4: P2
-built, v0.5: the P3 backend built, its UI after U1 (§16). Build in phases P1–P4. It applies
+built, v0.5: the P3 backend built, its UI after U1 (§16); v0.6: the owner's second-round
+answers (§15). Build in phases P1–P4. It applies
 [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) §3 ("the brain consumes the
 node's VSS messages over IP") to the platform's server, and changes no ADR. Where it needs a
 decision it lists it in §15.
@@ -54,7 +55,7 @@ decision it lists it in §15.
 6. No new runtime dependency on the Brain unless the owner chooses one (§12).
 
 **Non-goals.** The Brain transmitting on any car bus (never; ADR-0032). Grant format and
-pairing (module-bus message spec and U5 threat model). Home Assistant discovery, the OVMS
+pairing ([module-bus message spec](2026-10-06-module-bus-messages-design.md) §10 and the U5 threat model). Home Assistant discovery, the OVMS
 tree and other outbound MQTT exports (U5 integrations). Running the broker (Mosquitto is an
 OS service, ADR-0027 §3). The phone's own node client (TypeScript). Garage and several
 vehicles at once (U6): one NodeSource serves one `vid`.
@@ -81,7 +82,7 @@ does). `+` is the device level.
 | `ostler/v1/<vid>/+/status` | 1 | P1 | liveness, will (ADR-0037 §3) |
 | `ostler/v1/<vid>/+/power` | 1 | P1 | power state (ADR-0040 §1) |
 | `ostler/v1/<vid>/+/vss/+` | 0 | P1 | readings; the VSS path is one dotted level |
-| `ostler/v1/<vid>/+/manifest` | 1 | P3 | capability manifest (topic name pending the module-bus message spec) |
+| `ostler/v1/<vid>/+/manifest` | 1 | P3 | capability manifest ([module-bus message spec](2026-10-06-module-bus-messages-design.md) §7) |
 | `ostler/v1/<vid>/+/role/#` | 1 | P3 | role claims (ADR-0037 §3) |
 | `ostler/v1/<vid>/+/tap/+/meta` | 1 | P2 | tap session headers |
 | `ostler/v1/<vid>/+/tap/+/data` | 1 | P2 | tap batches; only while recording or the lab asks |
@@ -165,7 +166,7 @@ MQTT reader thread fills the table, the poll thread only reads it.
 
 Snapshot `faults` stays empty with `faults_note: "not read by the node yet"` until the node
 publishes fault reads (its gate allows only `21 <lid>` today); a later `faults/<module>`
-topic is for the module-bus message spec.
+topic is for the [module-bus message spec](2026-10-06-module-bus-messages-design.md) (its §17).
 
 ### 6.4 Staleness per signal
 
@@ -249,8 +250,8 @@ All snapshot changes are additive (the object is open; old clients ignore them).
 - **`api/asyncapi.yaml`** gains a second server, `brain-broker` (protocol `mqtt`, MQTT 5,
   mTLS), and the channels of §4 with payload schemas (VSS value, power, status, tap meta,
   tap batch as `application/vnd.ostler.tap.v1`), marked as consumed by the Brain. This is
-  the first slice of ADR-0026's "asyncapi gains the MQTT channels at U5"; the module-bus
-  message spec stays their owner, and the schemas move there when it lands.
+  the first slice of ADR-0026's "asyncapi gains the MQTT channels at U5"; the
+  [module-bus message spec](2026-10-06-module-bus-messages-design.md) is their owner, and the schemas move there.
 
 ## 9. Requests to the node (P4)
 
@@ -262,7 +263,7 @@ writes a byte to a car bus and has no code path that could.
   `{id, target, action, params, category, tier, user, role, transport, origin, grant?,
   queued_at, expires_at, needs_brain: false}`. `id` is a ULID; `transport` is `local` or
   `remote` (ADR-0033 §6); `grant` is minted by the Brain or a paired phone for Tier 1+ and
-  verified by the node (format: module-bus message spec).
+  verified by the node (format: [module-bus message spec](2026-10-06-module-bus-messages-design.md) §10).
 - **MQTT 5 properties:** Message Expiry Interval set to `expires_at − now` (ADR-0040 §5),
   Correlation Data = `id`, Response Topic `ostler/v1/<vid>/<node>/act/<id>`; the node answers
   there with `{id, state: accepted | refused | running | done | expired | state_changed |
@@ -398,6 +399,25 @@ The owner took the recommendations on every question.
    for other disconnects.
 9. **Tap retention:** tap batches are recorded only during a recorded session. No rolling
    buffer.
+
+### Owner answers (2026-10-06, second round)
+
+The owner answered the questions left by P2 and P3 the same day, taking the
+recommendations.
+
+- **P2 Q1, identity install option:** stays the environment variable
+  `OSTLER_RECORD_IDENTITY`, off by default (no change).
+- **P2 Q2, `end_reason`:** stays node-only; cable sessions and the D2 demo logs stay
+  byte-stable.
+- **P2 Q3, tap time:** yes, the node emits the tap's `time` events (raw-tap §2.3–§2.4) so
+  tap timestamps can map to UTC. This is firmware work; the Brain maps them when present.
+- **P3 Q1, manifest and claims:** the manifest topic and the claim payload are confirmed as
+  drafted (§4, §16 P3, `tests/fixtures/node/cluster.jsonl`) and are now specified in the
+  [module-bus message spec](2026-10-06-module-bus-messages-design.md) (§7).
+- **P3 Q2, serial refusal:** stays a start-time check when `--mqtt` is given (no change
+  now).
+- **P3 Q3, K-line buses:** every bus whose id begins `kline` is a K-line gate bus
+  (confirmed; module-bus message spec §2).
 
 ## 16. As built
 
@@ -577,3 +597,9 @@ The owner took the recommendations on every question.
   source's refusal beside a node holding the K-line gate (fails closed), `device_info` in
   node session meta and the snapshot, the `asleep` status; the Network page UI waits for
   U1 (UI spec §10).
+- 2026-10-06 — v0.6: the owner's second-round answers (§15): `OSTLER_RECORD_IDENTITY` and
+  node-only `end_reason` unchanged; the node emits tap `time` events (firmware); the
+  manifest topic and claim payload confirmed and moved to the
+  [module-bus message spec](2026-10-06-module-bus-messages-design.md), which this spec's
+  references now link; the serial refusal stays a start-time check; every `kline*` bus is a
+  K-line gate bus.

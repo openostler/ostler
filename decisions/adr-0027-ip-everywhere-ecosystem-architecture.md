@@ -195,6 +195,7 @@ Video never crosses the T1S segment.
   - the CAN mapping;
   - ~~where the broker lives while parked~~ the parked topic set and bridge patterns
     (placement decided in ADR-0028).
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md).
 - The DevicePack contract is designed with it.
 - The base pack needs a router configuration: systemd-networkd, nftables, chrony, Mosquitto
   and an mDNS proxy, carried as OS configuration in the deploy tooling. *Amended:* uplinks

@@ -204,6 +204,7 @@ supported path until it passes.
 - SCOPE.md's statement that the protocol is necessarily implemented twice is reversed.
 - The module-bus message spec gains the node's capability manifest, the brain bridge
   patterns, the wake and shutdown messages, and source tags on readings.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§5–§7, §11–§12; the shutdown message is an open question there).
 - The UI spec's Security destination applies to every tier, since every node has GPS and a
   basic alarm.
 - GOALS, SCOPE and the hardware research are updated to the node/brain model by their owners.

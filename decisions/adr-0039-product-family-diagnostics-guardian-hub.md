@@ -182,6 +182,7 @@ The "Lite" wording was swept in the same change that accepted this ADR, by re-ru
   change.
 - The module-bus message spec gains the `tap/` and `lab/` topics, the batch content type and the
   session header; the capability manifest gains `tap` (buses, protocols, max rate) and `links`.
+  *Note (2026-10-06):* written as the [module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md) (§7–§8).
 - `ostler-firmware` gains `docs/specs/raw-tap.md` (format, USB-NCM link, setup mode, dongle list).
 - The UI spec's Network page lists USB among "reached via", and the helper becomes a Network-app
   flow; the platform gains a raw-tap recorder and pcapng exporter beside the logbook.
