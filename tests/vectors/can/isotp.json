@@ -1,0 +1,587 @@
+{
+  "format": "ostler-can-vectors/1",
+  "kind": "isotp",
+  "description": "ISO-TP segmentation, reassembly, flow control, STmin and transmit outcomes (CanLink spec \u00a76, \u00a77.1).",
+  "source": "Written from ISO 15765-2 / ISO 15765-4 and the CanLink spec (CC BY-SA 4.0); no third-party code or output copied.",
+  "cases": [
+    {
+      "id": "seg-sf",
+      "op": "segment",
+      "description": "a 2-byte OBD request: SF, padded to DLC 8 with 0x55",
+      "payload": "01 00",
+      "pad": "55",
+      "expect": {
+        "frames": [
+          "02 01 00 55 55 55 55 55"
+        ]
+      }
+    },
+    {
+      "id": "seg-sf-nopad",
+      "op": "segment",
+      "description": "the same SF without padding",
+      "payload": "01 00",
+      "pad": null,
+      "expect": {
+        "frames": [
+          "02 01 00"
+        ]
+      }
+    },
+    {
+      "id": "seg-sf-7",
+      "op": "segment",
+      "description": "the longest SF (7 bytes)",
+      "payload": "01 0C 0D 05 0F 11 2F",
+      "pad": "55",
+      "expect": {
+        "frames": [
+          "07 01 0C 0D 05 0F 11 2F"
+        ]
+      }
+    },
+    {
+      "id": "seg-ff-8",
+      "op": "segment",
+      "description": "8 bytes: FF + one CF, the CF padded",
+      "payload": "22 F1 90 F1 8C F1 87 F1",
+      "pad": "55",
+      "expect": {
+        "frames": [
+          "10 08 22 F1 90 F1 8C F1",
+          "21 87 F1 55 55 55 55 55"
+        ]
+      }
+    },
+    {
+      "id": "seg-F1c",
+      "op": "segment",
+      "description": "F1c: 5 DTCs (12 bytes) as FF + CF",
+      "payload": "43 05 01 70 01 34 03 00 41 23 C1 00",
+      "pad": "AA",
+      "expect": {
+        "frames": [
+          "10 0C 43 05 01 70 01 34",
+          "21 03 00 41 23 C1 00 AA"
+        ]
+      }
+    },
+    {
+      "id": "seg-sn-wrap",
+      "op": "segment",
+      "description": "130 bytes: 18 CFs, SN 1..F then wraps to 0",
+      "payload": "62 F1 00 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27 28 29 2A 2B 2C 2D 2E 2F 30 31 32 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F 40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 57 58 59 5A 5B 5C 5D 5E 5F 60 61 62 63 64 65 66 67 68 69 6A 6B 6C 6D 6E 6F 70 71 72 73 74 75 76 77 78 79 7A 7B 7C 7D 7E",
+      "pad": "55",
+      "expect": {
+        "frames": [
+          "10 82 62 F1 00 00 01 02",
+          "21 03 04 05 06 07 08 09",
+          "22 0A 0B 0C 0D 0E 0F 10",
+          "23 11 12 13 14 15 16 17",
+          "24 18 19 1A 1B 1C 1D 1E",
+          "25 1F 20 21 22 23 24 25",
+          "26 26 27 28 29 2A 2B 2C",
+          "27 2D 2E 2F 30 31 32 33",
+          "28 34 35 36 37 38 39 3A",
+          "29 3B 3C 3D 3E 3F 40 41",
+          "2A 42 43 44 45 46 47 48",
+          "2B 49 4A 4B 4C 4D 4E 4F",
+          "2C 50 51 52 53 54 55 56",
+          "2D 57 58 59 5A 5B 5C 5D",
+          "2E 5E 5F 60 61 62 63 64",
+          "2F 65 66 67 68 69 6A 6B",
+          "20 6C 6D 6E 6F 70 71 72",
+          "21 73 74 75 76 77 78 79",
+          "22 7A 7B 7C 7D 7E 55 55"
+        ]
+      }
+    },
+    {
+      "id": "seg-too-long",
+      "op": "segment",
+      "description": "4096 bytes is past the 12-bit FF length (FD escape out of scope)",
+      "payload_len": 4096,
+      "pad": "55",
+      "expect": {
+        "error": "length"
+      }
+    },
+    {
+      "id": "rx-F1c",
+      "op": "reassemble",
+      "description": "F1c over ISO-TP: FF, CF with 0xAA padding ignored",
+      "bs": 0,
+      "frames": [
+        "10 0C 43 05 01 70 01 34",
+        "21 03 00 41 23 C1 00 AA"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            12
+          ],
+          [
+            "message",
+            "43 05 01 70 01 34 03 00 41 23 C1 00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-calid",
+      "op": "reassemble",
+      "description": "a 19-byte CALID reply: FF + 2 CFs",
+      "bs": 0,
+      "frames": [
+        "10 13 49 04 01 4F 53 54",
+        "21 4C 45 52 43 41 4C 30",
+        "22 30 30 31 00 00 00 55"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            19
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "message",
+            "49 04 01 4F 53 54 4C 45 52 43 41 4C 30 30 30 31 00 00 00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-sn-wrap",
+      "op": "reassemble",
+      "description": "SN wraps F -> 0 across 18 CFs",
+      "bs": 0,
+      "frames": [
+        "10 82 62 F1 00 00 01 02",
+        "21 03 04 05 06 07 08 09",
+        "22 0A 0B 0C 0D 0E 0F 10",
+        "23 11 12 13 14 15 16 17",
+        "24 18 19 1A 1B 1C 1D 1E",
+        "25 1F 20 21 22 23 24 25",
+        "26 26 27 28 29 2A 2B 2C",
+        "27 2D 2E 2F 30 31 32 33",
+        "28 34 35 36 37 38 39 3A",
+        "29 3B 3C 3D 3E 3F 40 41",
+        "2A 42 43 44 45 46 47 48",
+        "2B 49 4A 4B 4C 4D 4E 4F",
+        "2C 50 51 52 53 54 55 56",
+        "2D 57 58 59 5A 5B 5C 5D",
+        "2E 5E 5F 60 61 62 63 64",
+        "2F 65 66 67 68 69 6A 6B",
+        "20 6C 6D 6E 6F 70 71 72",
+        "21 73 74 75 76 77 78 79",
+        "22 7A 7B 7C 7D 7E 55 55"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            130
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "message",
+            "62 F1 00 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27 28 29 2A 2B 2C 2D 2E 2F 30 31 32 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F 40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 57 58 59 5A 5B 5C 5D 5E 5F 60 61 62 63 64 65 66 67 68 69 6A 6B 6C 6D 6E 6F 70 71 72 73 74 75 76 77 78 79 7A 7B 7C 7D 7E"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-bs2",
+      "op": "reassemble",
+      "description": "BS 2: a block is full after every 2 CFs (send the next FC)",
+      "bs": 2,
+      "frames": [
+        "10 82 62 F1 00 00 01 02",
+        "21 03 04 05 06 07 08 09",
+        "22 0A 0B 0C 0D 0E 0F 10",
+        "23 11 12 13 14 15 16 17",
+        "24 18 19 1A 1B 1C 1D 1E",
+        "25 1F 20 21 22 23 24 25"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            130
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            true
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "progress",
+            true
+          ],
+          [
+            "progress",
+            false
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-wrong-sn",
+      "op": "reassemble",
+      "description": "a wrong sequence number aborts the message",
+      "bs": 0,
+      "frames": [
+        "10 13 49 04 01 4F 53 54",
+        "22 07 08 09 10 11 12 13"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            19
+          ],
+          [
+            "aborted",
+            "sequence"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-new-ff",
+      "op": "reassemble",
+      "description": "a new FF mid-message restarts reassembly",
+      "bs": 0,
+      "frames": [
+        "10 82 62 F1 00 00 01 02",
+        "21 03 04 05 06 07 08 09",
+        "10 0C 43 05 01 70 01 34",
+        "21 03 00 41 23 C1 00 55"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            130
+          ],
+          [
+            "progress",
+            false
+          ],
+          [
+            "first",
+            12
+          ],
+          [
+            "message",
+            "43 05 01 70 01 34 03 00 41 23 C1 00"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-stray-cf",
+      "op": "reassemble",
+      "description": "a CF with no FF is ignored",
+      "bs": 0,
+      "frames": [
+        "21 01 02 03 04 05 06 07",
+        "03 41 0D 32 55 55 55 55"
+      ],
+      "expect": {
+        "events": [
+          [
+            "ignored",
+            "stray"
+          ],
+          [
+            "message",
+            "41 0D 32"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-sf-mid",
+      "op": "reassemble",
+      "description": "an SF mid-message ends that message and is delivered",
+      "bs": 0,
+      "frames": [
+        "10 82 62 F1 00 00 01 02",
+        "03 41 0D 32 AA AA AA AA"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            130
+          ],
+          [
+            "message",
+            "41 0D 32"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-malformed",
+      "op": "reassemble",
+      "description": "SF length 0, an FF under 8 bytes, the FD escape and an FC are ignored",
+      "bs": 0,
+      "frames": [
+        "00 AA AA AA AA AA AA AA",
+        "10 05 00 01 02 03 04 05",
+        "10 00 00 00 00 14 01 02",
+        "30 00 00 55 55 55 55 55"
+      ],
+      "expect": {
+        "events": [
+          [
+            "ignored",
+            "malformed"
+          ],
+          [
+            "ignored",
+            "malformed"
+          ],
+          [
+            "ignored",
+            "malformed"
+          ],
+          [
+            "ignored",
+            "fc"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "rx-short-cf",
+      "op": "reassemble",
+      "description": "a CF shorter than the bytes still due aborts the message",
+      "bs": 0,
+      "frames": [
+        "10 13 49 04 01 4F 53 54",
+        "21 07 08 09"
+      ],
+      "expect": {
+        "events": [
+          [
+            "first",
+            19
+          ],
+          [
+            "aborted",
+            "short"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "fc-tester",
+      "op": "fc",
+      "description": "the tester's FC: CTS, BS 0, STmin 0 (ISO 15765-4), padded",
+      "status": 0,
+      "bs": 0,
+      "stmin": 0,
+      "pad": "55",
+      "expect": {
+        "frame": "30 00 00 55 55 55 55 55"
+      }
+    },
+    {
+      "id": "stmin",
+      "op": "stmin",
+      "description": "STmin byte -> seconds; reserved values read as 127 ms",
+      "values": {
+        "00": 0.0,
+        "0A": 0.01,
+        "7F": 0.127,
+        "80": 0.127,
+        "F0": 0.127,
+        "F1": 0.0001,
+        "F5": 0.0005,
+        "F9": 0.0009,
+        "FA": 0.127,
+        "FF": 0.127
+      }
+    },
+    {
+      "id": "tx-bs2",
+      "op": "transmit",
+      "description": "21 bytes with BS 2: FF, FC, 2 CFs, FC, 1 CF",
+      "payload": "22 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14",
+      "pad": "55",
+      "fcs": [
+        "30 02 00 AA AA AA AA AA",
+        "30 02 00 AA AA AA AA AA"
+      ],
+      "expect": {
+        "result": "ok",
+        "frames": [
+          "10 15 22 01 02 03 04 05",
+          "21 06 07 08 09 0A 0B 0C",
+          "22 0D 0E 0F 10 11 12 13",
+          "23 14 55 55 55 55 55 55"
+        ]
+      }
+    },
+    {
+      "id": "tx-wait3",
+      "op": "transmit",
+      "description": "three WAITs, then CTS",
+      "payload": "22 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14",
+      "pad": "55",
+      "fcs": [
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "30 00 00"
+      ],
+      "expect": {
+        "result": "ok",
+        "frames": [
+          "10 15 22 01 02 03 04 05",
+          "21 06 07 08 09 0A 0B 0C",
+          "22 0D 0E 0F 10 11 12 13",
+          "23 14 55 55 55 55 55 55"
+        ]
+      }
+    },
+    {
+      "id": "tx-max-wft",
+      "op": "transmit",
+      "description": "more WAITs than max_wft (10) aborts",
+      "payload": "22 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14",
+      "pad": "55",
+      "fcs": [
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00",
+        "31 00 00"
+      ],
+      "expect": {
+        "result": "max_wft",
+        "frames": [
+          "10 15 22 01 02 03 04 05"
+        ]
+      }
+    },
+    {
+      "id": "tx-ovflw",
+      "op": "transmit",
+      "description": "OVFLW aborts",
+      "payload": "22 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14",
+      "pad": "55",
+      "fcs": [
+        "32 00 00"
+      ],
+      "expect": {
+        "result": "overflow",
+        "frames": [
+          "10 15 22 01 02 03 04 05"
+        ]
+      }
+    },
+    {
+      "id": "tx-nbs",
+      "op": "transmit",
+      "description": "no FC within N_Bs",
+      "payload": "22 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14",
+      "pad": "55",
+      "fcs": [],
+      "expect": {
+        "result": "n_bs",
+        "frames": [
+          "10 15 22 01 02 03 04 05"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,826 @@
+{
+  "format": "ostler-can-vectors/1",
+  "kind": "gate",
+  "description": "TxGate decisions (CanLink spec \u00a77, \u00a77.1; tests T4, T5, T8, T17): every step is one frame offered to the gate at time t in a driving state, with the expected decision. State carries across the steps of a case (single-use grants, the FC window, the Tier 0 rate limit).",
+  "source": "Written from ADR-0020, ADR-0023, ADR-0033 and the CanLink spec (CC BY-SA 4.0).",
+  "defaults": {
+    "tier0_min_gap": 0.05,
+    "fc_window": 5.5,
+    "link_kind": "socketcan",
+    "rate_ok": true,
+    "allow_remote": false
+  },
+  "cases": [
+    {
+      "id": "T4",
+      "description": "send before the rate is confirmed",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "rate_ok": false,
+          "expect": {
+            "allowed": false,
+            "reason": "rate_not_confirmed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8a",
+      "description": "a Tier 0 read on 7DF while Moving, and UDS reads on 7E0",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "03 22 F1 90 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.06,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E1",
+            "ext": false,
+            "data": "02 19 02 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.06,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 09 02 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.07,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 3E 55 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "rate_limited"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8b",
+      "description": "Mode 04 without an allowlist entry",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": null,
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8c",
+      "description": "Mode 04 allowlisted (Parked or Idling): Moving, no grant, expired grant, wrong action, then valid and single-use",
+      "allowlist": [
+        {
+          "id": "7DF",
+          "data": "01 04",
+          "action": "obd_clear",
+          "tier": 1,
+          "category": "maintenance",
+          "states": [
+            "parked",
+            "idling"
+          ]
+        },
+        {
+          "id": "7E0",
+          "data": "02 10 01",
+          "action": "uds_session_sweep",
+          "tier": 1
+        }
+      ],
+      "grants": {
+        "g1": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        },
+        "g2": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 1
+        },
+        "g3": {
+          "action": "uds_session_sweep",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": false,
+            "reason": "driving_state"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "no_grant"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "g2",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_expired"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "g3",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_mismatch"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "idling",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "obd_clear"
+          }
+        },
+        {
+          "t": 3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_used"
+          }
+        },
+        {
+          "t": 3,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 10 01 55 55 55 55 55"
+          },
+          "grant": "g3",
+          "expect": {
+            "allowed": false,
+            "reason": "driving_state"
+          }
+        },
+        {
+          "t": 3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 10 01 55 55 55 55 55"
+          },
+          "grant": "g3",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "uds_session_sweep"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8d",
+      "description": "remote paths: no grant is minted, a forged remote grant is refused; with the install override both pass",
+      "allowlist": [
+        {
+          "id": "7DF",
+          "data": "01 04",
+          "action": "obd_clear",
+          "tier": 1,
+          "category": "maintenance",
+          "states": [
+            "parked",
+            "idling"
+          ]
+        }
+      ],
+      "grants": {
+        "r1": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "remote",
+          "at": 0,
+          "ttl": 10,
+          "expect_mint": "remote"
+        },
+        "f1": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "remote",
+          "forged": true
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "f1",
+          "expect": {
+            "allowed": false,
+            "reason": "remote"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8e",
+      "description": "the install override lets a remote-origin grant through (ADR-0033 \u00a76)",
+      "allow_remote": true,
+      "allowlist": [
+        {
+          "id": "7DF",
+          "data": "01 04",
+          "action": "obd_clear",
+          "tier": 1,
+          "category": "maintenance",
+          "states": [
+            "parked",
+            "idling"
+          ]
+        }
+      ],
+      "grants": {
+        "r1": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "remote",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "r1",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "obd_clear"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8f",
+      "description": "the never list: Tier 4 UDS services even when allowlisted, Mode 08, an MQTT link",
+      "allowlist": [
+        {
+          "id": "7E0",
+          "data": "xx 2E",
+          "action": "write_did",
+          "tier": 3
+        }
+      ],
+      "grants": {
+        "g1": {
+          "action": "write_did",
+          "tier": 3,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "04 2E F1 90 00 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": false,
+            "reason": "tier4_service"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 27 01 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "tier4_service"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "02 11 01 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "tier4_service"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "10 10 31 01 02 03 04 05"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "tier4_service"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 08 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "mode08"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "link_kind": "mqtt",
+          "expect": {
+            "allowed": false,
+            "reason": "mqtt_link"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8g",
+      "description": "flow control is Tier 0 only for a reply to a request we sent, within the window",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 09 02 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "fc"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E7",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "fc"
+          }
+        },
+        {
+          "t": 0.02,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        },
+        {
+          "t": 6.0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8h",
+      "description": "29-bit: functional read, FC to 18DA10F1, a frame on a reply id",
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "moving",
+          "frame": {
+            "id": "18DB33F1",
+            "ext": true,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "moving",
+          "frame": {
+            "id": "18DA10F1",
+            "ext": true,
+            "data": "30 00 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "fc"
+          }
+        },
+        {
+          "t": 0.02,
+          "driving_state": "moving",
+          "frame": {
+            "id": "18DAF110",
+            "ext": true,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        },
+        {
+          "t": 0.1,
+          "driving_state": "moving",
+          "frame": {
+            "id": "18DA10F1",
+            "ext": true,
+            "data": "03 22 F1 90 55 55 55 55"
+          },
+          "grant": "tier0",
+          "expect": {
+            "allowed": true,
+            "reason": "tier0"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T8i",
+      "description": "an allowlisted multi-frame message: the grant covers its FF, its CFs follow",
+      "allowlist": [
+        {
+          "id": "7E0",
+          "data": "xx xx 22",
+          "action": "uds_multi_read",
+          "tier": 1
+        }
+      ],
+      "grants": {
+        "g1": {
+          "action": "uds_multi_read",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "10 0A 22 F1 90 F1 8C F1"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "uds_multi_read"
+          }
+        },
+        {
+          "t": 0.01,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "21 87 F1 89 55 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "uds_multi_read"
+          }
+        },
+        {
+          "t": 0.02,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7E0",
+            "ext": false,
+            "data": "22 00 00 00 55 55 55 55"
+          },
+          "grant": "g1",
+          "expect": {
+            "allowed": false,
+            "reason": "not_allowlisted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T5-probe",
+      "description": "silent-bus probe grants: not Parked; no one-shot capability; the wrong frame; valid and single-use",
+      "probes": {
+        "p0": {
+          "at": 0,
+          "driving_state": "moving",
+          "expect_mint": "not_parked"
+        },
+        "p1": {
+          "at": 0,
+          "driving_state": "parked"
+        },
+        "p2": {
+          "at": 0,
+          "driving_state": "parked"
+        },
+        "p3": {
+          "at": 0,
+          "driving_state": "parked"
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "probe": "p1",
+          "one_shot": false,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "expect": {
+            "allowed": false,
+            "reason": "no_one_shot"
+          }
+        },
+        {
+          "t": 0,
+          "probe": "p2",
+          "one_shot": true,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 0D 55 55 55 55 55"
+          },
+          "expect": {
+            "allowed": false,
+            "reason": "probe_frame"
+          }
+        },
+        {
+          "t": 0,
+          "probe": "p3",
+          "one_shot": true,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "expect": {
+            "allowed": true,
+            "reason": "probe"
+          }
+        },
+        {
+          "t": 0,
+          "probe": "p3",
+          "one_shot": true,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "expect": {
+            "allowed": false,
+            "reason": "probe_used"
+          }
+        }
+      ]
+    },
+    {
+      "id": "T17",
+      "description": "Parked when the probe grant was minted, Moving at the 250k probe: refused",
+      "probes": {
+        "p1": {
+          "at": 0,
+          "driving_state": "parked"
+        }
+      },
+      "steps": [
+        {
+          "t": 0.2,
+          "probe": "p1",
+          "one_shot": true,
+          "driving_state": "moving",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "02 01 00 55 55 55 55 55"
+          },
+          "expect": {
+            "allowed": false,
+            "reason": "not_parked"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.9
+version: 2.0
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -52,7 +52,10 @@ Transport      transport/base.py: raw bytes in/out (SerialTransport, LoggingTran
 K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, echo, retries)
                + kline/profiles.py (protocols as data) + detect.py, keywords.py, frame_iso9141.py
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
-OBD-II         obd/: the J1979 service layer over an ObdRequestLink (kline/obd_link.py)
+OBD-II         obd/: the J1979 service layer over an ObdRequestLink (kline/obd_link.py,
+               can/obd.py)
+CAN            can/: frame-level CanLink beside Transport (SocketCAN, slcan, GVRET,
+               python-can), passive bitrate detection, ISO-TP, TxGate
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 VehiclePack    pack.py: the contract + loader (entry-point group "openostler.vehicle");
                module layers (D2: td5/ slabs/ airbag/ …) live in the pack repo
@@ -138,6 +141,24 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     grant from `obd/clear.py::ClearGate` (Parked or Idling, local link, one confirmation,
     automatic logbook snapshot first, audit; ADR-0033). No server route mints a grant
     until U2. The VIN goes only to an `on_vin` callback (ADR-0036).
+- **The CAN path (`can/`, ADR-0020, ADR-0023,
+  [spec](../specs/2026-10-06-canlink-isotp-design.md)).**
+  - `CanLink` is frame-level, beside the byte `Transport`. Every backend opens
+    listen-only (SocketCAN on stdlib `AF_CAN` with `CanIfControl` over `ip`; slcan over
+    serial or TCP; GVRET; python-can only with the `[can]` extra). `send()` raises
+    `RateNotConfirmed` until the rate is confirmed or declared, and every frame passes
+    `TxGate`: Tier 0 reads (and their FCs) on the diagnostic ids in any driving state,
+    anything else only with a pack allowlist entry, the entry's driving state and a
+    single-use `TxGrant`. A permitted send turns listen-only off; the session end or
+    30 s idle turns it back on.
+  - `can.detect()` listens at 500k then 250k (20 clean frames), then sends one `01 00`;
+    a silent bus gets one Parked-only one-shot probe per rate. ISO-TP is our own
+    (`isotp.py`); `CanObdRequestLink` (`can/obd.py`) makes `J1979` work over CAN.
+    `LoggingCanLink` writes JSONL and candump with the VIN scrubbed.
+  - Lab/reference only: production CAN I/O and the production gate are the node's TWAI
+    and C `TxGate` (ADR-0032), checked by the shared vectors in `tests/vectors/can/`.
+    Tests run on `tests/fake_can.py` (a virtual-clock bus); `needs_vcan` tests use a real
+    `vcan0` when the runner has one.
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -247,3 +268,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   ISO 9141-2 framing, session hygiene, the Parked gate and the snapshot `link`.
 - 2026-10-06 — J1979 service layer (`obd/`, `kline/obd_link.py`, `testing/`): request
   model, decoders, `PidTable`, Diagnostics, the Mode 04 gate, shared vectors.
+- 2026-10-06 — CAN path (`can/`): CanLink and backends, passive bitrate detection,
+  ISO-TP, TxGate, the J1979 CAN adapter, LoggingCanLink, the fake bus and shared vectors.
