@@ -2,7 +2,7 @@
 title: "Goals — what Ostler is for and where it is going"
 area: root
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [SCOPE.md]
 summary: >
@@ -253,8 +253,9 @@ Proposed, not yet adopted as targets:
 
 ## 12. Open questions
 
-- Whether `docs/` (and `references/`) are licensed CC BY-SA 4.0 like the data; REUSE needs
-  an answer.
+- ~~Whether `docs/` (and `references/`) are licensed CC BY-SA 4.0 like the data; REUSE needs
+  an answer.~~ Decided 2026-10-06: docs stay under the code licence (AGPL-3.0-or-later);
+  vehicle data stays CC BY-SA 4.0.
 - CRA role and legal advice before the first hardware sale.
 - The trust setup for local HTTPS on the Pi (per-device CA or ACME DNS;
   [ADR-0021](decisions/adr-0021-local-https-on-the-device.md)).
