@@ -204,11 +204,24 @@ export const FaultScanEntry = z.object({
 });
 export type FaultScanEntry = z.infer<typeof FaultScanEntry>;
 
+/**
+ * The error envelope of every API error (4xx/5xx): `error` is for people, `code` a stable
+ * token for programs (`not_found`, `public_mode`, `car_refused` …). Open: unknown codes and
+ * extra fields are kept.
+ */
+export const ErrorReply = z.looseObject({
+  ok: z.literal(false),
+  error: z.string(),
+  code: z.string().optional(),
+});
+export type ErrorReply = z.infer<typeof ErrorReply>;
+
 /** Every /command reply: {ok, message|error} plus action-specific extras. */
 export const CommandReply = z.looseObject({
   ok: z.boolean(),
   message: z.string().optional(),
   error: z.string().optional(),
+  code: z.string().optional(),
   file: z.string().optional(),
   path: z.string().optional(),
   rows: z.number().optional(),
@@ -224,6 +237,7 @@ export type CommandReply = z.infer<typeof CommandReply>;
 export const AutomapReply = z.looseObject({
   ok: z.boolean(),
   error: z.string().optional(),
+  code: z.string().optional(),
   mode: z.string().optional(), // "numeric" | "state"
   lid: z.string().optional(),
   offset: z.number().optional(),
@@ -245,11 +259,13 @@ export type AutomapReply = z.infer<typeof AutomapReply>;
 
 export const OkReply = z.looseObject({
   ok: z.boolean(),
-  error: z.string().optional(),
+  error: z.string().nullable().optional(),
+  code: z.string().optional(),
   stored: z.boolean().optional(),
   module: z.string().optional(),
   name: z.string().optional(),
   consent: z.boolean().optional(),
+  /** a community contribution accepted while offline (HTTP 202, `ok` is true) */
   queued: z.boolean().optional(),
 });
 export type OkReply = z.infer<typeof OkReply>;

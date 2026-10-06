@@ -346,7 +346,8 @@ def test_delete_session_refused_in_public_mode(tmp_path, served):
     srv.close_recorder()
     _, post = served(srv)
     code, res = post({"action": "delete_session", "params": {"id": real}})
-    assert code == 400 and not res["ok"] and "public" in res["error"]
+    assert code == 403 and not res["ok"] and "public" in res["error"]
+    assert res["code"] == "public_mode"
     assert (tmp_path / "sessions" / real).is_dir()
 
 
@@ -355,14 +356,16 @@ def test_delete_session_refuses_synthetic_recording_and_unknown(tmp_path, served
     _record(srv, 3)
     real = _real_session(srv)
     _, post = served(srv)
+    # status table (api-consistency spec §2): a synthetic session is read-only (403), the
+    # open one conflicts with the recorder (409), an unknown or malformed id is 404
     code, res = post({"action": "delete_session", "params": {"id": _synthetic_id(srv)}})
-    assert code == 400 and "synthetic" in res["error"]
+    assert code == 403 and "synthetic" in res["error"] and res["code"] == "read_only"
     code, res = post({"action": "delete_session", "params": {"id": real}})
-    assert code == 400 and "recorded" in res["error"]  # still open
+    assert code == 409 and "recorded" in res["error"]  # still open
     code, res = post({"action": "delete_session", "params": {"id": "20000101T000000Z"}})
-    assert code == 400
+    assert code == 404 and res["code"] == "not_found"
     code, res = post({"action": "delete_session", "params": {"id": "../etc"}})
-    assert code == 400
+    assert code == 404
 
 
 def test_delete_session_deletes_a_closed_real_session(tmp_path, served):
@@ -611,7 +614,7 @@ def test_patch_session_refusals(tmp_path, served):
     call = _req(served, srv)
     demo = _synthetic_id(srv)
     assert call("PATCH", f"/sessions/{demo}", {"name": "mine"}) == (
-        403, {"ok": False, "error": "synthetic sessions are read-only"})
+        403, {"ok": False, "error": "synthetic sessions are read-only", "code": "read_only"})
     assert call("PATCH", f"/sessions/{ids[0]}", {"name": 5})[0] == 400
     assert call("PATCH", f"/sessions/{ids[0]}", {})[0] == 400
     assert call("PATCH", f"/sessions/{ids[0]}", {"colour": "red"})[0] == 400
@@ -624,7 +627,8 @@ def test_patch_session_refused_in_public_mode(tmp_path, served):
     call = _req(served, srv)
     for sid in (ids[0], _synthetic_id(srv)):
         assert call("PATCH", f"/sessions/{sid}", {"name": "x"}) == (
-            403, {"ok": False, "error": "not available in public mode"})
+            403, {"ok": False, "error": "not available in public mode",
+                  "code": "public_mode"})
     assert json.loads((tmp_path / "sessions" / ids[0] / "meta.json").read_text())["name"] \
         == "Drive alpha"
 

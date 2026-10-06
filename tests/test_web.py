@@ -1073,13 +1073,14 @@ def test_public_server_refuses_actuators_but_not_reads():
                      active="slabs", public=True, admin_password="hemligt")
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
+        # a refusal only the public server makes: 403 public_mode (api-consistency §2)
         code, body = _post(base, "buzzer")
-        assert code == 400 and "public" in body["error"]
+        assert code == 403 and "public" in body["error"] and body["code"] == "public_mode"
         code, body = _post(base, "bleed_power_on")
-        assert code == 400 and "public" in body["error"]
+        assert code == 403 and "public" in body["error"]
         assert _post(base, "select_module", module="td5")[0] == 200
         code, body = _post(base, "output_mil_lamp", trust="experimental")
-        assert code == 400 and "public" in body["error"]
+        assert code == 403 and "public" in body["error"]
         code, body = _post(base, "read_identity", trust="experimental")   # read-only: allowed
         assert code == 200 and body["identity"]["vin_masked"].endswith("0000")
     finally:

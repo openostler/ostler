@@ -19,8 +19,10 @@ and the tests keep the three in step.
 - **`x-ostler-public-mode`**: what the `--public` server does with the route (`open`,
   `filtered` to the synthetic sessions, `refused` with 403, `hidden` as 404, or `partial`
   for `/command`).
-- **`x-ostler-query-string: refused`**: the route is matched exactly, so `?anything`
-  answers 404.
+- **Errors**: every API error is the JSON envelope `{ok: false, error, code?}`
+  (`ErrorReply`), with the statuses of the table in `info.description`
+  ([API consistency spec](../specs/2026-10-06-api-consistency-design.md) §1-§2). A query
+  string is accepted on every route; an unknown browser page gets the app shell.
 - **`x-ostler-route: static`**: served from the built app's `static/` directory.
 - **`components.x-ostler-wire-conventions`**: the wire rules for every Ostler API:
   - RFC 3339 UTC `Z` timestamps;
@@ -59,9 +61,14 @@ server URL (the default `servers` entry is `http://localhost:8080`).
 
 - `server.py` handles a route that `openapi.yaml` lacks, or `openapi.yaml` lists a route
   the server does not have. The routes are read from the server's source: the string
-  literals `_Handler` compares `self.path` with, and the path parts the `/sessions/…`
+  literals `_Handler` compares its `path` local with, and the path parts the `/sessions/…`
   helpers compare with;
-- an operation's admin gating or query-string handling differs from the server's;
+- an operation's admin gating differs from the server's, or a `do_*` routes on the raw
+  `self.path` (a query string would 404);
+- a documented status is outside the spec's status table, a 4xx/5xx of a non-app
+  operation is not `ErrorReply`, or the running server (a fake-pack `DiagServer`) answers
+  an error that is not the envelope, a 404 for a route with `?_=1`, or the wrong status for
+  a car refusal (502), a poll timeout (504) or a queued contribution (202);
 - an operation lacks `x-ostler-access`, `x-ostler-public-mode`, a success response, a 401
   (admin) or a 403 (refused in public mode);
 - `openapi.yaml` fails `openapi-spec-validator`, or `asyncapi.yaml` loses its structure;

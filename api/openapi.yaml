@@ -26,12 +26,23 @@ info:
     - `refused`: answered 403 `not available in public mode`.
     - `hidden`: answered 404 (audio is never served in public mode).
     - `partial`: some commands are refused (actuator and service actions, `delete_session`,
-      `split_session`); the reply is `{ok: false, error}` with HTTP 400.
+      `split_session`); the reply is `{ok: false, error, code: public_mode}` with HTTP 403.
 
-    **Errors.** API routes answer `{ok: false, error}` (`ErrorReply`) with the HTTP code.
-    An unknown route, or a route outside the JSON API (`/doc`, static files), answers the
-    stdlib HTML error page (`NotFoundHtml`). Routes matched with `==` on the raw request
-    path (marked `x-ostler-query-string: refused`) answer 404 when a query string is added.
+    **Errors.** Every API error is the JSON envelope `{ok: false, error, code?}`
+    (`ErrorReply`): `error` is an English sentence for people, `code` a stable token for
+    programs (`bad_request`, `auth_required`, `public_mode`, `read_only`, `not_found`,
+    `not_recording`, `disconnected`, `community_off`, `conflict`, `too_large`, `internal`,
+    `car_refused`, `car_timeout`, `unavailable`, `no_match`). A 2xx body never carries
+    `ok: false`. The statuses: 202 accepted but not yet done (a queued community
+    contribution), 400 bad input, 401 admin auth missing, 403 refused by policy (public
+    mode, a synthetic session), 404 unknown, 409 conflict with server state, 413 body too
+    large, 416 bad range, 500 unexpected failure, 502 the car refused (an ECU negative
+    response), 503 temporarily unavailable, 504 the car did not answer in time. Only the
+    app pages answer HTML; their 401 has an empty body so the browser shows its Basic
+    Auth prompt. An unknown `GET` whose `Accept` prefers `text/html` and whose path has no
+    file extension answers 200 with the app shell (the UI shows its not-found view); any
+    other unknown request answers the 404 envelope, as does a method the server lacks
+    (501). A query string is accepted on every route.
 
     **Wire conventions** are documented in `components.x-ostler-wire-conventions` and as
     named schemas (`Rfc3339Utc`, `VssUnit`, `GeoJsonPosition`, `GeoJsonLineString`, `Vid`).
@@ -120,7 +131,7 @@ paths:
             "*/*":
               schema: {type: string, format: binary}
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
   /{file}:
     get:
       tags: [app]
@@ -128,7 +139,10 @@ paths:
       summary: Any other file of the built app (favicon, manifest …); `index.html` is never served here.
       description: >
         The fallback of `do_GET`: a path that no route matches is resolved inside the
-        packaged `static/` directory (traversal-guarded). Nested paths are allowed.
+        packaged `static/` directory (traversal-guarded). Nested paths are allowed. When no
+        file matches, a browser page (`Accept` prefers `text/html`, no file extension in
+        the path) gets the app shell so the UI can show its not-found view and deep links
+        survive a reload; anything else gets the 404 envelope.
       x-ostler-access: public
       x-ostler-public-mode: open
       x-ostler-route: static
@@ -139,12 +153,14 @@ paths:
           schema: {type: string}
       responses:
         "200":
-          description: 'The file (`Cache-Control: no-cache`); the type follows its extension.'
+          description: >
+            The file (`Cache-Control: no-cache`; the type follows its extension), or the
+            app shell (`text/html`) for an unknown browser page.
           content:
             "*/*":
               schema: {type: string, format: binary}
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
 
   # ---------------------------------------------------------------- live ---------------
   /snapshot:
@@ -154,7 +170,6 @@ paths:
       summary: The latest snapshot (the same object `/events` pushes).
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: The latest snapshot.
@@ -173,7 +188,6 @@ paths:
         `api/asyncapi.yaml`.
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: An endless SSE stream.
@@ -199,11 +213,16 @@ paths:
         - a module action from the pack's command registry (see `/catalog` actions), with
           optional `params.trust` for typed confirmation.
 
-        The HTTP code is 200 when `ok` is true and 400 otherwise (refusals, unknown
-        actions, timeouts and errors alike).
+        The HTTP status is 200 when `ok` is true. Otherwise the reply's `code` sets it:
+        400 an unknown action, bad params or a policy refusal (experimental without trust,
+        gated, planned); 403 `public_mode` (refused on the public server) or `read_only`
+        (`delete_session` of a synthetic session); 404 `not_found` (an unknown session);
+        409 `not_recording` (`split_session`), `disconnected` or `conflict` (shutdown not
+        enabled, the session is being recorded); 500 `internal`; 502 `car_refused` (the
+        ECU answered with a negative response; `nrc` carries its code); 503 `unavailable`
+        (no session recorder); 504 `car_timeout` (the poll thread did not answer in time).
       x-ostler-access: public
       x-ostler-public-mode: partial
-      x-ostler-query-string: refused
       requestBody:
         required: true
         content:
@@ -216,10 +235,32 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/CommandReply"}
         "400":
-          description: Refused, unknown, timed out or failed (`ok` is false).
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/Error"
+        "502":
+          description: "The car refused: the ECU answered with a negative response (`code: car_refused`, `nrc`)."
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/CommandReply"}
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "503":
+          description: "Session recording is not available (`code: unavailable`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "504":
+          description: "The car did not answer in time: the poll thread timed out (`code: car_timeout`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
 
   # ---------------------------------------------------------------- metadata -----------
   /pack:
@@ -377,7 +418,6 @@ paths:
       summary: Solve scale and offset from (raw, displayed) samples and suggest a signal.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -387,12 +427,19 @@ paths:
             schema: {$ref: "#/components/schemas/CalibRequest"}
       responses:
         "200":
-          description: 'The fit, or `{ok: false, error}` (still HTTP 200).'
+          description: The fit and a suggested signal.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/CalibReply"}
+        "400":
+          description: Fewer than two samples with different raw values, a bad `lid`, or a body that is not JSON.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /automap:
     post:
       tags: [mapping]
@@ -400,7 +447,6 @@ paths:
       summary: Search the raw field (offset, type, scale or byte.bit) that explains plaintext readings.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -410,12 +456,24 @@ paths:
             schema: {$ref: "#/components/schemas/AutomapRequest"}
       responses:
         "200":
-          description: 'The solution, or `{ok: false, error}` (still HTTP 200).'
+          description: The solution.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/AutomapReply"}
+        "400":
+          description: >
+            No usable readings (`code: bad_request`), or valid readings that no raw field
+            explains (`code: no_match`, with the byte `diff`).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ErrorReply"
+                  - $ref: "#/components/schemas/AutomapReply"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /capture:
     post:
       tags: [mapping]
@@ -423,7 +481,6 @@ paths:
       summary: Append a labelled capture to the captures file; also a `capture` note in the recording session.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -433,12 +490,21 @@ paths:
             schema: {$ref: "#/components/schemas/CaptureRequest"}
       responses:
         "200":
-          description: "`stored` is false when the server has no captures file; `{ok: false, error}` on a write error."
+          description: "`stored` is false when the server has no captures file."
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          $ref: "#/components/responses/Error"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          description: "The captures file could not be written (`code: internal`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
   /captures:
     get:
       tags: [mapping]
@@ -470,7 +536,6 @@ paths:
       summary: Write a confirmed or candidate mapping back to the pack's signal store.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -485,12 +550,19 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
         "400":
-          description: Unknown or read-only module, a record without name/lid/offset, or a write error.
+          description: Unknown or read-only module, a record without name/lid/offset, or an invalid record.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/ErrorReply"}
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          description: "The signal store could not be written (`code: internal`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
 
   # ---------------------------------------------------------------- docs (admin) -------
   /docs:
@@ -500,7 +572,6 @@ paths:
       summary: The index of the Documents tab.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       responses:
@@ -534,7 +605,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
 
   # ---------------------------------------------------------------- community ----------
   /community:
@@ -544,7 +615,6 @@ paths:
       summary: The opt-in contribution state.
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: 'The state (`{consent: null, endpoint: null}` when community is disabled).'
@@ -559,7 +629,6 @@ paths:
       description: Not admin-gated (the first-run Consent screen and Preferences belong to the device's own user); refused in public mode.
       x-ostler-access: public
       x-ostler-public-mode: refused
-      x-ostler-query-string: refused
       requestBody:
         required: true
         content:
@@ -578,13 +647,14 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          $ref: "#/components/responses/Error"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "400":
-          description: Community is disabled on this server.
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "409":
+          $ref: "#/components/responses/CommunityOff"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /community/contribute:
     post:
       tags: [community]
@@ -593,7 +663,6 @@ paths:
       description: Sent from the admin Coverage Map, so admin auth is required; refused in public mode.
       x-ostler-access: admin
       x-ostler-public-mode: refused
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -603,19 +672,32 @@ paths:
             schema: {type: object, additionalProperties: true}
       responses:
         "200":
-          description: "`{ok: true, flushed}`, or `{ok: false, error}` (not enabled) or `{ok: false, queued: true, error}` (still HTTP 200)."
+          description: "Sent: `{ok: true, flushed}` (the queued ones drained with it)."
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "202":
+          description: "Accepted but not yet sent (the endpoint is offline): `{ok: true, queued: true, error?, pending}`; it is sent on a later successful call."
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/OkReply"
+                  - type: object
+                    required: [ok, queued]
+                    properties:
+                      ok: {const: true}
+                      queued: {const: true}
+        "400":
+          $ref: "#/components/responses/Error"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "400":
-          description: Community is disabled on this server.
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "409":
+          $ref: "#/components/responses/CommunityOff"
+        "413":
+          $ref: "#/components/responses/TooLarge"
 
   # ---------------------------------------------------------------- logbook ------------
   /sessions:
@@ -764,6 +846,8 @@ paths:
           $ref: "#/components/responses/Error"
         "404":
           $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
   /sessions/{id}/export:
     parameters:
       - $ref: "#/components/parameters/SessionId"
@@ -793,6 +877,8 @@ paths:
         "400":
           $ref: "#/components/responses/Error"
         "404":
+          $ref: "#/components/responses/Error"
+        "500":
           $ref: "#/components/responses/Error"
   /sessions/{id}/events:
     parameters:
@@ -1110,7 +1196,10 @@ components:
     vehicle-id: >
       Every session carries `vid` (`Vid`), the vehicle it was recorded on; added by U0-A
       as an optional string and absent on older sessions.
-    errors: "`{ok: false, error: <English sentence>}` with the HTTP status (`ErrorReply`)."
+    errors: >
+      Every API error body is `{ok: false, error: <English sentence>, code?: <token>}`
+      (`ErrorReply`) as `application/json`, with the HTTP status of the info table; a 2xx
+      body never carries `ok: false`. Clients key on `code`, never on `error`.
     openness: >
       Response objects are open (`additionalProperties: true`): clients must ignore
       unknown fields, as the UI's Zod schemas do.
@@ -1130,7 +1219,6 @@ components:
         summary: The single-page app (the legacy v2 page when no UI build is present).
         x-ostler-access: public
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         responses:
           "200":
             $ref: "#/components/responses/Html"
@@ -1140,42 +1228,39 @@ components:
         summary: The same app behind admin auth; the page shows the mapping tabs.
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
     LegacyV2:
       get:
         tags: [app]
         summary: The hand-written legacy v2 dashboard (reference, ADR-0004).
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
     LegacyV1:
       get:
         tags: [app]
         summary: The hand-written legacy v1 dashboard (reference, ADR-0004).
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
 
   parameters:
     Module:
@@ -1202,33 +1287,46 @@ components:
       content:
         text/html:
           schema: {type: string}
-    NotFoundHtml:
-      description: Not found (the stdlib HTML error page).
-      content:
-        text/html:
-          schema: {type: string}
-    Unauthorized:
-      description: Admin auth required (empty body).
+    UnauthorizedPage:
+      description: Admin auth required (an app page; empty body, so the browser shows its Basic Auth prompt).
       headers:
         WWW-Authenticate:
           schema: {type: string, const: 'Basic realm="Ostler admin"'}
+    Unauthorized:
+      description: "Admin auth required (`code: auth_required`)."
+      headers:
+        WWW-Authenticate:
+          schema: {type: string, const: 'Basic realm="Ostler admin"'}
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
     Error:
-      description: "`{ok: false, error}`."
+      description: "`{ok: false, error, code?}`."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     Forbidden:
-      description: Refused in public mode (`not available in public mode`) or for a synthetic session (`synthetic sessions are read-only`).
+      description: "Refused in public mode (`code: public_mode`, `not available in public mode`) or for a synthetic session (`code: read_only`, `synthetic sessions are read-only`)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     NotRecording:
-      description: The session is not being recorded (`Not recording — connect to the car first`, or `session <id> is not being recorded`).
+      description: "The session is not being recorded (`code: not_recording`; `Not recording — connect to the car first`, or `session <id> is not being recorded`)."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    Conflict:
+      description: "A conflict with the server state (`code: not_recording`, `disconnected` or `conflict`)."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    CommunityOff:
+      description: "Community is disabled on this server, or sharing is not enabled (`code: community_off`)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     TooLarge:
-      description: The body is too large (2 MiB per JSON body or audio chunk; 5000 accel samples).
+      description: "The body is too large (`code: too_large`; 2 MiB per JSON body or audio chunk; 5000 accel samples)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
@@ -1293,10 +1391,21 @@ components:
     # ---- generic replies ----
     ErrorReply:
       type: object
+      description: The error envelope of every API error (4xx/5xx).
       required: [ok, error]
       properties:
         ok: {const: false}
-        error: {type: string}
+        error: {type: string, description: One English sentence for people; clients never parse it.}
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          description: >
+            A stable token for programs: `bad_request`, `no_match`, `auth_required`,
+            `public_mode`, `read_only`, `not_found`, `not_recording`, `disconnected`,
+            `community_off`, `conflict`, `too_large`, `internal`, `car_refused`,
+            `unavailable`, `car_timeout`. Open: a client treats an unknown code by its
+            HTTP status.
+        nrc: {type: integer, description: "With `car_refused`: the ECU's negative response code (KWP2000 NRC)."}
       additionalProperties: true
     OkReply:
       type: object

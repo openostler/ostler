@@ -44,7 +44,7 @@ channels:
     title: Live snapshots (SSE)
     description: >
       `GET /events` answers `200 text/event-stream` with `Cache-Control: no-cache` and
-      `Connection: keep-alive`. The address is matched exactly: a query string answers 404.
+      `Connection: keep-alive`. A query string is accepted (and ignored).
     servers:
       - $ref: "#/servers/device"
     messages:

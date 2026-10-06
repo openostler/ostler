@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { z } from "zod";
 import {
   AutomapReply, Catalog, CatalogModules, CaptureList, CommandReply, NoteList, SessionData, SessionEvents, SessionHistogram, PackSchema, VersionInfo, SessionList, SessionMeta, Community, DocsResponse, FaultsResponse, FieldsResponse, MapResponse,
-  OkReply, Snapshot, SniffResponse,
+  ErrorReply, OkReply, Snapshot, SniffResponse,
 } from "./schemas";
 
 /**
@@ -25,8 +25,11 @@ const SCHEMA_FOR: Record<string, z.ZodType> = {
   docs: DocsResponse,
   community: Community,
   "community-consent": OkReply,
+  "community-queued": OkReply,
   "command-ok": CommandReply,
   "command-error": CommandReply,
+  "command-not-recording": CommandReply,
+  "error-not-found": ErrorReply,
   "csv-start": CommandReply,
   "csv-stop": CommandReply,
   "read-all-faults": CommandReply,

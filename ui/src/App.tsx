@@ -22,6 +22,7 @@ import { RewindButton } from "./components/RewindButton";
 import { canonicalModule, defaultModule, moduleName } from "./layout";
 import { clockHHMM, faultLookup, fmt } from "./lib/format";
 import { isAdminPath } from "./lib/admin";
+import { isAppPath } from "./lib/paths";
 import { connOf } from "./lib/connection";
 import { useConnectionSheet } from "./state/connection";
 import { screensFor } from "./screens/registry";
@@ -59,6 +60,12 @@ function Clock() {
  * `replay` opens a session straight away (a deep link, and the tests).
  */
 export function App({ path = window.location.pathname, replay }: { path?: string; replay?: string }) {
+  // an unknown page: the server sent the app shell so the not-found view can say so
+  if (!isAppPath(path)) return <NotFound path={path} />;
+  return <Dashboard path={path} replay={replay} />;
+}
+
+function Dashboard({ path, replay }: { path: string; replay?: string }) {
   // the vehicle pack (module ids, names, layout) loads once at boot; nothing renders before it
   const { pack, error, retry } = useLoadPack();
   if (!pack) return <PackGate error={error} onRetry={retry} />;
@@ -66,6 +73,21 @@ export function App({ path = window.location.pathname, replay }: { path?: string
     <ReplayProvider initial={replay ?? null}>
       <AppShell path={path} />
     </ReplayProvider>
+  );
+}
+
+/** A page the server does not have (it answered the app shell, so deep links survive). */
+function NotFound({ path }: { path: string }) {
+  return (
+    <div className="app">
+      <main id="view">
+        <div className="empty" role="alert">
+          <div className="title">Page not found</div>
+          <div className="small muted pretty">There is no page at <code>{path}</code>.</div>
+          <a className="btn accent" href="/">Open the dashboard</a>
+        </div>
+      </main>
+    </div>
   );
 }
 

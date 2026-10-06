@@ -87,7 +87,8 @@ function MappedRow({ module, cat, item, status, sniff, labels }: {
           module, lid: result.lid, offset: result.offset, kind: result.kind, name, our_value: null,
           confidence: "candidate", answer: { type: "map", value: result.signal ?? result.rule ?? "" },
         }).catch(() => ({ ok: false, queued: false }));
-        msg += sh.ok ? " · shared ✓" : sh.queued ? " · queued (offline)" : "";
+        // a queued contribution is accepted (HTTP 202, ok: true) but not sent yet
+        msg += sh.queued ? " · saved, will send later" : sh.ok ? " · shared ✓" : "";
         reloadCommunity();
       }
       toast(msg);

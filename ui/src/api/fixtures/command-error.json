@@ -1,4 +1,5 @@
 {
   "ok": false,
-  "error": "unknown command: no_such_command"
+  "error": "unknown command: no_such_command",
+  "code": "bad_request"
 }

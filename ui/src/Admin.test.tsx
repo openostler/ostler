@@ -75,6 +75,25 @@ describe("admin mode", () => {
     expect(JSON.parse(localStorage.getItem(key!)!)).toEqual([{ text: "762", raws: { "09": "02 fa" } }]);
   });
 
+  it("says a contribution queued offline (202, ok: true) is saved and will be sent later", async () => {
+    const user = userEvent.setup();
+    installFakeServer({
+      snapshot: connected,
+      community: { consent: true, endpoint: "https://community.invalid", registered: false, pending: 0 },
+      contribute: { status: 202, body: { ok: true, queued: true, error: "offline", pending: 1 } },
+      automap: { ok: true, mode: "numeric", lid: "09", offset: 0, kind: "u16", scale: 1, bias: 0, r2: 1, clean: true, how: "fit", signal: 'Signal("rpm", 0x09, 0)' },
+    });
+    render(<App path="/admin" />);
+    const row = (await screen.findByText("1. Engine Speed (rpm)")).closest(".ro") as HTMLElement;
+    await user.type(within(row).getByRole("textbox"), "762");
+    await user.click(within(row).getByRole("button", { name: "save" }));
+    await user.click(await within(row).findByRole("button", { name: /save to store/ }));
+    const toast = await screen.findByText(/saved, will send later/);
+    expect(toast).toHaveClass("toast");
+    expect(toast).not.toHaveTextContent("shared");
+    expect(toast).not.toHaveClass("bad");
+  });
+
   it("shows the derived catalog status on the Map, not the legacy ok/maybe/todo", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/admin" />);

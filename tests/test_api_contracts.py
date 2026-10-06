@@ -6,9 +6,12 @@
 
 - Every route ``web/server.py`` handles is in ``api/openapi.yaml`` and every documented
   route exists. Routes are read from the server's source (static analysis of the string
-  literals ``_Handler`` compares the request path with), so a new ``elif self.path == …``
-  fails here until it is documented. Admin gating and query-string handling are
-  cross-checked the same way.
+  literals ``_Handler`` compares its ``path`` local with), so a new ``elif path == …``
+  fails here until it is documented. Admin gating is cross-checked the same way.
+- The API consistency rules (specs/2026-10-06-api-consistency-design.md §7): a query
+  string never 404s, every error body is the ``{ok: false, error, code?}`` envelope,
+  every documented status is in the status table, unknown browser pages get the app
+  shell.
 - ``api/openapi.yaml`` passes ``openapi-spec-validator``; ``api/asyncapi.yaml`` is checked
   structurally (there is no light AsyncAPI validator on PyPI).
 - The committed UI fixtures (real server responses, ``ui/src/api/fixtures/``) validate
@@ -19,7 +22,10 @@ Needs the dev extra (pyyaml, openapi-spec-validator, jsonschema); no pack, no ha
 from __future__ import annotations
 
 import ast
+import base64
+import http.client
 import json
+import threading
 from pathlib import Path
 
 import pytest
@@ -70,8 +76,11 @@ FIXTURE_ROUTES = {
     "docs": ("/docs", "get", "200"),
     "community": ("/community", "get", "200"),
     "community-consent": ("/community/consent", "post", "200"),
+    "community-queued": ("/community/contribute", "post", "202"),
     "command-ok": ("/command", "post", "200"),
     "command-error": ("/command", "post", "400"),
+    "command-not-recording": ("/command", "post", "409"),
+    "error-not-found": ("/{file}", "get", "404"),
     "csv-start": ("/command", "post", "200"),
     "csv-stop": ("/command", "post", "200"),
     "read-all-faults": ("/command", "post", "200"),
@@ -137,11 +146,9 @@ def _is_self_path(node) -> bool:
             and isinstance(node.value, ast.Name) and node.value.id == "self")
 
 
-def _is_split_path(node) -> bool:
-    """``self.path.split("?")[0]``."""
-    return (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Call)
-            and isinstance(node.value.func, ast.Attribute) and node.value.func.attr == "split"
-            and _is_self_path(node.value.func.value))
+def _is_route_path(node) -> bool:
+    """The ``path`` local every ``do_*`` routes on (``path = self._path()``)."""
+    return isinstance(node, ast.Name) and node.id == "path"
 
 
 def _strings(node) -> "list[str]":
@@ -152,18 +159,16 @@ def _strings(node) -> "list[str]":
     return []
 
 
-def _path_tests(test) -> "tuple[list[tuple[str, bool]], list[str]]":
-    """From an ``if`` test: ([(exact path, query-string tolerant)], [startswith prefixes])."""
+def _path_tests(test) -> "tuple[list[str], list[str]]":
+    """From an ``if`` test: ([exact paths], [startswith prefixes])."""
     exact, prefixes = [], []
     for node in ast.walk(test):
         if isinstance(node, ast.Compare) and len(node.ops) == 1 and isinstance(
                 node.ops[0], (ast.Eq, ast.In)):
-            if _is_self_path(node.left):
-                exact += [(s, False) for s in _strings(node.comparators[0])]
-            elif _is_split_path(node.left):
-                exact += [(s, True) for s in _strings(node.comparators[0])]
+            if _is_route_path(node.left):
+                exact += _strings(node.comparators[0])
         elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-              and node.func.attr == "startswith" and _is_self_path(node.func.value)):
+              and node.func.attr == "startswith" and _is_route_path(node.func.value)):
             prefixes += [s for a in node.args for s in _strings(a)]
     return exact, prefixes
 
@@ -180,7 +185,7 @@ def _calls(nodes, name: str) -> bool:
 
 
 def _server_routes():
-    """→ (exact, prefixes): ``exact[(method, path)] = {admin, query}``;
+    """→ (exact, prefixes): ``exact[(method, path)] = {admin}``;
     ``prefixes[(method, prefix)] = admin``. Read from the ``if`` chains of ``do_*``."""
     cls = _handler()
     exact: "dict[tuple[str, str], dict]" = {}
@@ -191,8 +196,8 @@ def _server_routes():
             if isinstance(node, ast.If):
                 paths, pfx = _path_tests(node.test)
                 admin = _calls(node.body, "_require_admin")
-                for path, query in paths:
-                    exact[(method, path)] = {"admin": admin, "query": query}
+                for path in paths:
+                    exact[(method, path)] = {"admin": admin}
                 for p in pfx:
                     prefixes[(method, p)] = admin
             elif isinstance(node, ast.IfExp):  # e.g. the /assets/ cache header
@@ -211,7 +216,7 @@ def _subroute_literals(helper: str) -> "set[str]":
     fn = _method(_handler(), helper)
     out: "set[str]" = set()
     for node in ast.walk(fn):
-        if isinstance(node, ast.Compare) and not _is_self_path(node.left):
+        if isinstance(node, ast.Compare) and not _is_route_path(node.left):
             for side in [node.left, *node.comparators]:
                 out |= {s for s in _strings(side) if s and "/" not in s}
     return out
@@ -229,10 +234,10 @@ def _segment(path: str, prefix: str) -> str:
 def test_route_extraction_sees_the_server():
     """Guard the static analysis itself: known routes of each kind are found."""
     exact, prefixes = _server_routes()
-    assert exact[("get", "/snapshot")] == {"admin": False, "query": False}
-    assert exact[("get", "/map")] == {"admin": True, "query": True}
+    assert exact[("get", "/snapshot")] == {"admin": False}
+    assert exact[("get", "/map")] == {"admin": True}
     assert exact[("get", "/admin")]["admin"] is True
-    assert exact[("post", "/notes/live")]["query"] is True
+    assert ("post", "/notes/live") in exact and ("post", "/command") in exact
     assert ("get", "/sessions/") in prefixes and ("post", "/sessions/") in prefixes
     assert ("get", "/assets/") in prefixes
     assert {"notes", "audio", "accel", "accel_cal"} <= _subroute_literals("_sessions_post")
@@ -295,18 +300,24 @@ def test_admin_gating_matches_the_server(openapi):
     assert not wrong, "\n  ".join(["admin gating differs:", *wrong])
 
 
-def test_query_string_handling_matches_the_server(openapi):
-    """Routes matched with ``self.path == …`` 404 on any query string: say so."""
-    exact, _ = _server_routes()
-    wrong = []
-    for path, method, op in _operations(openapi):
-        code = exact.get((method, path))
-        if code is None:
-            continue
-        refused = op.get("x-ostler-query-string") == "refused"
-        if refused == code["query"]:
-            wrong.append(f"{method.upper()} {path}: server tolerates a query={code['query']}")
-    assert not wrong, "\n  ".join(["x-ostler-query-string differs:", *wrong])
+def test_no_route_matches_the_raw_request_path(openapi):
+    """Spec §3: ``do_*`` route on ``path`` (no query string), never on ``self.path``, so a
+    query string cannot 404; and no operation is marked as refusing one."""
+    cls = _handler()
+    raw = []
+    for method in METHODS:
+        fn = _method(cls, f"do_{method.upper()}")
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Compare) and any(
+                    _is_self_path(n) for n in [node.left, *node.comparators]):
+                raw.append(f"do_{method.upper()} line {node.lineno}: compares self.path")
+            elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                  and _is_self_path(node.func.value)):
+                raw.append(f"do_{method.upper()} line {node.lineno}: self.path.{node.func.attr}")
+    assert not raw, "\n  ".join(raw)
+    marked = [f"{m.upper()} {p}" for p, m, op in _operations(openapi)
+              if "x-ostler-query-string" in op]
+    assert not marked, f"x-ostler-query-string is gone (spec §3): {marked}"
 
 
 # ---------------------------------------------------------------- the OpenAPI document --- #
@@ -442,7 +453,7 @@ def test_asyncapi_documents_the_sse_route(asyncapi, openapi):
     sse = None
     for node in ast.walk(fn):
         if isinstance(node, ast.If) and node.body and _calls(node.body[:1], "_sse"):
-            sse = _path_tests(node.test)[0][0][0]
+            sse = _path_tests(node.test)[0][0]
     assert sse, "the SSE route was not found in do_GET"
     addresses = {c["address"] for c in asyncapi["channels"].values()}
     assert sse in addresses
@@ -460,3 +471,273 @@ def test_asyncapi_payload_is_the_openapi_snapshot(asyncapi, openapi):
     assert not list(v.iter_errors(snap))
     for ex in msgs["snapshot"].get("examples", []):
         assert not list(v.iter_errors(ex["payload"])), ex["name"]
+
+
+# ---------------------------------------------------------------- consistency (spec §7) -- #
+# specs/2026-10-06-api-consistency-design.md: the error envelope, the status table, query
+# strings and the app shell, statically against api/openapi.yaml and at runtime against a
+# fake-pack DiagServer.
+STATUS_TABLE = {"200", "202", "206", "400", "401", "403", "404", "409", "413", "416", "500",
+                "502", "503", "504"}
+ADMIN_PW = "pw"
+
+
+def _is_app_op(op: dict) -> bool:
+    return "app" in op.get("tags", [])
+
+
+def test_every_documented_status_is_in_the_status_table(openapi):
+    bad = [f"{m.upper()} {p}: {c}" for p, m, op in _operations(openapi)
+           for c in op.get("responses", {}) if c not in STATUS_TABLE]
+    assert not bad, "statuses outside the spec §2 table:\n  " + "\n  ".join(bad)
+
+
+def test_every_documented_error_is_the_envelope(openapi):
+    """Every 4xx/5xx of a non-app operation is ``ErrorReply`` (416 has no body)."""
+    assert "NotFoundHtml" not in openapi["components"]["responses"]
+    err = openapi["components"]["schemas"]["ErrorReply"]
+    assert err["properties"]["code"]["pattern"] == "^[a-z][a-z0-9_]*$"
+    assert "code" not in err["required"]
+    bad = []
+    for path, method, op in _operations(openapi):
+        for status, resp in op.get("responses", {}).items():
+            if status[0] not in "45" or status == "416":
+                continue
+            if _is_app_op(op) and status == "401":
+                continue  # an app page's 401 stays bodiless (the Basic Auth prompt)
+            resp = _resolve(openapi, resp)
+            schema = (resp.get("content") or {}).get("application/json", {}).get("schema", {})
+            refs = [schema.get("$ref")] + [s.get("$ref") for s in schema.get("allOf", [])]
+            if "#/components/schemas/ErrorReply" not in refs:
+                bad.append(f"{method.upper()} {path} {status}")
+    assert not bad, "error responses that are not ErrorReply:\n  " + "\n  ".join(bad)
+
+
+def test_fixtures_agree_with_their_status():
+    """An ``ok: false`` fixture is a non-2xx reply; a 2xx fixture never says ``ok: false``."""
+    bad = []
+    for name, (_path, _method, status) in FIXTURE_ROUTES.items():
+        data = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+        failed = isinstance(data, dict) and data.get("ok") is False
+        if failed == status.startswith("2"):
+            bad.append(f"{name}: status {status}, ok={data.get('ok')}")
+    assert not bad, "\n  ".join(bad)
+
+
+@pytest.fixture
+def fake_server(tmp_path):
+    """A fake-pack DiagServer with an admin password, polling, a doc and a community
+    client that is offline (contributions queue)."""
+    from openostler.community import Community
+    from openostler.pack import use_pack
+    from openostler.web.docs import DocLibrary
+    from openostler.web.server import DiagServer
+    from tests.fake_pack import FAKE_PACK
+
+    doc = tmp_path / "notes.md"
+    doc.write_text("# Notes\n\nA test document.\n", encoding="utf-8")
+    community = Community(config_path=str(tmp_path / "community.json"),
+                          endpoint="https://community.invalid/x",
+                          poster=lambda url, body: {"ok": False, "error": "offline"})
+    with use_pack(FAKE_PACK) as pack:
+        srv = DiagServer(pack.sources("auto"), host="127.0.0.1", port=0, poll_interval=0.05,
+                         stream_interval=0.05, csv_dir=str(tmp_path), menus=pack.menus,
+                         geocoder=None, admin_password=ADMIN_PW, community=community,
+                         docs=DocLibrary().add_file(doc))
+        srv.start_polling()
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            yield srv
+        finally:
+            srv.shutdown()
+            srv.server_close()
+            srv.stop()
+
+
+def _call(srv, method: str, path: str, body=None, auth: bool = True, headers=None):
+    """→ (status, headers, body bytes); never raises on an HTTP error status."""
+    conn = http.client.HTTPConnection("127.0.0.1", srv.server_address[1], timeout=15)
+    hdrs = dict(headers or {})
+    if auth:
+        hdrs["Authorization"] = "Basic " + base64.b64encode(f"admin:{ADMIN_PW}".encode()).decode()
+    data = None if body is None else json.dumps(body).encode()
+    if data is not None:
+        hdrs["Content-Type"] = "application/json"
+    try:
+        conn.request(method, path, body=data, headers=hdrs)
+        resp = conn.getresponse()
+        if resp.getheader("Content-Type", "").startswith("text/event-stream"):
+            return resp.status, dict(resp.getheaders()), b""  # the SSE stream never ends
+        return resp.status, dict(resp.getheaders()), resp.read()
+    finally:
+        conn.close()
+
+
+def _envelope_ok(openapi, status: int, headers: dict, body: bytes, where: str):
+    assert headers.get("Content-Type") == "application/json", where
+    reply = json.loads(body)
+    errors = list(_validator(openapi, "/components/schemas/ErrorReply").iter_errors(reply))
+    assert not errors, f"{where}: {errors[0].message}"
+    assert reply["ok"] is False and reply["error"], where
+    return reply
+
+
+# query strings a documented exact route needs to answer its success status
+_BASE_QUERY = {"/doc": "id=notes"}
+_POST_BODY = {"/community/consent": {"consent": False}}
+
+
+def test_a_query_string_never_404s(openapi, fake_server):
+    """Spec §7: every documented exact GET and POST route answers the same status with
+    ``?_=1`` as without it, and never 404."""
+    checked = []
+    for path, method, op in _operations(openapi):
+        if method not in ("get", "post") or "{" in path or op.get("x-ostler-route"):
+            continue
+        base = path + (f"?{_BASE_QUERY[path]}" if path in _BASE_QUERY else "")
+        extra = ("&" if "?" in base else "?") + "_=1"
+        body = _POST_BODY.get(path, {}) if method == "post" else None
+        plain = _call(fake_server, method.upper(), base, body)[0]
+        query = _call(fake_server, method.upper(), base + extra, body)[0]
+        assert query == plain and query != 404, f"{method.upper()} {path}: {plain} vs {query}"
+        checked.append(path)
+    assert {"/snapshot", "/events", "/command", "/docs", "/community", "/"} <= set(checked)
+
+
+@pytest.mark.parametrize("method,path,auth", [
+    ("GET", "/no/such/route", True), ("POST", "/no/such/route", True),
+    ("PATCH", "/no/such/route", True), ("DELETE", "/no/such/route", True),
+    ("PUT", "/snapshot", True), ("GET", "/doc?id=nope", True), ("GET", "/nope.js", True),
+    ("GET", "/docs", False), ("POST", "/signal", False), ("GET", "/sessions/nope/data", True),
+])
+def test_errors_are_the_envelope(openapi, fake_server, method, path, auth):
+    status, headers, body = _call(fake_server, method, path, {} if method != "GET" else None,
+                                  auth=auth)
+    assert status >= 400, (method, path, status)
+    reply = _envelope_ok(openapi, status, headers, body, f"{method} {path}")
+    if not auth:
+        assert status == 401 and reply["code"] == "auth_required"
+        assert headers["WWW-Authenticate"] == 'Basic realm="Ostler admin"'
+    elif method == "PUT":
+        assert status == 501
+    else:
+        assert status == 404 and reply["code"] == "not_found"
+
+
+def test_an_admin_page_keeps_its_bodiless_401(fake_server):
+    status, headers, body = _call(fake_server, "GET", "/admin", auth=False)
+    assert status == 401 and body == b"" and "WWW-Authenticate" in headers
+
+
+def test_unknown_browser_pages_get_the_app_shell(openapi, fake_server):
+    html = {"Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
+    status, headers, body = _call(fake_server, "GET", "/somewhere/deep", headers=html)
+    assert status == 200 and headers["Content-Type"].startswith("text/html")
+    assert body == _call(fake_server, "GET", "/")[2]  # the same shell as /
+    for accept in ({"Accept": "application/json"}, {}, {"Accept": "*/*"}):
+        status, headers, body = _call(fake_server, "GET", "/somewhere/deep", headers=accept)
+        assert status == 404
+        _envelope_ok(openapi, status, headers, body, f"/somewhere/deep {accept}")
+    status, headers, body = _call(fake_server, "GET", "/nope.js", headers=html)
+    assert status == 404  # a missing file is never the app
+    _envelope_ok(openapi, status, headers, body, "/nope.js")
+    status, headers, body = _call(fake_server, "POST", "/somewhere/deep", {}, headers=html)
+    assert status == 404  # only GET
+
+
+def test_the_car_refusing_is_502_and_a_poll_timeout_504(openapi, fake_server):
+    from openostler.kwp2000.kwp2000 import NegativeResponse
+
+    src = fake_server.source
+    calls = []
+
+    def command(action, params=None):
+        calls.append(action)
+        if action == "raise_nrc":
+            raise NegativeResponse(0x31, 0x22)
+        if action == "text_nrc":  # a source that catches its own exception
+            return {"ok": False, "error": "NegativeResponse: negative response to service "
+                                          "0x31: NRC 0x22 (conditionsNotCorrect)"}
+        return {"ok": True, "message": action}
+
+    src.command = command
+    for action in ("raise_nrc", "text_nrc"):
+        status, headers, body = _call(fake_server, "POST", "/command", {"action": action})
+        reply = _envelope_ok(openapi, status, headers, body, action)
+        assert status == 502 and reply["code"] == "car_refused" and reply["nrc"] == 0x22
+    fake_server._stop.set()               # the poll thread stops answering
+    fake_server._poller.join(timeout=2)
+    fake_server.command_timeout = 0.2
+    status, headers, body = _call(fake_server, "POST", "/command", {"action": "clear_faults"})
+    reply = _envelope_ok(openapi, status, headers, body, "timeout")
+    assert status == 504 and reply["code"] == "car_timeout"
+
+
+def test_a_queued_contribution_is_202_ok(openapi, fake_server):
+    assert _call(fake_server, "POST", "/community/consent", {"consent": True})[0] == 200
+    status, _, body = _call(fake_server, "POST", "/community/contribute",
+                            {"module": "alpha", "name": "x"})
+    reply = json.loads(body)
+    assert status == 202 and reply["ok"] is True and reply["queued"] is True
+    v = _validator(openapi, _response_pointer(openapi, "/community/contribute", "post", "202"))
+    assert not list(v.iter_errors(reply))
+    _call(fake_server, "POST", "/community/consent", {"consent": False})
+    status, headers, body = _call(fake_server, "POST", "/community/contribute", {"x": 1})
+    assert status == 409 and _envelope_ok(openapi, status, headers, body, "off")["code"] \
+        == "community_off"
+
+
+def test_the_status_table_corrections(openapi, tmp_path, monkeypatch):
+    """Spec §2 "Corrections": the statuses that used to be 200 or 400."""
+    from openostler.pack import use_pack
+    from openostler.web.server import DiagServer
+    from tests.fake_pack import FAKE_PACK
+
+    (tmp_path / "captures").mkdir()  # a directory: appending to it fails (OSError)
+    with use_pack(FAKE_PACK) as pack:
+        srv = DiagServer(pack.sources("auto"), host="127.0.0.1", port=0, poll_interval=0.05,
+                         stream_interval=0.05, csv_dir=str(tmp_path), menus=pack.menus,
+                         geocoder=None, record_sessions=False,
+                         captures_path=str(tmp_path / "captures"))
+        srv.start_polling()
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            def code_of(method, path, body=None):
+                status, headers, raw = _call(srv, method, path, body, auth=False)
+                reply = _envelope_ok(openapi, status, headers, raw, f"{method} {path}")
+                return status, reply.get("code")
+
+            assert code_of("POST", "/calib", {"samples": [[1, 1]]}) == (400, "bad_request")
+            assert code_of("POST", "/calib", {"samples": [[1, 1], [2, 2]], "lid": "zz"})[0] == 400
+            assert code_of("POST", "/automap", {"samples": []}) == (400, "bad_request")
+            assert code_of("POST", "/automap", {
+                "samples": [{"text": "10", "raws": {"09": "00"}}, {"text": "20", "raws": {"09": "00"}}],
+                "candidate_lids": ["09"]}) == (400, "no_match")
+            assert code_of("POST", "/capture", {"module": "alpha", "lid": "01"}) == (500, "internal")
+            assert code_of("POST", "/signal", {"module": "nope", "record": {}}) == (400, "bad_request")
+            from openostler import signals
+
+            def broken(module, rec):
+                raise OSError("read-only file system")
+            monkeypatch.setattr(signals, "upsert_field", broken)
+            assert code_of("POST", "/signal", {"module": "alpha", "record": {
+                "name": "x", "lid": "01", "offset": 0}}) == (500, "internal")
+            assert code_of("POST", "/community/consent", {"consent": True}) == (409, "community_off")
+            assert code_of("POST", "/command", {"action": "shutdown"}) == (409, "conflict")
+            assert code_of("POST", "/command", {"action": "split_session"}) == (503, "unavailable")
+            assert code_of("POST", "/command", {"action": "no_such"})[0] == 400
+            assert code_of("POST", "/command", "not an object") == (400, "bad_request")
+            assert _call(srv, "POST", "/command", {"action": "disconnect"})[0] == 200
+            assert code_of("POST", "/command", {"action": "clear_faults"}) == (409, "disconnected")
+            assert code_of("GET", "/sessions/20000101T000000Z/data") == (404, "not_found")
+
+            def unreadable(*a, **kw):
+                raise OSError("disk gone")
+            store = srv.session_store
+            monkeypatch.setattr(store, "meta", lambda sid, public=False: {"id": sid})
+            monkeypatch.setattr(store, "data", unreadable)
+            assert code_of("GET", "/sessions/20000101T000000Z/data") == (500, "internal")
+        finally:
+            srv.shutdown()
+            srv.server_close()
+            srv.stop()

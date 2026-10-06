@@ -43,6 +43,24 @@ describe("vehicle pack boot", () => {
     expect(server.calls.filter((c) => c.path === "/pack")).toHaveLength(1);
   });
 
+  it("shows a not-found view for a page the server answered with the app shell", async () => {
+    const server = installFakeServer({ snapshot: connected });
+    render(<App path="/no/such/page" />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Page not found");
+    expect(screen.getByText("/no/such/page")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open the dashboard" })).toHaveAttribute("href", "/");
+    expect(server.calls).toEqual([]); // nothing is loaded for a page that does not exist
+  });
+
+  it("serves the dashboard on every app path", async () => {
+    for (const path of ["/", "/v2", "/index.html"]) {
+      installFakeServer({ snapshot: connected });
+      const { unmount } = render(<App path={path} />);
+      expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it("shows the error card when /pack fails, and retries", async () => {
     setPack(null);
     installFakeServer({ snapshot: connected });

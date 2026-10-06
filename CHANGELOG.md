@@ -54,12 +54,40 @@ their own changelogs.
   zod, MapLibre GL JS).
 
 ### Changed
+- HTTP API errors and statuses follow one table
+  ([API consistency spec](specs/2026-10-06-api-consistency-design.md) §1-§2). This is a
+  behaviour change for clients that key on the status; the UI reads the body whatever
+  the status and is unaffected:
+  - every API error body is the envelope `{ok: false, error, code?}` (`ErrorReply`), with
+    a stable `code` (`bad_request`, `auth_required`, `public_mode`, `read_only`,
+    `not_found`, `not_recording`, `disconnected`, `community_off`, `conflict`,
+    `too_large`, `internal`, `car_refused`, `car_timeout`, `unavailable`, `no_match`);
+    admin API routes send it with their 401 (app pages keep a bodiless 401);
+  - `POST /command`: a public-mode refusal is 403 (was 400); `split_session` while not
+    recording, `disconnected — connect first` and shutdown not enabled are 409; no
+    session recorder is 503; an ECU negative response is 502 `car_refused` (with `nrc`)
+    and a poll-thread timeout 504 `car_timeout`; `delete_session` of a synthetic session
+    is 403, of an unknown one 404, of the open one 409;
+  - `POST /calib` and `/automap` failures are 400 (`no_match` when no raw field fits;
+    they were 200), a `/capture` write failure is 500 (was 200), a `/signal` store
+    write failure 500 (was 400), community disabled 409 (was 400), and an `OSError`
+    reading a session's data or export 500 (was 400);
+  - a community contribution queued offline answers 202 with `ok: true, queued: true`
+    (was 200 with `ok: false`); the Coverage Map toast says "saved, will send later";
+  - a body that is not a JSON object is 400 on every JSON route.
 - `pyproject.toml` uses PEP 639 licence metadata (`license = "AGPL-3.0-or-later"`,
   `license-files`) and needs `setuptools>=77` to build.
 - Every GitHub Action is pinned to a full commit SHA; workflows default to
   `permissions: contents: read`.
 
 ### Fixed
+- A query string no longer turns an exact route into a 404 (`/snapshot?x`, `/events?x`,
+  `POST /command?x` …): every route matches the path without its query.
+- An unknown route, a missing `/doc` or static file and a method the server lacks
+  answered the stdlib HTML error page; they answer the JSON envelope now. An unknown
+  browser page (`Accept` prefers HTML, no file extension) gets the app shell, whose new
+  not-found view keeps deep links working after a reload.
+- `POST /calib` with an unparsable `lid` dropped the connection; it is a 400.
 - Trivial lint findings (unused imports and variables, redundant arguments); no
   behaviour change.
 

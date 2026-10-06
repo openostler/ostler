@@ -246,3 +246,19 @@ for (const scheme of ["dark", "light"] as const) {
   });
 }
 
+
+test("an unknown page gets the app's not-found view; an unknown API path the JSON 404", async ({ page, request }) => {
+  await returningUser(page);
+  const res = await page.goto("/no/such/page?x=1");
+  expect(res?.status()).toBe(200); // the server answered the app shell (a deep link survives a reload)
+  await expect(page.getByText("Page not found")).toBeVisible();
+  await page.getByRole("link", { name: "Open the dashboard" }).click();
+  await expect(page.getByRole("navigation", { name: "Screens" })).toBeVisible();
+
+  const api = await request.get("/no/such/page", { headers: { Accept: "application/json" } });
+  expect(api.status()).toBe(404);
+  expect(await api.json()).toEqual({ ok: false, error: "not found", code: "not_found" });
+  const asset = await request.get("/assets/missing.js");
+  expect(asset.status()).toBe(404);
+  expect((await request.get("/snapshot?_=1")).status()).toBe(200); // a query string is fine
+});
