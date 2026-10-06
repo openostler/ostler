@@ -44,6 +44,26 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **UI U1 Shell** ([UI spec](specs/2026-10-06-ui-architecture-design.md) §3, §10; app-model
+  spec §9). One shell over today's screens: layout classes by aspect and height (HU-7
+  1024×600, HU-9/10, HU-wide, phone, tablet, desktop; kiosk flag
+  `?display=headunit&side=left|right`); a persistent status strip drawn from chip
+  descriptors (worst telltale, Link with the system in session and the node's power badge,
+  REC, 12 V, clock, Mark; the phone keeps chips 2–5 and 9); a driver-side rail with a
+  Drive-mode button on head units, or the phone's bottom bar; five destinations from a
+  registry (`ui/src/shell/destinations.ts`): Home (health, the pack's Drive view, last trip,
+  a large Drive button; an always-on vehicle pane on HU-wide), Diagnose (identity bar,
+  system list or compact switcher, the Faults/Inputs/Outputs/Utilities/Settings areas),
+  Logs (sessions, Analysis, Rewind), More (Preferences, Connection; on `/admin` Developer:
+  Decode, Label, Docs); Security registers but shows only with a node in the capability
+  manifest (U5). Drive mode is full screen with the strip and a back target. App-model
+  seams: `useShell()`, route names for `goTo`, one action path enforced by a lint rule, a
+  lazy chunk and an error boundary per destination, strip chips as data, CSP
+  `script-src 'self'` on the built page. Standards: W3C design tokens
+  (`ui/tokens/*.tokens.json`), a vendored Material Symbols SVG subset (Apache-2.0), a Web
+  App Manifest (`/manifest.webmanifest`), `Intl` (CLDR) units in the shell. Playwright runs
+  at 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and an axe WCAG 2.2
+  AA scan per layout class (`@axe-core/playwright`, a pinned dev dependency, MPL-2.0).
 - **NodeSource, phase P2: recording and the raw tap**
   ([spec](specs/2026-10-06-node-source-design.md) v0.4 §7, §16; ADR-0032, ADR-0036). A node
   source now records sessions (`tools/dashboard.py --source node` and
@@ -211,6 +231,12 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **UI (U1):** the header and the eight-tab bar are replaced by the status strip and the
+  destinations. The module picker moved to Diagnose, Rewind to Logs, the ⚙ Preferences to
+  More, and the admin tabs to More → Developer (`/admin` lands on Decode). The fault
+  pop-up is gone: faults show as the strip's worst-telltale chip, which opens the same
+  sheet and pulses (red only) until the sheet has been seen. Zod parses without its JIT
+  (`z.config({ jitless: true })`) so the CSP needs no `unsafe-eval`.
 - `EcuSession.tester_present()` sends the session profile's `keepalive` frame (`3E 01`, or
   a bare `3E`) when the session has a profile with one; without a profile, or with
   `keepalive: null`, the legacy `3E <_keepalive_sub>` applies as before (K-line profiles
