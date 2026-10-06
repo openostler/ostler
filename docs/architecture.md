@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.7
+version: 1.8
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -50,6 +50,7 @@ layer's interface, and each layer is unit-tested in isolation.
 ```
 Transport      transport/base.py: raw bytes in/out (SerialTransport, LoggingTransport)
 K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, echo, retries)
+               + kline/profiles.py (protocols as data) + detect.py, keywords.py, frame_iso9141.py
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 VehiclePack    pack.py: the contract + loader (entry-point group "openostler.vehicle");
@@ -109,6 +110,19 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - `_INLINE_COMMANDS` (CSV start/stop, fault-watch) run on the HTTP thread.
   - Everything that touches the K-line is queued for the poll thread. Queued commands can
     wait out a ~20 s reconnect, which is longer than the 8 s HTTP timeout.
+- **K-line profiles and detection (ADR-0022,
+  [spec](../specs/2026-10-06-kline-profiles-detection-design.md)).**
+  - A `KLineProfile` (`kline/profiles.py`) is the protocol as data; packs override it via
+    `ModuleSpec.kline`. `KLine.from_profile`/`KWP2000.from_profile` build a link from it;
+    the legacy constructors are unchanged (the D2 pack still uses them).
+  - `kline.detect.detect()` is a probe (fast init, then 5-baud `0x33`). Probes, and
+    `module_scan` sweeps, run only through the queued server commands `detect_protocol`
+    and `module_scan`, behind the Parked gate in `web/kline_cmds.py` (until U2:
+    `--kline-detect`, `params.confirm_parked`, no motion). Re-init of a known profile is
+    never gated.
+  - `web/kline_source.py::KLineLinkSource` is the generic link source: `needs-detect`
+    without a profile, keep-alive via `tick()`, and the detected profile remembered per
+    `vid` in `<state dir>/kline_profiles.json`. Snapshots carry `link` (null without one).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -214,3 +228,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   vehicle id, index schema 3 and `schemas/`.
 - 2026-10-06 — API consistency: one error envelope and status table, query strings on
   every route, `timefmt`, GeoJSON traces (specs/2026-10-06-api-consistency-design.md).
+- 2026-10-06 — K-line profiles and detection (ADR-0022): `kline/profiles.py`, `detect()`,
+  ISO 9141-2 framing, session hygiene, the Parked gate and the snapshot `link`.

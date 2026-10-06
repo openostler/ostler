@@ -28,10 +28,12 @@ import importlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Mapping, Optional, Tuple
 
 if TYPE_CHECKING:  # pragma: no cover
     from .commands import Command
+    from .kline.profiles import KLineProfile
 
 PACK_API_VERSION = 1
 ENTRY_POINT_GROUP = "openostler.vehicle"
@@ -63,6 +65,20 @@ class ModuleSpec:
     aliases: Tuple[str, ...] = ()               # legacy ids accepted on read ("motor")
     live: bool = True                           # False → an InfoDataSource (no live reader)
     fault_label: str = ""                       # faultscan row label ("TD5")
+    # K-line profile overrides (spec K-line profiles §1): any KLineProfile field, a nested
+    # "timing" mapping, or "base" naming another built-in. Empty → the built-in for
+    # ``init``. The future pack manifest's ``transport`` block carries the same keys.
+    kline: Mapping[str, Any] = field(default_factory=lambda: MappingProxyType({}),
+                                     hash=False, compare=False)
+
+    def kline_profile(self) -> "KLineProfile | None":
+        """This module's K-line profile: the base from ``init`` (``fast`` →
+        ``kwp2000_fast``, ``slow`` → ``kwp2000_slow``, ``none`` → no profile),
+        ``init_address``/``target`` from ``address``, then :attr:`kline`; named after
+        the module id. Raises ValueError for an invalid override."""
+        from .kline.profiles import profile_for_module
+
+        return profile_for_module(self.id, self.address, self.init, self.kline)
 
 
 @dataclass(frozen=True)

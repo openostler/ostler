@@ -14,7 +14,10 @@ handles both formats automatically (reads the address bits of the format byte).
 """
 from __future__ import annotations
 
+import inspect
 import time
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, Optional
 
 from ..transport.base import Transport
 from .frame import (
@@ -26,6 +29,10 @@ from .frame import (
     decode,
     encode,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .frame_iso9141 import Iso9141Frame
+    from .profiles import KLineProfile
 
 DEFAULT_START_COMMUNICATION = b"\x81"
 
@@ -64,6 +71,46 @@ class KLineTimeout(KLineError):
     pass
 
 
+class SlowInitUnconfirmed(KLineTimeout):
+    """A 5-baud init got ``55 KW1 KW2`` but no (or a wrong) inverted address: a failed
+    init, never a guess (``confirm_address="require"``)."""
+
+
+@dataclass(frozen=True)
+class SlowInitReply:
+    """A parsed 5-baud init reply (spec §5)."""
+
+    kw1: int
+    kw2: int
+    inverted_address: Optional[int]   # the byte read as ~address, or None when missing
+    confirmed: bool                   # inverted_address == ~address
+
+
+def parse_slow_init_reply(raw: bytes, address: int) -> "SlowInitReply | None":
+    """``55 KW1 KW2 [~KW2 echo] ~address`` → :class:`SlowInitReply`; None without ``55``.
+
+    The ``~address`` is accepted with or without the half-duplex ``~KW2`` echo in front of
+    it. An echo alone, a missing byte or any other value is ``confirmed=False``. Pure."""
+    raw = bytes(raw)
+    i = raw.find(0x55)
+    if i < 0 or len(raw) < i + 3:
+        return None
+    kw1, kw2 = raw[i + 1], raw[i + 2]
+    rest = raw[i + 3:]
+    inv_addr = (~address) & 0xFF
+    inv_kw2 = (~kw2) & 0xFF
+    cand: "int | None"
+    if len(rest) >= 2 and rest[0] == inv_kw2:
+        cand = rest[1]                      # echo, then the ECU's ~address
+    elif len(rest) == 1 and rest[0] == inv_kw2 and inv_kw2 != inv_addr:
+        cand = None                         # our echo only: the ECU never confirmed
+    elif rest:
+        cand = rest[0]                      # no echo (a bridge that strips it)
+    else:
+        cand = None
+    return SlowInitReply(kw1, kw2, cand, cand == inv_addr)
+
+
 class KLine:
     def __init__(
         self,
@@ -76,6 +123,11 @@ class KLine:
         init_low: float = _FAST_INIT_LOW,
         init_high: float = _FAST_INIT_HIGH,
         init_idle: float = 0.0,
+        *,
+        p3_min: float = 0.0,
+        clock: "Callable[[], float] | None" = None,
+        sleep: "Callable[[float], None] | None" = None,
+        on_event: "Callable[..., None] | None" = None,
     ) -> None:
         self._t = transport
         self._target = target
@@ -100,6 +152,87 @@ class KLine:
         self.init_idle = init_idle
         self.last_pulse: "dict" = {}
         self._rxbuf = bytearray()  # leftover bytes between frames (resync)
+        # ---- profile + session hygiene (spec K-line profiles §4) ---------- #
+        # The profile this link was built from (KLine.from_profile), or None for the legacy
+        # constructor, whose behaviour is unchanged: no P3 guard, no abandoned-session idle.
+        self.profile: "KLineProfile | None" = None
+        # P3min: the wait from the end of a reply to our next request. 0.0 = off.
+        self.p3_min = p3_min
+        self._clock = clock          # None → time.monotonic, looked up at call time
+        self._sleeper = sleep        # None → time.sleep, looked up at call time
+        self.on_event = on_event     # on_event(kind, **fields) → the connection log
+        self.last_tx: "float | None" = None       # clock time our last frame went out
+        self.last_rx_end: "float | None" = None   # clock time the last reply byte came in
+        # A link opened by an init and not ended by a confirmed C2 is *abandoned*: the
+        # next init waits the profile's abandoned idle (P3max) since last_tx.
+        self.abandoned = False
+        self.last_burst: bytes = b""              # the raw burst of the last converse()
+
+    @classmethod
+    def from_profile(cls, transport: Transport, profile: "KLineProfile",
+                     **kwargs) -> "KLine":
+        """A KLine whose addresses, timing, init pulse and idles come from ``profile``.
+        Explicit ``kwargs`` win over the profile's values."""
+        t = profile.timing
+        args = dict(target=profile.target, source=profile.source, timeout=t.reply_timeout,
+                    write_gap=t.p4, init_low=profile.init_low, init_high=profile.init_high,
+                    init_idle=profile.idle_before_init, p3_min=t.p3_min)
+        args.update(kwargs)
+        k = cls(transport, **args)
+        k.profile = profile
+        return k
+
+    def use_profile(self, profile: "KLineProfile") -> None:
+        """Switch this link to ``profile`` (after detection classified the ECU), keeping
+        its bus state (``last_tx``, ``abandoned``)."""
+        t = profile.timing
+        self.profile = profile
+        self._target, self._source = profile.target, profile.source
+        self._timeout = t.reply_timeout
+        self.write_gap = t.p4
+        self.init_low, self.init_high = profile.init_low, profile.init_high
+        self.init_idle = profile.idle_before_init
+        self.p3_min = t.p3_min
+
+    # ---- clock, events ------------------------------------------------- #
+    def now(self) -> float:
+        return self._clock() if self._clock is not None else time.monotonic()
+
+    def _sleep(self, seconds: float) -> None:
+        if seconds <= 0:
+            return
+        (self._sleeper or time.sleep)(seconds)
+
+    def emit(self, kind: str, **fields) -> None:
+        """Report a link event (``listen``, ``fast-init``, ``5baud``, ``keepalive`` …) to
+        ``on_event``. Never raises."""
+        if self.on_event is None:
+            return
+        try:
+            self.on_event(kind, **fields)
+        except Exception:  # noqa: BLE001 — a log hook must never break the link
+            pass
+
+    def mark_released(self, confirmed: bool) -> None:
+        """The session ended: with a confirmed ``C2`` only W5 applies before the next
+        init; otherwise it stays abandoned (P3max since ``last_tx``)."""
+        self.abandoned = not confirmed
+
+    def _pre_init_idle(self) -> None:
+        """W5 (``init_idle``), or the abandoned idle when the last session was abandoned
+        (profile links only). The legacy constructor keeps its plain ``init_idle`` sleep."""
+        if self.profile is None:
+            if self.init_idle:
+                time.sleep(self.init_idle)   # W5: let the bus stay quiet before the pulse
+            return
+        idle = self.init_idle
+        abandoned = self.abandoned and self.last_tx is not None
+        if abandoned:
+            assert self.last_tx is not None
+            idle = max(idle, self.last_tx + self.profile.idle_after_abandoned - self.now())
+        if idle > 0:
+            self._sleep(idle)
+        self.emit("idle", seconds=round(max(idle, 0.0), 3), abandoned=abandoned)
 
     # ---- lifecycle ---------------------------------------------------- #
     def open(self) -> None:
@@ -122,8 +255,7 @@ class KLine:
         Measures what ACTUALLY happened (``last_pulse``) — nominal values say nothing
         about a USB serial port where the driver and OS add their own delay.
         """
-        if self.init_idle:
-            time.sleep(self.init_idle)   # W5: let the bus stay quiet before the pulse
+        self._pre_init_idle()
         t0 = time.perf_counter()
         self._flush_input()
         # Deterministic low pulse: prefer baud drop (0x00 @ ~360 baud) over an
@@ -155,13 +287,16 @@ class KLine:
         self._fast_init_pulse()
         # No retry: StartCommunication must be sent ONCE. If it succeeds the session
         # opens; a retransmit is then rejected (generalReject "already in session").
-        return self.request(start_communication, addressed=True, retries=0)
+        data = self.request(start_communication, addressed=True, retries=0)
+        self.abandoned = True   # a link is open until a confirmed C2
+        return data
 
     def fast_init_tolerant(
         self,
         start_communication: bytes = DEFAULT_START_COMMUNICATION,
         functional: bool = False,
         source: "int | None" = None,
+        target: "int | None" = None,
     ) -> bytes:
         """Fast init with tolerant burst reading: search for 0xC1 in the whole reply burst.
 
@@ -173,11 +308,12 @@ class KLine:
         """
         self._fast_init_pulse()
         t_send = time.perf_counter()
-        frame = encode(start_communication, self._target,
+        frame = encode(start_communication, self._target if target is None else target,
                        self._source if source is None else source,
                        addressed=True, functional=functional)
+        conv_kw = {} if target is None else {"target": target}
         raw = self.converse(start_communication, addressed=True,
-                            functional=functional, source=source)
+                            functional=functional, source=source, **conv_kw)
         # to_frame_ms = the time from the end of the pulse until the send ACTUALLY started.
         # (An earlier attempt subtracted send_ms from the whole converse() and therefore measured
         # the burst read — hence the absurd 130–170 ms.)
@@ -199,12 +335,15 @@ class KLine:
         else:
             search, offset = raw, 0   # a physical echo (0x8n) contains no 0xC1
         j = search.find(0xC1)
+        self.emit("fast-init", frame=frame.hex(" "), burst=raw.hex(" "),
+                  ok=j >= 0, last_pulse=dict(self.last_pulse))
         if j < 0:
             # Be explicit that the echo is skipped: a functional frame BEGINS with 0xC1,
             # so "no C1 in the burst" read wrong against a burst that appears to start with c1.
             raise KLineTimeout(
                 f"no response after the echo (echo {frame.hex(' ')}, "
                 f"burst {raw.hex(' ') or 'empty'})")
+        self.abandoned = True   # a link is open until a confirmed C2
         return raw[offset + j:]
 
     def slow_init(self, address: int) -> "tuple[int, int]":
@@ -226,12 +365,74 @@ class KLine:
             )
         return kw
 
+    def slow_init_reply(self, address: "int | None" = None) -> SlowInitReply:
+        """5-baud init with the full reply (spec §5): ``55 KW1 KW2`` plus the ``~address``.
+
+        Address, address parity, W4 and the read window come from the profile when there
+        is one. Raises :class:`KLineTimeout` when no ``55`` came back (no ECU), and
+        :class:`SlowInitUnconfirmed` when the ``~address`` is missing or wrong and the
+        profile says ``confirm_address="require"`` (the default without a profile too)."""
+        slow = getattr(self._t, "slow_init", None)
+        if slow is None:
+            raise KLineError("transport lacks slow_init()")
+        p = self.profile
+        if address is None:
+            address = p.init_address if p is not None else self._target
+        self._pre_init_idle()
+        self._flush_input()
+        kwargs: dict = {}
+        if p is not None:
+            t = p.timing
+            kwargs = {"w4": t.w4, "read_timeout": max(0.5, t.w1_max + t.w2_max + t.w3_max)}
+            if p.init_address_parity != "none":
+                kwargs["parity"] = p.init_address_parity
+        raw = slow(address, **_accepted(slow, kwargs))
+        self.last_tx = self.now()
+        reply = parse_slow_init_reply(raw, address)
+        self.emit("5baud", address=f"0x{address:02X}", raw=bytes(raw).hex(" "),
+                  key_bytes=None if reply is None else f"{reply.kw1:02X} {reply.kw2:02X}",
+                  inverted_address=(None if reply is None or reply.inverted_address is None
+                                    else f"0x{reply.inverted_address:02X}"),
+                  confirmed=bool(reply and reply.confirmed))
+        if reply is None:
+            raise KLineTimeout(
+                f"no slow-init response on 0x{address:02X}: {bytes(raw).hex(' ') or 'empty'}")
+        self.last_rx_end = self.now()
+        require = p is None or p.confirm_address == "require"
+        if require and not reply.confirmed:
+            raise SlowInitUnconfirmed(
+                f"5-baud 0x{address:02X}: no valid inverted address (want "
+                f"0x{(~address) & 0xFF:02X}, raw {bytes(raw).hex(' ')})")
+        self.abandoned = True   # a link is open until a confirmed C2 (ISO 9141: always)
+        return reply
+
+    # ---- ISO 9141-2 (spec §3) ------------------------------------------ #
+    def request_iso9141(self, data: bytes) -> "list[Iso9141Frame]":
+        """Send one ISO 9141-2 request (``68 6A F1 … cs``) and return the verified reply
+        frames (one per ECU frame). Reads the burst with a P1max-based gap plus margin."""
+        from .frame_iso9141 import REQUEST_HEADER, split
+        from .frame_iso9141 import encode as encode_9141
+
+        p = self.profile
+        header = p.iso9141_header if p is not None else REQUEST_HEADER
+        frame = encode_9141(data, header)
+        gap = (p.timing.p1_max if p is not None else 0.020) + 0.040
+        overall = p.timing.reply_timeout if p is not None else self._timeout
+        self._flush_input()
+        self._send(frame)
+        raw = self._burst_read(gap, overall)
+        self.last_burst = raw
+        return split(raw, sent=frame,
+                     on_drop=lambda seg: self.emit("iso9141-drop", bytes=seg.hex(" ")))
+
     # ---- request/response --------------------------------------------- #
-    def request(self, data: bytes, retries: int = 2, addressed: bool = False) -> bytes:
+    def request(self, data: bytes, retries: int = 2, addressed: bool = False,
+                functional: bool = False) -> bytes:
         """Send a data field, return the reply's data field. Retries on
         timeout or a broken frame. Session traffic is unaddressed (``addressed=False``);
         fast init uses ``addressed=True``."""
-        frame = encode(data, self._target, self._source, addressed=addressed)
+        frame = encode(data, self._target, self._source, addressed=addressed,
+                       functional=functional)
         last: Exception | None = None
         for _ in range(retries + 1):
             self._flush_input()
@@ -254,6 +455,7 @@ class KLine:
         overall: float = 1.0,
         functional: bool = False,
         source: "int | None" = None,
+        target: "int | None" = None,
     ) -> bytes:
         """Send a data field and read the WHOLE reply burst raw (echo + reply +
         any glitch bytes) — without checksum rejection.
@@ -262,37 +464,47 @@ class KLine:
         searches the burst for the expected reply byte itself. Intended for cheap KKL cables
         where the turnaround glitch shreds individual frames but the right byte is still present.
         """
-        frame = encode(data, self._target, self._source if source is None else source,
+        frame = encode(data, self._target if target is None else target,
+                       self._source if source is None else source,
                        addressed=addressed, functional=functional)
         self._flush_input()
         self._send(frame)
-        return self._burst_read(gap, overall)
+        raw = self._burst_read(gap, overall)
+        self.last_burst = raw
+        return raw
 
     def _burst_read(self, gap: float, overall: float) -> bytes:
         """Collect bytes until it goes quiet for ``gap`` s (inter-byte gap), but at most
         ``overall`` s total. muki01 style: read the whole burst, then interpret it."""
         buf = bytearray()
-        start = time.monotonic()
+        start = self.now()
         got = False
-        while time.monotonic() - start < overall:
+        while self.now() - start < overall:
             chunk = self._t.receive(64, timeout=gap)
             if chunk:
                 buf += chunk
                 got = True
+                self.last_rx_end = self.now()
             elif got:
                 break  # silence after data → the burst is done
             else:
-                time.sleep(0.002)  # still waiting for the first byte
+                self._sleep(0.002)  # still waiting for the first byte
         return bytes(buf)
 
     def _send(self, frame: bytes) -> None:
         """Send a frame, with a P4 gap between bytes if ``write_gap`` is set."""
+        if self.p3_min > 0 and self.last_rx_end is not None:
+            # P3min: never start a request sooner than p3_min after the last reply byte.
+            wait = self.last_rx_end + self.p3_min - self.now()
+            if wait > 0:
+                self._sleep(wait)
         t0 = time.perf_counter()
         self._last_send_start = t0
         try:
             self._send_inner(frame)
         finally:
             self._last_send_ms = round((time.perf_counter() - t0) * 1000, 1)
+            self.last_tx = self.now()
 
     def _send_inner(self, frame: bytes) -> None:
         if self.write_gap <= 0:
@@ -326,6 +538,7 @@ class KLine:
             chunk = self._t.receive(64, timeout=remaining)
             if chunk:
                 self._rxbuf += chunk
+                self.last_rx_end = self.now()
             else:
                 time.sleep(0.001)
 
@@ -365,3 +578,17 @@ class KLine:
         flush = getattr(self._t, "reset_input_buffer", None)
         if flush is not None:
             flush()
+
+
+def _accepted(fn, kwargs: dict) -> dict:
+    """The subset of ``kwargs`` that ``fn`` accepts (transports differ: the ESP bridge and
+    the test fakes take only the address)."""
+    if not kwargs:
+        return {}
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return {}
+    if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in params.values()):
+        return dict(kwargs)
+    return {k: v for k, v in kwargs.items() if k in params}

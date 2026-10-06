@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/kline-profile.schema.json",
+  "title": "K-line profile overrides",
+  "description": "A pack module's K-line profile overrides (ModuleSpec.kline), and the transport block of the future pack manifest, which carries the same keys (spec 2026-10-06 K-line profiles \u00a71, ADR-0022). Every key is optional and overrides the built-in named by base (default: the one for the module's init). Byte strings are hex (\"3E 01\"); times are seconds. A 5-baud address parity other than none needs evidence (a car result). The platform re-checks the cross-field rules at pack load (openostler.kline.profiles.resolve).",
+  "type": "object",
+  "properties": {
+    "base": {
+      "enum": [
+        "iso9141_2",
+        "kwp2000_slow",
+        "kwp2000_fast"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "framing": {
+      "enum": [
+        "iso9141",
+        "kwp2000"
+      ]
+    },
+    "init": {
+      "enum": [
+        "fast",
+        "5baud",
+        "none"
+      ]
+    },
+    "init_address": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "init_address_parity": {
+      "enum": [
+        "none",
+        "odd",
+        "even"
+      ]
+    },
+    "init_functional": {
+      "type": "boolean"
+    },
+    "target": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "source": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "baud": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "parity": {
+      "enum": [
+        "N",
+        "E",
+        "O"
+      ]
+    },
+    "header": {
+      "enum": [
+        "auto",
+        "none",
+        "physical",
+        "functional",
+        "iso9141"
+      ]
+    },
+    "length": {
+      "enum": [
+        "auto",
+        "format",
+        "separate",
+        "none"
+      ]
+    },
+    "iso9141_header": {
+      "type": "string",
+      "pattern": "^([0-9A-Fa-f]{2})( ?[0-9A-Fa-f]{2})*$"
+    },
+    "checksum": {
+      "enum": [
+        "sum8",
+        "xor",
+        "twos_complement"
+      ]
+    },
+    "timing": {
+      "type": "object",
+      "properties": {
+        "p1_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p2_min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p2_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p3_min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p3_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p4": {
+          "type": "number",
+          "minimum": 0
+        },
+        "w1_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "w2_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "w3_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "w4": {
+          "type": "number",
+          "minimum": 0
+        },
+        "w5": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reply_timeout": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "timing_set": {
+      "enum": [
+        "normal",
+        "extended"
+      ]
+    },
+    "init_low": {
+      "type": "number",
+      "minimum": 0
+    },
+    "init_high": {
+      "type": "number",
+      "minimum": 0
+    },
+    "pre_init_idle": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "abandoned_idle": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "keepalive": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^([0-9A-Fa-f]{2})( ?[0-9A-Fa-f]{2})*$"
+        }
+      ]
+    },
+    "keepalive_interval": {
+      "type": "number",
+      "minimum": 0
+    },
+    "release": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^([0-9A-Fa-f]{2})( ?[0-9A-Fa-f]{2})*$"
+        }
+      ]
+    },
+    "confirm_address": {
+      "enum": [
+        "require",
+        "report"
+      ]
+    },
+    "tolerant": {
+      "type": "boolean"
+    },
+    "evidence": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "init_address_parity": {
+        "enum": [
+          "odd",
+          "even"
+        ]
+      }
+    },
+    "required": [
+      "init_address_parity"
+    ]
+  },
+  "then": {
+    "required": [
+      "evidence"
+    ],
+    "properties": {
+      "evidence": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -215,6 +215,16 @@ paths:
           `split_session`;
         - server (queued on the poll thread): `select_module {module}`, `read_all_faults`
           (45 s timeout), `connect`, `disconnect`, `set_port {port}`;
+        - probes of an unknown car (queued, 45 s timeout), **Parked only**:
+          `detect_protocol {confirm_parked}` (K-line auto-detection for a source with no
+          profile; the reply carries `outcome`: ok, bus-busy, ecu-refused, init-failed or
+          no-ecu, and the detected `link`) and `module_scan {confirm_parked, fast?, slow?}`
+          (a read-only fast and 5-baud init sweep; the reply carries `scan`). Until the
+          driving state (U2) exists both are refused (400, "probing an unknown car is
+          allowed only when Parked") unless the server runs with `--kline-detect`,
+          `params.confirm_parked` is `true` and nothing shows motion (a GPS fix at 3 km/h
+          or more, or a speed signal above 0). Re-initialising a known profile is never
+          gated;
         - generic source commands: `clear_faults`, `read_block`;
         - a module action from the pack's command registry (see `/catalog` actions), with
           optional `params.trust` for typed confirmation.
@@ -1576,7 +1586,7 @@ components:
       description: The live state, pushed over `/events` every poll and returned by `/snapshot`.
       required: [status]
       properties:
-        status: {type: string, description: "connected | connecting | error | no-cable"}
+        status: {type: string, description: "connected | connecting | error | no-cable | needs-detect (a K-line source with no profile: nothing is sent until a Parked detect_protocol)"}
         source: {type: string}
         module: {type: string, description: A canonical module id (a /pack module id).}
         mode: {type: [string, "null"]}
@@ -1619,7 +1629,31 @@ components:
           oneOf:
             - {type: "null"}
             - {$ref: "#/components/schemas/RecordingSources"}
+        link:
+          description: The active source's K-line link; null when it has none to report.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/KLineLink"}
       additionalProperties: true
+    KLineLink:
+      type: object
+      description: >
+        A K-line link (spec K-line profiles §6): the profile in use, how it was found and
+        the ECU's key bytes. Never carries a VIN.
+      required: [bus, profile, protocol, init, origin, address, key_bytes, timing, since]
+      properties:
+        bus: {type: string, enum: [kline]}
+        profile: {type: string, description: "A built-in (iso9141_2, kwp2000_slow, kwp2000_fast) or a pack module's profile name."}
+        protocol: {type: string, enum: [kwp2000, iso9141_2]}
+        init: {type: string, enum: [fast, 5baud, none]}
+        origin: {type: string, enum: [pack, detected, remembered, override]}
+        address: {type: string, pattern: "^0x[0-9a-f]{2}$"}
+        key_bytes: {type: [string, "null"], description: "The init key bytes, e.g. \"E9 8F\"."}
+        timing: {type: [string, "null"], enum: [normal, extended, null]}
+        since:
+          type: [number, "null"]
+          description: Epoch seconds the link came up.
+      additionalProperties: false
 
     # ---- commands ----
     CommandRequest:
@@ -1661,6 +1695,30 @@ components:
           items: {$ref: "#/components/schemas/FaultScanEntry"}
         shutting_down: {type: boolean}
         options: {type: object, additionalProperties: true}
+        outcome:
+          type: string
+          enum: [ok, bus-busy, ecu-refused, init-failed, no-ecu]
+          description: "`detect_protocol`: how detection ended."
+        link:
+          description: "`detect_protocol`: the detected K-line link."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/KLineLink"}
+        scan:
+          type: array
+          description: "`module_scan`: one row per probed address."
+          items: {$ref: "#/components/schemas/ModuleScanRow"}
+      additionalProperties: true
+    ModuleScanRow:
+      type: object
+      required: [address, init, module, status]
+      properties:
+        address: {type: string, description: "\"0x29\""}
+        init: {type: string, enum: [fast, slow]}
+        module: {type: string, description: "The pack's name for the address, or unknown:0xNN."}
+        status: {type: string, enum: [responded, silent]}
+        keybytes: {type: string}
+        error: {type: string}
       additionalProperties: true
 
     # ---- metadata ----

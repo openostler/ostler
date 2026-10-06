@@ -68,6 +68,18 @@ class KWP2000:
         # message, not just fast init. Airbag (TRW SPS, 0x5B) runs like that — unlike
         # Td5/SLABS which switch to unaddressed session frames.
         self._addressed = addressed
+        # functional=True: addressed session frames use the functional mode (0xCn), the
+        # OBD convention for a KWP2000 ECU whose key bytes say HB1 (spec K-line profiles §2).
+        self._functional = False
+
+    @classmethod
+    def from_profile(cls, kline: KLine, profile, max_pending: int = 6) -> "KWP2000":
+        """A KWP2000 whose ``tolerant``/``addressed`` (and functional mode) come from a
+        :class:`~openostler.kline.profiles.KLineProfile`'s ``tolerant`` and ``header``."""
+        kwp = cls(kline, max_pending=max_pending, tolerant=profile.tolerant,
+                  addressed=profile.addressed)
+        kwp._functional = profile.header == "functional"
+        return kwp
 
     # ---- lifecycle (delegated downward) ------------------------------- #
     def open(self) -> None:
@@ -96,6 +108,8 @@ class KWP2000:
             resp = self._request_tolerant(service, payload, overall, gap)
         else:
             kw = {} if retries is None else {"retries": retries}
+            if self._functional:
+                kw["functional"] = True
             resp = self._resolve_pending(
                 self._k.request(bytes([service]) + payload, addressed=self._addressed, **kw))
         if not resp:
@@ -122,6 +136,8 @@ class KWP2000:
             kw["overall"] = overall
         if gap is not None:
             kw["gap"] = gap
+        if self._functional:
+            kw["functional"] = True
         raw = self._k.converse(bytes([service]) + payload, addressed=self._addressed, **kw)
         return self._extract_response(raw, service, payload)
 
@@ -189,13 +205,18 @@ class KWP2000:
     # ---- services ----------------------------------------------------- #
     def start_communication(self, tolerant: "bool | None" = None,
                             functional: bool = False,
-                            source: "int | None" = None) -> bytes:
+                            source: "int | None" = None,
+                            target: "int | None" = None) -> bytes:
         """Fast init / StartCommunication. Returns the reply's data field (C1 …).
 
         ``tolerant`` controls burst vs strict reading; ``None`` follows the KWP2000's
-        own mode (set in the constructor)."""
+        own mode (set in the constructor). ``target`` addresses the init frame when it
+        differs from the session target (a profile's ``init_address``)."""
         use_tolerant = self._tolerant if tolerant is None else tolerant
         if use_tolerant:
+            if target is not None:
+                return self._k.fast_init_tolerant(functional=functional, source=source,
+                                                  target=target)
             return self._k.fast_init_tolerant(functional=functional, source=source)
         return self._k.fast_init()
 

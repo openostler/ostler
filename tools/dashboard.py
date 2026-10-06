@@ -142,6 +142,13 @@ def main() -> int:
     ap.add_argument("--tls-cert", help="serve HTTPS with this certificate (PEM); needs "
                                        "--tls-key. The phone mic and motion sensors need HTTPS")
     ap.add_argument("--tls-key", help="private key (PEM) for --tls-cert")
+    ap.add_argument("--kline-detect", action="store_true",
+                    help="allow K-line protocol detection and module-scan sweeps (probing an "
+                         "unknown car), each only with a 'Vehicle parked?' confirmation and "
+                         "no sign of motion; interim until the driving state (U2)")
+    ap.add_argument("--kline-profile", metavar="NAME", default=None,
+                    help="use this built-in K-line profile (iso9141_2, kwp2000_slow, "
+                         "kwp2000_fast) for sources without a pack profile, for this process")
     args = ap.parse_args()
     if args.public and not args.admin_password:
         print("--public needs an admin password (--admin-password or D2DIAG_ADMIN_PW): "
@@ -230,6 +237,7 @@ def main() -> int:
         allow_shutdown=args.allow_shutdown,
         gps=gps, sessions_dir=sessions_dir,
         audio=args.audio, imu=args.imu, geocoder=geocoder,
+        kline_detect=args.kline_detect, kline_profile=args.kline_profile,
     )
     scheme = "http"
     if args.tls_cert:

@@ -44,6 +44,30 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **K-line profiles and detection** (ADR-0022,
+  [spec](specs/2026-10-06-kline-profiles-detection-design.md), migration step 1).
+  `kline/profiles.py` makes K-line protocols data: a frozen `KLineProfile` (framing,
+  header and length modes, checksum, P1–P4 and W1–W5, idles, keep-alive, release, init
+  method) with the generic built-ins `iso9141_2`, `kwp2000_slow` and `kwp2000_fast`,
+  validated by `resolve()`; packs override through the new `ModuleSpec.kline` mapping
+  (`ModuleSpec.kline_profile()`), checked by `schemas/kline-profile.schema.json`.
+  `kline.detect.detect()` listens for W5, tries functional fast init, then 5-baud `0x33`
+  with a required inverted address, and classifies the key bytes (`kline/keywords.py`).
+  ISO 9141-2 framing (`kline/frame_iso9141.py`, `kline/iso9141.py`), P3min, keep-alive
+  (`EcuSession.keepalive_if_due()`, a server `source.tick()` between polls), release and
+  abandoned-session rules, `KLine.from_profile`/`KWP2000.from_profile`,
+  `KLine.slow_init_reply()` and `parse_slow_init_reply()`. A generic
+  `web/kline_source.py::KLineLinkSource` reports `needs-detect` without a profile and
+  remembers a detected profile per `vid` (`<state dir>/kline_profiles.json`, never a VIN).
+  Existing constructors are unchanged, so the D2 pack runs as before.
+- **Probing is Parked-only.** New queued commands `detect_protocol` and `module_scan` are
+  refused unless the server runs with `--kline-detect`, the request carries
+  `params.confirm_parked: true` and nothing shows motion (interim until U2);
+  `--kline-profile NAME` overrides the profile for the process; `tools/module_scan.py`
+  refuses to start without `--confirm-parked` or a "yes" at its prompt.
+- The snapshot gains `link` (the K-line link: profile, protocol, init, origin, address,
+  key bytes, timing, since; null when a source has none) and the status `needs-detect`
+  (OpenAPI `KLineLink`, Zod `KLineLink`, fixture `snapshot-kline.json`).
 - U0 repo hygiene (standards research §8.1 items 7–13, ADR-0017):
   - REUSE 3.3 compliance: `LICENSES/` with the canonical licence texts, `REUSE.toml`
     for docs, data, generated and binary files, and SPDX headers on source files;

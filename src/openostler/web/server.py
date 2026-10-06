@@ -42,6 +42,7 @@ from ..pack import active_pack, canonical_module
 from ..ports import list_serial_ports, resolve_serial_port
 from ..timefmt import rfc3339_utc
 from .docs import DocLibrary
+from .kline_cmds import PROBE_COMMANDS, KLineCommandsMixin
 from .sources import DataSource
 
 
@@ -738,7 +739,8 @@ class _Handler(BaseHTTPRequestHandler):
         srv = self.server
         # The basic-mode scan is sequential over several modules (slow init
         # for airbag) → give it plenty of time; other commands are fast.
-        timeout = srv.scan_timeout if cmd.get("action") == "read_all_faults" \
+        timeout = srv.scan_timeout if cmd.get("action") in ("read_all_faults", "detect_protocol",
+                                                            "module_scan") \
             else srv.command_timeout
         return srv.enqueue_command(cmd, timeout=timeout)
 
@@ -1075,7 +1077,7 @@ _INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutd
 # Server-level commands handled on the poll thread (they release/establish sessions or
 # switch sources). Not module commands: the registry gate does not apply to them.
 _SERVER_COMMANDS = frozenset({"select_module", "read_all_faults",
-                              "connect", "disconnect", "set_port"})
+                              "connect", "disconnect", "set_port"}) | PROBE_COMMANDS
 # Generic per-source commands every module offers (not in the command registry).
 _GENERIC_SOURCE_COMMANDS = frozenset({"clear_faults", "read_block"})
 # Prefixes of module-command families (``active_pack().module_command_prefixes``): an
@@ -1099,7 +1101,7 @@ class ConnectAborted(Exception):
     """Establishment aborted because a command is waiting (e.g. module switch)."""
 
 
-class DiagServer(ThreadingHTTPServer):
+class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
     # How long ``POST /command`` waits for the poll thread (seconds); past it the reply is
@@ -1138,6 +1140,10 @@ class DiagServer(ThreadingHTTPServer):
         geocoder: "str | None" = None,
         enricher=None,
         index_path: "str | None" = None,
+        kline_detect: bool = False,
+        kline_profile: "str | None" = None,
+        state_dir: "str | None" = None,
+        module_scan=None,
     ) -> None:
         if public and not admin_password:
             # Public mode is for a bind other people can reach; with no password every
@@ -1244,6 +1250,9 @@ class DiagServer(ThreadingHTTPServer):
         self._stop = threading.Event()
         self._commands: "queue.Queue" = queue.Queue()
         self._poller = threading.Thread(target=self._poll_loop, daemon=True)
+        # K-line probing gate, process override and remembered profiles (kline_cmds.py).
+        self._init_kline(kline_detect=kline_detect, kline_profile=kline_profile,
+                         state_dir=state_dir, module_scan=module_scan)
 
     # ---- session logbook --------------------------------------------- #
     def _init_logbook(self, record: bool) -> None:
@@ -2376,6 +2385,9 @@ class DiagServer(ThreadingHTTPServer):
         """
         from .. import commands
 
+        if action in PROBE_COMMANDS:
+            # Probing an unknown car (detection, an init sweep) is Parked-only (spec §2).
+            return self._probe_refusal(params), None
         if action in _SERVER_COMMANDS or action in _INLINE_COMMANDS:
             return None, None
         store = self.store_module()
@@ -2410,6 +2422,8 @@ class DiagServer(ThreadingHTTPServer):
         if status == "connected":
             self._ever_connected = True
             return "connected"
+        if status == "needs-detect":
+            return "disconnected"   # no profile: nothing is sent until a Parked detection
         if status == "connecting":
             if self._ever_connected:
                 return "reconnecting"
@@ -2460,6 +2474,7 @@ class DiagServer(ThreadingHTTPServer):
         snap["gps"] = self._gps_snapshot()
         snap["recording"] = self._recording_status()
         snap["recording_sources"] = self.recording_sources()
+        snap["link"] = self._kline_link_for(snap)
         return snap
 
     # ---- latched tests ------------------------------------------------- #
@@ -2629,6 +2644,10 @@ class DiagServer(ThreadingHTTPServer):
                     holder["result"] = self._select(params.get("module") or cmd.get("module"))
                 elif action == "read_all_faults":
                     holder["result"] = self._read_all_faults()
+                elif action == "detect_protocol":
+                    holder["result"] = self._detect_protocol(cmd.get("params") or {})
+                elif action == "module_scan":
+                    holder["result"] = self._run_module_scan(cmd.get("params") or {})
                 elif action == "disconnect":
                     holder["result"] = self._disconnect()
                 elif action == "connect":
@@ -2720,6 +2739,7 @@ class DiagServer(ThreadingHTTPServer):
             if self._paused:
                 self._stop.wait(self.poll_interval)
                 continue
+            self._tick_source()  # a due keep-alive between polls (K-line link sources)
             if self.logger is not None:
                 try:
                     self.logger.log(self.latest)

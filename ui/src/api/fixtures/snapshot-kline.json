@@ -1,0 +1,48 @@
+{
+  "status": "connected",
+  "source": "td5",
+  "signals": {},
+  "faults": [],
+  "link": {
+    "bus": "kline",
+    "profile": "kwp2000_fast",
+    "protocol": "kwp2000",
+    "init": "fast",
+    "origin": "pack",
+    "address": "0x33",
+    "key_bytes": "E9 8F",
+    "timing": "extended",
+    "since": 1790000000.0
+  },
+  "module": "td5",
+  "logging": {
+    "recording": false
+  },
+  "public": false,
+  "fault_watch": false,
+  "allow_shutdown": false,
+  "conn": "connected",
+  "ts": 1791261789.531132,
+  "ts_utc": "2026-10-06T04:43:09.531Z",
+  "battery_v": null,
+  "port": {
+    "spec": "auto",
+    "resolved": null,
+    "candidates": []
+  },
+  "active_test": null,
+  "gps": null,
+  "recording": null,
+  "recording_sources": {
+    "gps": "none",
+    "pi_audio": {
+      "state": "unavailable",
+      "reason": "Pi audio is off (start with --audio pi)"
+    },
+    "imu": {
+      "state": "unavailable",
+      "reason": "no IMU configured (start with --imu auto)"
+    },
+    "accel_hz": 25
+  }
+}

@@ -2,7 +2,7 @@
 title: "K-line profiles and detection — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/obd2_kline_reader.md, references/research/muki01/README.md, specs/2026-10-06-u0-seams-design.md, CONSTITUTION.md]
 summary: >
@@ -332,3 +332,14 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
 - 2026-10-06 — v0.2: approved by the owner. Interim pre-U2 gate confirmed; module-scan
   sweeps Parked-only; detected profile remembered per `vid` (`origin: "remembered"`);
   questions 3–5 stay open.
+- 2026-10-06 — v0.3: migration step 1 implemented in the platform. Implementation notes:
+  the generic source is `web/kline_source.py::KLineLinkSource`; the gate and the
+  remembered-profile wiring are in `web/kline_cmds.py`; the remembered entries are in
+  `<state dir>/kline_profiles.json`; the server command is `module_scan` (reply `scan`).
+  The module-scan gate sits at the entry points (the server command and
+  `tools/module_scan.py`), not inside `AddressScanner`, so the D2 pack's own copy of the
+  tool is unchanged until migration step 2. ISO 9141 bursts are read with a gap of
+  `p1_max` + 40 ms (so a second ECU's frame within P2max stays in the burst). The KB1
+  decode was re-checked against the ISO 14230-2 key-word layout (2000–2031); a KB1 with
+  neither HB bit set keeps the functional header, and with neither AL bit the format
+  length.

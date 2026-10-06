@@ -11,7 +11,8 @@ generators, …) live in the vehicle pack's repo (ADR-0015).
   `--replay pack` loops the active pack's demo sniff log.
 - `deploy.sh` — Pi deploy (mirrors the platform and a pack checkout, `PACK_DIR`).
 - `module_scan.py` — read-only K-line address scan (logic in `src/openostler/modscan.py`,
-  addresses from the pack's `SniffSpec`).
+  addresses from the pack's `SniffSpec`). A sweep is probing, so it is Parked-only: it
+  refuses to start without `--confirm-parked` or a "yes" at its prompt.
 - `esp32_read.py` — ESP32 sniffer reader with live markers.
 - `make_demo_session.py` — regenerates the pack's demo sessions (`pack.demo.generate`).
 - `build_meta.py` — stamps `BUILD_COMMIT`/`BUILD_TIME` into the Docker build (Settings → Version).

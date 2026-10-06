@@ -137,6 +137,28 @@ def _tmp_dir() -> str:
     return tempfile.mkdtemp(prefix="ostler-contract-")
 
 
+def _kline_snapshot(_base):
+    """A snapshot with a K-line ``link``: a generic link source on a fake KWP2000 ECU."""
+    from openostler.kline.profiles import BUILTIN
+    from openostler.web.kline_source import KLineLinkSource
+    from tests.fakes import FakeClock, FakeKLineEcu, kwp_fast_reply
+
+    ecu = FakeKLineEcu(fast_reply=kwp_fast_reply(0xE9, 0x8F))
+    clock = FakeClock()
+    src = KLineLinkSource("auto", name="td5", profile=BUILTIN["kwp2000_fast"], origin="pack",
+                          transport_factory=lambda port, profile: ecu, clock=clock,
+                          sleep=clock.sleep, wall=lambda: 1_790_000_000.0)
+    srv = DiagServer(host="127.0.0.1", port=0, source={"td5": src}, csv_dir=_tmp_dir(),
+                     record_sessions=False, geocoder=None)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        srv.poll_once()
+        return _get(f"http://127.0.0.1:{srv.server_address[1]}", "/snapshot")
+    finally:
+        srv.shutdown()
+        srv.server_close()
+
+
 def _queued(base):
     """A contribution while the endpoint is offline: 202 ``{ok: true, queued: true}``."""
     _post(base, "/community/consent", {"consent": True})
@@ -159,6 +181,7 @@ def _post(base, path, body):
 # name → how to obtain the response. Order matters only for CSV start before stop.
 CASES = {
     "snapshot": lambda b: _get(b, "/snapshot"),
+    "snapshot-kline": _kline_snapshot,
     "pack": lambda b: _get(b, "/pack"),
     "version": lambda b: _get(b, "/version"),
     "fields-td5": lambda b: _get(b, "/fields?module=td5"),

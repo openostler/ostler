@@ -68,13 +68,18 @@ def _raw_log_path(module: str, raw_log_dir: "str | None") -> "str | None":
     return os.path.join(raw_log_dir, f"raw-{module}-{stamp}.log")
 
 
-def _transport(port: str, raw_log_path: "str | None"):
+def _transport(port: str, raw_log_path: "str | None", profile=None):
     """SerialTransport, optionally wrapped in LoggingTransport for a raw TX/RX log.
 
     Lazy import so the package imports without pyserial. When raw logging is on,
-    LoggingTransport sits transparently under KLine and captures every byte both ways."""
+    LoggingTransport sits transparently under KLine and captures every byte both ways.
+    With a K-line ``profile`` the port opens at its baud and parity (today 10400 8N1)."""
     from ..transport import SerialTransport
-    inner = SerialTransport(port, timeout=1.0)
+    if profile is None:
+        inner = SerialTransport(port, timeout=1.0)
+    else:
+        inner = SerialTransport(port, baudrate=profile.baud, timeout=1.0,
+                                parity=profile.parity)
     if raw_log_path:
         from ..transport import LoggingTransport
         return LoggingTransport(inner, logfile=raw_log_path)
@@ -133,6 +138,13 @@ class DataSource(abc.ABC):
     def set_port(self, spec: str) -> None:
         """Use this serial port spec (``auto`` or a device path) from the next connect.
         Base: no port (info sources)."""
+
+    def kline_link(self) -> "dict | None":
+        """The snapshot ``link`` of this source's open K-line link (spec K-line profiles
+        §6): ``{bus, profile, protocol, init, origin, address, key_bytes, timing, since}``,
+        built with :func:`openostler.kline.detect.kline_link`. Base: None (no link to
+        report)."""
+        return None
 
     def menu_map(self) -> "list":
         """Reference/coverage map (reference tool menu + our status). Base: empty."""
