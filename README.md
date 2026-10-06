@@ -159,7 +159,7 @@ conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabula
 
 - The project was started by **leijoma**; their MIT-licensed work stays credited.
 - **K-line front-end** know-how (fast-init timing, burst reads, L9637D):
-  [muki01/OBD2_K-line_Reader](https://registry.platformio.org/libraries/muki01/OBD2%20K-Line) (MIT).
+  [muki01/OBD2_K-line_Reader](https://github.com/muki01/OBD2_K-line_Reader) (MIT snapshot; upstream GPL-3.0 since 2026-10-03).
 - **UI theme tokens:** [facebook/astryx](https://astryx.atmeta.com/) neutral theme (MIT),
   colour and spacing values only.
 - **Place names:** GeoNames `cities1000` (CC BY 4.0) and OpenStreetMap Nominatim (ODbL).

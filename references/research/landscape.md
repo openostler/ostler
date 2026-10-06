@@ -185,7 +185,7 @@ summary: >
 | [OBDII (PaulMarisOUMary)](https://github.com/PaulMarisOUMary/OBDII) | Modern ELM327 library | 🟢 MIT | L |
 | [ELMduino](https://github.com/PowerBroker2/ELMduino) · [arduino-OBD2](https://github.com/sandeepmistry/arduino-OBD2) | Arduino OBD | 🟢 MIT | L |
 | [iwanders/OBD9141](https://github.com/iwanders/OBD9141) | ISO 9141/14230 K-line, with good timing notes | 🟢 MIT | **P, L** |
-| [muki01 OBD2_K-line_Reader](https://github.com/muki01/OBD2_K-line_Reader) · [KLine lib](https://github.com/muki01/OBD2_KLine_Library) | ISO 9141, 14230, KW1281, DS2 | 🟢 MIT reader (THIRD_PARTY) / 🔴✓ lib | P |
+| [muki01 OBD2_K-line_Reader](https://github.com/muki01/OBD2_K-line_Reader) · [KLine lib](https://github.com/muki01/OBD2_KLine_Library) | ISO 9141, 14230, KW1281, DS2 | 🟢 reader MIT until `91ae045` (2026-10-01), 🔴✓ GPL-3.0 since 2026-10-03 / 🔴✗ lib (non-commercial headers; facts only) | P |
 | [freediag](https://github.com/fenugrec/freediag) | ISO 9141/14230/J1850 scan tool | 🔴✓ GPL-3 | P |
 | [AndrOBD](https://github.com/fr3ts0n/AndrOBD) | Android OBD with plugins and MQTT | 🔴✓ | U |
 | [obdium](https://github.com/provrb/obdium) | Rust OBD app | 🔴✓ | U, C |
