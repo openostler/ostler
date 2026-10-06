@@ -1,18 +1,19 @@
 ---
 title: "Product family — Ostler Diagnostics, Guardian and Hub; reference boards, node link, raw tap, uplinks, setup and wake"
 area: references
-status: draft
-version: 0.1
+status: stable
+version: 1.0
 updated: 2026-10-06
 depends_on: [decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/node_sensors.md, references/research/power_states.md, references/research/canbus_headunit.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Live research (2026-10-06) behind ADR-0039 (draft) for the owner's naming and setup direction. Family: Ostler Diagnostics (the OBD-port node, standalone with a phone or linked to a hub), Ostler Guardian (hidden node variant) and Ostler Hub (the brain); "node" stays the internal term. Reference boards: the MeatPi WiCAN Pro (ESP32-S3, $89, GPL-3 firmware, schematic published) reaches K-line only through an STN-compatible interpreter IC over a UART, so it fits CAN and generic OBD but not the Td5 gate or a byte-timed raw tap; a K-line Diagnostics board needs an L9637-class transceiver on an ESP32-S3 UART. Node-to-hub link: USB-NCM (ESP32-S3 full-speed device via esp_tinyusb; cdc_ncm in Raspberry Pi OS, Windows 10 1903+ inbox) near the hub, 10BASE-T1S elsewhere, same IP/MQTT either way; the S3 has one OTG port, so a USB-linked node cannot also host a 4G dongle. Raw tap: MCU-timestamped records batched over MQTT 5, scrubbed on the node, recorded on the hub, with lab send-requests through the node gate. Standalone uplink: the official 4G module by default; dongles by class (PPP/AT, ECM, RNDIS on ESP32-S3; Espressif's tested list) with a tested-dongle list. Setup mode: AP + BLE Improv, helper steps pair → uplink → pack → first scan; hub adoption. Hub-only wake: the hub's power board (ignition, RTC), no separate buddy. u-blox on the Diagnostics node.
+  Live research (2026-10-06) behind ADR-0039 (accepted 2026-10-06) for the owner's naming and setup direction. Family: Ostler Diagnostics (the OBD-port node, standalone with a phone or linked to a hub), Ostler Guardian (hidden node variant) and Ostler Hub (the brain); "node" stays the internal term. Reference boards: the MeatPi WiCAN Pro (ESP32-S3, $89, GPL-3 firmware, schematic published) reaches K-line only through an STN-compatible interpreter IC over a UART, so it fits CAN and generic OBD but not the Td5 gate or a byte-timed raw tap; a K-line Diagnostics board needs an L9637-class transceiver on an ESP32-S3 UART. Node-to-hub link: USB-NCM (ESP32-S3 full-speed device via esp_tinyusb; cdc_ncm in Raspberry Pi OS, Windows 10 1903+ inbox) near the hub, 10BASE-T1S elsewhere, same IP/MQTT either way; the S3 has one OTG port, so a USB-linked node cannot also host a 4G dongle. Raw tap: MCU-timestamped records batched over MQTT 5, scrubbed on the node, recorded on the hub, with lab send-requests through the node gate. Standalone uplink: the official 4G module by default; dongles by class (PPP/AT, ECM, RNDIS on ESP32-S3; Espressif's tested list) with a tested-dongle list. Setup mode: AP + BLE Improv, helper steps pair → uplink → pack → first scan; hub adoption. Hub-only wake: the hub's power board (ignition, RTC), no separate buddy. u-blox on the Diagnostics node.
 ---
 
 # Product family: Diagnostics, Guardian and Hub
 
-Research for the owner's direction of 2026-10-06 on naming and setup. Decision draft:
-[ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md). It builds on
+Research for the owner's direction of 2026-10-06 on naming and setup. Decision:
+[ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) (accepted
+2026-10-06 with the owner's answers). It builds on
 [ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md) (one node, optional brain),
 which this renames and does not re-decide. Facts were checked live on **2026-10-06**; **(U)**
 marks what is unverified or needs the bench. Sources are paraphrased.
@@ -33,9 +34,9 @@ marks what is unverified or needs the bench. Sources are paraphrased.
   the lab path). It has no gate and no parked broker; it needs its own wake source (§8).
 - "Node" stays the term in code, topics, manifests and ADRs (`kind: node`, `variant:
   diag-port|guardian|sensor`); only public names change. The app-model `product` value
-  `lite` should become `diagnostics` (open question).
+  `lite` becomes `diagnostics` (decided, ADR-0039).
 - **Hardware-agnostic:** the firmware selects a board profile at build or by NVS `board_id`
-  (ADR-0032 proposed amendment B, firmware `docs/specs/sensor-detection.md`),
+  (ADR-0032 Amendments B, firmware `docs/specs/sensor-detection.md`),
   so any board that meets §2's minimum can be a Diagnostics node.
 
 ## 2. Reference-board survey
@@ -150,7 +151,7 @@ them, so it applies the pack's identity declarations (for example KWP `1A`, OBD 
 the `scrubbed` flag, unless the install-level option is on. With the option on, unscrubbed
 bytes go only to the paired hub over the in-car link and every export still scrubs. Bytes the
 node cannot frame (an unknown foreign tool) are marked `unframed`; an export with unframed
-segments drops them (proposed; open question).
+segments drops them (decided, ADR-0039; the rest of the session still exports).
 
 **Send-requests:** the hub publishes a request on `…/<node>/lab/req` with a grant; the node's
 gate classifies the service (read services on the pack's allowlist run as Read, Tier 0, in
@@ -237,9 +238,9 @@ Without one:
 board** (ignition plus an RTC schedule plus a low-voltage cut); it has no remote wake, no
 parked broker and no alarm, which matches having no node. Anyone who wants those adds a
 Diagnostics node or a **Guardian**, which is already the small always-on device and can wake
-the hub. Wake semantics stay in ADR-0040 (draft, [power states](power_states.md)).
+the hub. Wake semantics are in ADR-0040 ([power states](power_states.md)).
 
-## 9. u-blox placement (resolves the pending GPS question)
+## 9. u-blox placement (resolved the pending GPS question)
 
 | Placement | For | Against |
 |---|---|---|
@@ -248,18 +249,19 @@ the hub. Wake semantics stay in ADR-0040 (draft, [power states](power_states.md)
 | Guardian | Hidden antenna | 1 Hz modem GNSS already covers security; adds parked drain |
 
 **Recommendation:** the 10 Hz u-blox sits on the **Diagnostics node** (as ADR-0032's
-proposed amendment A1 says); a USB u-blox on the hub is the hub-only option and the bench path;
+Amendments A1 proposed; decided by ADR-0039 §9); a USB u-blox on the hub is the hub-only option and the bench path;
 the guardian keeps its modem GNSS and takes a u-blox on I²C only when it replaces the node.
 
 ## 10. Open questions
 
-1. "Ostler Hub" or "Ostler Brain" as the public name; `lite` → `diagnostics` in the app-model
-   `product` enum.
+1. ~~"Ostler Hub" or "Ostler Brain" as the public name; `lite` → `diagnostics`.~~ **Decided
+   (ADR-0039):** Ostler Hub ("brain" stays informal and internal); `lite` → `diagnostics`.
 2. WiCAN Pro: confirm from schematic v1.51 that K-line reaches only the interpreter, and its
-   USB-C data roles.
-3. Raw-tap export of unframed bytes: drop, or keep only on the device?
-4. MQTT batching values (100 ms / 8 kB) and the PSRAM ring size.
-5. Default USB-link power: data-only, or VBUS ORed as a second feed?
+   USB-C data roles (still a bench item, ADR-0039 Confirmation).
+3. ~~Raw-tap export of unframed bytes.~~ **Decided (ADR-0039):** dropped from exports.
+4. MQTT batching values: **100 ms / 8 kB decided** (ADR-0039); the PSRAM ring size is still a
+   bench item.
+5. ~~Default USB-link power.~~ **Decided (ADR-0039):** data-only by default.
 
 ## Sources
 
@@ -274,3 +276,5 @@ the guardian keeps its modem GNSS and takes a u-blox on I²C only when it replac
 ## Changelog
 
 - 2026-10-06 — v0.1, first draft for ADR-0039.
+- 2026-10-06 — v1.0, ADR-0039 accepted: decided points marked in §1, §4, §9 and §10;
+  "Ostler Lite" kept only where it says what was renamed.

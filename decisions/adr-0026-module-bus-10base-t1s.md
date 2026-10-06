@@ -2,7 +2,7 @@
 title: "ADR-0026 — Module bus: 10BASE-T1S, with CAN and Wi-Fi as fallback"
 area: decisions
 status: locked
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [references/research/t1s_module_bus.md, references/t1s_bench_plan.md, references/research/hardware.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md]
 summary: >
@@ -13,6 +13,7 @@ summary: >
 
 > **Amended by [ADR-0032](adr-0032-one-node-optional-brain.md) and [ADR-0033](adr-0033-action-categories-and-approvals.md), 2026-10-06:** the PLCA coordinator is the node, Lite trust comes from pairing with the broker on the node, and the guardian is a node variant (see Amendments 3–7).
 > **Amended by [ADR-0037](adr-0037-role-holders-and-handover.md), 2026-10-06:** a guardian fitted alongside the node is the standby PLCA coordinator (Amendment 8).
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** USB-NCM is a point-to-point node-to-hub link beside T1S, and "Ostler Lite" reads "Ostler Diagnostics" (Amendments 9–10).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -173,3 +174,12 @@ Later on 2026-10-06, with the role-holder decision
    the rules and timeouts of ADR-0037 §4–§5. The segment's PLCA ID table is kept in each
    device's install configuration (ADR-0027 Amendments, networking answers), so the standby
    needs no brain. The duty costs the guardian parked current.
+
+Later on 2026-10-06, with the product family ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), accepted with the owner's answers):
+9. **USB-NCM node-to-hub link.** Beside 10BASE-T1S, a **point-to-point USB-NCM link**
+   (CDC-NCM, ECM fallback) joins a Diagnostics node to a hub within a USB cable of it. It
+   carries the same IP, MQTT 5, mTLS, per-device ACLs and topics as T1S, is its own routed
+   subnet (ADR-0027 Amendments, product family), and is data-only by default (the node is
+   powered from the car). T1S stays the module bus, and the node link when the hub is
+   elsewhere.
+10. **Names.** Read "Ostler Lite" and "Lite" above as "Ostler Diagnostics" (the OBD-port node, standalone with a phone), and "Ostler" where it names the tier with a brain as "Ostler Diagnostics + Ostler Hub" (ADR-0039).

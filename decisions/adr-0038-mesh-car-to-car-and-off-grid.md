@@ -2,7 +2,7 @@
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
+
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -161,3 +163,10 @@ that day.
 5. **Still open, not blocking:** whether, on Ostler Lite, the node itself may be the mesh
    gateway (alarm alerts to a camp with no brain and no phone); until decided, the bridge
    runs on the brain or the phone app (§3).
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The decision text and the
+Amendments above are unchanged.
+
+- **Names.** Read "Ostler Lite" and "Lite" above as "Ostler Diagnostics" (the OBD-port node, standalone with a phone), and "Ostler" where it names the tier with a brain as "Ostler Diagnostics + Ostler Hub". "Node" and "brain" stay the internal terms.

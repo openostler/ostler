@@ -2,7 +2,7 @@
 title: "Feature backlog from the research — tagged core / add-on / moonshot"
 area: references
 status: stable
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/platform.md, references/research/landscape.md]
 summary: >
@@ -50,7 +50,7 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 17 | **Rover 14CUX / MEMS packs** | add-on | libcomm14cux, librosco (GPL-3 ✓) | Classic Range Rover and Rover V8 owners |
 | 18 | **Discovery 3/4 collaboration** | core | jlr-scanner (AGPL ✓) | Shared vehicle packs rather than a rewrite |
 | 19 | **Discover undocumented LR ECUs** | core (developer) | CaringCaribou (GPL-3 ✓) | Scans which services and IDs an ECU answers, read-only |
-| 20 | **Phone ↔ node link** (BLE through the native wrapper, Web Bluetooth where available, or the node's Wi-Fi AP) | core | esp32-isotp-ble-bridge (MIT), niro-spy pattern; Capacitor wrapper | The phone talks to the node directly, with no brain: the Ostler Lite app path (ADR-0032) |
+| 20 | **Phone ↔ node link** (BLE through the native wrapper, Web Bluetooth where available, or the node's Wi-Fi AP) | core | esp32-isotp-ble-bridge (MIT), niro-spy pattern; Capacitor wrapper | The phone talks to the node directly, with no brain: the Ostler Diagnostics app path (ADR-0032, ADR-0039) |
 | 21 | **SignalK-style data model** | core (design) | SignalK (Apache) | Its path/metadata scheme is a model for our metric namespace |
 | 22 | **Head-unit CAN-box emulator module** | add-on | esp32-canbox-nissan (MIT), canbox (⚠️ reference only) | Old car → new head unit (the "CAN/OBD emulator" module) |
 | 23 | **I/O / relay boards** (off-the-shelf now, our own later) on the module bus | add-on | Waveshare 8DI-8RO-C; open-source driver libraries (not ESPHome itself) | Each output declares category and tier; an ADR per car-switching function before it ships (ADR-0033) |

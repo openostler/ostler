@@ -1,12 +1,12 @@
 ---
 title: "Power states and wake — sleeping devices, wake paths, wake requests and parked current"
 area: references
-status: draft
-version: 0.1
+status: stable
+version: 1.0
 updated: 2026-10-06
 depends_on: [decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/node_sensors.md, references/research/t1s_module_bus.md, references/research/cluster_view.md]
 summary: >
-  Live research (2026-10-06) behind ADR-0040 (draft) for the owner's request that add-on actions wake the brain only when they need it, and otherwise wake just the module they talk to, with "asleep" and "woken" shown honestly. Patterns: AUTOSAR network management (a bus stays awake while anyone requests it, then times out to sleep) and CAN partial networking (ISO 11898-2:2016 selective wake, TJA1145A under 64 µA); OPEN Alliance TC10 on 10BASE-T1S (in LAN865x/LAN867x silicon, wakes the whole segment, only a March 2026 LAN867x Rev D0 patch series in Linux; not confirmed for NCN26010); Wake-on-LAN (unauthenticated, so never a remote path); MQTT 5 session expiry, message expiry, retained state and will; ESP32-S3 sleep (deep sleep 7–8 µA chip, no radio; auto light sleep keeps Wi-Fi at about 1–2.5 mA; BLE needs light sleep); Matter ICDs (SIT up to 15 s polling, LIT with check-in) and Thread sleepy end devices; ESPHome and Home Assistant showing deep-sleep devices as unavailable unless set up for it; Pi 5 boot about 15–20 s, about 3 W idle, about 1.2 W halted unless POWER_OFF_ON_HALT=1 (0.01 W); car parasitic norms about 50 mA after 30 min. Proposes reachability classes, parked modes for the node, latency and energy figures for a budget, and the gaps to bench.
+  Live research (2026-10-06) behind ADR-0040 (accepted 2026-10-06) for the owner's request that add-on actions wake the brain only when they need it, and otherwise wake just the module they talk to, with "asleep" and "woken" shown honestly. Patterns: AUTOSAR network management (a bus stays awake while anyone requests it, then times out to sleep) and CAN partial networking (ISO 11898-2:2016 selective wake, TJA1145A under 64 µA); OPEN Alliance TC10 on 10BASE-T1S (in LAN865x/LAN867x silicon, wakes the whole segment, only a March 2026 LAN867x Rev D0 patch series in Linux; not confirmed for NCN26010); Wake-on-LAN (unauthenticated, so never a remote path); MQTT 5 session expiry, message expiry, retained state and will; ESP32-S3 sleep (deep sleep 7–8 µA chip, no radio; auto light sleep keeps Wi-Fi at about 1–2.5 mA; BLE needs light sleep); Matter ICDs (SIT up to 15 s polling, LIT with check-in) and Thread sleepy end devices; ESPHome and Home Assistant showing deep-sleep devices as unavailable unless set up for it; Pi 5 boot about 15–20 s, about 3 W idle, about 1.2 W halted unless POWER_OFF_ON_HALT=1 (0.01 W); car parasitic norms about 50 mA after 30 min. Proposes reachability classes, parked modes for the node, latency and energy figures for a budget, and the gaps to bench.
 ---
 
 # Power states and wake
@@ -14,8 +14,9 @@ summary: >
 Research for the owner's request of 2026-10-06: "add-on actions wake the brain if necessary,
 or they wake the module they're trying to talk to, where the brain isn't necessary. We should
 probably try and convey this concept of 'asleep' and woken, perhaps build something more in
-depth around it." The decision draft is
-[ADR-0040](../../decisions/adr-0040-power-states-and-wake.md). Facts checked live on
+depth around it." The decision is
+[ADR-0040](../../decisions/adr-0040-power-states-and-wake.md), accepted on 2026-10-06 with
+the owner's answers. Facts checked live on
 2026-10-06 unless marked; **(U)** marks a figure that is unverified or needs the bench.
 Concepts only: no specification text or code is reused.
 
@@ -31,7 +32,7 @@ Concepts only: no specification text or code is reused.
   ([ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md)).
 - **The parked broker is on the node**; the brain's broker bridges to it when awake
   ([ADR-0028 §5](../../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md),
-  [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md), draft).
+  [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md)).
 - **Hardware notes:** a halted Pi must be cut (60 s hard shutdown timeout); no Pi below about
   12.0 V; heartbeat only below about 11.8 V; OVMS-style staged power-down
   ([hardware.md](hardware.md#power-wake-and-buses-detail)).
@@ -217,7 +218,7 @@ is belt and braces for the window between halt and cut.
   guardian, CarPiHAT and WiCAN (about 1–4 mA) but not the diagnostic-port node, which now runs
   from the car battery (ADR-0032).
 
-**Proposed node parked modes** (figures are at 12 V, board level, for the bench to confirm):
+**Node parked modes** (proposed here, decided in ADR-0040 §2; figures are at 12 V, board level, for the bench to confirm):
 
 | Mode | What stays up | Reachable by | Target |
 |---|---|---|---|
@@ -264,3 +265,6 @@ U); session resumption would cut it (U: ESP-TLS support on the module side).
 
 - 2026-10-06: v0.1, first draft from live checks for the owner's wake request; feeds
   ADR-0040 (draft) and the proposed amendments to the UI and app-model specs.
+- 2026-10-06: v1.0, ADR-0040 accepted with the owner's answers (parked-ready for 72 h, 10 mA
+  budget, 12.2/12.0/11.8 V floors, all bench-tuned); UI spec §3.8 and app-model §13
+  accepted. The proposals here stand as the evidence.

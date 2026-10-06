@@ -2,7 +2,7 @@
 title: "ADR-0021 — Local HTTPS on the device"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, docs/https_on_the_pi.md, references/research/standards.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0021 — Local HTTPS on the device
 
 > **Amended by [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** "the Pi" here means the brain; Ostler Lite has no Pi, so trust there comes from phone pairing, with no Pi CA (see Amendments).
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06: "yes" to local HTTPS on the Pi)
@@ -75,3 +76,10 @@ Recorded with the node/brain direction
   PWA in a native wrapper (Capacitor), which reaches the node over BLE or the node's Wi-Fi
   AP; that link is authenticated by the pairing keys exchanged when the phone is paired,
   never by a shared default certificate or password.
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The decision text and the
+Amendments above are unchanged.
+
+- **Names.** Read "Ostler Lite" and "Lite" above as "Ostler Diagnostics" (the OBD-port node, standalone with a phone), and "Ostler" where it names the tier with a brain as "Ostler Diagnostics + Ostler Hub". "Node" and "brain" stay the internal terms.

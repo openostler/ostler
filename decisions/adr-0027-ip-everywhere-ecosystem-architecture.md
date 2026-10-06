@@ -2,7 +2,7 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.4
+version: 1.5
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -14,6 +14,7 @@ summary: >
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §5), 2026-10-06:** the Amendments' "Base and guardian" entry (node replaces the buddy; the guardian is a node variant) and §9's "one server gate" wording for car-touching actions (that gate is on the node).
 > **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (§6–§7), 2026-10-06:** the "notify-only alarm" line and "Tier ≥ 2 not reachable from any remote path" (phone approval over local links; install override).
 > **Amended 2026-10-06 (networking answers, [ADR-0037](adr-0037-role-holders-and-handover.md), [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md)):** §12 Matter is a bridge through Home Assistant and Matterbridge, certified only at scale, with alarm disarm allowed and Comfort switches only with the install override; §3/§7 NTP runs on the time-role holder; §4 PLCA IDs live in each device's install configuration; mesh and Matter are remote paths. See [Amendments (networking answers)](#amendments-2026-10-06-networking-answers).
+> **Amended 2026-10-06 (product family, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md)):** §2's segments gain the node link (USB-NCM, its own subnet); §5's topics gain `tap/` and `lab/`. See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -323,3 +324,18 @@ differ, they win.
 - **Mesh and Matter are remote paths** under ADR-0033 §6: a mesh carries Read and alerts
   only (ADR-0038 §2); Matter carries Read plus alarm arming and disarming, and Comfort only
   with the install override (above). Neither is a local link, whatever radio it rides on.
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The decision text above is
+unchanged; where these entries differ, they win.
+
+- **Segments (§2, §3).** The table gains **Node link: USB-NCM** (CDC-NCM, ECM fallback), a
+  point-to-point link between a Diagnostics node and a hub within a USB cable of it. It is
+  **its own routed subnet** and IPv6 /64, like every segment (§3); 10BASE-T1S stays the node
+  link when the hub is elsewhere (ADR-0026 Amendment 9).
+- **Topics (§5).** Beside the VSS topics, the node publishes its raw tap on
+  `ostler/v1/<vid>/<node>/tap/<session>/data` (binary batches, never retained) with the
+  session header retained on `…/tap/<session>/meta`, and takes lab send-requests on
+  `…/<node>/lab/req`, answering on `…/<node>/lab/resp` (ADR-0039 §3). Both use the same
+  broker, mTLS and per-device ACLs.

@@ -1,22 +1,23 @@
 ---
 title: "ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub (raw tap, USB-IP link, setup mode, uplinks, hub-only wake, u-blox placement)"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-06
 depends_on: [references/research/product_family.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/power_states.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Proposed, from the owner's direction of 2026-10-06. Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5, scrubbed on the node, recorded on the hub, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module, Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node. Lists the "Lite" wording sweep, bench tests and open questions.
+  Accepted by the owner on 2026-10-06 (all recommendations). Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms ("brain" also an informal synonym for the Hub); the app-model `product` value `lite` becomes `diagnostics`; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5 (100 ms / 8 kB; a TLS TCP stream only if the bench fails), scrubbed on the node, recorded on the hub, unframed bytes dropped from exports, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM (data-only by default) near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module (a fitted option), Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node, closing ADR-0032's GPS placement and ranking first in ADR-0037's best-clock-first order. Records the "Lite" wording sweep, bench tests and the owner's answers.
 ---
 
 # ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub
 
 - **Date:** 2026-10-06
-- **Status:** proposed (draft for the owner; nothing here is accepted until the open
-  questions are answered). **Supersedes in part**
+- **Status:** accepted (owner answers, 2026-10-06; see
+  [Owner answers](#owner-answers-2026-10-06)). **Supersedes in part**
   [ADR-0032](adr-0032-one-node-optional-brain.md) §1 (the names "Ostler Lite" and "Ostler"
-  only; the architecture stands) and, if accepted, amends ADR-0026, ADR-0027 and ADR-0028
-  (see [Relation to other ADRs](#relation-to-other-adrs)). Evidence:
+  only; the architecture stands) and amends ADR-0026, ADR-0027, ADR-0028, ADR-0036 and
+  ADR-0037 (recorded in their Amendments; see
+  [Relation to other ADRs](#relation-to-other-adrs)). Evidence:
   [product family research](../references/research/product_family.md).
 
 ## Context
@@ -36,8 +37,8 @@ summary: >
   never sends itself. The link is USB carrying IP near the hub, or T1S/Ethernet when the hub
   is elsewhere, with the same IP/MQTT and topics either way. A hub-only box still needs a wake
   source.
-- ADR-0032 §1 named the tiers "Ostler Lite" and "Ostler"; ADR-0032's proposed amendment left
-  the u-blox placement open.
+- ADR-0032 §1 named the tiers "Ostler Lite" and "Ostler"; ADR-0032's Amendments (A1) left
+  the u-blox placement pending this work.
 
 ## Decision drivers
 
@@ -60,12 +61,13 @@ summary: >
 
 "Node" and "brain" stay the terms in code, topics, manifests and ADRs. ADR-0032 §1's table
 reads "Ostler Diagnostics" for "Ostler Lite" and "Ostler Diagnostics + Ostler Hub" for
-"Ostler". Public name of the hub: open question 1.
+"Ostler". The public name is **Ostler Hub**; "brain" stays an informal and internal synonym.
+The app-model `product` value `lite` becomes `diagnostics`.
 
 **2. Hardware-agnostic, with board profiles.** Any board meeting the minimum (ESP32-S3 with
 PSRAM; a K-line transceiver on an S3 UART for K-line cars; TWAI CAN; protected 12 V input;
 ignition sense; a brain-power output) is a Diagnostics node through a board profile (ADR-0032
-proposed amendment B). The **WiCAN Pro** is a **CAN-only board profile**: its K-line goes
+Amendments B). The **WiCAN Pro** is a **CAN-only board profile**: its K-line goes
 through an STN-compatible interpreter IC, so the node cannot own K-line timing or timestamp
 bytes on it; generic K-line OBD reads through the interpreter may be offered as Read, Tier 0,
 never gated K-line transmits. The K-line reference is an ESP32-S3 with a discrete
@@ -75,14 +77,16 @@ transceiver (dev build now, our own board later).
 - Raw tap records carry an MCU monotonic µs timestamp (mapped to shared UTC by periodic time
   records), a sequence number, bus id, direction, protocol, flags and bytes, plus events for
   init, keep-alive, gate decisions, overflow, time and link.
-- Transport: **MQTT 5 with batching** (binary batches on
+- Transport: **MQTT 5 with batching** (binary batches of 100 ms or 8 kB, whichever first, on
   `ostler/v1/<vid>/<node>/tap/<session>/data`, session header retained on `…/meta`), over the
-  same broker, mTLS and ACLs. A separate TCP stream is the fallback only if the bench fails.
+  same broker, mTLS and ACLs. A separate TLS TCP stream is the fallback only if the bench
+  fails.
 - The node buffers in a PSRAM ring and reports losses. The hub records into the logbook and
   exports pcapng.
 - **Identity scrub on the node** (ADR-0036 §2): the node frames messages before emitting and
   replaces declared identity replies with the placeholder unless the install-level option is
-  on; exports always scrub.
+  on; exports always scrub. Bytes the node cannot frame (a foreign tool's unknown protocol)
+  are marked `unframed` and **dropped from exports**; the rest of the session still exports.
 - **Send-requests:** the hub asks on `…/lab/req` with a grant; the node gate classifies,
   serializes and answers on `…/lab/resp`. The hub never transmits; the gate never hands over.
 - **Rejected:** raw serial (or K-line bytes) tunnelled over the network to a hub-side driver.
@@ -91,10 +95,11 @@ transceiver (dev build now, our own board later).
 esp_tinyusb) when the hub is within a USB cable of the port; **10BASE-T1S** (ADR-0026) when
 the hub is elsewhere; Ethernet on prototypes. IP, MQTT, VSS and raw-tap topics are identical on
 each. The USB link is its own routed subnet (ADR-0027 §3). The node is always powered from the
-car; hub VBUS is never its only feed. A USB-linked node cannot host a dongle (one OTG port).
+car; the USB link is **data-only by default** (hub VBUS is not ORed in, and is never the
+node's only feed). A USB-linked node cannot host a dongle (one OTG port).
 
-**5. Standalone uplink.** Default: the **official 4G module** on the Diagnostics board (an IoT
-SIM). Also Wi-Fi (car, hotspot, home). Also a **USB 4G dongle** by class: PPP/AT over CDC-ACM
+**5. Standalone uplink.** The **official 4G module** (an IoT SIM) is a **fitted option** on
+the Diagnostics board, not on every board. Also Wi-Fi (car, hotspot, home). Also a **USB 4G dongle** by class: PPP/AT over CDC-ACM
 (`iot_usbh_modem`), ECM (`iot_usbh_ecm`) or RNDIS (`iot_usbh_rndis`); QMI/MBIM sticks only on a
 hub. A **tested-dongle list** in the firmware repo records what works.
 
@@ -114,45 +119,31 @@ phone for a node already owned); then its CA issues the certificate. No silent t
 **8. Hub-only wake.** A hub with no Diagnostics node wakes from its **power board**: ignition
 (for example CarPiHAT PRO 5), an RTC schedule (Pi 5 `wakealarm`, Witty Pi 5) and a
 low-voltage cut. It has no remote wake, parked broker or alarm. There is **no separate
-buddy**: a Diagnostics node or a Guardian adds those. Wake semantics: [ADR-0040](adr-0040-power-states-and-wake.md) (draft).
+buddy**: a Diagnostics node or a Guardian adds those. Wake semantics: [ADR-0040](adr-0040-power-states-and-wake.md).
 
-**9. u-blox placement (resolves ADR-0032's pending question, proposed).** The 10 Hz u-blox
-sits on the **Diagnostics node** (ADR-0032 amendment A1 as proposed); a USB u-blox on the hub
-is the hub-only and bench option; the guardian keeps its 1 Hz modem GNSS.
+**9. u-blox placement (closes ADR-0032's pending question).** The 10 Hz u-blox sits on the
+**Diagnostics node** (ADR-0032 Amendments A1); a USB u-blox on the hub is the hub-only and
+bench option; the guardian keeps its 1 Hz modem GNSS. With its PPS wired, the node's u-blox
+is the top-ranked clock in ADR-0037's best-clock-first order (GNSS with PPS, then GNSS
+without PPS, then a clock in holdover, then a phone seed; the owner's priority breaks ties).
 
-## Wording sweep (rename "Lite" later; files not edited here)
+## Wording sweep (applied 2026-10-06)
 
-Checked by `grep -w Lite` on 2026-10-06 (third-party product names such as "VCDS-Lite" and
-"FORScan Lite" in `references/research/ui/` are excluded):
+The "Lite" wording was swept in the same change that accepted this ADR, by re-running
+`grep -rn "Lite\b" --include=*.md` (third-party names such as "VCDS-Lite" and "FORScan Lite",
+"SQLite" and "Raspberry Pi OS Lite" excluded):
 
-| File | Lines |
-|---|---|
-| `README.md` | 9, 39 |
-| `GOALS.md` | 9, 30, 144, 152, 204 |
-| `decisions/CLAUDE.md` | 18, 25, 36 (and an entry for this ADR) |
-| `decisions/adr-0014-ostler-handles.md` | 14, 104 (product family amendment) |
-| `decisions/adr-0018-ui-architecture-decisions.md` | 104 |
-| `decisions/adr-0021-local-https-on-the-device.md` | 14, 72 |
-| `decisions/adr-0026-module-bus-10base-t1s.md` | 14, 155 |
-| `decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md` | 9, 57, 100, 127, 128, 155, 159 |
-| `decisions/adr-0032-one-node-optional-brain.md` | 2, 9, 50, 115, 121, 128, 219, 240 (banner pointing here) |
-| `decisions/adr-0037-role-holders-and-handover.md` | 67, 218 |
-| `decisions/adr-0038-mesh-car-to-car-and-off-grid.md` | 62, 147 |
-| `references/vision.md` | 9, 106, 118, 162, 234, 302, 305 |
-| `references/research/addons_catalogue.md` | 9, 21, 119, 176 |
-| `references/research/connectivity_uplink.md` | 44, 180 |
-| `references/research/ecosystem_architecture.md` | 9, 272 |
-| `references/research/features_backlog.md` | 53 |
-| `references/research/hardware.md` | 157, 158 |
-| `references/research/power_states.md` | 197 (another researcher's draft) |
-| `specs/2026-10-06-accounts-sharing-design.md` | 9, 44, 47, 208, 339, 349 |
-| `specs/2026-10-06-app-model-design.md` | 9, 124, 247, 250, 352, 439, 493 (working tree; 439 and the changelog shift come from the [ADR-0040](adr-0040-power-states-and-wake.md) amendment in progress); the `product` value `lite` at 93 and 377 |
-| `specs/2026-10-06-kline-profiles-detection-design.md` | 9, 323, 377 |
-| `specs/2026-10-06-platform-direction-design.md` | 9, 36, 185 |
-| `specs/2026-10-06-ui-architecture-design.md` | 186, 254, 258 (254 and 258 from the [ADR-0040](adr-0040-power-states-and-wake.md) amendment in progress) |
-| `INDEX.md` | regenerated by `build_index.py`, never hand-edited |
+- **Accepted ADRs** (ADR-0014, ADR-0018, ADR-0021, ADR-0026, ADR-0029, ADR-0032, ADR-0037,
+  ADR-0038) keep their decision text and gain a banner and an Amendments entry: read
+  "Ostler Lite" or "Lite" as "Ostler Diagnostics", and "Ostler" where it names the tier with a
+  brain as "Ostler Diagnostics + Ostler Hub".
+- **Specs, research notes, GOALS.md, README.md and references/vision.md** are renamed
+  directly; "Ostler (full)" reads "Ostler Diagnostics + Hub" where it means the product with a
+  brain. The app-model `product` value `lite` becomes `diagnostics`.
+- **Left as written:** this ADR's own explanation of the rename, historical changelog
+  entries, and the frontmatter titles of accepted ADRs.
 
-`ostler-firmware` has no "Lite" mentions. Line numbers drift: re-run the grep when the sweep is done. Accepted ADRs get a banner, not an edit.
+`ostler-firmware` has no "Lite" mentions. `INDEX.md` is regenerated by `build_index.py`.
 
 ## Confirmation
 
@@ -185,8 +176,8 @@ Checked by `grep -w Lite` on 2026-10-06 (third-party product names such as "VCDS
 
 ## Consequences
 
-- ADR-0032 gains a "renamed by ADR-0039" banner; the wording sweep above runs as one change by
-  the files' owners.
+- ADR-0032 gains a "renamed by ADR-0039" banner; the wording sweep above ran in the same
+  change.
 - The module-bus message spec gains the `tap/` and `lab/` topics, the batch content type and the
   session header; the capability manifest gains `tap` (buses, protocols, max rate) and `links`.
 - `ostler-firmware` gains `docs/specs/raw-tap.md` (format, USB-NCM link, setup mode, dongle list).
@@ -211,23 +202,37 @@ Checked by `grep -w Lite` on 2026-10-06 (third-party product names such as "VCDS
 ## Relation to other ADRs
 
 - **ADR-0032:** §1 names superseded; §3's "Link: … Ethernet, USB or UART on dev kits" becomes
-  USB-NCM as a product link and UART dropped; §2, §4–§16 stand.
+  USB-NCM as a product link, with UART for development only; Amendments A1's pending u-blox
+  placement is closed (§9); §2, §4–§16 stand (§4 extended by ADR-0040).
 - **ADR-0026:** adds USB-NCM as a point-to-point node-to-hub link beside T1S (an amendment).
 - **ADR-0027:** §2's segment table gains "Node link: USB-NCM, its own subnet"; §5's topics gain
   `tap/` and `lab/`.
 - **ADR-0028:** §3 dongles now also on the node (by class); §7 provisioning gains the helper and
   adoption; "buddy" stays retired for hub-only boxes.
+- **ADR-0033:** unchanged by this ADR (its add-on gate wording is amended by ADR-0040).
 - **ADR-0036:** applied on the node for the raw tap; unchanged otherwise.
-- **ADR-0037:** the uplink-manager row stands; a USB-linked node has no dongle.
+- **ADR-0037:** the uplink-manager row stands; a USB-linked node has no dongle; the time-source
+  order is confirmed, with the node's u-blox and PPS ranking first (§9).
+- **ADR-0040:** power states and wake for every member of the family.
 
-## Open questions for the owner
+## Owner answers (2026-10-06)
 
-1. **Ostler Hub or Ostler Brain** as the public name? And `lite` → `diagnostics` in the
-   app-model `product` value?
-2. Accept MQTT 5 batching for the raw tap (100 ms / 8 kB), with TCP only as a fallback?
-3. Raw-tap bytes the node cannot frame (a foreign tool's unknown protocol): drop them from
-   exports, or never export such sessions?
-4. Default USB power: data-only, or hub VBUS ORed in as a second feed?
-5. Is the official 4G module on every Diagnostics board, or a fitted option?
-6. Accept "no buddy" for hub-only boxes (power board wake, Guardian for remote wake)?
-7. Accept the u-blox on the Diagnostics node, closing ADR-0032's GPS question?
+The owner accepted every recommendation on 2026-10-06; the decision text above already reads
+this way. Question numbers are the draft's.
+
+1. **Public name: Ostler Hub.** "Brain" stays an informal and internal synonym. The app-model
+   `product` value `lite` becomes `diagnostics` (app-model spec §4).
+2. **Raw tap over MQTT 5 batches** (100 ms or 8 kB, whichever first). A TLS TCP stream from
+   the node is only the fallback if the bench (Confirmation) fails.
+3. **Unframed bytes are dropped from exports.** Raw-tap bytes the node cannot frame (a
+   foreign tool's unknown protocol) stay on the device; the session itself can still be
+   exported without them.
+4. **The USB link is data-only by default.** The node is powered from the car; hub VBUS is
+   not ORed in.
+5. **The official 4G module is a fitted option,** not on every Diagnostics board.
+6. **No buddy for hub-only boxes.** A hub with no Diagnostics node wakes from its power board;
+   a Diagnostics node or a Guardian adds remote wake, the parked broker and the alarm.
+7. **The u-blox goes on the Diagnostics node.** This closes ADR-0032's pending GPS placement
+   (ADR-0032 Amendments A1) and makes the node's u-blox with PPS rank first in ADR-0037's
+   "best clock first" order. That order is confirmed: GNSS with PPS, then GNSS without PPS,
+   then a clock in holdover, then a phone seed; the owner's priority breaks ties.

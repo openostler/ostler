@@ -1,23 +1,26 @@
 ---
 title: "ADR-0040 — Power states and wake (asleep, waking, awake; wake requests, leases, queued actions with expiry)"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-06
 depends_on: [references/research/power_states.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0037-role-holders-and-handover.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Proposed, pending owner answers. Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued. The alarm path never waits for a wake. The node gets two parked modes (ready, deep). Confirmation by a simulated wake harness and bench measurements.
+  Accepted by the owner on 2026-10-06 (all recommendations). Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued (default expiry 2 min, max 10 min). The alarm path never waits for a wake. The node gets two parked modes (ready for 72 h, then deep); budget 10 mA average, floors 12.2/12.0/11.8 V (bench-tuned). Owner and Driver may wake the Hub locally and remotely within quota, a Viewer's Read only within the remote quota; a brain wake asks for confirmation only on remote requests; a guardian alongside may take the parked broker while the node is in parked-deep; Wi-Fi modules with actions stay wakeable; apps wake only through action requests and held views. Confirmation by a simulated wake harness and bench measurements.
 ---
 
 # ADR-0040 — Power states and wake
 
 - **Date:** 2026-10-06
-- **Status:** proposed (draft for the owner; nothing here is accepted until the open
-  questions are answered). Builds on [ADR-0026](adr-0026-module-bus-10base-t1s.md),
+- **Status:** accepted (owner answers, 2026-10-06; see
+  [Owner answers](#owner-answers-2026-10-06)). Builds on
+  [ADR-0026](adr-0026-module-bus-10base-t1s.md),
   [ADR-0028](adr-0028-base-hardware-connectivity-and-remote-access.md),
   [ADR-0032](adr-0032-one-node-optional-brain.md) and
   [ADR-0033](adr-0033-action-categories-and-approvals.md); works with
-  [ADR-0037](adr-0037-role-holders-and-handover.md) (draft). Evidence:
+  [ADR-0037](adr-0037-role-holders-and-handover.md) and
+  [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md); amends ADR-0028, ADR-0032,
+  ADR-0033 and ADR-0037 (recorded in their Amendments). Evidence:
   [power states research](../references/research/power_states.md).
 
 ## Context
@@ -27,10 +30,11 @@ summary: >
   and convey this concept of 'asleep' and woken, perhaps build something more in depth around
   it."
 - ADR-0032 §4 lists the brain's wake causes and the clean shutdown with a timeout, but says
-  nothing about add-on modules, limits, cost or what a person sees. ADR-0033 §3 says the
-  brain's gate checks add-on actions, which fails when the brain sleeps (ADR-0037 open
-  question 4).
-- The product family (Diagnostics node, Guardian, Hub/brain, add-on modules on T1S,
+  nothing about add-on modules, limits, cost or what a person sees. ADR-0033 §3 said the
+  brain's gate checks add-on actions, which fails when the brain sleeps (ADR-0037 §7 and
+  ADR-0033 Amendments moved it to the executing gate and left the detail to this ADR).
+- The product family ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md):
+  Diagnostics node, Guardian, Hub/brain, add-on modules on T1S,
   Ethernet, Wi-Fi or CAN) mixes devices that are always reachable, wakeable by a wire, or
   reachable only when they check in. Smart homes show the last kind as "Unavailable"
   (research §3.3); we want honest "Asleep".
@@ -79,11 +83,11 @@ Every device publishes a retained `ostler/v1/<vid>/<device>/power`:
 | **Brain** (Hub) | awake (ignition lease) | **off** (cut, < 1 mA for the switch); EV always-on: held | node power switch only |
 | **Wired module** (T1S/Ethernet) | awake | asleep (µA class with a switched PHY) | wake wire; TC10 after its bench; Ethernet modules stay on the node's switched feed |
 | **CAN module** | awake | asleep (< 64 µA transceiver) | CAN selective wake frame |
-| **Wi-Fi module** | awake | auto light sleep (wakeable, 1–2.5 mA) **or** deep sleep (check-in) | DTIM, or its own timer check-in |
+| **Wi-Fi module** | awake | auto light sleep (wakeable, 1–2.5 mA), **required for any module with actions**; deep sleep (check-in) only for sensor-only modules | DTIM, or its own timer check-in |
 | **Camera** | awake if powered | off (feed switched by the node or an I/O module) | the switched feed; boot time per model |
 
-The node starts parked-ready and stages to parked-deep after a set time (proposed 72 h), on
-the energy budget, or at the deep floor (§4.4). The phone and the cloud hold no power state;
+The node starts parked-ready and stages to parked-deep after 72 h, on the energy budget, or
+at the deep floor (§4.4). The phone and the cloud hold no power state;
 they are requesters.
 
 ### 3. Wake sources
@@ -115,31 +119,32 @@ to wiring and **never hands over** (ADR-0037 §2): no arbiter means no wake on t
 
 **4.3 Who may wake whom.**
 - Only an authenticated, paired device or signed-in user; the purpose's **category** must be
-  in the requester's role (ADR-0033 §2). A Viewer's Read may wake the brain only if the owner
-  allows it (open question 3).
-- **Remote** requests need the owner's "remote wake" setting (default on for the Owner role,
-  off for others) and a daily quota. A remote wake is not remote *control*: the action that
-  follows is still bound by ADR-0033 §6.
+  in the requester's role (ADR-0033 §2). The **Owner and the Driver** may wake the brain,
+  locally and remotely. A **Viewer's Read** request may wake it only within the remote wake
+  quota.
+- **Remote** requests need the owner's "remote wake" setting (on by default for the Owner and
+  Driver roles) and count against a daily quota. A remote wake is not remote *control*: the
+  action that follows is still bound by ADR-0033 §6.
 - Modules may wake the node (wire) and request the brain only for their declared purposes
   (manifest `wake.may_request`).
-- Mesh and Home Assistant never wake the brain (ADR-0038 draft: a mesh never commands).
+- Mesh and Home Assistant never wake the brain (ADR-0038: a mesh never commands).
 
 **4.4 Limits and cost.**
-- **Rate limits:** a token bucket per requester (proposed 6 brain wakes an hour, 20 a day)
-  and a global cap (proposed 30 brain wakes a day); alarm-class requests are exempt from the
+- **Rate limits:** a token bucket per requester (starting values, tuned on the bench: 6 brain wakes an hour, 20 a day)
+  and a global cap (30 brain wakes a day); alarm-class requests are exempt from the
   buckets but not from the hard floor.
 - **Energy ledger:** the arbiter keeps a daily ledger of parked current and the estimated
   cost of each wake (brain ≈ 30 mAh per 5 min, research §5). Default budget ≤ 10 mA average
-  (240 mAh a day), owner-settable; over budget, scheduled and background wakes are refused
+  (240 mAh a day), owner-settable and tuned on the bench; over budget, scheduled and background wakes are refused
   and interactive ones need confirmation. Cellular data per wake is counted against the
   uplink's meter (ADR-0028 §4).
 - **Floors** (resting 12 V): **12.2 V** refuses scheduled and background wakes; **12.0 V**
   refuses brain wakes and shuts an awake brain down; **11.8 V** puts the node into
-  parked-deep with alarm inputs only. A refused wake says why ("Battery 11.9 V: hub not
-  woken").
+  parked-deep with alarm inputs only. The floor values are tuned on the bench. A refused wake
+  says why ("Battery 11.9 V: hub not woken").
 - **Coalescing:** a request for a target already waking or awake joins it; its hold becomes a
   lease. Ten requests make one wake.
-- **Timeouts:** a brain that is not online by the boot timeout (proposed 60 s) is cut, retried
+- **Timeouts:** a brain that is not online by the boot timeout (60 s, bench-tuned) is cut, retried
   once, then locked out for an hour with an alert; a module not online in 2 s after a wire wake
   is reported `failed`. After two failed boots in a day, brain wakes need a local request.
 
@@ -187,11 +192,13 @@ Phone to node over BLE adds ≈ 1–2 s (U); a cloud request adds the uplink's p
 ### 7. What people see
 
 Asleep badges with last seen and wake path, a "Waking…" progress, queued actions with expiry
-and Cancel, a confirmation when a wake costs the brain ("Wakes the hub, ≈ 30 s, uses battery"),
+and Cancel, a confirmation when a **remote** request wakes the brain ("Wakes the hub, ≈ 30 s, uses
+battery"; local wakes do not ask, and a "Don't ask again" choice is stored per user and device
+and honoured on local links only),
 a power column on the Network page, and the Link chip (no new strip chip) for the brain's
-state. Detail: the proposed amendments to the
-[UI spec](../specs/2026-10-06-ui-architecture-design.md) and the
-[app-model spec](../specs/2026-10-06-app-model-design.md).
+state. Apps cause a wake only through action requests and held views (no `wake()` call).
+Detail: [UI spec §3.8](../specs/2026-10-06-ui-architecture-design.md) and
+[app-model spec §13](../specs/2026-10-06-app-model-design.md).
 
 ### 8. Safety
 
@@ -209,9 +216,10 @@ state. Detail: the proposed amendments to the
 
 ### 9. Role holders while asleep (ADR-0037)
 
-- **Parked broker:** the node in parked-ready. In parked-deep there is no broker; the node
-  clears its claim when it sleeps. Whether a guardian alongside takes it over then is open
-  question 5.
+- **Parked broker:** the node in parked-ready. In parked-deep the node runs no broker and
+  clears its claim when it sleeps; a **guardian fitted alongside takes over** the parked
+  broker then, at the cost of its own cell (ADR-0037 §2, §4), and gives it back when the node
+  is parked-ready or awake again.
 - **Time source:** the node's RTC carries time through deep sleep; readings after a wake are
   `unsynced` until GNSS or SNTP is back.
 - **Uplink manager:** the node while the brain is off (ADR-0037 §4); a cloud wake is only
@@ -276,25 +284,33 @@ model and a controllable clock:
 ## Relation to other ADRs
 
 - **ADR-0032 §4:** stands; this ADR adds module wakes, limits, floors, leases and states
-  (an amendment if accepted).
+  (recorded in ADR-0032's Amendments).
 - **ADR-0033 §3:** "the brain's gate does so for add-on actions" reads "the gate of the
-  device the action runs on" (§5; answers ADR-0037 open question 4).
+  device the action runs on" (§5; as ADR-0037 §7 set out).
 - **ADR-0033 §6:** a remote *wake* is permitted under quota; the action it serves stays
   read-only on remote paths unless the install override is set.
 - **ADR-0037 §3:** `status` gains `asleep`; a holder that sleeps releases its claims.
 - **ADR-0026, ADR-0027 §11:** the wake wire stays; a stuck-wire rule is added.
 - **ADR-0028 §2** (superseded by ADR-0032 §4): its state words map to §1 here.
 
-## Open questions for the owner
+## Owner answers (2026-10-06)
 
-1. **Node parked modes:** ready (≤ 5 mA, phone-reachable) for 72 h, then deep (≤ 0.5 mA,
-   wires only)? Or deep sooner, accepting no phone wake?
-2. **Budget and floors:** 10 mA average, and 12.2 / 12.0 / 11.8 V?
-3. **Who may wake the brain:** Owner and Driver locally; remote only the Owner by default;
-   may a Viewer's Read wake it?
-4. **Queue limits:** default expiry 2 min, max 10 min; Tier 0–1 only?
-5. **Guardian standby while the node is in parked-deep:** may it take the parked broker at
-   the cost of its own cell (ADR-0037 open question 3)?
-6. **Confirmation for a brain wake:** always, only remote, or "don't ask again" per user?
-7. **Wi-Fi modules:** require auto light sleep (wakeable) for any module with actions, and
-   allow check-in only for sensor-only modules (the Matter LIT rule)?
+The owner accepted every recommendation on 2026-10-06; the decision text above already reads
+this way. Questions 1–7 are this ADR's draft numbering; 8 and 9 were open questions 13 and 14
+of the app-model spec's §13.
+
+1. **Node parked modes:** parked-ready for 72 h, then parked-deep (§2).
+2. **Budget and floors:** 10 mA average; floors 12.2 / 12.0 / 11.8 V; all tuned on the bench
+   (§4.4).
+3. **Who may wake the Hub:** the Owner and the Driver, locally and remotely within the remote
+   quota; a Viewer's Read request may wake it only within the remote quota (§4.3).
+4. **Queued actions:** default expiry 2 min, maximum 10 min, Tier 0–1 only (§5).
+5. **Guardian standby:** a guardian fitted alongside may take over the parked broker while the
+   node is in parked-deep (§9; ADR-0037 Amendments).
+6. **Brain-wake confirmation** only for remote requests (§7).
+7. **Wi-Fi modules:** a module with actions stays wakeable (auto light sleep); deep sleep with
+   check-in only for sensor-only modules (§2).
+8. **Apps wake only** through action requests and held views; there is no `wake()` call
+   (app-model spec §13.3).
+9. **"Don't ask again"** is stored per user and device, and honoured on local links only
+   (§7).
