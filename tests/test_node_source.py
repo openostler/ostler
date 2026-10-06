@@ -301,7 +301,8 @@ def test_the_brain_subscribes_read_only_and_publishes_nothing(rig):
     mine = [p for c, p in rig.broker.received if c == "t-nodesource"]
     filters = [s.topic_filter for p in mine if isinstance(p, codec.Subscribe) for s in p.subscriptions]
     assert filters == [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
-                       f"ostler/v1/{VID}/+/vss/+"]
+                       f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
+                       f"ostler/v1/{VID}/+/role/#"]
     opts = [s for p in mine if isinstance(p, codec.Subscribe) for s in p.subscriptions]
     assert all(s.no_local and not s.retain_as_published and s.retain_handling == 0 for s in opts)
     assert not [p for p in mine if isinstance(p, codec.Publish)]
@@ -312,12 +313,13 @@ def test_the_brain_subscribes_read_only_and_publishes_nothing(rig):
 
 def test_the_spec_acl_grants_exactly_the_p1_reads(tmp_path):
     """Spec §5's per-device ACL: read the §4 filters of its own vid; write only its own
-    request topics (P4). The P1 subscriptions all pass it."""
+    request topics (P4). The P1 and P3 subscriptions all pass it."""
     from openostler.pack import use_pack
     from tests.fake_pack import FAKE_PACK
 
     acl = {"t-nodesource": {"read": [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
-                                     f"ostler/v1/{VID}/+/vss/+"],
+                                     f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
+                                     f"ostler/v1/{VID}/+/role/#"],
                             "write": [f"ostler/v1/{VID}/brain/act/+"]},
            "node": {"read": [], "write": [f"ostler/v1/{VID}/node/#", "sync/x"]}}
     with use_pack(FAKE_PACK):

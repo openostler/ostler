@@ -44,6 +44,31 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **NodeSource, phase P3: Network page data (backend only)**
+  ([spec](specs/2026-10-06-node-source-design.md) v0.5 §11, §16; ADR-0037, ADR-0040). The
+  feed also subscribes, read-only, to each device's retained capability `manifest` and its
+  role claims `role/#`; `node/cluster.py` builds the cluster view. **`GET /cluster`** (new,
+  additive; refused on the public server) returns one row per device seen (kind, variant,
+  model, board, firmware and manifest `etag`, "reached via" from the manifest's `links`,
+  status, the whole ADR-0040 power record, last seen, its claims) and one row per
+  single-holder role (holder, term, since, candidates in the role's order, the last change
+  of holder a live message caused). Claims from a device that is offline or asleep, not
+  declared by its manifest, not eligible (the brain for the parked broker; an add-on
+  module failing ADR-0037 Amendment 14) or not checkable are void and flagged; two gate
+  claims on one bus leave it with no holder and an alert; a bus read without a gate shows
+  "No gate for this bus". The view is `stale`, never emptied, while the broker is down.
+  **The serial source refuses to start beside a node that holds the K-line gate** (owner
+  answer 7): `tools/dashboard.py --serial … --mqtt URL` reads the vehicle's retained claims
+  and manifests once and refuses when a node claims, or by its manifest is wired to, a
+  K-line gate; it also refuses when the broker cannot be checked. Snapshots gain
+  `device_info` and `node.fw`/`node.etag`; `status: asleep` from the node's own `status`
+  topic (ADR-0037 Amendment 8) now reads as asleep. Node sessions' `meta.json` gains
+  `device_info` (firmware and manifest `etag` per device; changes are `node_manifest`
+  events). `api/openapi.yaml` (`/cluster`, `Cluster`, `NodeManifest`, `RoleClaim`) and
+  `api/asyncapi.yaml` (channels `nodeManifest`, `nodeRole`, `nodeRoleScoped`) follow; no new
+  SSE event (spec §8). The firmware publishes no manifest or claims yet: the tests use the
+  hand-written `tests/fixtures/node/cluster.jsonl`. No UI view: the Network page comes
+  after U1.
 - **NodeSource, phase P2: recording and the raw tap**
   ([spec](specs/2026-10-06-node-source-design.md) v0.4 §7, §16; ADR-0032, ADR-0036). A node
   source now records sessions (`tools/dashboard.py --source node` and

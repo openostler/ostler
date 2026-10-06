@@ -2,15 +2,15 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.2
+version: 2.3
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
-  contracts in api/, NodeSource, the MQTT client and node recording with the raw tap)
-  and the dev commands.
+  contracts in api/, NodeSource, the MQTT client, node recording with the raw tap and the
+  cluster view) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -37,6 +37,9 @@ PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--mod
 # A Brain: read the car through the node's MQTT messages (read-only; records the raw tap)
 PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
     --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key [--vid VID]
+# A cable beside a possible node: --mqtt makes the serial source check the broker first
+# and refuse to start when a node holds the K-line gate (owner answer 7)
+PYTHONPATH=src python3 tools/dashboard.py --serial PORT --mqtt mqtts://… --mqtt-ca … [--vid VID]
 
 # UI development without a car: the test-only server on simulated sources
 # (the same one Playwright drives); --node serves them through NodeSource and a fake broker
@@ -172,10 +175,11 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     paho adapter could replace it without touching NodeSource); the same codec drives
     the test broker `tests/fake_broker.py`. TLS is mTLS via `tls_context()`; `mqtt://` is
     for a lab broker only (`--mqtt-insecure-lab`).
-  - `NodeFeed` holds one read-only connection (`status`, `power`, `vss/+` of one `vid`;
-    No Local, Retain As Published off, clean start) and fills `node.DeviceTable` from the
-    MQTT thread; `NodeSource` (one per pack module, all over one feed) builds the snapshot
-    from it under a lock. Selecting a module only filters the view.
+  - `NodeFeed` holds one read-only connection (`status`, `power`, `vss/+`, `manifest` and
+    `role/#` of one `vid`; No Local, Retain As Published off, clean start) and fills
+    `node.DeviceTable` from the MQTT thread; `NodeSource` (one per pack module, all over
+    one feed) builds the snapshot from it under a lock. Selecting a module only filters
+    the view.
   - Staleness is per signal on the node's own clock (`t_us`); a retained value at
     subscribe time is "last known"; reboots come from the payload's `boot` id (or `t_us`
     going backwards); confidence is never raised (the lower of node and store wins).
@@ -187,6 +191,15 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - **Recording (P2).** `logbook/node.py` holds the recorder's node rules; while a session
     is open `_sync_tap` subscribes the raw tap and `logbook/tap.py` writes `.otap` files
     after the identity check (`node/tap.py`); `logbook/pcapng.py` exports them, scrubbed.
+    Node sessions' meta records each device's firmware and manifest `etag` (P3).
+  - **The cluster view (P3).** The feed also reads each device's retained `manifest` and
+    `role/#` claims (ADR-0037 §3); `node/cluster.py` (pure) builds `GET /cluster`: devices
+    with power and last seen, role holders (higher term, then priority), candidates in the
+    role's order, void claims flagged (offline, asleep, undeclared, ineligible), gate
+    conflicts never resolved, handovers only from live messages. It is built, never
+    authoritative, and read-only. `check_serial_beside_node` reads it once so a serial
+    source refuses to start beside a node holding the K-line gate (`tools/dashboard.py
+    --mqtt`); it fails closed when the broker cannot be checked.
   - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/`;
     `tests/fake_node.py` replays them; `needs_broker` tests use a real Mosquitto (CI job).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
@@ -304,3 +317,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   table), `web/node_source.py`, `--source node`, `source_kind`, `conn_for`, `touches_car`.
 - 2026-10-06 — v2.2, NodeSource P2: node sessions (`logbook/node.py`), the raw tap
   (`node/tap.py`, `logbook/tap.py`, `logbook/pcapng.py`), the CI `broker` job.
+- 2026-10-06 — v2.3, NodeSource P3 (backend): `manifest` and `role/#`, `node/cluster.py`,
+  `GET /cluster`, the serial source's refusal beside a gate-holding node, `device_info`.

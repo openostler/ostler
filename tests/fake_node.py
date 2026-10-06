@@ -54,6 +54,12 @@ def tap_messages(name: str = "td5-vectors.jsonl") -> "list[dict]":
     return [d for d in load(name) if "/tap/" in d["topic"]]
 
 
+def cluster_messages(case: str = "cluster") -> "list[dict]":
+    """The hand-written cluster fixture's messages of one ``case`` (manifests, status,
+    power and role claims of several devices; ``cluster.jsonl``, NodeSource P3)."""
+    return [d for d in load("cluster.jsonl") if d["case"] == case]
+
+
 def topic(kind: str, vid: str = VID, device: str = DEVICE) -> str:
     return f"ostler/v1/{vid}/{device}/{kind}"
 

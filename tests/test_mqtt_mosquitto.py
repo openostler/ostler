@@ -183,7 +183,8 @@ def mosquitto_tls(tmp_path_factory):
     acl.write_text(
         "user t-nodesource\n" + "".join(
             f"topic read ostler/v1/{ACL_VID}/+/{t}\n"
-            for t in ("status", "power", "vss/+", "tap/+/meta", "tap/+/data"))
+            for t in ("status", "power", "vss/+", "manifest", "role/#", "tap/+/meta",
+                      "tap/+/data"))
         + f"\nuser node\ntopic readwrite ostler/v1/{ACL_VID}/node/#\n")
     port = _free_port()
     conf = d / "m.conf"
