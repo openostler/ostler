@@ -262,3 +262,18 @@ test("an unknown page gets the app's not-found view; an unknown API path the JSO
   expect(asset.status()).toBe(404);
   expect((await request.get("/snapshot?_=1")).status()).toBe(200); // a query string is fine
 });
+
+test("a session exports as GeoJSON and its replay data carries the trace and t0_utc", async ({ request }) => {
+  const { sessions } = await (await request.get("/sessions")).json();
+  const demo = sessions.find((s: { synthetic: boolean; has_gps: boolean }) => s.synthetic && s.has_gps);
+  const res = await request.get(`/sessions/${demo.id}/export?fmt=geojson`);
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("application/geo+json");
+  const fc = await res.json();
+  expect(fc.type).toBe("FeatureCollection");
+  expect(fc.features[0].geometry.type).toBe("LineString");
+  const data = await (await request.get(`/sessions/${demo.id}/data?max=50`)).json();
+  expect(data.trace.geometry.type).toBe("LineString");
+  expect(data.trace.properties.t_ms).toHaveLength(data.trace.geometry.coordinates.length);
+  expect(data.t0_utc).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+});

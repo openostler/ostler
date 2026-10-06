@@ -11,6 +11,7 @@
  * speed only re-anchors it, and the rAF loop never depends on the per-frame time.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { parseUtc } from "../lib/time";
 
 export const SPEEDS = [1, 2, 4, 8] as const;
 export type Speed = (typeof SPEEDS)[number];
@@ -55,13 +56,9 @@ export function clockAt(anchor: Anchor, wallNow: number, speed: number, start: n
   return { time: Math.max(start, time), ended: false };
 }
 
-/** Epoch ms ↔ session ms offset, from the first row with a known UTC (null: no UTC at all). */
-export function utcOffset(t: readonly number[], utc: readonly (number | null)[]): number | null {
-  for (let i = 0; i < utc.length && i < t.length; i++) {
-    const u = utc[i];
-    if (u != null) return u - t[i]!;
-  }
-  return null;
+/** Epoch ms ↔ session ms offset: the instant of session ms 0 (`t0_utc`; null: no UTC at all). */
+export function utcOffset(data: { t0_utc?: string | null }): number | null {
+  return parseUtc(data.t0_utc);
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");

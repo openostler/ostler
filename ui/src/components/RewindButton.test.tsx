@@ -34,7 +34,7 @@ const replay = (over: Partial<Replay> = {}): Replay => ({ ...INACTIVE, enter: vi
 
 function renderRewind(r: Replay, recording: string | null = null) {
   return renderWithApp(<ReplayCtx.Provider value={r}><RewindButton /></ReplayCtx.Provider>, {
-    snap: { status: "connected", signals: {}, faults: [], recording: recording ? { session: recording, since: 0, rows: 10 } : null },
+    snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], recording: recording ? { session: recording, since_utc: "1970-01-01T00:00:00.000Z", rows: 10 } : null },
   });
 }
 

@@ -94,6 +94,10 @@ their own changelogs.
   - a community contribution queued offline answers 202 with `ok: true, queued: true`
     (was 200 with `ok: false`); the Coverage Map toast says "saved, will send later";
   - a body that is not a JSON object is 400 on every JSON route.
+- The UI reads only the new wire fields (API consistency spec §8 step 3): the recording
+  card and Logs use `since_utc`/`ts_utc` (`ui/src/lib/time.ts` parses RFC 3339), replay
+  takes its clock from `t0_utc` and synthesises `ts_utc`, the map and cursor read the
+  GeoJSON `trace`, phone audio sends `start_utc`, and the export menu offers GeoJSON.
 - `pyproject.toml` uses PEP 639 licence metadata (`license = "AGPL-3.0-or-later"`,
   `license-files`) and needs `setuptools>=77` to build.
 - Every GitHub Action is pinned to a full commit SHA; workflows default to

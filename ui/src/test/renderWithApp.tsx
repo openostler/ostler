@@ -15,7 +15,7 @@ import { packFixture } from "./packFixture";
 export function renderWithApp(ui: ReactElement, over: Partial<AppContext> = {}) {
   setPack(packFixture);
   const ctx: AppContext = {
-    snap: { status: "connected", signals: {}, faults: [] },
+    snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [] },
     live: { ...initialLive, module: "td5" },
     linkUp: true,
     module: "td5",

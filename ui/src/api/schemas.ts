@@ -42,9 +42,9 @@ export const ActiveTest = z.object({
   action: z.string(),
   label: z.string(),
   /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
-  since: z.number(),
+  since: z.number().optional(),
   /** RFC 3339 UTC: when the test was started. */
-  since_utc: z.string().optional(),
+  since_utc: z.string(),
   stop: z.string(),
 });
 export type ActiveTest = z.infer<typeof ActiveTest>;
@@ -67,9 +67,9 @@ export type GpsFix = z.infer<typeof GpsFix>;
 export const Recording = z.object({
   session: z.string(),
   /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
-  since: z.number(),
+  since: z.number().optional(),
   /** RFC 3339 UTC: when the session started. */
-  since_utc: z.string().optional(),
+  since_utc: z.string(),
   rows: z.number(),
   /** "recording" while connected; "paused" while the car is disconnected (no rows written). */
   state: z.string().optional(), // absent = "recording" (older servers)
@@ -97,7 +97,7 @@ export const Snapshot = z.object({
   /** @deprecated server epoch seconds of this snapshot; use ts_utc (removed in API 0.2.0) */
   ts: z.number().optional(),
   /** RFC 3339 UTC instant of this snapshot. */
-  ts_utc: z.string().optional(),
+  ts_utc: z.string(),
   /** Car battery in volts, or null when unknown. */
   battery_v: z.number().nullable().optional(),
   port: PortInfo.optional(),
@@ -428,14 +428,14 @@ export const SessionData = z.object({
   id: z.string(),
   t: z.array(z.number()),
   /** @deprecated epoch ms per sample; use t0_utc + t (removed in API 0.2.0) */
-  utc: z.array(z.number().nullable()),
+  utc: z.array(z.number().nullable()).optional(),
   /** RFC 3339 UTC instant of session ms 0 (null without a UTC time). */
-  t0_utc: z.string().nullable().optional(),
+  t0_utc: z.string().nullable(),
   ch: z.record(z.string(), z.array(z.number().nullable())),
   /** @deprecated [lon, lat, t_ms]; use trace (removed in API 0.2.0) */
-  track: z.array(z.tuple([z.number(), z.number(), z.number()])),
+  track: z.array(z.tuple([z.number(), z.number(), z.number()])).optional(),
   /** The GPS track as GeoJSON (null below two positions). */
-  trace: GeoJsonTrace.nullable().optional(),
+  trace: GeoJsonTrace.nullable(),
   decimated: z.boolean(),
   /** Text channels aligned with t (faults joined with "; ", module). */
   text: z.record(z.string(), z.array(z.string().nullable())).optional(),

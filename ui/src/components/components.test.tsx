@@ -153,12 +153,12 @@ describe("ActionButton confirm levels", () => {
 describe("ConnectionNotice", () => {
   it("shows a strip with Open connection only while not live", async () => {
     const user = userEvent.setup();
-    const { ctx, unmount } = renderWithApp(<ConnectionNotice />, { snap: { status: "connected", conn: "lost", signals: {}, faults: [] } });
+    const { ctx, unmount } = renderWithApp(<ConnectionNotice />, { snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", conn: "lost", signals: {}, faults: [] } });
     expect(screen.getByText("No connection")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Open connection" }));
     expect(ctx.openConnection).toHaveBeenCalled();
     unmount();
-    renderWithApp(<ConnectionNotice />, { snap: { status: "connecting", conn: "connecting", signals: {}, faults: [] } });
+    renderWithApp(<ConnectionNotice />, { snap: { status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", conn: "connecting", signals: {}, faults: [] } });
     expect(screen.queryByText("No connection")).not.toBeInTheDocument();
   });
 });
@@ -166,12 +166,12 @@ describe("ConnectionNotice", () => {
 describe("ConnectionSheet", () => {
   it("says how long the link has been down", () => {
     renderWithApp(<ConnectionSheet onClose={vi.fn()} downSince={Date.now() - 80_000} />,
-      { snap: { status: "error", conn: "error", signals: {}, faults: [] } });
+      { snap: { status: "error", ts_utc: "2026-10-05T09:00:00.000Z", conn: "error", signals: {}, faults: [] } });
     expect(screen.getByText("No connection for 1 m 20 s")).toBeInTheDocument();
   });
 
   it("has no Data source block or mode row (ADR-0011: live only), even from an old server", () => {
-    const oldSnap = { status: "connected", conn: "connected", signals: {}, faults: [], mode: "mock", modes: ["mock", "live"], source: "usb" };
+    const oldSnap = { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", conn: "connected", signals: {}, faults: [], mode: "mock", modes: ["mock", "live"], source: "usb" };
     renderWithApp(<ConnectionSheet onClose={vi.fn()} />, { snap: oldSnap });
     expect(screen.queryByText("Data source")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Mock" })).not.toBeInTheDocument();

@@ -9,6 +9,7 @@
  */
 import type { Field, GpsFix, Note, SessionChannel, SessionData, SessionEvent, SessionMeta, SignalValue, Snapshot } from "../api/schemas";
 import { canonicalModule, defaultModule } from "../layout";
+import { parseUtc, toUtc } from "../lib/time";
 import { HISTORY_LEN, type LiveState, type Sample } from "./live";
 import { indexAt } from "./playback";
 import type { ReplayEventState } from "./replayTypes";
@@ -45,6 +46,7 @@ function activeTestOf(v: unknown): ReplayEventState["active_test"] {
     action: o.action,
     ...(typeof o.label === "string" ? { label: o.label } : {}),
     ...(typeof o.since === "number" ? { since: o.since } : {}),
+    ...(typeof o.since_utc === "string" ? { since_utc: o.since_utc } : {}),
     ...(typeof o.stop === "string" ? { stop: o.stop } : {}),
   };
 }
@@ -213,31 +215,27 @@ export function synthesise(args: {
   const faults = splitFaults(valueAtIndex(text?.faults, i));
   const status = state.status ?? "connected";
   const at = state.active_test;
-  const offset = utcAt(data);
+  // the instant of the cursor: t0_utc + t; without a UTC time, the session start + t
+  const zero = parseUtc(data.t0_utc) ?? parseUtc(meta.start_utc);
   const snap: Snapshot = {
     status, module, signals, faults,
     logging: state.logging ?? { recording: false },
     fault_watch: state.fault_watch,
-    active_test: at ? { action: at.action, label: at.label ?? at.action, since: at.since ?? 0, stop: at.stop ?? "" } : null,
+    active_test: at ? {
+      action: at.action, label: at.label ?? at.action, stop: at.stop ?? "",
+      since_utc: at.since_utc ?? (at.since != null ? toUtc(at.since * 1000) : toUtc((zero ?? 0) + t)),
+    } : null,
     battery_v: signals.battery?.v ?? null,
     gps: i < 0 ? null : gpsAt(data, i),
     stale: false,
+    ts_utc: toUtc((zero ?? 0) + t),
   };
   if (state.conn) snap.conn = state.conn;
-  if (offset != null) snap.ts = (offset + t) / 1000;
   for (const k of CARRY) if (base && base[k] !== undefined) (snap as Record<string, unknown>)[k] = base[k];
   const names = Object.keys(signals);
   const history = i < 0 ? {} : historyAt(data, i, names);
   const seen = Object.fromEntries(names.map((n) => [n, REPLAY_SEEN]));
   return { snap, live: { module, history, seen, seq: [], seqDone: true }, state, module };
-}
-
-function utcAt(data: SessionData): number | null {
-  for (let i = 0; i < data.utc.length && i < data.t.length; i++) {
-    const u = data.utc[i];
-    if (u != null) return u - data.t[i]!;
-  }
-  return null;
 }
 
 /** The note the cursor is on: a range note while inside it, a point note for NOTE_SHOW_MS after. */

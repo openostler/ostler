@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.6
+version: 1.7
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -127,6 +127,13 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   routes from the server's source, so adding or removing a route without updating
   `openapi.yaml` fails, and it validates the UI fixtures against the response schemas.
   How to view and maintain them: [api/README.md](../api/README.md).
+  - Every API error is one envelope, `{ok: false, error, code?}`, sent by
+    `_Handler._error`; `/command` maps its reply's `code` to the status through
+    `_STATUS_FOR_CODE` (502 when the car refuses, 504 on a poll timeout). Routes match
+    `path` (no query string), and an unknown browser page gets the app shell
+    ([API consistency spec](../specs/2026-10-06-api-consistency-design.md)).
+  - Wire timestamps are RFC 3339 UTC `Z` from `openostler.timefmt.rfc3339_utc`; traces
+    are GeoJSON (`SessionData.trace`, `?fmt=geojson`).
 - **Session logbook (`logbook/`, ADR-0009/0011).**
   - The recorder opens a session only while the car is connected. While disconnected
     it is *paused*: no data rows (not even GPS), and it ends after 300 s.
@@ -205,3 +212,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-06 — U0 seams (specs/2026-10-06-u0-seams-design.md): VSS metrics
   (`metrics.py`, `vss/`, `tools/build_metrics.py`), `metric` on store records, the
   vehicle id, index schema 3 and `schemas/`.
+- 2026-10-06 — API consistency: one error envelope and status table, query strings on
+  every route, `timefmt`, GeoJSON traces (specs/2026-10-06-api-consistency-design.md).

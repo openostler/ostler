@@ -10,7 +10,7 @@
  * into runs of equal colour bucket, each a GeoJSON LineString whose `b` property drives a
  * data-driven `line-color` expression.
  */
-import type { SessionData, SessionMeta } from "../../api/schemas";
+import type { GeoJsonTrace, SessionData, SessionMeta } from "../../api/schemas";
 import { indexAt, valueAt } from "../../state/playback";
 
 export const BUCKETS = 20;
@@ -112,6 +112,24 @@ export function lineColorExpression(colors: readonly string[] = RAMP): unknown[]
 /** CSS gradient for the legend bar (the same ramp, low → high, left → right). */
 export const legendGradient = (colors: readonly string[] = RAMP) => `linear-gradient(to right, ${colors.join(", ")})`;
 
+/** One GPS point: [lon, lat, session ms]. */
+export type TrackPoint = [number, number, number];
+/** The GPS track as points, read from the GeoJSON `trace` (see trackOf). */
+export type Track = TrackPoint[];
+/** What the trace and cursor helpers read: the columns plus the track. */
+export type TrackData = Pick<SessionData, "t" | "ch"> & { track: Track };
+
+/** The `trace` LineString Feature → [lon, lat, t_ms] points (empty without a trace). */
+export function trackOf(trace: GeoJsonTrace | null | undefined): Track {
+  if (!trace) return [];
+  const coords = trace.geometry.coordinates;
+  const times = trace.properties.t_ms;
+  const n = Math.min(coords.length, times.length);
+  const out: Track = [];
+  for (let i = 0; i < n; i++) out.push([coords[i]![0], coords[i]![1], times[i]!]);
+  return out;
+}
+
 export type LineFeature = {
   type: "Feature";
   properties: { b: number };
@@ -123,7 +141,7 @@ export type FeatureCollection = { type: "FeatureCollection"; features: LineFeatu
  * Cut the track into runs of equal bucket. Each run is one LineString that starts at the
  * last point of the previous run, so the coloured line has no gaps between runs.
  */
-export function traceSegments(data: Pick<SessionData, "t" | "ch" | "track">, channel: string, r: Range | null = rangeOf(data.ch[channel])): FeatureCollection {
+export function traceSegments(data: TrackData, channel: string, r: Range | null = rangeOf(data.ch[channel])): FeatureCollection {
   const values = data.ch[channel];
   const features: LineFeature[] = [];
   const track = data.track;
@@ -159,7 +177,7 @@ export type Cursor = { lon: number; lat: number; heading: number | null };
 
 /** The cursor on the track at session time `ms`: interpolated position; heading from the
  * GPS_Heading channel when present, else the bearing of the current track segment. */
-export function cursorAt(data: Pick<SessionData, "t" | "ch" | "track">, ms: number, times: readonly number[] = data.track.map((p) => p[2])): Cursor | null {
+export function cursorAt(data: TrackData, ms: number, times: readonly number[] = data.track.map((p) => p[2])): Cursor | null {
   const tr = data.track;
   if (!tr.length) return null;
   const i = indexAt(times, ms);
@@ -180,7 +198,7 @@ export function cursorAt(data: Pick<SessionData, "t" | "ch" | "track">, ms: numb
 export type BBox = [number, number, number, number];
 
 /** [minLon, minLat, maxLon, maxLat] of the track (null when empty). */
-export function bboxOf(track: SessionData["track"]): BBox | null {
+export function bboxOf(track: Track): BBox | null {
   if (!track.length) return null;
   const b: BBox = [Infinity, Infinity, -Infinity, -Infinity];
   for (const [lon, lat] of track) {
@@ -208,7 +226,7 @@ export function defaultTraceChannel(names: readonly string[]): string | null {
  * metres, on a local equirectangular projection. It removes GPS jitter so the offset lanes
  * stay parallel instead of zig-zagging (spec §5: "~1 m smooth").
  */
-export function simplifyTrack(track: SessionData["track"], toleranceM = SMOOTH_M): SessionData["track"] {
+export function simplifyTrack(track: Track, toleranceM = SMOOTH_M): Track {
   if (track.length < 3 || toleranceM <= 0) return track.slice();
   const lat0 = track[0]![1];
   const mPerDegLat = 111_320;

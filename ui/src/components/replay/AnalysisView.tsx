@@ -22,7 +22,7 @@ import { channelLabel, channelUnits, showValue } from "./labels";
 import { TraceLegend, type LegendTrace } from "./Legend";
 import { NotesPanel, type NoteRequest } from "./NotesPanel";
 import {
-  bboxOf, cursorAt, defaultTraceChannel, laneRamp, lineColorExpression, plottable, rangeOf, simplifyTrack, traceSegments,
+  bboxOf, cursorAt, defaultTraceChannel, laneRamp, lineColorExpression, plottable, rangeOf, simplifyTrack, trackOf, traceSegments,
   type BBox, type Cursor, type TraceLane,
 } from "./trace";
 import { TraceMap, type MapTrace } from "./TraceMap";
@@ -73,19 +73,21 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
   const setClassic = (on: boolean) => { setClassicState(on); saveClassic(on); };
   const a = traceA && names.includes(traceA) ? traceA : defaultTraceChannel(names);
   const b = traceB && names.includes(traceB) ? traceB : null;
-  const smooth = useMemo(() => ({ t: data.t, ch: data.ch, track: simplifyTrack(data.track) }), [data]);
+  // the GPS track, from the GeoJSON trace (positions + their session ms)
+  const track = useMemo(() => trackOf(data.trace), [data]);
+  const smooth = useMemo(() => ({ t: data.t, ch: data.ch, track: simplifyTrack(track) }), [data, track]);
   const rangeA = useMemo(() => (a ? rangeOf(data.ch[a]) : null), [data, a]);
   const rangeB = useMemo(() => (b ? rangeOf(data.ch[b]) : null), [data, b]);
   const colorsA = laneRamp("a", classic);
   const colorsB = laneRamp("b", classic);
   const mapA = useMemo<MapTrace | null>(() => (a ? { fc: traceSegments(smooth, a, rangeA), colors: colorsA, color: lineColorExpression(colorsA) } : null), [smooth, a, rangeA, colorsA]);
   const mapB = useMemo<MapTrace | null>(() => (b ? { fc: traceSegments(smooth, b, rangeB), colors: colorsB, color: lineColorExpression(colorsB) } : null), [smooth, b, rangeB, colorsB]);
-  const trackTimes = useMemo(() => data.track.map((p) => p[2]), [data]);
-  const atCursor = useMemo(() => cursorAt(data, time, trackTimes), [data, time, trackTimes]);
+  const trackTimes = useMemo(() => track.map((p) => p[2]), [track]);
+  const atCursor = useMemo(() => cursorAt({ t: data.t, ch: data.ch, track }, time, trackTimes), [data, track, time, trackTimes]);
   const cursor = live?.cursor ?? atCursor;
   // Live: the map is framed once (a growing bbox would rebuild it every fetch); the marker
   // then follows the car.
-  const fresh = meta.bbox ?? bboxOf(data.track);
+  const fresh = meta.bbox ?? bboxOf(track);
   const [firstBox, setFirstBox] = useState<BBox | null>(fresh);
   if (!firstBox && fresh) setFirstBox(fresh);
   const bbox = live ? firstBox : fresh;
@@ -105,7 +107,7 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
   const readouts = [...lanesNames, ...(data.ch.GPS_Speed && !lanesNames.includes("GPS_Speed") ? ["GPS_Speed"] : [])];
   const start = data.t[0] ?? 0;
   const end = data.t[data.t.length - 1] ?? 0;
-  const offset = useMemo(() => utcOffset(data.t, data.utc), [data]);
+  const offset = useMemo(() => utcOffset(data), [data]);
   const canNote = !live && !meta.synthetic && !snap?.public;
   const speedCh = names.includes("speed") ? "speed" : names.includes("GPS_Speed") ? "GPS_Speed" : null;
   const valueOf = (n: string): number | null => {
@@ -157,7 +159,7 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
 
   return (
     <div className="analysis-view stack" data-live={live ? "true" : undefined}>
-      {meta.has_gps || data.track.length || live?.cursor ? (
+      {meta.has_gps || track.length || live?.cursor ? (
         <div className="card replay-mapcard">
           <TraceMap a={mapA} b={mapB} bbox={bbox} cursor={cursor} />
           {legend.length ? (

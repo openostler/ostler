@@ -54,9 +54,9 @@ const fxRpm = fxData.ch.rpm!;
 const fxSpeedRange = rangeOf(fxData.ch.GPS_Speed)!;
 const fxRpmRange = rangeOf(fxRpm)!;
 const realData = {
-  id: real.id, t: [0, 1000, 2000], utc: [null, null, null],
+  id: real.id, t: [0, 1000, 2000], t0_utc: null,
   ch: { rpm: [800, 900, 1000], coolant_temp: [80, null, 82], LateralAcc: [0.1, -0.6, 0.2], InlineAcc: [0.3, 0, -0.9] },
-  track: [], decimated: false,
+  trace: null, decimated: false,
 };
 const note = (id: string, t: number, t_end: number | null = null): Note => ({
   id, t, t_end, text: `note ${id}`, tags: [], kind: "note", source: "retro", created: "2026-10-05T09:02:00.000Z",
@@ -140,6 +140,7 @@ describe("Analysis — replay", () => {
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
     expect(screen.getByRole("link", { name: "CSV" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=csv`);
     expect(screen.getByRole("link", { name: "GPX" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=gpx`);
+    expect(screen.getByRole("link", { name: "GeoJSON" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=geojson`);
     expect(calls.some((c) => c.path.startsWith(`/sessions/${demo.id}/data?ch=`))).toBe(true);
     // no G-G panel without acceleration channels
     expect(document.querySelector(".replay-gg")).toBeNull();
@@ -352,7 +353,7 @@ describe("Analysis — replay", () => {
   });
 
   it("public mode hides Delete, the note tool and the inline editors", async () => {
-    renderWithApp(ui(real.id), { snap: { status: "connected", signals: {}, faults: [], public: true } });
+    renderWithApp(ui(real.id), { snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], public: true } });
     await screen.findByText(/No GPS in this session/);
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
     expect(screen.queryByRole("button", { name: /^Edit / })).toBeNull();
@@ -366,9 +367,9 @@ const fix = (lat: number, lon: number, heading: number | null = 90): GpsFix => (
   fix: true, lat, lon, heading, speed_kmh: 42, sats: 9, hdop: 0.9, src: "usb", age_s: 0.2,
 });
 const liveSnap = (over: Partial<Snapshot> = {}): Snapshot => ({
-  status: "connected", faults: [],
+  status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", faults: [],
   signals: { rpm: { v: 1234, u: "rpm" } },
-  recording: { session: real.id, since: 1_791_000_000, rows: 3, state: "recording" },
+  recording: { session: real.id, since_utc: "2026-10-03T04:00:00.000Z", rows: 3, state: "recording" },
   ...over,
 });
 const dataCalls = () => calls.filter((c) => c.path.startsWith(`/sessions/${real.id}/data?`)).length;
@@ -407,7 +408,7 @@ describe("Analysis — live", () => {
   });
 
   it("a paused recording is still shown live", async () => {
-    renderLive(liveSnap({ recording: { session: real.id, since: 0, rows: 3, state: "paused" } }));
+    renderLive(liveSnap({ recording: { session: real.id, since_utc: "1970-01-01T00:00:00.000Z", rows: 3, state: "paused" } }));
     await screen.findByText(/No GPS in this session/);
     expect(screen.getByTestId("live-chip")).toBeInTheDocument();
     expect(screen.getByText(/paused/)).toBeInTheDocument();
@@ -427,18 +428,18 @@ describe("Analysis — live", () => {
 
   it("GPS but no recording: the map sits at the live position with the hint", async () => {
     mapMock.fail = false;
-    const { push } = renderLive({ status: "connecting", signals: {}, faults: [], gps: fix(56.6, -4.8, null) });
+    const { push } = renderLive({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], gps: fix(56.6, -4.8, null) });
     expect(screen.getByText("Recording starts when the car connects.")).toBeInTheDocument();
     expect(screen.queryByTestId("live-chip")).toBeNull();
     await waitFor(() => expect(mapMock.handle).not.toBeNull());
     await waitFor(() => expect(mapMock.handle!.setCursor).toHaveBeenLastCalledWith({ lat: 56.6, lon: -4.8, heading: null }));
-    push({ status: "connecting", signals: {}, faults: [], gps: fix(56.7, -4.7, 10) });
+    push({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], gps: fix(56.7, -4.7, 10) });
     await waitFor(() => expect(mapMock.handle!.setCursor).toHaveBeenLastCalledWith({ lat: 56.7, lon: -4.7, heading: 10 }));
     expect(calls.filter((c) => c.path.startsWith("/sessions"))).toEqual([]);
   });
 
   it("nothing at all: an empty state offering Rewind", () => {
-    renderLive({ status: "disconnected", signals: {}, faults: [], gps: { ...fix(0, 0), fix: false } });
+    renderLive({ status: "disconnected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], gps: { ...fix(0, 0), fix: false } });
     expect(screen.getByText("Nothing to show yet")).toBeInTheDocument();
     expect(screen.getByText(/Rewind/)).toBeInTheDocument();
     expect(document.querySelector("[data-map-status]")).toBeNull();

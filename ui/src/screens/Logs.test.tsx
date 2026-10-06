@@ -48,9 +48,9 @@ const real: SessionMeta = {
   ],
 };
 const realData = {
-  id: real.id, t: [0, 1000, 2000], utc: [null, null, null],
+  id: real.id, t: [0, 1000, 2000], t0_utc: null,
   ch: { rpm: [800, 900, 1000], coolant_temp: [80, null, 82], LateralAcc: [0.1, -0.6, 0.2], InlineAcc: [0.3, 0, -0.9] },
-  track: [], decimated: false,
+  trace: null, decimated: false,
 };
 const note = (id: string, t: number, t_end: number | null = null): Note => ({
   id, t, t_end, text: `note ${id}`, tags: [], kind: "note", source: "retro", created: "2026-10-05T09:02:00.000Z",
@@ -151,7 +151,7 @@ describe("Logs — opening a session", () => {
 
   it("the drive in progress opens LIVE on Analysis (no replay); Rewind is how you replay it", async () => {
     const { ctx } = renderWithApp(ui(), {
-      snap: { status: "connected", signals: {}, faults: [], recording: { session: real.id, since: 0, rows: 5, state: "recording" } },
+      snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], recording: { session: real.id, since_utc: "1970-01-01T00:00:00.000Z", rows: 5, state: "recording" } },
     });
     await screen.findByText("demo");
     fireEvent.click(document.querySelector(`[data-session="${real.id}"]`)!);

@@ -28,8 +28,8 @@ function stubServer(reply: (c: Call) => unknown = () => ({ ok: true })) {
 }
 
 const meta = SessionMeta.parse({ ...metaFx, synthetic: false });
-const snap = (over: Partial<Snapshot> = {}): Snapshot => ({ status: "connected", signals: {}, faults: [], ...over });
-const recording = (state?: string) => snap({ recording: { session: "S1", since: 0, rows: 10, ...(state ? { state } : {}) } as Snapshot["recording"] });
+const snap = (over: Partial<Snapshot> = {}): Snapshot => ({ status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], ...over });
+const recording = (state?: string) => snap({ recording: { session: "S1", since_utc: "2026-10-05T09:00:00.000Z", rows: 10, ...(state ? { state } : {}) } as Snapshot["recording"] });
 
 function inReplay(over: Partial<Replay> = {}, s: Snapshot = snap()) {
   const replay: Replay = {

@@ -18,7 +18,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("Preferences — Recording & flags", () => {
   it("opens the recording options and flag manager without a recording, and comes back", () => {
-    renderWithApp(<Preferences onClose={vi.fn()} />, { snap: { status: "connected", signals: {}, faults: [], recording: null } });
+    renderWithApp(<Preferences onClose={vi.fn()} />, { snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], recording: null } });
     fireEvent.click(screen.getByRole("button", { name: "Recording & flags" }));
     expect(screen.getByText("Recording & flags")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Flags" })).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe("Preferences — Version", () => {
     };
     vi.stubGlobal("fetch", vi.fn(async (url: string) => new Response(
       JSON.stringify(String(url).endsWith("/version") ? body : {}), { headers: { "Content-Type": "application/json" } })));
-    renderWithApp(<Preferences onClose={vi.fn()} />, { snap: { status: "connected", signals: {}, faults: [], recording: null } });
+    renderWithApp(<Preferences onClose={vi.fn()} />, { snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], recording: null } });
     const link = await screen.findByRole("link", { name: "b9dd0f4" });
     expect(link).toHaveAttribute("href", "https://github.com/openostler/ostler/commit/b9dd0f4df891d73250238b2d07cbc0428ca83180");
     expect(screen.getByText("Land Rover Discovery 2")).toBeInTheDocument();

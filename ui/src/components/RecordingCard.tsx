@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api, command } from "../api/client";
 import type { Recording } from "../api/schemas";
 import { applyOptions, gpsLabel, loadOptions, usePhoneAudio, usePhoneMotion } from "../lib/recordingOptions";
+import { parseUtc } from "../lib/time";
 import { useApp } from "../state/app";
 import "../recording.css";
 import { NoteSheet } from "./NoteSheet";
@@ -113,7 +114,8 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
   };
 
   const mods = modules?.length ? modules : module ? [module] : [];
-  const elapsed = dur(nowS - recording.since);
+  const sinceMs = parseUtc(recording.since_utc);
+  const elapsed = dur(sinceMs == null ? 0 : nowS - sinceMs / 1000);
   const paused = isPaused(recording);
   const title = paused ? "Paused — no connection" : `Recording now · ${elapsed}`;
   const head = (
