@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Chart-strip maths, pure. X is session time (never sample index), so a decimated series
  * (min/max per bucket, duplicate timestamps) lands on the same pixels as the full one and

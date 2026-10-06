@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Read the ESP32 K-line sniffer's (kline_sniff.ino) USB serial + markers → log file.
 
     python3 tools/esp32_read.py [PORT] [outfile]

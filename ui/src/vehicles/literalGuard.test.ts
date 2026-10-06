@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Phase 0 (spec 2026-10-06 §5): platform UI code never names a vehicle module. Module ids,
  * names and layout come from GET /pack; only a pack's own UI (src/vehicles/<pack>/) may

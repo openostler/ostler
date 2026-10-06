@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Logging of data snapshots to file (JSONL) for later analysis.
 
 One line = one JSON object with timestamp, status, signals (name→value) and

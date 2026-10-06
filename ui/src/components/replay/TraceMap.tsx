@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The replay map. MapLibre is loaded on demand (`import("./maplibre")`); when it can't start
  * (no WebGL, chunk failed to load) a plain SVG drawing of the same coloured lanes stands in,

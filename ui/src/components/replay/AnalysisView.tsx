@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The analysis body (spec §7): the map with traces A and B and their legend, the G-G panel,
  * readouts at the cursor, the chart strip and, in replay, the notes panel. The Analysis tab

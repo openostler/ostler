@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Tap-to-edit text (spec §5, the replay header's name and description). Tap → a field; Enter
  * (Shift+Enter for a new line when multiline) or leaving the field saves; Escape cancels. The

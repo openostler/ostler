@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """SerialTransport — bytes over a serial K-Line adapter (USB KKL / FTDI).
 
 This is the *primary* transport. The library runs on the Raspberry Pi where

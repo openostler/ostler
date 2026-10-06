@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { afterEach, describe, expect, it } from "vitest";
 import {
   BASEMAP_KEY, casingFor, ESRI_IMAGERY, insideConus, layerVisible, loadBasemap, SAT_URL_KEY, satelliteSource, saveBasemap, USGS_IMAGERY,

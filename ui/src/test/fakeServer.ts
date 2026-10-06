@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { act } from "@testing-library/react";
 import { vi } from "vitest";
 import catalogBcu from "../api/fixtures/catalog-bcu.json";

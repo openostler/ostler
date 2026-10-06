@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session recorder and store (ADR-0009, specs/2026-10-05-session-logbook-design.md)."""
 
 import pytest

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared helpers for Vibes as Code tooling (stdlib only).
 
 Parses the minimal YAML frontmatter subset this repo uses and decides which

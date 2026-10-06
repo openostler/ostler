@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Offline place names from GeoNames ``cities1000`` (spec 2026-10-06-logs-at-scale §2).
 
 ``label(lat, lon)`` names a point by the largest town whose population-scaled reach

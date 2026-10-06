@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AUTO_OPEN_MS, autoOpenDelay, connOf, fmtDown, RECONNECTING_MS, REPROMPT_MS, shouldAutoOpen, type Conn } from "../lib/connection";

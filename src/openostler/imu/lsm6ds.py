@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """LSM6DSOX / LSM6DS3TR-C accelerometer over Linux i2c-dev (ADR-0010). Stdlib only.
 
 The part is probed at 0x6A then 0x6B on ``/dev/i2c-<bus>`` (``fcntl.ioctl(fd, I2C_SLAVE)``),

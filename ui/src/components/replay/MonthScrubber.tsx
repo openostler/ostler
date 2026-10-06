@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The right-edge month scrubber (spec §5, Google Photos style): one tick per month that has
  * sessions (from GET /sessions/histogram?group=month), newest at the top, year labels at

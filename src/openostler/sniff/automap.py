@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Auto-map a reference tool field from PLAINTEXT readings + sniffed raw bytes.
 
 Premise: the user only sees plaintext in the reference tool (can't specify offset/type).

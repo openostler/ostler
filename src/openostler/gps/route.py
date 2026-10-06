@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The synthetic demo drive: a parametric loop with a speed profile (ADR-0009).
 
 Used by ``MockGps`` and ``tools/make_demo_session.py``. The loop is **not a road**: it is

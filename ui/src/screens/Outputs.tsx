@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ItemCard } from "../components/ItemCard";

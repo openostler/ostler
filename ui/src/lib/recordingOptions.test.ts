@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AudioCapture, setPhoneAudio } from "./audio";
 import { formatNoteTime, noteAt, noteSpan, sortNotes } from "./notes";

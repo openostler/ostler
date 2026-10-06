@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The catalog on the Discovery 2 reference pack's real menus: drift guards and invariants
 (integration; needs the ``d2diag`` pack installed, see tests/conftest.py)."""
 from __future__ import annotations

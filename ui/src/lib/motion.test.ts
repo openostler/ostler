@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { describe, expect, it, vi } from "vitest";
 import {
   calibrationMatrix, decimate, Decimator, defaultForwardYaw, forwardFromDrive, forwardYaw, levelMatrix, meanVec,

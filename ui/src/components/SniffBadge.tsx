@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { SniffState } from "../api/useSniff";
 
 /** Freshness of the passive sniff feed (ESP32 tap listening to the NanoCom), in one line. */

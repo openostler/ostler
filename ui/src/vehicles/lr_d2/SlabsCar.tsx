@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import type { Field, SignalValue } from "../../api/schemas";
 import { fmt } from "../../lib/format";
 import { RangeBar } from "../../components/RangeBar";

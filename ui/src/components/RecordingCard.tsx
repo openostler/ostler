@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useState } from "react";
 import { api, command } from "../api/client";
 import type { Recording } from "../api/schemas";

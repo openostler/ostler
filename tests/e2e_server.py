@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test/dev-only dashboard with a SIMULATED car (ADR-0011: the product has no demo mode).
 
 Builds a ``DiagServer`` from ``tests/fake_sources.py``: the Td5, SLABS and info modules

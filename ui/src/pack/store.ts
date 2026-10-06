@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The active vehicle pack (GET /pack), held once for the whole app. App loads it at boot
  * (api/usePack.ts) and gates rendering on it; everything else reads it through `getPack()`

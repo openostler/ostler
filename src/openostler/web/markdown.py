@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Minimal, dependency-free Markdown→HTML renderer.
 
 Built to render *our* diagnostic documents (the canonical fault-code dictionary +

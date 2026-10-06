@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for the declarative signal store (openostler.signals).
 
 Store mechanics run against FAKE_PACK; the checks on the Discovery 2 stores are

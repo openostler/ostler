@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useEffect, useRef } from "react";
 import type { SessionMeta } from "../../api/schemas";
 import { canonicalModule, moduleName } from "../../layout";

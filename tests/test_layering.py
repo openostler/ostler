@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Layering guard — the core must never import the consumer/presentation layer.
 
 Core = car communication + data interpretation (see SCOPE.md). It must not import from

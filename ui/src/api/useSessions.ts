@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./client";
 import type { SessionData, SessionHistogram, SessionMeta } from "./schemas";

@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """The KWP2000 layer (ISO 14230-3): standard services on top of K-Line.
 
 Knows the service IDs, positive/negative responses (0x7F + NRC) and

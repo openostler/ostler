@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """IMU sample sources and the polling thread (ADR-0010; spec §3). Stdlib only.
 
 ``ImuReader(source, hz)`` polls ``source.read() -> (ax, ay, az)`` (m/s², specific force) on

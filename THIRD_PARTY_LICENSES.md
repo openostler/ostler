@@ -21,7 +21,7 @@ The web dashboard's neutral colour/spacing tokens are adapted from
 [facebook/astryx](https://astryx.atmeta.com/) (`packages/themes/neutral`), Meta's
 open-source design system, **MIT-licensed**. Only the theme token *values* (colours,
 radii, spacing) are used, inlined as CSS custom properties in `dashboard_v2.html` and
-kept in `ui/astryx-theme.css`.
+`ui/src/styles.css` (and so in the committed build under `src/openostler/web/static/`).
 
 > MIT License
 >
@@ -45,6 +45,28 @@ kept in `ui/astryx-theme.css`.
 > OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The Figtree font is loaded from Google Fonts (SIL Open Font License).
+
+## Bundled UI libraries (committed build)
+
+The committed React build in `src/openostler/web/static/` bundles these runtime
+libraries; their licence notices travel inside the bundle and in `LICENSES/`:
+
+- [React and React DOM](https://github.com/facebook/react) (with `scheduler`): **MIT**,
+  © Meta Platforms, Inc. and affiliates.
+- [zod](https://github.com/colinhacks/zod): **MIT**, © 2025 Colin McDonnell.
+- [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js): **BSD-3-Clause**,
+  © 2023 MapLibre contributors and © 2020 Mapbox; it contains parts of glfx.js (MIT,
+  © 2011 Evan Wallace) and d3-color (BSD-3-Clause, © 2010-2016 Mike Bostock).
+
+Map tiles and styles (OpenFreeMap, Esri imagery) are fetched at runtime and are not
+shipped.
+
+## REUSE
+
+Every file's licence is machine-readable ([REUSE 3.3](https://reuse.software/spec-3.3/)):
+source files carry SPDX headers, `REUSE.toml` covers data, generated and binary files,
+and the licence texts are in `LICENSES/`. COVESA VSS files (`vss/upstream/`, our overlay
+and the generated `metrics.json`) are MPL-2.0. Check with `reuse lint`.
 
 ## GeoNames — offline place names (CC BY 4.0)
 

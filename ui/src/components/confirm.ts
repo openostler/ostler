@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The ONE confirmation for anything that writes to an ECU or drives hardware
  * (actuators, clear faults, shutdown). Kept as a plain function so every caller states

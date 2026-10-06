@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """HTTP + SSE server for the dashboard (stdlib, no external dependencies).
 
 A background thread polls the data source and updates ``latest``; ``/events``

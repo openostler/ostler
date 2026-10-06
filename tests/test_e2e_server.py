@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """tests/e2e_server.py — the test/dev-only dashboard on simulated sources (ADR-0011)."""
 
 import pytest

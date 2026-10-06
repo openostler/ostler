@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Test helper: a half-duplex ECU simulator at the Transport level.
 
 Echoes every frame sent (like a real K-line) and queues a preprogrammed response

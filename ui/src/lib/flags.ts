@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * Automatic flags (specs/2026-10-05-replay-notes-capture-design.md §8): derived in the UI from a
  * session's columnar data each time it is loaded — never stored. A sensor outside its `normal`

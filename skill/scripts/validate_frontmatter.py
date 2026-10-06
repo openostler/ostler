@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Lint frontmatter across the repo.
 
 Checks every manifest-eligible Markdown file for required fields, valid area/

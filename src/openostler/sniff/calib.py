@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Solve scale/offset from (raw value, reference tool displayed value) samples.
 
 Model: ``displayed = raw · scale + bias`` (least-squares). Also formats a suggested

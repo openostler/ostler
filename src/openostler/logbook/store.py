@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Read side of the logbook: list, meta, columnar replay data, delete, export (ADR-0009),
 plus events, notes, audio and capture labels (ADR-0010).
 

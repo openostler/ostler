@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """GPS fix sources: a USB NMEA receiver, a mock that drives the demo loop, and a file replay.
 
 Every source exposes ``start()``, ``stop()``, ``latest() -> Fix | None`` and ``src``.

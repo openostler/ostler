@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Per-session notes (ADR-0010; spec 2026-10-05-replay-notes-capture §2). Core: never imports web.
 
 Contract:

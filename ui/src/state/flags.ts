@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /**
  * The automatic flags of the open session (specs/2026-10-05-replay-notes-capture-design.md §8):
  * `/fields` and `/faults` for every module the session touched (cached per module for the page's

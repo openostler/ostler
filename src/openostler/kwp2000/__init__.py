@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """KWP2000 layer: standard services on top of K-Line."""
 from .kwp2000 import (
     READ_DATA_BY_LOCAL_ID,

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { STATUS_WORD, type Status } from "../lib/catalog";
 
 const ICON: Record<Status, string> = { verified: "✓", candidate: "◆", sniff: "○", untranscribed: "◌" };

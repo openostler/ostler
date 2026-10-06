@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Start the realtime dashboard (always against the car — there is no demo mode, ADR-0011).
 
     # the car (the port is auto-detected when --serial is omitted):

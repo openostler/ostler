@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { useEffect, useRef, useState } from "react";
 import { forwardFromDrive, calibrationMatrix, phoneMotion, postCalibration, RATES, saveCalibration, loadCalibration, type Mat3 } from "../lib/motion";
 import {

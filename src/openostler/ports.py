@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Serial-port resolution — find the KKL/OBD USB cable's device path.
 
 Core utility: given a spec or ``"auto"``, return a concrete serial device path.

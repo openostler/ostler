@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 OpenOstler contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 /** Note helpers for the replay timeline (spec §2, §5) — pure. */
 import type { Note } from "../api/schemas";
 

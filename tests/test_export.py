@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Session exports: AiM-named CSV, Racelogic VBO, GPX 1.1 (ADR-0009)."""
 
 import pytest

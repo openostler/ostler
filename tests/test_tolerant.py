@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+# SPDX-FileCopyrightText: 2026 leijoma
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for the tolerant mode: burst reading that handles noise where strict fails.
 
 Proves against RECORDED bytes (real car 2026-08-03) and a simulated turnaround
