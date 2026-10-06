@@ -2,7 +2,7 @@
 title: "ADR-0032 — One node, optional brain (Ostler Lite and Ostler)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md]
 summary: >
@@ -117,6 +117,11 @@ remains the reference and the lab path.
 - **One app codebase in three places:** the cloud; the brain; the phone as a PWA in a native
   wrapper such as Capacitor (needed for Bluetooth and local Wi-Fi, especially on iOS).
   Brain and cloud run the same containers (Dokploy-style).
+  *Amended 2026-10-06 (owner):* with a brain or Ostler Cloud reachable, the phone app loads
+  the shell and apps from that server (Home Assistant's Companion model); for Lite and
+  offline it ships a bundled shell, the core apps and declarative add-on apps; its native
+  features are fixed in the binary, and it runs no runtime third-party code. Detail:
+  [app-model spec §7.1](../specs/2026-10-06-app-model-design.md#71-amendment-2026-10-06-the-phone-build).
 - The **phone-to-node link** (BLE through the wrapper, or the node's Wi-Fi AP) is **core
   now**. Web Bluetooth comes off the moonshot list.
 

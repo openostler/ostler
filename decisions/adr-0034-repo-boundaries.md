@@ -2,14 +2,17 @@
 title: "ADR-0034 — Repo boundaries: one platform repo, first-class firmware, packs as data, later hardware and contract repos"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
-depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, SCOPE.md]
+depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, specs/2026-10-06-app-model-design.md, SCOPE.md]
 summary: >
-  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012.
+  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`.
 ---
 
 # ADR-0034 — Repo boundaries
+
+> **Amended 2026-10-06:** optional UI apps may live in their own `ostler-app-<x>` repos;
+> the shell and core apps stay in `ostler`. See [Amendments](#amendments-2026-10-06).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). **Amends** the repo tables of
@@ -113,3 +116,19 @@ so the hardware stays open as the code does). GPL-3 reuse stays in marked module
   amend-in-place precedent.
 - **Put hardware under AGPL or CC BY-SA.** Rejected: neither is designed for hardware;
   CERN-OHL-S is.
+
+## Amendments (2026-10-06)
+
+- **Optional UI apps in their own repos** (owner answer to the
+  [app-model spec](../specs/2026-10-06-app-model-design.md) Q1, 2026-10-06). The decision's
+  table keeps "the whole UI" in `ostler`; this narrows it. **Optional UI apps** (Cameras,
+  Social, add-on module apps and community apps) may live in their own `ostler-app-<x>` repos
+  **now**. The rule's grounds are **release cadence** (these apps ship on their own schedule,
+  often tied to an add-on device) and **contributors** (module makers and community authors
+  who need not work in the platform repo). **The shell and the core apps** (Diagnose, Logs,
+  Security, Network and Decode lab) **stay in `ostler`**, because they change in lockstep with
+  the contracts. An app repo publishes a pinned npm package `@ostler/app-<x>` that the
+  platform build bundles; its licence follows ADR-0012 for apps bundled into the shell.
+  Community apps load only as sandboxed iframes on web hosts (app-model spec §5, §7).
+  Confirmation: CI in `ostler` validates every pinned app's manifest and `shell` range, and a
+  proposal for an app repo still names cadence or contributors, as the rule requires.
