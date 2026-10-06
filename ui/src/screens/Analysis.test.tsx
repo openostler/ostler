@@ -141,6 +141,8 @@ describe("Analysis — replay", () => {
     expect(screen.getByRole("link", { name: "CSV" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=csv`);
     expect(screen.getByRole("link", { name: "GPX" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=gpx`);
     expect(screen.getByRole("link", { name: "GeoJSON" })).toHaveAttribute("href", `/sessions/${demo.id}/export?fmt=geojson`);
+    // the raw-tap export is offered only for a node session with a tap
+    expect(screen.queryByRole("link", { name: "Raw tap (pcapng)" })).toBeNull();
     expect(calls.some((c) => c.path.startsWith(`/sessions/${demo.id}/data?ch=`))).toBe(true);
     // no G-G panel without acceleration channels
     expect(document.querySelector(".replay-gg")).toBeNull();
@@ -277,6 +279,17 @@ describe("Analysis — replay", () => {
     // 30 px and 150 px of 300 over 0–2 s
     expect(post.body).toMatchObject({ t: 200, t_end: 1000, text: "clunk" });
     width.mockRestore();
+  });
+
+  it("a node session with a raw tap offers the pcapng export", async () => {
+    real.tap = [{ session: "01M48AFR80CDXA0ZQ1XBS3VHSS", device: "node", file: "tap/01M48AFR80CDXA0ZQ1XBS3VHSS.otap" }];
+    try {
+      renderWithApp(ui(real.id));
+      await screen.findByText(/No GPS in this session/);
+      expect(screen.getByRole("link", { name: "Raw tap (pcapng)" })).toHaveAttribute("href", `/sessions/${real.id}/export?fmt=pcapng`);
+    } finally {
+      delete real.tap;
+    }
   });
 
   it("a real session: Delete needs the word Delete (case-sensitive), posts delete_session and leaves replay", async () => {

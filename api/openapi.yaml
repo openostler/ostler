@@ -876,7 +876,7 @@ paths:
     get:
       tags: [logbook]
       operationId: exportSession
-      summary: Download a session as CSV, VBO, GPX 1.1, GeoJSON or a notes CSV.
+      summary: Download a session as CSV, VBO, GPX 1.1, GeoJSON, a notes CSV or its raw tap as pcapng.
       x-ostler-access: public
       x-ostler-public-mode: filtered
       parameters:
@@ -886,7 +886,14 @@ paths:
             `geojson` is an RFC 7946 FeatureCollection: one LineString Feature of every GPS
             point with `coordTimes` (RFC 3339 UTC), `t_ms`, `id` and `start_utc`, plus a
             Point Feature per note (`kind`, `text`, `tags`, `t_ms`, `time`).
-          schema: {type: string, enum: [csv, vbo, gpx, geojson, notes], default: csv}
+            `pcapng` is a node session's raw tap (NodeSource spec §7): one interface per
+            tap session and bus (K-line as `LINKTYPE_USER0`, CAN as
+            `LINKTYPE_CAN_SOCKETCAN`, events as `LINKTYPE_USER1`), timestamps on the node's
+            monotonic clock (µs since boot, not UTC), `seq` gaps as packet comments and
+            interface drop counts. Identity replies are scrubbed and unframed records
+            dropped whatever the install setting (ADR-0036 §3). A session with no tap
+            answers 400.
+          schema: {type: string, enum: [csv, vbo, gpx, geojson, notes, pcapng], default: csv}
       responses:
         "200":
           description: 'An attachment (`Content-Disposition: attachment; filename="…"`).'
@@ -902,6 +909,8 @@ paths:
               schema: {type: string}
             application/geo+json:
               schema: {type: object, description: A GeoJSON FeatureCollection.}
+            application/x-pcapng:
+              schema: {type: string, format: binary, description: "pcapng (one section, little-endian)."}
         "400":
           $ref: "#/components/responses/Error"
         "404":
@@ -1705,7 +1714,21 @@ components:
             connected: {type: boolean}
             host: {type: string}
           additionalProperties: true
-        tap: {type: "null", description: "The raw-tap session (phase P2); null until then."}
+        tap:
+          description: >
+            The raw-tap subscription (NodeSource spec §7): null while no session records
+            (the tap is subscribed only then, owner answer 9).
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeTap"}
+      additionalProperties: true
+    NodeTap:
+      type: object
+      required: [session, state]
+      properties:
+        session: {type: [string, "null"], description: "The tap session (a ULID) of the latest batch; null before one."}
+        state: {type: string, enum: [connecting, waiting, receiving], description: "connecting: the tap connection is not up; waiting: subscribed, no batch in the last 5 s; receiving."}
+        batches: {type: integer, minimum: 0}
       additionalProperties: true
     VssReading:
       type: object
@@ -2327,12 +2350,55 @@ components:
         end_pos: {$ref: "#/components/schemas/LonLat"}
         synthetic: {type: boolean}
         recording: {type: boolean}
-        source: {type: string, description: "mock | live | demo"}
+        source: {type: string, description: "mock | live | node | demo"}
+        devices: {type: array, items: {type: string}, description: "A node session: the device ids seen."}
+        pack:
+          description: "A node session: the vehicle pack that decoded it on the Brain."
+          oneOf:
+            - {type: "null"}
+            - type: object
+              required: [id]
+              properties:
+                id: {type: string}
+                version: {type: [string, "null"]}
+              additionalProperties: true
+        tap:
+          type: array
+          description: "A node session: its raw-tap files (`tap/<tap session>.otap`); `?fmt=pcapng` exports them."
+          items: {$ref: "#/components/schemas/SessionTap"}
+        end_reason:
+          description: "A node session: why it ended (null while recording)."
+          oneOf:
+            - {type: "null"}
+            - {type: string, enum: [idle, node_asleep, closed, split]}
         audio: {type: array, items: {$ref: "#/components/schemas/AudioTrack"}}
         accel_cal:
           oneOf:
             - {type: "null"}
             - {$ref: "#/components/schemas/AccelCal"}
+      additionalProperties: true
+    SessionTap:
+      type: object
+      description: "One raw-tap file of a node session (schemas/session-meta.schema.json `tap`)."
+      required: [session, device, file, scrub, seq_first, seq_last, gaps, overflow]
+      properties:
+        session: {type: string, description: The node's tap session (a ULID).}
+        device: {type: string}
+        file: {type: string}
+        boot_id: {type: [integer, "null"]}
+        scrub: {type: [string, "null"], description: "on | brain | off | unknown (ADR-0036)"}
+        buses: {type: array, items: {type: object}}
+        clock: {type: [object, "null"]}
+        started: {type: [string, "null"]}
+        seq_first: {type: [integer, "null"]}
+        seq_last: {type: [integer, "null"]}
+        records: {type: integer}
+        bytes: {type: integer}
+        gaps: {type: integer}
+        lost: {type: integer}
+        overflow: {type: integer}
+        brain_scrubbed: {type: integer}
+        brain_dropped: {type: integer}
       additionalProperties: true
     SessionList:
       type: object

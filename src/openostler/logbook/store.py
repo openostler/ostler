@@ -23,6 +23,10 @@ recorded before U0 (or a demo log) has none on disk and reads as the local vehic
 (``SessionStore(..., vid=None, state_dir=None)``: ``OSTLER_VEHICLE_ID``, else
 ``<state_dir>/vehicle.json``, state dir defaulting to the parent of ``root``). Files are
 never rewritten for it.
+
+NodeSource P2: ``export(sid, "pcapng")`` writes a node session's raw tap
+(``logbook/pcapng.py``; scrubbed and without unframed records whatever the install
+setting, ADR-0036 §3). A session without a tap raises ValueError.
 """
 from __future__ import annotations
 
@@ -41,8 +45,11 @@ from .audio import mime_for, track_file
 from . import demo as _demo_pkg
 from . import places as _places
 from .notes import NoteLog, read_notes
+from .pcapng import MIME as _PCAPNG_MIME
+from .pcapng import to_pcapng
 from .recorder import (MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions,
                        write_json_atomic)
+from .tap import read_tap
 from .vehicle import local_vid, state_dir_for
 
 _SAFE_ID = re.compile(r"^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$")
@@ -61,6 +68,7 @@ _EXPORTS = {
     "gpx": (_export.to_gpx, "application/gpx+xml", "gpx"),
     "geojson": (_export.to_geojson, "application/geo+json", "geojson"),
     "notes": (_export.notes_csv, "text/csv; charset=utf-8", "notes.csv"),
+    "pcapng": (to_pcapng, _PCAPNG_MIME, "pcapng"),
 }
 
 
@@ -578,13 +586,16 @@ class SessionStore:
                 pass
 
     def export(self, sid: str, fmt: str, public: bool = False) -> "tuple[str, str, bytes]":
-        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | geojson | notes."""
+        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | geojson | notes
+        | pcapng (a node session's raw tap; ValueError when it has none)."""
         fmt = (fmt or "").lower()
         if fmt not in _EXPORTS:
             raise ValueError(f"unknown export format: {fmt!r}")
         path, _, meta = self._resolve(sid, public)
         notes = read_notes(path)
         fn, ctype, ext = _EXPORTS[fmt]
+        if fmt == "pcapng":
+            return f"{meta['id']}.{ext}", ctype, fn(read_tap(path, meta), meta)
         if fmt == "notes":
             body = fn(notes, meta)
         else:

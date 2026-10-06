@@ -57,7 +57,7 @@ markers = [
     "needs_pack: integration test that needs the Discovery 2 reference pack (d2diag) installed",
     "fake_pack: run with tests/fake_pack.py FAKE_PACK active (platform logic, no real pack)",
     "needs_vcan: runs on a real vcan0; skipped where the runner has none, a failure with OSTLER_REQUIRE_VCAN=1 (CI vcan job, CanLink spec §9)",
-    "needs_broker: runs the MQTT client against a real Mosquitto; skipped where none is installed (NodeSource spec §13)",
+    "needs_broker: runs the MQTT client against a real Mosquitto; skipped where none is installed, a failure with OSTLER_REQUIRE_BROKER=1 (CI broker job, NodeSource spec §13)",
 ]
 
 # Ruff (ADR-0017, dev-only). The rule set is E, F, I, B and UP; the ignores below keep the

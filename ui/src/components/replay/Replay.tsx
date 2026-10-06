@@ -95,6 +95,9 @@ function SessionActions({ meta, canDelete, onDeleted }: { meta: SessionMeta; can
           {(["csv", "vbo", "gpx", "geojson"] as const).map((f) => (
             <a key={f} className="btn block" href={api.sessionExportUrl(meta.id, f)} download>{f === "geojson" ? "GeoJSON" : f.toUpperCase()}</a>
           ))}
+          {meta.tap && meta.tap.length > 0 ? (
+            <a className="btn block" href={api.sessionExportUrl(meta.id, "pcapng")} download>Raw tap (pcapng)</a>
+          ) : null}
         </div>
       </details>
       {canDelete && !confirming ? <button className="rchip replay-delete" onClick={() => setConfirming(true)}>Delete</button> : null}

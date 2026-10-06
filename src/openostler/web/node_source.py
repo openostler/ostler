@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """NodeSource: the Brain reads the car through the node's MQTT messages (NodeSource spec,
-phase P1: read-only ingest).
+phases P1 read-only ingest and P2 recording and raw tap).
 
 - :class:`NodeFeed` owns one MQTT 5 connection (``openostler.mqtt``) to the Brain's broker
   (or, in the lab, the node's), subscribes read-only to ``status``, ``power`` and ``vss/+``
@@ -13,6 +13,12 @@ phase P1: read-only ingest).
 - :class:`NodeSource` is a :class:`DataSource` per pack module over one shared feed:
   ``poll()`` builds the snapshot from the table under its lock and never blocks.
   Selecting a module only filters the view; the node keeps its own rotation.
+- **The raw tap (P2).** While a session records, :meth:`NodeFeed.start_tap` opens a second
+  connection (client id ``<id>-tap``, session expiry 60 s so a short Brain hiccup does not
+  lose QoS 1 batches; clean start on each new run, resumed on reconnects) subscribed to
+  ``tap/+/meta`` and ``tap/+/data``, and hands every message to the recorder's sink;
+  :meth:`NodeFeed.stop_tap` unsubscribes and closes it when the session ends (owner
+  answer 9: no rolling buffer).
 
 The Brain never touches the car (ADR-0032): nothing here opens a serial port, imports a
 transport or publishes a request (requests are P4). It is read-only: it publishes nothing.
@@ -26,10 +32,13 @@ import time
 from typing import Callable, Optional
 
 from ..mqtt import MqttClient, StdlibMqttClient, SubOptions
-from ..node import FAULTS_NOTE, DeviceTable, check_vid, subscriptions
+from ..node import (FAULTS_NOTE, DeviceTable, check_vid, parse_tap_rest, parse_topic,
+                    subscriptions, tap_subscriptions)
 from .sources import DataSource
 
 KEEP_ALIVE_S = 10
+TAP_SESSION_EXPIRY_S = 60  # spec §4: a short Brain hiccup does not lose tap batches
+TAP_RECEIVING_S = 5.0      # a batch within this long: the tap is "receiving"
 MQTT_PORT, MQTTS_PORT = 1883, 8883
 
 # Spec §10: snapshot status → conn.
@@ -87,7 +96,8 @@ class NodeFeed:
                  lookup=None, canonical=None, is_known=None,
                  clock: Callable[[], float] = time.monotonic,
                  wall: Callable[[], float] = time.time,
-                 log: "Callable[[str], None] | None" = None) -> None:
+                 log: "Callable[[str], None] | None" = None,
+                 tap_client: "Callable[[], MqttClient] | None" = None) -> None:
         self.vid = check_vid(vid)
         self.host, self.port = host, port
         self._clock, self._wall = clock, wall
@@ -95,11 +105,21 @@ class NodeFeed:
         self.table = DeviceTable(self.vid, pack_id=pack_id, lookup=lookup,
                                  canonical=canonical, is_known=is_known,
                                  log=lambda m: self.log(m))
+        cid = client_id or getattr(client, "client_id", None) or \
+            f"{socket.gethostname().split('.')[0]}-nodesource"
         if client is None:
-            cid = client_id or f"{socket.gethostname().split('.')[0]}-nodesource"
             client = StdlibMqttClient(cid, keep_alive=KEEP_ALIVE_S, clean_start=True,
                                       session_expiry=0, ssl_context=ssl_context)
         self.client = client
+        # The tap connection (P2): built per recorded session.
+        self._tap_factory = tap_client or (lambda: StdlibMqttClient(
+            f"{cid}-tap", keep_alive=KEEP_ALIVE_S, clean_start=True,
+            session_expiry=TAP_SESSION_EXPIRY_S, ssl_context=ssl_context))
+        self._tap: "MqttClient | None" = None
+        self._tap_sink: "Callable[[str, str, str, bytes], object] | None" = None
+        self._tap_session: "str | None" = None
+        self._tap_last_rx: "float | None" = None
+        self.tap_batches = 0
         self.refused: "list[str]" = []
         self.attempted = False  # a connection was tried (so "down" means down, not "starting")
         self._lock = threading.Lock()
@@ -114,6 +134,7 @@ class NodeFeed:
         start(self.host, self.port)
 
     def stop(self) -> None:
+        self.stop_tap(wait=True)
         stop = getattr(self.client, "stop", None)
         if stop is not None:
             stop()
@@ -163,6 +184,114 @@ class NodeFeed:
     def view(self, module: "str | None") -> dict:
         return self.table.view(module, self._clock(), self._wall())
 
+    # ---- the raw tap (P2) ------------------------------------------------------------ #
+    def tap_subscription_options(self) -> "list[SubOptions]":
+        return [SubOptions(f, qos, no_local=True, retain_as_published=False, retain_handling=0)
+                for f, qos in tap_subscriptions(self.vid)]
+
+    @property
+    def tap_running(self) -> bool:
+        return self._tap is not None
+
+    def start_tap(self, sink: "Callable[[str, str, str, bytes], object]") -> bool:
+        """Subscribe to the raw tap and hand each message to ``sink(device, session, part,
+        payload)`` (``part`` is ``meta`` or ``data``). Idempotent; never blocks (the
+        connection is made in the background). True when it started now."""
+        with self._lock:
+            self._tap_sink = sink
+            if self._tap is not None:
+                return False
+            client = self._tap_factory()
+            self._tap = client
+            self._tap_session, self._tap_last_rx = None, None
+        client.on_message = self._on_tap_message
+        client.on_connect = lambda _ack, c=client: self._on_tap_connect(c)
+        client.on_disconnect = lambda reason: self.log(f"tap connection lost: {reason}")
+        start = getattr(client, "start", None)
+        if start is None:
+            raise TypeError("the MQTT client cannot run in the background")
+        start(self.host, self.port)
+        self.log("raw tap: subscribing (a session is recording)")
+        return True
+
+    def stop_tap(self, wait: bool = False) -> bool:
+        """Unsubscribe from the raw tap and close its connection (the session ended). The
+        teardown runs in the background unless ``wait``. True when a tap was running."""
+        with self._lock:
+            client, self._tap, self._tap_sink = self._tap, None, None
+        if client is None:
+            return False
+
+        def teardown() -> None:
+            try:
+                if client.connected:
+                    unsub = getattr(client, "unsubscribe", None)
+                    if unsub is not None:
+                        unsub([s.topic_filter for s in self.tap_subscription_options()])
+            except Exception:  # noqa: BLE001 — the broker expires the session in 60 s anyway
+                pass
+            stop = getattr(client, "stop", None)
+            try:
+                if stop is not None:
+                    stop()
+                else:
+                    client.disconnect()
+            except Exception:  # noqa: BLE001
+                pass
+
+        if wait:
+            teardown()
+        else:
+            threading.Thread(target=teardown, name="nodesource-tap-stop", daemon=True).start()
+        self.log("raw tap: unsubscribed (no session is recording)")
+        return True
+
+    def _on_tap_connect(self, client) -> None:
+        # A new run starts clean; a reconnect within it resumes the 60 s session so QoS 1
+        # batches queued meanwhile are delivered.
+        if hasattr(client, "clean_start"):
+            client.clean_start = False
+        subs = self.tap_subscription_options()
+        codes = client.subscribe(subs)
+        for sub, code in zip(subs, codes):
+            if code >= 0x80:
+                self.log(f"the broker refused the subscription {sub.topic_filter} "
+                         "(check the ACL, spec §5)")
+
+    def _on_tap_message(self, pkt) -> None:
+        t = parse_topic(pkt.topic)
+        if t is None or t.vid != self.vid or not t.device or t.kind != "tap":
+            return
+        rest = parse_tap_rest(t.rest)
+        if rest is None:
+            return
+        session, part = rest
+        with self._lock:
+            sink = self._tap_sink
+            if part == "data":
+                self.tap_batches += 1
+                self._tap_session, self._tap_last_rx = session, self._clock()
+        if sink is not None:
+            sink(t.device, session, part, pkt.payload)
+
+    def tap_state(self) -> "dict | None":
+        """Snapshot ``node.tap``: null when the tap is not subscribed (no session is
+        recording); else ``{session, state, batches}`` with ``state`` ``connecting``,
+        ``waiting`` (subscribed, no batch lately) or ``receiving``."""
+        with self._lock:
+            client = self._tap
+            if client is None:
+                return None
+            session, last = self._tap_session, self._tap_last_rx
+            batches = self.tap_batches
+        if not client.connected:
+            state = "connecting"
+        elif last is not None and self._clock() - last <= TAP_RECEIVING_S:
+            state = "receiving"
+        else:
+            state = "waiting"
+        return {"session": session, "state": state, "batches": batches}
+
 
 class NodeSource(DataSource):
     """One pack module's view of the node feed (spec §6, §10)."""
@@ -188,12 +317,13 @@ class NodeSource(DataSource):
         dev = view["device"]
         broker = self.feed.broker()
         node = None
+        tap = self.feed.tap_state()
         if dev is not None:
-            node = {**dev, "broker": broker, "tap": None}
+            node = {**dev, "broker": broker, "tap": tap}
         snap = {"source": self.name, "source_kind": "node", "signals": view["signals"],
                 "vss": view["vss"], "faults": [], "faults_note": FAULTS_NOTE,
                 "node": node or {"device": None, "status": None, "power": None, "boot": None,
-                                 "last_seen_utc": None, "broker": broker, "tap": None},
+                                 "last_seen_utc": None, "broker": broker, "tap": tap},
                 "devices": view["devices"]}
         state = ((dev or {}).get("power") or {}).get("state")
         if not broker["connected"]:

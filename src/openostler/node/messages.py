@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 PREFIX = "ostler/v1"
-STATUS, POWER, VSS = "status", "power", "vss"
+STATUS, POWER, VSS, TAP = "status", "power", "vss", "tap"
 STATUS_VALUES = ("online", "offline")
 # ADR-0040 §1 power states (the node publishes awake and shutting_down today).
 POWER_STATES = ("awake", "held", "waking", "asleep", "shutting_down")
@@ -47,6 +47,22 @@ def subscriptions(vid: str) -> "list[tuple[str, int]]":
     the vehicle, never a request topic."""
     base = f"{PREFIX}/{check_vid(vid)}/+"
     return [(f"{base}/status", 1), (f"{base}/power", 1), (f"{base}/vss/+", 0)]
+
+
+def tap_subscriptions(vid: str) -> "list[tuple[str, int]]":
+    """The raw-tap filters (spec §4, P2): headers and batches, QoS 1. Subscribed only while
+    a session records (owner answer 9), on their own connection (session expiry 60 s)."""
+    base = f"{PREFIX}/{check_vid(vid)}/+/tap/+"
+    return [(f"{base}/meta", 1), (f"{base}/data", 1)]
+
+
+def parse_tap_rest(rest: str) -> "Optional[tuple[str, str]]":
+    """``<session>/meta`` or ``<session>/data`` (a ``tap`` topic's remainder) →
+    ``(session, part)``; None for anything else (``tap/ctl`` is never read)."""
+    session, sep, part = rest.partition("/")
+    if not sep or part not in ("meta", "data") or not session:
+        return None
+    return session, part
 
 
 @dataclass(frozen=True)
@@ -152,6 +168,6 @@ def parse_vss(leaf: str, payload: bytes) -> "Optional[VssValue]":
                     source, name, c, raw, state)
 
 
-__all__ = ["POWER_STATES", "PREFIX", "STATUS_VALUES", "Topic", "VssValue", "check_vid",
-           "parse_power", "parse_status", "parse_topic", "parse_vss", "subscriptions",
-           "vin_shaped"]
+__all__ = ["POWER_STATES", "PREFIX", "STATUS_VALUES", "TAP", "Topic", "VssValue", "check_vid",
+           "parse_power", "parse_status", "parse_tap_rest", "parse_topic", "parse_vss",
+           "subscriptions", "tap_subscriptions", "vin_shaped"]

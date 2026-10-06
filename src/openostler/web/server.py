@@ -49,7 +49,7 @@ from .sources import DataSource
 # Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
 # is answered 404 before it reaches the store (no path traversal through the URL).
 _SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$")
-_EXPORT_FORMATS = ("csv", "vbo", "gpx", "geojson", "notes")
+_EXPORT_FORMATS = ("csv", "vbo", "gpx", "geojson", "notes", "pcapng")
 _DEFAULT_MAX_POINTS = 2000
 
 # ---- replay API (ADR-0010) ---- #
@@ -1334,9 +1334,13 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
                 self._conn_log(f"logbook: feed failed ({type(exc).__name__}: {exc})")
             status = self._recording_status()
             self._feed_imu(rec, status)
+        tap = self._sync_tap(status)
         self._track_session(status)
         self.latest = {**self.latest, "recording": status,
                        "recording_sources": self.recording_sources()}
+        node = self.latest.get("node")
+        if tap is not False and isinstance(node, dict):
+            self.latest["node"] = {**node, "tap": tap}  # the tap as of this poll
 
     def _feed_imu(self, rec, status: "dict | None") -> None:
         """Hand the IMU samples gathered since the last poll to the recorder (dropped
@@ -1351,8 +1355,41 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         except Exception as exc:  # noqa: BLE001
             self._conn_log(f"imu: feed failed ({type(exc).__name__}: {exc})")
 
+    def _sync_tap(self, status: "dict | None"):
+        """A node source's raw tap follows the recorder (NodeSource spec §7, owner answer
+        9): subscribed while a session is open, unsubscribed when it ends. Returns the
+        snapshot ``node.tap`` now, or False for a source without a tap. Never raises."""
+        feed = getattr(self.source, "feed", None)
+        if feed is None or not hasattr(feed, "start_tap"):
+            return False
+        try:
+            if status and self._recorder is not None and not self._rec_closed:
+                feed.start_tap(self._tap_sink)
+            elif feed.tap_running:
+                feed.stop_tap()
+            return feed.tap_state()
+        except Exception as exc:  # noqa: BLE001 — the tap never fells the poll loop
+            self._conn_log(f"node: raw tap {type(exc).__name__}: {exc}")
+            return False
+
+    def _tap_sink(self, device: str, session: str, part: str, payload: bytes) -> None:
+        """Raw-tap messages from the MQTT thread into the open session (if any)."""
+        rec = self._recorder
+        if rec is None or self._rec_closed:
+            return
+        try:
+            rec.tap_message(device, session, part, payload)
+        except Exception as exc:  # noqa: BLE001
+            self._conn_log(f"logbook: tap write failed ({type(exc).__name__}: {exc})")
+
     def close_recorder(self) -> None:
         """End the open session (server shutdown). Idempotent."""
+        feed = getattr(self.source, "feed", None)
+        if feed is not None and getattr(feed, "tap_running", False):
+            try:
+                feed.stop_tap()
+            except Exception:  # noqa: BLE001
+                pass
         with self._rec_lock:
             if self._rec_closed:
                 return

@@ -111,7 +111,10 @@ def is_accel(name: str) -> bool:
 
 def group_for(name: str) -> str:
     """The channel's group for ``meta.channels``: ``accel`` (every acceleration channel,
-    GPS-derived too), ``gps``, ``text`` or the store group (lower case)."""
+    GPS-derived too), ``gps``, ``text``, ``vss`` (a node's VSS path column, ``<path>`` or
+    ``<path>@<device>``) or the store group (lower case)."""
+    if name.startswith("Vehicle."):
+        return "vss"
     if is_accel(name):
         return "accel"
     if name.startswith("GPS_"):

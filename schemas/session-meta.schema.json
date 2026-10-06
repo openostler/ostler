@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ostler.tech/schemas/session-meta.schema.json",
   "title": "Logbook session meta",
-  "description": "meta.json of one recorded session (<logs>/sessions/<id>/meta.json), written atomically by openostler.logbook.recorder (ADR-0009, ADR-0010, ADR-0011, U0). Timestamps are RFC 3339 in UTC with a Z suffix. Sessions recorded before U0 carry no vid; the store reads them as the local vid and never rewrites them. note_count is computed on read and is not stored.",
+  "description": "meta.json of one recorded session (<logs>/sessions/<id>/meta.json), written atomically by openostler.logbook.recorder (ADR-0009, ADR-0010, ADR-0011, U0). Timestamps are RFC 3339 in UTC with a Z suffix. Sessions recorded before U0 carry no vid; the store reads them as the local vid and never rewrites them. note_count is computed on read and is not stored. Sessions recorded from a node (source node; NodeSource spec §7) add devices, pack, tap and end_reason.",
   "type": "object",
   "required": ["id", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules", "channels",
                "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos", "end_pos",
@@ -36,7 +36,24 @@
     "end_pos": { "$ref": "#/$defs/lonlat" },
     "synthetic": { "type": "boolean" },
     "recording": { "type": "boolean" },
-    "source": { "type": "string", "description": "live, demo, or a legacy mock." },
+    "source": { "type": "string", "description": "live, node (recorded from a node's MQTT messages), demo, or a legacy mock." },
+    "devices": { "type": "array", "items": { "type": "string" }, "description": "A node session: the device ids seen under the vehicle id." },
+    "pack": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["id"],
+          "properties": { "id": { "type": "string" }, "version": { "type": ["string", "null"] } }
+        },
+        { "type": "null" }
+      ],
+      "description": "A node session: the vehicle pack (and its distribution version) that decoded it on the Brain."
+    },
+    "tap": { "type": "array", "items": { "$ref": "#/$defs/tap" }, "description": "A node session: its raw-tap files (tap/<tap session>.otap)." },
+    "end_reason": {
+      "oneOf": [{ "enum": ["idle", "node_asleep", "closed", "split"] }, { "type": "null" }],
+      "description": "A node session: why it ended (null while recording). node_asleep: the node slept cleanly; idle: 300 s without a connected poll; closed: the server stopped; split: a manual split."
+    },
     "audio": { "type": "array", "items": { "$ref": "#/$defs/audio" } },
     "accel_cal": {
       "oneOf": [
@@ -105,6 +122,32 @@
             { "type": "null" }
           ]
         }
+      }
+    },
+    "tap": {
+      "type": "object",
+      "required": ["session", "device", "file", "scrub", "seq_first", "seq_last", "gaps", "overflow"],
+      "properties": {
+        "session": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$", "description": "The node's tap session (a ULID)." },
+        "device": { "type": "string" },
+        "file": { "type": "string", "pattern": "^tap/[0-9A-Za-z_.-]+\\.otap$" },
+        "boot_id": { "type": ["integer", "null"] },
+        "scrub": {
+          "oneOf": [{ "enum": ["on", "brain", "off", "unknown"] }, { "type": "null" }],
+          "description": "on: the node scrubbed and the Brain re-checked; brain: the Brain scrubbed (the node's header said off or nothing); off / unknown: identity data kept on this device under the install option OSTLER_RECORD_IDENTITY (ADR-0036; never exported)."
+        },
+        "buses": { "type": "array", "items": { "type": "object" } },
+        "clock": { "type": ["object", "null"] },
+        "started": { "type": ["string", "null"] },
+        "seq_first": { "type": ["integer", "null"], "minimum": 0 },
+        "seq_last": { "type": ["integer", "null"], "minimum": 0 },
+        "records": { "type": "integer", "minimum": 0 },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "gaps": { "type": "integer", "minimum": 0, "description": "seq gaps (each logged as a tap_gap event; never filled)." },
+        "lost": { "type": "integer", "minimum": 0 },
+        "overflow": { "type": "integer", "minimum": 0, "description": "overflow events from the node." },
+        "brain_scrubbed": { "type": "integer", "minimum": 0 },
+        "brain_dropped": { "type": "integer", "minimum": 0 }
       }
     },
     "audio": {

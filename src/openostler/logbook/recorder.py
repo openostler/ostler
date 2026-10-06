@@ -33,6 +33,14 @@ ADR-0010 additions (specs/2026-10-05-replay-notes-capture-design.md):
 U0 (specs/2026-10-06-u0-seams-design.md): every new non-synthetic session's ``meta.json``
 carries ``vid``, the vehicle id from ``vid=``, ``OSTLER_VEHICLE_ID`` or
 ``<state_dir>/vehicle.json`` (``logbook/vehicle.py``).
+
+Node sessions (NodeSource spec §7, P2; the rules are in ``logbook/node.py``): a snapshot
+with ``source_kind: "node"`` opens a session only with the node online, awake or held and a
+live value; ``status: asleep`` ends it at once (``end_reason: node_asleep``); stale values
+are never written; ``vss`` readings add ``<path>`` and ``<path>@<device>`` columns; ``Utc``
+follows the node's synced clock. ``tap_message()`` (called from the MQTT thread) writes
+the raw tap beside the CSV (``logbook/tap.py``). Their ``meta.json`` adds ``source:
+"node"``, ``devices``, ``pack``, ``tap`` and ``end_reason``.
 """
 from __future__ import annotations
 
@@ -51,9 +59,11 @@ from typing import Callable
 from ..timefmt import rfc3339_utc
 from . import channels as ch
 from . import motion
+from . import node as _node
 from . import places as _places
 from .audio import AudioTrackWriter
 from .notes import NoteLog, read_notes
+from .tap import TapRecorder, identity_recording_enabled
 from .vehicle import local_vid, state_dir_for
 
 IDLE_S = 300.0          # end after this long without a connected poll
@@ -318,6 +328,13 @@ class _Session:
         self.user: dict = {k: None for k in USER_KEYS}   # name, description, place*
         self.written: dict = {}                            # user fields last written
         self.vid: "str | None" = None                      # U0: the vehicle id
+        # NodeSource P2
+        self.node = False                                  # recorded from a node source
+        self.tap: "TapRecorder | None" = None
+        self.devices: "set[str]" = set()
+        self.pack: "dict | None" = None
+        self.end_reason: "str | None" = None
+        self.clock_synced: "bool | None" = None
 
     @property
     def name(self) -> "str | None":
@@ -349,8 +366,13 @@ class SessionRecorder:
                  fsync: Callable[[int], None] = os.fsync,
                  accel_hz: int = DEFAULT_ACCEL_HZ,
                  on_change: "Callable[[str], None] | None" = None,
-                 vid: "str | None" = None, state_dir: "str | None" = None) -> None:
+                 vid: "str | None" = None, state_dir: "str | None" = None,
+                 record_identity: "bool | None" = None) -> None:
         self.root = str(root)
+        # ADR-0036: identity data in the raw tap is scrubbed unless the install-level option
+        # (OSTLER_RECORD_IDENTITY, local configuration only) is on.
+        self.record_identity = (identity_recording_enabled() if record_identity is None
+                                else bool(record_identity))
         # U0: every new session carries the vehicle id. ``vid`` pins it (tests, tools);
         # otherwise it is resolved when a session opens from ``OSTLER_VEHICLE_ID`` or
         # ``<state_dir>/vehicle.json`` (default state dir: the parent of ``root``).
@@ -391,16 +413,21 @@ class SessionRecorder:
             if s is None:
                 if not connected:  # GPS movement never opens a session (ADR-0011)
                     return
+                if _node.is_node(snap) and not _node.may_open(snap):
+                    return  # a node: online, awake or held, and a live value (spec §7)
                 s = self._open(now, m, snap)
             else:
                 self._state_changes(s, m, snap)
+                if s.node and _node.asleep(snap):  # a clean sleep ends it (owner answer 8)
+                    self._end(s, now, m, reason="node_asleep")
+                    return
             self._check_pi(s, m)
             s.paused = not connected
             if connected:
                 s.last_conn_m = m
                 self._row(s, now, m, snap, fix)
             if m - s.last_conn_m >= IDLE_S:
-                self._end(s, now, m)
+                self._end(s, now, m, reason="idle")
             elif m - s.last_meta_m >= META_S:
                 self._write_meta(s, m)
 
@@ -408,7 +435,7 @@ class SessionRecorder:
         """End the open session (server shutdown)."""
         with self._lock:
             if self._s is not None:
-                self._end(self._s, self._clock(), self._mono())
+                self._end(self._s, self._clock(), self._mono(), reason="closed")
 
     def status(self) -> "dict | None":
         """The snapshot ``recording`` field: ``{session, since, since_utc, rows, state}`` or
@@ -449,6 +476,25 @@ class SessionRecorder:
         s = self._s
         return None if s is None else s.ms(self._mono())
 
+    def tap_message(self, device: str, session: str, part: str, payload: bytes) -> int:
+        """A raw-tap message from a node (``tap/<session>/meta`` or ``…/data``; NodeSource
+        spec §7). Written only while a node session is open (owner answer 9: no rolling
+        buffer); returns the records written. Thread-safe (the MQTT thread calls it)."""
+        with self._lock:
+            s = self._s
+            if s is None or s.tap is None:
+                return 0
+            if part == "meta":
+                s.tap.header(str(device), str(session), bytes(payload))
+                return 0
+            if part != "data":
+                return 0
+            first = not s.tap.entries()
+            n = s.tap.batch(str(device), str(session), bytes(payload))
+            if n and first:
+                self._write_meta(s, self._mono())  # list the tap at once
+            return n
+
     def start(self, snapshot: "dict | None" = None) -> str:
         """Open a session now if none is open; returns its id. For tests and tools only:
         no server route starts a session without a connection (ADR-0011). It ends by the
@@ -464,8 +510,10 @@ class SessionRecorder:
         with self._lock:
             if self._s is None or self._s.paused:
                 raise NotRecording()
-            self._end(self._s, self._clock(), self._mono())
-            self._open(self._clock(), self._mono(), snapshot or {})
+            prev = self._s
+            self._end(prev, self._clock(), self._mono(), reason="split")
+            self._open(self._clock(), self._mono(), snapshot or (
+                {"source_kind": "node"} if prev.node else {}))
             return self._s.id
 
     def event(self, etype: str, **fields) -> "dict | None":
@@ -689,8 +737,18 @@ class SessionRecorder:
         path = os.path.join(self.root, sid)
         os.makedirs(path)
         mode = snap.get("mode")
-        self._src = self.source or (mode if mode in ("mock", "live", "demo") else "live")
+        node = _node.is_node(snap)
+        self._src = self.source or ("node" if node else
+                                    mode if mode in ("mock", "live", "demo") else "live")
         s = _Session(sid, path, now, m)
+        if node:
+            s.node = True
+            s.pack = _node.pack_info()
+            s.devices.update(d for d in snap.get("devices") or [] if isinstance(d, str))
+            s.tap = TapRecorder(path, record_identity=self.record_identity,
+                                emit=lambda etype, fields: self._emit(
+                                    s, self._mono(), etype, fields),
+                                mono=self._mono, fsync=self._fsync)
         # A synthetic session (the pack's committed demo logs) belongs to no vehicle and
         # stays byte-stable: it gets a vid only when one is passed in.
         s.vid = self.vid or (None if self.synthetic else local_vid(self.state_dir))
@@ -791,6 +849,8 @@ class SessionRecorder:
                 s.events_dirty = False
             for w in s.writers.values():
                 w.sync(self._fsync)
+            if s.tap is not None:
+                s.tap.sync(force=force)
             s.last_sync_m = m
 
     def _ensure_columns(self, s: _Session, m: float, new_signals: "list[str]",
@@ -829,7 +889,11 @@ class SessionRecorder:
         vals: "dict[str, str]" = {}
         new_signals: "list[str]" = []
         if snap is not None:
-            for name, sv in (snap.get("signals") or {}).items():
+            sigs = snap.get("signals") or {}
+            if s.node:  # a stale value is a last known one, never a live row (spec §7)
+                sigs = {k: v for k, v in sigs.items() if _node.is_live(v)}
+                s.devices.update(d for d in snap.get("devices") or [] if isinstance(d, str))
+            for name, sv in sigs.items():
                 if not isinstance(name, str) or _IDENTITY.search(name):
                     continue
                 v = _num_value(sv)
@@ -844,6 +908,12 @@ class SessionRecorder:
                 vals[name] = fmt_num(v)
                 if name == "speed":
                     s.max_speed = v if s.max_speed is None else max(s.max_speed, v)
+            if s.node:
+                for col, (v, unit) in _node.vss_values(snap).items():
+                    if col not in s.signals and col not in new_signals:
+                        new_signals.append(col)
+                        s.units[col] = unit
+                    vals[col] = fmt_num(v)
             module = _canonical_module(snap.get("module"))
             if isinstance(module, str) and module:
                 vals["module"] = module
@@ -859,13 +929,20 @@ class SessionRecorder:
             self._gps_vals(s, m, fix, vals)
         if not vals:
             return
+        if s.node and not any(c not in ch.TEXT_CHANNELS for c in vals):
+            return  # nothing live from the node this poll: no row (spec §7)
         if new_signals:
             self._ensure_columns(s, m, new_signals, [])
         elif m - s.part_start_m >= PART_S:
             self._new_part(s, m)
             self._write_meta(s, m)
+        node_ms = _node.node_utc_ms(snap) if (s.node and snap is not None) else None
+        if s.node and s.utc_offset is None:
+            self._note_clock(s, m, node_ms is not None)
         if s.utc_offset is not None:
             utc = str(int(round(m * 1000.0 + s.utc_offset)))
+        elif node_ms is not None:
+            utc = str(int(round(node_ms)))
         elif self.trust_clock:
             utc = str(int(round(now * 1000.0)))
         else:
@@ -873,6 +950,17 @@ class SessionRecorder:
         vals["Interval"] = str(s.ms(m))
         vals["Utc"] = utc
         self._write_row(s, m, vals)
+
+    def _note_clock(self, s: _Session, m: float, synced: bool) -> None:
+        """A node session's ``Utc`` source changed: the node's synced clock, or the Brain's
+        (``time_unsynced``; spec §7)."""
+        if s.clock_synced == synced:
+            return
+        if not synced:
+            self._emit(s, m, "time_unsynced", {"utc_from": "brain"})
+        elif s.clock_synced is not None:
+            self._emit(s, m, "time_synced", {"utc_from": "node"})
+        s.clock_synced = synced
 
     def _gps_vals(self, s: _Session, m: float, fix, vals: dict) -> None:
         lat, lon = float(fix.lat), float(fix.lon)
@@ -1001,6 +1089,12 @@ class SessionRecorder:
         }
         if meta["vid"] is None:
             del meta["vid"]
+        if s.node:  # NodeSource spec §7 (ADR-0010 amendment)
+            devices = set(s.devices) | set(s.tap.devices() if s.tap is not None else ())
+            meta["devices"] = sorted(devices)
+            meta["pack"] = s.pack
+            meta["tap"] = s.tap.entries() if s.tap is not None else []
+            meta["end_reason"] = s.end_reason
         return meta
 
     def _adopt_external(self, s: _Session, path: str) -> None:
@@ -1033,7 +1127,10 @@ class SessionRecorder:
         if found is not None:
             s.user.update(found)
 
-    def _end(self, s: _Session, now: float, m: float) -> None:
+    def _end(self, s: _Session, now: float, m: float, reason: str = "idle") -> None:
+        s.end_reason = reason
+        if s.tap is not None:
+            s.tap.close()
         for track in list(s.writers):
             self._close_writer(s, m, track, "stop")
         self._stop_pi(s, m)
@@ -1052,7 +1149,8 @@ class SessionRecorder:
             s.efh = None
         s.end_s, s.end_m = now, m
         self._s = None
-        has_data = s.rows > 0 and (s.signals or s.has_gps or s.accel_rows)
+        has_data = (s.rows > 0 and (s.signals or s.has_gps or s.accel_rows)) or bool(
+            s.tap is not None and s.tap.records)
         if not has_data and not s.audio and not read_notes(s.dir):
             # no signal value, GPS fix, note or audio (e.g. a server restart): leave no
             # empty session

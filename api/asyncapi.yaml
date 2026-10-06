@@ -31,9 +31,11 @@ info:
     node's own broker in the lab): `status`, `power` and one retained `vss/<leaf>` topic per
     value. The Brain's NodeSource subscribes read-only (No Local on, Retain As Published
     off, Retain Handling 0, clean start, session expiry 0) and turns them into the snapshot
-    (NodeSource spec §4, §6). The module-bus message spec will own these schemas; they move
-    there when it lands. Tap, manifest, role, wake and request channels arrive with their
-    phases (P2 to P4).
+    (NodeSource spec §4, §6). While a session records, a second connection (client id
+    `<id>-tap`, session expiry 60 s) subscribes to the raw tap, `tap/<session>/meta` and
+    `tap/<session>/data` (P2; never `tap/ctl`), and unsubscribes when the session ends. The
+    module-bus message spec will own these schemas; they move there when it lands.
+    Manifest, role, wake and request channels arrive with their phases (P3, P4).
 
     **Coming:** the outbound MQTT exports at U5 (standards research §2 and §8.2).
   license:
@@ -120,6 +122,40 @@ channels:
       value:
         $ref: "#/components/messages/nodeVss"
 
+  nodeTapMeta:
+    address: "ostler/v1/{vid}/{device}/tap/{session}/meta"
+    title: Raw-tap session header
+    description: >
+      Retained, QoS 1, JSON (`ostler-firmware` `docs/specs/raw-tap.md` §2.1). Read only
+      while a session records.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      session: {$ref: "#/components/parameters/tapSession"}
+    messages:
+      header:
+        $ref: "#/components/messages/nodeTapMeta"
+  nodeTapData:
+    address: "ostler/v1/{vid}/{device}/tap/{session}/data"
+    title: Raw-tap record batches
+    description: >
+      Not retained, QoS 1, binary (raw-tap §2.2): 20-byte little-endian record headers
+      (`t_us` u64, `seq` u32, `type`, `bus`, `dir`/event, `proto` u8, `flags` u16, `len`
+      u16) each followed by its payload; flushed every 100 ms or at 8 kB. The Brain writes
+      them beside the session's CSV (`tap/<session>.otap`) after its identity check
+      (ADR-0036).
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      session: {$ref: "#/components/parameters/tapSession"}
+    messages:
+      batch:
+        $ref: "#/components/messages/nodeTapData"
+
 operations:
   receiveNodeStatus:
     action: receive
@@ -151,6 +187,26 @@ operations:
     bindings:
       mqtt: {qos: 0}
     x-ostler-consumer: brain
+  receiveNodeTapMeta:
+    action: receive
+    title: The Brain receives raw-tap headers (while a session records)
+    channel:
+      $ref: "#/channels/nodeTapMeta"
+    messages:
+      - $ref: "#/channels/nodeTapMeta/messages/header"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodeTapData:
+    action: receive
+    title: The Brain receives raw-tap batches (while a session records)
+    channel:
+      $ref: "#/channels/nodeTapData"
+    messages:
+      - $ref: "#/channels/nodeTapData/messages/batch"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
   receiveSnapshot:
     action: receive
     title: Receive the live snapshot
@@ -170,6 +226,8 @@ components:
       description: The vehicle id (never a VIN; a VIN-shaped vid is refused).
     device:
       description: The publishing device's id (its node config `node.name`).
+    tapSession:
+      description: The node's tap session id (a ULID).
   messages:
     nodeStatus:
       name: nodeStatus
@@ -211,6 +269,53 @@ components:
         - name: rpm
           payload: {value: 780, unit: rpm, ts: "2026-10-06T10:00:00.000Z", t_us: 2490181, boot: 7,
                     source: "kline-diag/td5/21 09", name: rpm, c: proven, raw: 780}
+
+    nodeTapMeta:
+      name: nodeTapMeta
+      title: Raw-tap session header
+      contentType: application/json
+      payload:
+        type: object
+        required: [v, session, node, boot_id, buses, scrub]
+        properties:
+          v: {const: 1}
+          session: {type: string, description: "A ULID."}
+          node: {type: string}
+          boot_id: {type: integer, minimum: 0, description: "The node's boot counter (NVS)."}
+          buses:
+            type: array
+            items:
+              type: object
+              required: [idx, bus_id, proto]
+              properties:
+                idx: {type: integer, minimum: 0}
+                bus_id: {type: string}
+                proto: {type: string, description: "kline | can"}
+              additionalProperties: true
+          clock:
+            type: object
+            properties:
+              source: {type: string, description: "ublox-pps | sntp | none"}
+              synced: {type: boolean}
+            additionalProperties: true
+          scrub: {type: string, enum: ["on", "off"], description: "off only with the node's install-level option (ADR-0036); the Brain then scrubs unless its own option is on too."}
+          filters: {type: array}
+          started: {type: string}
+        additionalProperties: true
+      examples:
+        - name: kline
+          payload: {v: 1, session: 01M48AFR80CDXA0ZQ1XBS3VHSS, node: node, boot_id: 7,
+                    buses: [{idx: 0, bus_id: kline-diag, proto: kline, baud: 10400}],
+                    clock: {source: sntp, synced: true}, scrub: "on", filters: [],
+                    records: kline_msg, started: "2026-10-06T10:00:00.000Z"}
+    nodeTapData:
+      name: nodeTapData
+      title: Raw-tap record batch
+      contentType: application/vnd.ostler.tap.v1
+      payload:
+        type: string
+        format: binary
+        description: Raw-tap v1 records, little-endian (raw-tap §2.2).
 
     snapshot:
       name: snapshot
