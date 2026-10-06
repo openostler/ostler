@@ -2,11 +2,11 @@
 title: "Platform direction — from D2 Td5 tool to open vehicle platform (diagnostics · logger · telemetry · tracker/alarm) — design"
 area: specs
 status: draft
-version: 0.4
+version: 0.5
 updated: 2026-10-06
-depends_on: [SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md]
+depends_on: [SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
-  Draft for owner review. Grows the project into an open, local-first vehicle platform: core (comms + interpretation) + declarative vehicle packs + opt-in integrations, an always-on ESP32 guardian with Linux on demand, MQTT/HA with OVMS and OwnTracks compatibility, a notify-only alarm, a five-destination IA, and a phased plan with anti-bloat guardrails; D2 Td5 stays the reference pack. No implementation until approved.
+  Draft for owner review. Grows the project into an open, local-first vehicle platform: core (comms + interpretation) + declarative vehicle packs + opt-in integrations, an always-on ESP32 guardian with Linux on demand, add-on modules on an IP automotive-Ethernet backbone (ADR-0027), MQTT/HA with OVMS and OwnTracks compatibility, a notify-only alarm, a five-destination IA, and a phased plan with anti-bloat guardrails; D2 Td5 stays the reference pack. No implementation until approved.
 ---
 
 # Platform direction — design (draft)
@@ -26,6 +26,11 @@ The evidence is in `references/research/`:
 An open, **local-first** platform for vehicles: diagnostics, a data logger and telemetry,
 a GPS tracker and an alarm, integrated with Home Assistant over MQTT. It should work for
 the Discovery 2 today, other Land Rovers next, and OBD-II/CAN vehicles after that.
+
+Since v0.5 this sits inside a wider frame, the **smart-home-like ecosystem**
+([GOALS.md](../GOALS.md), [ADR-0027](../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md)):
+- a **base hardware pack** interfaces with the car and carries diagnostics and telemetry;
+- **add-on modules** join over standard IP networking on an automotive-Ethernet backbone.
 
 The research found that an open K-line/ICE telematics node, open Land Rover body-system
 diagnostics, an open car alarm and a PWA-first car UI are all unclaimed.
@@ -56,7 +61,7 @@ diagnostics, an open car alarm and a PWA-first car UI are all unclaimed.
 |---|---|---|
 | Vehicle model | Per-vehicle **packs**: `vehicle.json` plus `ecus/*.json` (transport, protocol, per-state polls, signals with `metric`, actions with safety), `dtc/` and `hooks.py`. Imports OBDb and DBC; exports Torque CSV. Packs are licensed CC BY-SA. | platform.md §1 |
 | Repo | One monorepo split into `core/`, `vehicles/` and `integrations/`. Plugins are found through stdlib entry points. **No fork.** Rename only after a second pack exists. | platform.md §2 |
-| Hardware | An ESP32-S3 LTE/GNSS **guardian** on its own 18650 owns the alarm, tracker, wake, the 12 V watchdog and Pi power. A Pi 5 with a CarPiHAT PRO 5 is the Linux brain, powered on demand. A 10 Hz u-blox handles logging. KKL stays for K-line. A private CAN bus carries add-on modules. Cameras use Wi-Fi. | hardware.md |
+| Hardware | An ESP32-S3 LTE/GNSS **guardian** on its own 18650 owns the alarm, tracker, wake, the 12 V watchdog and Pi power. A Pi 5 with a CarPiHAT PRO 5 is the Linux brain, powered on demand. A 10 Hz u-blox handles logging. KKL stays for K-line. **Add-on modules join an IP network on an automotive-Ethernet backbone**: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras, Wi-Fi/USB for displays, with the Pi routing between segments. Our own CAN (separate wires, never the vehicle's CAN) is the dev-kit and µA-wake fallback. | hardware.md, [ADR-0026](../decisions/adr-0026-module-bus-10base-t1s.md), [ADR-0027](../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md) |
 | MQTT | Native HA device discovery, plus an **OVMS v3-compatible topic tree**, plus **OwnTracks** location. Two availability topics, brain and tracker. Stdlib client. | platform.md §3, ovms.md |
 | Alarm | A notify-only state machine: arming, armed, notice/pending, triggered, alerting, tamper. It arms when the OEM alarm locks; strong triggers act at once and weak triggers need corroboration. Notifications escalate HA → ntfy → Telegram → SMS. The guardian owns it. | platform.md §4 |
 | IA | `Home · Diagnose · Logs · Security · More`. Drive is a full-screen mode rather than a tab, and Analysis is the session detail view. Five tabs is a hard cap. | platform.md §5 |
@@ -73,7 +78,7 @@ Each phase gets its own spec and tests.
 | 1 | Opt-in, read-only integrations: MQTT/HA, OVMS topics, OwnTracks, Traccar OsmAnd, ntfy. |
 | 2 | Guardian firmware: tracker and notify-only alarm. The Security destination appears. |
 | 3 | The `generic_obd2` pack, which proves the platform is universal. |
-| 4 | CAN add-ons: relay box and head-unit/OBD emulator. |
+| 4 | Add-on modules on the module bus (T1S, CAN as fallback): relay box, sensor/button nodes, head-unit/OBD emulator; the module contract and DevicePack. |
 | Moonshot | Remote OEM disarm, remote start, ODX import, cloud fleet. Each needs its own ADR and gate. |
 
 ## Guardrails
@@ -126,8 +131,9 @@ The owner's direction:
    20 s late. Cameras therefore need their own pre-record buffer: SD-card IP cams,
    ESP32-CAM_MJPEG2SD (AGPL), or a parking-mode dashcam. The alternative is a Pi left
    running while armed, which costs battery.
-3. **Wired cameras for continuous recording.** Use PoE/Ethernet RTSP, CSI or USB. ESP32
-   cams are fine for snapshots only.
+3. **Wired cameras for continuous recording.** Use standard Ethernet RTSP cameras on the
+   camera segment (12 V or PoE; ADR-0027), CSI or USB. ESP32 cams are fine for snapshots
+   only. Cameras never go on the T1S module segment.
 4. **Pi 5 load.** It can record 2–4 RTSP streams without transcoding. Detection needs an
    AI HAT (Hailo) or a Coral.
 
@@ -137,7 +143,7 @@ The owner's direction:
 |---|---|---|
 | `openostler/ostler` (new) | public, AGPL + commercial | Platform: core comms, snapshot contract, VehiclePack SDK, logbook/replay, integrations, web server, **the main UI** |
 | `discovery2-diag` (this repo) | public, AGPL code + CC BY-SA data | Becomes the **Land Rover Discovery 2 pack** |
-| `openostler/ostler-firmware` (new) | public, AGPL | ESP32 guardian and add-on modules |
+| `openostler/ostler-firmware` (new) | public, AGPL | ESP32 guardian and add-on modules (module bus, module contract) |
 | `openostler/ostler-cloud` (new) | **private, closed** | Ostler Cloud |
 | Later | — | `ostler-hardware` (CERN-OHL-S) and `ostler-android` |
 | HEVAC | owner's separate project | Not part of this platform |
@@ -155,3 +161,4 @@ The owner's direction:
 - 2026-10-06: v0.2, owner answers (closed cloud, notify-only alarm, Map slot, working name Ostler); displays as thin clients with cameras on our infrastructure; repository map.
 - 2026-10-06: v0.3, handles per ADR-0014 (GitHub org and Python package `openostler`).
 - 2026-10-06: v0.4, the IA row is refined by the [UI architecture design](2026-10-06-ui-architecture-design.md) (draft); no decision here changes.
+- 2026-10-06: v0.5, the ecosystem frame (ADR-0027): the "private CAN bus for add-ons" is replaced by an IP automotive-Ethernet backbone (T1S modules, Ethernet/PoE cameras, Wi-Fi/USB displays, the Pi routing); CAN becomes the dev-kit and µA-wake fallback; Phase 4 is renamed "add-on modules on the module bus".

@@ -28,6 +28,7 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0024-body-bus-links-passive-by-default.md` — I/K-Bus as byte `Transport` + framer, passive by default; allowlist + Parked + gate; no spoofing; IKE read exception; standing automations pre-authorised; data in packs.
 - `adr-0025-reuse-and-licences-pragmatic.md` — amends ADR-0019 (c): reimplement anything in our own words; never copy descriptive text; GPL-3 taken whole only into marked GPL-3 modules or packs; GPL-2.0-only, non-commercial and dealer material stay out.
 - `adr-0026-module-bus-10base-t1s.md` — our own module bus: IP for the computer tier, 10BASE-T1S (PLCA, LAN8651 reference) for our modules; CAN/Wi-Fi on dev kits; CAN kept for µA-wake nodes; one VSS/MQTT-style message model; car buses out of scope.
+- `adr-0027-ip-everywhere-ecosystem-architecture.md` — builds on ADR-0026: IP everywhere on an automotive-Ethernet backbone (T1S modules, Ethernet/PoE cameras, 100BASE-T1 only for our own cameras, Wi-Fi/USB displays); the Pi routes; MQTT 5 with VSS topics; mDNS/DNS-SD; NTP; mTLS plus the command envelope; the module contract and DevicePack adapters; car buses at the edge; CAN/wake fallback; Matter via a bridge only.
 
 ADR-0005 (NanoCom sniff workflow) and ADR-0007 (BCU SecurityAccess) are Discovery 2
 decisions and stay in the D2 pack repo; their numbers are not reused.
