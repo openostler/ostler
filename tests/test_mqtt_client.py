@@ -157,7 +157,9 @@ def test_client_drops_a_silent_broker():
     c.on_disconnect = reasons.append
     c.connect("127.0.0.1", port)
     assert wait_for(lambda: not c.connected, timeout=5.0)
-    assert reasons and "keep-alive" in reasons[0]
+    # ``connected`` drops before ``on_disconnect`` runs on the reader thread.
+    assert wait_for(lambda: reasons, timeout=2.0)
+    assert "keep-alive" in reasons[0]
     srv.close()
 
 
