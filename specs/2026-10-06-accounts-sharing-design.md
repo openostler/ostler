@@ -123,8 +123,9 @@ allowed(action) = action.category in (role.categories ∩ share.categories ∩ t
 
 - `transport_ok` is ADR-0033 §6. **Local links** (the head unit, the in-car LAN, the node's
   Wi-Fi AP, BLE to the node) allow everything the rest allows. **Remote paths** (a share over
-  Tailscale or the relay, MQTT, Home Assistant) are **read-only**, plus arming (never
-  disarming) the software alarm, unless the install-level `OSTLER_ALLOW_REMOTE_CONTROL`
+  Tailscale or the relay, MQTT, Home Assistant) are **read-only**, plus arming and disarming the software alarm (owner, 2026-10-06:
+  disarm over the air is allowed; it needs a user or token whose role grants Security, and
+  every remote disarm is audited and notified to the owner), unless the install-level `OSTLER_ALLOW_REMOTE_CONTROL`
   override is on; it is set only in the environment or install config, defaults off and can
   never be set remotely. MQTT and Home Assistant never reach Tier 2+.
 - `state_ok` is the category's while-moving rule (ADR-0033 §1) over UI spec §3.5: Comfort
