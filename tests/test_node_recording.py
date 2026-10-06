@@ -322,6 +322,30 @@ def test_tap_is_written_only_while_a_node_session_is_open(rec):
     assert "tap_start" in [e["type"] for e in events_of(rec, sid)]
 
 
+def test_the_recorder_checks_batch_properties(rec):
+    """Module-bus spec §8: the recorder passes a batch's MQTT 5 properties to the tap
+    writer; a batch with another content type is refused and its records become a gap."""
+    msgs = tap_messages()
+    meta_msg = next(m for m in msgs if m["topic"].endswith("/meta"))
+    data = [m for m in msgs if m["topic"].endswith("/data")]
+    session = meta_msg["topic"].split("/")[5]
+    rec.feed(snap({"alpha_speed": sig(900)}))
+    sid = rec.session_id
+    rec.tap_message("node", session, "meta", meta_msg["payload"])
+    assert rec.tap_message("node", session, "data", data[0]["payload"],
+                           data[0]["properties"]) > 0
+    assert rec.tap_message("node", session, "data", data[1]["payload"],
+                           {"content_type": "application/octet-stream"}) == 0
+    assert rec.tap_message("node", session, "data", data[2]["payload"],
+                           data[2]["properties"]) > 0
+    rec.close()
+    (t,) = meta_of(rec, sid)["tap"]
+    assert (t["refused"], t["unlabelled"], t["first_seq_mismatch"], t["gaps"]) == (1, 0, 0, 1)
+    assert not _schema_errors(meta_of(rec, sid))
+    errors = [e for e in events_of(rec, sid) if e["type"] == "tap_error"]
+    assert len(errors) == 1 and "application/octet-stream" in errors[0]["error"]
+
+
 def test_a_cable_session_takes_no_tap(rec):
     rec.feed({"status": "connected", "conn": "connected", "module": "alpha", "faults": [],
               "signals": {"alpha_speed": {"v": 9}}})
@@ -432,6 +456,8 @@ def test_the_tap_follows_the_recorded_session_end_to_end(rr):
     want = sum(len(d["payload"]) for d in data[1:4])
     assert t["session"] == session and t["bytes"] == want and t["gaps"] == 0
     assert t["scrub"] == "on" and t["seq_first"] > 0
+    # the batches' MQTT 5 properties arrived through the broker and agree (module-bus §8)
+    assert (t["refused"], t["unlabelled"], t["first_seq_mismatch"]) == (0, 0, 0)
     # the Brain published nothing on either connection
     assert not rr.received("t-nodesource", codec.Publish)
     assert not rr.received("t-nodesource-tap", codec.Publish)
@@ -563,6 +589,8 @@ def test_the_simulated_nodes_looping_tap_records_without_gaps(rr):
     rr.srv.close_recorder()
     t = SessionStore(rr.sessions).meta(sid)["tap"][0]
     assert (t["seq_first"], t["seq_last"], t["gaps"], t["records"]) == (0, 2 * seq - 1, 0, 2 * seq)
+    # each renumbered batch carries the content type and its new first_seq
+    assert (t["refused"], t["unlabelled"], t["first_seq_mismatch"]) == (0, 0, 0)
     # its time events are re-stamped for the new t_us, so every mark is used: UTC now
     store = SessionStore(rr.sessions)
     ((entry, records),) = read_tap(os.path.join(rr.sessions, sid), store.meta(sid))

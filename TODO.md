@@ -90,6 +90,11 @@ are built. Open:
       source, err_us}`); `node/tap.py` `TimeMap` maps `t_us` linearly between marks and the
       pcapng export stamps UTC (a tap without marks keeps the node clock); `meta.json` `tap`
       counts `time_marks`. Rows and tap records stay linked by `t_us`.
+- [x] **Tap batch properties** (module-bus spec §8; firmware 5971323): `NodeFeed` hands
+      each batch's MQTT 5 properties to the tap writer, which refuses another content type,
+      reads an unlabelled batch as v1 and cross-checks `first_seq` with the first record
+      (`refused`, `unlabelled`, `first_seq_mismatch` in `meta.json` `tap`); the header's
+      `records` is read as an array; `tests/fake_node.py` sends the fixtures' properties.
 - [ ] **Parked periods and alarm events** in the logbook from the node's `power` and alarm
       topics (ADR-0010 amendment; spec §7 "in a later spec").
 - [x] **Firmware and manifest `etag` in node session meta:** `meta.json` `device_info`
@@ -113,13 +118,22 @@ are built. Open:
       read them from `tests/fixtures/node/lifecycle.jsonl` and the vector runs.
       `cluster.jsonl` keeps only what the node cannot publish (other devices, a second gate
       claim, vehicle roles held by the node).
+- [x] **Firmware: the second gate claim** (`ostler-firmware` 5971323, ADR-0037 §5): the
+      node reports `gate_conflict` in its manifest's `problems`; the cluster view shows it
+      (gate row `conflict`, no holder, alert `by: "manifest"`), tested with the real
+      `gate-conflict.jsonl`; the unset-priority test uses the real
+      `slabs-vectors-no-priority.jsonl`; every `power` record carries the parked class.
+- [ ] **Owner decision: which claims silence a gate holder** (module-bus spec §17 item 13).
+      The firmware counts any claim on its gate bus, one from an offline or unmanifested
+      device included; the spec's void rules count only live ones. Until decided the Brain
+      shows both.
 - [x] **Serial refusal while running:** decided (owner, 2026-10-06, spec §15 second
       round): it stays a start-time check when `--mqtt` is given; no change now. A node
       that appears later, or a lab laptop with no broker, is still not seen.
 - [ ] **§6.5 with the manifest:** the manifest's `primary` and the owner's priority in the
       selection, and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
       interval. The node now publishes `priority` (when set) but no `signals`, `primary` or
-      `rate_hz` yet (firmware 0426ea5).
+      `rate_hz` yet (firmware 5971323).
 - [ ] **Energy ledger and floors** on the Network page's Power section (UI spec §3.8;
       app-model §13.2): the arbiter publishes no ledger yet (ADR-0040 §4.4; P4 / firmware).
 - [ ] **P4 requests:** `act/<id>`, wake requests, lab requests, outcomes in the snapshot,
@@ -133,9 +147,10 @@ are built. Open:
       path (the D2 battery voltage from the Td5 and SLABS) on one retained topic, so only
       the last survives as a stored value. NodeSource keeps both live (keyed by source);
       the topic shape is open question 9 of the [module-bus message spec](specs/2026-10-06-module-bus-messages-design.md).
-- [ ] **Regenerate the firmware fixtures** (`td5-vectors`, `slabs-vectors`, `lifecycle`
-      in `tests/fixtures/node/`) from the firmware's `node-fixtures` target whenever its
-      payloads change (copied from `ostler-firmware` 0426ea5).
+- [ ] **Regenerate the firmware fixtures** (`td5-vectors`, `slabs-vectors`,
+      `slabs-vectors-no-priority`, `lifecycle`, `gate-conflict` in `tests/fixtures/node/`)
+      from the firmware's `node-fixtures` target whenever its payloads change (copied from
+      `ostler-firmware` 5971323).
 - [ ] **UI: the `off` power state.** The Brain accepts `power.state: off` and the snapshot
       reads `asleep`; the strip's power badge (`ui/src/shell/strip.ts` `powerNote`) has no
       word for `off` yet ("Off"), and the Network page will need one.

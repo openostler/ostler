@@ -478,10 +478,13 @@ class SessionRecorder:
         s = self._s
         return None if s is None else s.ms(self._mono())
 
-    def tap_message(self, device: str, session: str, part: str, payload: bytes) -> int:
+    def tap_message(self, device: str, session: str, part: str, payload: bytes,
+                    props: "dict | None" = None) -> int:
         """A raw-tap message from a node (``tap/<session>/meta`` or ``…/data``; NodeSource
         spec §7). Written only while a node session is open (owner answer 9: no rolling
-        buffer); returns the records written. Thread-safe (the MQTT thread calls it)."""
+        buffer); returns the records written. ``props``: the publish's MQTT 5 properties,
+        which a batch's content type and ``first_seq`` are checked against (module-bus spec
+        §8; None: not checked). Thread-safe (the MQTT thread calls it)."""
         with self._lock:
             s = self._s
             if s is None or s.tap is None:
@@ -492,7 +495,8 @@ class SessionRecorder:
             if part != "data":
                 return 0
             first = not s.tap.entries()
-            n = s.tap.batch(str(device), str(session), bytes(payload))
+            n = s.tap.batch(str(device), str(session), bytes(payload),
+                            dict(props) if props is not None else None)
             if n and first:
                 self._write_meta(s, self._mono())  # list the tap at once
             return n

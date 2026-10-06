@@ -16,6 +16,10 @@ spec §2 and its ``components/poll/src/tap.c``).
   ``62 F1 8C`` has its frames' data replaced. Per-byte K-line records and unknown
   protocols cannot be checked on their own and are dropped when a scrub is due. A record
   the node already flagged ``scrubbed`` is kept as it is: the flag is never cleared.
+- :func:`batch_properties` reads a batch's MQTT 5 properties (module-bus spec §8, raw-tap
+  §3 and its amendment of 2026-10-06): the content type
+  ``application/vnd.ostler.tap.v1`` and the user property ``first_seq``, the decimal
+  ``seq`` of the batch's first record.
 - :func:`parse_time_event` reads a ``time`` event's CBOR map ``{t_us, utc_ns, source,
   err_us}`` (raw-tap spec, amendment of 2026-10-06) and :class:`TimeMap` maps a tap's
   ``t_us`` to UTC from those marks (raw-tap §2.4): linearly between two marks, with the
@@ -86,7 +90,11 @@ def valid_session(s: str) -> bool:
 def parse_header(payload: bytes) -> "Optional[dict]":
     """The session header when it is a JSON object with ``v: 1``; else None. ``scrub`` is
     kept only when it is ``on`` or ``off``; anything else becomes None, which the Brain
-    treats as "not scrubbed by the node" (so it scrubs)."""
+    treats as "not scrubbed by the node" (so it scrubs). ``records`` (raw-tap amendment of
+    2026-10-06: the record kinds a batch may hold, ``["kline_msg", "time"]`` from the node)
+    is a list of strings; a single string (the first firmware's ``"kline_msg"``) is read
+    as a one-item list and any other value is dropped. It is a promise of what may appear,
+    so a batch is never refused for a kind it does not list."""
     try:
         obj = json.loads(payload.decode("utf-8"))
     except (UnicodeDecodeError, ValueError):
@@ -95,7 +103,39 @@ def parse_header(payload: bytes) -> "Optional[dict]":
         return None
     if obj.get("scrub") not in SCRUB_VALUES:
         obj = {**obj, "scrub": None}
+    if "records" in obj:
+        rec = obj["records"]
+        if isinstance(rec, str):
+            obj["records"] = [rec]
+        elif not (isinstance(rec, list) and all(isinstance(k, str) for k in rec)):
+            del obj["records"]
     return obj
+
+
+_DECIMAL = re.compile(r"^(0|[1-9][0-9]{0,9})$")
+
+
+def batch_properties(props: "dict | None") -> dict:
+    """A batch publish's MQTT 5 properties as the tap path checks them (module-bus spec
+    §8): ``{content_type, content_type_ok, first_seq, first_seq_sent}``. ``content_type`` is the property
+    as sent (None when absent); ``content_type_ok`` is True for
+    ``application/vnd.ostler.tap.v1``, False for any other value and None when absent (a
+    node from before the firmware set it). ``first_seq`` is the user property's decimal
+    value (the first one when repeated), or None when it is absent or not a decimal
+    ``u32``; ``first_seq_sent`` says whether the user property was there at all."""
+    props = props or {}
+    ctype = props.get("content_type")
+    ctype = ctype if isinstance(ctype, str) else None
+    first, sent = None, False
+    for pair in props.get("user_property") or []:
+        if isinstance(pair, (list, tuple)) and len(pair) == 2 and pair[0] == "first_seq":
+            sent, v = True, pair[1]
+            if isinstance(v, str) and _DECIMAL.match(v) and int(v) <= 0xFFFFFFFF:
+                first = int(v)
+            break
+    return {"content_type": ctype,
+            "content_type_ok": None if ctype is None else ctype == CONTENT_TYPE,
+            "first_seq": first, "first_seq_sent": sent}
 
 
 def encode_record(r: TapRecord) -> bytes:
@@ -334,7 +374,7 @@ def export_records(records: "Iterable[TapRecord]") -> "list[TapRecord]":
     return out
 
 
-__all__ = ["CONTENT_TYPE", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED",
+__all__ = ["CONTENT_TYPE", "batch_properties", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED",
            "FLAG_UNSYNCED", "HEADER_LEN", "IdentityScrub", "PLACEHOLDER", "PROTO_CAN",
            "PROTO_CAN_FD", "PROTO_KLINE_BYTE", "PROTO_KLINE_MSG", "TYPE_DATA", "TYPE_EVENT",
            "TapRecord", "TimeMap", "encode_record", "export_records", "is_time_event",

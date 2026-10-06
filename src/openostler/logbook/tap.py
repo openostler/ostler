@@ -14,6 +14,16 @@ by the node's ``t_us`` (raw-tap §2.4).
 - **Sequence.** ``seq`` gaps are logged as ``tap_gap`` events and counted, never filled;
   a ``seq`` already written (a QoS 1 redelivery) is skipped. ``overflow`` events from the
   node are counted and logged.
+- **Batch properties** (module-bus spec §8, raw-tap §3): a batch received over MQTT
+  carries the content type ``application/vnd.ostler.tap.v1`` and the user property
+  ``first_seq``. A batch with any other content type is refused whole (``tap_error``,
+  counted as ``refused``; its records then show as a gap). A batch without one (a node
+  from before the firmware set it) is read as v1 and counted as ``unlabelled``, as is one
+  without a readable ``first_seq``. ``first_seq`` is cross-checked with the batch's first
+  record: a disagreement is a ``tap_error`` and counted (``first_seq_mismatch``); the
+  records' own ``seq`` stays authoritative. A batch whose bytes hold no whole record but
+  whose ``first_seq`` is past the next expected ``seq`` reports that gap from
+  ``first_seq``. Batches handed in without properties (not from MQTT) are not checked.
 - **Time.** The node's ``time`` events (raw-tap §2.4, CBOR ``{t_us, utc_ns, source,
   err_us}``) are stored with the other records and counted (``time_marks`` in the meta);
   readers map ``t_us`` to UTC from them (``node/tap.py`` ``TimeMap``, the pcapng export).
@@ -32,8 +42,9 @@ import os
 import re
 from typing import Callable, Optional
 
-from ..node.tap import (EV_OVERFLOW, IdentityScrub, TapRecord, encode_record, is_time_event,
-                        parse_header, parse_records, valid_session)
+from ..node.tap import (CONTENT_TYPE, EV_OVERFLOW, IdentityScrub, TapRecord, batch_properties,
+                        encode_record, is_time_event, parse_header, parse_records,
+                        valid_session)
 
 RECORD_IDENTITY_ENV = "OSTLER_RECORD_IDENTITY"
 _TRUE = frozenset({"1", "true", "yes", "on"})
@@ -68,6 +79,9 @@ class _Stream:
         self.overflow = 0
         self.time_marks = 0
         self.malformed = 0
+        self.refused = 0
+        self.unlabelled = 0
+        self.first_seq_mismatch = 0
         self.scrub = IdentityScrub()
         self.mode: "str | None" = None
         self.dirty = False
@@ -84,6 +98,8 @@ class _Stream:
                 "records": self.records, "bytes": self.bytes,
                 "gaps": self.gaps, "lost": self.lost, "overflow": self.overflow,
                 "time_marks": self.time_marks,
+                "refused": self.refused, "unlabelled": self.unlabelled,
+                "first_seq_mismatch": self.first_seq_mismatch,
                 "brain_scrubbed": self.scrub.scrubbed, "brain_dropped": self.scrub.dropped}
 
 
@@ -124,18 +140,50 @@ class TapRecorder:
             st.header = h
         return True
 
-    def batch(self, device: str, session: str, payload: bytes) -> int:
-        """One ``tap/<session>/data`` batch; returns the records written."""
+    def batch(self, device: str, session: str, payload: bytes,
+              props: "dict | None" = None) -> int:
+        """One ``tap/<session>/data`` batch; returns the records written. ``props``: the
+        publish's MQTT 5 properties (checked when given; module-bus spec §8)."""
         if not valid_session(session):
             self._once(f"id:{session}", "tap_error",
                        {"device": device, "error": "tap session id is not a ULID; dropped"})
             return 0
         st = self._stream(device, session)
+        info = batch_properties(props) if props is not None else None
+        if info is not None and info["content_type_ok"] is False:
+            st.refused += 1
+            self._emit("tap_error", {"session": session, "device": device,
+                                     "error": f"batch refused: content type "
+                                              f"{info['content_type']!r} is not "
+                                              f"{CONTENT_TYPE}"})
+            return 0
+        if info is not None and (info["content_type"] is None or info["first_seq"] is None):
+            st.unlabelled += 1
+            missing = [n for n, ok in (("content type", info["content_type"] is not None),
+                                       ("first_seq", info["first_seq"] is not None)) if not ok]
+            self._once(f"unlabelled:{device}/{session}", "tap_error",
+                       {"session": session, "device": device,
+                        "error": f"batches without a readable {' or '.join(missing)}; read "
+                                 "as v1 by their records (module-bus spec §8)"})
+        first_seq = info["first_seq"] if info is not None else None
         records, trailing = parse_records(payload)
         if trailing:
             st.malformed += 1
             self._emit("tap_error", {"session": session, "device": device,
                                      "error": f"{trailing} trailing bytes in a batch dropped"})
+        if first_seq is not None and records and records[0].seq != first_seq:
+            st.first_seq_mismatch += 1
+            self._emit("tap_error", {"session": session, "device": device,
+                                     "error": f"first_seq {first_seq} does not match the "
+                                              f"batch's first record (seq {records[0].seq})"})
+        if (first_seq is not None and not records and st.expected is not None
+                and first_seq > st.expected):
+            st.gaps += 1
+            st.lost += first_seq - st.expected
+            self._emit("tap_gap", {"session": session, "device": device,
+                                   "from": st.expected, "to": first_seq - 1,
+                                   "lost": first_seq - st.expected})
+            st.expected = first_seq
         out = []
         for r in records:
             if st.expected is not None and r.seq < st.expected:

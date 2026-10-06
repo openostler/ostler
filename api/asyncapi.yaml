@@ -198,8 +198,14 @@ channels:
     description: >
       Not retained, QoS 1, binary (raw-tap §2.2): 20-byte little-endian record headers
       (`t_us` u64, `seq` u32, `type`, `bus`, `dir`/event, `proto` u8, `flags` u16, `len`
-      u16) each followed by its payload; flushed every 100 ms or at 8 kB. The Brain writes
-      them beside the session's CSV (`tap/<session>.otap`) after its identity check
+      u16) each followed by its payload; flushed every 100 ms or at 8 kB. Every publish
+      carries the MQTT 5 Content Type `application/vnd.ostler.tap.v1` and one User Property
+      `first_seq`, the decimal `seq` of the batch's first record (module-bus spec §8;
+      raw-tap amendment of 2026-10-06; set by the firmware from 5971323). The Brain refuses
+      a batch with another content type (counted `refused`), reads one without a content
+      type or `first_seq` as v1 (`unlabelled`) and logs a `first_seq` that disagrees with
+      the first record (`first_seq_mismatch`; the records' `seq` is kept). It writes the
+      records beside the session's CSV (`tap/<session>.otap`) after its identity check
       (ADR-0036).
     servers:
       - $ref: "#/servers/brain-broker"
@@ -365,7 +371,7 @@ components:
         $ref: "./openapi.yaml#/components/schemas/NodeManifest"
       examples:
         - name: diag-node
-          summary: As the node firmware publishes it (`ostler-firmware` 0426ea5, host build).
+          summary: As the node firmware publishes it (`ostler-firmware` 5971323, host build).
           payload: {schema: 1, id: node, kind: node, variant: diag-port,
                     model: "Ostler Diagnostics (dev build)", board: host-sim, fw: "0.1.0",
                     priority: 10, memory: {psram_kb: 0}, roles: [],
@@ -414,6 +420,16 @@ components:
             additionalProperties: true
           scrub: {type: string, enum: ["on", "off"], description: "off only with the node's install-level option (ADR-0036); the Brain then scrubs unless its own option is on too."}
           filters: {type: array}
+          records:
+            type: array
+            items: {type: string}
+            description: >
+              The record kinds this session's batches may contain (raw-tap amendment of
+              2026-10-06): data protocols by their raw-tap §2.2 `proto` name (`kline_byte`,
+              `kline_msg`, `can`, `can_fd`) and events by their §2.3 name (`init`, `time`, …).
+              A promise of what may appear, not that each kind does; readers ignore kinds
+              they do not know. The node sends `["kline_msg", "time"]` (the first firmware
+              sent the single string `"kline_msg"`, which the Brain reads as a one-item list).
           started: {type: string}
         additionalProperties: true
       examples:
@@ -421,11 +437,28 @@ components:
           payload: {v: 1, session: 01M48AFR80CDXA0ZQ1XBS3VHSS, node: node, boot_id: 7,
                     buses: [{idx: 0, bus_id: kline-diag, proto: kline, baud: 10400}],
                     clock: {source: sntp, synced: true}, scrub: "on", filters: [],
-                    records: kline_msg, started: "2026-10-06T10:00:00.000Z"}
+                    records: [kline_msg, time], started: "2026-10-06T10:00:00.000Z"}
     nodeTapData:
       name: nodeTapData
       title: Raw-tap record batch
       contentType: application/vnd.ostler.tap.v1
+      headers:
+        type: object
+        description: >
+          MQTT 5 User Properties of the publish (module-bus spec §8). The Content Type
+          property is `application/vnd.ostler.tap.v1` (this message's `contentType`).
+        required: [first_seq]
+        properties:
+          first_seq:
+            type: string
+            pattern: "^(0|[1-9][0-9]*)$"
+            description: >
+              The decimal `seq` of the batch's first record (the same value that record
+              carries), so a consumer sees a gap before it parses the batch.
+      bindings:
+        mqtt:
+          contentType: application/vnd.ostler.tap.v1
+          bindingVersion: 0.2.0
       payload:
         type: string
         format: binary

@@ -46,7 +46,20 @@ def header(scrub="on", session=SESSION, boot=7, buses=None) -> bytes:
                        "buses": buses or [{"idx": 0, "bus_id": "kline-diag", "proto": "kline",
                                            "baud": 10400}],
                        "clock": {"source": "sntp", "synced": True}, "scrub": scrub,
-                       "filters": [], "started": "2026-10-06T10:00:00.000Z"}).encode()
+                       "filters": [], "records": ["kline_msg", "time"],
+                       "started": "2026-10-06T10:00:00.000Z"}).encode()
+
+
+def props(first_seq, content_type=T.CONTENT_TYPE) -> dict:
+    """A batch's MQTT 5 properties as the node sets them (module-bus spec §8)."""
+    out = {"user_property": [["first_seq", str(first_seq)]]}
+    if content_type is not None:
+        out["content_type"] = content_type
+    return out
+
+
+FIXTURES = ("td5-vectors.jsonl", "slabs-vectors.jsonl", "slabs-vectors-no-priority.jsonl",
+            "lifecycle.jsonl", "gate-conflict.jsonl")
 
 
 # ---- codec ----------------------------------------------------------------------------- #
@@ -65,7 +78,7 @@ def test_fixture_batches_round_trip_through_the_codec():
         records += batch_records
     seqs = [r.seq for r in records]
     assert seqs == list(range(len(seqs)))   # the node numbers every record, no gap
-    # data: kline_msg records; events: only the clock's time marks (firmware 0426ea5)
+    # data: kline_msg records; events: only the clock's time marks (firmware 5971323)
     marks = [r for r in records if r.is_event]
     assert marks and all(T.is_time_event(r) and r.bus == 0xFF and r.proto == 0
                          and r.flags == 0 for r in marks)
@@ -80,7 +93,76 @@ def test_fixture_batches_round_trip_through_the_codec():
             assert last is not None and 0 <= r.t_us - last < 1_000_000, r.seq
 
 
-@pytest.mark.parametrize("name", ["td5-vectors.jsonl", "slabs-vectors.jsonl", "lifecycle.jsonl"])
+@pytest.mark.parametrize("name", FIXTURES)
+def test_the_header_lists_the_record_kinds_and_every_batch_is_labelled(name):
+    """Raw-tap amendment of 2026-10-06: the header's ``records`` is an array of the kinds a
+    batch may hold, ``["kline_msg", "time"]``, and every kind met is listed; each batch
+    carries the content type ``application/vnd.ostler.tap.v1`` and ``first_seq``, the
+    ``seq`` of its first record (module-bus spec §8)."""
+    msgs = tap_messages(name)
+    (meta,) = [m for m in msgs if m["topic"].endswith("/meta")]
+    h = T.parse_header(meta["payload"])
+    assert h["records"] == ["kline_msg", "time"] == json.loads(meta["payload"])["records"]
+    assert "properties" not in meta
+    kinds = set()
+    for m in msgs:
+        if not m["topic"].endswith("/data"):
+            continue
+        records, trailing = T.parse_records(m["payload"])
+        assert records and not trailing
+        info = T.batch_properties(m["properties"])
+        assert info == {"content_type": T.CONTENT_TYPE, "content_type_ok": True,
+                        "first_seq": records[0].seq, "first_seq_sent": True}
+        kinds |= {"time" if T.is_time_event(r) else "kline_msg"
+                  if r.proto == T.PROTO_KLINE_MSG and not r.is_event else f"other {r}"
+                  for r in records}
+    assert kinds <= set(h["records"]) and "kline_msg" in kinds
+
+
+def test_the_tap_channels_match_the_asyncapi_document():
+    """``api/asyncapi.yaml``: the header schema (``records`` an array) validates every
+    fixture header; the batch message names the content type and the ``first_seq`` user
+    property, and every fixture batch's properties fit them."""
+    pytest.importorskip("yaml")
+    import jsonschema
+
+    from tests.test_api_contracts import ASYNCAPI, _load
+
+    msgs = _load(ASYNCAPI)["components"]["messages"]
+    meta_v = jsonschema.Draft202012Validator(msgs["nodeTapMeta"]["payload"])
+    assert msgs["nodeTapMeta"]["payload"]["properties"]["records"]["type"] == "array"
+    data = msgs["nodeTapData"]
+    assert data["contentType"] == T.CONTENT_TYPE
+    assert data["bindings"]["mqtt"]["contentType"] == T.CONTENT_TYPE
+    head_v = jsonschema.Draft202012Validator(data["headers"])
+    assert not list(meta_v.iter_errors(msgs["nodeTapMeta"]["examples"][0]["payload"]))
+    for name in FIXTURES:
+        for m in tap_messages(name):
+            if m["topic"].endswith("/meta"):
+                assert not list(meta_v.iter_errors(json.loads(m["payload"]))), name
+            else:
+                assert m["properties"]["content_type"] == data["contentType"]
+                assert not list(head_v.iter_errors(dict(m["properties"]["user_property"])))
+
+
+def test_header_records_and_batch_properties_are_read_tolerantly():
+    base = json.loads(header())
+    assert T.parse_header(json.dumps({**base, "records": "kline_msg"}).encode())["records"] == [
+        "kline_msg"]                                       # the first firmware's string
+    assert "records" not in T.parse_header(json.dumps({**base, "records": [1]}).encode())
+    assert "records" not in T.parse_header(json.dumps({k: v for k, v in base.items()
+                                                       if k != "records"}).encode())
+    assert T.batch_properties(None) == {"content_type": None, "content_type_ok": None,
+                                        "first_seq": None, "first_seq_sent": False}
+    assert T.batch_properties({"content_type": "text/plain"})["content_type_ok"] is False
+    for bad in ("-1", "01", "x", "4294967296", 7):
+        got = T.batch_properties({"user_property": [("first_seq", bad)]})
+        assert got["first_seq"] is None and got["first_seq_sent"], bad
+    got = T.batch_properties({"user_property": [("other", "1"), ("first_seq", "4294967295")]})
+    assert got["first_seq"] == 0xFFFFFFFF
+
+
+@pytest.mark.parametrize("name", FIXTURES)
 def test_the_firmware_time_events_decode_and_map_to_utc(name):
     """The node's ``time`` events (code 6, CBOR ``{t_us, utc_ns, source, err_us}``; raw-tap
     amendment of 2026-10-06): every one decodes, maps its own instant, and the fixture's
@@ -268,6 +350,38 @@ def test_writer_appends_records_and_lists_the_file(tmp_path):
     assert (e["records"], e["gaps"], e["lost"], e["overflow"]) == (3, 0, 0, 0)
     assert e["buses"][0]["bus_id"] == "kline-diag"
     assert ev.types() == ["tap_start"]
+
+
+def test_writer_checks_the_batch_properties(tmp_path):
+    """Module-bus spec §8: a batch with another content type is refused whole (its records
+    then read as a gap); one without a content type or ``first_seq`` is read as v1 and
+    counted ``unlabelled`` (logged once); a ``first_seq`` that disagrees with the first
+    record is logged and counted, the records' own ``seq`` kept; a batch with no whole
+    record reports a gap up to its ``first_seq``; no properties (not from MQTT): no check."""
+    w, ev, _c, _s = _writer(tmp_path)
+    w.header("node", SESSION, header("on"))
+    assert w.batch("node", SESSION, batch(rec(0, REQ), rec(1, REQ)), props(0)) == 2
+    assert w.batch("node", SESSION, batch(rec(2, REQ)), props(2, "application/json")) == 0
+    assert w.batch("node", SESSION, batch(rec(3, REQ)), props(3)) == 1        # gap: 2
+    assert w.batch("node", SESSION, batch(rec(4, REQ)), props(4, None)) == 1   # no type
+    assert w.batch("node", SESSION, batch(rec(5, REQ)), {"content_type": T.CONTENT_TYPE}) == 1
+    assert w.batch("node", SESSION, batch(rec(6, REQ)), props(9)) == 1         # mismatch
+    assert w.batch("node", SESSION, b"\x00" * 7, props(10)) == 0              # no record
+    assert w.batch("node", SESSION, batch(rec(10, REQ)), props(10)) == 1
+    assert w.batch("node", SESSION, batch(rec(11, REQ))) == 1                  # unchecked
+    (e,) = w.entries()
+    assert (e["refused"], e["unlabelled"], e["first_seq_mismatch"]) == (1, 2, 1)
+    assert (e["gaps"], e["lost"], e["records"]) == (2, 4, 8)
+    errors = [f["error"] for t, f in ev if t == "tap_error"]
+    assert len(errors) == 4
+    assert "content type 'application/json' is not application/vnd.ostler.tap.v1" in errors[0]
+    assert "content type" in errors[1] and "read as v1" in errors[1]   # logged once
+    assert "first_seq 9 does not match the batch's first record (seq 6)" in errors[2]
+    assert "trailing bytes" in errors[3]
+    gaps = [(f["from"], f["to"]) for t, f in ev if t == "tap_gap"]
+    assert gaps == [(2, 2), (7, 9)]
+    w.close()
+    assert [r.seq for r in _otap(tmp_path)] == [0, 1, 3, 4, 5, 6, 10, 11]
 
 
 def test_writer_logs_gaps_skips_duplicates_and_counts_overflow(tmp_path):
