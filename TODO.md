@@ -2,7 +2,7 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.3
+version: 2.4
 updated: 2026-10-06
 summary: >
   Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, data-hub ideas. Vehicle work lives in each pack.
@@ -87,10 +87,10 @@ are built. Open:
       `<path>@<device>`), `tap/+/meta` and `tap/+/data` (session expiry 60 s), the
       `.otap` files and `meta.json` `tap`, the Brain-side scrub check, `fmt=pcapng`, the
       `node.tap` snapshot field.
-- [ ] **Tap time to UTC:** the pcapng export stamps the node's `t_us` (µs since boot); map
-      it to UTC from the tap's `time` events (raw-tap §2.4, CBOR) once the node emits them
-      (decode lab, spec §14). The owner confirmed the node will emit them (2026-10-06,
-      spec §15 second round); that is firmware work, then the Brain maps them.
+- [x] **Tap time to UTC:** the firmware emits `time` events (0426ea5, CBOR `{t_us, utc_ns,
+      source, err_us}`); `node/tap.py` `TimeMap` maps `t_us` linearly between marks and the
+      pcapng export stamps UTC (a tap without marks keeps the node clock); `meta.json` `tap`
+      counts `time_marks`. Rows and tap records stay linked by `t_us`.
 - [ ] **Parked periods and alarm events** in the logbook from the node's `power` and alarm
       topics (ADR-0010 amendment; spec §7 "in a later spec").
 - [x] **Firmware and manifest `etag` in node session meta:** `meta.json` `device_info`
@@ -109,17 +109,18 @@ are built. Open:
       the stale banner, and the device page's peer view (same row shape). Nothing in the
       new UI is built before U1 (UI spec §10); `ui/src/api/schemas.ts` gains `Cluster`,
       `device_info` and `node.fw`/`etag` then (Zod strips them today).
-- [ ] **Firmware: publish the manifest and role claims** (`ostler-firmware`): the node
-      publishes no `manifest` and no `role/…` claims yet, and no `asleep` status; the P3
-      tests use the hand-written `tests/fixtures/node/cluster.jsonl`. When it does,
-      regenerate the fixture from a host-test dump. The manifest topic and the claim
-      payload are confirmed as drafted and specified in the [module-bus message spec](specs/2026-10-06-module-bus-messages-design.md) §7.
+- [x] **Firmware: publish the manifest and role claims** (`ostler-firmware` 0426ea5): the
+      node publishes its manifest, the gate claim and its release, and `asleep`; the tests
+      read them from `tests/fixtures/node/lifecycle.jsonl` and the vector runs.
+      `cluster.jsonl` keeps only what the node cannot publish (other devices, a second gate
+      claim, vehicle roles held by the node).
 - [x] **Serial refusal while running:** decided (owner, 2026-10-06, spec §15 second
       round): it stays a start-time check when `--mqtt` is given; no change now. A node
       that appears later, or a lab laptop with no broker, is still not seen.
 - [ ] **§6.5 with the manifest:** the manifest's `primary` and the owner's priority in the
       selection, and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
-      interval. Waits for the firmware's manifest to fix the field shapes.
+      interval. The node now publishes `priority` (when set) but no `signals`, `primary` or
+      `rate_hz` yet (firmware 0426ea5).
 - [ ] **Energy ledger and floors** on the Network page's Power section (UI spec §3.8;
       app-model §13.2): the arbiter publishes no ledger yet (ADR-0040 §4.4; P4 / firmware).
 - [ ] **P4 requests:** `act/<id>`, wake requests, lab requests, outcomes in the snapshot,
@@ -133,8 +134,12 @@ are built. Open:
       path (the D2 battery voltage from the Td5 and SLABS) on one retained topic, so only
       the last survives as a stored value. NodeSource keeps both live (keyed by source);
       the topic shape is open question 9 of the [module-bus message spec](specs/2026-10-06-module-bus-messages-design.md).
-- [ ] **Regenerate `tests/fixtures/node/*.jsonl`** from the firmware's `node-fixtures`
-      target whenever its payloads change (copied from `ostler-firmware` ceb4cc7).
+- [ ] **Regenerate the firmware fixtures** (`td5-vectors`, `slabs-vectors`, `lifecycle`
+      in `tests/fixtures/node/`) from the firmware's `node-fixtures` target whenever its
+      payloads change (copied from `ostler-firmware` 0426ea5).
+- [ ] **UI: the `off` power state.** The Brain accepts `power.state: off` and the snapshot
+      reads `asleep`; the strip's power badge (`ui/src/shell/strip.ts` `powerNote`) has no
+      word for `off` yet ("Off"), and the Network page will need one.
 - [ ] **UI states of §10** ("Node asleep · wakes on …", "Node offline", "Waiting for the
       node", "Node not reading <module>", "before restart"): the snapshot carries them. U1
       shows the node's power state as a badge in the strip's Link chip (Asleep, Waking…,
@@ -154,7 +159,8 @@ are built. Open:
       mapping, the mesh bridge's QoS and ACL.
 - [ ] **`grant_invalid`** in the platform's Python gate and the shared CAN vectors (owner,
       2026-10-06), so both report the same code as the node.
-- [ ] **`power.state: off`** is not accepted by `node/messages.py` `parse_power` yet.
+- [x] **`power.state: off`** is accepted by `node/messages.py` `parse_power` (ADR-0040 §1);
+      who publishes it stays open (§17 question 6).
 - [ ] **AsyncAPI** follows the spec as channels are built (`act/`, `wake/`, `lab/`).
 
 ## Roadmap — data-hub direction (not scheduled)

@@ -6,10 +6,13 @@
 claims into the device table, holders, candidates and void claims, the gate rules, handovers
 seen live only, ``GET /cluster`` against the OpenAPI contract, firmware and manifest
 ``etag`` in node session meta, and the serial source's refusal beside a node that holds the
-K-line gate (owner answer 7). The manifests and claims are hand-written fixtures
-(``tests/fixtures/node/cluster.jsonl``): the firmware publishes neither yet."""
+K-line gate (owner answer 7). The node's own manifest, gate claim, power and sleep are the
+firmware's (``tests/fixtures/node/lifecycle.jsonl``, ``ostler-firmware`` 0426ea5); the other
+devices, a second gate claim and the vehicle roles the node does not hold yet are
+hand-written (``tests/fixtures/node/cluster.jsonl``)."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
@@ -27,7 +30,8 @@ from openostler.web.node_source import (NodeFeed, check_serial_beside_node, node
                                         probe_cluster)
 from openostler.web.server import DiagServer
 from tests.fake_broker import FakeBroker
-from tests.fake_node import VID, FakeNode, case, cluster_messages, load
+from tests.fake_node import (VID, FakeNode, case, cluster_messages, load, node_awake,
+                             node_shutdown)
 
 pytestmark = pytest.mark.fake_pack
 
@@ -111,7 +115,10 @@ def test_the_cluster_fixture_and_its_manifests_follow_the_contracts():
     power_v = _validator(doc, "/components/schemas/NodePower")
     status_v = jsonschema.Draft202012Validator(msgs["nodeStatus"]["payload"])
     kinds = set()
-    for m in load("cluster.jsonl"):
+    real = [m for n in ("lifecycle.jsonl", "td5-vectors.jsonl", "slabs-vectors.jsonl")
+            for m in load(n) if m["topic"].split("/")[4] in ("manifest", "role", "power", "status")]
+    assert {m["topic"].split("/")[4] for m in real} == {"manifest", "role", "power", "status"}
+    for m in load("cluster.jsonl") + real:
         kind = m["topic"].split("/")[4]
         kinds.add(kind)
         if not m["payload"]:
@@ -120,6 +127,12 @@ def test_the_cluster_fixture_and_its_manifests_follow_the_contracts():
             body = json.loads(m["payload"])
             assert not list(man_v.iter_errors(body)), m["topic"]
             assert body["id"] == m["topic"].split("/")[3] and len(body["etag"]) == 64
+            # the etag is the SHA-256 of the canonical JSON without it, and the published
+            # bytes are that JSON with the etag added last (sensor-detection amendment)
+            del body["etag"]
+            canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            etag = hashlib.sha256(canon.encode()).hexdigest()
+            assert m["payload"].decode() == canon[:-1] + f',"etag":"{etag}"}}', m["topic"]
         elif kind == "role":
             assert not list(claim_v.iter_errors(json.loads(m["payload"]))), m["topic"]
         elif kind == "power":
@@ -142,10 +155,26 @@ def test_the_base_cluster_holders_and_candidates():
     v = Feeder().case("cluster").view()
     assert [d["id"] for d in v["devices"]] == ["brain", "engbay", "guardian", "node", "relay1"]
     assert [(r["role"], r["scope"]) for r in v["roles"]] == [
-        ("gate", "kline-diag"), ("pbroker", None), ("time", None), ("plca", "t1s0"),
-        ("uplink", None)]
+        ("gate", "kline-diag"), ("pbroker", None), ("time", None), ("uplink", None)]
     gate = role(v, "gate", "kline-diag")
     assert (gate["holder"], gate["term"], gate["hands_over"]) == ("node", 1, False)
+    assert (gate["since"], gate["reason"]) == ("2026-10-06T10:00:00.000Z", "wired")
+    # the real node declares no vehicle role (roles: []): it is no candidate, holds none
+    pb = role(v, "pbroker")
+    assert pb["holder"] is None and [c["device"] for c in pb["candidates"]] == ["guardian",
+                                                                               "relay1"]
+    assert role(v, "time")["holder"] is None and role(v, "uplink")["holder"] == "brain"
+    assert [a["code"] for a in v["alerts"]] == ["void_claim"]   # the sensor node's pbroker
+
+
+def test_a_node_holding_vehicle_roles():
+    """Hand-written (``node_roles``): the node as a later firmware would publish it, holding
+    the parked broker and the time role and declaring PLCA on ``t1s0``."""
+    v = Feeder().case("cluster").case("node_roles").view()
+    assert [(r["role"], r["scope"]) for r in v["roles"]] == [
+        ("gate", "kline-diag"), ("pbroker", None), ("time", None), ("plca", "t1s0"),
+        ("uplink", None)]
+    assert role(v, "gate", "kline-diag")["holder"] == "node"
     pb = role(v, "pbroker")
     assert (pb["holder"], pb["term"], pb["reason"]) == ("node", 3, "node healthy 60 s")
     # node → guardian → eligible module (ADR-0037 §2, Amendment 13); the check_in sensor
@@ -165,15 +194,18 @@ def test_a_device_row_is_the_peer_view_shape():
     v = Feeder().case("cluster").view()
     node = device(v, "node")
     assert (node["kind"], node["variant"], node["class"]) == ("node", "diag-port", "node")
-    assert node["board"] == "esp32-s3-devkitc" and node["fw"] == "0.1.0"
+    # as the firmware publishes it (host build): no PSRAM, Wi-Fi with no via, no parked_ma
+    assert node["board"] == "host-sim" and node["fw"] == "0.1.0" and node["model"]
     assert len(node["etag"]) == 64 and node["manifest_utc"].endswith("Z")
-    assert node["links"] == [{"kind": "wifi", "via": "brain"}]
+    assert node["links"] == [{"kind": "wifi"}]
     assert node["power"]["state"] == "awake" and node["power"]["class"] == "always"
     assert node["since"] == node["power"]["since"]
     assert node["last_seen_utc"] is None  # stored messages only: never "seen" live
     assert node["transmit"] == [{"bus_id": "kline-diag"}]
-    assert node["memory"] == {"psram_kb": 8192}
-    assert {c["role"] for c in node["claims"]} == {"gate", "pbroker", "time"}
+    assert node["memory"] == {"psram_kb": 0} and node["roles_declared"] == []
+    assert node["items"] == [{"bus": "kline-diag", "id": "kline", "kind": "kline",
+                              "origin": "board", "status": "ok"}]
+    assert {c["role"] for c in node["claims"]} == {"gate"}
     assert device(v, "guardian")["class"] == "guardian"
     assert device(v, "engbay")["class"] == "module"  # a sensor node is an add-on module
     assert device(v, "brain")["class"] == "brain"
@@ -189,7 +221,7 @@ def test_two_gate_claims_on_one_bus_leave_no_holder_and_an_alert():
 
 
 def test_a_sleeping_or_offline_holders_claims_are_void():
-    f = Feeder().case("cluster")
+    f = Feeder().case("cluster").case("node_roles")
     f.msg("node/status", "offline")
     v = f.view()
     gate = role(v, "gate", "kline-diag")
@@ -250,7 +282,7 @@ def test_add_on_modules_as_the_last_parked_broker_fallback():
 
 
 def test_term_then_priority_decides_and_the_loser_is_superseded():
-    f = Feeder().case("cluster")
+    f = Feeder().case("cluster").case("node_roles")
     f.case("guardian_takes_pbroker")  # stored: term 4 beats the node's term 3
     pb = role(f.view(), "pbroker")
     assert pb["holder"] == "guardian" and pb["term"] == 4
@@ -259,7 +291,7 @@ def test_term_then_priority_decides_and_the_loser_is_superseded():
 
 
 def test_handovers_are_recorded_from_live_claims_only():
-    f = Feeder().case("cluster")
+    f = Feeder().case("cluster").case("node_roles")
     f.case("guardian_takes_pbroker", retain=False)  # live: the guardian takes over
     h = role(f.view(), "pbroker")["last_handover"]
     assert (h["from"], h["to"], h["term"], h["reason"]) == ("node", "guardian", 4,
@@ -268,29 +300,82 @@ def test_handovers_are_recorded_from_live_claims_only():
     f.msg("guardian/role/pbroker", "", retain=False)  # released live: back to the node's claim
     h = role(f.view(), "pbroker")["last_handover"]
     assert (h["from"], h["to"], h["reason"]) == ("guardian", "node", "guardian released")
-    f.case("node_asleep", retain=False)  # the node sleeps cleanly and clears its claims
+    # the node sleeps cleanly: it releases its claims, then power and status go asleep
+    f.case("node_asleep", retain=False)
     v = f.view()
     assert role(v, "pbroker")["holder"] is None
     h = role(v, "pbroker")["last_handover"]
-    assert (h["from"], h["to"], h["reason"]) == ("node", None, "node asleep")
-    assert role(v, "time")["last_handover"]["reason"] == "node asleep"
+    assert (h["from"], h["to"], h["reason"]) == ("node", None, "node released")
+    assert role(v, "time")["last_handover"]["reason"] == "node released"
     f.msg("guardian/role/pbroker", {"role": "pbroker", "term": 5, "reason": "takeover"},
           retain=False)
     h = role(f.view(), "pbroker")["last_handover"]
     assert (h["from"], h["to"], h["term"], h["reason"]) == (None, "guardian", 5, "takeover")
-    gate = role(v, "gate", "kline-diag")  # a gate never hands over: void while asleep
-    assert gate["holder"] is None and gate["claims"][0]["flags"] == ["asleep"]
+    gate = role(v, "gate", "kline-diag")  # a gate never hands over: released before sleep
+    assert gate["holder"] is None and gate["claims"] == [] and gate["no_holder"]
     # the bus just has no gate while its node sleeps (ADR-0037 Amendment 9)
-    assert (gate["last_handover"]["to"], gate["last_handover"]["reason"]) == (None, "node asleep")
+    assert (gate["last_handover"]["to"], gate["last_handover"]["reason"]) == (None,
+                                                                              "node released")
+    assert device(v, "node")["status"] == "asleep"
+    assert device(v, "node")["power"]["state"] == "asleep"
+    assert device(v, "node")["power"]["next_checkin"] == "2026-10-06T10:10:33.182Z"
+    # still wired to the K-line by its manifest: a cable must not start beside it
+    assert cl.kline_gate_holders(v) == [{"device": "node", "bus_id": "kline-diag",
+                                         "by": "manifest", "status": "asleep"}]
+
+
+def test_a_shutdown_releases_the_gate_without_changing_the_status():
+    """The end of a vector run (firmware): the gate claim is released and power goes
+    ``shutting_down``; ``status`` stays ``online`` (no sleep)."""
+    f = Feeder().case("cluster")
+    for m in node_shutdown():
+        f.msg(m["topic"], m["payload"], retain=False)
+    v = f.view()
+    node = device(v, "node")
+    assert node["status"] == "online" and node["power"]["state"] == "shutting_down"
+    assert node["claims"] == []
+    gate = role(v, "gate", "kline-diag")
+    assert gate["no_holder"] and gate["last_handover"]["reason"] == "node released"
+    assert cl.kline_gate_holders(v)[0]["by"] == "manifest"
+
+
+def test_an_unset_owner_priority_is_absent_from_the_manifest_and_null_in_the_claim():
+    """A node with no ``node.priority`` (firmware README): the manifest omits ``priority``
+    and the claim carries ``priority: null``. The gate still has its holder."""
+    f = Feeder().case("cluster")
+    m = json.loads(next(d for d in node_awake() if d["topic"].endswith("/manifest"))["payload"])
+    del m["priority"]
+    f.msg("node/manifest", m)
+    f.msg("node/role/gate/kline-diag", {"role": "gate", "scope": "kline-diag", "term": 1,
+                                        "priority": None, "since": "2026-10-06T10:00:00.000Z",
+                                        "reason": "wired"})
+    v = f.view()
+    gate = role(v, "gate", "kline-diag")
+    assert gate["holder"] == "node" and gate["claims"][0]["priority"] is None
+    assert parse_manifest(json.dumps(m).encode()).get("priority") is None
+
+
+def test_the_kline_item_starts_unverified():
+    """The node's K-line item is ``unverified`` until an init on the bus succeeds, then
+    ``ok`` with a new ``etag`` (sensor-detection amendment); both are kept as published."""
+    t = DeviceTable(VID)
+    seen = []
+    for i, d in enumerate(load("lifecycle.jsonl")):
+        t.ingest(d["topic"], d["payload"], False, float(i), 1_791_300_000.0 + i)
+        if d["topic"].endswith("/manifest"):
+            row = device(t.cluster(), "node")
+            seen.append((row["items"][0]["status"], row["etag"]))
+    assert [s for s, _e in seen] == ["unverified", "ok", "ok"]
+    assert seen[0][1] != seen[1][1] and seen[1][1] == seen[2][1]  # a re-announce: same etag
 
 
 def test_a_reconnect_forgets_claims_and_manifests_until_the_retained_copies_return():
-    f = Feeder().case("cluster")
+    f = Feeder().case("cluster").case("node_roles")
     f.t.forget_liveness()
     v = f.view()
     assert all(d["claims"] == [] and d["fw"] is None for d in v["devices"])
     assert role(v, "pbroker")["holder"] is None
-    f.case("cluster")
+    f.case("cluster").case("node_roles")
     assert role(f.view(), "pbroker")["holder"] == "node"
     assert role(f.view(), "pbroker")["last_handover"] is None
 
@@ -431,13 +516,14 @@ def _cluster_validator():
 def test_get_cluster_validates_and_follows_the_node(tmp_path, fake_pack):
     r = Rig(tmp_path)
     try:
-        for m in cluster_messages():
+        for m in cluster_messages() + cluster_messages("node_roles"):
             if m["topic"].split("/")[3] != "node":
                 r.broker.inject(m["topic"], m["payload"], m["qos"], m["retain"])
             else:
                 r.node.send(m)
         assert wait_for(lambda: len(r.feed.cluster()["devices"]) == 5
-                        and role(r.feed.cluster(), "gate", "kline-diag")["holder"] == "node")
+                        and role(r.feed.cluster(), "gate", "kline-diag")["holder"] == "node"
+                        and role(r.feed.cluster(), "pbroker")["holder"] == "node")
         code, body = r.get("/cluster?x=1")
         assert code == 200
         errors = list(_cluster_validator().iter_errors(body))
@@ -448,7 +534,9 @@ def test_get_cluster_validates_and_follows_the_node(tmp_path, fake_pack):
         # the node sleeps cleanly: its claims go, the snapshot says asleep
         for m in cluster_messages("node_asleep"):
             r.node.send(m)
-        assert wait_for(lambda: role(r.feed.cluster(), "pbroker")["holder"] is None)
+        assert wait_for(lambda: role(r.feed.cluster(), "pbroker")["holder"] is None
+                        and device(r.feed.cluster(), "node")["status"] == "asleep")
+        assert role(r.feed.cluster(), "gate", "kline-diag")["no_holder"]
         assert r.srv.poll_once()["status"] == "asleep"
         snap = r.srv.poll_once()
         assert snap["node"]["fw"] == "0.1.0" and snap["device_info"]["relay1"]["fw"] == "0.2.0"

@@ -155,6 +155,7 @@
         "gaps": { "type": "integer", "minimum": 0, "description": "seq gaps (each logged as a tap_gap event; never filled)." },
         "lost": { "type": "integer", "minimum": 0 },
         "overflow": { "type": "integer", "minimum": 0, "description": "overflow events from the node." },
+        "time_marks": { "type": "integer", "minimum": 0, "description": "time events from the node (raw-tap §2.4): with at least one, readers map t_us to UTC; none keeps the node's clock only." },
         "brain_scrubbed": { "type": "integer", "minimum": 0 },
         "brain_dropped": { "type": "integer", "minimum": 0 }
       }

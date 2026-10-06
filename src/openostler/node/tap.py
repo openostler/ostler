@@ -16,11 +16,16 @@ spec §2 and its ``components/poll/src/tap.c``).
   ``62 F1 8C`` has its frames' data replaced. Per-byte K-line records and unknown
   protocols cannot be checked on their own and are dropped when a scrub is due. A record
   the node already flagged ``scrubbed`` is kept as it is: the flag is never cleared.
+- :func:`parse_time_event` reads a ``time`` event's CBOR map ``{t_us, utc_ns, source,
+  err_us}`` (raw-tap spec, amendment of 2026-10-06) and :class:`TimeMap` maps a tap's
+  ``t_us`` to UTC from those marks (raw-tap §2.4): linearly between two marks, with the
+  nearest mark's offset before the first and after the last; no mark, no mapping.
 
 Pure: no I/O, no clock, no ``web`` import and no path to a car bus (ADR-0032).
 """
 from __future__ import annotations
 
+import bisect
 import json
 import re
 import struct
@@ -49,6 +54,12 @@ _CAN_IDENTITY = (b"\x49", b"\x5A", b"\x62\xF1\x90", b"\x62\xF1\x8C")
 CONTENT_TYPE = "application/vnd.ostler.tap.v1"
 _ULID = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
 SCRUB_VALUES = ("on", "off")
+
+
+# The CBOR subset a ``time`` event uses (RFC 8949): unsigned and negative integers, text,
+# null, booleans and a definite-length map of them.
+_CBOR_UINT, _CBOR_NINT, _CBOR_TEXT, _CBOR_MAP, _CBOR_SIMPLE = 0, 1, 3, 5, 7
+_CBOR_FALSE, _CBOR_TRUE, _CBOR_NULL = 20, 21, 22
 
 
 @dataclass(frozen=True)
@@ -202,6 +213,113 @@ def _can_identity(msg: bytes) -> bool:
     return any(bytes(msg[:len(p)]) == p for p in _CAN_IDENTITY)
 
 
+def _cbor_head(buf: bytes, off: int) -> "tuple[int, int, int]":
+    """``(major type, argument, next offset)``; raises ValueError on an indefinite length,
+    a reserved argument or a short buffer."""
+    if off >= len(buf):
+        raise ValueError("short CBOR")
+    ib = buf[off]
+    major, info = ib >> 5, ib & 0x1F
+    off += 1
+    if info < 24:
+        return major, info, off
+    if info > 27:
+        raise ValueError("indefinite or reserved CBOR length")
+    n = 1 << (info - 24)
+    if off + n > len(buf):
+        raise ValueError("short CBOR")
+    return major, int.from_bytes(buf[off:off + n], "big"), off + n
+
+
+def _cbor_item(buf: bytes, off: int) -> "tuple[object, int]":
+    major, arg, off = _cbor_head(buf, off)
+    if major == _CBOR_UINT:
+        return arg, off
+    if major == _CBOR_NINT:
+        return -1 - arg, off
+    if major == _CBOR_TEXT:
+        if off + arg > len(buf):
+            raise ValueError("short CBOR")
+        return buf[off:off + arg].decode("utf-8"), off + arg
+    if major == _CBOR_SIMPLE and arg in (_CBOR_FALSE, _CBOR_TRUE, _CBOR_NULL):
+        return {_CBOR_FALSE: False, _CBOR_TRUE: True, _CBOR_NULL: None}[arg], off
+    raise ValueError(f"CBOR major type {major} not expected in a time event")
+
+
+def parse_time_event(payload: bytes) -> "Optional[dict]":
+    """A ``time`` event's payload (raw-tap spec, amendment of 2026-10-06): a CBOR map with
+    the text keys ``t_us`` (unsigned), ``utc_ns`` (unsigned, ns since the Unix epoch),
+    ``source`` (text) and ``err_us`` (unsigned or null). Returns ``{t_us, utc_ns, source,
+    err_us}`` (unknown keys ignored, so later additions are read), or None when it is not
+    such a map or ``t_us`` / ``utc_ns`` is missing or not an unsigned integer."""
+    try:
+        major, n, off = _cbor_head(bytes(payload), 0)
+        if major != _CBOR_MAP:
+            return None
+        obj: "dict[str, object]" = {}
+        for _ in range(n):
+            k, off = _cbor_item(payload, off)
+            v, off = _cbor_item(payload, off)
+            if isinstance(k, str):
+                obj[k] = v
+    except (ValueError, UnicodeDecodeError):
+        return None
+    t_us, utc_ns = obj.get("t_us"), obj.get("utc_ns")
+    if not all(isinstance(v, int) and not isinstance(v, bool) and v >= 0
+               for v in (t_us, utc_ns)):
+        return None
+    err = obj.get("err_us")
+    return {"t_us": t_us, "utc_ns": utc_ns,
+            "source": obj.get("source") if isinstance(obj.get("source"), str) else None,
+            "err_us": err if isinstance(err, int) and not isinstance(err, bool) and err >= 0
+            else None}
+
+
+def is_time_event(r: TapRecord) -> bool:
+    return r.is_event and r.dir == EV_TIME
+
+
+class TimeMap:
+    """A tap's node clock (``t_us``) to UTC, from its ``time`` events (raw-tap §2.4 and the
+    amendment of 2026-10-06). A mark is used only when its CBOR ``t_us`` equals the record
+    header's (the instant it maps); a later mark for the same ``t_us`` replaces an earlier
+    one. Between two marks the mapping is linear; before the first and after the last it
+    keeps that mark's offset (the node clock runs at its own rate there, unchecked). With
+    no mark there is no mapping (:meth:`utc_ns` returns None): a tap recorded while the
+    node had no clock keeps its ``t_us``."""
+
+    def __init__(self, records: "Iterable[TapRecord]") -> None:
+        marks: "dict[int, tuple[int, str | None]]" = {}
+        for r in records:
+            if not is_time_event(r):
+                continue
+            ev = parse_time_event(r.payload)
+            if ev is None or ev["t_us"] != r.t_us:
+                continue
+            marks[r.t_us] = (ev["utc_ns"], ev["source"])
+        self._t = sorted(marks)
+        self._utc = [marks[t][0] for t in self._t]
+        self.sources = sorted({s for _u, s in marks.values() if s})
+
+    def __len__(self) -> int:
+        return len(self._t)
+
+    def __bool__(self) -> bool:
+        return bool(self._t)
+
+    def utc_ns(self, t_us: int) -> "int | None":
+        """UTC in ns since the Unix epoch for a node instant, or None without marks."""
+        if not self._t:
+            return None
+        i = bisect.bisect_right(self._t, t_us)
+        if i == 0:
+            return self._utc[0] + (t_us - self._t[0]) * 1000
+        if i == len(self._t):
+            return self._utc[-1] + (t_us - self._t[-1]) * 1000
+        t0, t1, u0, u1 = self._t[i - 1], self._t[i], self._utc[i - 1], self._utc[i]
+        return u0 + (t_us - t0) * (u1 - u0) // (t1 - t0)
+
+
 def export_records(records: "Iterable[TapRecord]") -> "list[TapRecord]":
     """What may leave the device (ADR-0036 §3, ADR-0039 owner answer 3): unframed records
     dropped and every identity reply scrubbed, whatever the install setting."""
@@ -216,8 +334,8 @@ def export_records(records: "Iterable[TapRecord]") -> "list[TapRecord]":
     return out
 
 
-__all__ = ["CONTENT_TYPE", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED", "FLAG_UNSYNCED",
-           "HEADER_LEN", "IdentityScrub", "PLACEHOLDER", "PROTO_CAN", "PROTO_CAN_FD",
-           "PROTO_KLINE_BYTE", "PROTO_KLINE_MSG", "TYPE_DATA", "TYPE_EVENT", "TapRecord",
-           "encode_record", "export_records", "parse_header", "parse_records", "scrub_kline",
-           "valid_session"]
+__all__ = ["CONTENT_TYPE", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED",
+           "FLAG_UNSYNCED", "HEADER_LEN", "IdentityScrub", "PLACEHOLDER", "PROTO_CAN",
+           "PROTO_CAN_FD", "PROTO_KLINE_BYTE", "PROTO_KLINE_MSG", "TYPE_DATA", "TYPE_EVENT",
+           "TapRecord", "TimeMap", "encode_record", "export_records", "is_time_event",
+           "parse_header", "parse_records", "parse_time_event", "scrub_kline", "valid_session"]

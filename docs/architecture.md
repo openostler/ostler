@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.4
+version: 2.5
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -203,8 +203,13 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     authoritative, and read-only. `check_serial_beside_node` reads it once so a serial
     source refuses to start beside a node holding the K-line gate (`tools/dashboard.py
     --mqtt`); it fails closed when the broker cannot be checked.
-  - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/`;
-    `tests/fake_node.py` replays them; `needs_broker` tests use a real Mosquitto (CI job).
+  - **Tap time.** `node/tap.py` `TimeMap` maps a tap's `t_us` to UTC from the node's
+    `time` events (CBOR, decoded by a stdlib subset); the pcapng export stamps UTC when a
+    tap has them and the node clock otherwise.
+  - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/` (the two
+    vector runs and `lifecycle.jsonl`), plus hand-written lines only for what the node
+    cannot publish yet (`cluster.jsonl`, `status-power.jsonl`); `tests/fake_node.py`
+    replays them; `needs_broker` tests use a real Mosquitto (CI job).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
