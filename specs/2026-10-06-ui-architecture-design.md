@@ -208,6 +208,63 @@ amendment for how it relates to the shell.
 pages become "More → Network → *device*"; the capability manifest (§5.1) gains `roles` and
 `transmit` per bus (ADR-0037 Consequences).
 
+### 3.8 Proposed amendment (2026-10-06, pending owner answers): asleep, waking and queued actions
+
+*Not yet decided; nothing above changes until the owner answers. Decision draft:
+[ADR-0040](../decisions/adr-0040-power-states-and-wake.md) (proposed); evidence:
+[power states research](../references/research/power_states.md).*
+
+**Words and badges.** Every device shows one power state from its retained `power` topic,
+always icon plus word: **Awake**, **Asleep** (with last seen and how it wakes: "wakes on
+wire", "checks in ≈ 6 min"), **Waking…** (elapsed seconds against the expected time),
+**Kept awake** (by whom, until when), **Shutting down**, **Off**, and **Offline** (amber,
+only for an unexpected loss). An asleep device keeps its last values in stale grey with their
+age, never zero and never "Unavailable" (§2 honest states).
+
+**Status strip (no new chip).** The brain's state lives in the **Link** chip (§3.2):
+"Hub asleep" as a rung note, "Waking hub · 12 s" with a progress ring, and a small count when
+actions are queued ("1 queued"). Its sheet lists queued actions (name, target, expires at,
+**Cancel**), the leases this user holds, and refused wakes with their reason. Security and
+the alarm never wait for the brain, so the Security chip is unaffected.
+
+**Confirmations.** Drawn by the shell only (app-model spec §2).
+- **Waking a module** (`needs_brain: false`, ADR-0040 §5): no extra confirm; the button shows
+  "Waking Relay box…" then the action's own tier friction (§7).
+- **Waking the brain:** a sheet, "This needs the hub. Wake it? About 30 s · uses about 30 mAh
+  (today: 180 mAh left) · battery 12.5 V", with **Wake and run** and **Cancel**. Remote
+  requests always show it, with the quota ("2 of 6 remote wakes left today"). A local
+  "Don't ask again" per user is open question 6 of ADR-0040.
+- **Tier 2–3:** wake first, then the normal approval (§7.2); approvals never queue.
+- **Refusals are honest:** "Hub not woken: battery 11.9 V", "Hub failed to start; locked for
+  1 h", "Limit reached: 6 wakes this hour".
+
+**Queued actions.** The button reads "Queued · runs when the hub is ready · expires 14:35 ·
+Cancel". Outcomes: Done; **Expired**; Cancelled; Refused by *device* (the executing gate's
+reason); **State changed** (the driving state moved; ADR-0040 §5). Check-in targets say
+"Runs when Relay box next checks in (≤ 10 min)".
+
+**Network page (§3.7).** The Devices section gains a **Power** column: state, class (always,
+wakeable, check-in, none), wake path, estimated current, lease holders and a **Wake** button
+where the user's role allows it. A **Power** section adds today's energy ledger against the
+budget, the 12 V floors in force, the node's parked mode (ready or deep) and a wake log (who
+woke what, when, why, cost, outcome). Read-only over remote paths except Wake under the quota.
+
+**Landing and brain-only views.** With the brain asleep, Home and Security render from the
+node's retained data. A view that needs the brain (full Logs, replay, clips) shows a "Needs
+the hub" card with **Wake** instead of disappearing; on Ostler Lite (no brain fitted) it is
+absent, as today. While Moving the brain is held by the ignition lease, so no wake prompt
+appears in Drive mode.
+
+**Phone and Diagnostics standalone.** On Lite the phone talks to the node only; no hub prompt
+exists. When the node is in **parked-deep** the phone cannot reach it (no BLE or AP): the app
+says "Node asleep (deep) · wakes on ignition, door or motion · last seen 3 h" from cached or
+cloud data, and offers nothing else.
+
+**Manifest (§5.1), if accepted:** each `devices` entry gains
+`"power": {"class": "wakeable", "wake_paths": ["wake_wire"], "parked_ma": 0.2}`; each
+`actions` entry gains `"runs_on": "relay1"`, `"needs_brain": false`, `"queueable": true` and
+`"expires_max_s": 600` (Tier 2+ is never `queueable`).
+
 ## 4. The vehicle model in the UI
 
 ### 4.1 Garage and active-vehicle switcher
@@ -672,3 +729,9 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   health, role holders, uplinks and metering, remote access, certificates and pairing), adds
   a read-only peer view to every device's own page, and builds the cluster view from each
   device's published manifest (ADR-0037, proposed).
+- 2026-10-06: proposed amendment, pending owner answers (no version change; nothing above
+  is changed): §3.8 adds power states and badges (asleep is not offline), the brain's state
+  and queued actions in the Link chip, wake confirmations with cost, queued actions with
+  expiry and Cancel, a Power column and section on the Network page, "Needs the hub" cards,
+  the phone-standalone case and manifest fields `power`, `runs_on`, `needs_brain`,
+  `queueable` (ADR-0040, proposed).

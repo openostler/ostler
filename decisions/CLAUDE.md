@@ -42,6 +42,9 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0037-role-holders-and-handover.md` — PROPOSED: single-holder roles (transmit gate per bus, never handed over; parked broker; time source; PLCA coordinator; uplink manager) with static priority set at pairing, retained claims + LWT + mDNS hints, timeouts and split-brain rules; authority always stays with the executing gate.
 - `adr-0038-mesh-car-to-car-and-off-grid.md` — PROPOSED: mesh only between cars, to a base or off-grid, as its own subnet; a mesh is a remote path (Read and alerts only); Meshtastic-compatible LoRa add-on first behind a separate GPL-3 VSS bridge; MeshCore and Reticulum to bench-test; Babel if a Wi-Fi IP mesh is wanted.
 
+- `adr-0039-product-family-diagnostics-guardian-hub.md` — PROPOSED: product names Ostler Diagnostics (OBD-port node), Ostler Guardian, Ostler Hub ("node" stays internal); timestamped raw-frame tap to the hub; USB-NCM node link; setup mode; standalone 4G; hub-only wake from its power board; u-blox on the Diagnostics node.
+- `adr-0040-power-states-and-wake.md` — PROPOSED: retained power states (asleep/waking/awake/held…), reachability classes, node parked-ready/parked-deep, wake requests as messages with arbiter, quotas, energy ledger and battery floors; actions declare `runs_on`/`needs_brain`; only Tier 0–1 actions queue, with expiry.
+
 ADR-0005 (NanoCom sniff workflow) and ADR-0007 (BCU SecurityAccess) are Discovery 2
 decisions and stay in the D2 pack repo; their numbers are not reused.
 

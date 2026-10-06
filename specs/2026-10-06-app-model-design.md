@@ -423,6 +423,65 @@ carries the peer view and UA the Network app.
 12. **Owner operations** (pairing, revoking, uplinks): plain owner-role API calls, or a new
     category (for example "Administration") in ADR-0033?
 
+## 13. Proposed amendment (2026-10-06, pending owner answers): power states, wake and queued actions
+
+*Not yet decided; §4–§6 stand until the owner answers. Decision draft:
+[ADR-0040](../decisions/adr-0040-power-states-and-wake.md) (proposed); UI: UI spec §3.8
+(proposed); evidence: [power states research](../references/research/power_states.md).*
+
+**13.1 Manifest additions.** Additive; old manifests stay valid.
+- **Capability manifest actions** (UI spec §5.1) gain `runs_on`, `needs_brain`, `queueable`
+  and `expires_max_s`. An app's `actions` list copies them as it copies category and tier
+  (§4.2); the registry refuses a manifest whose copy differs, or that marks a Tier 2+ action
+  `queueable`.
+- **App views** gain `needs_brain: true` where the view needs a brain service (full Logs,
+  replay, clips). With the brain asleep the shell renders a "Needs the hub" card with **Wake**
+  in the view's slot and does not activate the app; on Lite the view is hidden by
+  `requires.product` as today.
+- **`permissions.wake`**: `["interactive"]` lets the app ask the shell to wake a device for a
+  person's tap; `["background"]` (OTA, sync) is first-party only and subject to the budget. No
+  permission means the app can never cause a wake.
+
+```jsonc
+"actions": [ { "id": "relay1.ch3", "category": "accessories", "tier": 1,
+               "runs_on": "relay1", "needs_brain": false, "queueable": true, "expires_max_s": 300 } ],
+"views":   [ { "id": "clips", "needs_brain": true,
+               "driving": { "parked": "full", "idling": "full", "moving": false } } ],
+"permissions": { "data": ["video"], "wake": ["interactive"] }
+```
+
+**13.2 Cluster model.** The `cluster.read` device rows and the device page's peer view
+(§12.1–12.2) gain the device's retained `power` record: `state` (off, asleep, waking, awake,
+held, shutting_down, offline), `class` (always, wakeable, check_in, none), `wake_paths`,
+`next_checkin`, `leases` and `est_ma`, plus the arbiter's ledger (today's mAh against the
+budget, the floor in force). One JSON shape for both, as §12.2 requires.
+
+**13.3 SDK.**
+
+| Service | Addition |
+|---|---|
+| `actions` | `request(id, params, { wake: "ask" \| "auto" \| "never", expires_in_s })`. The handle reports `waking`, `queued {expires_at}`, `running`, `done`, `expired`, `cancelled`, `refused {by, reason}`, `state_changed`; `handle.cancel()` |
+| `power` (new) | `state(deviceId)` and `subscribe(deviceIds)` (read-only records above); `hold(deviceId, { until, reason })` returns a lease handle that the shell renews while the view is visible and releases on unmount or at the maximum (ADR-0040 §4.5) |
+
+- **`wake: "ask"`** (default) lets the shell show the brain-wake sheet (UI spec §3.8);
+  `"auto"` is honoured only for module wakes (`needs_brain: false`) or after the user chose
+  "Don't ask again"; `"never"` fails fast with `refused {reason: "asleep"}`.
+- **There is no `wake()` call for apps.** A wake is always the side effect of an action
+  request, a held view or a shell Wake button, so its purpose is known and checked.
+- **The shell owns** the wake sheet, the queued list in the Link chip's sheet and every
+  refusal; apps never draw them (§2, §8).
+
+**13.4 Tests (added to §10).** A `needs_brain: false` request never wakes the brain (fake
+arbiter); a queued request reports `expired` after its expiry and `state_changed` after a
+driving-state change; a Tier 2 action marked `queueable` is refused by the registry; an app
+without `permissions.wake` cannot cause a wake; leases are released on unmount; a
+`needs_brain` view shows the placeholder, not the app, while the brain is asleep.
+
+**Open questions added by this amendment:**
+
+13. **Wake by apps:** only through action requests and held views (no `wake()`), as proposed?
+14. **"Don't ask again"** for brain wakes: per user and device, local links only?
+
 ## Changelog
 
 - 2026-10-06: v0.1, first draft from the [app model research](../references/research/ui/app_model.md):
@@ -437,3 +496,8 @@ carries the peer view and UA the Network app.
 - 2026-10-06: proposed amendment §12, pending owner answers (no version change): Network as a
   core app that absorbs More → Devices, its manifest, the firmware-served device page with a
   read-only peer view, and open questions 10–12.
+- 2026-10-06: proposed amendment §13, pending owner answers (no version change): action
+  fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a
+  "Needs the hub" placeholder; `permissions.wake`; per-device power records in the cluster
+  model; SDK wake and expiry options on `actions.request`, a read-only `power` service with
+  leases; tests and open questions 13–14 (ADR-0040, proposed).
