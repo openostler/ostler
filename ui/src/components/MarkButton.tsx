@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { api } from "../api/client";
+import { Icon } from "../icons/Icon";
 import type { Note } from "../api/schemas";
 import { formatNoteTime } from "../lib/notes";
 import { useCaptureRunner } from "../lib/recordingOptions";
@@ -18,8 +19,11 @@ const clock = (iso: string | undefined) => {
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 };
 
+/** The strip chip's face: the flag symbol and the word (UI spec §3.2: icon and word). */
+const MarkFace = () => <><Icon name="flag" size={20} /><span className="schip-word">Mark</span></>;
+
 /**
- * Header ⚑ (spec §5, §8). Live while recording: one tap saves a `mark` at once (the moment is
+ * The strip's Mark chip (UI spec §3.2 chip 9, the one action safe at any speed; spec §5, §8). Live while recording: one tap saves a `mark` at once (the moment is
  * never lost to typing), then "What happened?" PATCHes the mark with text and tags. Paused (no
  * connection): shown greyed, "Connect to the car to mark". In replay of an editable session: a
  * retro mark at the cursor, then the same sheet. Hidden on demo logs, in public mode and when
@@ -40,8 +44,8 @@ export function MarkButton() {
   // Paused (no connection): the session stays open but nothing can be marked (spec §5).
   if (isPaused(snap?.recording)) {
     return (
-      <button className="chip mark-btn" aria-label="Connect to the car to mark" title="Connect to the car to mark"
-        disabled>⚑</button>
+      <button className="schip mark-btn" aria-label="Connect to the car to mark" title="Connect to the car to mark"
+        disabled><MarkFace /></button>
     );
   }
   return <Mark toast={toast} />;
@@ -86,8 +90,8 @@ function RetroMark({ session, toast }: { session: string; toast: (m: string, bad
 
   return (
     <>
-      <button className="chip mark-btn" aria-label="Mark at the cursor" title="Mark this moment at the cursor"
-        aria-busy={busy} onClick={tap}>⚑</button>
+      <button className="schip mark-btn" aria-label="Mark at the cursor" title="Mark this moment at the cursor"
+        aria-busy={busy} onClick={tap}><MarkFace /></button>
       {mark ? (
         <NoteSheet hint={mark.note ? `Marked at ${formatNoteTime(mark.t)}` : "Not saved yet — Save stores it now"}
           onSave={save} onClose={() => setMark(null)} />
@@ -134,8 +138,8 @@ function Mark({ toast }: { toast: (m: string, bad?: boolean) => void }) {
 
   return (
     <>
-      <button className="chip mark-btn" aria-label="Mark this moment" title="Mark this moment"
-        aria-busy={busy} onClick={tap}>⚑</button>
+      <button className="schip mark-btn" aria-label="Mark this moment" title="Mark this moment"
+        aria-busy={busy} onClick={tap}><MarkFace /></button>
       {mark ? (
         <NoteSheet hint={mark.note ? `Marked at ${clock(mark.note.created)}` : "Not saved yet — Save stores it now"}
           onSave={save} onClose={() => setMark(null)} />

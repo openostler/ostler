@@ -7,28 +7,26 @@ import { HealthStrip } from "../components/HealthStrip";
 import { ScreenHead } from "../components/ScreenHead";
 import { StatTile } from "../components/StatTile";
 import { StatusGate } from "../components/StatusGate";
-import { driveView, tileConv } from "../layout";
+import { driveView, moduleName, tileConv } from "../layout";
 import { usePack } from "../pack/store";
 import { useApp } from "../state/app";
 import { getView } from "../vehicles/registry";
 
-/** Driver's dashboard: the per-module view the pack's layout names (layout.drive). "tiles"
- * is generic — hero gauges and stat tiles; any other kind is a view the pack registered
- * (vehicles/registry.ts). Modules without one show a placeholder. Calm when healthy;
- * neutral/"awaiting" when undecoded. */
-export function Drive() {
+/** Driver's view of the module in session: the per-module view the pack's layout names
+ * (layout.drive). "tiles" is generic — hero gauges and stat tiles; any other kind is a view
+ * the pack registered (vehicles/registry.ts). Modules without one show a placeholder. Calm
+ * when healthy; neutral/"awaiting" when undecoded. Home's vehicle card and Drive mode both
+ * show it (UI spec §3.4–3.5); the roles of §5.4 replace it with the manifest in U3. */
+export function DriveBody() {
   const { snap, module, fields } = useApp();
   const pack = usePack();
-  const recording = !!snap?.logging?.recording;
-  const head = <ScreenHead title="Drive">{recording ? <span className="status hi"><span className="si">●</span>REC</span> : null}</ScreenHead>;
-  if (snap?.status !== "connected") return <>{head}<StatusGate /></>;
+  if (snap?.status !== "connected") return <StatusGate />;
 
   const view = driveView(module);
   const health = view?.health ? <HealthStrip /> : null;
   if (view?.kind === "tiles") {
     return (
       <>
-        {head}
         {health}
         <div className="drive2">
           {(view.tiles ?? []).map((t) => (
@@ -41,12 +39,30 @@ export function Drive() {
   }
   // a registered view is a stable module-level component (looked up, never created here)
   const packView = view ? getView(pack?.id, view.kind) : undefined;
-  if (packView) return <>{head}{health}{createElement(packView, { signals: snap.signals, fields })}</>;
+  if (packView) return <>{health}{createElement(packView, { signals: snap.signals, fields })}</>;
+  return (
+    <div className="empty"><div className="title">No vehicle view for this module yet</div>
+      <div className="pretty">Its faults, inputs and settings are in Diagnose.</div></div>
+  );
+}
+
+/** Home's vehicle card (and HU-wide's always-on vehicle pane): health and the driver's view
+ * of the system in session. */
+export function VehicleCard() {
+  const { module } = useApp();
+  return (
+    <section className="vehicle-card stack" aria-label={`Vehicle: ${moduleName(module)}`}>
+      <DriveBody />
+    </section>
+  );
+}
+
+/** Drive mode's screen: the title, then the driver's view. */
+export function Drive() {
   return (
     <>
-      {head}
-      <div className="empty"><div className="title">No vehicle view for this module yet</div>
-        <div className="pretty">Its faults, inputs and settings are on the other tabs.</div></div>
+      <ScreenHead title="Drive" />
+      <DriveBody />
     </>
   );
 }

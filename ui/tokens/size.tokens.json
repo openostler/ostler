@@ -1,0 +1,356 @@
+{
+  "$description": "Shell sizes per layout class (UI spec §3.1), shared radii and the minimum chip height. Layout tokens become CSS custom properties on .app[data-layout=<class>].",
+  "radius": {
+    "md": {
+      "$type": "dimension",
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      }
+    }
+  },
+  "chip": {
+    "min-h": {
+      "$type": "dimension",
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      },
+      "$description": "every strip chip is at least 48 px tall (UI spec §3.2)"
+    }
+  },
+  "layout": {
+    "hu7": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        },
+        "$description": "driver-side rail"
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        },
+        "$description": "rail item height: the 76 px head-unit target"
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        },
+        "$description": "primary touch target"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      }
+    },
+    "hu9": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 112,
+          "unit": "px"
+        }
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      }
+    },
+    "huwide": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 112,
+          "unit": "px"
+        }
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "vehicle-pane": {
+        "$type": "dimension",
+        "$value": {
+          "value": 520,
+          "unit": "px"
+        },
+        "$description": "always-on vehicle pane"
+      },
+      "secondary-pane": {
+        "$type": "dimension",
+        "$value": {
+          "value": 520,
+          "unit": "px"
+        }
+      }
+    },
+    "phone": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        },
+        "$description": "bottom bar height (plus the safe area)"
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    },
+    "tablet": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 88,
+          "unit": "px"
+        }
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    },
+    "desktop": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 88,
+          "unit": "px"
+        }
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    }
+  }
+}

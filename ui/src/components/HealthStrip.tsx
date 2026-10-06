@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { summarize } from "../lib/health";
+import type { RouteName } from "../shell/routes";
 import { useApp } from "../state/app";
 
 const ICON = { ok: "✓", warn: "!", alarm: "!", offline: "…" } as const;
 
-/** One line that answers "is the car OK?". Tapping it goes to the cause. */
+/** One line that answers "is the car OK?". Tapping it goes to the cause in Diagnose. */
 export function HealthStrip() {
   const { snap, fields, goTo } = useApp();
   const h = summarize(snap, fields);
   if (h.level === "offline") return null; // the status gate covers this case
-  const target = h.current || h.logged ? "faults" : h.outOfRange.length ? "inputs" : null;
+  const target: RouteName | null = h.current || h.logged ? "diagnose.faults" : h.outOfRange.length ? "diagnose.live" : null;
   return (
     <button className={`health ${h.level}`} onClick={() => target && goTo(target)} disabled={!target}
       aria-label={`Vehicle status: ${h.headline}`}>

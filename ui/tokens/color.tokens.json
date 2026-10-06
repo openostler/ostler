@@ -1,0 +1,241 @@
+{
+  "$description": "Calm-instrument colours, light (the default). Status hues validated with the dataviz validate_palette.js in both modes. Values adapted from the Astryx neutral theme (MIT).",
+  "color": {
+    "bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9255,
+          0.9333,
+          0.9451
+        ],
+        "hex": "#eceef1"
+      },
+      "$description": "page"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          1,
+          1
+        ],
+        "hex": "#ffffff"
+      },
+      "$description": "cards"
+    },
+    "raised": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9647,
+          0.9686,
+          0.9765
+        ],
+        "hex": "#f6f7f9"
+      },
+      "$description": "controls, strip"
+    },
+    "sunken": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.902,
+          0.9137,
+          0.9294
+        ],
+        "hex": "#e6e9ed"
+      },
+      "$description": "bar and gauge track"
+    },
+    "band": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7882,
+          0.8157,
+          0.8471
+        ],
+        "hex": "#c9d0d8"
+      },
+      "$description": "normal-range band on a track"
+    },
+    "line": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8667,
+          0.8824,
+          0.902
+        ],
+        "hex": "#dde1e6"
+      }
+    },
+    "line-strong": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7647,
+          0.7882,
+          0.8157
+        ],
+        "hex": "#c3c9d0"
+      }
+    },
+    "text-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0627,
+          0.0745,
+          0.0902
+        ],
+        "hex": "#101317"
+      }
+    },
+    "text-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2667,
+          0.298,
+          0.3333
+        ],
+        "hex": "#444c55"
+      }
+    },
+    "text-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3843,
+          0.4196,
+          0.4588
+        ],
+        "hex": "#626b75"
+      },
+      "$description": "at least 4.5:1 on white"
+    },
+    "accent": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1216,
+          0.4353,
+          0.8784
+        ],
+        "hex": "#1f6fe0"
+      }
+    },
+    "on-accent": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          1,
+          1
+        ],
+        "hex": "#ffffff"
+      }
+    },
+    "ok": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1804,
+          0.4902,
+          0.3098
+        ],
+        "hex": "#2e7d4f"
+      }
+    },
+    "warn": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6902,
+          0.5098,
+          0
+        ],
+        "hex": "#b08200"
+      }
+    },
+    "alarm": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8157,
+          0.149,
+          0.2314
+        ],
+        "hex": "#d0263b"
+      }
+    },
+    "warn-bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9843,
+          0.9451,
+          0.851
+        ],
+        "hex": "#fbf1d9"
+      }
+    },
+    "alarm-bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9843,
+          0.8902,
+          0.902
+        ],
+        "hex": "#fbe3e6"
+      }
+    },
+    "ok-bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8863,
+          0.949,
+          0.9098
+        ],
+        "hex": "#e2f2e8"
+      }
+    },
+    "overlay": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0392,
+          0.0471,
+          0.0588
+        ],
+        "hex": "#0a0c0f",
+        "alpha": 0.55
+      },
+      "$description": "sheet scrim"
+    }
+  }
+}

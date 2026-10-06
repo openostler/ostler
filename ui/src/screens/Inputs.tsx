@@ -138,7 +138,7 @@ export function Inputs() {
         <div className="empty"><div className="title">{filter === "attention" ? "Nothing needs attention" : "No unverified signals"}</div></div>
       ) : (
         <div className="empty"><div className="title">No live inputs yet</div>
-          <div className="pretty">Connect {moduleName(module)} from the connection pill in the header. The K-line carries one session at a time.</div>
+          <div className="pretty">Connect {moduleName(module)} from the Link chip in the status strip. The K-line carries one session at a time.</div>
           <button className="btn" onClick={openConnection}>Open connection</button></div>
       )}
       <NotDecoded items={placeholders} />

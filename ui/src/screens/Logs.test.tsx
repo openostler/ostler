@@ -141,7 +141,7 @@ describe("Logs — opening a session", () => {
     const { ctx } = renderWithApp(ui());
     await screen.findByText("demo");
     fireEvent.click(document.querySelector(`[data-session="${demo.id}"]`)!);
-    expect(ctx.goTo).toHaveBeenCalledWith("analysis");
+    expect(ctx.goTo).toHaveBeenCalledWith("logs.analysis");
     // the replay is open (the global transport shows); Logs stays the browser
     await screen.findByRole("button", { name: "Play" });
     expect(calls.some((c) => c.path.startsWith(`/sessions/${demo.id}/data?ch=`))).toBe(true);
@@ -155,7 +155,7 @@ describe("Logs — opening a session", () => {
     });
     await screen.findByText("demo");
     fireEvent.click(document.querySelector(`[data-session="${real.id}"]`)!);
-    expect(ctx.goTo).toHaveBeenCalledWith("analysis");
+    expect(ctx.goTo).toHaveBeenCalledWith("logs.analysis");
     expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
     expect(calls.some((c) => c.path.startsWith(`/sessions/${real.id}/data?ch=`))).toBe(false);
   });

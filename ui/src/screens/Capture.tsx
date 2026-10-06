@@ -218,7 +218,7 @@ function DirectCapture({ onSaved }: { onSaved: OnSaved }) {
         (the LID, in hex) and <b>Read</b> sends <span className="mono">21 xx</span> — it only reads, never changes anything.
         Read once, change one thing on the car, read again: the bytes that changed hold that thing.
       </p>
-      {!connected ? <div className="small" style={{ color: "var(--ic-yellow)", marginBottom: 8 }}>Connect {moduleName(module)} first (the connection pill in the header).</div> : null}
+      {!connected ? <div className="small" style={{ color: "var(--ic-yellow)", marginBottom: 8 }}>Connect {moduleName(module)} first (the Link chip in the status strip).</div> : null}
       <form className="row" style={{ gap: 8 }} onSubmit={(e) => { e.preventDefault(); void read(); }}>
         <input className="input mono" style={{ width: 160 }} aria-label="LID to read" placeholder="LID in hex, e.g. 23"
           value={lid} onChange={(e) => setLid(e.target.value)} />

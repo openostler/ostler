@@ -48,7 +48,7 @@ describe("RewindButton", () => {
     expect(btn).toHaveAttribute("title", "Rewind to the latest sample");
     fireEvent.click(btn);
     expect(r.enter).toHaveBeenCalledWith("live", { at: "end", follow: true });
-    expect(ctx.goTo).toHaveBeenCalledWith("analysis");
+    expect(ctx.goTo).toHaveBeenCalledWith("logs.analysis");
   });
 
   it("not recording: opens the newest finished session at its end, then Analysis", async () => {
@@ -59,7 +59,7 @@ describe("RewindButton", () => {
     expect(btn).toHaveAttribute("title", "Open the last drive at its end");
     fireEvent.click(btn);
     await waitFor(() => expect(r.enter).toHaveBeenCalledWith("s2", { at: "end" }));
-    expect(ctx.goTo).toHaveBeenCalledWith("analysis");
+    expect(ctx.goTo).toHaveBeenCalledWith("logs.analysis");
     expect(paths).toContain("/sessions?limit=5");
   });
 
