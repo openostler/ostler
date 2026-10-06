@@ -29,6 +29,7 @@ _CORE = [
     "metrics.py",  # ADR-0016: the VSS namespace (stdlib only)
     "obd",  # J1979 service layer (specs/2026-10-06-j1979-service-layer-design.md §1)
     "testing",  # shipped test fakes (packs spec §2.9), stdlib only
+    "can",  # CanLink, detection, ISO-TP, TxGate (specs/2026-10-06-canlink-isotp-design.md §1)
 ]
 _FORBIDDEN = {"web", "apps"}
 _CORE_EXCEPT: "set[str]" = set()
@@ -80,6 +81,29 @@ def test_obd_is_transport_agnostic():
             parts = mod.split(".")
             assert not ({"kline", "kwp2000", "can"} & set(parts[:2] if parts[0] == "openostler" else parts[:1])), \
                 f"{path.relative_to(_SRC)} imports {mod!r}"
+
+
+def test_can_imports_only_the_obd_protocol_and_scrub():
+    # CanLink spec §1: can imports obd.link (the protocol) and obd.vin (the shared scrub
+    # patterns), nothing above it; python-can only in pycan.py (the [can] extra, lazily);
+    # can-isotp never at runtime (spec §6, T16 is its only user).
+    files = sorted((_SRC / "can").rglob("*.py"))
+    assert files
+    allowed_obd = {"openostler.obd.link", "openostler.obd.vin"}
+    for path in files:
+        for _ln, mod in _absolute_imports(path):
+            root = mod.split(".")[0]
+            if root != "openostler":
+                assert root != "isotp", f"{path.relative_to(_SRC)} imports {mod!r}"
+                assert root != "can" or path.name == "pycan.py", \
+                    f"{path.relative_to(_SRC)} imports {mod!r}"
+                continue
+            top = mod.split(".")[1]
+            if top == "obd":
+                assert any(mod == a or mod.startswith(a + ".") for a in allowed_obd), \
+                    f"{path.relative_to(_SRC)} imports {mod!r}"
+            else:
+                assert top == "can", f"{path.relative_to(_SRC)} imports {mod!r}"
 
 
 def test_logbook_gps_and_imu_are_scanned():

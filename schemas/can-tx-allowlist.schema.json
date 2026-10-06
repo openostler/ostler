@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/can-tx-allowlist.schema.json",
+  "title": "CAN transmit allowlist",
+  "description": "A pack's can.tx_allowlist (CanLink spec §7, ADR-0020): every frame beyond the Tier 0 diagnostic reads that a pack may ever transmit on a vehicle bus. A frame is sent only when an entry matches, the driving state is in the entry's states (default Parked; never Moving) and the gate holds a short-lived single-use grant for the entry's action and tier. Tier 4 is never listed (it needs its own ADR). $defs.transport is the pack's CAN transport declaration (vehicle.json transport), which skips bitrate detection (ADR-0023); the pack vehicle.json schema references it when it lands.",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/entry"
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": [
+        "id",
+        "action",
+        "tier"
+      ],
+      "properties": {
+        "bus": {
+          "type": "string",
+          "default": "obd",
+          "description": "Which bus of the vehicle (the OBD port is \"obd\")."
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^(?:[0-7][0-9A-Fa-f]{2}|[0-1][0-9A-Fa-f]{7})$",
+          "description": "CAN id in hex: 3 digits for 11-bit, 8 digits for 29-bit."
+        },
+        "extended": {
+          "type": "boolean",
+          "default": false
+        },
+        "dlc": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8
+        },
+        "data": {
+          "type": "string",
+          "pattern": "^(?:(?:[0-9A-Fa-f]{2}|xx|XX)(?: (?:[0-9A-Fa-f]{2}|xx|XX)){0,7})?$",
+          "description": "Spaced hex of the leading data bytes, with xx wildcards (\"02 01 04\")."
+        },
+        "max_rate_hz": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The pack action this frame belongs to; a grant names it."
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "description": "The action's safety tier (Tier 0 reads need no entry; Tier 4 needs an ADR)."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "read",
+            "comfort",
+            "security",
+            "accessories",
+            "maintenance",
+            "actuator_tests",
+            "procedures"
+          ],
+          "description": "The ADR-0033 action category, for the manifest."
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "parked",
+              "idling"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "default": [
+            "parked"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false
+    },
+    "transport": {
+      "type": "object",
+      "required": [
+        "bus"
+      ],
+      "properties": {
+        "bus": {
+          "enum": [
+            "can",
+            "kline"
+          ]
+        },
+        "bitrate": {
+          "enum": [
+            125000,
+            250000,
+            500000,
+            1000000
+          ]
+        },
+        "id_width": {
+          "enum": [
+            11,
+            29
+          ]
+        }
+      },
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false
+    }
+  }
+}

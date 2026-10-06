@@ -2,7 +2,7 @@
 title: "J1979 service layer — modes 01–0A over K-line and CAN — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/muki01/README.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/obd2_kline_reader.md, references/research/ui/vehicle_data_model.md, references/research/ui/decode_pipeline.md]
 summary: >
@@ -438,3 +438,11 @@ codes (Q12, [packs spec §2.6](2026-10-06-vehicle-packs-generic-obd2-bmw-e-desig
   install-config override; the U3 capability builder and `etag`; the `generic_obd2` pack
   and importer (U4) re-running the value fixtures through its store; Mode 05 and K-line
   Mode 06 decoding; the C port running the shared vectors in CI; J1979-2.
+- 2026-10-06 — v0.5: the CAN adapter lands with the CanLink spec's first step
+  ([CanLink spec](2026-10-06-canlink-isotp-design.md) v0.4). `can/obd.py`
+  (`CanObdRequestLink`) implements `ObdRequestLink` over ISO-TP: functional `7DF` and
+  `18DB33F1`, physical `7E0`–`7E7` and `18DAxxF1`, replies keyed `"7E8"` or
+  `"18DAF110"`, `7F xx 78` waited out under P2\*. The ISO-TP halves of F1c (five codes
+  over FF/CF) and F11 (the VIN over FF/CF/FC to `on_vin` only), plus F3–F5 and the golden
+  two-ECU `SupportReport`, now also run on `FakeCanBus` (`tests/test_can_obd.py`). Mode 04
+  over CAN needs a `TxGrant` for the pack's allowlist entry as well as the `ClearGrant`.

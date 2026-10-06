@@ -24,6 +24,22 @@ became test fixtures written in our own words, and its facts come from SAE J1979
 ISO transport standards (ADR-0025). The OBDb `SAEJ1979` pin belongs to the
 `generic_obd2` pack.
 
+## CAN path — optional and dev-only libraries, protocol references
+
+- **python-can** ([hardbyte/python-can](https://github.com/hardbyte/python-can),
+  LGPL-3.0) is an **optional** dependency, installed only with the `[can]` extra for
+  desktop CAN dongles without a SocketCAN driver, and imported lazily by
+  `src/openostler/can/pycan.py` alone. It is never installed on a Pi and never bundled;
+  the default install stays stdlib + pyserial ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md)
+  §3, ADR-0035).
+- **can-isotp** ([pylessard/python-can-isotp](https://github.com/pylessard/python-can-isotp),
+  MIT) is a **dev-only** test reference: the differential test T16 runs our own ISO-TP
+  against it. No runtime code imports it, and none of its code is vendored or shipped
+  (spec §6, owner Q8).
+- **ESP32RET** ([collin80/ESP32RET](https://github.com/collin80/ESP32RET), MIT, © 2018
+  Collin Kidder) was read at `ae857ea9` for the GVRET command numbers and frame layout
+  used by `src/openostler/can/gvret.py`; facts only, no code was copied.
+
 ## Astryx — UI theme tokens (dashboard visual design)
 
 The web dashboard's neutral colour/spacing tokens are adapted from

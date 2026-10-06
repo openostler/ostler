@@ -86,3 +86,20 @@ def list_serial_ports() -> "list[str]":
             if p not in out and not p.startswith("/dev/tty."):
                 out.append(p)
     return out
+
+
+ARPHRD_CAN = 280                # /sys/class/net/<if>/type of a CAN interface (linux/if_arp.h)
+
+
+def list_can_interfaces(sysfs: str = "/sys/class/net") -> "list[str]":
+    """SocketCAN interfaces (``can0``, ``vcan0``, …): every network interface whose
+    ``type`` is ``ARPHRD_CAN`` (CanLink spec §1). Never raises: empty off Linux."""
+    out: "list[str]" = []
+    for path in sorted(glob.glob(f"{sysfs}/*/type")):
+        try:
+            with open(path, encoding="ascii") as fh:
+                if int(fh.read().strip()) == ARPHRD_CAN:
+                    out.append(path.rsplit("/", 2)[-2])
+        except (OSError, ValueError):
+            continue
+    return out

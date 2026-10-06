@@ -28,7 +28,14 @@ dev = [
     "openapi-spec-validator>=0.7.1",
     "jsonschema>=4.18",
     "vss-tools==6.1.0; python_version >= '3.11'",
+    # can-isotp (MIT) is only the dev-time reference for the differential ISO-TP test T16
+    # (CanLink spec §6, owner Q8); no runtime code imports it.
+    "can-isotp>=2.0",
 ]
+# python-can (LGPL-3.0) for desktop CAN dongles without a SocketCAN driver (PCAN, Kvaser,
+# Vector on macOS/Windows; CanLink spec §3, ADR-0020, ADR-0035). Optional, imported lazily
+# by openostler.can.pycan only; never installed on a Pi, where SocketCAN is stdlib.
+can = ["python-can>=4.0"]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack
@@ -49,6 +56,7 @@ testpaths = ["tests"]
 markers = [
     "needs_pack: integration test that needs the Discovery 2 reference pack (d2diag) installed",
     "fake_pack: run with tests/fake_pack.py FAKE_PACK active (platform logic, no real pack)",
+    "needs_vcan: runs SocketCanLink on a real vcan0; skipped where the runner has none (CanLink spec §9)",
 ]
 
 # Ruff (ADR-0017, dev-only). The rule set is E, F, I, B and UP; the ignores below keep the

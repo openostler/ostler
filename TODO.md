@@ -48,6 +48,15 @@ Updated 2026-10-06. Check off when done.
 - [ ] **Retire the legacy pages** `web/dashboard.html` / `dashboard_v2.html` (served at
       `/legacy/*`) once the React UI's parity is confirmed in the car.
 - [ ] **PyInstaller distribution** (.app/.exe) for non-technical users.
+- [ ] **CAN on the Pi image** ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md)
+      §3, §12): add `AmbientCapabilities=CAP_NET_ADMIN` to `openostler.service` so
+      `CanIfControl` can run `ip link set can0 …`; note `modprobe can-isotp` (optional,
+      for `KernelIsoTpChannel`). Add a CI job that loads `vcan` so the `needs_vcan` tests
+      run instead of skipping.
+- [ ] **Wire the CAN path into the server** (after U2/U4): the link chip (mode, rate,
+      `listen_only: "requested"`), the connection ladder's Bus rung from `DetectResult`,
+      `RateMemory` under the state dir, the server gate minting `TxGrant`s, and the pack
+      `vehicle.json` schema referencing `can-tx-allowlist.schema.json#/$defs/transport`.
 
 ## Roadmap — data-hub direction (not scheduled)
 

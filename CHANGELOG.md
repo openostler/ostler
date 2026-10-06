@@ -44,6 +44,27 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **CAN path: CanLink, passive bitrate detection, ISO-TP and the transmit gate**
+  ([spec](specs/2026-10-06-canlink-isotp-design.md), first step, fakes only; ADR-0020,
+  ADR-0023). New core package `src/openostler/can/`: a frame-level `CanLink` beside
+  `Transport` that opens listen-only on every backend (SocketCAN on stdlib `AF_CAN` with
+  `CanIfControl` over iproute2, slcan over serial or TCP for the WiCAN Pro, GVRET, and
+  python-can only through the new optional `[can]` extra), and whose `send()` raises
+  `RateNotConfirmed` until the rate is confirmed or declared. `can.detect()` listens at
+  500k then 250k, accepts after 20 clean frames, then sends one `01 00` (11- or 29-bit);
+  a silent bus gets one Parked-only one-shot probe per rate, 500k then 250k, stopping at
+  the first error frame. Our own pure-Python ISO-TP (`IsoTpChannel`, `IsoTpMux` collecting
+  one message per ECU until P2 or P2*, `IsoTpSniffer`, optional kernel
+  `KernelIsoTpChannel`); `TxGate` (Tier 0 reads and their FCs in any state, otherwise a
+  pack allowlist entry, the entry's driving state and a single-use `TxGrant`; Tier 4,
+  Mode 08, MQTT links and remote grants without the install override never pass);
+  `CanObdRequestLink` so `J1979` runs over CAN (functional `7DF`/`18DB33F1`, multi-ECU
+  `7E8`–`7EF`/`18DAF1xx`); `LoggingCanLink` (JSONL and candump, VIN scrubbed across FF and
+  CFs); `ports.list_can_interfaces()`; `schemas/can-tx-allowlist.schema.json`. Tests T1–T17
+  on a virtual-clock fake bus (`tests/fake_can.py`), T16 differential against can-isotp
+  (dev-only), and shared vectors for the node's C port in `tests/vectors/can/`. This
+  Python code is the lab/reference; production CAN I/O and the production gate are the
+  node's (ADR-0032). The D2 pack is untouched.
 - **J1979 (OBD-II) service layer**
   ([spec](specs/2026-10-06-j1979-service-layer-design.md), first step, fakes only).
   `src/openostler/obd/` is a stdlib-only, transport-agnostic layer: `J1979` over an
