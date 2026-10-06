@@ -143,6 +143,10 @@ def main() -> int:
                                        "--tls-key. The phone mic and motion sensors need HTTPS")
     ap.add_argument("--tls-key", help="private key (PEM) for --tls-cert")
     args = ap.parse_args()
+    if args.public and not args.admin_password:
+        print("--public needs an admin password (--admin-password or D2DIAG_ADMIN_PW): "
+              "without one every admin route would be open on a public bind.", file=sys.stderr)
+        return 2
     if bool(args.tls_cert) != bool(args.tls_key):
         ap.error("--tls-cert and --tls-key must be given together")
     if args.gps.strip().lower() == "mock":

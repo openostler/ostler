@@ -29,6 +29,13 @@ their own changelogs.
 
 ## [Unreleased]
 
+### Security
+- `--public` (and `DiagServer(public=True)`) now refuses to start without an admin
+  password: without one every admin route, including signal-store write-back and
+  `/capture`, was open on a public bind.
+- `POST /community/consent` and `/community/contribute` are refused in public mode, and
+  `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
+
 ### Added
 - U0 repo hygiene (standards research §8.1 items 7–13, ADR-0017):
   - REUSE 3.3 compliance: `LICENSES/` with the canonical licence texts, `REUSE.toml`

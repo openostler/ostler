@@ -551,7 +551,13 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             res = _signal_upsert(self._body())
             self._json(res, code=200 if res.get("ok") else 400)
+        elif self.path in ("/community/consent", "/community/contribute") and self.server._public:
+            # A public visitor must not change this device's sharing choice or upload
+            # readings in its name.
+            self._json({"ok": False, "error": _PUBLIC_REFUSAL}, 403)
         elif self.path == "/community/consent":
+            # Not admin-gated: the first-run Consent screen and Preferences belong to the
+            # device's own user (the LAN UI); public mode is refused above.
             c = self.server.community
             if c is None:
                 self._json({"ok": False, "error": "community disabled"}, 400)
@@ -559,6 +565,9 @@ class _Handler(BaseHTTPRequestHandler):
                 body = self._body()
                 self._json(c.set_consent(bool(body.get("consent")), body.get("vehicle")))
         elif self.path == "/community/contribute":
+            # Contributions come from the admin Coverage Map, so they need admin auth.
+            if not self._require_admin():
+                return
             c = self.server.community
             if c is None:
                 self._json({"ok": False, "error": "community disabled"}, 400)
@@ -940,6 +949,11 @@ class DiagServer(ThreadingHTTPServer):
         enricher=None,
         index_path: "str | None" = None,
     ) -> None:
+        if public and not admin_password:
+            # Public mode is for a bind other people can reach; with no password every
+            # admin route (signal write-back, /capture, …) would be open to them.
+            raise ValueError("public mode needs an admin password (--admin-password or "
+                             "D2DIAG_ADMIN_PW)")
         super().__init__((host, port), _Handler)
         # None/"" = admin ungated (local dev). Set = /admin + mapping endpoints
         # behind HTTP Basic Auth. See _Handler._admin_ok.

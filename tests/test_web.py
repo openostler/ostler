@@ -1070,7 +1070,7 @@ def test_public_server_refuses_actuators_but_not_reads():
     from tests.fake_sources import FakeSlabsSource
     srv = DiagServer({"slabs": FakeSlabsSource(), "td5": FakeTd5Source()},
                      host="127.0.0.1", port=0, poll_interval=0.05, stream_interval=0.05,
-                     active="slabs", public=True)
+                     active="slabs", public=True, admin_password="hemligt")
     base = f"http://127.0.0.1:{_serve(srv)}"
     try:
         code, body = _post(base, "buzzer")
