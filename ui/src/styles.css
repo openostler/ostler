@@ -14,58 +14,15 @@
 /* ---- Tokens ------------------------------------------------------------------
    "Calm instrument" (ISA-101 high-performance HMI + modern clusters): neutral greys
    when healthy, colour ONLY for abnormal states — and then always with an icon and a
-   word. Status hues are validated (dataviz validate_palette.js) for both modes:
-   light passes every check; dark ok/warn sits in the CVD 6–8 band, legal because
-   status never relies on colour alone.
+   word. The colour, size and layout-class tokens live in ui/tokens/*.tokens.json (W3C
+   design tokens, U1) and arrive as CSS custom properties from virtual:design-tokens.css
+   (imported before this file in main.tsx). Status hues are validated (dataviz
+   validate_palette.js) for both modes: light passes every check; dark ok/warn sits in the
+   CVD 6–8 band, legal because status never relies on colour alone.
    Theme: follows the phone (prefers-color-scheme) unless <html data-theme> overrides. */
 :root {
-  color-scheme: light;
   --font-base: Figtree, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
-  --radius-md: 12px;
-  --radius-sm: 6px;
-
-  --bg: #eceef1;          /* page */
-  --surface: #ffffff;     /* cards */
-  --raised: #f6f7f9;      /* controls, header */
-  --sunken: #e6e9ed;      /* bar/gauge track */
-  --band: #c9d0d8;        /* normal-range band on a track */
-  --line: #dde1e6;
-  --line-strong: #c3c9d0;
-  --text-1: #101317;
-  --text-2: #444c55;
-  --text-3: #626b75;      /* ≥ 4.5:1 on white */
-  --accent: #1f6fe0;
-  --on-accent: #ffffff;
-  --ok: #2e7d4f;
-  --warn: #b08200;
-  --alarm: #d0263b;
-  --warn-bg: #fbf1d9;
-  --alarm-bg: #fbe3e6;
-  --ok-bg: #e2f2e8;
-  --overlay: rgba(10, 12, 15, 0.55);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #0e1012; --surface: #16191c; --raised: #1c2024; --sunken: #23282d; --band: #3a424a;
-    --line: #262b30; --line-strong: #353c43;
-    --text-1: #f1f3f5; --text-2: #b3bac1; --text-3: #8a939c;
-    --accent: #4f8ce8; --on-accent: #0e1012;
-    --ok: #2f9e63; --warn: #bf8a1a; --alarm: #e5485f;
-    --warn-bg: #2e2612; --alarm-bg: #33171c; --ok-bg: #13281d;
-    --overlay: rgba(0, 0, 0, 0.65);
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0e1012; --surface: #16191c; --raised: #1c2024; --sunken: #23282d; --band: #3a424a;
-  --line: #262b30; --line-strong: #353c43;
-  --text-1: #f1f3f5; --text-2: #b3bac1; --text-3: #8a939c;
-  --accent: #4f8ce8; --on-accent: #0e1012;
-  --ok: #2f9e63; --warn: #bf8a1a; --alarm: #e5485f;
-  --warn-bg: #2e2612; --alarm-bg: #33171c; --ok-bg: #13281d;
-  --overlay: rgba(0, 0, 0, 0.65);
 }
 /* Legacy aliases used by older components — map onto the tokens above. */
 :root {
@@ -87,20 +44,7 @@ body {
 button, input { font: inherit; }
 @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.3; } }
 
-/* 100dvh = the visible area on mobile (100vh includes the area behind the toolbar). */
-.app {
-  position: relative; display: flex; flex-direction: column; height: 100vh; height: 100dvh;
-  max-width: 900px; margin: 0 auto; background: var(--bg-body); overflow: hidden;
-}
-header {
-  display: flex; flex-shrink: 0; align-items: center; gap: 12px; padding: 8px 16px;
-  padding-top: max(8px, env(safe-area-inset-top)); min-height: 56px;
-  background: var(--bg-surface); border-bottom: 1px solid var(--border);
-}
-.pill {
-  display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 10px;
-  border: 1px solid var(--border-emph); background: var(--bg-surface); font-size: 12px; font-weight: 700;
-}
+/* The shell's frame (.app, the strip, the rail and bottom bar) is in shell/shell.css. */
 .pdot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 9999px; background: var(--fg-dis); }
 .pdot.green { background: var(--ic-green); }
 .pdot.red { background: var(--ic-red); }
@@ -224,27 +168,6 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
   color: var(--fg2); font-size: 12px; font-weight: 600; cursor: pointer;
 }
 .chan.on { color: var(--fg); border-color: var(--accent); }
-
-nav.tabs {
-  display: flex; flex-shrink: 0; background: var(--bg-surface); border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom); overflow-x: auto;
-}
-nav.tabs button {
-  flex: 1; min-width: 0; min-height: 56px; border: 0; background: transparent; color: var(--fg2);
-  font-size: 11px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column;
-  align-items: center; gap: 3px; padding: 6px 0;
-}
-nav.tabs button[aria-current="page"] { color: var(--fg); }
-/* 7+ tabs (8 public with Analysis): 8 × 48 px fits a 393 px phone; narrower, the bar scrolls */
-nav.tabs.many button { min-width: 48px; }
-nav.tabs .ti { font-size: 16px; line-height: 18px; }
-nav.tabs .ts { display: none; }
-nav.tabs .tl, nav.tabs .ts { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
-nav.tabs button[aria-current="page"] .ti { color: var(--accent); }
-@media (max-width: 400px) {
-  nav.tabs .tl { display: none; }
-  nav.tabs .ts { display: block; }
-}
 
 .empty { padding: 40px 16px; text-align: center; color: var(--fg2); display: flex; flex-direction: column; gap: 8px; align-items: center; }
 .empty .title { font-size: 18px; font-weight: 700; color: var(--fg); }
@@ -444,15 +367,8 @@ nav.tabs button[aria-current="page"] .ti { color: var(--accent); }
 .fault .fmeta { font-size: 12px; color: var(--text-3); display: flex; gap: 8px; align-items: center; }
 .code { font-family: var(--font-mono); font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: var(--sunken); color: var(--text-1); }
 
-.hdr-clock { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-1); }
 
-/* ---- UI overhaul (ADR-0008): header, connection, status, coverage ---------------- */
-header { gap: 8px; }
-/* admin: a small chip where the title used to be */
-.hadmin {
-  flex: 0 0 auto; height: 20px; padding: 0 6px; border-radius: 6px; display: inline-flex; align-items: center;
-  background: var(--sunken); color: var(--text-2); font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
-}
+/* ---- UI overhaul (ADR-0008): connection, status, coverage ---------------------- */
 /* module selector: one bordered control — muted "Module", the name (ellipsis), ▾. The
    native <select> sits transparently on top, so the whole control is the tap target and
    the platform picker opens. */
@@ -479,21 +395,7 @@ header { gap: 8px; }
   flex: 0 0 auto; display: inline-block; height: 24px; line-height: 22px; padding: 0 8px; border-radius: 9999px;
   border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 700; white-space: nowrap;
 }
-.hright { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.hbatt { font-size: 13px; font-weight: 700; color: var(--text-1); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hbatt .u { font-size: 11px; color: var(--text-2); margin-left: 1px; }
-.hbatt span[aria-hidden] { color: var(--text-3); margin-right: 2px; }
-button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 0 10px; }
-.pill-word { white-space: nowrap; }
-/* phones: no clock; "Module" stacks above the name, and the % pill keeps its word for
-   screen readers only — the module name gets the room */
-/* Rewind (spec §7): icon + word; icon only on phones (aria-label keeps the word) */
-.chip.hrewind { width: auto; padding: 0 10px; gap: 6px; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
-.chip.hrewind:disabled { color: var(--fg-dis); cursor: default; }
 @media (max-width: 480px) {
-  .chip.hrewind { width: 36px; padding: 0; }
-  .hrewind-w { display: none; }
-  .hdr-clock { display: none; }
   .modctl { padding: 0 6px 0 8px; gap: 4px; }
   .modctl-txt { flex-direction: column; align-items: flex-start; gap: 0; }
   .modctl-k { font-size: 10px; line-height: 12px; }
@@ -501,12 +403,6 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
   .mappct { padding: 0 6px; }
   .mappct-w { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
-@media (max-width: 400px) {
-  header { gap: 6px; padding-left: 12px; padding-right: 12px; }
-  .hright { gap: 6px; }
-  button.pill { padding: 0 8px; gap: 6px; }
-}
-@media (max-width: 360px) { .hbatt span[aria-hidden] { display: none; } }
 
 /* Not live, on the module pages: a compact strip, never blocking the page */
 .connnotice {
@@ -587,14 +483,11 @@ button.pill { color: var(--text-1); cursor: pointer; font: inherit; font-size: 1
 /* ---- whole-app replay (ADR-0010): amber = "this is a recording, read-only" ----
    Amber is the existing --warn token, always paired with the word REPLAY / "replay". */
 /* replay frame: a border on the scroll container itself stays put while the content scrolls,
-   so all four sides stay visible between the header and the transport bar */
+   so all four sides stay visible between the status strip and the transport bar */
 main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
-/* In replay the header pill is the way back: "Replay · Exit to live", flashing amber. */
-.pill-replay { border-color: var(--warn); background: var(--warn-bg); animation: replay-flash 1.6s ease-in-out infinite; }
-.pill-replay .pdot { animation: blink 1.6s steps(2, start) infinite; }
+/* In replay the strip's Link chip is the way back: "Replay · Exit to live", flashing amber
+   (shell/shell.css, .schip.tone-replay). */
 @keyframes replay-flash { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--warn); } }
-@media (prefers-reduced-motion: reduce) { .pill-replay, .pill-replay .pdot { animation: none; } }
-@media (max-width: 480px) { .pill-exit { display: none; } .pill-replay .pill-word::after { content: " · Exit"; } }
 .modctl-replay { cursor: default; }
 .replay-lock { white-space: nowrap; }
 

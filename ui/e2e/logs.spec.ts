@@ -15,7 +15,7 @@ async function returningUser(page: Page) {
 }
 
 async function openLogs(page: Page) {
-  await page.getByRole("navigation", { name: "Screens" }).getByRole("button", { name: "Logs", exact: true }).click();
+  await page.getByRole("navigation", { name: "Destinations" }).getByRole("button", { name: "Logs", exact: true }).click();
   await expect(page.locator("button.replay-row").first()).toBeVisible();
 }
 
@@ -24,11 +24,13 @@ async function openLogs(page: Page) {
 const ownRows = (page: Page) =>
   page.locator("button.replay-row").filter({ hasNot: page.locator(".replay-chip-demo") }).filter({ hasNot: page.locator(".replay-chip-live") });
 
+/** A destination in the rail or bottom bar, or (Sessions, Analysis) a view inside Logs. */
 const navButton = (page: Page, name: string) =>
-  page.getByRole("navigation", { name: "Screens" }).getByRole("button", { name, exact: true });
+  page.getByRole("navigation", { name: name === "Analysis" || name === "Sessions" ? "Logs views" : "Destinations" })
+    .getByRole("button", { name, exact: true });
 
-/** Open the Logs tab and the synthetic demo session (always listed, ADR-0009): it lands on
- * the Analysis tab (spec §7). */
+/** Open Logs and the synthetic demo session (always listed, ADR-0009): it lands on
+ * Logs → Analysis (spec §7). */
 async function openDemo(page: Page) {
   await openLogs(page);
   const demoRow = page.locator("button.replay-row", { hasText: "Demo log 1" }).first();
@@ -45,7 +47,7 @@ test("the main chunk excludes maplibre; it loads only for a replay", async ({ pa
   const requested: string[] = [];
   page.on("request", (r) => requested.push(r.url()));
   await page.goto("/");
-  await expect(page.getByRole("navigation", { name: "Screens" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Destinations" })).toBeVisible();
   expect(requested.filter((u) => /maplibre/i.test(u))).toEqual([]);
   await openDemo(page);
   await expect.poll(() => requested.some((u) => /maplibre/i.test(u))).toBe(true);
@@ -120,13 +122,14 @@ test("traces A and B through the channel picker, then the satellite toggle", asy
   await page.screenshot({ path: "test-results/logs-traces.png", fullPage: true });
 });
 
-test("opening a demo log lands on Analysis; the transport follows to another tab; ‹ Sessions returns to Logs", async ({ page }) => {
+test("opening a demo log lands on Analysis; the transport follows to another destination; ‹ Sessions returns to Logs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   await openDemo(page);
   await expect(page.locator("[data-map-status]")).toBeVisible();
-  await navButton(page, "Drive").click();
+  await navButton(page, "Home").click();
   await expect(page.getByTestId("global-transport")).toBeVisible();
+  await navButton(page, "Logs").click();
   await navButton(page, "Analysis").click();
   await page.getByRole("button", { name: "‹ Sessions" }).click();
   await expect(navButton(page, "Logs")).toHaveAttribute("aria-current", "page");

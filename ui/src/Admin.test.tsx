@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { SniffBadge } from "./components/SniffBadge";
 import { mergeReadings } from "./lib/mapping";
-import { SCREENS } from "./screens/registry";
+import { DESTINATIONS } from "./shell/destinations";
 import { baseSnapshot, consented, installFakeServer, type Call } from "./test/fakeServer";
 
 const connected = { ...baseSnapshot, faults: [] };
@@ -43,14 +43,26 @@ afterEach(() => {
 });
 
 describe("admin mode", () => {
-  it("is only on /admin", async () => {
+  it("is only on /admin, under More → Developer", async () => {
+    const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     const { unmount } = render(<App path="/" />);
     await screen.findByRole("button", { name: "Drive" });
+    await user.click(within(screen.getByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "More" }));
+    expect(await screen.findByRole("heading", { name: "More" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Decode" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Developer")).not.toBeInTheDocument();
     unmount();
     render(<App path="/admin" />);
-    for (const tab of ["Decode", "Label", "Docs"]) expect(await screen.findByRole("button", { name: tab })).toBeInTheDocument();
+    // /admin lands on Decode (More → Developer), with Label and Docs one tap away
+    const dev = await screen.findByRole("navigation", { name: "Developer" });
+    for (const tab of ["Decode", "Label", "Docs"]) expect(within(dev).getByRole("button", { name: tab })).toBeInTheDocument();
+    expect(within(dev).getByRole("button", { name: "Decode" })).toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "More" }))
+      .toHaveAttribute("aria-current", "page");
+    await user.click(screen.getByRole("button", { name: "‹ More" }));
+    const section = await screen.findByRole("region", { name: "Developer" });
+    expect(within(section).getAllByRole("button").map((b) => b.textContent)).toEqual(["Decode", "Label", "Docs"]);
   });
 
   it("maps a field from a reference-tool reading and saves it to the store", async () => {
@@ -135,11 +147,12 @@ describe("admin mode", () => {
     expect(await screen.findByRole("button", { name: "Notes" })).toBeInTheDocument();
   });
 
-  it("names the admin tabs Decode and Label, keeping the public tabs", () => {
-    const admin = SCREENS.filter((x) => x.admin).map((x) => [x.id, x.label]);
-    expect(admin).toEqual([["map", "Decode"], ["capture", "Label"], ["docs", "Docs"]]);
-    expect(SCREENS.filter((x) => !x.admin).map((x) => x.label))
-      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]);
+  it("registers the five destinations, none of them admin-only", () => {
+    expect(DESTINATIONS.map((d) => [d.id, d.label, d.slot])).toEqual([
+      ["home", "Home", "destination:home"], ["diagnose", "Diagnose", "destination:diagnose"],
+      ["logs", "Logs", "destination:logs"], ["security", "Security", "destination:security"],
+      ["more", "More", "destination:more"],
+    ]);
   });
 
   it("explains Decode with three steps and a glossary", async () => {
@@ -229,7 +242,8 @@ describe("admin mode", () => {
     const user = userEvent.setup();
     withLabelRoutes(installFakeServer({ snapshot: connected }));
     render(<App path="/admin" />);
-    await user.click(await screen.findByRole("button", { name: "Utilities" }));
+    await user.click(within(await screen.findByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "Diagnose" }));
+    await user.click(within(await screen.findByRole("navigation", { name: "Areas" })).getByRole("button", { name: "Utilities" }));
     await user.click(await screen.findByRole("button", { name: /Advanced/ }));
     await user.click(screen.getByRole("button", { name: "Label these bytes →" }));
     expect(await screen.findByRole("heading", { name: "Label" })).toBeInTheDocument();

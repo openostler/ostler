@@ -11,6 +11,21 @@ import { getPack, setPack } from "./pack/store";
 import { baseSnapshot, consented, installFakeServer, pushSnapshot } from "./test/fakeServer";
 
 const connected = { ...baseSnapshot, faults: [] };
+
+type User = ReturnType<typeof userEvent.setup>;
+
+/** Open a destination from the bottom bar (the U1 shell; unit tests run as a phone). */
+async function dest(user: User, name: string) {
+  const nav = await screen.findByRole("navigation", { name: "Destinations" });
+  await user.click(within(nav).getByRole("button", { name }));
+}
+
+/** Open a Diagnose area by its label (Faults, Inputs, Outputs, Utilities, Settings). */
+async function area(user: User, name: string) {
+  await dest(user, "Diagnose");
+  const areas = await screen.findByRole("navigation", { name: "Areas" });
+  await user.click(within(areas).getByRole("button", { name }));
+}
 const cov = (verified: number, candidate = 0, sniff = 0, untranscribed = 0) =>
   ({ verified, candidate, sniff, untranscribed, total: verified + candidate + sniff + untranscribed });
 const slabsCatalog = {
@@ -38,7 +53,7 @@ describe("vehicle pack boot", () => {
     const server = installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     expect(screen.getByText("Loading…")).toBeInTheDocument();
-    expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+    expect(await screen.findByRole("navigation", { name: "Destinations" })).toBeInTheDocument();
     expect(getPack()?.default_module).toBe("td5");
     expect(server.calls.filter((c) => c.path === "/pack")).toHaveLength(1);
   });
@@ -56,7 +71,7 @@ describe("vehicle pack boot", () => {
     for (const path of ["/", "/v2", "/index.html"]) {
       installFakeServer({ snapshot: connected });
       const { unmount } = render(<App path={path} />);
-      expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+      expect(await screen.findByRole("navigation", { name: "Destinations" })).toBeInTheDocument();
       unmount();
     }
   });
@@ -71,7 +86,7 @@ describe("vehicle pack boot", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not load the vehicle");
     vi.stubGlobal("fetch", ok);
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+    expect(await screen.findByRole("navigation", { name: "Destinations" })).toBeInTheDocument();
   });
 });
 
@@ -113,22 +128,27 @@ describe("live dashboard", () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    await area(user, "Inputs");
     expect(await screen.findByText("Temperatures")).toBeInTheDocument();
     const coolant = (await screen.findAllByText("Coolant")).map((el) => el.closest(".srow")).find(Boolean) as HTMLElement;
     await user.click(within(coolant).getByRole("button", { name: "About Coolant" }));
     expect(within(coolant).getByText(/Normal 86–95/)).toBeInTheDocument();
   });
 
-  it("pops faults once and stops nagging after dismiss", async () => {
+  it("shows faults as the worst-telltale chip, never a pop-up; dismissing the sheet acknowledges them", async () => {
     const user = userEvent.setup();
     const faults = ["027: shuttle valve switch — electrical failure (Current)"];
     installFakeServer({ snapshot: { ...connected, faults } });
     render(<App path="/" />);
+    const chip = await screen.findByRole("button", { name: "1 fault, 1 new" });
+    expect(chip).toHaveClass("tone-alarm", "attention"); // a current fault: red, and new
+    expect(screen.queryByText("⚠ 1 fault")).not.toBeInTheDocument(); // no modal by itself (U1)
+    await user.click(chip);
     expect(await screen.findByText("⚠ 1 fault")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Dismiss" }));
     pushSnapshot({ ...connected, faults });
     expect(screen.queryByText("⚠ 1 fault")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "1 fault" })).not.toHaveClass("attention");
   });
 
   it("clears faults only after confirmation", async () => {
@@ -136,8 +156,7 @@ describe("live dashboard", () => {
     const faults = ["inlet air temp. circuit (Current)"];
     const server = installFakeServer({ snapshot: { ...connected, faults } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Dismiss" }));
-    await user.click(screen.getByRole("button", { name: "Faults" }));
+    await area(user, "Faults");
     vi.mocked(window.confirm).mockReturnValueOnce(false);
     await user.click(screen.getByRole("button", { name: /Clear codes/ }));
     expect(server.commandsSent()).not.toContain("clear_faults");
@@ -149,7 +168,7 @@ describe("live dashboard", () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: connected });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Outputs" }));
+    await area(user, "Outputs");
     expect(await screen.findByText(/Nothing verified here yet — switch to Experimental/)).toBeInTheDocument();
     expect(screen.queryByText("Fuel pump")).not.toBeInTheDocument();
     expect(server.commandsSent()).toEqual([]);
@@ -160,7 +179,7 @@ describe("live dashboard", () => {
     const slabs = { ...connected, module: "slabs", source: "mock-slabs", signals: {} };
     const server = installFakeServer({ snapshot: slabs, catalogs: { slabs: slabsCatalog } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Outputs" }));
+    await area(user, "Outputs");
     const card = (await screen.findByText("Compressor test")).closest(".card") as HTMLElement;
     await user.click(within(card).getByRole("button", { name: "Compressor" }));
     const run = within(card).getByRole("button", { name: "Compressor" });
@@ -176,7 +195,7 @@ describe("live dashboard", () => {
     const server = installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     expect(await screen.findByText(/Experimental mode/)).toBeInTheDocument();
-    await user.click(await screen.findByRole("button", { name: "Outputs" }));
+    await area(user, "Outputs");
     const card = (await screen.findByText("4. Fuel Pump (pulse)", { selector: ".item-name" })).closest(".card") as HTMLElement;
     expect(within(card).getByText("Candidate")).toBeInTheDocument(); // status chip shown in Experimental
     await user.click(within(card).getByRole("button", { name: "Fuel pump" }));
@@ -189,7 +208,7 @@ describe("live dashboard", () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: connected, commands: { start_csv: { ok: true, message: "recording", file: "livedata.csv" } } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    await area(user, "Inputs");
     await user.click(await screen.findByRole("button", { name: /Log CSV/ }));
     await waitFor(() => expect(server.commandsSent()).toContain("start_csv"));
     expect(await screen.findByText(/recording · livedata.csv/)).toBeInTheDocument();
@@ -200,24 +219,26 @@ describe("live dashboard", () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await screen.findByText("Connected");
-    await user.click(screen.getByRole("button", { name: "Preferences" }));
+    await dest(user, "More");
+    await user.click(await screen.findByRole("button", { name: /^Preferences/ }));
     await user.click(screen.getByRole("button", { name: "°F" }));
     await user.click(screen.getByRole("button", { name: "Done" }));
     expect(JSON.parse(localStorage.getItem("d2diag.v2")!).units.temp).toBe("F");
-    expect(screen.getAllByText("°F").length).toBeGreaterThan(0);
+    await dest(user, "Home");
+    expect((await screen.findAllByText("°F")).length).toBeGreaterThan(0);
   });
 
   it("reads a raw LID block under Utilities → Advanced, in Experimental only", async () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected, commands: { read_block: { ok: true, raws: { "09": "02fa" } } } });
     const { unmount } = render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Utilities" }));
+    await area(user, "Utilities");
     expect(await screen.findByText(/Nothing verified here yet/)).toBeInTheDocument();
     expect(screen.queryByText("Advanced")).not.toBeInTheDocument();
     unmount();
     consented({ trust: "experimental" });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Utilities" }));
+    await area(user, "Utilities");
     await user.click(await screen.findByRole("button", { name: /Advanced/ }));
     await user.click(screen.getByRole("button", { name: "Read" }));
     expect(await screen.findByText("02 fa")).toBeInTheDocument();
@@ -227,15 +248,16 @@ describe("live dashboard", () => {
 describe("calm instrument", () => {
   beforeEach(() => consented());
 
-  it("leads Drive with a one-line health summary that links to the cause", async () => {
+  it("leads Home with a one-line health summary that links to the cause in Diagnose", async () => {
     const user = userEvent.setup();
     const faults = ["027: shuttle valve switch — electrical failure (Logged)"];
     installFakeServer({ snapshot: { ...connected, faults, signals: { battery: { v: 14.1, u: "V", s: "ok", c: "proven" } } } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Dismiss" }));
     const strip = await screen.findByRole("button", { name: /Vehicle status: 1 logged fault/ });
     await user.click(strip);
     expect(await screen.findByRole("heading", { name: "Faults" })).toBeInTheDocument();
+    expect(within(screen.getByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "Diagnose" }))
+      .toHaveAttribute("aria-current", "page");
   });
 
   it("shows each value against its normal band, and colour only when out of range", async () => {
@@ -260,7 +282,7 @@ describe("calm instrument", () => {
       air_temp: { v: 95, u: "°C", s: "high", c: "proven" },
     } } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    await area(user, "Inputs");
     await user.click(await screen.findByRole("button", { name: /Attention · 1/ }));
     const rows = () => [...document.querySelectorAll(".srow")].map((r) => r.getAttribute("data-signal"));
     expect(rows()).toEqual(["air_temp"]);
@@ -277,35 +299,46 @@ describe("calm instrument", () => {
 describe("overhaul navigation", () => {
   beforeEach(() => consented());
 
-  it("has the eight tabs (Logs, then Analysis last) and no Connect or Capabilities tab", async () => {
+  it("has the destinations from the registry (Security waits for a node) and no Connect or Capabilities tab", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
-    const nav = await screen.findByRole("navigation", { name: "Screens" });
-    expect(nav).toHaveClass("many"); // 48 px minimum per tab: fits 393 px, scrolls narrower
-    expect(within(nav).getAllByRole("button").map((b) => b.getAttribute("aria-label")))
-      .toEqual(["Drive", "Faults", "Inputs", "Outputs", "Settings", "Utilities", "Logs", "Analysis"]);
+    const nav = await screen.findByRole("navigation", { name: "Destinations" });
+    expect(nav).toHaveClass("bar"); // the phone's bottom bar; landscape classes get the rail
+    expect(within(nav).getAllByRole("button").map((b) => b.textContent)).toEqual(["Home", "Diagnose", "Logs", "More"]);
+    expect(within(nav).getByRole("button", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    const areas = async () => within(await screen.findByRole("navigation", { name: "Areas" })).getAllByRole("button");
+    const user = userEvent.setup();
+    await dest(user, "Diagnose");
+    expect((await areas()).map((b) => b.textContent)).toEqual(["Faults", "Inputs", "Outputs", "Utilities", "Settings"]);
+    await dest(user, "Logs");
+    expect(within(await screen.findByRole("navigation", { name: "Logs views" })).getAllByRole("button").map((b) => b.textContent))
+      .toEqual(["Sessions", "Analysis"]);
     expect(screen.queryByRole("button", { name: "Connect" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Capabilities" })).not.toBeInTheDocument();
   });
 
-  it("switches module from the header and keeps the current tab", async () => {
+  it("switches the system from Diagnose and keeps the area", async () => {
     const user = userEvent.setup();
     consented({ trust: "experimental" });
     const server = installFakeServer({ snapshot: connected });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Inputs" }));
-    const select = screen.getByRole("combobox", { name: "Module" });
+    await area(user, "Inputs");
+    const select = await screen.findByRole("combobox", { name: "Module" });
     await waitFor(() => expect(within(select).getByRole("option", { name: "BCU (body control)" })).toBeInTheDocument());
     await user.selectOptions(select, "bcu");
     await waitFor(() => expect(server.commandBodies()).toContainEqual({ action: "select_module", params: { module: "bcu" } }));
     expect(screen.getByRole("heading", { name: "Inputs" })).toBeInTheDocument();
   });
 
-  it("has no title; the module control and, in Experimental only, the % mapped pill", async () => {
+  it("has no title in the strip; Diagnose's identity bar holds the module control and, in Experimental only, the % mapped pill", async () => {
+    const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     const { unmount } = render(<App path="/" />);
-    const header = document.querySelector("header") as HTMLElement;
-    expect(await within(header).findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+    const strip = await screen.findByRole("banner", { name: "Status" });
+    expect(within(strip).queryByText(/D2 Diag/)).not.toBeInTheDocument();
+    expect(within(strip).queryByRole("combobox")).not.toBeInTheDocument(); // module select moved to Diagnose
+    await dest(user, "Diagnose");
+    const header = (await screen.findByRole("combobox", { name: "Module" })).closest(".diag-id") as HTMLElement;
     await waitFor(() => expect(header.querySelector(".modctl-v")).toHaveTextContent("TD5 (engine)"));
     expect(within(header).getByText("Module")).toBeInTheDocument();
     expect(within(header).queryByText(/D2 Diag/)).not.toBeInTheDocument();
@@ -314,15 +347,15 @@ describe("overhaul navigation", () => {
     unmount();
     consented({ trust: "experimental" });
     render(<App path="/" />);
-    const header2 = document.querySelector("header") as HTMLElement;
-    await waitFor(() => expect(header2.querySelector(".mappct")).toHaveTextContent("34% mapped")); // td5: 34 of 99 verified
+    await dest(user, "Diagnose");
+    await waitFor(() => expect(document.querySelector(".diag-id .mappct")).toHaveTextContent("34% mapped")); // td5: 34 of 99 verified
   });
 
-  it("shows a small admin chip instead of a title on /admin", async () => {
+  it("shows a small admin badge in the strip on /admin", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/admin" />);
-    const header = document.querySelector("header") as HTMLElement;
-    expect(await within(header).findByText("admin")).toHaveClass("hadmin");
+    const strip = await screen.findByRole("banner", { name: "Status" });
+    expect((await within(strip).findAllByText("admin"))[0]?.closest(".schip")).toHaveClass("schip-admin");
   });
 
   it("shows a non-blocking connection notice on Settings and Utilities", async () => {
@@ -330,7 +363,7 @@ describe("overhaul navigation", () => {
     installFakeServer({ snapshot: { ...connected, status: "error", conn: "error", error: "no answer" } });
     render(<App path="/" />);
     for (const tab of ["Settings", "Utilities"]) {
-      await user.click(await screen.findByRole("button", { name: tab }));
+      await area(user, tab);
       expect(await screen.findByRole("heading", { name: tab })).toBeInTheDocument();
       const notice = document.querySelector(".connnotice") as HTMLElement;
       expect(notice).toHaveTextContent("No connection");
@@ -364,7 +397,7 @@ describe("overhaul navigation", () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await area(user, "Settings");
     await screen.findByRole("heading", { name: "Settings" });
     expect(document.querySelector(".connnotice")).toBeNull();
   });
@@ -372,18 +405,20 @@ describe("overhaul navigation", () => {
   it("lists only modules with something verified in Stable", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
+    await dest(userEvent.setup(), "Diagnose");
     const select = await screen.findByRole("combobox", { name: "Module" });
     await waitFor(() => expect(within(select).getByRole("option", { name: "TD5 (engine)" })).toBeInTheDocument());
     expect(within(select).queryByRole("option", { name: /Body control/ })).not.toBeInTheDocument();
   });
 
-  it("shows the car battery and opens the connection sheet from the pill", async () => {
+  it("shows the car battery and opens the connection sheet from the Link chip", async () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: { ...connected, conn: "connected", battery_v: 12.64,
       port: { spec: "auto", resolved: "/dev/ttyUSB0", candidates: ["/dev/ttyUSB0", "/dev/ttyUSB1"] } } });
     render(<App path="/" />);
-    expect(await screen.findByLabelText("Car battery 12.6 V")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Connected" }));
+    // the phone moves 12 V from the strip to a Home card (UI spec §3.2)
+    expect(await screen.findByRole("group", { name: "Car battery" })).toHaveTextContent("12.6 V");
+    await user.click(screen.getByRole("button", { name: "Connected · TD5 (engine)" }));
     const sheet = await screen.findByRole("dialog");
     expect(within(sheet).getByText("Connection")).toBeInTheDocument();
     await user.click(within(sheet).getByRole("radio", { name: "/dev/ttyUSB1" }));
@@ -409,14 +444,14 @@ describe("overhaul navigation", () => {
     const bcu = { ...connected, module: "bcu", signals: {} };
     installFakeServer({ snapshot: bcu });
     const { unmount } = render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await area(user, "Settings");
     expect(await screen.findByText(/Nothing verified here yet/)).toBeInTheDocument();
     expect(document.querySelector(".stag, .placeholder, [data-testid=coverage-bar]")).toBeNull();
     expect(screen.queryByText(/Experimental mode/)).not.toBeInTheDocument();
     unmount();
     consented({ trust: "experimental" });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await area(user, "Settings");
     expect((await screen.findAllByText("sniff target")).length).toBeGreaterThan(0);
     expect(screen.getByTestId("coverage-bar")).toBeInTheDocument();
   });
@@ -434,7 +469,7 @@ describe("overhaul navigation", () => {
       read_identity: { ok: true, identity: { part_no: "NNN500250", vin: "SALLTGM88XA123456", vin_masked: "SALLT********3456" } },
     } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Settings" }));
+    await area(user, "Settings");
     await user.click(await screen.findByRole("button", { name: "Read" }));
     const region = await screen.findByRole("region", { name: "Identity" });
     expect(within(region).getByText("SALLT********3456")).toBeInTheDocument();
@@ -453,7 +488,7 @@ describe("overhaul navigation", () => {
     };
     installFakeServer({ snapshot: connected, catalogs: { td5: inputsCatalog } });
     render(<App path="/" />);
-    await user.click(await screen.findByRole("button", { name: "Inputs" }));
+    await area(user, "Inputs");
     const section = await screen.findByRole("region", { name: "From NanoCom — not yet decoded" });
     expect(within(section).getByText("Brake switch")).toBeInTheDocument();
     expect(within(section).getByText("sniff target")).toBeInTheDocument();
@@ -519,25 +554,26 @@ describe("whole-app replay", () => {
   beforeEach(() => consented());
   const live = { ...connected, battery_v: 12.2 };
 
-  it("shows the Replay · Exit to live pill and the global transport on Drive; Exit returns to live", async () => {
+  it("shows Replay · Exit to live in the strip and the global transport on Home; Exit returns to live", async () => {
     const user = userEvent.setup();
     installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
     const pill = await screen.findByRole("button", { name: "Replay — Exit to live" });
-    expect(pill).toHaveTextContent("Replay · Exit to live");
+    expect(pill).toHaveTextContent(/Replay/);
+    expect(pill).toHaveClass("tone-replay");
     expect(screen.queryByRole("region", { name: "Replay" })).not.toBeInTheDocument(); // no top banner
-    expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-current", "page");
     expect(await screen.findByTestId("global-transport")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Note at .*: Rough idle/ })).toBeInTheDocument();
     expect(document.querySelector("main")).toHaveClass("replay-edge");
-    // the header battery is the recorded one, not the live one
-    expect(screen.getByLabelText("Car battery 13.7 V")).toBeInTheDocument();
+    // the battery is the recorded one, not the live one
+    expect(await screen.findByRole("group", { name: "Car battery" })).toHaveTextContent("13.7 V");
     await user.click(screen.getByRole("button", { name: "Replay — Exit to live" }));
     expect(screen.queryByRole("button", { name: "Replay — Exit to live" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("global-transport")).not.toBeInTheDocument();
     pushSnapshot(live);
     expect(await screen.findByText("Connected")).toBeInTheDocument();
-    expect(screen.getByLabelText("Car battery 12.2 V")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Car battery" })).toHaveTextContent("12.2 V");
   });
 
   it("Rewind while recording opens the drive at its newest sample on Analysis and follows it; Exit returns to live", async () => {
@@ -549,6 +585,7 @@ describe("whole-app replay", () => {
       installReplayServer({ snapshot: rec }, { meta: { ...replayMeta, recording: true, end_utc: null }, data: () => replayDataTo(last) });
       render(<App path="/" />);
       pushSnapshot(rec);
+      await dest(user, "Logs"); // Rewind moved from the header to Logs (U1)
       await user.click(await screen.findByRole("button", { name: "Rewind" }));
       await screen.findByRole("button", { name: "Replay — Exit to live" });
       expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
@@ -568,7 +605,7 @@ describe("whole-app replay", () => {
     }
   });
 
-  it("goTo(id) switches the tab (Rewind with no recording opens the newest log on Analysis)", async () => {
+  it("goTo(route) navigates (Rewind with no recording opens the newest log on Logs → Analysis)", async () => {
     const user = userEvent.setup();
     const server = installReplayServer({ snapshot: live });
     const inner = globalThis.fetch;
@@ -580,7 +617,8 @@ describe("whole-app replay", () => {
     }));
     render(<App path="/" />);
     pushSnapshot(live);
-    expect(screen.getByRole("button", { name: "Drive" })).toHaveAttribute("aria-current", "page");
+    expect(await screen.findByRole("button", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    await dest(user, "Logs");
     await user.click(await screen.findByRole("button", { name: "Rewind" }));
     expect(await screen.findByRole("button", { name: "Replay — Exit to live" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Analysis" })).toHaveAttribute("aria-current", "page");
@@ -605,12 +643,12 @@ describe("whole-app replay", () => {
     const server = installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
     await screen.findByTestId("global-transport");
-    await user.click(screen.getByRole("button", { name: "Outputs" }));
+    await area(user, "Outputs");
     const card = (await screen.findByText(/A\/C Fan/)).closest("[data-replay-item]") as HTMLElement;
     expect(within(card).getByLabelText(/replay, read only/)).toHaveTextContent("🔒");
     expect(within(card).queryByRole("button", { name: /A\/C Fan/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Faults" }));
-    await user.click(screen.getByRole("button", { name: "Settings" }));
+    await area(user, "Faults");
+    await area(user, "Settings");
     expect(await screen.findByLabelText("Identity in replay")).toBeInTheDocument();
     expect(server.commandsSent()).toEqual([]);
   });
@@ -621,7 +659,7 @@ describe("whole-app replay", () => {
     installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
     await screen.findByTestId("global-transport");
-    await user.click(screen.getByRole("button", { name: "Outputs" }));
+    await area(user, "Outputs");
     const item = () => document.querySelector('[data-replay-item="ac-fan"]') as HTMLElement;
     await waitFor(() => expect(item()).toBeTruthy());
     expect(item()).not.toHaveAttribute("data-running");
@@ -637,6 +675,8 @@ describe("whole-app replay", () => {
     const server = installReplayServer({ snapshot: live });
     render(<App path="/" replay="s1" />);
     await screen.findByTestId("global-transport");
+    await dest(userEvent.setup(), "Diagnose");
+    expect(await screen.findByLabelText(/Module TD5.*\(recorded\)/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Module TD5.*\(recorded\)/)).toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "Module" })).not.toBeInTheDocument();
     await seek(45_000);

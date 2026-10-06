@@ -45,8 +45,9 @@ ISO transport standards (ADR-0025). The OBDb `SAEJ1979` pin belongs to the
 The web dashboard's neutral colour/spacing tokens are adapted from
 [facebook/astryx](https://astryx.atmeta.com/) (`packages/themes/neutral`), Meta's
 open-source design system, **MIT-licensed**. Only the theme token *values* (colours,
-radii, spacing) are used, inlined as CSS custom properties in `dashboard_v2.html` and
-`ui/src/styles.css` (and so in the committed build under `src/openostler/web/static/`).
+radii, spacing) are used: inlined as CSS custom properties in `dashboard_v2.html`, and
+since U1 held as W3C design tokens in `ui/tokens/*.tokens.json` (and so in the committed
+build under `src/openostler/web/static/`).
 
 > MIT License
 >
@@ -83,8 +84,25 @@ libraries; their licence notices travel inside the bundle and in `LICENSES/`:
   © 2023 MapLibre contributors and © 2020 Mapbox; it contains parts of glfx.js (MIT,
   © 2011 Evan Wallace) and d3-color (BSD-3-Clause, © 2010-2016 Mike Bostock).
 
+- **Material Symbols** (the U1 icon set): a subset of Google's
+  [Material Symbols](https://github.com/google/material-design-icons) (outlined, weight
+  400), **Apache-2.0**, © Google LLC. The SVG files in `ui/src/icons/material-symbols/` are
+  copied unmodified from the npm package
+  [`@material-symbols/svg-400`](https://github.com/marella/material-symbols) 0.47.6 (also
+  Apache-2.0); their path data is drawn inline by `ui/src/icons/Icon.tsx`. The licence text
+  is `LICENSES/Apache-2.0.txt`. Add a symbol by copying its file from the same package
+  version and listing it in `ui/src/icons/symbols.ts` (a test keeps the two in step).
+
 Map tiles and styles (OpenFreeMap, Esri imagery) are fetched at runtime and are not
 shipped.
+
+## UI test tooling (dev-only, never shipped)
+
+- [axe-core](https://github.com/dequelabs/axe-core) and
+  [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm): **MPL-2.0**,
+  © Deque Systems, Inc. A pinned dev dependency (`ui/package.json`) that runs the WCAG 2.2
+  AA scan in the Playwright suite (`ui/e2e/shell.spec.ts`). Nothing of it is bundled into
+  `src/openostler/web/static/`.
 
 ## REUSE
 

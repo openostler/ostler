@@ -103,7 +103,7 @@ export function ConnectionSheet({ onClose, downSince = null }: { onClose: () => 
         </section>
       ) : null}
 
-      <div className="small dis">One session at a time — the K-line is shared. Pick the module in the header.</div>
+      <div className="small dis">One session at a time — the K-line is shared. Pick the system in Diagnose.</div>
       <button className="btn accent" onClick={onClose}>Done</button>
     </Sheet>
   );

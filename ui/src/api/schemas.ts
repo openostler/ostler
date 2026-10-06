@@ -12,6 +12,11 @@
  */
 import { z } from "zod";
 
+// The built page's CSP has no 'unsafe-eval' (app-model spec §9, seam 7). Zod 4 would probe
+// `new Function` to compile fast object parsers; jitless keeps it to plain code, so no CSP
+// violation is raised. The speed difference is immaterial at our response sizes.
+z.config({ jitless: true });
+
 /** Confidence of a mapping: verified against the car, or derived/unverified (ADR-0006). */
 export const Confidence = z.string(); // "proven" | "candidate"; open so a new level doesn't crash the UI
 export type Confidence = z.infer<typeof Confidence>;

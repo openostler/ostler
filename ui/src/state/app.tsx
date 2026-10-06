@@ -4,12 +4,15 @@
 
 import { createContext, useContext } from "react";
 import type { Catalog, Community, FaultMeaning, Field, Snapshot } from "../api/schemas";
+import type { RouteName } from "../shell/routes";
 import type { LiveState } from "./live";
 import type { Prefs } from "./prefs";
 
 export type Toast = (msg: string, bad?: boolean) => void;
 
-/** Everything a screen needs, provided once by <App>. */
+/** The screen state every screen reads, provided once by <App>. Shell services (layout,
+ * driving state, nav, sheets) are in `useShell()` (shell/context.tsx); `goTo` and `toast`
+ * stay here as the same functions so today's screens keep working. */
 export type AppContext = {
   snap: Snapshot | null;
   live: LiveState;
@@ -29,9 +32,9 @@ export type AppContext = {
   admin: boolean;
   community: Community | null;
   reloadCommunity: () => void;
-  /** Switch the active tab by screen id (registry.ts: "drive", "logs", "analysis", …).
-   * Stable identity; an unknown id falls back to the first screen. */
-  goTo: (tab: string) => void;
+  /** Navigate by route name (shell/routes.ts: "diagnose.faults", "logs.analysis", …; "drive"
+   * opens Drive mode). Stable identity. The same function as `useShell().nav.open`. */
+  goTo: (route: RouteName) => void;
   toast: Toast;
   ackedFaults: Set<string>;
   showFaultSheet: (faults: string[]) => void;

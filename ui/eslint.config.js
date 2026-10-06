@@ -8,6 +8,33 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+// App-model seam 3 (specs/2026-10-06-app-model-design.md §9): one action path. Car actions go
+// through `useAction` (api/useAction.ts) and the confirmations in components/confirm.ts; only
+// api/client.ts names the action route, and the raw `command()` sender is allowed only in the
+// files below, which send server-state commands (port, module, recording, logs, shutdown).
+const ACTION_ROUTE = [
+  { selector: "Literal[value=/^\\/command\\b/]", message: "Only api/client.ts calls the action route; use useAction()." },
+  { selector: "TemplateElement[value.raw=/^\\/command\\b/]", message: "Only api/client.ts calls the action route; use useAction()." },
+];
+const RAW_COMMAND = {
+  patterns: [{
+    group: ["**/api/client"], importNames: ["command"],
+    message: "Send car actions through useAction() (api/useAction.ts); server-state senders are allowlisted in eslint.config.js.",
+  }],
+};
+const SERVER_STATE_SENDERS = [
+  "src/api/useAction.ts",
+  "src/state/systems.ts", // select_module
+  "src/components/ConnectionSheet.tsx", // port and connection
+  "src/components/Preferences.tsx", // shutdown
+  "src/components/RecordingCard.tsx", // split_session
+  "src/components/replay/Replay.tsx", // delete_session
+  "src/lib/recordingOptions.ts", // recording_options
+  "src/screens/Capture.tsx", // read_block (Tier 0)
+  "src/screens/Faults.tsx", // read_all_faults, set_fault_watch
+  "src/screens/Inputs.tsx", // start_csv, stop_csv
+];
+
 export default tseslint.config(
   { ignores: ["node_modules", "test-results", "playwright-report"] },
   {
@@ -21,4 +48,14 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**"],
+    rules: {
+      "no-restricted-syntax": ["error", ...ACTION_ROUTE],
+      "no-restricted-imports": ["error", RAW_COMMAND],
+    },
+  },
+  { files: ["src/api/client.ts"], rules: { "no-restricted-syntax": "off" } },
+  { files: SERVER_STATE_SENDERS, rules: { "no-restricted-imports": "off" } },
 );
