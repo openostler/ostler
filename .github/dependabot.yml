@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Dependabot (ADR-0017): weekly, grouped update PRs with a 7-day cooldown so brand-new
+# releases settle first. Actions stay pinned by SHA; Dependabot bumps the SHA and comment.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /ui
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      ui-dev:
+        dependency-type: development
+      ui-runtime:
+        dependency-type: production
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
