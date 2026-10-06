@@ -2,13 +2,14 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
-  DataSource boundary, the two command paths) and the dev commands.
+  VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths) and the
+  dev commands.
 ---
 
 # Architecture and key seams
@@ -20,11 +21,12 @@ broken are in [CONSTITUTION.md](../CONSTITUTION.md). This page is the working ma
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"          # only runtime dep is pyserial
+pip install -e ".[dev]"          # only runtime dep is pyserial; dev adds pytest, jsonschema, vss-tools
 # the Discovery 2 reference pack (integration tests, the dashboard, e2e)
 pip install --no-deps "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag"
 
 pytest -q                        # whole suite, no hardware needed
+python tools/build_metrics.py    # regenerate metrics.json after editing vss/ (--check in CI)
 pytest -m "not needs_pack" -q    # platform-only (fake pack)
 pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 
@@ -85,6 +87,18 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - Decoders, the dashboard and automap all read it.
   - Confirmed mappings are written back with `upsert_field`.
   - Each field carries `confidence`, either `proven` or `candidate`.
+  - A field may carry `metric`, a COVESA VSS path (below); pack-private fields need none.
+- **Metrics: the VSS namespace (`metrics.py`, `vss/`, ADR-0016).**
+  - `vss/` pins VSS 6.1 (`vss/upstream/`, MPL-2.0) and holds the overlay
+    `vss/ostler.vspec`: the OVMS, Home Assistant and OBDb aliases and the Home role on
+    existing nodes, plus the `Vehicle.Ostler.*` extensions. It is the only alias source.
+  - `tools/build_metrics.py` (dev-only, vss-tools) writes `src/openostler/metrics.json`
+    (the annotated and extension leaves) and `vss_leaves.json` (every upstream leaf and
+    its unit). Both are committed and shipped; `--check` runs in CI.
+  - At runtime `openostler.metrics` (stdlib) reads them: `load_metrics()`,
+    `metric_info(path)`, `is_known(path)`. `upsert_field` refuses an unknown `metric`.
+  - Units are VSS unit keys copied verbatim from `vss/upstream/units.yaml` (`Celsius`,
+    `km/h`). Pack store units stay display units until U3 converts at the mapping step.
 - **`web/sources.py` is the protocol/UI boundary.**
   - Each `DataSource.poll()` returns `{status, signals, faults}`.
   - The product always uses live sources; there are no server modes (ADR-0011). The
@@ -110,6 +124,17 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     behind `GET /sessions` (keyset paging, search, filters), `/sessions/histogram` (the
     month scrubber) and `PATCH /sessions/<id>` (name and description). It rebuilds itself
     from the session files when missing or on a schema change.
+- **Vehicle id (`logbook/vehicle.py`, UI spec §4.1).**
+  - `logs/vehicle.json` (`{vid, pack, created_utc}`) is created once, next to
+    `logs/sessions/`; `OSTLER_VEHICLE_ID` overrides the vid. It never holds a VIN.
+  - The recorder stamps `vid` into every new non-synthetic session's `meta.json`. The store
+    reads a session without one (older logs, demo logs) as the local vid, on read only.
+  - The session index (schema 3) has a `vid` column; `/sessions` responses carry `vid`.
+- **Schemas (`schemas/`, ADR-0017).** JSON Schema 2020-12 for the signal-store module
+  file, a pack's `layout.json`, `logs/vehicle.json` and a session `meta.json` (RFC 3339 UTC
+  `Z` timestamps), `$id` under `https://ostler.tech/schemas/`, custom keys `x-…`.
+  `tests/test_schemas.py` validates the fake pack, the D2 pack and freshly written files;
+  `jsonschema` is dev-only.
 - **Place names (`geo/`).**
   - `geo.offline.label(lat, lon)` names a point from a trimmed GeoNames `cities1000`
     table (`geo/places.tsv.gz`, built by `tools/build_places.py`, CC BY 4.0).
@@ -162,3 +187,6 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-06 — Repo split (ADR-0015): this is the platform (`openostler`); the
   `VehiclePack` seam; module layers, the signal store data and the car-test backlog live in
   the packs; `needs_pack` integration tests; `--replay pack`.
+- 2026-10-06 — U0 seams (specs/2026-10-06-u0-seams-design.md): VSS metrics
+  (`metrics.py`, `vss/`, `tools/build_metrics.py`), `metric` on store records, the
+  vehicle id, index schema 3 and `schemas/`.
