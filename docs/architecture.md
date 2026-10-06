@@ -158,9 +158,11 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     listen-only (SocketCAN on stdlib `AF_CAN` with `CanIfControl` over `ip`; slcan over
     serial or TCP; GVRET; python-can only with the `[can]` extra). `send()` raises
     `RateNotConfirmed` until the rate is confirmed or declared, and every frame passes
-    `TxGate`: Tier 0 reads (and their FCs) on the diagnostic ids in any driving state,
-    anything else only with a pack allowlist entry, the entry's driving state and a
-    single-use `TxGrant`. A permitted send turns listen-only off; the session end or
+    `TxGate`: Tier 0 reads (and their FCs) on the diagnostic ids in any driving state
+    (a functional `3E`, or `3E` to a third ECU within 5 s, only while Parked:
+    `sweep_not_parked`), anything else only with a pack allowlist entry, the entry's
+    driving state and a single-use `TxGrant` that passes the injectable grant verifier
+    (`grant_invalid`). A permitted send turns listen-only off; the session end or
     30 s idle turns it back on.
   - `can.detect()` listens at 500k then 250k (20 clean frames), then sends one `01 00`;
     a silent bus gets one Parked-only one-shot probe per rate. ISO-TP is our own
