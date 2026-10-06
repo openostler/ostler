@@ -4,7 +4,7 @@
 repo is the vehicle-agnostic platform: the K-line/KWP2000 comms core, the `VehiclePack`
 contract, the session logbook and the dashboard. Vehicle specifics live in separate
 vehicle packs; the reference pack is the Land Rover Discovery 2 pack `d2diag`
-([discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag)). This repo
+([ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2)). This repo
 follows the [Vibes as Code](https://github.com/JamesWrightDavid/Vibes-as-Code) method:
 orient cheaply, then load on demand.
 

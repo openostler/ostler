@@ -4,7 +4,7 @@ Docs for the **Ostler platform** (OpenOstler): the vehicle-agnostic comms core, 
 `VehiclePack` contract, the session logbook and the dashboard. Vehicle knowledge (module
 pages, fault dictionaries, capability inventories, protocol research) lives with each
 vehicle pack. For the Land Rover Discovery 2 that is the
-[discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag) repo
+[ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2) repo
 (`docs/discovery-2-td5/`, `docs/capability-inventory/`, `references/`).
 
 ## Pages

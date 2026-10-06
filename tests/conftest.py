@@ -18,8 +18,8 @@ import os
 import pytest
 
 PACK_DIST = "d2diag"
-INSTALL = ('pip install --no-deps "d2diag @ git+https://github.com/JamesWrightDavid/'
-           'discovery2-diag@split-pack" (or pip install --no-deps -e <pack checkout>)')
+INSTALL = ('pip install --no-deps "d2diag @ git+https://github.com/openostler/'
+           'ostler-pack-lr-d2@split-pack" (or pip install --no-deps -e <pack checkout>)')
 
 
 def pack_installed() -> bool:

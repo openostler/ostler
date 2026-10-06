@@ -16,7 +16,7 @@ permissions:
 # PACK_REF: the D2 pack ref CI tests against (a branch or tag).
 env:
   PACK_REF: main
-  PACK_REPO: https://github.com/JamesWrightDavid/discovery2-diag
+  PACK_REPO: https://github.com/openostler/ostler-pack-lr-d2
 
 jobs:
   test:

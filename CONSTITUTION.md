@@ -53,7 +53,7 @@ summary: >
 - **Confidence is honest.** Every field is `proven` (verified against the car) or
   `candidate` (derived or unverified). Nothing is promoted to `proven` without a car
   result recorded in the pack's car-test plan (for the D2 pack,
-  [references/test_plan.md](https://github.com/JamesWrightDavid/discovery2-diag/blob/main/references/test_plan.md)).
+  [references/test_plan.md](https://github.com/openostler/ostler-pack-lr-d2/blob/main/references/test_plan.md)).
 
 ### Protocol rules (violating these only shows up against the real car)
 - **Always end a module with `EcuSession.release()`**, on module switch and error paths
@@ -123,7 +123,7 @@ summary: >
   `python3 skill/scripts/build_index.py`. `INDEX.md` is generated. Never hand-edit it.
 - No code, scaffolding or implementation until a design is approved (a spec in
   `specs/`). Car findings route per the pack's
-  [test plan](https://github.com/JamesWrightDavid/discovery2-diag/blob/main/references/test_plan.md).
+  [test plan](https://github.com/openostler/ostler-pack-lr-d2/blob/main/references/test_plan.md).
 
 ## Changelog
 

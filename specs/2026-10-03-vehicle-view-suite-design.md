@@ -60,7 +60,7 @@ snapshot.signals ── value + confidence (c) per signal ──▶ zone state: 
 
 ## Body (BCU) page — the first slice
 
-Zones driven by the BCU read-inputs ([menus/bcu-inputs.md](https://github.com/JamesWrightDavid/discovery2-diag/blob/main/references/menus/bcu-inputs.md), in the D2 pack repo):
+Zones driven by the BCU read-inputs ([menus/bcu-inputs.md](https://github.com/openostler/ostler-pack-lr-d2/blob/main/references/menus/bcu-inputs.md), in the D2 pack repo):
 - **Doors/openings:** driver, passenger, (rear ×2 if present), bonnet, tailgate → open/closed.
 - **Lamps:** side, main beam, dipped, front/rear fog, left/right indicator, hazard, brake,
   reverse → lit when on.

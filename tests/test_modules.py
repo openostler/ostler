@@ -5,7 +5,7 @@
 """Module detection across all buses (sniff/modules.py).
 
 Sample frames come straight from the D2 pack's protocol state handoff
-(references/ in discovery2-diag) and d2diag.sniff.library.KNOWN, one per bus.
+(references/ in ostler-pack-lr-d2) and d2diag.sniff.library.KNOWN, one per bus.
 """
 
 import pytest
