@@ -90,6 +90,8 @@ def _server(tmp_path, public=False, gps="default", **kw):
     if gps == "default":
         gps = FakeGps(FakeFix())
     src = FakeTd5Source(gps=gps)
+    if public:
+        kw.setdefault("admin_password", "pw")   # public mode needs one
     srv = DiagServer(src, host="127.0.0.1", port=0, csv_dir=str(tmp_path), public=public,
                      gps=gps, **kw)
     return srv
@@ -433,7 +435,8 @@ def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
         srv.stop()
         srv.server_close()
 
-    for extra, has in ((["--geocoder", "off"], False), (["--public"], False),
+    for extra, has in ((["--geocoder", "off"], False),
+                       (["--public", "--admin-password", "pw"], False),
                        (["--geocoder", "http://geo.invalid"], True)):
         monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
                                           "--gps", "none", "--imu", "none",
@@ -445,6 +448,13 @@ def test_dashboard_runs_live_with_the_geocoder(tmp_path, monkeypatch):
         finally:
             srv.stop()
             srv.server_close()
+
+    # --public with no admin password refuses to start (every admin route would be open).
+    monkeypatch.delenv("D2DIAG_ADMIN_PW", raising=False)
+    monkeypatch.setattr(sys, "argv", ["dashboard.py", "--host", "127.0.0.1", "--port", "0",
+                                      "--public"])
+    captured.clear()
+    assert mod.main() == 2 and "srv" not in captured
 
 
 # ---- paging, search, histogram (spec 2026-10-06 §3) ------------------------ #
@@ -481,6 +491,8 @@ def _logbook(tmp_path, n=5, **kw):
     root = tmp_path / "sessions"
     base = 1_735_725_600.0  # 2025-01-01T10:00:00Z
     ids = [_make_real(root, base + i * DAY, name=f"Drive {_WORDS[i]}") for i in range(n)]
+    if kw.get("public"):
+        kw.setdefault("admin_password", "pw")   # public mode needs one
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path), **kw)
     return srv, ids
 
@@ -687,7 +699,8 @@ def test_closed_session_points_go_to_the_enricher(tmp_path, served):
 
 def test_no_enricher_in_public_mode_or_when_off(tmp_path):
     srv = DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, csv_dir=str(tmp_path),
-                     public=True, enricher=FakeEnricher(), geocoder="http://geo.invalid")
+                     public=True, admin_password="pw", enricher=FakeEnricher(),
+                     geocoder="http://geo.invalid")
     try:
         assert srv._enricher is None
     finally:

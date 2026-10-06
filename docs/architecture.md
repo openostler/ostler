@@ -114,6 +114,10 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
   groups and descriptions come from `/fields`, which reads the signal store plus
   `sources.DERIVED_FIELDS`. The UI never hard-codes them.
+- **Admin and public mode.** Admin routes sit behind HTTP Basic auth when an admin password
+  is set (`_Handler._require_admin`); with none they are open, which is for local dev only.
+  `--public` therefore refuses to start without a password, and public mode refuses
+  actuators, uploads and community writes (`_PUBLIC_REFUSAL`).
 - **The API contracts (`api/`, ADR-0017).** `api/openapi.yaml` (OpenAPI 3.1.1) documents
   every HTTP route of `web/server.py`: parameters, bodies, response schemas, errors,
   admin gating (`x-ostler-access`) and public-mode behaviour (`x-ostler-public-mode`).

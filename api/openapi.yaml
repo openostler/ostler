@@ -556,8 +556,9 @@ paths:
       tags: [community]
       operationId: postCommunityConsent
       summary: Opt in or out of community contributions.
+      description: Not admin-gated (the first-run Consent screen and Preferences belong to the device's own user); refused in public mode.
       x-ostler-access: public
-      x-ostler-public-mode: open
+      x-ostler-public-mode: refused
       x-ostler-query-string: refused
       requestBody:
         required: true
@@ -577,6 +578,8 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "400":
           description: Community is disabled on this server.
           content:
@@ -587,9 +590,12 @@ paths:
       tags: [community]
       operationId: postCommunityContribute
       summary: Contribute one whitelisted, PII-free record (queued when offline).
-      x-ostler-access: public
-      x-ostler-public-mode: open
+      description: Sent from the admin Coverage Map, so admin auth is required; refused in public mode.
+      x-ostler-access: admin
+      x-ostler-public-mode: refused
       x-ostler-query-string: refused
+      security:
+        - adminBasic: []
       requestBody:
         required: true
         content:
@@ -601,6 +607,10 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "400":
           description: Community is disabled on this server.
           content:

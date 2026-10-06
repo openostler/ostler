@@ -36,6 +36,8 @@ REPO = Path(__file__).resolve().parents[1]
 
 def _server(tmp_path, **kw):
     kw.setdefault("csv_dir", str(tmp_path))
+    if kw.get("public"):
+        kw.setdefault("admin_password", "pw")   # public mode needs one
     return DiagServer(FakeTd5Source(), host="127.0.0.1", port=0, **kw)
 
 
