@@ -174,11 +174,11 @@
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.898,
-          0.2824,
-          0.3725
+          0.9373,
+          0.4157,
+          0.4902
         ],
-        "hex": "#e5485f"
+        "hex": "#ef6a7d"
       }
     },
     "warn-bg": {
