@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/signal-store.schema.json",
+  "title": "Signal store module file",
+  "description": "One <module>.json of a vehicle pack's signal store (src/<pack>/signals/): the LID field mappings that the decoders, the dashboard and automap read. Written only through openostler.signals.upsert_field (CONSTITUTION). Custom keys must start with x-.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/record" },
+  "$defs": {
+    "range": {
+      "type": "array",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "record": {
+      "type": "object",
+      "required": ["name", "lid", "offset"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Za-z0-9_]+$", "description": "Field id within the module, e.g. coolant_temp." },
+        "lid": {
+          "description": "Local identifier: two or more hex digits (\"1A\"), or an integer.",
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9A-Fa-f]{1,4}$" },
+            { "type": "integer", "minimum": 0, "maximum": 65535 }
+          ]
+        },
+        "offset": { "type": "integer", "minimum": 0, "description": "Byte offset in the LID's data." },
+        "kind": { "enum": ["u8", "u16", "u16le", "s16", "s16le", "bit"], "default": "u16" },
+        "scale": { "type": "number", "default": 1.0 },
+        "bias": { "type": "number", "default": 0.0 },
+        "unit": { "type": "string", "description": "Display unit as stored by the pack." },
+        "confidence": { "enum": ["proven", "candidate"], "description": "proven = verified against the car; candidate = derived or unverified (ADR-0006)." },
+        "limits": { "oneOf": [{ "$ref": "#/$defs/range" }, { "type": "null" }] },
+        "span": { "oneOf": [{ "$ref": "#/$defs/range" }, { "type": "null" }] },
+        "normal": { "oneOf": [{ "$ref": "#/$defs/range" }, { "type": "null" }] },
+        "bit": { "oneOf": [{ "type": "integer", "minimum": 0, "maximum": 7 }, { "type": "null" }] },
+        "states": {
+          "oneOf": [
+            {
+              "type": "object",
+              "propertyNames": { "pattern": "^-?[0-9]+$" },
+              "additionalProperties": { "type": "string" }
+            },
+            { "type": "null" }
+          ],
+          "description": "Raw value (as a decimal string key) to a state label."
+        },
+        "length": {
+          "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }],
+          "description": "Applies only to a data field of exactly this many bytes (reply-length layouts)."
+        },
+        "source": { "type": "string" },
+        "label": { "type": "string" },
+        "group": { "type": "string" },
+        "description": { "type": "string" },
+        "metric": {
+          "type": "string",
+          "pattern": "^Vehicle(\\.[A-Za-z0-9_]+)+$",
+          "description": "The canonical meaning: a COVESA VSS path known to openostler.metrics (ADR-0016). Optional."
+        }
+      },
+      "patternProperties": { "^x-": true },
+      "additionalProperties": false
+    }
+  }
+}

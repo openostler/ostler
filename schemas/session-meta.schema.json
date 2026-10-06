@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/session-meta.schema.json",
+  "title": "Logbook session meta",
+  "description": "meta.json of one recorded session (<logs>/sessions/<id>/meta.json), written atomically by openostler.logbook.recorder (ADR-0009, ADR-0010, ADR-0011, U0). Timestamps are RFC 3339 in UTC with a Z suffix. Sessions recorded before U0 carry no vid; the store reads them as the local vid and never rewrites them. note_count is computed on read and is not stored.",
+  "type": "object",
+  "required": ["id", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules", "channels",
+               "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos", "end_pos",
+               "synthetic", "recording", "source"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[0-9]{8}T[0-9]{6}Z(-[0-9]+)?$" },
+    "vid": { "$ref": "#/$defs/vid" },
+    "name": { "type": ["string", "null"], "maxLength": 80 },
+    "description": { "type": ["string", "null"], "maxLength": 2000 },
+    "place_start": { "$ref": "#/$defs/place" },
+    "place_end": { "$ref": "#/$defs/place" },
+    "place": { "$ref": "#/$defs/place" },
+    "start_utc": { "$ref": "#/$defs/utc" },
+    "end_utc": { "oneOf": [{ "$ref": "#/$defs/utc" }, { "type": "null" }] },
+    "duration_s": { "type": "integer", "minimum": 0 },
+    "rows": { "type": "integer", "minimum": 0 },
+    "parts": { "type": "array", "items": { "type": "string", "pattern": "^data(-[0-9]+)?\\.csv$" } },
+    "modules": { "type": "array", "items": { "type": "string" } },
+    "channels": { "type": "array", "items": { "$ref": "#/$defs/channel" } },
+    "has_gps": { "type": "boolean" },
+    "distance_km": { "type": "number", "minimum": 0 },
+    "max_speed_kmh": { "type": ["number", "null"] },
+    "bbox": {
+      "oneOf": [
+        { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4 },
+        { "type": "null" }
+      ],
+      "description": "[min lon, min lat, max lon, max lat]."
+    },
+    "start_pos": { "$ref": "#/$defs/lonlat" },
+    "end_pos": { "$ref": "#/$defs/lonlat" },
+    "synthetic": { "type": "boolean" },
+    "recording": { "type": "boolean" },
+    "source": { "type": "string", "description": "live, demo, or a legacy mock." },
+    "audio": { "type": "array", "items": { "$ref": "#/$defs/audio" } },
+    "accel_cal": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["matrix"],
+          "properties": {
+            "matrix": {
+              "type": "array", "minItems": 3, "maxItems": 3,
+              "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } }
+            },
+            "source": { "type": "string" },
+            "method": { "type": "string" }
+          }
+        },
+        { "type": "null" }
+      ]
+    }
+  },
+  "patternProperties": { "^x-": true },
+  "additionalProperties": false,
+  "$defs": {
+    "vid": {
+      "type": "string",
+      "pattern": "^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$",
+      "description": "Vehicle id: names one vehicle, not a pack (UI spec §4.1)."
+    },
+    "utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "RFC 3339 timestamp in UTC with a Z suffix."
+    },
+    "lonlat": {
+      "oneOf": [
+        { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        { "type": "null" }
+      ],
+      "description": "[longitude, latitude] (GeoJSON order)."
+    },
+    "place": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["label", "source"],
+          "properties": {
+            "label": { "type": "string" },
+            "source": { "type": "string" },
+            "label_offline": { "type": ["string", "null"] }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "channel": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "units": { "type": "string" },
+        "group": { "type": "string" },
+        "c": { "enum": ["proven", "candidate"] },
+        "limits": {
+          "oneOf": [
+            { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "required": ["track"],
+      "properties": {
+        "track": { "type": "string" },
+        "mime": { "type": "string" },
+        "start_ms": { "type": ["integer", "null"] },
+        "end_ms": { "type": ["integer", "null"] },
+        "source": { "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
