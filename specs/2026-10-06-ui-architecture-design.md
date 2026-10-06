@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-06
-depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md]
+depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1.
 ---
 
 # UI architecture — design
@@ -20,7 +20,8 @@ The evidence is the seven notes in [`references/research/ui/`](../references/res
 in `depends_on`. **Amended on 2026-10-06 (v0.4)** for the node/brain direction
 ([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md)) and action categories and
 approvals ([ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md)); the spec
-stays approved and the changes are listed in the changelog.
+stays approved and the changes are listed in the changelog. **Amended on 2026-10-06 (v0.5)**
+with the app model (§3.6, [app-model spec](2026-10-06-app-model-design.md), draft).
 
 ## 1. Context and goals
 
@@ -147,6 +148,20 @@ carries one session at a time, so in a SLABS session the Td5 speed is absent and
 **Service mode** merges admin and Experimental: a long-press on the version line in More → About
 plus the server password; while on, a thick coloured frame round the viewport, a strip badge,
 Experimental items and Decode mode. It is refused, and exits, when Moving.
+
+### 3.6 One shell, apps by manifest (amendment 2026-10-06, v0.5)
+
+The UI is **one shell** (launcher, status strip, driving states and landing, auth, the data
+stream, the app registry, the safety-gate client and every approval surface) that hosts
+features as **apps declared by a manifest**: requirements against the capability manifest,
+slot contributions, the actions they use with category and tier, a driving rule per view
+(while Moving only shell-drawn templates) and hosts. **Core apps** (Diagnose, Logs, Security,
+Network) stay in the platform repo and fill the destinations above; **optional apps**
+(Cameras, Social, Decode lab, add-on module apps) may ship from their own repos, bundled at
+build time or declarative-only. Apps are **never separate PWAs**, never draw approvals and never
+reach the car except through the gate (§7). **Nothing is built before U1**; U1 only leaves the
+seams. Detail and open questions: [app-model spec](2026-10-06-app-model-design.md) (draft);
+evidence: [app model research](../references/research/ui/app_model.md).
 
 ## 4. The vehicle model in the UI
 
@@ -493,7 +508,7 @@ Phase 0, U5 in its Phase 2, U4 in its Phase 3.
 | Phase | Ships | Test |
 |---|---|---|
 | **U0 Seams** | `vid` on every logbook session (old logs migrate to one vid); optional `metric` (VSS path) on store records via `upsert_field`; `metrics.json` common set; the D2 pack fills its set | unit tests; D2 coverage unchanged; no UI change |
-| **U1 Shell** | layout classes, strip, rail / bottom bar, five destinations holding today's screens (§3.4), Drive mode, module select into Diagnose, fault modal → telltale | Playwright at 1024×600, 1280×720, 1920×720, 393×852; target-size asserts |
+| **U1 Shell** | layout classes, strip, rail / bottom bar, five destinations holding today's screens (§3.4), Drive mode, module select into Diagnose, fault modal → telltale; the app-model seams ([app-model spec §9](2026-10-06-app-model-design.md#9-migration-not-before-u1-the-seams-u1-leaves)) | Playwright at 1024×600, 1280×720, 1920×720, 393×852; target-size asserts |
 | **U2 Driving state** | platform driving state (vehicle → GPS), UI lockouts, server refusal of Tiers 1–3 while Moving, service mode with frame | Moving fixture locks actions, text and video; server tests |
 | **U3 Manifest** | Python-generated capabilities (D2 on tiers 2+3), field config onto signals, derived tiers, Scan all with seven states and reports; the visible-signals poll subscription (rule below) | golden manifests for D2 and the fake pack; scan-state tests; a test that every recorded channel is still polled with no screen open |
 | **U4 Second pack** | `generic_obd2`, `generateViews()` (tier 1), single-system collapse, connect-time manifest, local VIN decode, unknown-vehicle banner | view snapshots; ELM fake; a test that no VIN reaches logs |
@@ -598,3 +613,8 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   manifest, GPS and 12 V from the node, relay boards as our own later boards with an ADR per
   switching function, and the `comfort` render class renamed `add-on device`; §3.1 notes the phone
   app packaged with Capacitor; §11 Q4, Q5 and Q10 annotated.
+- 2026-10-06: v0.5, amendment for the app model (stays approved). §3.6 adds one shell with
+  features as apps declared by a manifest, core apps (Diagnose, Logs, Security, Network) in the
+  platform repo, optional apps from their own repos, no separate PWAs and nothing built before
+  U1; §10's U1 row leaves the app-model seams. Detail in the draft
+  [app-model spec](2026-10-06-app-model-design.md).
