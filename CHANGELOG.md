@@ -44,6 +44,12 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **CI `vcan` job.** Loads `vcan` (from `linux-modules-extra` if needed) and, when the
+  runner kernel has it, `can-isotp`, brings up `vcan0` and runs the `needs_vcan` tests:
+  `SocketCanLink` round-trip and a new `KernelIsoTpChannel` round-trip against a kernel
+  ISO-TP ECU socket. `OSTLER_REQUIRE_VCAN=1` (and `OSTLER_REQUIRE_CAN_ISOTP=1`, set only
+  when `can-isotp` loads) turns their skips into failures, so the job cannot pass by
+  skipping. ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md) §9.)
 - **CAN path: CanLink, passive bitrate detection, ISO-TP and the transmit gate**
   ([spec](specs/2026-10-06-canlink-isotp-design.md), first step, fakes only; ADR-0020,
   ADR-0023). New core package `src/openostler/can/`: a frame-level `CanLink` beside
