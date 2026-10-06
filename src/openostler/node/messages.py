@@ -6,8 +6,10 @@
 ``firmware/README.md``, ``components/poll/src/poll.c``).
 
 Topics live under ``ostler/v1/<vid>/<device>/``: ``status`` (plain text ``online``, will
-``offline``), ``power`` (the ADR-0040 record) and ``vss/<leaf>`` where the leaf is a VSS
-path (``Vehicle.…``) or a pack leaf ``<pack>.<module>.<field>``. Pure functions: no I/O.
+``offline``, ``asleep`` before a clean sleep), ``power`` (the ADR-0040 record),
+``vss/<leaf>`` where the leaf is a VSS path (``Vehicle.…``) or a pack leaf
+``<pack>.<module>.<field>``, and (P3) the retained capability ``manifest`` and role claims
+``role/<role>[/<scope>]`` (ADR-0037 §3). Pure functions: no I/O.
 """
 from __future__ import annotations
 
@@ -18,7 +20,10 @@ from typing import Optional
 
 PREFIX = "ostler/v1"
 STATUS, POWER, VSS, TAP = "status", "power", "vss", "tap"
-STATUS_VALUES = ("online", "offline")
+MANIFEST, ROLE = "manifest", "role"
+# ADR-0037 §3 and its Amendment 8 (ADR-0040 §1): ``asleep`` is a clean sleep, ``offline``
+# the will (an unexpected loss).
+STATUS_VALUES = ("online", "offline", "asleep")
 # ADR-0040 §1 power states (the node publishes awake and shutting_down today).
 POWER_STATES = ("awake", "held", "waking", "asleep", "shutting_down")
 
@@ -43,10 +48,12 @@ def check_vid(vid: str) -> str:
 
 
 def subscriptions(vid: str) -> "list[tuple[str, int]]":
-    """The P1 read-only subscription set (spec §4): ``(filter, max QoS)``. Never ``#`` on
-    the vehicle, never a request topic."""
+    """The read-only subscription set (spec §4): ``(filter, max QoS)``: P1's ``status``,
+    ``power`` and ``vss/+``, and P3's ``manifest`` and ``role/#``. Never ``#`` on the
+    vehicle, never a request topic."""
     base = f"{PREFIX}/{check_vid(vid)}/+"
-    return [(f"{base}/status", 1), (f"{base}/power", 1), (f"{base}/vss/+", 0)]
+    return [(f"{base}/status", 1), (f"{base}/power", 1), (f"{base}/vss/+", 0),
+            (f"{base}/manifest", 1), (f"{base}/role/#", 1)]
 
 
 def tap_subscriptions(vid: str) -> "list[tuple[str, int]]":
@@ -69,7 +76,7 @@ def parse_tap_rest(rest: str) -> "Optional[tuple[str, str]]":
 class Topic:
     vid: str
     device: str
-    kind: str          # status | power | vss | tap | anything later
+    kind: str          # status | power | vss | tap | manifest | role | anything later
     rest: str = ""     # the vss leaf, or the remainder for other kinds
 
 
@@ -103,6 +110,58 @@ def parse_power(payload: bytes) -> "Optional[dict]":
     if obj is None or obj.get("state") not in POWER_STATES:
         return None
     return obj
+
+
+def parse_manifest(payload: bytes) -> "Optional[dict]":
+    """A device's capability manifest (UI spec §5.1 device entry; the firmware's
+    sensor-detection spec §7 in ``ostler-firmware``): a JSON object. The list and object fields the
+    cluster view reads are checked for their type; a wrong one is dropped (the rest is
+    kept). None when it is not a JSON object."""
+    obj = _json_obj(payload)
+    if obj is None:
+        return None
+    for key in ("roles", "transmit", "items", "links", "actions", "signals", "problems"):
+        if key in obj and not isinstance(obj[key], list):
+            del obj[key]
+    for key in ("memory", "power"):
+        if key in obj and not isinstance(obj[key], dict):
+            del obj[key]
+    for key in ("id", "kind", "variant", "model", "board", "fw", "etag"):
+        if key in obj and not isinstance(obj[key], str):
+            del obj[key]
+    if "priority" in obj and not isinstance(_num(obj["priority"]), (int, float)):
+        del obj["priority"]
+    return obj
+
+
+def parse_role_rest(rest: str) -> "Optional[tuple[str, str | None]]":
+    """``<role>`` or ``<role>/<scope>`` (a ``role`` topic's remainder) → ``(role, scope)``;
+    None for anything deeper or empty."""
+    parts = rest.split("/") if rest else []
+    if not parts or not parts[0] or len(parts) > 2 or (len(parts) == 2 and not parts[1]):
+        return None
+    return parts[0], (parts[1] if len(parts) == 2 else None)
+
+
+def parse_claim(payload: bytes) -> "Optional[dict]":
+    """A role claim ``{role, scope, term, priority, since, reason}`` (ADR-0037 §3). An
+    empty payload is a release (returns ``{}``); None when unreadable."""
+    if not payload:
+        return {}
+    obj = _json_obj(payload)
+    if obj is None:
+        return None
+    term = _int(obj.get("term"))
+    return {"role": obj.get("role") if isinstance(obj.get("role"), str) else None,
+            "scope": obj.get("scope") if isinstance(obj.get("scope"), str) else None,
+            "term": term if term is not None else 0,
+            "priority": _num(obj.get("priority")),
+            "since": obj.get("since") if isinstance(obj.get("since"), str) else None,
+            "reason": obj.get("reason") if isinstance(obj.get("reason"), str) else None}
+
+
+def _num(v) -> "int | float | None":
+    return v if isinstance(v, (int, float)) and not isinstance(v, bool) else None
 
 
 def _int(v) -> "Optional[int]":
@@ -168,6 +227,7 @@ def parse_vss(leaf: str, payload: bytes) -> "Optional[VssValue]":
                     source, name, c, raw, state)
 
 
-__all__ = ["POWER_STATES", "PREFIX", "STATUS_VALUES", "TAP", "Topic", "VssValue", "check_vid",
-           "parse_power", "parse_status", "parse_tap_rest", "parse_topic", "parse_vss",
+__all__ = ["MANIFEST", "POWER_STATES", "PREFIX", "ROLE", "STATUS_VALUES", "TAP", "Topic",
+           "VssValue", "check_vid", "parse_claim", "parse_manifest", "parse_power",
+           "parse_role_rest", "parse_status", "parse_tap_rest", "parse_topic", "parse_vss",
            "subscriptions", "tap_subscriptions", "vin_shaped"]

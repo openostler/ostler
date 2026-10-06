@@ -2,10 +2,10 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.2
+version: 2.3
 updated: 2026-10-06
 summary: >
-  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource phases P3–P4 and follow-ups, data-hub ideas. Vehicle work lives in each pack.
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, data-hub ideas. Vehicle work lives in each pack.
 ---
 
 # TODO — Ostler platform
@@ -79,7 +79,8 @@ Updated 2026-10-06. Check off when done.
 
 ## NodeSource ([spec](specs/2026-10-06-node-source-design.md))
 
-P1 (read-only ingest) and P2 (recording and raw tap) are built. Open:
+P1 (read-only ingest), P2 (recording and raw tap) and the P3 backend (Network page data)
+are built. Open:
 
 - [x] **P2 recording and raw tap:** sessions driven by the node's `status` and `power`
       (end at once on `asleep`, `end_reason: node_asleep`), `vss` columns (`<path>` and
@@ -91,14 +92,36 @@ P1 (read-only ingest) and P2 (recording and raw tap) are built. Open:
       (decode lab, spec §14).
 - [ ] **Parked periods and alarm events** in the logbook from the node's `power` and alarm
       topics (ADR-0010 amendment; spec §7 "in a later spec").
-- [ ] **Firmware and manifest `etag` in node session meta** once the manifest is
-      published (P3).
-- [ ] **P3 Network page:** `manifest` and `role/#` subscriptions, `GET /cluster`, the role
-      table. With the role claims, a **serial source refuses to start when the vehicle's
-      node holds the `kline-diag` gate** (owner answer 7); P1 has no gate claim to read,
-      so today only `--serial` together with `--source node` is refused. The manifest's
-      `primary` and the owner's priority join the §6.5 selection; the manifest's `rate`
-      replaces the EMA interval.
+- [x] **Firmware and manifest `etag` in node session meta:** `meta.json` `device_info`
+      `{device: {fw, etag}}` and `node_manifest` events (P3).
+- [x] **P3 Network page data (backend):** `manifest` and `role/#` subscriptions, the
+      device and role table (`node/cluster.py`) with the power record and last seen, void
+      claims flagged, gate conflicts, handovers from live messages, `GET /cluster`
+      (OpenAPI `Cluster`), the AsyncAPI channels `nodeManifest`, `nodeRole`,
+      `nodeRoleScoped`, `device_info` and `node.fw`/`etag` in the snapshot.
+- [x] **Serial source refuses beside a gate-holding node** (owner answer 7):
+      `tools/dashboard.py --serial … --mqtt URL` checks the vehicle's claims and manifests
+      once and refuses (also when the broker cannot be checked).
+- [ ] **Network page UI — after U1.** The Network core app (UI spec §3.7, §3.8; app-model
+      spec §12, §13.2) renders `GET /cluster`: the Devices section with the Power column,
+      the Roles section ("No holder", "No gate for this bus", void and conflict flags),
+      the stale banner, and the device page's peer view (same row shape). Nothing in the
+      new UI is built before U1 (UI spec §10); `ui/src/api/schemas.ts` gains `Cluster`,
+      `device_info` and `node.fw`/`etag` then (Zod strips them today).
+- [ ] **Firmware: publish the manifest and role claims** (`ostler-firmware`): the node
+      publishes no `manifest` and no `role/…` claims yet, and no `asleep` status; the P3
+      tests use the hand-written `tests/fixtures/node/cluster.jsonl`. When it does,
+      regenerate the fixture from a host-test dump. The manifest topic name and the claim
+      payload are for the module-bus message spec (spec §4).
+- [ ] **Serial refusal while running:** the check runs at start only, and only with
+      `--mqtt`; a node that appears later (or a lab laptop with no broker) is not seen.
+      Decide whether a serial source keeps a watch on the broker, or a Brain install
+      remembers the vehicle's gate holder.
+- [ ] **§6.5 with the manifest:** the manifest's `primary` and the owner's priority in the
+      selection, and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
+      interval. Waits for the firmware's manifest to fix the field shapes.
+- [ ] **Energy ledger and floors** on the Network page's Power section (UI spec §3.8;
+      app-model §13.2): the arbiter publishes no ledger yet (ADR-0040 §4.4; P4 / firmware).
 - [ ] **P4 requests:** `act/<id>`, wake requests, lab requests, outcomes in the snapshot,
       the `/command` codes (`gate_refused`, `no_gate`, `node_asleep`, `expired`,
       `state_changed`); until then module actions on a node source answer 503.

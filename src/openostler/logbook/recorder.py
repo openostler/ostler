@@ -40,7 +40,8 @@ live value; ``status: asleep`` ends it at once (``end_reason: node_asleep``); st
 are never written; ``vss`` readings add ``<path>`` and ``<path>@<device>`` columns; ``Utc``
 follows the node's synced clock. ``tap_message()`` (called from the MQTT thread) writes
 the raw tap beside the CSV (``logbook/tap.py``). Their ``meta.json`` adds ``source:
-"node"``, ``devices``, ``pack``, ``tap`` and ``end_reason``.
+"node"``, ``devices``, ``device_info`` (each device's firmware and manifest ``etag``, P3;
+changes are ``node_manifest`` events), ``pack``, ``tap`` and ``end_reason``.
 """
 from __future__ import annotations
 
@@ -332,6 +333,7 @@ class _Session:
         self.node = False                                  # recorded from a node source
         self.tap: "TapRecorder | None" = None
         self.devices: "set[str]" = set()
+        self.device_info: "dict[str, dict]" = {}         # NodeSource P3: {device: {fw, etag}}
         self.pack: "dict | None" = None
         self.end_reason: "str | None" = None
         self.clock_synced: "bool | None" = None
@@ -777,6 +779,19 @@ class SessionRecorder:
         return [*ch.TIME_CHANNELS, *ch.GPS_CHANNELS, *ch.GPS_ACCEL_CHANNELS, *s.signals,
                 *s.extra, *ch.TEXT_CHANNELS]
 
+    def _sync_device_info(self, s: _Session, m: float, snap: dict) -> None:
+        """Each device's firmware and manifest ``etag`` (NodeSource spec §7, P3; UI spec
+        §4.1: replay renders what was recorded). The latest goes to ``meta.json``
+        ``device_info``; every first sight and change is a ``node_manifest`` event."""
+        for dev, info in sorted((snap.get("device_info") or {}).items()):
+            if not isinstance(dev, str) or not isinstance(info, dict):
+                continue
+            cur = {"fw": info.get("fw") if isinstance(info.get("fw"), str) else None,
+                   "etag": info.get("etag") if isinstance(info.get("etag"), str) else None}
+            if s.device_info.get(dev) != cur:
+                s.device_info[dev] = cur
+                self._emit(s, m, "node_manifest", {"device": dev, **cur})
+
     def _emit(self, s: _Session, m: float, etype: str, fields: dict) -> "dict | None":
         if s.efh is None:
             return None
@@ -893,6 +908,7 @@ class SessionRecorder:
             if s.node:  # a stale value is a last known one, never a live row (spec §7)
                 sigs = {k: v for k, v in sigs.items() if _node.is_live(v)}
                 s.devices.update(d for d in snap.get("devices") or [] if isinstance(d, str))
+                self._sync_device_info(s, m, snap)
             for name, sv in sigs.items():
                 if not isinstance(name, str) or _IDENTITY.search(name):
                     continue
@@ -1092,6 +1108,7 @@ class SessionRecorder:
         if s.node:  # NodeSource spec §7 (ADR-0010 amendment)
             devices = set(s.devices) | set(s.tap.devices() if s.tap is not None else ())
             meta["devices"] = sorted(devices)
+            meta["device_info"] = {d: dict(s.device_info[d]) for d in sorted(s.device_info)}
             meta["pack"] = s.pack
             meta["tap"] = s.tap.entries() if s.tap is not None else []
             meta["end_reason"] = s.end_reason

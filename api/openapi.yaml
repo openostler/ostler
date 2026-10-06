@@ -295,6 +295,32 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/Pack"}
+  /cluster:
+    get:
+      tags: [metadata]
+      operationId: getCluster
+      summary: The cluster view for the Network page (NodeSource spec §11, P3).
+      description: >
+        Built from what the devices under the vehicle id publish (retained `manifest`,
+        `status`, `power` and `role/<role>[/<scope>]` claims, ADR-0037 §3), never
+        authoritative: one row per device seen (kind, variant, model, board, firmware and
+        manifest `etag`, "reached via" from the manifest's `links`, status, the whole
+        ADR-0040 power record, last seen, its role claims) and one row per single-holder
+        role (holder, term, since, candidates in order, the last change of holder the
+        Brain saw live). A claim from a device that is offline or asleep, not declared by its
+        manifest, not eligible or not checkable is shown void and flagged; two gate claims
+        on one bus leave it with no holder and an alert. `stale` while the broker is not
+        connected (the page is then read-only with its age). With a cable source the lists
+        are empty and `note` says why. Read-only: nothing here acts on a device.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      responses:
+        "200":
+          description: The cluster view.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Cluster"}
+        "403": {$ref: "#/components/responses/Forbidden"}
   /version:
     get:
       tags: [metadata]
@@ -1626,6 +1652,10 @@ components:
           description: "A node source: every `Vehicle.*` path the nodes publish, with each source and the selected one (NodeSource spec §6.5)."
           additionalProperties: {$ref: "#/components/schemas/VssReading"}
         devices: {type: array, items: {type: string}, description: "A node source: every device seen under the vehicle id."}
+        device_info:
+          type: object
+          description: "A node source: each device's firmware version and manifest `etag`, from its retained capability manifest (P3); devices with no manifest are absent."
+          additionalProperties: {$ref: "#/components/schemas/DeviceInfo"}
         faults_note: {type: string, description: "Why `faults` is empty when it is not read (a node source: `not read by the node yet`)."}
         source: {type: string}
         module: {type: string, description: A canonical module id (a /pack module id).}
@@ -1696,12 +1726,14 @@ components:
       required: [device, status, power, last_seen_utc, broker]
       properties:
         device: {type: [string, "null"], description: "The device id in the node's topics; null before any is seen."}
-        status: {type: [string, "null"], description: "online | offline (its will) | null (never seen)"}
+        status: {type: [string, "null"], description: "online | offline (its will) | asleep (a clean sleep, ADR-0037 Amendment 8) | null (never seen)"}
         power:
           oneOf:
             - {type: "null"}
             - {$ref: "#/components/schemas/NodePower"}
         boot: {type: [integer, "null"], description: "The node's boot counter (from its VSS payloads)."}
+        fw: {type: [string, "null"], description: "The node's firmware version, from its manifest (P3); null until one is published."}
+        etag: {type: [string, "null"], description: "The node's capability-manifest etag (P3); null until one is published."}
         last_seen_utc:
           description: When the Brain last received a live message from the device; null when it has only stored ones.
           oneOf:
@@ -1729,6 +1761,240 @@ components:
         session: {type: [string, "null"], description: "The tap session (a ULID) of the latest batch; null before one."}
         state: {type: string, enum: [connecting, waiting, receiving], description: "connecting: the tap connection is not up; waiting: subscribed, no batch in the last 5 s; receiving."}
         batches: {type: integer, minimum: 0}
+      additionalProperties: true
+    DeviceInfo:
+      type: object
+      description: A device's firmware version and capability-manifest etag (NodeSource spec §7, P3).
+      required: [fw, etag]
+      properties:
+        fw: {type: [string, "null"]}
+        etag: {type: [string, "null"], description: "The manifest's own etag (the SHA-256 of its canonical JSON, set by the device); null when it publishes none."}
+      additionalProperties: true
+    NodeManifest:
+      type: object
+      description: >
+        A device's capability manifest as published, retained, on
+        `ostler/v1/<vid>/<device>/manifest` (UI spec §5.1 device entry, §3.8; app-model spec
+        §13.1; `ostler-firmware` `docs/specs/sensor-detection.md` §7). Owned by the
+        module-bus message spec once it lands; the fields the cluster view reads are listed.
+      properties:
+        schema: {type: integer}
+        id: {type: string}
+        kind: {type: string, description: "node | brain | module (a guardian and a sensor node are `node` with that variant)"}
+        variant: {type: string, description: "diag-port | guardian | sensor | …"}
+        model: {type: string}
+        board: {type: string, description: The compiled-in board profile.}
+        fw: {type: string}
+        etag: {type: string}
+        priority: {type: number, description: "The owner's priority from pairing (higher first, ADR-0037 §3)."}
+        memory:
+          type: object
+          properties:
+            psram_kb: {type: number}
+          additionalProperties: true
+        roles:
+          type: array
+          description: "Roles the device may hold (ADR-0037 §2, §3): `{role, scope?, max_clients?, priority?}`."
+          items:
+            type: object
+            required: [role]
+            properties:
+              role: {type: string, enum: [pbroker, time, plca, uplink]}
+              scope: {type: string}
+              max_clients: {type: integer, minimum: 1}
+              priority: {type: number}
+            additionalProperties: true
+        transmit:
+          type: array
+          description: The car buses whose transmit gate the device holds by its wiring.
+          items:
+            type: object
+            required: [bus_id]
+            properties:
+              bus_id: {type: string}
+            additionalProperties: true
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: string}
+              kind: {type: string}
+              origin: {type: string, enum: [board, detected, harness, config]}
+              status: {type: string, enum: [ok, absent, fault, no_signal, refused]}
+            additionalProperties: true
+        links: {type: array, items: {type: object, additionalProperties: true}, description: "How the device is reached (USB, T1S segment, Ethernet, Wi-Fi, BLE)."}
+        power:
+          type: object
+          properties:
+            class: {type: string, enum: [always, wakeable, check_in, none]}
+            wake_paths: {type: array, items: {type: string}}
+            parked_ma: {type: number}
+          additionalProperties: true
+        actions:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: string}
+              category: {type: string}
+              tier: {type: integer}
+              runs_on: {type: string}
+              needs_brain: {type: boolean}
+              queueable: {type: boolean}
+              expires_max_s: {type: number}
+            additionalProperties: true
+      additionalProperties: true
+    RoleClaim:
+      type: object
+      description: >
+        A role claim as published, retained, on `ostler/v1/<vid>/<device>/role/<role>[/<scope>]`
+        (ADR-0037 §3); an empty payload releases it.
+      required: [role, term]
+      properties:
+        role: {type: string, enum: [gate, pbroker, time, plca, uplink]}
+        scope: {type: [string, "null"], description: "The bus id for `gate`, the T1S segment for `plca`."}
+        term: {type: integer, minimum: 0, description: "Incremented by every takeover (ADR-0037 §5)."}
+        priority: {type: [number, "null"]}
+        since: {type: [string, "null"], description: RFC 3339 UTC when the device took the role.}
+        reason: {type: [string, "null"]}
+      additionalProperties: true
+    ClusterClaim:
+      type: object
+      description: "One role claim in the cluster view, with why it is void (`flags`: offline, asleep, no_manifest, not_declared, not_eligible, mismatch) or loses (superseded, conflict)."
+      required: [term, void, flags]
+      properties:
+        role: {type: string}
+        scope: {type: [string, "null"]}
+        device: {type: string}
+        term: {type: integer}
+        priority: {type: [number, "null"]}
+        since: {type: [string, "null"]}
+        reason: {type: [string, "null"]}
+        void: {type: boolean}
+        flags:
+          type: array
+          items: {type: string, enum: [offline, asleep, no_manifest, not_declared, not_eligible, mismatch, superseded, conflict]}
+      additionalProperties: true
+    ClusterDevice:
+      type: object
+      description: >
+        One device row of the Network page; the same shape as a device page's peer view
+        (app-model spec §12.2, §13.2).
+      required: [id, status, power, last_seen_utc, claims]
+      properties:
+        id: {type: string}
+        kind: {type: [string, "null"]}
+        variant: {type: [string, "null"]}
+        class: {type: [string, "null"], enum: [brain, node, guardian, module, null], description: "How the role rules see it (null without a manifest)."}
+        model: {type: [string, "null"]}
+        board: {type: [string, "null"]}
+        fw: {type: [string, "null"]}
+        etag: {type: [string, "null"]}
+        manifest_utc:
+          description: When the Brain received the manifest; null without one.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        links: {type: array, items: {type: object, additionalProperties: true}, description: "Reached via (the manifest's `links`)."}
+        status: {type: [string, "null"], description: "online | offline | asleep | null (not seen)"}
+        power:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodePower"}
+        last_seen_utc:
+          description: When the Brain last received a live message from the device; null when it has only stored ones.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        since: {type: [string, "null"], description: "`power.since`: when its power state began."}
+        roles_declared: {type: array, items: {type: object, additionalProperties: true}}
+        transmit: {type: array, items: {type: object, additionalProperties: true}}
+        memory: {type: [object, "null"], additionalProperties: true}
+        items: {type: array, items: {type: object, additionalProperties: true}}
+        claims: {type: array, items: {$ref: "#/components/schemas/ClusterClaim"}}
+      additionalProperties: true
+    ClusterRole:
+      type: object
+      description: One single-holder role and scope (ADR-0037 §2); `no_holder` reads "No holder" (or "No gate for this bus").
+      required: [role, scope, holder, no_holder, conflict, candidates, claims, last_handover]
+      properties:
+        role: {type: string, enum: [gate, pbroker, time, plca, uplink]}
+        scope: {type: [string, "null"]}
+        title: {type: string}
+        holder: {type: [string, "null"]}
+        term: {type: [integer, "null"]}
+        since: {type: [string, "null"]}
+        reason: {type: [string, "null"]}
+        conflict: {type: boolean, description: "Two live gate claims on one bus: both refuse to transmit (ADR-0037 §5)."}
+        no_holder: {type: boolean}
+        hands_over: {type: boolean, description: "false for the transmit gate (tied to the wiring)."}
+        candidates:
+          type: array
+          description: Devices whose manifest lists the role and that are eligible, in the role's order.
+          items:
+            type: object
+            required: [device]
+            properties:
+              device: {type: string}
+              class: {type: [string, "null"]}
+              status: {type: [string, "null"]}
+              power_state: {type: [string, "null"]}
+            additionalProperties: true
+        claims: {type: array, items: {$ref: "#/components/schemas/ClusterClaim"}}
+        last_handover:
+          description: "The last change of holder caused by a live message the Brain received (a claim, a release, the holder going offline or asleep; for a gate it is never a handover, only the bus losing or regaining its gate); never inferred from the stored copies a subscribe delivers. Null when none was seen."
+          oneOf:
+            - {type: "null"}
+            - type: object
+              required: [from, to, at_utc]
+              properties:
+                from: {type: [string, "null"]}
+                to: {type: [string, "null"]}
+                term: {type: [integer, "null"]}
+                at_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+                reason: {type: [string, "null"]}
+              additionalProperties: true
+      additionalProperties: true
+    Cluster:
+      type: object
+      description: "`GET /cluster`: the cluster view (NodeSource spec §11; app-model `cluster.read`)."
+      required: [vid, source_kind, built_utc, stale, devices, roles, alerts]
+      properties:
+        vid: {type: [string, "null"]}
+        source_kind: {type: string}
+        built_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+        as_of_utc:
+          description: When the Brain last received any message for the view; null before one.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        stale: {type: boolean, description: "The broker is not connected: the view is last known, read-only."}
+        broker:
+          oneOf:
+            - {type: "null"}
+            - type: object
+              required: [connected, host]
+              properties:
+                connected: {type: boolean}
+                host: {type: string}
+              additionalProperties: true
+        devices: {type: array, items: {$ref: "#/components/schemas/ClusterDevice"}}
+        roles: {type: array, items: {$ref: "#/components/schemas/ClusterRole"}}
+        alerts:
+          type: array
+          items:
+            type: object
+            required: [code, message]
+            properties:
+              code: {type: string, enum: [gate_conflict, void_claim]}
+              role: {type: string}
+              scope: {type: [string, "null"]}
+              devices: {type: array, items: {type: string}}
+              flags: {type: array, items: {type: string}}
+              message: {type: string}
+            additionalProperties: true
+        note: {type: string, description: Why the lists are empty (no node source).}
       additionalProperties: true
     VssReading:
       type: object
@@ -2352,6 +2618,10 @@ components:
         recording: {type: boolean}
         source: {type: string, description: "mock | live | node | demo"}
         devices: {type: array, items: {type: string}, description: "A node session: the device ids seen."}
+        device_info:
+          type: object
+          description: "A node session: each device's firmware and manifest `etag` (the latest seen; a change is a `node_manifest` event)."
+          additionalProperties: {$ref: "#/components/schemas/DeviceInfo"}
         pack:
           description: "A node session: the vehicle pack that decoded it on the Brain."
           oneOf:

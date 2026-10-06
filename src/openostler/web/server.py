@@ -590,6 +590,13 @@ class _Handler(BaseHTTPRequestHandler):
             # Public (also in public mode): the vehicle pack's manifest (modules, aliases,
             # UI layout). The UI loads it once at boot.
             self._json(active_pack().manifest())
+        elif path == "/cluster":
+            # The Network page's data (NodeSource spec §11, P3): built from what the devices
+            # publish; read-only. Refused on the public server (no device topology there).
+            if self.server._public:
+                self._error(403, _PUBLIC_REFUSAL, "public_mode")
+                return
+            self._json(self.server.cluster())
         elif path == "/version":
             # Public: what is running (platform + pack versions and commits) for Settings.
             from ..version import build_info
@@ -1354,6 +1361,25 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
                 rec.feed_accel(samples, "imu")
         except Exception as exc:  # noqa: BLE001
             self._conn_log(f"imu: feed failed ({type(exc).__name__}: {exc})")
+
+    def cluster(self) -> dict:
+        """``GET /cluster`` (NodeSource spec §11): a node source's cluster view; with a
+        cable source there is no cluster to read, so the lists are empty and ``note``
+        says why."""
+        feed = getattr(self.source, "feed", None)
+        if feed is not None and hasattr(feed, "cluster"):
+            try:
+                return feed.cluster()
+            except Exception as exc:  # noqa: BLE001 — the page shows an empty, stale view
+                self._conn_log(f"node: cluster view {type(exc).__name__}: {exc}")
+        return {"vid": getattr(feed, "vid", None),
+                "source_kind": getattr(self.source, "source_kind", "serial"),
+                "built_utc": rfc3339_utc(time.time()), "as_of_utc": None,
+                "stale": feed is not None, "broker": None, "devices": [], "roles": [],
+                "alerts": [],
+                "note": ("the cluster view failed; see the connection log" if feed is not None
+                         else "no node source: the cluster is read from the node's MQTT "
+                              "messages (--source node)")}
 
     def _sync_tap(self, status: "dict | None"):
         """A node source's raw tap follows the recorder (NodeSource spec §7, owner answer

@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """NodeSource: the Brain reads the car through the node's MQTT messages (NodeSource spec,
-phases P1 read-only ingest and P2 recording and raw tap).
+phases P1 read-only ingest, P2 recording and raw tap, P3 Network page data).
 
 - :class:`NodeFeed` owns one MQTT 5 connection (``openostler.mqtt``) to the Brain's broker
-  (or, in the lab, the node's), subscribes read-only to ``status``, ``power`` and ``vss/+``
-  of one ``vid`` (spec §4: No Local on, Retain As Published off, Retain Handling 0, clean
-  start with session expiry 0) and fills a :class:`~openostler.node.DeviceTable` from the
-  MQTT thread. It reconnects with jittered back-off (1 s doubling to 30 s).
+  (or, in the lab, the node's), subscribes read-only to ``status``, ``power``, ``vss/+``,
+  ``manifest`` and ``role/#`` of one ``vid`` (spec §4: No Local on, Retain As Published
+  off, Retain Handling 0, clean start with session expiry 0) and fills a
+  :class:`~openostler.node.DeviceTable` from the MQTT thread. It reconnects with jittered
+  back-off (1 s doubling to 30 s). :meth:`NodeFeed.cluster` is ``GET /cluster`` (spec §11).
 - :class:`NodeSource` is a :class:`DataSource` per pack module over one shared feed:
   ``poll()`` builds the snapshot from the table under its lock and never blocks.
   Selecting a module only filters the view; the node keeps its own rotation.
@@ -19,6 +20,9 @@ phases P1 read-only ingest and P2 recording and raw tap).
   ``tap/+/meta`` and ``tap/+/data``, and hands every message to the recorder's sink;
   :meth:`NodeFeed.stop_tap` unsubscribes and closes it when the session ends (owner
   answer 9: no rolling buffer).
+- **The serial-source rule (P3, owner answer 7).** :func:`check_serial_beside_node` reads
+  the vehicle's retained manifests and role claims once (:func:`probe_cluster`); a K-line
+  cable source refuses to start when a node holds, or is wired to, the K-line gate.
 
 The Brain never touches the car (ADR-0032): nothing here opens a serial port, imports a
 transport or publishes a request (requests are P4). It is read-only: it publishes nothing.
@@ -33,7 +37,8 @@ from typing import Callable, Optional
 
 from ..mqtt import MqttClient, StdlibMqttClient, SubOptions
 from ..node import (FAULTS_NOTE, DeviceTable, check_vid, parse_tap_rest, parse_topic,
-                    subscriptions, tap_subscriptions)
+                    serial_refusal, subscriptions, tap_subscriptions)
+from ..node.table import utc
 from .sources import DataSource
 
 KEEP_ALIVE_S = 10
@@ -122,6 +127,9 @@ class NodeFeed:
         self.tap_batches = 0
         self.refused: "list[str]" = []
         self.attempted = False  # a connection was tried (so "down" means down, not "starting")
+        self.subscribed_at: "float | None" = None  # the read set's SUBACK (this connection)
+        self.last_msg: "float | None" = None
+        self._last_msg_wall: "float | None" = None
         self._lock = threading.Lock()
         client.on_message = self._on_message
         client.on_connect = self._on_connect
@@ -158,16 +166,21 @@ class NodeFeed:
         refused = [s.topic_filter for s, c in zip(subs, codes) if c >= 0x80]
         with self._lock:
             self.refused = refused
+            self.subscribed_at = self._clock()
         for f in refused:
             self.log(f"the broker refused the subscription {f} (check the ACL, spec §5)")
         self.log(f"connected to {self.host}:{self.port}, subscribed to vehicle {self.vid}")
 
     def _on_disconnect(self, reason: str) -> None:
         self.attempted = True
+        with self._lock:
+            self.subscribed_at = None
         self.log(f"broker connection lost: {reason}")
 
     def _on_message(self, pkt) -> None:
-        self.table.ingest(pkt.topic, pkt.payload, pkt.retain, self._clock(), self._wall())
+        now, wall = self._clock(), self._wall()
+        self.last_msg, self._last_msg_wall = now, wall
+        self.table.ingest(pkt.topic, pkt.payload, pkt.retain, now, wall)
 
     @property
     def connected(self) -> bool:
@@ -183,6 +196,20 @@ class NodeFeed:
 
     def view(self, module: "str | None") -> dict:
         return self.table.view(module, self._clock(), self._wall())
+
+    def device_info(self) -> "dict[str, dict]":
+        return self.table.device_info()
+
+    def cluster(self) -> dict:
+        """``GET /cluster`` (spec §11): the devices, their power and last seen, the role
+        holders and void claims, as built from what they publish. ``stale`` while the
+        broker is not connected (the view is then read-only and shows its age, UI spec
+        §3.7); ``as_of_utc`` is the last message's arrival."""
+        view = self.table.cluster()
+        broker = self.broker()
+        return {"vid": self.vid, "source_kind": "node", "built_utc": utc(self._wall()),
+                "as_of_utc": utc(self._last_msg_wall) if self._last_msg_wall else None,
+                "stale": not broker["connected"], "broker": broker, **view}
 
     # ---- the raw tap (P2) ------------------------------------------------------------ #
     def tap_subscription_options(self) -> "list[SubOptions]":
@@ -323,8 +350,9 @@ class NodeSource(DataSource):
         snap = {"source": self.name, "source_kind": "node", "signals": view["signals"],
                 "vss": view["vss"], "faults": [], "faults_note": FAULTS_NOTE,
                 "node": node or {"device": None, "status": None, "power": None, "boot": None,
-                                 "last_seen_utc": None, "broker": broker, "tap": tap},
-                "devices": view["devices"]}
+                                 "last_seen_utc": None, "fw": None, "etag": None,
+                                 "broker": broker, "tap": tap},
+                "devices": view["devices"], "device_info": self.feed.device_info()}
         state = ((dev or {}).get("power") or {}).get("state")
         if not broker["connected"]:
             snap["status"] = "broker-down" if self.feed.is_down() else "connecting"
@@ -336,8 +364,8 @@ class NodeSource(DataSource):
         elif dev["status"] == "offline":
             snap["status"] = "error"
             snap["error"] = "Node offline"
-        elif state == "asleep":
-            snap["status"] = "asleep"
+        elif dev["status"] == "asleep" or state == "asleep":
+            snap["status"] = "asleep"  # a clean sleep (ADR-0037 Amendment 8, ADR-0040 §1)
         elif state == "waking":
             snap["status"] = "connecting"
             snap["connect_phase"] = "waking"
@@ -359,6 +387,45 @@ class NodeSource(DataSource):
 def node_sources(feed: NodeFeed, modules: "list[str]") -> "dict[str, NodeSource]":
     """One :class:`NodeSource` per pack module, all over ``feed``."""
     return {m: NodeSource(feed, m) for m in modules}
+
+
+def probe_cluster(feed: NodeFeed, *, timeout: float = 5.0, quiet: float = 0.3,
+                  settle_max: float = 2.0, sleep: Callable[[float], None] = time.sleep,
+                  clock: Callable[[], float] = time.monotonic) -> dict:
+    """Connect ``feed`` once, wait for its read set's SUBACK and for the retained messages
+    to stop arriving (``quiet`` s without one, at most ``settle_max`` s), and return its
+    cluster view; the connection is closed again. Raises ConnectionError when the broker
+    does not answer within ``timeout``."""
+    feed.start()
+    try:
+        end = clock() + timeout
+        while feed.subscribed_at is None:
+            if clock() > end:
+                err = getattr(feed.client, "last_error", None)
+                raise ConnectionError(f"no answer from the broker {feed.host}:{feed.port}"
+                                      + (f" ({err})" if err else ""))
+            sleep(0.02)
+        start = clock()
+        while clock() - start < settle_max:
+            last = max(feed.subscribed_at or 0.0, feed.last_msg or 0.0)
+            if clock() - last >= quiet:
+                break
+            sleep(0.02)
+        return feed.cluster()
+    finally:
+        feed.stop()
+
+
+def check_serial_beside_node(url: str, vid: str, **kw) -> "str | None":
+    """Owner answer 7: the reason a serial (K-line cable) source must not start on vehicle
+    ``vid``, or None. Reads the vehicle's retained manifests and role claims once over the
+    broker at ``url`` (the :func:`build_feed` options; client id ``<id>-check`` so a
+    running NodeSource is never taken over). Raises ValueError or OSError
+    (ConnectionError) when it cannot check."""
+    probe = kw.pop("probe", probe_cluster)
+    cid = kw.pop("client_id", None) or f"{socket.gethostname().split('.')[0]}-nodesource"
+    feed = build_feed(url, vid, client_id=f"{cid}-check", **kw)
+    return serial_refusal(probe(feed))
 
 
 def build_feed(url: str, vid: str, *, ca: "str | None" = None, cert: "str | None" = None,
@@ -386,5 +453,5 @@ def build_feed(url: str, vid: str, *, ca: "str | None" = None, cert: "str | None
                     log=log)
 
 
-__all__ = ["NodeFeed", "NodeSource", "build_feed", "node_sources", "parse_mqtt_url",
-           "store_lookup"]
+__all__ = ["NodeFeed", "NodeSource", "build_feed", "check_serial_beside_node", "node_sources",
+           "parse_mqtt_url", "probe_cluster", "store_lookup"]

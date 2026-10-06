@@ -20,7 +20,8 @@ Playwright (run from ui/) and UI development without a car:
 the connection-sheet flows. ``--node`` serves the car through NodeSource instead: an
 in-process fake MQTT broker and a simulated node replaying the firmware's fixtures
 (``tests/fixtures/node/``), read-only; it records sessions and the raw tap like a Brain
-(NodeSource spec P2). Never deploy this: it fabricates every value it serves.
+(NodeSource spec P2), and ``GET /cluster`` shows a hand-written cluster around it (P3).
+Never deploy this: it fabricates every value it serves.
 """
 from __future__ import annotations
 
@@ -81,10 +82,15 @@ def node_modules(pack) -> dict:
     from openostler.metrics import is_known
     from openostler.web.node_source import NodeFeed, node_sources, store_lookup
     from tests.fake_broker import FakeBroker
-    from tests.fake_node import VID, FakeNode
+    from tests.fake_node import VID, FakeNode, cluster_messages
 
     broker = FakeBroker().start()
     FakeNode(broker.host, broker.port).connect().start_loop()
+    # The rest of a cluster (P3, GET /cluster): manifests and role claims, retained. The
+    # node's own status and power come from the simulated node.
+    for m in cluster_messages():
+        if not m["topic"].endswith(("/node/status", "/node/power")):
+            broker.inject(m["topic"], m["payload"], m["qos"], m["retain"])
     feed = NodeFeed(VID, broker.host, broker.port, client_id="e2e-nodesource",
                     pack_id=pack.id, lookup=store_lookup(), canonical=pack.canonical,
                     is_known=is_known)
