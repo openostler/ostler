@@ -147,6 +147,10 @@ Order beyond step 3 is indicative, not committed. Each new pack gets its own spe
   SIM; a 10 Hz u-blox for logging; the KKL cable for K-line; WiCAN Pro as a later OBD front
   end; Waveshare and Autosport Labs ESP32 boards for add-ons. Target parked draw from the
   car battery: about 1–4 mA (unverified).
+- **Module bus** ([ADR-0026](decisions/adr-0026-module-bus-10base-t1s.md)): IP for the computer
+  tier (Pi, head unit, phones, cameras); **10BASE-T1S** single-pair Ethernet for our own
+  modules once we build hardware, with CAN/Wi-Fi on dev kits and CAN kept for µA-wake nodes;
+  the bench is planned in [t1s_bench_plan.md](references/t1s_bench_plan.md).
 - **Later — our own boards** for hardware sales, once the software settles: one board
   combining a CM5 (or NXP i.MX93), an ESP32-S3, a SIM7670 modem, CAN and K-line
   transceivers, an ignition/opto front end and a cell charger. Firmware and drivers carry
