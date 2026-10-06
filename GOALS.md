@@ -2,11 +2,11 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.2
+version: 2.3
 updated: 2026-10-06
 depends_on: [SCOPE.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals: the tagline ("an open, smart-home-like ecosystem for your car; it reads your car's diagnostics and live data, then grows with add-ons"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Hub, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Hub, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
+  The short, canonical statement of Ostler's goals: the tagline ("an open, smart-home-like ecosystem for your car; it reads your car's diagnostics and live data, then grows with add-ons"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
 ---
 
 # Goals
@@ -31,9 +31,9 @@ systems into a connected IoT platform, with diagnostics and telemetry at the cor
 "brain" stay the internal terms). **Ostler Diagnostics** is the node at the OBD port
 (optional 4G): tracking, alarm basics, live data and faults through the phone app or Ostler
 Cloud; it works fully offline with a phone and is never cloud-only. **Ostler Diagnostics +
-Hub** adds **Ostler Hub**, the brain (a Linux computer): the full local app, add-on
+Brain** adds **Ostler Brain**, the brain (a Linux computer): the full local app, add-on
 routing, cameras, big logbooks, replay, analysis and the decode lab; upgrading is plugging
-in a hub, and the car side is unchanged. **Ostler Guardian** is the hidden node variant. Add-on
+in a Brain, and the car side is unchanged. **Ostler Guardian** is the hidden node variant. Add-on
 modules join either tier the way devices join a smart home: cameras, sensor nodes, I/O
 and relay modules, displays. Every device speaks IP (10BASE-T1S for modules, faster
 Ethernet for cameras) and the same VSS-named, MQTT-style messages, so modules are
@@ -144,7 +144,7 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
 ## 4. Product line and add-ons
 
 Ostler is sold and built as a **node** (Ostler Diagnostics) or **node + brain** (Ostler
-Diagnostics + Hub), plus **add-on modules** on either, like a smart-home hub and its devices. Detail:
+Diagnostics + Brain), plus **add-on modules** on either, like a smart-home hub and its devices. Detail:
 [vision §4](references/vision.md#4-hardware-path), the
 [add-ons catalogue](references/research/addons_catalogue.md) and
 [ADR-0032](decisions/adr-0032-one-node-optional-brain.md) and
@@ -153,7 +153,7 @@ Diagnostics + Hub), plus **add-on modules** on either, like a smart-home hub and
 | | What | Tag |
 |---|---|---|
 | **Ostler Diagnostics** | The ESP32 diagnostic **node** at the OBD port: K-line/CAN I/O, decoding to VSS, the transmit gate, GPS, optional 4G (a fitted module or a USB dongle; each device may have its own IoT SIM), a parked MQTT broker, basic alarm, its own web page; the phone app (PWA in a native wrapper) over BLE or the node's Wi-Fi AP, or Ostler Cloud | core |
-| **Ostler Hub** | The **brain** (Raspberry Pi now, our own board later) that the node powers and wakes (linked by USB or T1S): the full local app, add-on routing, cameras, big logbooks, replay, analysis, the decode lab | core |
+| **Ostler Brain** | The **brain** (Raspberry Pi now, our own board later) that the node powers and wakes (linked by USB or T1S): the full local app, add-on routing, cameras, big logbooks, replay, analysis, the decode lab | core |
 | **Ostler Guardian** | The same node firmware on security hardware: backup battery, tamper sensing, IMU, better antennas, GPS, optional 4G. Fitted hidden; **no outputs** | core variant |
 | **Sensor nodes** | Fast tacho, EGT, boost/oil pressure and temperature, wideband AFR, extra accelerometers; read-only, isolated taps; readings are source-tagged VSS signals | add-on |
 | **Add-on modules** | Cameras, buttons, gauges, displays and head unit, a future **I/O / relay module** (alarm outputs and switching, an ADR per car-switching function); then LoRa/Meshtastic, Wi-Fi HaLow, mesh, TPMS, GNSS/RTK, power, trailer and anything that implements the module contract | add-on |
@@ -204,6 +204,7 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-06: v2.3, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
 - 2026-10-06: v2.2, product family renamed (ADR-0039): Ostler Diagnostics (was Ostler Lite),
   Ostler Hub (the brain; was "Ostler (full)") and Ostler Guardian; the §4 table and the
   mission paragraph follow.

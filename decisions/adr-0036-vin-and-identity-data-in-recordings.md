@@ -2,7 +2,7 @@
 title: "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0032-one-node-optional-brain.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0036 — VIN and identity data in recordings
 
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** the Diagnostics node scrubs identity data in its raw tap too, before it leaves the node. See [Amendments (product family)](#amendments-2026-10-06-product-family).
+> **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answer, 2026-10-06). **Amends**
@@ -100,3 +101,9 @@ unchanged; where this entry differs, it wins.
    option on, unscrubbed bytes go only to the paired hub over the in-car link, and every
    export still scrubs (§3). Bytes the node cannot frame are marked `unframed` and dropped
    from exports (ADR-0039 §3).
+
+## Amendments (2026-10-06, Brain rename)
+
+- **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
+  "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
+  unchanged.

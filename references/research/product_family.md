@@ -1,15 +1,15 @@
 ---
-title: "Product family — Ostler Diagnostics, Guardian and Hub; reference boards, node link, raw tap, uplinks, setup and wake"
+title: "Product family — Ostler Diagnostics, Guardian and Brain; reference boards, node link, raw tap, uplinks, setup and wake"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/node_sensors.md, references/research/power_states.md, references/research/canbus_headunit.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Live research (2026-10-06) behind ADR-0039 (accepted 2026-10-06) for the owner's naming and setup direction. Family: Ostler Diagnostics (the OBD-port node, standalone with a phone or linked to a hub), Ostler Guardian (hidden node variant) and Ostler Hub (the brain); "node" stays the internal term. Reference boards: the MeatPi WiCAN Pro (ESP32-S3, $89, GPL-3 firmware, schematic published) reaches K-line only through an STN-compatible interpreter IC over a UART, so it fits CAN and generic OBD but not the Td5 gate or a byte-timed raw tap; a K-line Diagnostics board needs an L9637-class transceiver on an ESP32-S3 UART. Node-to-hub link: USB-NCM (ESP32-S3 full-speed device via esp_tinyusb; cdc_ncm in Raspberry Pi OS, Windows 10 1903+ inbox) near the hub, 10BASE-T1S elsewhere, same IP/MQTT either way; the S3 has one OTG port, so a USB-linked node cannot also host a 4G dongle. Raw tap: MCU-timestamped records batched over MQTT 5, scrubbed on the node, recorded on the hub, with lab send-requests through the node gate. Standalone uplink: the official 4G module by default; dongles by class (PPP/AT, ECM, RNDIS on ESP32-S3; Espressif's tested list) with a tested-dongle list. Setup mode: AP + BLE Improv, helper steps pair → uplink → pack → first scan; hub adoption. Hub-only wake: the hub's power board (ignition, RTC), no separate buddy. u-blox on the Diagnostics node.
+  Live research (2026-10-06) behind ADR-0039 (accepted 2026-10-06) for the owner's naming and setup direction. Family: Ostler Diagnostics (the OBD-port node, standalone with a phone or linked to a Brain), Ostler Guardian (hidden node variant) and Ostler Brain; "node" stays the internal term. Reference boards: the MeatPi WiCAN Pro (ESP32-S3, $89, GPL-3 firmware, schematic published) reaches K-line only through an STN-compatible interpreter IC over a UART, so it fits CAN and generic OBD but not the Td5 gate or a byte-timed raw tap; a K-line Diagnostics board needs an L9637-class transceiver on an ESP32-S3 UART. Node-to-Brain link: USB-NCM (ESP32-S3 full-speed device via esp_tinyusb; cdc_ncm in Raspberry Pi OS, Windows 10 1903+ inbox) near the Brain, 10BASE-T1S elsewhere, same IP/MQTT either way; the S3 has one OTG port, so a USB-linked node cannot also host a 4G dongle. Raw tap: MCU-timestamped records batched over MQTT 5, scrubbed on the node, recorded on the Brain, with lab send-requests through the node gate. Standalone uplink: the official 4G module by default; dongles by class (PPP/AT, ECM, RNDIS on ESP32-S3; Espressif's tested list) with a tested-dongle list. Setup mode: AP + BLE Improv, helper steps pair → uplink → pack → first scan; Brain adoption. Brain-only wake: the Brain's power board (ignition, RTC), no separate buddy. u-blox on the Diagnostics node.
 ---
 
-# Product family: Diagnostics, Guardian and Hub
+# Product family: Diagnostics, Guardian and Brain
 
 Research for the owner's direction of 2026-10-06 on naming and setup. Decision:
 [ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) (accepted
@@ -24,13 +24,13 @@ marks what is unverified or needs the bench. Sources are paraphrased.
 |---|---|---|---|
 | **Ostler Diagnostics** (was "Ostler Lite") | node, diag-port variant | ESP32-S3 (PSRAM) at the OBD port: K-line and CAN front ends, 12 V and ignition sense, a 10 Hz u-blox, optional 4G module or a USB 4G dongle | The car: bus I/O, decode to VSS, **the transmit gate**, the raw tap, timing; the parked broker; brain power and wake (ADR-0032 §2, §4) |
 | **Ostler Guardian** | node, guardian variant | Same firmware; hidden, backup cell, IMU, tamper, modem GNSS, 4G; **no outputs** | Tracking and alarm triggers; standby parked broker and time source (ADR-0037, proposed) |
-| **Ostler Hub** (was "Ostler" with a brain) | brain | Pi 5 class Linux box with a power board | Compute and network: the full app, logbook, replay, the Python decode lab, uplink manager, local CA; **never touches the car** |
+| **Ostler Brain** (was "Ostler Hub", and before that "Ostler" with a brain) | brain | Pi 5 class Linux box with a power board | Compute and network: the full app, logbook, replay, the Python decode lab, uplink manager, local CA; **never touches the car** |
 
 - **Standalone:** a Diagnostics node and a phone. The node records, serves its own page and
   the phone app (BLE or its AP), and brings its own uplink if any (§5).
-- **With a hub:** plug a Diagnostics node into a hub (USB-NCM or T1S, §3). The hub adds the
+- **With a Brain:** plug a Diagnostics node into a Brain (USB-NCM or T1S, §3). The Brain adds the
   full app, the lab and its uplink; nothing changes on the car side (ADR-0032 §1).
-- **Hub-only:** a hub with no Diagnostics node (cameras, logging, a third-party OBD adapter on
+- **Brain-only:** a Brain with no Diagnostics node (cameras, logging, a third-party OBD adapter on
   the lab path). It has no gate and no parked broker; it needs its own wake source (§8).
 - "Node" stays the term in code, topics, manifests and ADRs (`kind: node`, `variant:
   diag-port|guardian|sensor`); only public names change. The app-model `product` value
@@ -63,12 +63,12 @@ in `silent` mode), with our firmware on it; its interpreter may serve generic K-
 reads (Read only, Tier 0), never gated K-line writes. Reusing WiCAN code means GPL-3 rules
 under ADR-0025 (whole, in a marked module); writing our own board profile avoids that.
 
-## 3. The node-to-hub link
+## 3. The node-to-Brain link
 
 | Link | When | Physical | Strengths | Limits |
 |---|---|---|---|---|
-| **USB-NCM** (CDC-NCM; ECM fallback) | Hub within a USB cable of the port (under the dash, behind a seat) | One USB cable | No network setup: the hub sees a NIC; one cable carries data and can supply 5 V; Improv serial works on the same port before the network is up | Full speed only on the ESP32-S3 (12 Mbit/s wire, a few Mbit/s real, U); cable ≤ 5 m; not automotive-grade; uses the S3's **only** OTG port |
-| **10BASE-T1S** (ADR-0026) | Hub elsewhere in the car | One twisted pair, multidrop | Automotive, 25 m, other modules share the segment; PLCA | LAN8651 SPI MAC-PHY per node; T1S bench plan still to pass |
+| **USB-NCM** (CDC-NCM; ECM fallback) | Brain within a USB cable of the port (under the dash, behind a seat) | One USB cable | No network setup: the Brain sees a NIC; one cable carries data and can supply 5 V; Improv serial works on the same port before the network is up | Full speed only on the ESP32-S3 (12 Mbit/s wire, a few Mbit/s real, U); cable ≤ 5 m; not automotive-grade; uses the S3's **only** OTG port |
+| **10BASE-T1S** (ADR-0026) | Brain elsewhere in the car | One twisted pair, multidrop | Automotive, 25 m, other modules share the segment; PLCA | LAN8651 SPI MAC-PHY per node; T1S bench plan still to pass |
 | **Ethernet** (SPI W5500 on the S3, which has no EMAC) | Bench, prototypes | RJ45 | Cheap, known | Not automotive; four wires |
 | Wi-Fi | Fallback only | radio | no wiring | not for alarm-critical links (ADR-0026) |
 
@@ -80,16 +80,16 @@ under ADR-0025 (whole, in a marked module); writing our own board profile avoids
   defconfigs, rpi-6.12.y), and `usbnet` is built in; Windows 10 1903+ and 11 ship an inbox
   NCM host (Windows 10 may need the driver picked by hand); macOS (U).
 - **Addressing:** the USB link is its own routed subnet (ADR-0027 §3): IPv6 link-local plus
-  the vehicle ULA /64, IPv4 by DHCP from the hub; mDNS finds `_ostler-mod._tcp` on it.
+  the vehicle ULA /64, IPv4 by DHCP from the Brain; mDNS finds `_ostler-mod._tcp` on it.
 - **Same everywhere:** IP, MQTT 5, mTLS, the VSS topics and the raw-tap topics are identical
   on USB, T1S and Ethernet (ADR-0027 §1).
-- **Power:** the node is always powered from the car (OBD pin 16 or the harness). The hub's
-  VBUS may be ORed in as a second feed but never relied on: the node must wake the hub, and a
-  cut hub has no VBUS (ADR-0032 §4). Pi 5 ports supply 600 mA in total, 1.6 A with a 5 A
+- **Power:** the node is always powered from the car (OBD pin 16 or the harness). The Brain's
+  VBUS may be ORed in as a second feed but never relied on: the node must wake the Brain, and a
+  cut Brain has no VBUS (ADR-0032 §4). Pi 5 ports supply 600 mA in total, 1.6 A with a 5 A
   supply or `usb_max_current_enable=1`; a node (S3 Wi-Fi peaks about 350 mA, u-blox about
   30 mA, U) fits, a 4G dongle on the same feed does not.
 - **One OTG port:** a USB-linked node is a USB device and cannot host a dongle at the same
-  time; it uses the hub's uplink or its own 4G module (§5–§6). The ESP32-P4 has two OTG
+  time; it uses the Brain's uplink or its own 4G module (§5–§6). The ESP32-P4 has two OTG
   controllers but no radio (later option, U).
 
 **Recommendation:** USB-NCM for the bench and for hubs fitted near the port; T1S as the
@@ -99,8 +99,8 @@ product link otherwise; Ethernet for prototypes. Raw serial over the network sta
 ## 4. Raw tap
 
 The Diagnostics node gives two outputs: **decoded VSS** (as today) and a **raw frame stream**
-timestamped on the MCU, for sniffing and the decode lab. The hub records it and runs the
-Python lab; the hub **asks** the node to transmit, and never transmits itself.
+timestamped on the MCU, for sniffing and the decode lab. The Brain records it and runs the
+Python lab; the Brain **asks** the node to transmit, and never transmits itself.
 
 **Record** (byte layout in the firmware draft, `docs/specs/raw-tap.md`):
 
@@ -120,7 +120,7 @@ with the reason, never the payload of a refused write), `session` (start/stop, f
 `overflow` (dropped count), `time` (a pair `t_us` ↔ shared UTC, once a second), `link`.
 
 **Time:** the node's clock is disciplined by the u-blox PPS where present (ADR-0032
-amendment A3); `time` records let the hub map `t_us` to UTC linearly between marks; without
+amendment A3); `time` records let the Brain map `t_us` to UTC linearly between marks; without
 sync the session is `time: unsynced` and is merged by order only.
 
 **Rates:** K-line at 10 400 baud is under 1.1 kB/s of bytes, so per-byte records cost about
@@ -140,7 +140,7 @@ retained on `…/tap/<session>/meta`. It reuses the broker, mTLS, per-device ACL
 broker load). A separate TCP or WebSocket stream from the node is the fallback if the bench
 shows the broker cannot keep a saturated CAN bus for 10 minutes without loss.
 
-**Recording on the hub:** the recorder subscribes, checks `seq`, writes the session into the
+**Recording on the Brain:** the recorder subscribes, checks `seq`, writes the session into the
 logbook beside decoded values (ADR-0032 §9), and exports to **pcapng** (CAN as SocketCAN
 link type; K-line as a user link type with our record header) so Wireshark and candump-style
 tools read it (ADR-0017).
@@ -149,11 +149,11 @@ tools read it (ADR-0017).
 them, so it applies the pack's identity declarations (for example KWP `1A`, OBD `09 02`, UDS
 `22 F190`) **on the node**, replacing the reply data with the fixed placeholder and setting
 the `scrubbed` flag, unless the install-level option is on. With the option on, unscrubbed
-bytes go only to the paired hub over the in-car link and every export still scrubs. Bytes the
+bytes go only to the paired Brain over the in-car link and every export still scrubs. Bytes the
 node cannot frame (an unknown foreign tool) are marked `unframed`; an export with unframed
 segments drops them (decided, ADR-0039; the rest of the session still exports).
 
-**Send-requests:** the hub publishes a request on `…/<node>/lab/req` with a grant; the node's
+**Send-requests:** the Brain publishes a request on `…/<node>/lab/req` with a grant; the node's
 gate classifies the service (read services on the pack's allowlist run as Read, Tier 0, in
 service mode; anything else takes its tier and needs a matching grant; unknown services are
 refused), serializes it with its own polling, and answers on `…/lab/resp`. Sniffed write
@@ -172,23 +172,23 @@ modem family as the guardian, an IoT SIM): always on, no USB port used, known cu
 | ECM module or stick | `iot_usbh_ecm` | supported | Tested on S3: ML302, EC800E-CN, EC801E-CN, YM310, MC610-EU, Lierda NT26; ML307R and AIR720 SL fail on S2/S3 (endpoint size above 64 bytes at full speed); also CH397A, RTL8152B, NX7202D Ethernet adapters |
 | RNDIS module or stick | `iot_usbh_rndis` | supported | Same module list, plus ML307R and AIR720 SL; S3 with softAP sharing measured 5.8 Mbit/s up, 7.9 Mbit/s down; some need an AT command to auto-dial |
 | NCM sticks (some HiLink firmware) | none listed | (U) | Bench |
-| QMI/MBIM modem-mode sticks | none | hub only | ModemManager on the hub (ADR-0028 §3) |
+| QMI/MBIM modem-mode sticks | none | Brain only | ModemManager on the Brain (ADR-0028 §3) |
 
 - Consumer HiLink sticks (Huawei E3372h class) present RNDIS or ECM depending on firmware;
   none is on Espressif's list (U: bench). Several listed modules are China-band parts; for the
   UK and EU, MC610-EU is the listed candidate (U: bands).
 - Dongles draw bursts of 1–2 A at 5 V (U); the board needs a 5 V/2 A USB-A rail.
 - A **tested-dongle list** lives in the firmware repo (skeleton in the firmware draft):
-  model, firmware, class, VID:PID, bands, S3 status, hub status, AT setup, peak and parked
+  model, firmware, class, VID:PID, bands, S3 status, Brain status, AT setup, peak and parked
   current, throughput, tester and date.
 
-## 6. Uplink with a hub
+## 6. Uplink with a Brain
 
-The hub holds the **uplink manager** role (ADR-0037 §2, brain → node): it runs the owner's
+The Brain holds the **uplink manager** role (ADR-0037 §2, brain → node): it runs the owner's
 Auto or pinned order over its own sources and offers a routed default to the node. The
-node's own 4G module or Wi-Fi becomes one more source in the hub's list, and the node's
-fallback when the hub sleeps. A **USB-linked** node has no dongle (§3), so its uplink while
-the hub sleeps is Wi-Fi or its 4G module; a **T1S-linked** node may keep a dongle. A guardian
+node's own 4G module or Wi-Fi becomes one more source in the Brain's list, and the node's
+fallback when the Brain sleeps. A **USB-linked** node has no dongle (§3), so its uplink while
+the Brain sleeps is Wi-Fi or its 4G module; a **T1S-linked** node may keep a dongle. A guardian
 alongside keeps its SIM for the alarm path.
 
 ## 7. Setup mode and the setup helper
@@ -199,13 +199,13 @@ never a shared default) and **BLE with Improv**; Improv serial also runs on the 
 times out (proposed 15 min, re-entered only physically), offers no car actions and transmits
 nothing on any car bus.
 
-**Helper steps** (a core flow in the Network app, on the phone, the hub or the node's page):
+**Helper steps** (a core flow in the Network app, on the phone, the Brain or the node's page):
 
 1. **Pair and set the owner.** Improv's physical authorisation (button press) or the label
-   QR; the phone creates the owner's pairing key (standalone, ADR-0032 §12) or the hub's CA
-   issues the node certificate (with a hub, ADR-0027 §8). The first person is the Owner.
+   QR; the phone creates the owner's pairing key (standalone, ADR-0032 §12) or the Brain's CA
+   issues the node certificate (with a Brain, ADR-0027 §8). The first person is the Owner.
 2. **Uplink.** Improv scan and send Wi-Fi settings; or a detected dongle or the 4G module (APN,
-   metered flag, budget); or "through the hub".
+   metered flag, budget); or "through the Brain".
 3. **Pack.** Suggest one from the K-line profile or CAN detection (Parked only, ADR-0022/0023)
    or let the owner pick; install signed pack JSON (ADR-0032 risks).
 4. **First scan.** Scan all (Read, Tier 0) with honest states (UI spec §4.3), snapshotted to the
@@ -215,15 +215,15 @@ Improv's post-provisioning **redirect URL** hands the browser to the node's page
 2–4. ESP-IDF unified provisioning (BLE or SoftAP, security 2 with SRP6a, custom endpoints,
 about 110 kB for BLE) stays reference, as in ADR-0028 §7.
 
-**The hub adopts discovered devices:** unpaired devices advertise `_ostler-mod._tcp` with
+**The Brain adopts discovered devices:** unpaired devices advertise `_ostler-mod._tcp` with
 `pr=0` and show as "nearby" on the Network page (UI spec §3.7). Adopting needs the owner on
-the hub and a physical press on the device (or, for a node already owned standalone, approval
-from the owner's paired phone); the hub's CA then issues the certificate and the roles follow
+the Brain and a physical press on the device (or, for a node already owned standalone, approval
+from the owner's paired phone); the Brain's CA then issues the certificate and the roles follow
 the owner's order (ADR-0037). There is no silent takeover.
 
-## 8. Hub-only wake source
+## 8. Brain-only wake source
 
-With a Diagnostics node, the node wakes the hub and runs the parked broker (ADR-0032 §4).
+With a Diagnostics node, the node wakes the Brain and runs the parked broker (ADR-0032 §4).
 Without one:
 
 | Option | Wake sources | Parked draw | Notes |
@@ -234,28 +234,29 @@ Without one:
 | **Sixfab Power Management HAT** | RTC schedule, MCU-controlled soft shutdown | (U) | Wake pins documented for the Pi 4 only |
 | A small buddy MCU | anything | 1–5 mA | Re-creates the retired buddy |
 
-**Recommendation:** no separate buddy. A hub-only box takes its wake from its **power
+**Recommendation:** no separate buddy. A Brain-only box takes its wake from its **power
 board** (ignition plus an RTC schedule plus a low-voltage cut); it has no remote wake, no
 parked broker and no alarm, which matches having no node. Anyone who wants those adds a
 Diagnostics node or a **Guardian**, which is already the small always-on device and can wake
-the hub. Wake semantics are in ADR-0040 ([power states](power_states.md)).
+the Brain. Wake semantics are in ADR-0040 ([power states](power_states.md)).
 
 ## 9. u-blox placement (resolved the pending GPS question)
 
 | Placement | For | Against |
 |---|---|---|
-| **Diagnostics node** | Present in standalone and hub setups; gives the gate its own fast speed source; makes the node the best clock (PPS) for the raw-tap timestamps | Antenna cable from under the dash to the dash top |
-| Hub (USB u-blox) | Easy on the bench | Absent standalone; asleep while parked; the gate must not trust a speed from another device |
+| **Diagnostics node** | Present in standalone and Brain setups; gives the gate its own fast speed source; makes the node the best clock (PPS) for the raw-tap timestamps | Antenna cable from under the dash to the dash top |
+| Brain (USB u-blox) | Easy on the bench | Absent standalone; asleep while parked; the gate must not trust a speed from another device |
 | Guardian | Hidden antenna | 1 Hz modem GNSS already covers security; adds parked drain |
 
 **Recommendation:** the 10 Hz u-blox sits on the **Diagnostics node** (as ADR-0032's
-Amendments A1 proposed; decided by ADR-0039 §9); a USB u-blox on the hub is the hub-only option and the bench path;
+Amendments A1 proposed; decided by ADR-0039 §9); a USB u-blox on the Brain is the Brain-only option and the bench path;
 the guardian keeps its modem GNSS and takes a u-blox on I²C only when it replaces the node.
 
 ## 10. Open questions
 
 1. ~~"Ostler Hub" or "Ostler Brain" as the public name; `lite` → `diagnostics`.~~ **Decided
-   (ADR-0039):** Ostler Hub ("brain" stays informal and internal); `lite` → `diagnostics`.
+   (ADR-0039):** Ostler Hub at first, then **Ostler Brain** (ADR-0039 Amendments,
+   2026-10-06); `lite` → `diagnostics`.
 2. WiCAN Pro: confirm from schematic v1.51 that K-line reaches only the interpreter, and its
    USB-C data roles (still a bench item, ADR-0039 Confirmation).
 3. ~~Raw-tap export of unframed bytes.~~ **Decided (ADR-0039):** dropped from exports.
@@ -278,3 +279,5 @@ the guardian keeps its modem GNSS and takes a u-blox on I²C only when it replac
 - 2026-10-06 — v0.1, first draft for ADR-0039.
 - 2026-10-06 — v1.0, ADR-0039 accepted: decided points marked in §1, §4, §9 and §10;
   "Ostler Lite" kept only where it says what was renamed.
+- 2026-10-06 — v1.1, ADR-0039 amended: "Ostler Hub" renamed **Ostler Brain**; "hub" (our
+  compute box) reads "Brain" throughout, including the §3, §6 and §8 headings.

@@ -2,7 +2,7 @@
 title: "ADR-0014 — Ostler handles: openostler org and package, @ostler npm, @ostler.tech; trademark policy"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md]
 summary: >
@@ -13,6 +13,7 @@ summary: >
 
 > **Amended 2026-10-06 ([ADR-0032](adr-0032-one-node-optional-brain.md), ADR-0034):** the product family adds "Ostler Lite" and "Ostler"; "node" and "brain" are working names; the guardian is a node variant.
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** the product family is Ostler Diagnostics, Ostler Guardian and Ostler Hub; read "Ostler Lite" as "Ostler Diagnostics". See [Amendments (product family)](#amendments-2026-10-06-product-family).
+> **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It amends the naming in ADR-0013.
@@ -123,3 +124,9 @@ above stand; where this entry differs, it wins.
    Lite" in Amendment 1 as "Ostler Diagnostics", and "Ostler" there as "Ostler Diagnostics +
    Ostler Hub". "Node" and "brain" stay the internal terms (Amendment 2); "brain" is also an
    informal synonym for the Hub. Ostler Cloud stays as named.
+
+## Amendments (2026-10-06, Brain rename)
+
+- **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
+  "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
+  unchanged.

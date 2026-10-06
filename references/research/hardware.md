@@ -2,7 +2,7 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
@@ -84,7 +84,7 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 |---|---|
 | Guardian | About 0 (it runs from its 18650) |
 | Diagnostics node (ADR-0040 §2; bench targets) | Parked-ready ≤ 5 mA (first 72 h); parked-deep ≤ 0.5 mA |
-| CarPiHAT (hub's power board; the hub itself is cut) | Under 1 mA |
+| CarPiHAT (Brain's power board; the Brain itself is cut) | Under 1 mA |
 | WiCAN Pro, if fitted | About 1–3 mA |
 | **Total** | **About 1.5–9 mA** (budget: ≤ 10 mA average including wakes, ADR-0040 §4.4) |
 
@@ -157,7 +157,7 @@ antenna lead would also blind the guardian, which defeats the point of a hidden 
 
 **Decided: on the diagnostic node** ([ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) §9; recommended here first) (UART with PPS to a node GPIO, or I²C on a dev
 kit), with the brain receiving fixes over MQTT like every other reading.
-- **Ostler Diagnostics works alone.** Ostler Diagnostics has no hub; the node records
+- **Ostler Diagnostics works alone.** Ostler Diagnostics has no Brain; the node records
   sessions itself (ADR-0032 §12), so 10 Hz logging and Drive mode on it alone need the
   receiver on the node.
 - **The gate needs speed.** The driving state falls back to GPS speed, and the node gate

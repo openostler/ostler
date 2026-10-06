@@ -2,7 +2,7 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.5
+version: 1.6
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -15,6 +15,7 @@ summary: >
 > **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (§6–§7), 2026-10-06:** the "notify-only alarm" line and "Tier ≥ 2 not reachable from any remote path" (phone approval over local links; install override).
 > **Amended 2026-10-06 (networking answers, [ADR-0037](adr-0037-role-holders-and-handover.md), [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md)):** §12 Matter is a bridge through Home Assistant and Matterbridge, certified only at scale, with alarm disarm allowed and Comfort switches only with the install override; §3/§7 NTP runs on the time-role holder; §4 PLCA IDs live in each device's install configuration; mesh and Matter are remote paths. See [Amendments (networking answers)](#amendments-2026-10-06-networking-answers).
 > **Amended 2026-10-06 (product family, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md)):** §2's segments gain the node link (USB-NCM, its own subnet); §5's topics gain `tap/` and `lab/`. See [Amendments (product family)](#amendments-2026-10-06-product-family).
+> **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -339,3 +340,9 @@ unchanged; where these entries differ, they win.
   session header retained on `…/tap/<session>/meta`, and takes lab send-requests on
   `…/<node>/lab/req`, answering on `…/<node>/lab/resp` (ADR-0039 §3). Both use the same
   broker, mTLS and per-device ACLs.
+
+## Amendments (2026-10-06, Brain rename)
+
+- **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
+  "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
+  unchanged.

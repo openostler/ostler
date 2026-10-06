@@ -2,16 +2,17 @@
 title: "ADR-0037 — Role holders and handover (transmit gate, parked broker, time source, PLCA coordinator, uplink manager)"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
-depends_on: [references/research/cluster_view.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
+depends_on: [references/research/cluster_view.md, references/research/connectivity_uplink.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls. Amended 2026-10-06 by ADR-0039 and ADR-0040: `status` gains `asleep`; a holder that sleeps releases its claims; a guardian alongside takes the parked broker while the node is in parked-deep; the u-blox sits on the Diagnostics node and, with PPS, ranks first for time.
+  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls. Amended 2026-10-06 by ADR-0039 and ADR-0040: `status` gains `asleep`; a holder that sleeps releases its claims; a guardian alongside takes the parked broker while the node is in parked-deep; the u-blox sits on the Diagnostics node and, with PPS, ranks first for time. Amended 2026-10-06 (owner): an always-on add-on module that declares the `pbroker` role and at least 2 MB of PSRAM in its manifest is the last parked-broker fallback (node → guardian → module), so a car with only add-on modules still coordinates; deep-sleeping modules (check-in or none) are never eligible; ties go to the owner's priority, then the lowest device id; the module hands the role back when a Diagnostics node or Guardian is healthy for 60 s.
 ---
 
 # ADR-0037 — Role holders and handover
 
 > **Amended 2026-10-06 (product family and power states, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), [ADR-0040](adr-0040-power-states-and-wake.md)):** `status` gains `asleep`; a holder that sleeps releases its claims; with the node in parked-deep a guardian fitted alongside takes the parked broker; the time-source order is confirmed, with the Diagnostics node's u-blox and PPS ranking first; "Lite" reads "Ostler Diagnostics". See [Amendments (product family and power states)](#amendments-2026-10-06-product-family-and-power-states).
+> **Amended 2026-10-06 (owner, parked broker on add-on modules):** an eligible always-on add-on module (manifest `roles` lists `pbroker`, `power.class` `always`, `memory.psram_kb` ≥ 2048) is the **last** parked-broker fallback after the node and the guardian; deep-sleeping modules never are; ties by owner priority then lowest device id; it hands back when a Diagnostics node or Guardian is healthy for 60 s. See [Amendments (parked broker on add-on modules)](#amendments-2026-10-06-parked-broker-on-add-on-modules).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -271,3 +272,65 @@ text and the Amendments above are unchanged; where these entries differ, they wi
     normally the time source; readings after a wake from parked-deep are `unsynced` until
     GNSS or SNTP is back (ADR-0040 §9).
 12. **Names.** Read "Lite" (§2's time-source row) as "Ostler Diagnostics" (ADR-0039).
+
+## Amendments (2026-10-06, parked broker on add-on modules)
+
+The owner amended this ADR on 2026-10-06 so that a car with only add-on modules (no
+Diagnostics node, Guardian or Brain) still coordinates. The decision text and the Amendments
+above are unchanged; where these entries differ, they win.
+
+13. **Order** (§2). The parked broker's candidates become **node → guardian → eligible add-on
+    module**. An add-on module is always the **last** fallback: it never outranks a node or a
+    guardian, whatever priority the owner gives it. The brain is still never a candidate.
+14. **Eligibility.** A module may claim the parked broker only if all of these hold; every
+    consumer ignores a claim from any other module and the Network page flags it (§3):
+    - its capability manifest lists `{"role": "pbroker"}` in `roles` (UI spec §5.1; the role
+      id stays `pbroker`, so there is no second "eligible roles" field);
+    - its `power.class` in its parked states is **`always`** (ADR-0040 §1). A module whose
+      parked class is `wakeable`, `check_in` or `none` is never eligible, so deep-sleeping
+      sensor nodes never hold the broker;
+    - its manifest declares **PSRAM of at least 2 MB** (`"memory": {"psram_kb": 2048}` or
+      more, from its board profile). Evidence: the ESP-IDF Mosquitto port needs about 2 kB
+      of heap at start and 4 kB per plain client, but each mTLS client costs about 37 kB of
+      heap with default buffers (25–30 kB for a handshake alone), so five mTLS clients peak
+      at about 150–200 kB, which fits only with mbedTLS allocating in PSRAM
+      ([connectivity research §2](../references/research/connectivity_uplink.md)). 2 MB
+      leaves the module's own work and the TLS peaks room; the bench may raise the figure,
+      never drop the PSRAM requirement;
+    - its `pbroker` role entry declares **`max_clients`**, at most **5** mTLS clients (the
+      port's tested figure) until the bench proves more. Parked devices beyond the limit use
+      §2's "no holder" fallbacks (wake wire or CAN, alarms direct to a paired phone or out
+      the device's own uplink); the guardian's and alarm-capable devices' sessions are
+      admitted first;
+    - it runs the same broker build as the node (ESP-IDF Mosquitto port, one TLS listener,
+      client certificates from the local CA or the owner's pairing key, the compiled-in
+      parked topic allow-list) and is in the owner's order set at pairing.
+15. **Tie-break among modules.** Several eligible modules are ordered by the owner's
+    priority set at pairing (§3), then by the **lowest device id** (byte-wise comparison of
+    the id string). A higher-ranked module takes the role back from a lower one by §4's
+    give-back rule (healthy for 60 s).
+16. **Takeover and hand-back** (§4, §5). A module claims the role when no node or guardian is
+    paired, or when the current holder is lost by §4's two signals for 30 s (no MQTT silence
+    alone, §5). When a **Diagnostics node or Guardian** appears or recovers (status `online`
+    and its mDNS record answered) and stays healthy for **60 s**, the module releases: it
+    stops accepting new sessions, clears its retained claim, and its clients reconnect to
+    the new holder by mDNS name; the new holder claims with a higher `term`. Retained state
+    is not migrated: devices republish their manifest and status on reconnect (the
+    research's relay-not-store rule). With a node in parked-deep and no guardian, an
+    eligible module holds the role until the node is parked-ready or awake again (ADR-0040
+    §9).
+17. **No new authority.** A module holding the parked broker gains no gate, no approval
+    power, no wake arbitration over the brain's power switch or the wake wire (ADR-0040
+    §4.2: those stay with the node) and no PLCA or uplink-manager candidacy. It delivers
+    check-in messages as the parked-broker holder (ADR-0040 §4.2). When the brain wakes, the
+    brain's broker bridges to it as it would to the node.
+18. **Confirmation (added).** *Simulated:* in the role harness, a car with only add-on
+    modules (A: `always`, `psram_kb` 8192; B: `always`, `psram_kb` 2048; C: `check_in`
+    sensor that lists `pbroker`; D: `always` with no PSRAM) elects exactly one parked broker:
+    A or B by owner priority, else the lower device id; C's and D's claims are ignored and
+    flagged; a sixth mTLS client is refused and falls back; adding a guardian (or a node)
+    moves the role to it after 60 s ± one tick with a higher term, the module clears its
+    claim, and no alarm event is lost or duplicated; removing it again returns the role to
+    the module after 30 s of two signals. *Bench:* an ESP32-S3 module with 2 MB PSRAM runs
+    the Mosquitto port with five mTLS clients for 24 h; peak internal heap and PSRAM use are
+    recorded, and a parked alarm event from one module reaches a paired phone through it.

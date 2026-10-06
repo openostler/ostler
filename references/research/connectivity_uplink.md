@@ -2,7 +2,7 @@
 title: "Connectivity, uplinks and remote access — node and brain, parked broker, provisioning"
 area: references
 status: stable
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/hardware.md, references/research/t1s_module_bus.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
@@ -125,7 +125,7 @@ PicoMQTT, sMQTTBroker and TinyMqtt are all MQTT 3.1.1 with QoS 0
 | **Home Wi-Fi when parked** | Pi (or node) Wi-Fi client | No | The cheapest bulk path: uploads, OTA, logbook sync |
 | **USB 3G/4G/5G dongle on the Pi** | HiLink-style: the stick is its own router and shows as an Ethernet NIC (`cdc_ether`/`rndis_host`/NCM) with DHCP. Or modem mode: QMI (`qmi_wwan`) / MBIM (`cdc_mbim`) driven by ModemManager | Yes | HiLink "just works" (double NAT, little control); QMI/MBIM gives signal, SIM and SMS. PPP is the slow legacy path ([FOSDEM 2014](https://archive.fosdem.org/2014/schedule/event/deviot10/), [Netgate forum](https://forum.netgate.com/topic/129994/qmi-mbim-ncm-rndis-protocols)) |
 | **4G on the node** (official fitted option) | A per-device IoT SIM in a Cat-1 modem (e.g. SIM7670-class, as on the guardian variant), fitted on the Diagnostics board (ADR-0039 §5) | Yes | Always on; uses no USB port |
-| **USB 4G dongle on the node** | ESP32-S3 USB host, by class: PPP and AT over CDC-ACM (`iot_usbh_modem`, Cat-1/Cat-4, NAPT to share the link), ECM (`iot_usbh_ecm`) or RNDIS (`iot_usbh_rndis`); QMI/MBIM sticks only on the Pi. A tested-dongle list lives in the firmware repo ([product family §5](product_family.md#5-standalone-uplink)) | Yes | Listed modules include A7670E and EC20; slow (USB full speed) but always on ([Espressif](https://components.espressif.com/components/espressif/iot_usbh_modem)). **One OTG port:** a node linked to the hub by USB-NCM is a USB device and cannot host a dongle at the same time (ADR-0039 §4) |
+| **USB 4G dongle on the node** | ESP32-S3 USB host, by class: PPP and AT over CDC-ACM (`iot_usbh_modem`, Cat-1/Cat-4, NAPT to share the link), ECM (`iot_usbh_ecm`) or RNDIS (`iot_usbh_rndis`); QMI/MBIM sticks only on the Pi. A tested-dongle list lives in the firmware repo ([product family §5](product_family.md#5-standalone-uplink)) | Yes | Listed modules include A7670E and EC20; slow (USB full speed) but always on ([Espressif](https://components.espressif.com/components/espressif/iot_usbh_modem)). **One OTG port:** a node linked to the Brain by USB-NCM is a USB device and cannot host a dongle at the same time (ADR-0039 §4) |
 | **Guardian-variant 4G** | The guardian variant's SIM7670G Cat-1, its own IoT SIM | Yes | Alarm-grade: own battery, works with 12 V cut |
 | **High-speed gateway** (option) | An OpenWrt 4G/5G router as an Ethernet WAN; it can run **mwan3** itself (up to 250 WANs, failover and balancing) ([OpenWrt](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3)) | Per its SIM | For vans and overlanders; the Pi sees one Ethernet uplink |
 | **Starlink Mini** (integration) | Ethernet or Wi-Fi WAN; status from its local gRPC API | No (but power-hungry) | See §3.4 |

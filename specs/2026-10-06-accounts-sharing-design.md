@@ -2,7 +2,7 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md]
 summary: >
@@ -41,10 +41,10 @@ an optional relay and directory, never the source of truth.
 - Upgrade: an existing `--admin-password` / `D2DIAG_ADMIN_PW` becomes the owner's password
   (user `owner`, prompted to rename and add a passkey). Basic Auth keeps working for one
   release, mapped to the owner, then goes.
-- **Ostler Diagnostics alone** (a node with no hub, [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md))
+- **Ostler Diagnostics alone** (a node with no Brain, [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md))
   has no display or console. The owner is bootstrapped by **pairing a phone** with the node
   (a physical step on the node, such as a button press or a code on its label); the pairing
-  keys on the phone sign the owner in. There is no Pi CA without a hub; trust comes from pairing.
+  keys on the phone sign the owner in. There is no Pi CA without a Brain; trust comes from pairing.
 - Lost owner: `ostler auth reset-owner` on the device console (physical or SSH) issues a
   new setup code and deletes no data.
 
@@ -349,3 +349,4 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
   install override; phone approval of Tier 2–3 over local links; Lite bootstraps by phone
   pairing; the default vehicle is the one the node is on; the confirmation matrix.
 - 2026-10-06 — v0.3: wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).
+- 2026-10-06 — v0.4, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".

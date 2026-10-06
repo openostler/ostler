@@ -2,17 +2,18 @@
 title: "ADR-0032 — One node, optional brain (Ostler Lite and Ostler)"
 area: decisions
 status: locked
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md]
 summary: >
-  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027. Amended 2026-10-06: GPS split (the guardian's 1 Hz modem GNSS for security, a 10 Hz u-blox for drive logging, every fix a tagged reading, best fix selected, GNSS time served by the time-role holder) with the u-blox placement pending product-family research; sensor detection (board profile, detected chips, declared config or harness ID, one manifest with origin and status per item, read-only probing). Amended 2026-10-06 by ADR-0039 and ADR-0040: renamed Ostler Diagnostics (was Lite) and Ostler Hub (the brain); USB-NCM is a product link and UART dev-only; the u-blox sits on the Diagnostics node, closing the GPS placement; wake and shutdown extended with power states, wake requests and node parked modes.
+  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027. Amended 2026-10-06: GPS split (the guardian's 1 Hz modem GNSS for security, a 10 Hz u-blox for drive logging, every fix a tagged reading, best fix selected, GNSS time served by the time-role holder) with the u-blox placement pending product-family research; sensor detection (board profile, detected chips, declared config or harness ID, one manifest with origin and status per item, read-only probing). Amended 2026-10-06 by ADR-0039 and ADR-0040: renamed Ostler Diagnostics (was Lite) and Ostler Hub (the brain); USB-NCM is a product link and UART dev-only; the u-blox sits on the Diagnostics node, closing the GPS placement; wake and shutdown extended with power states, wake requests and node parked modes. Amended 2026-10-06 (ADR-0039 Amendments): the brain product is Ostler Brain (was Hub).
 ---
 
 # ADR-0032 — One node, optional brain
 
 > **Amended 2026-10-06 (owner answers):** §5, §6, §13 and §14 gain the GPS split and sensor detection; the 10 Hz u-blox's placement is **pending (product-family research)**. See [Amendments](#amendments-2026-10-06-gps-split-and-sensor-detection).
 > **Amended 2026-10-06 (product family and power states, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), [ADR-0040](adr-0040-power-states-and-wake.md)):** renamed by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics" and "Ostler" (with a brain) as "Ostler Diagnostics + Ostler Hub"; §3's link: USB-NCM is a product link, UART for development only; the 10 Hz u-blox sits on the Diagnostics node, closing A1's pending placement; §4's wake and shutdown are extended by ADR-0040. See [Amendments (product family and power states)](#amendments-2026-10-06-product-family-and-power-states).
+> **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). Supersedes parts of
@@ -364,3 +365,9 @@ requests as messages arbitrated by the device wired to the wake path, stay-awake
 quotas, an energy ledger, battery floors, queued Tier 0–1 actions with expiry, and two parked
 modes for the node (parked-ready for 72 h, then parked-deep). §4's wake causes and the clean
 shutdown with a timeout stand.
+
+## Amendments (2026-10-06, Brain rename)
+
+- **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
+  "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
+  unchanged.
