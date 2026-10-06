@@ -17,6 +17,9 @@ releases the link after every probe (see ``CONSTITUTION.md``). The logic is in
 
 Ignition on, car stationary. This takes a while — each address gets a quiet settle so a
 link can die before the next init.
+
+**Parked only.** An init sweep is probing (spec K-line profiles §2, owner Q4): the tool
+refuses to start without ``--confirm-parked`` or a "yes" at its "Vehicle parked?" prompt.
 """
 import argparse
 import os
@@ -36,14 +39,39 @@ def _addrs(spec: "str | None", default: "list[int]") -> "list[int]":
     return [int(x, 16) for x in spec.replace(" ", "").split(",") if x]
 
 
-def main() -> int:
+PARKED_RULE = ("module_scan: an init sweep probes the car and is allowed only when Parked. "
+               "Park, ignition on, then pass --confirm-parked (or answer yes).")
+
+
+def confirm_parked(flag: bool, ask=input, interactive: "bool | None" = None) -> bool:
+    """True with ``--confirm-parked``, or after a "yes" at the "Vehicle parked?" prompt
+    (only on a terminal). Anything else refuses."""
+    if flag:
+        return True
+    if interactive is None:
+        interactive = sys.stdin.isatty()
+    if not interactive:
+        return False
+    try:
+        answer = ask("Vehicle parked? [y/N] ")
+    except EOFError:
+        return False
+    return answer.strip().lower() in ("y", "yes")
+
+
+def main(argv: "list[str] | None" = None) -> int:
     ap = argparse.ArgumentParser(description="Read-only K-line address scan")
     ap.add_argument("port", help="serial device, or 'auto' to detect the cable")
     ap.add_argument("--esp", action="store_true", help="talk over an ESP32 in cable mode")
     ap.add_argument("--fast", help="comma hex fast-init addresses (default 13,29)")
     ap.add_argument("--slow", help="comma hex 5-baud addresses (default 18,40,5a,5b)")
     ap.add_argument("--settle", type=float, default=2.0, help="quiet seconds between probes")
-    args = ap.parse_args()
+    ap.add_argument("--confirm-parked", action="store_true",
+                    help="confirm the vehicle is parked (the sweep is Parked-only)")
+    args = ap.parse_args(argv)
+    if not confirm_parked(args.confirm_parked):
+        print(PARKED_RULE, file=sys.stderr)
+        return 2
 
     port = args.port
     if not args.esp:

@@ -33,10 +33,14 @@ class SerialTransport(Transport):
         url: str = DEFAULT_URL,
         baudrate: int = DEFAULT_BAUDRATE,
         timeout: float = 1.0,
+        parity: str = "N",
     ) -> None:
         self._url = url
         self._baudrate = baudrate
         self._timeout = timeout
+        # Line parity for the session bytes: "N" (8N1, every K-line profile today), "E", "O".
+        self._parity = {"N": serial.PARITY_NONE, "E": serial.PARITY_EVEN,
+                        "O": serial.PARITY_ODD}[parity]
         self._ser: "serial.SerialBase | None" = None
 
     def open(self) -> None:
@@ -46,7 +50,7 @@ class SerialTransport(Transport):
             self._url,
             baudrate=self._baudrate,
             bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
+            parity=self._parity,
             stopbits=serial.STOPBITS_ONE,
             timeout=self._timeout,
         )
@@ -144,17 +148,27 @@ class SerialTransport(Transport):
         return time.perf_counter() - t_high_started
 
     @staticmethod
-    def slow_init_bits(address: int) -> "list[int]":
+    def slow_init_bits(address: int, parity: str = "none") -> "list[int]":
         """5-baud init frame for ``address``: start bit(0), **8 data bits LSB-first**,
         stop bit(1) — 8N1, no parity (KWP2000 slow init). Pure + testable.
 
         FIXED 2026-08-04: the previous 7 data bits + a miscalculated "odd parity" gave the wrong
         byte for addresses with an odd number of ones (0x29→0xA9, 0x34→0xB4) — which would have
         made a slow-init scan miss exactly the interesting candidates. 0x33
-        happened to come out right and hid the bug."""
+        happened to come out right and hid the bug.
+
+        ``parity="odd"``/``"even"`` sends seven data bits plus that parity bit instead. Only
+        a pack profile with a car result (``evidence``) may ask for it (ADR-0022)."""
+        if parity not in ("none", "odd", "even"):
+            raise ValueError(f"5-baud address parity must be none, odd or even: {parity!r}")
         bits = [0]
-        for i in range(8):
-            bits.append((address >> i) & 1)
+        if parity == "none":
+            for i in range(8):
+                bits.append((address >> i) & 1)
+        else:
+            data = [(address >> i) & 1 for i in range(7)]
+            ones = sum(data)
+            bits += data + [(ones + 1) % 2 if parity == "odd" else ones % 2]
         bits.append(1)
         return bits
 
@@ -171,6 +185,7 @@ class SerialTransport(Transport):
         bit_seconds: float = 0.2,
         w4: float = 0.03,
         read_timeout: float = 0.5,
+        parity: str = "none",
     ) -> bytes:
         """ISO 9141 / ISO 14230 **5-baud slow init** — full handshake.
 
@@ -184,7 +199,7 @@ class SerialTransport(Transport):
         :meth:`parse_slow_init` to pick out KW1/KW2.
         """
         ser = self._require_open()
-        bits = self.slow_init_bits(address)
+        bits = self.slow_init_bits(address, parity)
         ser.break_condition = False  # line idle (high) before start
         ser.reset_input_buffer()
         time.sleep(bit_seconds)

@@ -76,9 +76,23 @@ export const Recording = z.object({
 });
 export type Recording = z.infer<typeof Recording>;
 
+/** The active K-line link: its profile, how it was found and the ECU's key bytes. */
+export const KLineLink = z.object({
+  bus: z.string(), // "kline"
+  profile: z.string(), // "kwp2000_fast" | "kwp2000_slow" | "iso9141_2" | a pack module id
+  protocol: z.string(), // "kwp2000" | "iso9141_2"
+  init: z.string(), // "fast" | "5baud" | "none"
+  origin: z.string(), // "pack" | "detected" | "remembered" | "override"
+  address: z.string(), // "0x33"
+  key_bytes: z.string().nullable(), // "E9 8F"
+  timing: z.string().nullable(), // "normal" | "extended"; null for ISO 9141-2
+  since: z.number().nullable(), // epoch seconds the link came up
+});
+export type KLineLink = z.infer<typeof KLineLink>;
+
 /** The snapshot pushed over /events every poll (and returned by /snapshot). */
 export const Snapshot = z.object({
-  status: z.string(), // "connected" | "connecting" | "error" | "no-cable"
+  status: z.string(), // "connected" | "connecting" | "error" | "no-cable" | "needs-detect"
   source: z.string().optional(),
   module: z.string().optional(), // canonical module id (a /pack module id)
   mode: z.string().nullable().optional(), // "mock" | "live"
@@ -106,6 +120,8 @@ export const Snapshot = z.object({
   gps: GpsFix.nullable().optional(),
   recording: Recording.nullable().optional(),
   recording_sources: z.lazy(() => RecordingSources).nullable().optional(),
+  /** The K-line link of the active source (null: no K-line link to report). */
+  link: KLineLink.nullable().optional(),
 });
 export type Snapshot = z.infer<typeof Snapshot>;
 
@@ -239,6 +255,12 @@ export const CommandReply = z.looseObject({
   raws: z.record(z.string(), z.string()).optional(),
   report: z.array(FaultScanEntry).optional(),
   shutting_down: z.boolean().optional(),
+  /** detect_protocol: how detection ended (ok | bus-busy | ecu-refused | init-failed | no-ecu). */
+  outcome: z.string().optional(),
+  /** detect_protocol: the detected K-line link. */
+  link: KLineLink.nullable().optional(),
+  /** module_scan: one row per probed address. */
+  scan: z.array(z.looseObject({ address: z.string(), init: z.string(), module: z.string(), status: z.string() })).optional(),
 });
 export type CommandReply = z.infer<typeof CommandReply>;
 

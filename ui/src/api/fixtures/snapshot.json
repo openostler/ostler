@@ -139,5 +139,6 @@
       "reason": "no IMU configured (start with --imu auto)"
     },
     "accel_hz": 25
-  }
+  },
+  "link": null
 }

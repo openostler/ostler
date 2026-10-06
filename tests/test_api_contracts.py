@@ -58,6 +58,7 @@ BARE_SESSION = {"get", "patch"}
 # ui/src/api/schemas.test.ts (SCHEMA_FOR) and tests/test_ui_contract.py (CASES).
 FIXTURE_ROUTES = {
     "snapshot": ("/snapshot", "get", "200"),
+    "snapshot-kline": ("/snapshot", "get", "200"),
     "pack": ("/pack", "get", "200"),
     "version": ("/version", "get", "200"),
     "fields-td5": ("/fields", "get", "200"),

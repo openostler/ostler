@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""K-Line-lagret: ramformat, checksumma, fast init, timeout/retries."""
+"""The K-line layer: frame formats, checksums, fast and 5-baud init, timeouts and retries,
+protocol profiles (``profiles``), key-byte classification (``keywords``), ISO 9141-2
+framing (``frame_iso9141``) and auto-detection (``detect``)."""
 from .frame import (
     TD5_ECU_ADDRESS,
     TESTER_ADDRESS,
@@ -14,12 +16,26 @@ from .frame import (
     decode,
     encode,
 )
-from .kline import KLine, KLineError, KLineTimeout
+from .kline import (
+    KLine,
+    KLineError,
+    KLineTimeout,
+    SlowInitReply,
+    SlowInitUnconfirmed,
+    parse_slow_init_reply,
+)
+from .profiles import BUILTIN, KLineProfile, Timing
 
 __all__ = [
     "KLine",
     "KLineError",
     "KLineTimeout",
+    "SlowInitReply",
+    "SlowInitUnconfirmed",
+    "parse_slow_init_reply",
+    "KLineProfile",
+    "Timing",
+    "BUILTIN",
     "DecodedFrame",
     "FrameError",
     "ChecksumError",

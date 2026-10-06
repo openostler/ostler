@@ -44,8 +44,11 @@ class EcuSession:
     # we have always done. Set per module and applied to KLine in :meth:`open`.
     _write_gap: float = 0.0
 
-    def __init__(self, kwp: KWP2000) -> None:
+    def __init__(self, kwp: KWP2000, profile=None) -> None:
         self._kwp = kwp
+        # The module's KLineProfile (spec K-line profiles §6), or None: then the class
+        # attributes above and the caller's arguments apply exactly as before.
+        self.profile = profile
 
     # ---- lifecycle (delegated all the way down to the transport) ------- #
     def open(self) -> None:
@@ -88,6 +91,36 @@ class EcuSession:
         """Keepalive (``3E`` → ``7E``) — keep the session alive between requests."""
         self._kwp.tester_present(self._keepalive_sub)
 
+    def keepalive_if_due(self) -> bool:
+        """Send the keep-alive when nothing went out for the profile's interval (spec §4.1).
+
+        The profile's ``keepalive`` (``3E 01``, or a bare ``3E``) goes out when
+        ``now - last_tx >= keepalive_interval``; any request resets the timer, so a busy
+        poll sends nothing extra. Without a profile it is :meth:`tester_present` every
+        2 s. A failed keep-alive is logged, never raised. → True when one was sent."""
+        p = self.profile
+        if p is not None and p.keepalive is None:
+            return False
+        interval = p.keepalive_interval if p is not None else 2.0
+        kline = getattr(self._kwp, "_k", None)
+        last = getattr(kline, "last_tx", None)
+        now = kline.now() if kline is not None and hasattr(kline, "now") else time.monotonic()
+        if last is not None and now - last < interval:
+            return False
+        try:
+            if p is not None:
+                self._kwp.request(p.keepalive[0], p.keepalive[1:])
+            else:
+                self.tester_present()
+            ok, err = True, None
+        except (KWP2000Error, KLineError) as exc:
+            ok, err = False, f"{type(exc).__name__}: {exc}"
+        emit = getattr(kline, "emit", None)
+        if emit is not None:
+            emit("keepalive", ok=ok, error=err,
+                 frame=(p.keepalive.hex(" ") if p is not None else "3e"))
+        return True
+
     # ---- clean teardown (shared bus) ----------------------------------- #
     def end_session(self) -> None:
         """End the diagnostic session cleanly (StopDiagnosticSession, ``20`` → ``60``).
@@ -115,10 +148,22 @@ class EcuSession:
         process (proven in the car 2026-08-18: fresh process, SLABS as first module,
         generalReject on the first attempt).
         """
+        kline = getattr(self._kwp, "_k", None)
+        p = self.profile
+        if p is not None and p.release is None:
+            # ISO 9141 style: no release frame; the tester stops and waits P3max.
+            if hasattr(kline, "mark_released"):
+                kline.mark_released(False)
+            return
+        confirmed = False
         try:
             self._kwp.stop_communication()
+            confirmed = True   # a positive C2: the link is closed for sure
         except Exception:  # noqa: BLE001 — no open link is the normal case
             pass
+        if p is not None and hasattr(kline, "mark_released"):
+            kline.mark_released(confirmed)
+            kline.emit("release", confirmed=confirmed)
 
     def release(self) -> None:
         """:meth:`end_session` + :meth:`close` — on module switch AND on error paths.
@@ -137,7 +182,7 @@ class EcuSession:
         self,
         after: "Callable[[], None] | None" = None,
         *,
-        idle: float,
+        idle: "float | None" = None,
         attempts: int,
         retry_sleep: float,
         sleep: Callable[[float], None] = time.sleep,
@@ -161,7 +206,15 @@ class EcuSession:
 
         ``sleep`` is injected for testability. Raises :class:`KWP2000Error` after
         ``attempts`` failed attempts.
+
+        ``idle=None`` (only with a profile) adds no settle here: a profile-built
+        :class:`~openostler.kline.KLine` applies the profile's pre-init idle (W5, or
+        P3max after an abandoned session) before each init itself. The init goes to the
+        profile's ``init_address`` with its ``init_functional`` mode when the module
+        declares no init variants of its own.
         """
+        if idle is None:
+            idle = 0.0
         def _say(msg: str) -> None:
             if progress is not None:
                 progress(msg)
@@ -177,11 +230,17 @@ class EcuSession:
         last: "Exception | None" = None
         for i in range(attempts):
             functional, source = self._init_variants[i % len(self._init_variants)]
+            init_kw = {}
+            p = self.profile
+            if p is not None and type(self)._init_variants == EcuSession._init_variants:
+                functional = p.init_functional
+                if p.init_address != p.target:
+                    init_kw["target"] = p.init_address
             how = "" if not functional else " [funktionell, F1]"
             _say(f"sending init (try {i + 1}/{attempts}){how}")
             try:
                 c1 = self._kwp.start_communication(
-                    tolerant=True, functional=functional, source=source)
+                    tolerant=True, functional=functional, source=source, **init_kw)
             except (KLineError, KWP2000Error) as exc:
                 last = exc
                 if after is None:
