@@ -30,6 +30,7 @@ here before implementation starts.
 - `2026-10-06-mcp-server-design.md` — APPROVED (ADR-0030/0033): Ostler MCP server (resources, tools, prompts) under the tier gates, and the `skill/pack-author/` skill.
 - `2026-10-06-ui-architecture-design.md` — APPROVED (ADR-0016, ADR-0018): head-unit-first UI for any vehicle: layout classes, status strip, five destinations, driving lockouts, garage, capability manifest and render tiers, add-on devices, safety tiers, decode pipeline.
 - `2026-10-06-app-model-design.md` — DRAFT: one shell with features as apps declared by a manifest (driver-safe templates, core apps in-platform, optional apps from own repos); not before U1.
+- `2026-10-06-node-source-design.md` — DRAFT (ADR-0032/0037/0040): NodeSource, the Brain ingests node VSS, power, status and raw tap over MQTT 5; snapshot mapping, recording, Network data, requests to the node gate; stdlib MQTT client recommended.
 
 Discovery 2 specs (NanoCom capture, HEVAC control, DTC coverage, fault-screen import,
 reply-length layouts) stay in the D2 pack repo (ADR-0015).
