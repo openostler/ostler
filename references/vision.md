@@ -2,11 +2,11 @@
 title: "Vision — where Ostler is going in the long term"
 area: references
 status: draft
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [GOALS.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/ecosystem_architecture.md, references/research/addons_catalogue.md]
 summary: >
-  The long-term half of the goals, split out of GOALS.md (v2.0 keeps the short half): the gaps Ostler fills and the peers it works with, who it is for, the product pillars, the hardware path (one ESP32 diagnostic node with an optional brain: Ostler Lite is the node alone, Ostler is node plus brain; the guardian is a hidden node hardware variant with no outputs; sensor nodes and other modules as add-ons, each with its own web page), the add-on vision (a Meshtastic-compatible LoRa add-on first, Wi-Fi HaLow, Babel if a Wi-Fi IP mesh is wanted, and more), a multi-vehicle garage, sharing and a social layer, connectivity and remote access (any modem, Starlink, failover, Tailscale, Ostler Cloud, HA Cloud), a Matter bridge, AI-native access through an MCP server behind the same gates, the repo and product map, the business model, success measures and open questions. Decisions: ADR-0028 to ADR-0038.
+  The long-term half of the goals, split out of GOALS.md (v2.0 keeps the short half): the gaps Ostler fills and the peers it works with, who it is for, the product pillars, the hardware path (one ESP32 diagnostic node with an optional brain: Ostler Diagnostics is the node, standalone with a phone; Ostler Hub is the brain it plugs into; Ostler Guardian is a hidden node hardware variant with no outputs; sensor nodes and other modules as add-ons, each with its own web page), the add-on vision (a Meshtastic-compatible LoRa add-on first, Wi-Fi HaLow, Babel if a Wi-Fi IP mesh is wanted, and more), a multi-vehicle garage, sharing and a social layer, connectivity and remote access (any modem, Starlink, failover, Tailscale, Ostler Cloud, HA Cloud), a Matter bridge, AI-native access through an MCP server behind the same gates, the repo and product map, the business model, success measures and open questions. Decisions: ADR-0028 to ADR-0040.
 ---
 
 # Vision
@@ -100,23 +100,24 @@ talks to it, as an add-on device; it is not part of this platform.
 
 Ostler hardware is **one diagnostic node with an optional brain**, plus **add-on
 modules**, like a smart-home hub and its devices
-([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md),
+([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md); names:
+[ADR-0039](../decisions/adr-0039-product-family-diagnostics-guardian-hub.md);
 [ecosystem research §3](research/ecosystem_architecture.md#3-product-taxonomy-and-the-module-contract)).
 
-- **Ostler Lite: the node** (the core product). An always-on ESP32-S3 node owns the car
+- **Ostler Diagnostics: the node** (the core product, at the OBD port). An always-on ESP32-S3 node owns the car
   and power: K-line/CAN I/O, decoding to VSS with the portable C decoder and pack JSON,
-  the **transmit gate (the only path to the car)**, GPS, optional 4G (an official option;
-  each device may have its own IoT SIM), a small parked MQTT broker, basic alarm, and
+  the **transmit gate (the only path to the car)**, GPS, optional 4G (an official fitted
+  module or a USB dongle; each device may have its own IoT SIM), a small parked MQTT broker, basic alarm, and
   switching the brain's power. It hosts its own web page and talks to the phone app (a
   PWA in a native wrapper such as Capacitor) over BLE or its Wi-Fi AP. It works fully
   offline with a phone; Ostler Cloud is optional, never required.
-- **Ostler: node + brain.** A **brain** (the Pi now) adds compute and network: the full
+- **Ostler Hub: the brain** (sold as Ostler Diagnostics + Hub). A **brain** (the Pi now) adds compute and network: the full
   local app, add-on routing, cameras, big logbooks, replay, analysis, the decode lab and a
-  local CA. It never touches the car; it consumes the node's VSS messages over IP (T1S, or
-  Ethernet/USB/UART on dev kits). The node wakes it (ignition, a phone or cloud request,
-  an alarm needing cameras, a schedule), orders a clean shutdown with a timeout, and is
-  the hub again when it is off. Upgrading from Lite is plugging in a brain.
-- **Guardian: a node hardware variant**, same firmware, built for security: own backup
+  local CA. It never touches the car; it consumes the node's VSS messages over IP (USB-NCM near
+  the hub, T1S elsewhere, Ethernet on prototypes). The node wakes it (ignition, a phone or cloud request,
+  an alarm needing cameras, a schedule), orders a clean shutdown with a timeout, and
+  serves the car alone again when it is off. Upgrading from Ostler Diagnostics is plugging in a hub.
+- **Ostler Guardian: a node hardware variant**, same firmware, built for security: own backup
   battery, tamper sensing, IMU, better antennas, GPS, optional 4G. It is fitted hidden,
   away from the diagnostic port, either replacing the plain node or alongside it as a
   battery-backed tracker that alerts if the node is ripped out. It has **no outputs**;
@@ -162,7 +163,7 @@ open, so the list is open too. Some directions:
 - **Vehicle extras:** TPMS, GNSS/RTK, winch and light control, dash buttons and keypads,
   a trailer module, a weather station, leisure battery and solar monitoring, fridge and
   camper kit, EV charger integration.
-- **Motorbikes:** a Lite node with the phone as the screen, or a guardian-variant node.
+- **Motorbikes:** an Ostler Diagnostics node with the phone as the screen, or a guardian-variant node.
 
 The [add-ons catalogue](research/addons_catalogue.md) lists each idea with its transport,
 the standards it should use and a phase.
@@ -238,11 +239,11 @@ the alarm path and the in-car app never depend on the internet.
 | HEVAC | owner's separate project | Not part of the platform |
 
 Brand split ([ADR-0014](../decisions/adr-0014-ostler-handles.md)): **Ostler** is the product
-family (Ostler Lite, Ostler Cloud, Ostler Guardian, Ostler Node); **OpenOstler** is the open code and
+family (Ostler Diagnostics, Ostler Hub, Ostler Guardian, Ostler Cloud; ADR-0039); **OpenOstler** is the open code and
 community. Packs are "Ostler pack *for* <vehicle>"; vehicle makers' marks are never part of
 our brand ([TRADEMARKS.md](../TRADEMARKS.md)).
 
-- **Funding:** official hardware sales (the node, node + brain and add-on modules), a closed-source
+- **Funding:** official hardware sales (Ostler Diagnostics, Ostler Hub, Ostler Guardian and add-on modules), a closed-source
   **Ostler Cloud** subscription (hosted sync, fleet, remote access), and a **commercial
   licence** for closed or embedded use
   ([ADR-0012](../decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md),
@@ -305,6 +306,10 @@ our brand ([TRADEMARKS.md](../TRADEMARKS.md)).
   pairing keys (no Pi CA).
 
 ## Changelog
+
+- 2026-10-06: v1.3, product family renamed (ADR-0039): Ostler Diagnostics (was Ostler Lite),
+  Ostler Hub (the brain) and Ostler Guardian; the node links to the hub by USB-NCM or T1S;
+  4G is a fitted module or a USB dongle.
 
 - 2026-10-06: v1.2, owner's networking answers (ADR-0037, ADR-0038, ADR-0027 Amendments):
   the convoy mesh is Meshtastic-compatible first, Babel if a Wi-Fi IP mesh is wanted, and a

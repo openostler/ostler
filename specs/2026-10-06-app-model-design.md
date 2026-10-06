@@ -2,16 +2,16 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Lite and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category.
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the hub" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`.
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.3 for owner review (Q1, Q2, Q5, Q6 and Q9–Q12 answered 2026-10-06; §11).
+**Status:** draft v0.4 for owner review (Q1, Q2, Q5, Q6 and Q9–Q14 answered 2026-10-06; §11).
 Q3, Q4, Q7 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
@@ -91,7 +91,7 @@ phase UA).
   "entry": { "kind": "bundled", "module": "@ostler/app-cameras" },  // bundled | declarative | iframe | module
   "hosts": ["head_unit", "phone", "desktop", "cloud"],
   "requires": {
-    "product": ["ostler"],                 // ostler (brain) | lite
+    "product": ["ostler"],                 // ostler (with a hub) | diagnostics (node alone)
     "devices": [{ "kind": "camera" }],     // matched against capabilities.devices
     "node_variants": [],                   // e.g. ["guardian"]
     "signals": ["Vehicle.Speed"],          // VSS paths (ADR-0016) it subscribes to
@@ -122,7 +122,8 @@ phase UA).
   `core` only for apps built from the platform repo.
 - **`requires`** decides visibility, as UI spec §6 decides device chrome: no camera, no Cameras
   app chrome. Signals and devices are matched against the capability manifest (§5 there);
-  `product: ["ostler"]` hides an app on Ostler Lite. `mode: "service"` shows an app only in service mode
+  `product: ["ostler"]` hides an app on Ostler Diagnostics alone (no hub; the value
+  `diagnostics`, formerly `lite`, ADR-0039). `mode: "service"` shows an app only in service mode
   (Decode lab).
 - **`actions`** lists capability-manifest action ids (or `<device>.*` patterns) the app may
   request, each with its **category and tier copied from that manifest**. The registry refuses
@@ -244,16 +245,16 @@ send `X-Ostler-App: <id>` so the audit log names them.
 
 Owner decision of 2026-10-06 (Q9), refining ADR-0032 §11 ("one app in three places").
 
-1. **Companion model with a server.** With a brain (Ostler) or Ostler Cloud reachable, the
+1. **Companion model with a server.** With a brain (Ostler Hub) or Ostler Cloud reachable, the
    Capacitor app loads the shell and every app (core, optional and runtime-loaded first-party
    apps) from that server, as a browser would, in the way Home Assistant's Companion app shows
    the user's own server frontend. New apps need no store update; the native app never changes
    its own features at runtime (App Store 2.5.2, Play policy).
-2. **Bundled fallback for Lite and offline.** With no brain and no internet the phone talks
+2. **Bundled fallback for Ostler Diagnostics alone and offline.** With no brain and no internet the phone talks
    straight to the node, which serves only its small manifest-generated page. The app
    therefore ships a bundled shell, the core apps (Diagnose, Logs, Security, Network) and the
-   declarative add-on apps (manifest plus generated views). **Lite works fully offline with
-   only the node.**
+   declarative add-on apps (manifest plus generated views). **Ostler Diagnostics works fully
+   offline with only the node.**
 3. **Native features, fixed in the binary:** BLE and local Wi-Fi to the node, notifications,
    location, background tasks and approval of Tier 2–3 actions over local links within
    ADR-0033 §6. They give the app real native value (App Store 4.2).
@@ -355,7 +356,7 @@ kinds wait for a real third-party app and an ADR.
 7. **Catalog.** A future app catalog is a new outbound path: wanted, and from where?
 8. **Enablement scope.** Per install (recommended) or per vehicle?
 9. ~~**Phone app.**~~ **Answered 2026-10-06:** Companion model with a server; a bundled
-   shell, core and declarative apps for Lite and offline; fixed native features; no runtime
+   shell, core and declarative apps for Ostler Diagnostics alone and offline; fixed native features; no runtime
    third-party code (§7.1, which records the store-policy check and its risks).
 10. ~~**Network as a core app** that absorbs Devices, rather than two pages?~~ **Answered
     2026-10-06:** yes; Network is a core app that absorbs More → Devices (§12.1).
@@ -364,6 +365,10 @@ kinds wait for a real third-party app and an ADR.
 12. ~~**Owner operations** (pairing, revoking, uplinks): API calls or a new category?~~
     **Answered 2026-10-06:** owner-role API operations (ADR-0029 §5), not a new ADR-0033
     category (§12.1).
+13. ~~**Wake by apps.**~~ **Answered 2026-10-06:** only through action requests and held
+    views; no `wake()` call (§13.3).
+14. ~~**"Don't ask again"** for brain wakes.~~ **Answered 2026-10-06:** stored per user and
+    device, honoured on local links only (§13.3).
 
 ## 12. The Network app and device pages (accepted 2026-10-06)
 
@@ -387,7 +392,7 @@ only the platform may ship.
               "publisher": "openostler" },
   "entry": { "kind": "bundled", "module": "@ostler/app-network" },
   "hosts": ["head_unit", "phone", "desktop", "cloud"],
-  "requires": { "product": ["ostler", "lite"], "devices": [], "node_variants": [],
+  "requires": { "product": ["ostler", "diagnostics"], "devices": [], "node_variants": [],
                 "signals": [],
                 "api": ["cluster.read", "uplinks.read", "uplinks.write", "pairing.write",
                         "certs.read"] },
@@ -429,6 +434,69 @@ sentence read as above; §3's add-on module apps row reads "More → Network →
 slot names join §4.2; Q6 and Q10–Q12 are answered (§11). U5 carries the peer view and UA the
 Network app.
 
+## 13. Power states, wake and queued actions (accepted 2026-10-06)
+
+*Accepted by the owner on 2026-10-06 (Q13, Q14; v0.4). Decision:
+[ADR-0040](../decisions/adr-0040-power-states-and-wake.md); UI: UI spec §3.8 (accepted);
+evidence: [power states research](../references/research/power_states.md).*
+
+**13.1 Manifest additions.** Additive; old manifests stay valid.
+- **Capability manifest actions** (UI spec §5.1) gain `runs_on`, `needs_brain`, `queueable`
+  and `expires_max_s`. An app's `actions` list copies them as it copies category and tier
+  (§4.2); the registry refuses a manifest whose copy differs, or that marks a Tier 2+ action
+  `queueable`.
+- **App views** gain `needs_brain: true` where the view needs a brain service (full Logs,
+  replay, clips). With the brain asleep the shell renders a "Needs the hub" card with **Wake**
+  in the view's slot and does not activate the app; on Ostler Diagnostics alone the view is
+  hidden by `requires.product` as today.
+- **`permissions.wake`**: `["interactive"]` lets the app ask the shell to wake a device for a
+  person's tap; `["background"]` (OTA, sync) is first-party only and subject to the budget. No
+  permission means the app can never cause a wake.
+
+```jsonc
+"actions": [ { "id": "relay1.ch3", "category": "accessories", "tier": 1,
+               "runs_on": "relay1", "needs_brain": false, "queueable": true, "expires_max_s": 300 } ],
+"views":   [ { "id": "clips", "needs_brain": true,
+               "driving": { "parked": "full", "idling": "full", "moving": false } } ],
+"permissions": { "data": ["video"], "wake": ["interactive"] }
+```
+
+**13.2 Cluster model.** The `cluster.read` device rows and the device page's peer view
+(§12.1–12.2) gain the device's retained `power` record: `state` (off, asleep, waking, awake,
+held, shutting_down, offline), `class` (always, wakeable, check_in, none), `wake_paths`,
+`next_checkin`, `leases` and `est_ma`, plus the arbiter's ledger (today's mAh against the
+budget, the floor in force). One JSON shape for both, as §12.2 requires.
+
+**13.3 SDK.**
+
+| Service | Addition |
+|---|---|
+| `actions` | `request(id, params, { wake: "ask" \| "auto" \| "never", expires_in_s })`. The handle reports `waking`, `queued {expires_at}`, `running`, `done`, `expired`, `cancelled`, `refused {by, reason}`, `state_changed`; `handle.cancel()` |
+| `power` (new) | `state(deviceId)` and `subscribe(deviceIds)` (read-only records above); `hold(deviceId, { until, reason })` returns a lease handle that the shell renews while the view is visible and releases on unmount or at the maximum (ADR-0040 §4.5) |
+
+- **`wake: "ask"`** (default) lets the shell show the brain-wake sheet where one applies (UI
+  spec §3.8: remote requests always; local requests wake without a sheet); `"auto"` is
+  honoured only for module wakes (`needs_brain: false`) or after the user chose "Don't ask
+  again", which is stored per user and device and honoured on local links only, so it never
+  skips the remote sheet; `"never"` fails fast with `refused {reason: "asleep"}`.
+- **There is no `wake()` call for apps.** A wake is always the side effect of an action
+  request, a held view or a shell Wake button, so its purpose is known and checked.
+- **The shell owns** the wake sheet, the queued list in the Link chip's sheet and every
+  refusal; apps never draw them (§2, §8).
+
+**13.4 Tests (added to §10).** A `needs_brain: false` request never wakes the brain (fake
+arbiter); a queued request reports `expired` after its expiry and `state_changed` after a
+driving-state change; a Tier 2 action marked `queueable` is refused by the registry; an app
+without `permissions.wake` cannot cause a wake; leases are released on unmount; a
+`needs_brain` view shows the placeholder, not the app, while the brain is asleep.
+
+**Open questions added by this amendment** (answered 2026-10-06, §11):
+
+13. ~~**Wake by apps:** only through action requests and held views (no `wake()`)?~~
+    **Answered:** yes (§13.3).
+14. ~~**"Don't ask again"** for brain wakes: per user and device, local links only?~~
+    **Answered:** yes (§13.3; UI spec §3.8).
+
 ## Changelog
 
 - 2026-10-06: v0.1, first draft from the [app model research](../references/research/ui/app_model.md):
@@ -450,3 +518,17 @@ Network app.
   changes are owner-role API operations, not a new category. §4.2 lists the slot names,
   `more:network`, `sheet:link` and `network:device:<id>` included. Q6 and Q10–Q12 answered.
   Stays draft: Q3, Q4, Q7 and Q8 are open.
+- 2026-10-06: proposed amendment §13, pending owner answers (no version change): action
+  fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a
+  "Needs the hub" placeholder; `permissions.wake`; per-device power records in the cluster
+  model; SDK wake and expiry options on `actions.request`, a read-only `power` service with
+  leases; tests and open questions 13–14 (ADR-0040, proposed).
+- 2026-10-06: v0.4, owner answers on power states and the product family (ADR-0039,
+  ADR-0040). §13 is accepted: action fields `runs_on`, `needs_brain`, `queueable` and
+  `expires_max_s`; `needs_brain` views with a "Needs the hub" placeholder;
+  `permissions.wake`; per-device power records in the cluster model; SDK wake and expiry
+  options on `actions.request` and a read-only `power` service with leases. Q13 (apps wake
+  only through action requests and held views; no `wake()`) and Q14 ("Don't ask again" per
+  user and device, local links only) answered; the brain-wake sheet shows for remote
+  requests only. The `product` value `lite` becomes `diagnostics`, and "Lite" reads Ostler
+  Diagnostics. Stays draft: Q3, Q4, Q7 and Q8 are open.

@@ -2,11 +2,11 @@
 title: "Add-ons catalogue — module ideas with transport, standards and phase"
 area: references
 status: draft
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [references/vision.md, references/research/ecosystem_architecture.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/features_backlog.md]
 summary: >
-  A catalogue of add-on module ideas for the Ostler ecosystem (the guardian as a node hardware variant, cameras and dashcam, 360 view, own relay boards later, sensor nodes (fast tacho, EGT, boost/oil, wideband AFR, accelerometers) and sensor pods, buttons, displays and head unit, gauges, TPMS, a Meshtastic-compatible LoRa add-on first behind a thin GPL-3 VSS bridge (mesh is car-to-car, base or off-grid only, a remote path, ADR-0038), Wi-Fi HaLow link to home, a richer car-to-car mesh layer later (MeshCore, Reticulum/LXMF, Styrene, Ratspeak as references) and Babel if a Wi-Fi IP mesh is wanted, a 10 Hz u-blox GNSS (next; placement pending) and RTK later, cellular and Starlink gateway, CAN/T1S bridges, leisure battery and solar via Victron VE.Direct, EV charger via OCPP/ISO 15118, camper and overland kit, tracker, OBD dongle, winch and lights, weather station, trailer, motorcycles via a Lite node with the phone or a guardian-variant node, and more), each with what it does, its transport, the open standards it should use and a phase (now / next / later / idea), plus rules every add-on follows and live-checked facts (October 2026) with sources.
+  A catalogue of add-on module ideas for the Ostler ecosystem (the guardian as a node hardware variant, cameras and dashcam, 360 view, own relay boards later, sensor nodes (fast tacho, EGT, boost/oil, wideband AFR, accelerometers) and sensor pods, buttons, displays and head unit, gauges, TPMS, a Meshtastic-compatible LoRa add-on first behind a thin GPL-3 VSS bridge (mesh is car-to-car, base or off-grid only, a remote path, ADR-0038), Wi-Fi HaLow link to home, a richer car-to-car mesh layer later (MeshCore, Reticulum/LXMF, Styrene, Ratspeak as references) and Babel if a Wi-Fi IP mesh is wanted, a 10 Hz u-blox GNSS (next; on the Diagnostics node, ADR-0039) and RTK later, cellular and Starlink gateway, CAN/T1S bridges, leisure battery and solar via Victron VE.Direct, EV charger via OCPP/ISO 15118, camper and overland kit, tracker, OBD dongle, winch and lights, weather station, trailer, motorcycles via an Ostler Diagnostics node with the phone or a guardian-variant node, and more), each with what it does, its transport, the open standards it should use and a phase (now / next / later / idea), plus rules every add-on follows and live-checked facts (October 2026) with sources.
 ---
 
 # Add-ons catalogue
@@ -18,8 +18,8 @@ were checked live in **October 2026**; **(U)** means unverified.
 
 > **Update (2026-10-06, ADR-0032/0033):** the guardian is no longer an add-on but a
 > **node hardware variant** (same firmware, hidden, battery-backed, no outputs); the base
-> pack's "buddy" is replaced by the node, and add-ons work with **Ostler Lite** (node
-> alone) or **Ostler** (node + brain). The node transmit gate is the only path to the car.
+> pack's "buddy" is replaced by the node, and add-ons work with **Ostler Diagnostics** (node
+> alone) or **Ostler Diagnostics + Hub** (node + brain; names per ADR-0039). The node transmit gate is the only path to the car.
 > The "alarms are notify-only" rule is dropped: alarm outputs come through a future I/O /
 > relay module with an ADR per car-switching function. Sensor nodes are a new family (§1).
 
@@ -95,7 +95,7 @@ not scheduled; **idea** = worth recording.
 | Module | What it does | Transport | Standards | Phase |
 |---|---|---|---|---|
 | **TPMS receiver** | Reads aftermarket or OEM tyre sensors | 315/433 MHz receiver (SDR or a sub-GHz radio) on T1S or USB | rtl_433 decoders, MQTT | later |
-| **GNSS (10 Hz u-blox)** | Drive logging, replay, Drive mode, the driving-state fallback, the speed-vs-wheel-speed check and the best clock for the time role; the guardian's 1 Hz modem GNSS stays the security tracker ([ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md) Amendments A, [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md)). **Placement pending (product-family research)**: the node or the "Ostler Diagnostics" OBD-port node; a USB u-blox on the brain stays a dev path | UART on a node (time pulse to a GPIO); USB as a dev path | NMEA 0183, UBX | next |
+| **GNSS (10 Hz u-blox)** | Drive logging, replay, Drive mode, the driving-state fallback, the speed-vs-wheel-speed check and the best clock for the time role; the guardian's 1 Hz modem GNSS stays the security tracker ([ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md) Amendments A, [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md)). **On the Ostler Diagnostics node** ([ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) §9), where with PPS it ranks first for time; a USB u-blox on the hub is the hub-only and dev path | UART on a node (time pulse to a GPIO); USB as a dev path | NMEA 0183, UBX | next |
 | **RTK** | Centimetre RTK for lap timing, surveying and trails | T1S or USB | UBX, RTCM 3 over NTRIP | later |
 | **Tracker** | A small hidden tracker on its own cell; the guardian variant covers most of this | LTE-M/NB-IoT or LoRa | OwnTracks, Traccar OsmAnd | later |
 | **OBD dongle** | A Wi-Fi/BLE OBD front end for `generic_obd2` | Wi-Fi, BLE | ELM327 AT, slcan/SocketCAN (e.g. WiCAN Pro) | next ([ADR-0031](../../decisions/adr-0031-generic-obd2-pack-in-platform.md)) |
@@ -117,7 +117,7 @@ not scheduled; **idea** = worth recording.
 
 | Module | What it does | Transport | Standards | Phase |
 |---|---|---|---|---|
-| **Bike: Lite node + phone** | An Ostler Lite node with the phone as the screen: diagnostics where the bike allows it (many older bikes use K-line, (U) per make), lean angle and IMU logging, GNSS | BLE/Wi-Fi to the phone; no module bus | VSS, MQTT; the same `VehiclePack` contract | later |
+| **Bike: Diagnostics node + phone** | An Ostler Diagnostics node with the phone as the screen: diagnostics where the bike allows it (many older bikes use K-line, (U) per make), lean angle and IMU logging, GNSS | BLE/Wi-Fi to the phone; no module bus | VSS, MQTT; the same `VehiclePack` contract | later |
 | **Bike: guardian-variant node** | Hidden, battery-backed tracker and movement/tilt alarm; probably the natural bike product | 4G (IoT SIM) or LoRa | OwnTracks, Traccar OsmAnd | later |
 | **Group rides** | Positions and messages within a riding group, with or without phone signal; coarse positions unless a live ride is opted in | LoRa (Meshtastic-compatible add-on, ADR-0038) and the phone | Meshtastic; the social layer of [vision §6](../vision.md#6-many-vehicles-many-people) | later |
 | **Bike TPMS** | Two-wheel tyre pressure | 433 MHz or BLE | rtl_433 or BLE | idea |
@@ -164,6 +164,10 @@ Sources: [Morse Micro chips](https://morsemicro.com/chips),
 [LF Energy and NEVI](https://lfenergy.org/u-s-joint-office-of-energy-and-transportation-partners-with-linux-foundation-energy-to-improve-ev-charging-nationally/).
 
 ## Changelog
+
+- 2026-10-06: v1.4, product names per ADR-0039: Ostler Diagnostics (was Ostler Lite) and
+  Ostler Hub; the bike row reads a Diagnostics node + phone; the u-blox row's placement is
+  decided (on the Diagnostics node).
 
 - 2026-10-06: v1.3, owner's networking answers (ADR-0038 and ADR-0037 accepted, ADR-0027
   and ADR-0032 Amendments): the LoRa row is the first mesh add-on, Meshtastic-compatible

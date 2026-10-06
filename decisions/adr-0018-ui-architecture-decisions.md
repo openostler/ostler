@@ -2,7 +2,7 @@
 title: "ADR-0018 — UI architecture decisions"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0018 — UI architecture decisions
 
 > **Amended by [ADR-0033](adr-0033-action-categories-and-approvals.md) and [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** the `comfort` render class is renamed `add-on device`, phones may approve Tier 2–3 over local links, and the guardian is a node variant (see Amendments).
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06: "yes" to every recommended answer in UI spec
@@ -107,3 +108,10 @@ The decisions above stand except where noted; the
   hardware variant of the node ([ADR-0032](adr-0032-one-node-optional-brain.md)), and U5
   starts with the node's capability manifest. The order (U5 before `generateViews()`)
   stands.
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The decision text and the
+Amendments above are unchanged.
+
+- **Names.** Read "Ostler Lite" and "Lite" above as "Ostler Diagnostics" (the OBD-port node, standalone with a phone), and "Ostler" where it names the tier with a brain as "Ostler Diagnostics + Ostler Hub". "Node" and "brain" stay the internal terms.

@@ -2,11 +2,11 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Lite); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Lite node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions.
+  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions.
 ---
 
 # Accounts, multi-vehicle garage, sharing and social — design
@@ -41,10 +41,10 @@ an optional relay and directory, never the source of truth.
 - Upgrade: an existing `--admin-password` / `D2DIAG_ADMIN_PW` becomes the owner's password
   (user `owner`, prompted to rename and add a passkey). Basic Auth keeps working for one
   release, mapped to the owner, then goes.
-- **Ostler Lite** (a node with no brain, [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md))
+- **Ostler Diagnostics alone** (a node with no hub, [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md))
   has no display or console. The owner is bootstrapped by **pairing a phone** with the node
   (a physical step on the node, such as a button press or a code on its label); the pairing
-  keys on the phone sign the owner in. There is no Pi CA on Lite; trust comes from pairing.
+  keys on the phone sign the owner in. There is no Pi CA without a hub; trust comes from pairing.
 - Lost owner: `ostler auth reset-owner` on the device console (physical or SSH) issues a
   new setup code and deletes no data.
 
@@ -205,7 +205,7 @@ public CA). Unredeemed invites expire (default 48 h). The owner can revoke them.
   at ride end. Glanceable on head units (Moving lockouts apply: no text entry, no lists
   over six items); on bikes the phone or a small display shows only distance to the
   leader and the sweep.
-- **Bikes** carry a guardian-variant or Lite node (ADR-0032), with the phone as the screen.
+- **Bikes** carry a guardian-variant or Ostler Diagnostics node (ADR-0032), with the phone as the screen.
 - **Ride summaries:** route, distance, duration, stops and chosen vehicle data (coolant
   peaks, low-range time). **Privacy zones** trim the ends near saved places, as fitness
   apps do. GPX export exists.
@@ -336,7 +336,7 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
    only after?
 6. Social hosting: on a member's device, or only once Ostler Cloud exists?
 7. ~~For bikers: base hardware on bikes, or the phone only?~~ **Answered:** a
-   guardian-variant or Lite node, with the phone as the screen.
+   guardian-variant or Ostler Diagnostics node, with the phone as the screen.
 8. Should Ostler Cloud ever hold a Meta app for automatic posts, or only share links and
    the owner's own bots?
 
@@ -348,3 +348,4 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
   the category; the kiosk session is Read and Comfort; transport is local-only with the
   install override; phone approval of Tier 2–3 over local links; Lite bootstraps by phone
   pairing; the default vehicle is the one the node is on; the confirmation matrix.
+- 2026-10-06 — v0.3: wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).

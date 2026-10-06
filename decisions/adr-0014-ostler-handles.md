@@ -2,7 +2,7 @@
 title: "ADR-0014 — Ostler handles: openostler org and package, @ostler npm, @ostler.tech; trademark policy"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0014 — Ostler handles and the trademark policy
 
 > **Amended 2026-10-06 ([ADR-0032](adr-0032-one-node-optional-brain.md), ADR-0034):** the product family adds "Ostler Lite" and "Ostler"; "node" and "brain" are working names; the guardian is a node variant.
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** the product family is Ostler Diagnostics, Ostler Guardian and Ostler Hub; read "Ostler Lite" as "Ostler Diagnostics". See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It amends the naming in ADR-0013.
@@ -110,3 +111,15 @@ brain; [ADR-0034](adr-0034-repo-boundaries.md), repo boundaries). The handles ab
    node (same firmware, built for security), not a separate product line or an add-on.
 4. **Repos.** The org also gets `ostler-pack-<x>` repos, and later `ostler-hardware` and a
    module contract repo (ADR-0034).
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The handles and the Amendments
+above stand; where this entry differs, it wins.
+
+5. **Product family renamed.** The family is **Ostler Diagnostics** (the OBD-port node,
+   standalone with a phone or linked to a hub; was "Ostler Lite"), **Ostler Guardian** (the
+   hidden node variant) and **Ostler Hub** (the brain; was the "Ostler" tier). Read "Ostler
+   Lite" in Amendment 1 as "Ostler Diagnostics", and "Ostler" there as "Ostler Diagnostics +
+   Ostler Hub". "Node" and "brain" stay the internal terms (Amendment 2); "brain" is also an
+   informal synonym for the Hub. Ostler Cloud stays as named.

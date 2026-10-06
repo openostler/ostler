@@ -2,7 +2,7 @@
 title: "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0032-one-node-optional-brain.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0036 — VIN and identity data in recordings
+
+> **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** the Diagnostics node scrubs identity data in its raw tap too, before it leaves the node. See [Amendments (product family)](#amendments-2026-10-06-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answer, 2026-10-06). **Amends**
@@ -85,3 +87,16 @@ CONSTITUTION and GOALS (those files are amended by their owners).
 - **Record by default.** Rejected: privacy by default.
 - **Hash identity replies instead of a placeholder.** Rejected: a VIN has little entropy and
   a hash can be reversed by search; a fixed placeholder leaks nothing.
+
+## Amendments (2026-10-06, product family)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (accepted with the owner's answers of 2026-10-06). The decision text above is
+unchanged; where this entry differs, it wins.
+
+1. **The node scrubs the raw tap** (§2). The Diagnostics node frames K-line and ISO-TP
+   messages before it emits its raw tap, so it applies the pack's identity declarations **on
+   the node**: identity replies are replaced with the fixed placeholder and flagged
+   `scrubbed` before they leave the node, unless the install-level option is on. With the
+   option on, unscrubbed bytes go only to the paired hub over the in-car link, and every
+   export still scrubs (§3). Bytes the node cannot frame are marked `unframed` and dropped
+   from exports (ADR-0039 §3).

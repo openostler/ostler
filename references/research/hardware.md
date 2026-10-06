@@ -2,11 +2,11 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
-  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS node (ADR-0032; the guardian is its hidden battery-backed variant), 10 Hz u-blox for logging, KKL K-line, WiCAN Pro, Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own boards (a node board with a guardian variant, a separate brain board); risks. Updated 2026-10-06 for ADR-0032/0033: one ESP32 node with an optional Pi brain, no buddy, the guardian as a hidden node variant with no outputs, KKL dev-only. v1.4 adds the GPS split (owner, 2026-10-06): the guardian's built-in SIM7670G GNSS at 1 Hz (fixed; GPS/GLONASS/Galileo/BeiDou) with a hidden active antenna for security, and a 10 Hz u-blox (MAX-M10S or NEO-M9N) on the diagnostic node for drive logging, with prices, antennas and the merge recommendation.
+  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS node (ADR-0032; the guardian is its hidden battery-backed variant), 10 Hz u-blox for logging, KKL K-line, WiCAN Pro (a CAN-only board profile, ADR-0039), Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own boards (a node board with a guardian variant, a separate brain board); risks. Updated 2026-10-06 for ADR-0032/0033: one ESP32 node with an optional Pi brain, no buddy, the guardian as a hidden node variant with no outputs, KKL dev-only. v1.4 adds the GPS split (owner, 2026-10-06): the guardian's built-in SIM7670G GNSS at 1 Hz (fixed; GPS/GLONASS/Galileo/BeiDou) with a hidden active antenna for security, and a 10 Hz u-blox (MAX-M10S or NEO-M9N) on the diagnostic node for drive logging, with prices, antennas and the merge recommendation. v1.5 (ADR-0039, ADR-0040): the WiCAN Pro is a CAN-only board profile (K-line behind an interpreter IC); the u-blox placement on the diagnostic node is decided; the parked-current table gains the Diagnostics node (parked-ready ≤ 5 mA, parked-deep ≤ 0.5 mA) against a 10 mA budget.
 ---
 
 # Hardware research: a development kit now, our own hardware later
@@ -72,7 +72,7 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 | Wake and alarm inputs | PC817 4-channel opto board (screw terminals) and **[Adafruit LSM6DSOX](https://adafruit.com/product/4438)** (STEMMA, plus one jumper wire for the interrupt pin) | 15 | Ignition, OEM alarm/siren and doors; wake on motion |
 | Guardian → Pi link | One GPIO driving a CarPiHAT input through an opto/relay board, plus a UART link | 5 | Check the CarPiHAT's power-on logic first (U). Fallback: **[Witty Pi 5 HAT+](https://thepihut.com/products/witty-pi-5-hat-real-time-clock-and-power-management-for-raspberry-pi)**. |
 | K-line (Td5) | **Keep the KKL USB cable** on the Pi for development only; production K-line runs on the node (ADR-0032) | 0 | Proven |
-| OBD front end for later cars and always-on K-line | **[MeatPi WiCAN Pro](https://www.crowdsupply.com/meatpi-electronics/wican-pro)** ($89; backordered until about December 2026) and an OBD Y-splitter (£17) | 85 | Fallback: [SparkFun OBD-II UART](https://www.sparkfun.com/sparkfun-obd-ii-uart.html) (STN1110, £53.50). It might pass the Td5 seed-key exchange, but its timing is unknown, so bench-test it first (U). |
+| OBD front end for later CAN cars (a **CAN-only board profile**: its K-line goes through an interpreter IC, so not for gated K-line or the raw tap; ADR-0039 §2) | **[MeatPi WiCAN Pro](https://www.crowdsupply.com/meatpi-electronics/wican-pro)** ($89; backordered until about December 2026) and an OBD Y-splitter (£17) | 85 | Fallback: [SparkFun OBD-II UART](https://www.sparkfun.com/sparkfun-obd-ii-uart.html) (STN1110, £53.50). It might pass the Td5 seed-key exchange, but its timing is unknown, so bench-test it first (U). |
 | Add-on: I/O / relay module (later; ADR per car-switching function) | **[Waveshare ESP32-S3-ETH-8DI-8RO-C](https://thepihut.com/products/8-channel-esp32-s3-wi-fi-relay-module-with-can-interface)** | 43 | 7–36 V input; DIN rail; isolated CAN; 8 isolated inputs (5–36 V); 8 × 10 A relays; RTC. A more compact alternative is the [M5Stack StamPLC](https://docs.m5stack.com/en/products/sku/K141) (15 mA standby). |
 | Add-on: CAN bridge / emulator | **[Autosport Labs ESP32-CAN-X2](https://wiki.autosportlabs.com/ESP32-CAN-X2)** ($54.95, in stock) | 42 | 2× CAN; automotive 6–20 V input; JST pigtails |
 | Camera (later) | **[M5 Timer Camera X](https://thepihut.com/collections/new-products-maker/products/timer-camera-x-ov3660-esp32-psram)** (2 µA sleep, own battery), XIAO ESP32-S3 Sense, or Pi Camera 3 | 13–35 | Over Wi-Fi to go2rtc on the Pi |
@@ -83,11 +83,13 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 | Part | Draw from the car battery |
 |---|---|
 | Guardian | About 0 (it runs from its 18650) |
-| CarPiHAT | Under 1 mA |
+| Diagnostics node (ADR-0040 §2; bench targets) | Parked-ready ≤ 5 mA (first 72 h); parked-deep ≤ 0.5 mA |
+| CarPiHAT (hub's power board; the hub itself is cut) | Under 1 mA |
 | WiCAN Pro, if fitted | About 1–3 mA |
-| **Total** | **About 1–4 mA** |
+| **Total** | **About 1.5–9 mA** (budget: ≤ 10 mA average including wakes, ADR-0040 §4.4) |
 
-The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (U).
+The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (U); at the
+10 mA budget it is about five and a half months (U).
 
 ## GPS split: two receivers, two jobs (2026-10-06)
 
@@ -153,10 +155,11 @@ antenna lead would also blind the guardian, which defeats the point of a hidden 
 
 ### Where the u-blox goes: node or brain
 
-**Recommendation: on the diagnostic node** (UART with PPS to a node GPIO, or I²C on a dev
+**Decided: on the diagnostic node** ([ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) §9; recommended here first) (UART with PPS to a node GPIO, or I²C on a dev
 kit), with the brain receiving fixes over MQTT like every other reading.
-- **Lite works.** Ostler Lite has no brain; the node records sessions itself (ADR-0032
-  §12), so 10 Hz logging and Drive mode on Lite need the receiver on the node.
+- **Ostler Diagnostics works alone.** Ostler Diagnostics has no hub; the node records
+  sessions itself (ADR-0032 §12), so 10 Hz logging and Drive mode on it alone need the
+  receiver on the node.
 - **The gate needs speed.** The driving state falls back to GPS speed, and the node gate
   re-checks it at execution (UI spec §3.5, ADR-0033 §3). During a SLABS session the Td5 speed
   is absent, so the gate's own receiver should be the fast one.
@@ -201,7 +204,7 @@ Sources: [SIM767XX AT manual v1.01](https://files.waveshare.com/wiki/SIM7670G-LT
 
 | Board | Has | Sleep | Price | Role |
 |---|---|---|---|---|
-| WiCAN Pro | ESP32-S3; CAN + ISO 9141/14230 (fast/slow init) + J1850; IMU; RTC; microSD; MQTT/HA; GPL-3 firmware | 2.8 mA (claims <1 mA) | $89 | OBD front end; could run our K-line core |
+| WiCAN Pro | ESP32-S3; CAN + ISO 9141/14230 (fast/slow init) + J1850; IMU; RTC; microSD; MQTT/HA; GPL-3 firmware | 2.8 mA (claims <1 mA) | $89 | CAN-only board profile (ADR-0039 §2): K-line only through its interpreter IC, so generic K-line OBD reads at most, never our gated K-line core |
 | Freematics ONE+ B/H | ESP32 + OBD co-processor; KWP2000; SIM7670 + u-blox M9; IMU | About 10 mA | $135 / $175 | All-in-one alternative with no battery. Custom KWP headers (U). |
 | OVMS v3.3 | 3× CAN; SIM7600; K-line board £25 | About 8–9 mA | £235 | Reference and interop rig ([ovms.md](ovms.md)) |
 | Macchina M2 / A0 | M2: SAM3X with 2× K-line/LIN; A0: ESP32 CAN | U | $99 / $90 | Ready K-line platform, but not ESP32 |
@@ -282,7 +285,7 @@ Sources: [SIM767XX AT manual v1.01](https://files.waveshare.com/wiki/SIM7670G-LT
 
 | Bus | Plan |
 |---|---|
-| K-line | On the node (ESP32-S3 with a K-line transceiver) in production; KKL on the Pi for development only. Other ESP32-side options: WiCAN Pro or the STN1110 board. L9637D breakouts aren't really sold (the chip is obsolete). |
+| K-line | On the node (ESP32-S3 with a K-line transceiver) in production; KKL on the Pi for development only. Not on the WiCAN Pro (CAN-only profile; its K-line sits behind an interpreter IC, ADR-0039 §2) or the STN1110 board, except for generic K-line OBD reads. L9637D breakouts aren't really sold (the chip is obsolete). |
 | CAN on the Pi | CarPiHAT, or a Waveshare 2-CH CAN FD HAT |
 | CAN on the ESP32 | TWAI + SN65HVD230 (~£3) or an M5 Unit CAN |
 | Add-on bus | Private CAN at 250/500 kbit/s. 11-bit ID = 4-bit class + 7-bit node. Heartbeat / command / state messages, ISO-TP for config and OTA. Never share wires with vehicle CAN. |

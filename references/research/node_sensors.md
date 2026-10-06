@@ -2,7 +2,7 @@
 title: "Node sensors — detection, budgets, timing, parked current and placement"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/hardware.md, references/research/addons_catalogue.md]
 summary: >
@@ -174,8 +174,11 @@ a signal generator feeds 6 kHz into MCPWM capture, and log P2 misses and init fa
 
 ## 6. Parked current per sensor
 
-The node and guardian sleep with the radio off between check-ins (ADR-0032 §4). Draw at the
-part (3.3 V), before regulator losses.
+Parked modes follow [ADR-0040](../../decisions/adr-0040-power-states-and-wake.md) §2. The
+node is **parked-ready** for its first 72 h (auto light sleep with BLE, its AP or Wi-Fi
+client and the parked broker up; ≤ 5 mA board target), then **parked-deep** (deep sleep,
+radio off, woken only by its wires, a timer or a modem ring; ≤ 0.5 mA). The guardian deep
+sleeps with IMU wake and timed check-ins. Draw at the part (3.3 V), before regulator losses.
 
 | Item | Parked state | Draw | Source |
 |---|---|---|---|
@@ -198,7 +201,9 @@ part (3.3 V), before regulator losses.
 
 Budget rule: the guardian keeps only the IMU wake (µA class) and the ESP32-S3 deep sleep on
 its own cell; everything else is power-switched. The node draws from the car battery, so the
-hardware research's 20–50 mA parasitic allowance applies to the whole car, not to us.
+hardware research's 20–50 mA parasitic allowance applies to the whole car, not to us; our
+share is the ≤ 10 mA average budget of ADR-0040 §4.4, which a parked-ready node and its
+sensors must fit.
 
 ## 7. Placement
 
@@ -282,3 +287,5 @@ ADC2 and Wi-Fi, low-power currents, ambient temperature per part),
 ## Changelog
 
 - 2026-10-06: v0.1, first draft for the owner's item 3 (sensor detection on nodes).
+- 2026-10-06: v0.2, §6's sleep wording follows ADR-0040: the node is parked-ready (light
+  sleep, phone-reachable) for 72 h, then parked-deep; our parked share is the 10 mA budget.

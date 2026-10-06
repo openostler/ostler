@@ -2,11 +2,11 @@
 title: "Connectivity, uplinks and remote access — node and brain, parked broker, provisioning"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/hardware.md, references/research/t1s_module_bus.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
-  Live research (October 2026) behind ADR-0028, updated for ADR-0032/0033: one always-on ESP32 node (no separate buddy) with an optional Pi brain; the guardian is a hidden node hardware variant; 4G on the node is an official option with a per-device IoT SIM. Can the node host the parked MQTT broker? (Espressif's Mosquitto port: yes for a small TLS set, with caveats; Arduino brokers: no.) Uplinks: existing in-car Wi-Fi, phone hotspot, any USB 3G/4G dongle (HiLink/ECM/NCM/RNDIS or QMI/MBIM via ModemManager), Starlink Mini (12–48 V, 25–40 W, local gRPC status API), node or guardian-variant 4G; selection, priority failover with NetworkManager, data metering with vnstat. Remote access: LAN-only default, Tailscale (BSD-3, headscale, ESP32 MicroLink), an Ostler Cloud relay on the Nabu Casa end-to-end model, HA Cloud via Home Assistant; WireGuard/Nebula/ZeroTier licences. Wi-Fi AP+client on one radio, per-module web UIs, Improv Wi-Fi provisioning, and the drafted IANA `_ostler-mod._tcp` request (used unregistered in development, submitted at module contract v1).
+  Live research (October 2026) behind ADR-0028, updated for ADR-0032/0033: one always-on ESP32 node (no separate buddy) with an optional Pi brain; the guardian is a hidden node hardware variant; 4G on the node is an official fitted option with a per-device IoT SIM, or a USB dongle by class (PPP/AT, ECM, RNDIS; one OTG port, so not on a USB-linked node; ADR-0039). Can the node host the parked MQTT broker? (Espressif's Mosquitto port: yes for a small TLS set, with caveats; Arduino brokers: no.) Uplinks: existing in-car Wi-Fi, phone hotspot, any USB 3G/4G dongle (HiLink/ECM/NCM/RNDIS or QMI/MBIM via ModemManager), Starlink Mini (12–48 V, 25–40 W, local gRPC status API), node or guardian-variant 4G; selection, priority failover with NetworkManager, data metering with vnstat. Remote access: LAN-only default, Tailscale (BSD-3, headscale, ESP32 MicroLink), an Ostler Cloud relay on the Nabu Casa end-to-end model, HA Cloud via Home Assistant; WireGuard/Nebula/ZeroTier licences. Wi-Fi AP+client on one radio, per-module web UIs, Improv Wi-Fi provisioning, and the drafted IANA `_ostler-mod._tcp` request (used unregistered in development, submitted at module contract v1).
 ---
 
 # Connectivity, uplinks and remote access
@@ -41,12 +41,15 @@ do.
 - This changes the [hardware research](hardware.md) split, where the guardian owned
   wake and Pi power. The node is the always-on ESP32, so a car without a guardian variant
   still wakes, still sees doors and motion, and still has a broker while parked; with no
-  brain (Ostler Lite) the node is the whole system.
+  brain (Ostler Diagnostics alone) the node is the whole system.
 - **Power states.** *Asleep* (Pi cut, node on); *woken* (ignition, an alarm input, a
   schedule, a button, or a remote request arriving through any uplink the node or guardian
   holds); *awake/driving* (Pi on); *always-on* (an owner setting meant for EVs, whose DC-DC
   keeps the 12 V battery up; the node still cuts the Pi if 12 V falls below a floor).
   A halted Pi 5 still draws about 50 mA unless fully cut ([hardware.md](hardware.md)).
+  These words now map to the power states of
+  [ADR-0040](../../decisions/adr-0040-power-states-and-wake.md) §1 (off, asleep, waking,
+  awake, held), with the node's parked-ready and parked-deep modes.
 
 ## 2. MQTT broker on the always-on ESP32: feasibility
 
@@ -121,7 +124,8 @@ PicoMQTT, sMQTTBroker and TinyMqtt are all MQTT 3.1.1 with QoS 0
 | **Phone hotspot** | Pi Wi-Fi client, or USB tethering (NCM/RNDIS) | Yes | Phones mark it metered themselves |
 | **Home Wi-Fi when parked** | Pi (or node) Wi-Fi client | No | The cheapest bulk path: uploads, OTA, logbook sync |
 | **USB 3G/4G/5G dongle on the Pi** | HiLink-style: the stick is its own router and shows as an Ethernet NIC (`cdc_ether`/`rndis_host`/NCM) with DHCP. Or modem mode: QMI (`qmi_wwan`) / MBIM (`cdc_mbim`) driven by ModemManager | Yes | HiLink "just works" (double NAT, little control); QMI/MBIM gives signal, SIM and SMS. PPP is the slow legacy path ([FOSDEM 2014](https://archive.fosdem.org/2014/schedule/event/deviot10/), [Netgate forum](https://forum.netgate.com/topic/129994/qmi-mbim-ncm-rndis-protocols)) |
-| **4G on the node** (official option) | A per-device IoT SIM in a Cat-1 modem (e.g. SIM7670-class on the guardian variant), or ESP32-S3 USB host with `iot_usbh_modem` (Cat-1/Cat-4 over PPP, NAPT to share the link) | Yes | Listed modules include A7670E and EC20; slow (PPP over USB FS) but always on ([Espressif](https://components.espressif.com/components/espressif/iot_usbh_modem)) |
+| **4G on the node** (official fitted option) | A per-device IoT SIM in a Cat-1 modem (e.g. SIM7670-class, as on the guardian variant), fitted on the Diagnostics board (ADR-0039 §5) | Yes | Always on; uses no USB port |
+| **USB 4G dongle on the node** | ESP32-S3 USB host, by class: PPP and AT over CDC-ACM (`iot_usbh_modem`, Cat-1/Cat-4, NAPT to share the link), ECM (`iot_usbh_ecm`) or RNDIS (`iot_usbh_rndis`); QMI/MBIM sticks only on the Pi. A tested-dongle list lives in the firmware repo ([product family §5](product_family.md#5-standalone-uplink)) | Yes | Listed modules include A7670E and EC20; slow (USB full speed) but always on ([Espressif](https://components.espressif.com/components/espressif/iot_usbh_modem)). **One OTG port:** a node linked to the hub by USB-NCM is a USB device and cannot host a dongle at the same time (ADR-0039 §4) |
 | **Guardian-variant 4G** | The guardian variant's SIM7670G Cat-1, its own IoT SIM | Yes | Alarm-grade: own battery, works with 12 V cut |
 | **High-speed gateway** (option) | An OpenWrt 4G/5G router as an Ethernet WAN; it can run **mwan3** itself (up to 250 WANs, failover and balancing) ([OpenWrt](https://openwrt.org/docs/guide-user/network/wan/multiwan/mwan3)) | Per its SIM | For vans and overlanders; the Pi sees one Ethernet uplink |
 | **Starlink Mini** (integration) | Ethernet or Wi-Fi WAN; status from its local gRPC API | No (but power-hungry) | See §3.4 |
@@ -177,7 +181,7 @@ PicoMQTT, sMQTTBroker and TinyMqtt are all MQTT 3.1.1 with QoS 0
 | Placement | Speed | Works with Pi off | Works with 12 V cut | Cost | Use |
 |---|---|---|---|---|---|
 | **Pi + USB dongle** | High (Cat-4+, 5G) | No | No | Dongle + SIM | Driving, bulk sync |
-| **Node + 4G** (official option) | Low (Cat-1/PPP) | Yes | No | Option + IoT SIM | Ostler Lite, alarm notifications, remote wake |
+| **Node + 4G** (fitted option, or a USB dongle on a node not linked by USB) | Low (Cat-1/PPP) | Yes | No | Option + IoT SIM | Ostler Diagnostics alone, alarm notifications, remote wake |
 | **Guardian variant + 4G** | Low (Cat-1) | Yes | Yes | Variant + IoT SIM | Alarm-grade, tracker |
 | **Phone/head-unit Wi-Fi** | Medium–high | No | No | None | Default "no SIM" setup |
 

@@ -2,7 +2,7 @@
 title: "ADR-0033 — Action categories, roles, phone approval, safe fault clearing and alarm paths"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, CONSTITUTION.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0033 — Action categories, roles, phone approval, safe fault clearing and alarm paths
 
 > **Amended 2026-10-06 (networking answers, [ADR-0037](adr-0037-role-holders-and-handover.md), [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), [ADR-0027](adr-0027-ip-everywhere-ecosystem-architecture.md#amendments-2026-10-06-networking-answers)):** §6's remote paths include the mesh and Matter; Tier 2+ never runs over Home Assistant, MQTT, Matter or a mesh; Matter may disarm, and preheat or aux-heater switches over Matter need the install override; §3's add-on actions are checked by the executing gate, which wakes the brain only if needed. See [Amendments](#amendments-2026-10-06-networking-answers).
+> **Amended 2026-10-06 (power states, [ADR-0040](adr-0040-power-states-and-wake.md)):** §3's add-on actions are checked by the gate of the device the action `runs_on`; under §6 a remote **wake** is allowed within the quota while the action it serves stays bound by §6. See [Amendments (power states)](#amendments-2026-10-06-power-states).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06, with the owner's answers on phone
@@ -272,3 +273,19 @@ every cell, runs a disarm Parked only with an audit entry and an owner notificat
 runs preheat or aux heater only with the override on; an add-on action with the brain
 asleep is checked by the target device's gate, and refused there when it fails that gate's
 own checks.
+
+## Amendments (2026-10-06, power states)
+
+With [ADR-0040](adr-0040-power-states-and-wake.md) (accepted with the owner's answers of 2026-10-06). The decision text and the
+Amendments above are unchanged; where these entries differ, they win.
+
+6. **The executing gate is the `runs_on` device** (§3; Amendment 5). Every action in a
+   capability manifest declares `runs_on` and `needs_brain`. An add-on action is checked by
+   **the gate of the device it `runs_on`**, and anything that reaches a car bus by the node's
+   transmit gate. A wake carries no grant and no approval; a queued action (Tier 0–1 only)
+   is re-checked when it runs and dropped after its expiry or a driving-state change
+   (ADR-0040 §4–§5).
+7. **Remote wake under quota** (§6). A remote request may **wake** a device within the
+   owner's remote-wake setting and daily quota (ADR-0040 §4.3). The action it serves stays
+   bound by §6: read-only on remote paths unless `OSTLER_ALLOW_REMOTE_CONTROL` is set on the
+   node, and Tier 2–3 approvals are live, on local links, and never queued.

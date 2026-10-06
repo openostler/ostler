@@ -2,14 +2,16 @@
 title: "ADR-0037 — Role holders and handover (transmit gate, parked broker, time source, PLCA coordinator, uplink manager)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/cluster_view.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls.
+  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls. Amended 2026-10-06 by ADR-0039 and ADR-0040: `status` gains `asleep`; a holder that sleeps releases its claims; a guardian alongside takes the parked broker while the node is in parked-deep; the u-blox sits on the Diagnostics node and, with PPS, ranks first for time.
 ---
 
 # ADR-0037 — Role holders and handover
+
+> **Amended 2026-10-06 (product family and power states, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), [ADR-0040](adr-0040-power-states-and-wake.md)):** `status` gains `asleep`; a holder that sleeps releases its claims; with the node in parked-deep a guardian fitted alongside takes the parked broker; the time-source order is confirmed, with the Diagnostics node's u-blox and PPS ranking first; "Lite" reads "Ostler Diagnostics". See [Amendments (product family and power states)](#amendments-2026-10-06-product-family-and-power-states).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -245,3 +247,27 @@ brackets are the owner's numbering for the networking questions of that day.
 6. **Timeouts.** The values in §4 are bench starting points, tuned on the bench.
 7. **The Network page** (owner Q1: yes). Network is a core app that absorbs More → Devices
    (§6; UI spec §3.7, app-model spec §12).
+
+## Amendments (2026-10-06, product family and power states)
+
+With [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) and [ADR-0040](adr-0040-power-states-and-wake.md) (both accepted with the owner's answers of 2026-10-06). The decision
+text and the Amendments above are unchanged; where these entries differ, they win.
+
+8. **`asleep` status** (§3). `status` gains `asleep` beside `online` and `offline`: a device
+   that goes to sleep publishes a retained `asleep` and disconnects cleanly (no will);
+   `offline` stays for an unexpected loss (ADR-0040 §1). A claim is void while its device is
+   `asleep`, as while it is `offline`.
+9. **A holder that sleeps releases its claims** (§3, §4): it clears its retained claims
+   before it sleeps, and the candidates follow §4. The transmit gate still never hands over
+   (§2): while its node sleeps there is no transmit on that bus.
+10. **Parked broker in parked-deep** (§2, §4; ADR-0040 §9). When the node enters parked-deep
+    it runs no broker and releases the parked-broker claim; a **guardian fitted alongside
+    takes it over**, at the cost of its own cell, and gives it back when the node is
+    parked-ready or awake again.
+11. **Time source confirmed** (§2; ADR-0039 §9). The 10 Hz u-blox sits on the **Diagnostics
+    node**, which closes the pending placement above. Best clock first is confirmed: GNSS
+    with PPS, then GNSS without PPS, then a clock in holdover, then a phone seed; the owner's
+    priority breaks ties. The node's u-blox with PPS wired ranks first, so the node is
+    normally the time source; readings after a wake from parked-deep are `unsynced` until
+    GNSS or SNTP is back (ADR-0040 §9).
+12. **Names.** Read "Lite" (§2's time-source row) as "Ostler Diagnostics" (ADR-0039).

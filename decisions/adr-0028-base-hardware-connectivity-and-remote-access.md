@@ -2,7 +2,7 @@
 title: "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/connectivity_uplink.md, references/research/ecosystem_architecture.md, references/research/hardware.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
@@ -13,6 +13,7 @@ summary: >
 
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §4–§5, §16), 2026-10-06:** §1 base definition (the node replaces the buddy; the guardian is a node variant), §2 power states (node wakes and cleanly shuts down the brain with a timeout), and all "buddy" wording (read "node"); §9's IANA request is submitted at module contract v1, unregistered in development.
 > **Amended by [ADR-0037](adr-0037-role-holders-and-handover.md), 2026-10-06:** the uplink manager (§1, §4) is a single-holder role (brain → node); §1's open point is answered (a guardian alongside the node is the standby parked broker, PLCA coordinator and time source). See [Amendments](#amendments-2026-10-06-role-holders).
+> **Amended 2026-10-06 (power states and product family, [ADR-0040](adr-0040-power-states-and-wake.md), [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md)):** §2's power-state words map to ADR-0040 §1; a Diagnostics node may host a USB dongle by class (§3); provisioning gains the setup helper and hub adoption (§7); a hub-only box still has no buddy. See [Amendments (power states and product family)](#amendments-2026-10-06-power-states-and-product-family).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; from the
@@ -213,3 +214,23 @@ With [ADR-0037](adr-0037-role-holders-and-handover.md) (accepted with the owner'
   ADR-0037 §4–§5, at a parked-current cost. §5's fallback "the guardian hosts the parked
   broker" is this standby role. A guardian that **replaces** the node holds those roles
   outright (ADR-0026 Amendment 3).
+
+## Amendments (2026-10-06, power states and product family)
+
+With [ADR-0040](adr-0040-power-states-and-wake.md) and [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) (both accepted with the owner's answers of 2026-10-06). The decision
+text and the Amendments above are unchanged; where these entries differ, they win.
+
+- **Power-state words** (§2, superseded by ADR-0032 §4). §2's words map to ADR-0040 §1:
+  *asleep* (Pi cut, node on) is the brain **off** with the node awake or parked-ready;
+  *woken* is **waking**; *awake* is **awake**, or **held** while a lease keeps it up; the
+  owner's **always-on** (EV) setting is the brain **held** by its always-on lease, which the
+  battery floors still end.
+- **Dongles on the node** (§3). A Diagnostics node may host a USB 4G dongle by class (PPP/AT
+  over CDC-ACM, ECM or RNDIS) from a tested-dongle list; QMI/MBIM sticks stay on a hub; a
+  USB-linked node cannot host one (one OTG port; ADR-0039 §4–§5).
+- **Provisioning** (§7). Setup mode (a Wi-Fi AP with a per-device password, BLE Improv and
+  Improv serial) gains the setup helper (pair and owner, uplink, pack, first scan) and hub
+  adoption with a physical press (ADR-0039 §7).
+- **No buddy for hub-only boxes** (§1 as superseded). A hub with no Diagnostics node wakes
+  from its power board (ignition, RTC schedule, low-voltage cut); a Diagnostics node or a
+  Guardian adds remote wake, the parked broker and the alarm (ADR-0039 §8).
