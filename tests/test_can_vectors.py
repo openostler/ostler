@@ -152,6 +152,17 @@ def _frame(d: dict) -> CanFrame:
     return CanFrame(int(d["id"], 16), d["ext"], _b(d["data"]))
 
 
+def _token(g: dict) -> str:
+    """A grant's stand-in token: the C runner signs with a test key (``bad``: a broken
+    signature; ``unknown_key``: a key outside the trust store)."""
+    return "test:" + g.get("signature", "valid")
+
+
+def _test_verifier(grant: TxGrant) -> str:
+    """The fake verifier: only a grant 'signed' by the test key is valid."""
+    return "ok" if grant.token == "test:valid" else "invalid"
+
+
 @pytest.mark.parametrize("case", _cases("gate"))
 def test_gate_vectors(case):
     defaults = _doc("gate")["defaults"]
@@ -160,19 +171,23 @@ def test_gate_vectors(case):
     gate = TxGate(case.get("allowlist", ()), clock=lambda: clock["t"],
                   driving_state=lambda: state["v"],
                   allow_remote=case.get("allow_remote", defaults["allow_remote"]),
-                  tier0_min_gap=defaults["tier0_min_gap"], fc_window=defaults["fc_window"])
+                  tier0_min_gap=defaults["tier0_min_gap"], fc_window=defaults["fc_window"],
+                  sweep_window=defaults["sweep_window"], grant_verifier=_test_verifier)
     grants: "dict[str, object]" = {}
     for name, g in case.get("grants", {}).items():
         if g.get("forged"):
-            grants[name] = TxGrant(g["action"], g["tier"], 1e9, "forged", g["origin"])
+            grants[name] = TxGrant(g["action"], g["tier"], 1e9, "forged", g["origin"],
+                                   _token(g))
             continue
         clock["t"] = g["at"]
         if "expect_mint" in g:
             with pytest.raises(TxRefused) as ei:
-                gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"])
+                gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"],
+                           token=_token(g))
             assert ei.value.code == g["expect_mint"]
             continue
-        grants[name] = gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"])
+        grants[name] = gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"],
+                                  token=_token(g))
     for name, p in case.get("probes", {}).items():
         clock["t"], state["v"] = p["at"], p["driving_state"]
         if "expect_mint" in p:
