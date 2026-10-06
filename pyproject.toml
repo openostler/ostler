@@ -18,7 +18,7 @@ Source = "https://github.com/openostler/ostler"
 
 [project.optional-dependencies]
 # Dev-only tools (ADR-0017); never installed on a Pi. reuse is GPL-3.0-or-later, CI only.
-dev = ["pytest>=7", "reuse>=5", "ruff>=0.8"]
+dev = ["pytest>=7", "reuse>=5", "ruff>=0.8", "pyyaml>=6", "openapi-spec-validator>=0.7.1", "jsonschema>=4.18"]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack

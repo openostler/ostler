@@ -1,0 +1,2176 @@
+# Ostler HTTP API: the routes of src/openostler/web/server.py (_Handler.do_GET/POST/PATCH/DELETE).
+# OpenAPI 3.1.1; schemas are JSON Schema 2020-12 (ADR-0017). Shapes follow the UI's Zod
+# schemas (ui/src/api/schemas.ts) and the real responses in ui/src/api/fixtures/.
+# tests/test_api_contracts.py fails when a server route is missing here (or vice versa) and
+# validates every fixture against its response schema. See api/README.md.
+openapi: 3.1.1
+info:
+  title: Ostler
+  summary: The open vehicle platform's local HTTP API (dashboard, logbook, replay, admin mapper).
+  description: |
+    The HTTP API the Ostler server (`openostler.web.server`) offers its own UI on the device
+    (a Pi in the car, or a laptop). It is a stdlib `http.server`: there is no framework and
+    no API versioning yet (routes get versioned at U6, ADR-0017 / standards research §8.2).
+
+    **Access.** Every operation carries `x-ostler-access`:
+    - `public`: no authentication.
+    - `admin`: HTTP Basic auth (`adminBasic`). Only the password counts; the user name is
+      ignored. When the server runs without `--admin-password`, admin routes are
+      **ungated** (local development).
+
+    **Public mode** (`--public`, the demo server). Every operation carries
+    `x-ostler-public-mode`:
+    - `open`: served as usual.
+    - `filtered`: served, but only the pack's synthetic (demo) sessions exist; a real
+      session answers 404 exactly like an unknown id (ADR-0009).
+    - `refused`: answered 403 `not available in public mode`.
+    - `hidden`: answered 404 (audio is never served in public mode).
+    - `partial`: some commands are refused (actuator and service actions, `delete_session`,
+      `split_session`); the reply is `{ok: false, error}` with HTTP 400.
+
+    **Errors.** API routes answer `{ok: false, error}` (`ErrorReply`) with the HTTP code.
+    An unknown route, or a route outside the JSON API (`/doc`, static files), answers the
+    stdlib HTML error page (`NotFoundHtml`). Routes matched with `==` on the raw request
+    path (marked `x-ostler-query-string: refused`) answer 404 when a query string is added.
+
+    **Wire conventions** are documented in `components.x-ostler-wire-conventions` and as
+    named schemas (`Rfc3339Utc`, `VssUnit`, `GeoJsonPosition`, `GeoJsonLineString`, `Vid`).
+
+    **Live updates** are an SSE stream at `GET /events`; its messages are described in
+    `api/asyncapi.yaml` (AsyncAPI 3.0).
+  version: 0.0.1
+  license:
+    name: AGPL-3.0-or-later
+    identifier: AGPL-3.0-or-later
+servers:
+  - url: http://localhost:8080
+    description: A local dashboard (tools/dashboard.py; the port is configurable).
+  - url: https://{device}
+    description: The device over local HTTPS (ADR-0021).
+    variables:
+      device:
+        default: ostler.local
+security: []
+tags:
+  - name: app
+    description: The single-page app and the legacy reference pages.
+  - name: live
+    description: The live snapshot, its SSE stream and commands.
+  - name: metadata
+    description: Read-only pack, module, field, fault and catalog metadata.
+  - name: logbook
+    description: The session logbook (ADR-0009, ADR-0011).
+  - name: replay
+    description: Notes, audio and acceleration on sessions (ADR-0010).
+  - name: mapping
+    description: The admin mapping console (sniff, automap, calibration, signal store write-back).
+  - name: community
+    description: The opt-in community contribution client.
+  - name: docs
+    description: The markdown Documents tab (admin).
+
+paths:
+  # ---------------------------------------------------------------- app (HTML) ---------
+  /:
+    $ref: "#/components/pathItems/AppShell"
+  /index.html:
+    $ref: "#/components/pathItems/AppShell"
+  /v2:
+    $ref: "#/components/pathItems/AppShell"
+  /v2.html:
+    $ref: "#/components/pathItems/AppShell"
+  /admin:
+    $ref: "#/components/pathItems/AdminShell"
+  /admin/:
+    $ref: "#/components/pathItems/AdminShell"
+  /admin.html:
+    $ref: "#/components/pathItems/AdminShell"
+  /legacy/v2:
+    $ref: "#/components/pathItems/LegacyV2"
+  /legacy/v2.html:
+    $ref: "#/components/pathItems/LegacyV2"
+  /v1:
+    $ref: "#/components/pathItems/LegacyV1"
+  /v1.html:
+    $ref: "#/components/pathItems/LegacyV1"
+  /legacy/v1:
+    $ref: "#/components/pathItems/LegacyV1"
+  /legacy/v1.html:
+    $ref: "#/components/pathItems/LegacyV1"
+  /assets/{asset}:
+    get:
+      tags: [app]
+      operationId: getAsset
+      summary: A fingerprinted build asset of the app (cached for a year, immutable).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-route: static
+      parameters:
+        - name: asset
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: The file; the type follows its extension.
+          headers:
+            Cache-Control:
+              schema: {type: string, const: "public, max-age=31536000, immutable"}
+          content:
+            "*/*":
+              schema: {type: string, format: binary}
+        "404":
+          $ref: "#/components/responses/NotFoundHtml"
+  /{file}:
+    get:
+      tags: [app]
+      operationId: getStaticFile
+      summary: Any other file of the built app (favicon, manifest …); `index.html` is never served here.
+      description: >
+        The fallback of `do_GET`: a path that no route matches is resolved inside the
+        packaged `static/` directory (traversal-guarded). Nested paths are allowed.
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-route: static
+      parameters:
+        - name: file
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: 'The file (`Cache-Control: no-cache`); the type follows its extension.'
+          content:
+            "*/*":
+              schema: {type: string, format: binary}
+        "404":
+          $ref: "#/components/responses/NotFoundHtml"
+
+  # ---------------------------------------------------------------- live ---------------
+  /snapshot:
+    get:
+      tags: [live]
+      operationId: getSnapshot
+      summary: The latest snapshot (the same object `/events` pushes).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      responses:
+        "200":
+          description: The latest snapshot.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Snapshot"}
+  /events:
+    get:
+      tags: [live]
+      operationId: streamEvents
+      summary: Server-Sent Events stream of snapshots (see api/asyncapi.yaml).
+      description: >
+        `text/event-stream`, one unnamed `data:` message holding a JSON `Snapshot` every
+        `stream_interval` seconds, for as long as the client stays connected. No `event:`,
+        `id:` or `retry:` fields are sent. Described message by message in
+        `api/asyncapi.yaml`.
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      responses:
+        "200":
+          description: An endless SSE stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: "`data: <Snapshot JSON>\\n\\n`, repeated."
+  /command:
+    post:
+      tags: [live]
+      operationId: postCommand
+      summary: Run a server command or a module action (every module action passes the command gate, ADR-0008).
+      description: |
+        `action` is one of:
+        - inline (answered at once): `start_csv`, `stop_csv`, `set_fault_watch {on}`,
+          `shutdown` (only with `--allow-shutdown`), `delete_session {id}`,
+          `recording_options {audio: off|pi, imu: off|on, accel_hz: 10|25|50, name?}`,
+          `split_session`;
+        - server (queued on the poll thread): `select_module {module}`, `read_all_faults`
+          (45 s timeout), `connect`, `disconnect`, `set_port {port}`;
+        - generic source commands: `clear_faults`, `read_block`;
+        - a module action from the pack's command registry (see `/catalog` actions), with
+          optional `params.trust` for typed confirmation.
+
+        The HTTP code is 200 when `ok` is true and 400 otherwise (refusals, unknown
+        actions, timeouts and errors alike).
+      x-ostler-access: public
+      x-ostler-public-mode: partial
+      x-ostler-query-string: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CommandRequest"}
+      responses:
+        "200":
+          description: The command ran.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CommandReply"}
+        "400":
+          description: Refused, unknown, timed out or failed (`ok` is false).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CommandReply"}
+
+  # ---------------------------------------------------------------- metadata -----------
+  /pack:
+    get:
+      tags: [metadata]
+      operationId: getPack
+      summary: The active vehicle pack's manifest (modules, aliases, UI layout).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      responses:
+        "200":
+          description: The manifest.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Pack"}
+  /version:
+    get:
+      tags: [metadata]
+      operationId: getVersion
+      summary: Platform and pack versions and commits (Settings → Version).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      responses:
+        "200":
+          description: What is running.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/VersionInfo"}
+  /fields:
+    get:
+      tags: [metadata]
+      operationId: getFields
+      summary: Expected fields of a module with presentation metadata (from the signal store).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      parameters:
+        - $ref: "#/components/parameters/Module"
+      responses:
+        "200":
+          description: The module's fields (an unknown module has none).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/FieldsResponse"}
+  /faults:
+    get:
+      tags: [metadata]
+      operationId: getFaultMeanings
+      summary: The fault-meaning dictionary of a module (the `dtc` store).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      parameters:
+        - $ref: "#/components/parameters/Module"
+      responses:
+        "200":
+          description: The module's fault meanings.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/FaultsResponse"}
+  /catalog:
+    get:
+      tags: [metadata]
+      operationId: getCatalog
+      summary: Without `module`, every module's summary; with it, that module's catalog pages.
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      parameters:
+        - name: module
+          in: query
+          required: false
+          description: A module id or legacy alias. Absent or empty → the module list.
+          schema: {type: string}
+      responses:
+        "200":
+          description: A `CatalogModules` list (no `module`) or one module's `Catalog`.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/CatalogModules"
+                  - $ref: "#/components/schemas/Catalog"
+        "404":
+          $ref: "#/components/responses/Error"
+        "503":
+          description: The catalog cannot be built (an import failed).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+  /map:
+    get:
+      tags: [mapping]
+      operationId: getMap
+      summary: The admin Map view of a module (pre-ADR-0008 menu shape) and per-module coverage.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      security:
+        - adminBasic: []
+      parameters:
+        - $ref: "#/components/parameters/Module"
+      responses:
+        "200":
+          description: The map.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MapResponse"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /signals:
+    get:
+      tags: [mapping]
+      operationId: getSignalRecords
+      summary: The raw signal-store records of a writable module (the admin mapper's view).
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      security:
+        - adminBasic: []
+      parameters:
+        - $ref: "#/components/parameters/Module"
+      responses:
+        "200":
+          description: The records (empty for a module the mapper may not write).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SignalsResponse"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ---------------------------------------------------------------- mapping (admin) ----
+  /sniff:
+    get:
+      tags: [mapping]
+      operationId: getSniff
+      summary: The passive sniffer's latest frames per LID with their current decodes.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      security:
+        - adminBasic: []
+      parameters:
+        - name: module
+          in: query
+          required: false
+          description: The module to show; absent → the sniffer's own choice.
+          schema: {type: string}
+      responses:
+        "200":
+          description: 'The sniff view (`{module: null, modules: [], lids: []}` without a sniffer).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SniffResponse"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /calib:
+    post:
+      tags: [mapping]
+      operationId: postCalib
+      summary: Solve scale and offset from (raw, displayed) samples and suggest a signal.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      security:
+        - adminBasic: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CalibRequest"}
+      responses:
+        "200":
+          description: 'The fit, or `{ok: false, error}` (still HTTP 200).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CalibReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /automap:
+    post:
+      tags: [mapping]
+      operationId: postAutomap
+      summary: Search the raw field (offset, type, scale or byte.bit) that explains plaintext readings.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      security:
+        - adminBasic: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AutomapRequest"}
+      responses:
+        "200":
+          description: 'The solution, or `{ok: false, error}` (still HTTP 200).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AutomapReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /capture:
+    post:
+      tags: [mapping]
+      operationId: postCapture
+      summary: Append a labelled capture to the captures file; also a `capture` note in the recording session.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      security:
+        - adminBasic: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CaptureRequest"}
+      responses:
+        "200":
+          description: "`stored` is false when the server has no captures file; `{ok: false, error}` on a write error."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OkReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /captures:
+    get:
+      tags: [mapping]
+      operationId: getCaptures
+      summary: Capture notes from every session merged with the captures file (one row per capture).
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      security:
+        - adminBasic: []
+      parameters:
+        - name: module
+          in: query
+          required: false
+          schema: {type: string}
+      responses:
+        "200":
+          description: The captures.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CaptureList"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/Error"
+  /signal:
+    post:
+      tags: [mapping]
+      operationId: postSignal
+      summary: Write a confirmed or candidate mapping back to the pack's signal store.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      security:
+        - adminBasic: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SignalUpsertRequest"}
+      responses:
+        "200":
+          description: Written.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          description: Unknown or read-only module, a record without name/lid/offset, or a write error.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ---------------------------------------------------------------- docs (admin) -------
+  /docs:
+    get:
+      tags: [docs]
+      operationId: getDocs
+      summary: The index of the Documents tab.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      security:
+        - adminBasic: []
+      responses:
+        "200":
+          description: The documents.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DocsResponse"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /doc:
+    get:
+      tags: [docs]
+      operationId: getDoc
+      summary: One document rendered to an HTML fragment, fresh from the source.
+      x-ostler-access: admin
+      x-ostler-public-mode: open
+      security:
+        - adminBasic: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: {type: string}
+      responses:
+        "200":
+          description: The fragment.
+          content:
+            text/html:
+              schema: {type: string}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFoundHtml"
+
+  # ---------------------------------------------------------------- community ----------
+  /community:
+    get:
+      tags: [community]
+      operationId: getCommunity
+      summary: The opt-in contribution state.
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      responses:
+        "200":
+          description: 'The state (`{consent: null, endpoint: null}` when community is disabled).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Community"}
+  /community/consent:
+    post:
+      tags: [community]
+      operationId: postCommunityConsent
+      summary: Opt in or out of community contributions.
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                consent: {type: boolean}
+                vehicle:
+                  type: object
+                  additionalProperties: {type: string}
+              additionalProperties: true
+      responses:
+        "200":
+          description: The new consent (registration fields when opting in).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          description: Community is disabled on this server.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+  /community/contribute:
+    post:
+      tags: [community]
+      operationId: postCommunityContribute
+      summary: Contribute one whitelisted, PII-free record (queued when offline).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      x-ostler-query-string: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: true}
+      responses:
+        "200":
+          description: "`{ok: true, flushed}`, or `{ok: false, error}` (not enabled) or `{ok: false, queued: true, error}` (still HTTP 200)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          description: Community is disabled on this server.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+
+  # ---------------------------------------------------------------- logbook ------------
+  /sessions:
+    get:
+      tags: [logbook]
+      operationId: listSessions
+      summary: One page of sessions, newest first (keyset paging through the SessionIndex).
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      parameters:
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, default: 50, description: Capped at 200.}
+        - name: before
+          in: query
+          description: A `next` cursor from a previous page, or an ISO date/date-time (the scrubber). At most 120 characters.
+          schema: {type: string, maxLength: 120}
+        - name: q
+          in: query
+          description: Full-text search (name, description, place, notes); trimmed, at most 200 characters.
+          schema: {type: string}
+        - name: from
+          in: query
+          schema: {type: string, format: date}
+        - name: to
+          in: query
+          schema: {type: string, format: date}
+        - name: module
+          in: query
+          schema: {type: string}
+        - name: has_notes
+          in: query
+          description: "`1`, `true` or `yes` keeps only sessions with notes."
+          schema: {type: string}
+        - name: min_km
+          in: query
+          schema: {type: number}
+      responses:
+        "200":
+          description: 'A page (`{sessions: [], next: null}` without a logbook).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionList"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "503":
+          description: The index is still being built and a filter was asked for.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+  /sessions/histogram:
+    get:
+      tags: [logbook]
+      operationId: getSessionHistogram
+      summary: Session counts and kilometres per month, or per day of one year (the scrubber).
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      parameters:
+        - name: group
+          in: query
+          schema: {type: string, enum: [month, day], default: month}
+        - name: year
+          in: query
+          schema: {type: integer}
+      responses:
+        "200":
+          description: 'The buckets (`{group: month, buckets: []}` without a logbook).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionHistogram"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "503":
+          description: The index is not ready.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+  /sessions/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    get:
+      tags: [logbook]
+      operationId: getSession
+      summary: One session's metadata.
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      responses:
+        "200":
+          description: The metadata.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionMeta"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [logbook]
+      operationId: patchSession
+      summary: Edit a session's name and/or description (trimmed, capped at 80 / 2000 characters; empty → null).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SessionPatch"}
+      responses:
+        "200":
+          description: The updated metadata.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionMetaReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /sessions/{id}/data:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    get:
+      tags: [logbook]
+      operationId: getSessionData
+      summary: Columnar replay data, decimated to at most `max` points.
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      parameters:
+        - name: ch
+          in: query
+          description: Comma-separated channel names; absent → none (time, UTC and track only).
+          schema: {type: string}
+        - name: max
+          in: query
+          schema: {type: integer, minimum: 2, default: 2000}
+      responses:
+        "200":
+          description: The data.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionData"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sessions/{id}/export:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    get:
+      tags: [logbook]
+      operationId: exportSession
+      summary: Download a session as CSV, VBO, GPX 1.1 or a notes CSV.
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      parameters:
+        - name: fmt
+          in: query
+          schema: {type: string, enum: [csv, vbo, gpx, notes], default: csv}
+      responses:
+        "200":
+          description: 'An attachment (`Content-Disposition: attachment; filename="…"`).'
+          headers:
+            Content-Disposition:
+              schema: {type: string}
+          content:
+            text/csv:
+              schema: {type: string}
+            text/plain:
+              schema: {type: string, description: VBO (Racelogic).}
+            application/gpx+xml:
+              schema: {type: string}
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sessions/{id}/events:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    get:
+      tags: [replay]
+      operationId: getSessionEvents
+      summary: The session's event log (events.jsonl); the open session is flushed first.
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      responses:
+        "200":
+          description: The events.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SessionEvents"}
+        "404":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+  /sessions/{id}/notes:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    get:
+      tags: [replay]
+      operationId: listNotes
+      summary: The session's notes.
+      x-ostler-access: public
+      x-ostler-public-mode: filtered
+      responses:
+        "200":
+          description: The notes.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NoteList"}
+        "404":
+          $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [replay]
+      operationId: addNote
+      summary: Add a note at a session time (a retro note by default).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NoteCreate"}
+      responses:
+        "200":
+          description: The note.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NoteReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /sessions/{id}/notes/{nid}:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+      - $ref: "#/components/parameters/NoteId"
+    patch:
+      tags: [replay]
+      operationId: editNote
+      summary: Edit a note's text, tags, t or t_end.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NotePatch"}
+      responses:
+        "200":
+          description: The edited note.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NoteReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+    delete:
+      tags: [replay]
+      operationId: deleteNote
+      summary: Delete a note.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      responses:
+        "200":
+          description: 'Deleted (`{ok: true}`).'
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NoteReply"}
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sessions/{id}/audio:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    post:
+      tags: [replay]
+      operationId: putAudioChunk
+      summary: One chunk of a phone audio track into the session being recorded.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - name: track
+          in: query
+          required: true
+          schema: {type: string, pattern: "^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$"}
+        - name: seq
+          in: query
+          required: true
+          schema: {type: integer, minimum: 0}
+        - name: mime
+          in: query
+          schema: {type: string, default: audio/webm}
+        - name: start
+          in: query
+          description: The track's start, epoch milliseconds.
+          schema: {type: number}
+        - name: end
+          in: query
+          description: "`1` or `true` closes the track after this chunk."
+          schema: {type: string}
+      requestBody:
+        required: true
+        description: The raw chunk, at most 2 MiB.
+        content:
+          "*/*":
+            schema: {type: string, format: binary}
+      responses:
+        "200":
+          description: Stored.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AudioChunkReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/NotRecording"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /sessions/{id}/audio/{track}:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+      - name: track
+        in: path
+        required: true
+        schema: {type: string, pattern: "^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$"}
+    get:
+      tags: [replay]
+      operationId: getAudioTrack
+      summary: A session's audio track, with single-range HTTP Range support. Never in public mode.
+      x-ostler-access: public
+      x-ostler-public-mode: hidden
+      parameters:
+        - name: Range
+          in: header
+          required: false
+          description: A single `bytes=` range; multi-range requests are served whole.
+          schema: {type: string}
+      responses:
+        "200":
+          description: The whole track.
+          headers:
+            Accept-Ranges:
+              schema: {type: string, const: bytes}
+          content:
+            audio/*:
+              schema: {type: string, format: binary}
+        "206":
+          description: The requested range.
+          headers:
+            Content-Range:
+              schema: {type: string}
+          content:
+            audio/*:
+              schema: {type: string, format: binary}
+        "404":
+          $ref: "#/components/responses/Error"
+        "416":
+          description: 'Unsatisfiable range (`Content-Range: bytes */<size>`, empty body).'
+  /sessions/{id}/accel:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    post:
+      tags: [replay]
+      operationId: putAccel
+      summary: Acceleration samples into the session being recorded (at most 5000 per request).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AccelRequest"}
+      responses:
+        "200":
+          description: Stored.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AccelReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/NotRecording"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /sessions/{id}/accel_cal:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    post:
+      tags: [replay]
+      operationId: putAccelCal
+      summary: Set the sensor-to-vehicle rotation of the session being recorded.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AccelCalRequest"}
+      responses:
+        "200":
+          description: Stored (also written to meta.accel_cal and the event log).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AccelCalReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/NotRecording"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /notes/live:
+    post:
+      tags: [replay]
+      operationId: addLiveNote
+      summary: A note stamped "now" in the recording session (refused unless a session is recording).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/LiveNote"}
+      responses:
+        "200":
+          description: The note and its session.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NoteReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/NotRecording"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "503":
+          description: The server has no session recorder.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+
+components:
+  # Wire conventions for every Ostler API (HTTP here, SSE/MQTT in asyncapi.yaml). New
+  # fields follow them; the existing deviations are listed so they can be migrated.
+  x-ostler-wire-conventions:
+    timestamps: >
+      Wall-clock instants on the wire are RFC 3339 date-times in UTC with a `Z` suffix
+      (`Rfc3339Utc`), optionally with fractional seconds. Durations and offsets inside a
+      session are integer milliseconds from the session start (`SessionMs`). Epoch numbers
+      appear only inside CSV columns.
+    timestamp-deviations:
+      - "Snapshot.ts, Recording.since, ActiveTest.since: epoch seconds (EpochSeconds)."
+      - "SessionData.utc and the audio `start` query: epoch milliseconds."
+      - "Captures file rows (`t` in labeled_captures.jsonl): local time without an offset."
+    units: >
+      Values are sent in the storage unit of their COVESA VSS metric (ADR-0016, VSS 6.1
+      units file); the UI converts for display with Intl. Today's signal-store units
+      (`u`, `unit`, `units`) are the pack's strings, migrating to VSS units at U0/U3.
+    geo: >
+      Positions are WGS 84 decimal degrees in GeoJSON (RFC 7946) order `[lon, lat]`.
+      Traces are GeoJSON LineStrings (`GeoJsonLineString`) where a standalone trace is
+      exchanged. `SessionData.track` is a compact columnar form `[lon, lat, t_ms]`: the
+      third member is session time, not altitude, so it is not a GeoJSON position as is.
+    vehicle-id: >
+      Every session carries `vid` (`Vid`), the vehicle it was recorded on; added by U0-A
+      as an optional string and absent on older sessions.
+    errors: "`{ok: false, error: <English sentence>}` with the HTTP status (`ErrorReply`)."
+    openness: >
+      Response objects are open (`additionalProperties: true`): clients must ignore
+      unknown fields, as the UI's Zod schemas do.
+
+  securitySchemes:
+    adminBasic:
+      type: http
+      scheme: basic
+      description: >
+        The admin password (`--admin-password` or `D2DIAG_ADMIN_PW`); the user name is
+        ignored. Unset → admin routes are ungated. Realm `Ostler admin`.
+
+  pathItems:
+    AppShell:
+      get:
+        tags: [app]
+        summary: The single-page app (the legacy v2 page when no UI build is present).
+        x-ostler-access: public
+        x-ostler-public-mode: open
+        x-ostler-query-string: refused
+        responses:
+          "200":
+            $ref: "#/components/responses/Html"
+    AdminShell:
+      get:
+        tags: [app]
+        summary: The same app behind admin auth; the page shows the mapping tabs.
+        x-ostler-access: admin
+        x-ostler-public-mode: open
+        x-ostler-query-string: refused
+        security:
+          - adminBasic: []
+        responses:
+          "200":
+            $ref: "#/components/responses/Html"
+          "401":
+            $ref: "#/components/responses/Unauthorized"
+    LegacyV2:
+      get:
+        tags: [app]
+        summary: The hand-written legacy v2 dashboard (reference, ADR-0004).
+        x-ostler-access: admin
+        x-ostler-public-mode: open
+        x-ostler-query-string: refused
+        security:
+          - adminBasic: []
+        responses:
+          "200":
+            $ref: "#/components/responses/Html"
+          "401":
+            $ref: "#/components/responses/Unauthorized"
+    LegacyV1:
+      get:
+        tags: [app]
+        summary: The hand-written legacy v1 dashboard (reference, ADR-0004).
+        x-ostler-access: admin
+        x-ostler-public-mode: open
+        x-ostler-query-string: refused
+        security:
+          - adminBasic: []
+        responses:
+          "200":
+            $ref: "#/components/responses/Html"
+          "401":
+            $ref: "#/components/responses/Unauthorized"
+
+  parameters:
+    Module:
+      name: module
+      in: query
+      required: false
+      description: A module id or legacy alias (canonicalised); absent → the pack's default module.
+      schema: {type: string}
+    SessionId:
+      name: id
+      in: path
+      required: true
+      description: A session id (`YYYYMMDDTHHMMSSZ[-N]`); anything else answers 404.
+      schema: {type: string, pattern: "^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$"}
+    NoteId:
+      name: nid
+      in: path
+      required: true
+      schema: {type: string, pattern: "^[0-9a-f]{8}$"}
+
+  responses:
+    Html:
+      description: An HTML page.
+      content:
+        text/html:
+          schema: {type: string}
+    NotFoundHtml:
+      description: Not found (the stdlib HTML error page).
+      content:
+        text/html:
+          schema: {type: string}
+    Unauthorized:
+      description: Admin auth required (empty body).
+      headers:
+        WWW-Authenticate:
+          schema: {type: string, const: 'Basic realm="Ostler admin"'}
+    Error:
+      description: "`{ok: false, error}`."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    Forbidden:
+      description: Refused in public mode (`not available in public mode`) or for a synthetic session (`synthetic sessions are read-only`).
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    NotRecording:
+      description: The session is not being recorded (`Not recording — connect to the car first`, or `session <id> is not being recorded`).
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    TooLarge:
+      description: The body is too large (2 MiB per JSON body or audio chunk; 5000 accel samples).
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+
+  schemas:
+    # ---- conventions ----
+    Rfc3339Utc:
+      type: string
+      format: date-time
+      pattern: "Z$"
+      description: An RFC 3339 date-time in UTC with the `Z` suffix, e.g. `2026-10-05T09:00:00.000Z`.
+    EpochSeconds:
+      type: number
+      description: 'Legacy: seconds since the Unix epoch (see x-ostler-wire-conventions.timestamp-deviations).'
+    SessionMs:
+      type: number
+      minimum: 0
+      description: Milliseconds since the session start.
+    VssUnit:
+      type: string
+      description: A unit string; new metrics use the COVESA VSS 6.1 unit of their metric (ADR-0016). Empty for unitless values.
+    Vid:
+      type: [string, "null"]
+      description: The vehicle a session belongs to (U0-A). Optional; absent or null on older sessions.
+    GeoJsonPosition:
+      type: array
+      description: An RFC 7946 position `[lon, lat]` (WGS 84 degrees), optionally with altitude in metres.
+      prefixItems:
+        - {type: number, minimum: -180, maximum: 180}
+        - {type: number, minimum: -90, maximum: 90}
+        - {type: number}
+      minItems: 2
+      maxItems: 3
+    GeoJsonLineString:
+      type: object
+      description: An RFC 7946 LineString, the convention for a standalone trace.
+      required: [type, coordinates]
+      properties:
+        type: {const: LineString}
+        coordinates:
+          type: array
+          minItems: 2
+          items: {$ref: "#/components/schemas/GeoJsonPosition"}
+        bbox:
+          type: array
+          items: {type: number}
+    NumberPair:
+      type: [array, "null"]
+      prefixItems: [{type: number}, {type: number}]
+      minItems: 2
+      maxItems: 2
+    LonLat:
+      type: [array, "null"]
+      description: "`[lon, lat]` (GeoJSON order)."
+      prefixItems: [{type: number}, {type: number}]
+      minItems: 2
+      maxItems: 2
+    Confidence:
+      type: string
+      description: "`proven` or `candidate` (ADR-0006); open, a new level must not break clients."
+
+    # ---- generic replies ----
+    ErrorReply:
+      type: object
+      required: [ok, error]
+      properties:
+        ok: {const: false}
+        error: {type: string}
+      additionalProperties: true
+    OkReply:
+      type: object
+      required: [ok]
+      properties:
+        ok: {type: boolean}
+        error: {type: [string, "null"]}
+        stored: {type: boolean}
+        module: {type: string}
+        name: {type: string}
+        consent: {type: boolean}
+        queued: {type: boolean}
+      additionalProperties: true
+
+    # ---- snapshot ----
+    SignalValue:
+      type: object
+      description: "One live value: v value, u unit, s range status, c confidence."
+      required: [v]
+      properties:
+        v: {type: [number, "null"]}
+        u: {$ref: "#/components/schemas/VssUnit"}
+        s: {type: [string, "null"], description: "ok | low | high | suspect | null"}
+        c: {$ref: "#/components/schemas/Confidence"}
+      additionalProperties: true
+    Logging:
+      type: object
+      required: [recording]
+      properties:
+        recording: {type: boolean}
+        file: {type: string}
+        rows: {type: number}
+      additionalProperties: true
+    PortInfo:
+      type: object
+      required: [spec, resolved]
+      properties:
+        spec: {type: string}
+        resolved: {type: [string, "null"]}
+        candidates: {type: array, items: {type: string}}
+      additionalProperties: true
+    ActiveTest:
+      type: object
+      required: [action, label, since, stop]
+      properties:
+        action: {type: string}
+        label: {type: string}
+        since: {$ref: "#/components/schemas/EpochSeconds"}
+        stop: {type: string}
+      additionalProperties: true
+    GpsFix:
+      type: object
+      required: [fix, lat, lon, speed_kmh, heading, sats, hdop, src, age_s]
+      properties:
+        fix: {type: boolean}
+        lat: {type: [number, "null"]}
+        lon: {type: [number, "null"]}
+        speed_kmh: {type: [number, "null"]}
+        heading: {type: [number, "null"]}
+        sats: {type: [number, "null"]}
+        hdop: {type: [number, "null"]}
+        src: {type: string, description: "usb | mock | replay"}
+        age_s: {type: [number, "null"]}
+      additionalProperties: true
+    Recording:
+      type: object
+      description: The session being recorded right now.
+      required: [session, since, rows]
+      properties:
+        session: {type: string}
+        since: {$ref: "#/components/schemas/EpochSeconds"}
+        rows: {type: number}
+        state: {type: string, description: "recording | paused (absent = recording)"}
+      additionalProperties: true
+    SourceState:
+      type: object
+      required: [state]
+      properties:
+        state: {type: string, description: "available | unavailable | on"}
+        reason: {type: [string, "null"]}
+      additionalProperties: true
+    RecordingSources:
+      type: object
+      required: [gps, pi_audio, imu, accel_hz]
+      properties:
+        gps: {type: string, description: "usb | mock | none"}
+        pi_audio: {$ref: "#/components/schemas/SourceState"}
+        imu: {$ref: "#/components/schemas/SourceState"}
+        accel_hz: {type: number}
+      additionalProperties: true
+    Snapshot:
+      type: object
+      description: The live state, pushed over `/events` every poll and returned by `/snapshot`.
+      required: [status]
+      properties:
+        status: {type: string, description: "connected | connecting | error | no-cable"}
+        source: {type: string}
+        module: {type: string, description: A canonical module id (a /pack module id).}
+        mode: {type: [string, "null"]}
+        modes: {type: array, items: {type: string}}
+        signals:
+          type: object
+          additionalProperties: {$ref: "#/components/schemas/SignalValue"}
+        faults: {type: array, items: {type: string}}
+        logging: {$ref: "#/components/schemas/Logging"}
+        public: {type: boolean}
+        fault_watch: {type: boolean}
+        allow_shutdown: {type: boolean}
+        error: {type: string}
+        stale: {type: boolean}
+        connect_phase: {type: [string, "null"]}
+        conn:
+          type: string
+          description: "disconnected | connecting | connected | lost | reconnecting | error"
+        ts: {$ref: "#/components/schemas/EpochSeconds"}
+        battery_v: {type: [number, "null"]}
+        port: {$ref: "#/components/schemas/PortInfo"}
+        active_test:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/ActiveTest"}
+        gps:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/GpsFix"}
+        recording:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Recording"}
+        recording_sources:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/RecordingSources"}
+      additionalProperties: true
+
+    # ---- commands ----
+    CommandRequest:
+      type: object
+      required: [action]
+      properties:
+        action: {type: string}
+        params: {type: object, additionalProperties: true}
+      additionalProperties: true
+    FaultScanEntry:
+      type: object
+      required: [module, status]
+      properties:
+        module: {type: string}
+        status: {type: string, description: "ok | faults | error | unimplemented"}
+        faults: {type: array, items: {type: string}}
+        error: {type: string}
+        note: {type: string}
+      additionalProperties: true
+    CommandReply:
+      type: object
+      description: "`{ok, message|error}` plus action-specific extras."
+      required: [ok]
+      properties:
+        ok: {type: boolean}
+        message: {type: string}
+        error: {type: string}
+        file: {type: string}
+        path: {type: string}
+        rows: {type: number}
+        fault_watch: {type: boolean}
+        mode: {type: [string, "null"]}
+        module: {type: string}
+        raws:
+          type: object
+          additionalProperties: {type: string}
+        report:
+          type: array
+          items: {$ref: "#/components/schemas/FaultScanEntry"}
+        shutting_down: {type: boolean}
+        options: {type: object, additionalProperties: true}
+      additionalProperties: true
+
+    # ---- metadata ----
+    Field:
+      type: object
+      required: [name, unit, c, limits, label, group, description, derived, span, normal]
+      properties:
+        name: {type: string}
+        unit: {$ref: "#/components/schemas/VssUnit"}
+        c: {$ref: "#/components/schemas/Confidence"}
+        limits: {$ref: "#/components/schemas/NumberPair"}
+        label: {type: string}
+        group: {type: string}
+        description: {type: string}
+        derived: {type: boolean}
+        span: {$ref: "#/components/schemas/NumberPair"}
+        normal: {$ref: "#/components/schemas/NumberPair"}
+      additionalProperties: true
+    FieldsResponse:
+      type: object
+      required: [module, fields]
+      properties:
+        module: {type: string}
+        fields: {type: array, items: {$ref: "#/components/schemas/Field"}}
+      additionalProperties: true
+    FaultMeaning:
+      type: object
+      required: [key, name]
+      properties:
+        key: {type: string}
+        name: {type: string}
+        description: {type: string}
+        cause: {type: string}
+        severity: {type: string}
+        system: {type: string}
+        pcode: {type: string}
+        source: {type: string}
+      additionalProperties: true
+    FaultsResponse:
+      type: object
+      required: [module, faults]
+      properties:
+        module: {type: string}
+        faults: {type: array, items: {$ref: "#/components/schemas/FaultMeaning"}}
+      additionalProperties: true
+    SignalsResponse:
+      type: object
+      required: [module, signals]
+      properties:
+        module: {type: string}
+        signals:
+          type: array
+          items: {type: object, additionalProperties: true}
+      additionalProperties: true
+    MapItem:
+      type: object
+      required: [name, status]
+      properties:
+        name: {type: string}
+        status: {type: string, description: "ok | maybe | todo"}
+        ref: {type: string}
+        lid: {type: string}
+        sig: {type: string}
+      additionalProperties: true
+    MapCoverage:
+      type: object
+      required: [ok, maybe, total]
+      properties:
+        ok: {type: number}
+        maybe: {type: number}
+        total: {type: number}
+      additionalProperties: true
+    MapResponse:
+      type: object
+      required: [module, map, modules, coverage]
+      properties:
+        module: {type: string}
+        map:
+          type: array
+          items:
+            type: object
+            required: [cat, items]
+            properties:
+              cat: {type: string}
+              items: {type: array, items: {$ref: "#/components/schemas/MapItem"}}
+            additionalProperties: true
+        modules: {type: array, items: {type: string}}
+        coverage:
+          type: object
+          additionalProperties: {$ref: "#/components/schemas/MapCoverage"}
+      additionalProperties: true
+    CatalogCoverage:
+      type: object
+      required: [verified, candidate, sniff, untranscribed, total]
+      properties:
+        verified: {type: number}
+        candidate: {type: number}
+        sniff: {type: number}
+        untranscribed: {type: number}
+        total: {type: number}
+      additionalProperties: true
+    CatalogAction:
+      type: object
+      required: [action, label, status, safety, confirm]
+      properties:
+        action: {type: string}
+        label: {type: string}
+        status: {type: string, description: "verified | experimental | planned"}
+        safety: {type: string, description: "read | actuator | service | gated"}
+        confirm: {type: string, description: "none | preconditions | typed"}
+        preconditions: {type: array, items: {type: string}}
+        stop: {type: string}
+        ref: {type: string}
+      additionalProperties: true
+    CatalogItem:
+      type: object
+      required: [id, name, status, safety]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        status: {type: string, description: "verified | candidate | sniff | untranscribed"}
+        safety: {type: string}
+        sig: {type: [string, "null"]}
+        lid: {type: [string, "null"]}
+        ref: {type: string}
+        note: {type: string}
+        placeholder: {type: boolean}
+        pages: {type: [number, "null"]}
+        actions: {type: array, items: {$ref: "#/components/schemas/CatalogAction"}}
+      additionalProperties: true
+    CatalogGroup:
+      type: object
+      required: [id, title, items]
+      properties:
+        id: {type: string}
+        title: {type: string}
+        parent: {type: [string, "null"]}
+        nanocom: {type: [string, "null"]}
+        items: {type: array, items: {$ref: "#/components/schemas/CatalogItem"}}
+      additionalProperties: true
+    CatalogPage:
+      type: object
+      required: [id, title, coverage, groups]
+      properties:
+        id: {type: string, description: "faults | inputs | outputs | settings | utilities"}
+        title: {type: string}
+        coverage: {$ref: "#/components/schemas/CatalogCoverage"}
+        groups: {type: array, items: {$ref: "#/components/schemas/CatalogGroup"}}
+      additionalProperties: true
+    Catalog:
+      type: object
+      required: [module, store_module, coverage, pages]
+      properties:
+        module: {type: string}
+        store_module: {type: string}
+        coverage: {$ref: "#/components/schemas/CatalogCoverage"}
+        pages: {type: array, items: {$ref: "#/components/schemas/CatalogPage"}}
+      additionalProperties: true
+    CatalogModules:
+      type: object
+      required: [modules]
+      properties:
+        modules:
+          type: array
+          items:
+            type: object
+            required: [module, store_module, name, coverage]
+            properties:
+              module: {type: string}
+              store_module: {type: string}
+              name: {type: string}
+              coverage: {$ref: "#/components/schemas/CatalogCoverage"}
+            additionalProperties: true
+      additionalProperties: true
+    Pack:
+      type: object
+      description: The vehicle pack manifest (ADR-0013). Module ids are canonical; `aliases` maps legacy ids onto them.
+      required: [id, name, api_version, default_module, modules, aliases]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        api_version: {type: integer}
+        default_module: {type: string}
+        modules:
+          type: array
+          items:
+            type: object
+            required: [id, name, aliases, live]
+            properties:
+              id: {type: string}
+              name: {type: string}
+              aliases: {type: array, items: {type: string}}
+              live: {type: boolean}
+            additionalProperties: true
+        aliases:
+          type: object
+          additionalProperties: {type: string}
+        layout:
+          type: object
+          description: The pack's screen layout; every part is optional so a minimal pack works.
+          properties:
+            group_order: {type: array, items: {type: string}}
+            drive: {type: object, additionalProperties: {type: object, additionalProperties: true}}
+            body: {type: object, additionalProperties: true}
+            util_lids: {type: object, additionalProperties: true}
+            notices: {type: object, additionalProperties: true}
+            replay: {type: object, additionalProperties: true}
+          additionalProperties: true
+      additionalProperties: true
+    VersionPart:
+      type: object
+      required: [name, version, commit, source]
+      properties:
+        name: {type: string}
+        version: {type: [string, "null"]}
+        commit: {type: [string, "null"]}
+        source: {type: [string, "null"]}
+      additionalProperties: true
+    VersionInfo:
+      type: object
+      required: [platform, pack, built, started]
+      properties:
+        platform: {$ref: "#/components/schemas/VersionPart"}
+        pack:
+          allOf:
+            - $ref: "#/components/schemas/VersionPart"
+            - type: object
+              required: [id]
+              properties:
+                id: {type: string}
+        built: {type: [string, "null"]}
+        started: {$ref: "#/components/schemas/Rfc3339Utc"}
+      additionalProperties: true
+
+    # ---- mapping ----
+    SniffResponse:
+      type: object
+      required: [module, modules, lids]
+      properties:
+        module: {type: [string, "null"]}
+        modules: {type: array, items: {type: string}}
+        lids:
+          type: array
+          items:
+            type: object
+            required: [lid, raw, count]
+            properties:
+              lid: {type: string}
+              raw: {type: string}
+              count: {type: number}
+              decode:
+                type: array
+                items:
+                  type: object
+                  required: [name, value]
+                  properties:
+                    name: {type: string}
+                    value: {type: [number, string, "null"]}
+                    unit: {type: string}
+                    offset: {type: number}
+                    kind: {type: string}
+                  additionalProperties: true
+            additionalProperties: true
+        status: {type: string, description: "starting | live | empty | error; absent = no sniffer"}
+        error: {type: [string, "null"]}
+        source: {type: string}
+        frames: {type: number}
+        lines: {type: number}
+        age: {type: [number, "null"]}
+      additionalProperties: true
+    CalibRequest:
+      type: object
+      properties:
+        samples:
+          type: array
+          description: "`[raw, displayed]` pairs; at least two with different raw values."
+          items:
+            type: array
+            prefixItems: [{type: number}, {type: number}]
+            minItems: 2
+        lid: {type: [integer, string], description: An integer or a hex string.}
+        offset: {type: integer}
+        kind: {type: string, default: u16}
+        name: {type: string}
+        unit: {type: string}
+      additionalProperties: true
+    CalibReply:
+      type: object
+      required: [ok]
+      properties:
+        ok: {type: boolean}
+        error: {type: string}
+        signal: {type: string, description: A suggested `Signal(...)` line.}
+        scale: {type: number}
+        bias: {type: number}
+        r2: {type: number}
+        n: {type: number}
+      additionalProperties: true
+    AutomapRequest:
+      type: object
+      properties:
+        samples:
+          type: array
+          items:
+            type: object
+            required: [text, raws]
+            properties:
+              text: {type: string, description: The reading shown by a reference tool.}
+              raws:
+                type: object
+                description: LID (hex) → raw reply bytes (hex).
+                additionalProperties: {type: string}
+            additionalProperties: true
+        candidate_lids: {type: array, items: {type: string}}
+        name: {type: string}
+        unit: {type: string}
+      additionalProperties: true
+    AutomapReply:
+      type: object
+      required: [ok]
+      properties:
+        ok: {type: boolean}
+        error: {type: string}
+        mode: {type: string, description: "numeric | state"}
+        lid: {type: string}
+        offset: {type: number}
+        kind: {type: string}
+        scale: {type: number}
+        bias: {type: number}
+        r2: {type: number}
+        clean: {type: boolean}
+        how: {type: string}
+        signal: {type: string}
+        bit: {type: [number, "null"]}
+        rule: {type: string}
+        mapping:
+          type: object
+          additionalProperties: {type: number}
+        diff:
+          type: array
+          items:
+            type: object
+            required: [lid, byte, values]
+            properties:
+              lid: {type: string}
+              byte: {type: number}
+              values: {type: array, items: {type: number}}
+            additionalProperties: true
+      additionalProperties: true
+    CaptureRequest:
+      type: object
+      properties:
+        module: {type: string}
+        lid: {type: string}
+        raw: {type: string}
+        text: {type: string, description: The value as read (also accepted as `value`).}
+        value: {type: string}
+      additionalProperties: true
+    CaptureValue:
+      type: object
+      required: [module, lid, raw, value]
+      properties:
+        module: {type: string}
+        lid: {type: string}
+        raw: {type: string}
+        value: {type: string}
+      additionalProperties: true
+    CaptureList:
+      type: object
+      required: [captures]
+      properties:
+        captures:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/CaptureValue"
+              - type: object
+                properties:
+                  t: {type: [number, "null"], description: "Session ms for a capture note."}
+                  session: {type: [string, "null"]}
+      additionalProperties: true
+    SignalUpsertRequest:
+      type: object
+      required: [module, record]
+      properties:
+        module: {type: string, description: A module the pack lets the mapper write.}
+        record:
+          type: object
+          required: [name, lid, offset]
+          properties:
+            name: {type: string}
+            lid: {type: [string, integer]}
+            offset: {type: integer}
+          additionalProperties: true
+      additionalProperties: true
+
+    # ---- docs / community ----
+    DocsResponse:
+      type: object
+      required: [docs]
+      properties:
+        docs:
+          type: array
+          items:
+            type: object
+            required: [id, title, group]
+            properties:
+              id: {type: string}
+              title: {type: string}
+              group: {type: string}
+            additionalProperties: true
+      additionalProperties: true
+    Community:
+      type: object
+      required: [consent, endpoint]
+      properties:
+        consent: {type: [boolean, "null"]}
+        endpoint: {type: [string, "null"]}
+        vehicle: {type: [object, "null"], additionalProperties: true}
+        install: {type: string}
+        registered: {type: boolean}
+        pending: {type: number}
+      additionalProperties: true
+
+    # ---- logbook ----
+    SessionChannel:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string}
+        units: {$ref: "#/components/schemas/VssUnit"}
+        group: {type: string}
+        c: {type: [string, "null"], description: Store confidence; null for GPS and accel channels.}
+        limits: {$ref: "#/components/schemas/NumberPair"}
+      additionalProperties: true
+    Place:
+      type: object
+      required: [label, source]
+      properties:
+        label: {type: string}
+        source: {type: string, description: "geonames | osm"}
+        label_offline: {type: [string, "null"]}
+      additionalProperties: true
+    NullablePlace:
+      oneOf:
+        - {type: "null"}
+        - {$ref: "#/components/schemas/Place"}
+    AudioTrack:
+      type: object
+      required: [track, mime, start_ms, source]
+      properties:
+        track: {type: string}
+        mime: {type: string}
+        start_ms: {type: number, description: Epoch milliseconds.}
+        end_ms: {type: [number, "null"]}
+        source: {type: string, description: "phone | pi"}
+        bytes: {type: number}
+      additionalProperties: true
+    AccelCal:
+      type: object
+      required: [matrix, source, method]
+      properties:
+        matrix:
+          type: array
+          description: 3×3, sensor frame → vehicle frame.
+          items: {type: array, items: {type: number}}
+        source: {type: string, description: "phone | imu"}
+        method: {type: string, description: "level | level+gps | manual"}
+      additionalProperties: true
+    SessionMeta:
+      type: object
+      required: [id, start_utc, end_utc, duration_s, rows, has_gps, distance_km, max_speed_kmh,
+                 bbox, start_pos, end_pos, synthetic, recording, source]
+      properties:
+        id: {type: string}
+        vid: {$ref: "#/components/schemas/Vid"}
+        name: {type: [string, "null"]}
+        description: {type: [string, "null"]}
+        place: {$ref: "#/components/schemas/NullablePlace"}
+        place_start: {$ref: "#/components/schemas/NullablePlace"}
+        place_end: {$ref: "#/components/schemas/NullablePlace"}
+        note_count: {type: number}
+        start_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+        end_utc:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        duration_s: {type: number}
+        rows: {type: number}
+        parts: {type: array, items: {type: string}}
+        modules: {type: array, items: {type: string}}
+        channels: {type: array, items: {$ref: "#/components/schemas/SessionChannel"}}
+        has_gps: {type: boolean}
+        distance_km: {type: number}
+        max_speed_kmh: {type: [number, "null"]}
+        bbox:
+          type: [array, "null"]
+          description: "RFC 7946 bbox `[west, south, east, north]`."
+          items: {type: number}
+          minItems: 4
+          maxItems: 4
+        start_pos: {$ref: "#/components/schemas/LonLat"}
+        end_pos: {$ref: "#/components/schemas/LonLat"}
+        synthetic: {type: boolean}
+        recording: {type: boolean}
+        source: {type: string, description: "mock | live | demo"}
+        audio: {type: array, items: {$ref: "#/components/schemas/AudioTrack"}}
+        accel_cal:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/AccelCal"}
+      additionalProperties: true
+    SessionList:
+      type: object
+      required: [sessions]
+      properties:
+        sessions: {type: array, items: {$ref: "#/components/schemas/SessionMeta"}}
+        next: {type: [string, "null"], description: "Pass back as `before` for the next page; null on the last page."}
+      additionalProperties: true
+    SessionHistogram:
+      type: object
+      required: [group, buckets]
+      properties:
+        group: {type: string, enum: [month, day]}
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [key, count, km]
+            properties:
+              key: {type: string, description: "`YYYY-MM` or `YYYY-MM-DD`."}
+              count: {type: number}
+              km: {type: number}
+            additionalProperties: true
+      additionalProperties: true
+    SessionPatch:
+      type: object
+      properties:
+        name: {type: [string, "null"], maxLength: 80}
+        description: {type: [string, "null"], maxLength: 2000}
+      minProperties: 1
+      additionalProperties: true
+    SessionMetaReply:
+      type: object
+      required: [ok]
+      properties:
+        ok: {type: boolean}
+        error: {type: string}
+        meta: {$ref: "#/components/schemas/SessionMeta"}
+      additionalProperties: true
+    SessionData:
+      type: object
+      description: "Columnar replay data: `t` is session ms; `ch[name][i]` aligns with `t[i]`."
+      required: [id, t, utc, ch, track, decimated]
+      properties:
+        id: {type: string}
+        t: {type: array, items: {$ref: "#/components/schemas/SessionMs"}}
+        utc:
+          type: array
+          description: Epoch milliseconds per row (null when unknown).
+          items: {type: [number, "null"]}
+        ch:
+          type: object
+          additionalProperties: {type: array, items: {type: [number, "null"]}}
+        text:
+          type: object
+          description: Text channels aligned with `t` (faults joined with "; ", module).
+          additionalProperties: {type: array, items: {type: [string, "null"]}}
+        track:
+          type: array
+          description: "`[lon, lat, t_ms]` per GPS point (GeoJSON coordinate order; the third member is session ms)."
+          items:
+            type: array
+            prefixItems: [{type: number}, {type: number}, {type: number}]
+            minItems: 3
+            maxItems: 3
+        decimated: {type: boolean}
+      additionalProperties: true
+    SessionEvent:
+      type: object
+      description: "One line of events.jsonl: `{t (session ms), type, ...}`. Open: unknown types are kept."
+      required: [t, type]
+      properties:
+        t: {$ref: "#/components/schemas/SessionMs"}
+        type: {type: string, description: "state | module | command | active_test | note | accel_cal | …"}
+      additionalProperties: true
+    SessionEvents:
+      type: object
+      required: [id, events]
+      properties:
+        id: {type: string}
+        events: {type: array, items: {$ref: "#/components/schemas/SessionEvent"}}
+      additionalProperties: true
+
+    # ---- replay ----
+    Note:
+      type: object
+      required: [id, t, kind, source, created]
+      properties:
+        id: {type: string, pattern: "^[0-9a-f]{8}$"}
+        t: {$ref: "#/components/schemas/SessionMs"}
+        t_end: {type: [number, "null"]}
+        text: {type: string}
+        tags: {type: array, items: {type: string}}
+        kind: {type: string, enum: [mark, note, capture]}
+        source: {type: string, enum: [live, retro]}
+        created: {$ref: "#/components/schemas/Rfc3339Utc"}
+        edited:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        capture:
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/CaptureValue"}
+      additionalProperties: true
+    NoteList:
+      type: object
+      required: [id, notes]
+      properties:
+        id: {type: string}
+        notes: {type: array, items: {$ref: "#/components/schemas/Note"}}
+      additionalProperties: true
+    NoteCreate:
+      type: object
+      required: [t]
+      properties:
+        t: {type: number, minimum: 0, description: Session ms (rounded).}
+        t_end: {type: [number, "null"], minimum: 0}
+        text: {type: [string, "null"], maxLength: 2000}
+        tags: {type: array, items: {type: string, maxLength: 40}, maxItems: 16}
+        kind: {type: string, enum: [mark, note, capture], default: note}
+        source: {type: string, enum: [live, retro], default: retro}
+        capture: {$ref: "#/components/schemas/CaptureValue"}
+      additionalProperties: true
+    NotePatch:
+      type: object
+      properties:
+        t: {type: number, minimum: 0}
+        t_end: {type: [number, "null"], minimum: 0}
+        text: {type: [string, "null"]}
+        tags: {type: array, items: {type: string}}
+      minProperties: 1
+      additionalProperties: true
+    LiveNote:
+      type: object
+      properties:
+        kind: {type: string, enum: [mark, note, capture], default: mark}
+        text: {type: [string, "null"]}
+        tags: {type: array, items: {type: string}}
+        capture: {$ref: "#/components/schemas/CaptureValue"}
+      additionalProperties: true
+    NoteReply:
+      type: object
+      properties:
+        ok: {type: boolean}
+        error: {type: string}
+        note: {$ref: "#/components/schemas/Note"}
+        session: {type: string}
+      additionalProperties: true
+    AudioChunkReply:
+      type: object
+      required: [ok, track, seq, bytes, closed]
+      properties:
+        ok: {const: true}
+        track: {type: string}
+        seq: {type: integer}
+        bytes: {type: number}
+        closed: {type: boolean}
+      additionalProperties: true
+    AccelRequest:
+      type: object
+      required: [samples]
+      properties:
+        source: {type: string, enum: [phone, imu], default: phone}
+        samples:
+          type: array
+          maxItems: 5000
+          items:
+            type: array
+            description: "`[epoch_ms, ax, ay, az]`."
+            prefixItems: [{type: number}, {type: number}, {type: number}, {type: number}]
+            minItems: 4
+            maxItems: 4
+      additionalProperties: true
+    AccelReply:
+      type: object
+      required: [ok, samples, rows]
+      properties:
+        ok: {const: true}
+        samples: {type: integer}
+        rows: {}
+      additionalProperties: true
+    AccelCalRequest:
+      type: object
+      required: [matrix]
+      properties:
+        matrix:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: {type: array, items: {type: number}, minItems: 3, maxItems: 3}
+        source: {type: string, enum: [phone, imu], default: phone}
+        method: {type: string, pattern: "^[A-Za-z0-9+_-]{1,32}$", default: manual}
+      additionalProperties: true
+    AccelCalReply:
+      type: object
+      required: [ok, accel_cal]
+      properties:
+        ok: {const: true}
+        accel_cal: {$ref: "#/components/schemas/AccelCal"}
+      additionalProperties: true
