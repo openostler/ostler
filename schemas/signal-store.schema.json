@@ -25,7 +25,7 @@
           ]
         },
         "offset": { "type": "integer", "minimum": 0, "description": "Byte offset in the LID's data." },
-        "kind": { "enum": ["u8", "u16", "u16le", "s16", "s16le", "bit"], "default": "u16" },
+        "kind": { "enum": ["u8", "u16", "u16le", "s16", "s16le", "s8", "u32", "bit"], "default": "u16" },
         "scale": { "type": "number", "default": 1.0 },
         "bias": { "type": "number", "default": 0.0 },
         "unit": { "type": "string", "description": "Display unit as stored by the pack." },

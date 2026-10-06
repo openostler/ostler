@@ -44,6 +44,27 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **J1979 (OBD-II) service layer**
+  ([spec](specs/2026-10-06-j1979-service-layer-design.md), first step, fakes only).
+  `src/openostler/obd/` is a stdlib-only, transport-agnostic layer: `J1979` over an
+  `ObdRequestLink` that returns every responder keyed by ECU (no first-reply-wins),
+  shared pacing (one request in flight, 50 ms per ECU, the `0x21` back-off) and typed
+  per-ECU results (`ok`, `negative`, `malformed`, `no_reply`; late frames dropped and
+  counted). Per-ECU chained support bitmaps for modes 01, 02, 06 and 09 and a `0A` probe
+  feed `supported()` → `SupportReport` (never the VIN); Mode 01/02 values from a pack's
+  store records with `x-obd` (`PidTable`; multi-PID walks stop at an unknown length);
+  P/C/B/U DTCs for 03/07/0A with the CAN count-mismatch fallback and warning; freeze frame
+  with its trigger DTC; readiness and `Vehicle.Ostler.Diagnostics.*`; Mode 06 (CAN scaled
+  through `obd/uas.json`, K-line raw); Mode 09 CALID, CVN and ECU name, with the VIN handed
+  only to an `on_vin` callback and identity scrub patterns (ADR-0036). Mode 08 is never
+  sent. Mode 04 is a Tier 1 Maintenance action (`obd/clear.py`, ADR-0033): Parked or
+  Idling, local links unless `OSTLER_ALLOW_REMOTE_CONTROL`, one confirmation with a
+  safety-system warning, read-only (SRS) ECUs never sent `04`, an automatic logbook
+  snapshot first (no snapshot, no clear), honest per-ECU NRC `0x22` text, a re-read and an
+  audit entry for every attempt and refusal; no server route mints a grant yet (U2). The
+  K-line adapter is `kline/obd_link.py` (ISO 9141-2 and KWP2000); shipped fakes are in
+  `openostler.testing`. Shared test vectors for the later C port are in
+  `tests/vectors/j1979/`. The signal store gains the `s8` and `u32` kinds.
 - **K-line profiles and detection** (ADR-0022,
   [spec](specs/2026-10-06-kline-profiles-detection-design.md), migration step 1).
   `kline/profiles.py` makes K-line protocols data: a frozen `KLineProfile` (framing,

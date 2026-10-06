@@ -1,0 +1,351 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "pids",
+  "description": "Mode 01/02 replies walked through the PID table in tests/fixtures/j1979/pids.json (spec §3, §4.2). Values compare within 1e-6.",
+  "source": "Written from SAE J1979 / ISO 15031-5, ISO 15765-4 and ISO 9141-2 (CC BY-SA 4.0); muki01 defects as fixtures, no muki01 code or output copied.",
+  "cases": [
+    {
+      "id": "F6-32",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 32 FF 38",
+      "expect": {
+        "values": [
+          {
+            "pid": "32",
+            "signal": "evap_vapor_pressure",
+            "value": -50.0,
+            "unit": "Pa"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F6-54",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 54 FC 18",
+      "expect": {
+        "values": [
+          {
+            "pid": "54",
+            "signal": "evap_vapor_pressure_wide",
+            "value": -1000.0,
+            "unit": "Pa"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F6b-23",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 23 01 F4",
+      "expect": {
+        "values": [
+          {
+            "pid": "23",
+            "signal": "fuel_rail_gauge_pressure",
+            "value": 5000.0,
+            "unit": "kPa"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F6b-50",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 50 64 00 00 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "50",
+            "signal": "max_maf",
+            "value": 1000.0,
+            "unit": "g/s"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F7-stft",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 06 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "06",
+            "signal": "stft_bank1",
+            "value": -100.0,
+            "unit": "percent"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F7-iat",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 0F 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "0F",
+            "signal": "intake_air_temp",
+            "value": -40.0,
+            "unit": "Celsius"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F7-timing",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 0E 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "0E",
+            "signal": "timing_advance",
+            "value": -64.0,
+            "unit": "degrees"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F7-torque",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 61 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "61",
+            "signal": "driver_demand_torque",
+            "value": -125.0,
+            "unit": "percent"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F8-14",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 14 5A 80",
+      "expect": {
+        "values": [
+          {
+            "pid": "14",
+            "signal": "o2_b1s1_voltage",
+            "value": 0.45,
+            "unit": "V"
+          },
+          {
+            "pid": "14",
+            "signal": "o2_b1s1_stft",
+            "value": 0.0,
+            "unit": "percent"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F8-24",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 24 80 00 40 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "24",
+            "signal": "o2s1_lambda",
+            "value": 1.0,
+            "unit": "ratio"
+          },
+          {
+            "pid": "24",
+            "signal": "o2s1_voltage",
+            "value": 2.0,
+            "unit": "V"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F8-34",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 34 80 00 7F 00",
+      "expect": {
+        "values": [
+          {
+            "pid": "34",
+            "signal": "o2s1_lambda_wr",
+            "value": 1.0,
+            "unit": "ratio"
+          },
+          {
+            "pid": "34",
+            "signal": "o2s1_current",
+            "value": -1.0,
+            "unit": "mA"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F8-4F",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 4F 02 08 80 19",
+      "expect": {
+        "values": [
+          {
+            "pid": "4F",
+            "signal": "max_lambda",
+            "value": 2.0,
+            "unit": "ratio"
+          },
+          {
+            "pid": "4F",
+            "signal": "max_o2_voltage",
+            "value": 8.0,
+            "unit": "V"
+          },
+          {
+            "pid": "4F",
+            "signal": "max_o2_current",
+            "value": 128.0,
+            "unit": "mA"
+          },
+          {
+            "pid": "4F",
+            "signal": "max_map",
+            "value": 250.0,
+            "unit": "kPa"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F13-21-vs-23",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 21 00 2A",
+      "expect": {
+        "values": [
+          {
+            "pid": "21",
+            "signal": "distance_mil_on",
+            "value": 42.0,
+            "unit": "km"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F14-multi",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 0C 1A F8 0D 32 05 5A",
+      "expect": {
+        "values": [
+          {
+            "pid": "0C",
+            "signal": "engine_speed",
+            "value": 1726.0,
+            "unit": "rpm"
+          },
+          {
+            "pid": "0D",
+            "signal": "vehicle_speed",
+            "value": 50.0,
+            "unit": "km/h"
+          },
+          {
+            "pid": "05",
+            "signal": "coolant_temp",
+            "value": 50.0,
+            "unit": "Celsius"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "F14-unknown-middle",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 0C 1A F8 7E 01 02 05 5A",
+      "expect": {
+        "values": [
+          {
+            "pid": "0C",
+            "signal": "engine_speed",
+            "value": 1726.0,
+            "unit": "rpm"
+          }
+        ],
+        "errors": [
+          {
+            "pid": "7E",
+            "status": "malformed",
+            "reason": "unknown_pid_length"
+          }
+        ]
+      }
+    },
+    {
+      "id": "odometer-u32",
+      "mode": "01",
+      "ecu": "7E8",
+      "message": "41 A6 00 01 E2 40",
+      "expect": {
+        "values": [
+          {
+            "pid": "A6",
+            "signal": "odometer",
+            "value": 12345.6,
+            "unit": "km"
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "id": "mode02-frame",
+      "mode": "02",
+      "ecu": "7E8",
+      "message": "42 05 00 5A",
+      "expect": {
+        "values": [
+          {
+            "pid": "05",
+            "signal": "coolant_temp",
+            "value": 50.0,
+            "unit": "Celsius"
+          }
+        ],
+        "errors": []
+      }
+    }
+  ]
+}

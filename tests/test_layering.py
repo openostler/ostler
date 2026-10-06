@@ -27,6 +27,8 @@ _CORE = [
     "imu",  # ADR-0010: Pi IMU input is core (stdlib only)
     "pack.py",  # ADR-0013: the VehiclePack contract
     "metrics.py",  # ADR-0016: the VSS namespace (stdlib only)
+    "obd",  # J1979 service layer (specs/2026-10-06-j1979-service-layer-design.md §1)
+    "testing",  # shipped test fakes (packs spec §2.9), stdlib only
 ]
 _FORBIDDEN = {"web", "apps"}
 _CORE_EXCEPT: "set[str]" = set()
@@ -66,6 +68,18 @@ def test_core_file_list_is_present():
     # Guard against the scan silently matching nothing (e.g. a path rename).
     files = _core_files()
     assert len(files) > 15
+
+
+def test_obd_is_transport_agnostic():
+    # J1979 spec §1: obd imports nothing from kline, kwp2000 or can; the adapters import
+    # obd.link, never the other way round.
+    files = sorted((_SRC / "obd").rglob("*.py"))
+    assert files
+    for path in files:
+        for _ln, mod in _absolute_imports(path):
+            parts = mod.split(".")
+            assert not ({"kline", "kwp2000", "can"} & set(parts[:2] if parts[0] == "openostler" else parts[:1])), \
+                f"{path.relative_to(_SRC)} imports {mod!r}"
 
 
 def test_logbook_gps_and_imu_are_scanned():

@@ -70,8 +70,20 @@ def _s16le(d: bytes, o: int) -> int:
     return v - 0x10000 if v >= 0x8000 else v
 
 
-_READERS = {"u8": _u8, "u16": _u16, "u16le": _u16le, "s16": _s16, "s16le": _s16le}
-_WIDTH = {"u8": 1, "u16": 2, "u16le": 2, "s16": 2, "s16le": 2, "bit": 1}
+def _s8(d: bytes, o: int) -> int:
+    v = d[o]
+    return v - 0x100 if v >= 0x80 else v
+
+
+def _u32(d: bytes, o: int) -> int:
+    return (d[o] << 24) | (d[o + 1] << 16) | (d[o + 2] << 8) | d[o + 3]
+
+
+# ``s8`` and ``u32`` arrived with the J1979 layer (spec §3, §10): signed one-byte PIDs and
+# the four-byte odometer (PID A6). Existing records are unchanged.
+_READERS = {"u8": _u8, "u16": _u16, "u16le": _u16le, "s16": _s16, "s16le": _s16le,
+            "s8": _s8, "u32": _u32}
+_WIDTH = {"u8": 1, "u16": 2, "u16le": 2, "s16": 2, "s16le": 2, "bit": 1, "s8": 1, "u32": 4}
 
 
 @dataclass(frozen=True)

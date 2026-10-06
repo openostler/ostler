@@ -18,6 +18,11 @@ The hardware-free pytest suite. Run it with `pytest -q` from the repo root.
   (`python3 tests/e2e_server.py --port 8765`). Needs the D2 pack. Never deployed.
 - `test_layering.py` — AST guards: the core never imports `web`; the platform never imports a
   vehicle pack or names a module id (ADR-0013, ADR-0015).
+- `obd_fakes.py` — scripted J1979 cars (two-ECU CAN, petrol K-line) on
+  `openostler.testing.FakeObdLink`, and `make_vin()`: no VIN literal sits in the tree.
+- `vectors/j1979/` — shared J1979 test vectors (bytes in → decoded out, plus Mode 04 gate
+  cases) for the Python layer and the future C port; the format is in its `README.md`.
+  `fixtures/j1979/` holds the J1979 PID table and the golden `SupportReport`s.
 - `test_<area>.py` — one file per package or area. Pure D2 unit tests (td5, slabs, bcu,
   airbag, keygen, faults, importers, generators, the Phase 0 golden) live in the pack repo.
 

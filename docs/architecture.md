@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 1.8
+version: 1.9
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -52,6 +52,7 @@ Transport      transport/base.py: raw bytes in/out (SerialTransport, LoggingTran
 K-Line         kline/frame.py (encode/decode) + kline/kline.py (fast/slow init, echo, retries)
                + kline/profiles.py (protocols as data) + detect.py, keywords.py, frame_iso9141.py
 KWP2000        kwp2000/: service IDs, negative responses (0x7F+NRC), responsePending (0x78)
+OBD-II         obd/: the J1979 service layer over an ObdRequestLink (kline/obd_link.py)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 VehiclePack    pack.py: the contract + loader (entry-point group "openostler.vehicle");
                module layers (D2: td5/ slabs/ airbag/ …) live in the pack repo
@@ -123,6 +124,19 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - `web/kline_source.py::KLineLinkSource` is the generic link source: `needs-detect`
     without a profile, keep-alive via `tick()`, and the detected profile remembered per
     `vid` in `<state dir>/kline_profiles.json`. Snapshots carry `link` (null without one).
+- **The J1979 service layer (`obd/`,
+  [spec](../specs/2026-10-06-j1979-service-layer-design.md)).**
+  - `J1979` talks to an `ObdRequestLink` that returns every responder's whole service
+    messages keyed by ECU address (`EcuReply`); `obd` imports no transport, and the K-line
+    adapter `kline/obd_link.py` (ISO 9141-2 and KWP2000 framing) imports `obd.link`.
+    Pacing, the late-frame drop and the typed per-ECU status live in `obd/link.py`.
+  - PID formulas are a pack's store records with `x-obd {service, pid, len}`
+    (`PidTable.from_records`); the platform ships none. Decoders are pure (`obd/decode.py`)
+    and checked by the shared vectors in `tests/vectors/j1979/` (ADR-0032).
+  - Mode 08 is never sent; Mode 04 runs only through `J1979.clear_dtcs(grant)` with a
+    grant from `obd/clear.py::ClearGate` (Parked or Idling, local link, one confirmation,
+    automatic logbook snapshot first, audit; ADR-0033). No server route mints a grant
+    until U2. The VIN goes only to an `on_vin` callback (ADR-0036).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -230,3 +244,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   every route, `timefmt`, GeoJSON traces (specs/2026-10-06-api-consistency-design.md).
 - 2026-10-06 — K-line profiles and detection (ADR-0022): `kline/profiles.py`, `detect()`,
   ISO 9141-2 framing, session hygiene, the Parked gate and the snapshot `link`.
+- 2026-10-06 — J1979 service layer (`obd/`, `kline/obd_link.py`, `testing/`): request
+  model, decoders, `PidTable`, Diagnostics, the Mode 04 gate, shared vectors.

@@ -1,0 +1,156 @@
+{
+  "format": "ostler-j1979-vectors/1",
+  "decoder": "dtc",
+  "description": "Mode 03/07/0A replies → DTC codes and warnings (spec §4.4).",
+  "source": "Written from SAE J1979 / ISO 15031-5, ISO 15765-4 and ISO 9141-2 (CC BY-SA 4.0); muki01 defects as fixtures, no muki01 code or output copied.",
+  "cases": [
+    {
+      "id": "F1a",
+      "flavor": "can11",
+      "mode": "03",
+      "ecu": "7E8",
+      "messages": [
+        "43 02 01 70 01 34"
+      ],
+      "expect": {
+        "kind": "stored",
+        "codes": [
+          "P0170",
+          "P0134"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "F1b",
+      "flavor": "can11",
+      "mode": "03",
+      "ecu": "7E8",
+      "can_frames": [
+        "07 43 01 70 01 34 00 00"
+      ],
+      "messages": [
+        "43 01 70 01 34 00 00"
+      ],
+      "note": "muki01 D1: their own example. The ISO-TP PCI 07 is removed by the transport; the count byte 01 disagrees with the length, so the uncounted reading is used and warned, never truncated to one code.",
+      "expect": {
+        "kind": "stored",
+        "codes": [
+          "P0170",
+          "P0134"
+        ],
+        "warnings": [
+          "count_mismatch"
+        ]
+      }
+    },
+    {
+      "id": "F1c",
+      "flavor": "can11",
+      "mode": "03",
+      "ecu": "7E8",
+      "can_frames": [
+        "10 0C 43 05 01 70 01 34",
+        "21 03 00 41 23 C1 00 AA"
+      ],
+      "messages": [
+        "43 05 01 70 01 34 03 00 41 23 C1 00"
+      ],
+      "expect": {
+        "kind": "stored",
+        "codes": [
+          "P0170",
+          "P0134",
+          "P0300",
+          "C0123",
+          "U0100"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "F2",
+      "flavor": "iso9141",
+      "mode": "03",
+      "ecu": "10",
+      "kline_burst": "48 6B 10 43 01 33 01 34 03 00 72 48 6B 10 43 01 70 00 00 00 00 77",
+      "messages": [
+        "43 01 33 01 34 03 00",
+        "43 01 70 00 00 00 00"
+      ],
+      "expect": {
+        "kind": "stored",
+        "codes": [
+          "P0133",
+          "P0134",
+          "P0300",
+          "P0170"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "zero-code-counted",
+      "flavor": "can11",
+      "mode": "07",
+      "ecu": "7E8",
+      "messages": [
+        "47 02 00 00 01 33"
+      ],
+      "expect": {
+        "kind": "pending",
+        "codes": [
+          "P0000",
+          "P0133"
+        ],
+        "warnings": [
+          "zero_code"
+        ]
+      }
+    },
+    {
+      "id": "permanent-body",
+      "flavor": "can11",
+      "mode": "0A",
+      "ecu": "7E9",
+      "messages": [
+        "4A 01 80 01"
+      ],
+      "expect": {
+        "kind": "permanent",
+        "codes": [
+          "B0001"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "id": "none-can",
+      "flavor": "can11",
+      "mode": "03",
+      "ecu": "7E8",
+      "messages": [
+        "43 00"
+      ],
+      "expect": {
+        "kind": "stored",
+        "codes": [],
+        "warnings": []
+      }
+    },
+    {
+      "id": "none-kline",
+      "flavor": "kwp",
+      "mode": "03",
+      "ecu": "10",
+      "messages": [
+        "43 00 00 00 00 00 00"
+      ],
+      "expect": {
+        "kind": "stored",
+        "codes": [],
+        "warnings": []
+      }
+    }
+  ]
+}
