@@ -2,7 +2,7 @@
 title: "Goals — what Ostler is for and where it is going"
 area: root
 status: stable
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [SCOPE.md]
 summary: >
@@ -53,7 +53,8 @@ jlr-scanner (Discovery 3/4), WiCAN (hardware front end). See [ovms.md](reference
 We also **reuse their data** ([ADR-0019](decisions/adr-0019-reuse-from-ovms-and-obdb.md)): OBDb is
 the primary source for polled signals, and every OVMS vehicle and command is imported where the
 licence allows, with commands disabled behind the safety gates and a human review gate on the
-importer.
+importer. Reuse is pragmatic ([ADR-0025](decisions/adr-0025-reuse-and-licences-pragmatic.md)):
+any idea may be reimplemented; GPL-3 code goes only into marked GPL-3 modules or packs.
 
 ## 2. Principles
 
@@ -66,8 +67,8 @@ importer.
    namespace, **decided** ([ADR-0016](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md)),
    with OVMS, Home Assistant and OBDb names generated as aliases. OBDb-compatible pack data,
    JSON Schema, OpenAPI/AsyncAPI, MQTT with Home Assistant discovery, OwnTracks, Traccar
-   OsmAnd, SocketCAN (listen-only by default, [ADR-0020](decisions/adr-0020-can-links-listen-only-by-default.md)),
-   ISO-TP, REUSE/SPDX, SBOMs, WCAG 2.2 AA.
+   OsmAnd, SocketCAN (listen-only by default, [ADR-0020](decisions/adr-0020-can-links-listen-only-by-default.md),
+   [ADR-0023](decisions/adr-0023-passive-can-bitrate-detection.md)), ISO 9141-2/14230 profiles ([ADR-0022](decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md)), ISO-TP, REUSE/SPDX, SBOMs, WCAG 2.2 AA.
 3. **Safety travels with the action.** One server-side gate serves every path (UI, MQTT,
    Home Assistant, schedules). Remote paths get read-only actions only (plus arming the
    software alarm). The UI only adds friction; it never is the gate.
@@ -194,6 +195,7 @@ combined. U0–U3 sit in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets i
 | | Version tracker: platform and pack versions and commits (`GET /version`, Settings → Version) | **Done** |
 | | UI research (seven notes) and the UI architecture spec, approved | **Done** ([research](references/research/ui/), ADR-0018) |
 | | Standards, CAN/head-unit and OVMS-reuse research; ADR-0016 to ADR-0021 | **Done** |
+| | muki01 research (K-line, CAN, BMW I/K-Bus, diagnostic UI); ADR-0022 to ADR-0025 | **Done** ([synthesis](references/research/muki01/README.md)) |
 | | U0 seams: `vid` on sessions, optional VSS `metric` on signals, `vss/` overlay and generated `metrics.json`, JSON Schemas, OpenAPI/AsyncAPI | Next |
 | | U1 shell: layout classes, status strip, rail/bottom bar, five destinations, Drive mode | Planned |
 | | U2 driving state and server-enforced lockouts; U3 generated capability manifest, Scan all | Planned |
@@ -211,6 +213,9 @@ combined. U0–U3 sit in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets i
 - **Nothing writes to a car without the gates.** Coding and security writes are listed
   for honesty and never runnable; clears, actuator tests and procedures are confirmed,
   Parked-only and logged. Airbag/SRS is read-only by construction.
+- **No blind or spoofed frames.** Probing an unknown K-line car is Parked-only (ADR-0022); no
+  CAN frame at an unconfirmed bitrate (ADR-0023); body buses are passive by default and we
+  never transmit as a module present in the car (ADR-0024).
 - **No EKA, key or immobiliser programming in any default path.** It is gated and opt-in
   only, through the safety gates: the D2 pack keeps EKA read/set behind its gate (the pack's
   ADR-0007). No other SecurityAccess or replayed sniffed write beyond what a module needs for
@@ -222,8 +227,8 @@ combined. U0–U3 sit in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets i
   opt-in.
 - **The alarm is notify-only.** It never actuates the car; it sits alongside the OEM alarm
   and is not a Thatcham-rated product.
-- **No converted dealer databases** (the OpenVehicleDiag DMCA lesson), and no
-  non-commercial or unlicensed code.
+- **No converted dealer databases** (the OpenVehicleDiag DMCA lesson), no non-commercial,
+  unlicensed or GPL-2.0-only code, and no copied fault-code descriptions (ADR-0025).
 - **No vehicle maker's marks in our brand.**
 
 **Non-goals:**
@@ -279,9 +284,13 @@ Proposed, not yet adopted as targets:
   [ADR-0018 UI decisions](decisions/adr-0018-ui-architecture-decisions.md),
   [ADR-0019 OVMS/OBDb reuse](decisions/adr-0019-reuse-from-ovms-and-obdb.md),
   [ADR-0020 CAN links](decisions/adr-0020-can-links-listen-only-by-default.md),
-  [ADR-0021 local HTTPS](decisions/adr-0021-local-https-on-the-device.md).
+  [ADR-0021 local HTTPS](decisions/adr-0021-local-https-on-the-device.md),
+  [ADR-0022 K-line profiles](decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md),
+  [ADR-0023 CAN bitrate](decisions/adr-0023-passive-can-bitrate-detection.md),
+  [ADR-0024 body buses](decisions/adr-0024-body-bus-links-passive-by-default.md),
+  [ADR-0025 reuse](decisions/adr-0025-reuse-and-licences-pragmatic.md).
 - Research: [landscape](references/research/landscape.md), [OVMS](references/research/ovms.md),
-  [OVMS reuse](references/research/ovms_reuse.md), [standards](references/research/standards.md),
+  [OVMS reuse](references/research/ovms_reuse.md), [muki01](references/research/muki01/README.md), [standards](references/research/standards.md),
   [CAN and head units](references/research/canbus_headunit.md),
   [hardware](references/research/hardware.md), [platform](references/research/platform.md),
   [feature backlog](references/research/features_backlog.md), [UI notes](references/research/ui/).

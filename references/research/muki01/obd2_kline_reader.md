@@ -11,6 +11,10 @@ summary: >
 
 # muki01 OBD2_K-line_Reader and OBD2_KLine_Library: audit and feature inventory
 
+> **Licence guidance updated (2026-10-06):** the "pinned pre-relicence commit" advice below is superseded by
+> [ADR-0025](../../../decisions/adr-0025-reuse-and-licences-pragmatic.md): GPL-3 repos may be taken whole into
+> marked GPL-3 modules or packs; never copy descriptive text such as DTC descriptions verbatim.
+
 Sources, read in full: reader `f8a09aa` and library `2906123` (both 2026-10-04, `--depth 50`;
 library 2.0.0), including the decompressed `WebServer_Code/data/*.gz` UI, the six schematics
 and the issue list (web page). Sibling: [obd2_can_bus_library.md](obd2_can_bus_library.md).

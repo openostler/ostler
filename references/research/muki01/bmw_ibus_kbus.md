@@ -11,6 +11,10 @@ summary: >
 
 # muki01 BMW_IBus_KBus: BMW I/K-Bus audit and body-bus fit
 
+> **Licence guidance updated (2026-10-06):** the "pinned pre-relicence commit" advice below is superseded by
+> [ADR-0025](../../../decisions/adr-0025-reuse-and-licences-pragmatic.md): GPL-3 repos may be taken whole into
+> marked GPL-3 modules or packs; never copy descriptive text such as DTC descriptions verbatim.
+
 Read in full: <https://github.com/muki01/BMW_IBus_KBus> at `2853acd` (2026-10-04, 43
 commits) and its library <https://github.com/muki01/BMW_IBus_KBus_Library> at `8b23383`
 (2026-10-05, 17 commits): every sketch, header, schematic, README, CI file and template,

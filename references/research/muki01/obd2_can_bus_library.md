@@ -11,6 +11,10 @@ summary: >
 
 # muki01 OBD2_CAN_Bus_Library: audit and feature inventory
 
+> **Licence guidance updated (2026-10-06):** the "pinned pre-relicence commit" advice below is superseded by
+> [ADR-0025](../../../decisions/adr-0025-reuse-and-licences-pragmatic.md): GPL-3 repos may be taken whole into
+> marked GPL-3 modules or packs; never copy descriptive text such as DTC descriptions verbatim.
+
 Source: <https://github.com/muki01/OBD2_CAN_Bus_Library>, read in full at `58d69ce`
 (2026-10-04). It has 63 commits. The only code is `src/OBD2_CanBus.{h,cpp}` (121 + 728
 lines), plus seven example sketches, an Arduino-CLI compile CI and community files.
