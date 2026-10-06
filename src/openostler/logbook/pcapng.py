@@ -12,9 +12,12 @@ specification (IETF draft-ietf-opsawg-pcapng; little-endian, one section).
   ``LINKTYPE_USER0`` (147) and the payload is the K-line message as tapped; CAN uses
   ``LINKTYPE_CAN_SOCKETCAN`` (227: id big-endian with the SocketCAN flag bits, length, two
   reserved bytes, data); events use ``LINKTYPE_USER1`` (148) with their CBOR payload.
-- **Time.** Timestamps are each node's monotonic clock in µs since its boot (``t_us``),
-  not UTC: mapping them to UTC with the tap's ``time`` events is decode-lab work (spec
-  §14). The section comment says so.
+- **Time.** A tap with ``time`` events (raw-tap §2.4 and its amendment of 2026-10-06) is
+  stamped in UTC (µs since the Unix epoch): each record's ``t_us`` mapped by
+  :class:`~openostler.node.tap.TimeMap`, linearly between marks; a record the node flagged
+  unsynced says in a comment that its time is extrapolated, and each ``time`` event
+  carries its mark as a comment. A tap without one keeps the node's monotonic clock in µs
+  since its boot (``t_us``), as before. Each interface's description says which.
 - **Direction.** ``epb_flags`` marks ``rx`` inbound and ``tx_echo`` (the node's own frames
   read back) outbound; a gate-sent frame's comment says so.
 - **Gaps.** A record after a ``seq`` gap carries a comment naming the lost range, and each
@@ -27,8 +30,10 @@ from __future__ import annotations
 
 import struct
 
-from ..node.tap import (DIR_TX_ECHO, FLAG_GATE, FLAG_SCRUBBED, PROTO_CAN, PROTO_CAN_FD,
-                        TapRecord, export_records)
+from ..node.tap import (DIR_TX_ECHO, FLAG_GATE, FLAG_SCRUBBED, FLAG_UNSYNCED, PROTO_CAN,
+                        PROTO_CAN_FD, TapRecord, TimeMap, export_records, is_time_event,
+                        parse_time_event)
+from ..timefmt import rfc3339_utc_ms
 
 SHB, IDB, EPB, ISB = 0x0A0D0D0A, 0x00000001, 0x00000006, 0x00000005
 BYTE_ORDER_MAGIC = 0x1A2B3C4D
@@ -133,6 +138,10 @@ def _tap(sec: _Section, n: int, entry: dict, records: "list[TapRecord]") -> None
     # Gaps are found on the stored sequence; records the export drops (unframed) are not
     # losses, and a gap before one is reported on the next record exported.
     kept = {r.seq: r for r in export_records(records)}
+    tmap = TimeMap(records)
+    clock = (f"timestamps UTC from {len(tmap)} time marks"
+             f"{' (' + ', '.join(tmap.sources) + ')' if tmap.sources else ''}" if tmap
+             else "timestamps are the node's clock since boot, not UTC (no time events)")
     expected, pending, pending_lost, last = None, [], 0, None
     for raw in records:
         if expected is not None and raw.seq > expected:
@@ -144,10 +153,21 @@ def _tap(sec: _Section, n: int, entry: dict, records: "list[TapRecord]") -> None
         if r is None:
             continue
         comments, lost, pending, pending_lost = pending, pending_lost, [], 0
+        ts = r.t_us
+        if tmap:
+            ts = tmap.utc_ns(r.t_us) // 1000
+            if r.flags & FLAG_UNSYNCED:
+                comments.append("recorded before the node's clock was set: UTC extrapolated")
         if r.is_event:
             i = sec.iface((n, "events"), LINKTYPE_USER1, f"{device} events",
-                          f"tap {session} events (CBOR), node {device}")
+                          f"tap {session} events (CBOR), node {device}; {clock}")
             comments.insert(0, f"event {r.dir} seq {r.seq}")
+            if is_time_event(r):
+                ev = parse_time_event(r.payload)
+                if ev is not None:
+                    comments.append(f"time mark: t_us {ev['t_us']} = utc_ns {ev['utc_ns']} "
+                                    f"({rfc3339_utc_ms(ev['utc_ns'] // 1_000_000)}, "
+                                    f"{ev['source'] or 'unknown source'})")
             data, flags = r.payload, None
         else:
             bus = buses.get(r.bus) or {}
@@ -155,7 +175,7 @@ def _tap(sec: _Section, n: int, entry: dict, records: "list[TapRecord]") -> None
             i = sec.iface((n, r.bus), LINKTYPE_CAN_SOCKETCAN if can else LINKTYPE_USER0,
                           str(bus.get("bus_id") or f"bus{r.bus}"),
                           f"tap {session} bus {r.bus} ({bus.get('proto') or '?'}), "
-                          f"node {device}")
+                          f"node {device}; {clock}")
             data = _socketcan(r.payload) if can else r.payload
             flags = _OUTBOUND if r.dir == DIR_TX_ECHO else _INBOUND
             comments.append(f"seq {r.seq}")
@@ -163,7 +183,7 @@ def _tap(sec: _Section, n: int, entry: dict, records: "list[TapRecord]") -> None
                 comments.append("sent by the node's gate")
             if r.flags & FLAG_SCRUBBED:
                 comments.append("identity data scrubbed")
-        sec.packet(i, r.t_us, data, flags, comments, lost)
+        sec.packet(i, ts, data, flags, comments, lost)
         last = i
     if pending_lost and last is not None:  # a gap before records the export dropped
         sec.stats[last][1] += pending_lost
@@ -174,9 +194,11 @@ def to_pcapng(taps: "list[tuple[dict, list[TapRecord]]]", meta: dict) -> bytes:
     ``read_tap``). Raises ValueError when the session has no tap."""
     if not taps:
         raise ValueError("this session has no raw tap (only node sessions record one)")
-    sec = _Section(f"Ostler raw tap of session {meta.get('id', '')}. Timestamps are each "
-                   "node's monotonic clock in microseconds since its boot, not UTC. Identity "
-                   "replies are scrubbed and unframed records dropped (ADR-0036).")
+    sec = _Section(f"Ostler raw tap of session {meta.get('id', '')}. Timestamps are UTC, "
+                   "mapped from each node's time events; a tap without time events keeps the "
+                   "node's monotonic clock in microseconds since its boot, not UTC (its "
+                   "interfaces' descriptions say which). Identity replies are scrubbed and "
+                   "unframed records dropped (ADR-0036).")
     for n, (entry, records) in enumerate(taps):
         _tap(sec, n, entry, records)
     return sec.finish()

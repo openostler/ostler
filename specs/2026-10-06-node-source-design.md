@@ -2,11 +2,11 @@
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
 status: stable
-version: 0.6
+version: 0.7
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4, the P3 backend (manifest and role claims, GET /cluster, the serial source's refusal beside a gate-holding node) in v0.5; the Network page UI waits for U1. v0.6 records the owner's second-round answers (§15): the manifest topic and claim payload as drafted, now in the module-bus message spec; every kline* bus is a K-line gate bus; the node will emit tap time events. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4, the P3 backend (manifest and role claims, GET /cluster, the serial source's refusal beside a gate-holding node) in v0.5; the Network page UI waits for U1. v0.6 records the owner's second-round answers (§15): the manifest topic and claim payload as drafted, now in the module-bus message spec; every kline* bus is a K-line gate bus; the node will emit tap time events. v0.7 aligns with the node firmware's real output (ostler-firmware 0426ea5): its fixtures replace the hand-written node lines, the pcapng export stamps UTC from the tap's time events, power off is accepted, and the as-built payload shapes are corrected (§16). A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
 # NodeSource — the Brain ingests node data over MQTT — design
@@ -482,7 +482,8 @@ recommendations.
 - **§8 pcapng.** One interface per tap session and bus, K-line as `LINKTYPE_USER0` (no
   registered K-line link type), CAN as `LINKTYPE_CAN_SOCKETCAN`, events as
   `LINKTYPE_USER1` (CBOR payload); timestamps are the node's `t_us`, not UTC (stated in
-  the section comment); `seq` gaps as packet comments and `isb_ifdrop`. A session without
+  the section comment); `seq` gaps as packet comments and `isb_ifdrop`. *(2026-10-06,
+  v0.7: a tap with `time` events is now stamped in UTC; see "Firmware alignment" below.)* A session without
   a tap answers 400 (`bad_request`).
 - **Judgement calls.** `end_reason`, `devices`, `pack` and `tap` are written for node
   sessions only, so cable sessions and the pack's byte-stable demo logs are unchanged;
@@ -561,12 +562,57 @@ recommendations.
   took the lowest id, which became the brain). The node's own `status: asleep` makes the
   snapshot `asleep`, which ends a recorded session as `power.state: asleep` does.
 - **Not in P3, in `TODO.md`:** the Network page UI (after U1); the firmware publishing the
-  manifest, claims and `asleep` (the fixture is hand-written); a running check after the
-  serial source has started; the manifest's `primary`, priority and `rate` in the §6.5
-  selection; the energy ledger and floors (P4 and firmware).
+  manifest, claims and `asleep` (the fixture is hand-written; done in v0.7, below); a
+  running check after the serial source has started; the manifest's `primary`, priority
+  and `rate` in the §6.5 selection; the energy ledger and floors (P4 and firmware).
+
+### Firmware alignment (v0.7, 2026-10-06; `ostler-firmware` 0426ea5)
+
+The node now publishes what P1–P3 read, and its host-test fixtures (`td5-vectors.jsonl`,
+`slabs-vectors.jsonl` and the new `lifecycle.jsonl`) replace the hand-written node lines in
+`tests/fixtures/node/`. Where the real output differs from what P1–P3 assumed:
+
+- **Manifest.** `board` may be `host-sim`; `memory.psram_kb` may be `0`; `roles` is `[]`
+  (the gate is declared by `transmit` and claimed on `role/gate/<bus_id>`); `links` is
+  `[{"kind":"wifi"}]` with no `via`; `power` is `{class, wake_paths}` with no `parked_ma`;
+  `priority` is absent when the owner set none (the claim then carries `priority: null`);
+  the K-line item carries `"bus":"kline-diag"` and starts `unverified`, then `ok` after the
+  first init (a new `etag`). The cluster code needed no change: it reads these fields
+  optionally and keeps items as published. OpenAPI `NodeManifest` gains the `unverified`
+  status and the item `bus`, and documents the rest; the drafted `via` and `parked_ma`
+  stay optional for other devices. The `etag` is the SHA-256 of the canonical JSON
+  (sensor-detection amendment); a test checks it on every fixture manifest.
+- **Sleep and shutdown.** A clean sleep publishes the claim release, then `power`
+  `asleep`, then `status` `asleep` (P3 had assumed `status` first), so the gate row's
+  last handover reads "node released" rather than "node asleep"; the node still counts as
+  wired to the K-line by its manifest. A shutdown releases the claim and publishes
+  `shutting_down` without changing `status`.
+- **Timestamps advance** with the fake bus from 2026-10-06T10:00:00Z (`ts`, `since`, the
+  tap marks); no test pins them.
+- **`power.state: off`** (ADR-0040 §1) is accepted; its claims are void (as before) and the
+  snapshot reads `asleep` (not running, no unexpected loss). The UI's power badge has no
+  word for it yet (`TODO.md`).
+- **Tap time to UTC.** The node writes `time` events (raw-tap amendment of 2026-10-06:
+  event code 6, bus 0xFF, a CBOR map `{t_us, utc_ns, source, err_us}`) before the first
+  synced record of a session and at least once a second while records flow.
+  `node/tap.py` decodes them (`parse_time_event`, a stdlib subset of CBOR: unsigned and
+  negative integers, text, null and booleans in a definite-length map) and `TimeMap` maps
+  `t_us` to UTC linearly between marks, with the nearest mark's offset outside them; a
+  mark whose CBOR `t_us` differs from its record's is not used. The `.otap` files keep the
+  events with the other records; `meta.json` `tap` entries count them (`time_marks`). The
+  pcapng export stamps a tap with marks in UTC (µs since the epoch), comments each mark
+  and every record the node flagged unsynced ("UTC extrapolated"), and says per interface
+  which clock it uses; a tap without marks keeps `t_us` as before. Decoded rows and tap
+  records stay linked by `t_us`.
+- **Hand-written fixtures kept** for what the node cannot publish yet: the devices around
+  it, a second gate claim, the node holding vehicle roles (`node_roles`), the will
+  (`offline`) and the `held`, `waking` and `off` power states.
 
 ## Notes on sources
 
+- v0.7: `ostler-firmware` `origin/main` 0426ea5 (2026-10-06): `firmware/README.md`,
+  `firmware/node/host/fixtures/*.jsonl`, `docs/specs/raw-tap.md` and
+  `docs/specs/sensor-detection.md` (their amendments of 2026-10-06), `CHANGELOG.md`.
 - `ostler-firmware` at f59ac00 (2026-10-06): `firmware/README.md` (topics and payloads),
   `components/poll` (`poll.c` payload building, `sink.h`), `main/net.c` (MQTT 5, keep-alive
   10 s, retained will), `docs/specs/raw-tap.md` (accepted 2026-10-06).
@@ -603,3 +649,7 @@ recommendations.
   [module-bus message spec](2026-10-06-module-bus-messages-design.md), which this spec's
   references now link; the serial refusal stays a start-time check; every `kline*` bus is a
   K-line gate bus.
+- 2026-10-06 — v0.7: aligned with the node firmware (0426ea5, §16 "Firmware alignment"):
+  its fixtures replace the hand-written node lines; the manifest, sleep and shutdown as
+  built; tap `time` events map `t_us` to UTC in the pcapng export (`time_marks` in the
+  meta); `power.state: off` accepted.

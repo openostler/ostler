@@ -2,11 +2,11 @@
 title: "Module-bus messages — the MQTT topic tree, payloads, QoS, ACLs and versioning — design"
 area: specs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, references/research/mesh_networking.md]
 summary: >
-  Approved by the owner on 2026-10-06 ("go with your recommendations"). The module-bus message spec that ADR-0026, ADR-0027, ADR-0028, ADR-0032, ADR-0037, ADR-0038, ADR-0039 and ADR-0040 require before firmware: it gathers, without new decisions, every topic and payload already decided under ostler/v1/<vid>/<device>/: vss/<path> readings with boot and source tags; power (the ADR-0040 record); status with an offline will and asleep; the retained capability manifest (board, roles, transmit, items with origin and status, problems, power, memory.psram_kb, links, tap, actions with runs_on, needs_brain, queueable and expires_max_s) exactly as the NodeSource spec and its cluster fixture drafted it; role/<role>[/<scope>] claims {role, scope, term, priority, since, reason} with release by empty payload and the ADR-0037 timeouts; tap/<ULID>/meta and data, tap/ctl and lab/req and lab/resp (firmware raw-tap spec); requester-owned act/<id> and wake/<id> requests with MQTT 5 expiry and their outcomes; the owner-approved transmit grant (a node-issued challenge and an Ed25519 JWS bound to it, keys enrolled only by pairing or adoption, refusal grant_invalid); every kline* bus is a K-line gate bus; the parked topic set and bridge patterns; per-device ACLs; mDNS TXT keys; mesh bridge topics and the mesh transport value; the CAN fallback rules; timeouts; versioning. Undecided items are listed as open questions.
+  Approved by the owner on 2026-10-06 ("go with your recommendations"). The module-bus message spec that ADR-0026, ADR-0027, ADR-0028, ADR-0032, ADR-0037, ADR-0038, ADR-0039 and ADR-0040 require before firmware: it gathers, without new decisions, every topic and payload already decided under ostler/v1/<vid>/<device>/: vss/<path> readings with boot and source tags; power (the ADR-0040 record); status with an offline will and asleep; the retained capability manifest (board, roles, transmit, items with origin and status, problems, power, memory.psram_kb, links, tap, actions with runs_on, needs_brain, queueable and expires_max_s) exactly as the NodeSource spec and its cluster fixture drafted it; role/<role>[/<scope>] claims {role, scope, term, priority, since, reason} with release by empty payload and the ADR-0037 timeouts; tap/<ULID>/meta and data, tap/ctl and lab/req and lab/resp (firmware raw-tap spec); requester-owned act/<id> and wake/<id> requests with MQTT 5 expiry and their outcomes; the owner-approved transmit grant (a node-issued challenge and an Ed25519 JWS bound to it, keys enrolled only by pairing or adoption, refusal grant_invalid); every kline* bus is a K-line gate bus; the parked topic set and bridge patterns; per-device ACLs; mDNS TXT keys; mesh bridge topics and the mesh transport value; the CAN fallback rules; timeouts; versioning. Undecided items are listed as open questions. v1.1 (2026-10-06) records the payloads as the node firmware built them (ostler-firmware 0426ea5): manifest items with a bus and the unverified status, priority absent when unset (null in the claim), links without via, power without parked_ma, psram_kb 0, roles [] beside the gate claim; the sleep and shutdown sequences; the tap time event's CBOR keys; power off accepted by the Brain.
 ---
 
 # Module-bus messages — design
@@ -95,6 +95,12 @@ Interval.
   claims (§7) and disconnects cleanly, so no will fires. `offline` is kept for an
   unexpected loss. Consumers show asleep as asleep, never as offline (UI spec §3.8).
 - A claim from a device whose status is `offline` or `asleep` is void (§7).
+- **As built (2026-10-06, firmware 0426ea5).** The node's clean sleep publishes, in order:
+  its claims released (empty payloads), `power` `asleep` (with `next_checkin` when a timer
+  wake is set), `status` `asleep`, then a clean disconnect. `asleep` is published only
+  before a sleep. A **shutdown** (the node stops without sleeping) releases its claims and
+  publishes `power` `shutting_down` but does not change `status`. After every reconnect
+  the node republishes `status` `online`, its manifest and its claims.
 
 ## 5. `power` (ADR-0040 §1, §4.5; NodeSource §1)
 
@@ -116,7 +122,9 @@ Retained, QoS 1, one record per device:
   lets a consumer detect a reboot without a synced clock.
 - A **lease** is `{holder, target, until, reason}` (ADR-0040 §4.5); `held` means `leases`
   is non-empty. Lease maxima are in §15.
-- Who publishes `off` for a device whose supply is cut is open (§17).
+- Who publishes `off` for a device whose supply is cut is open (§17). The Brain accepts
+  `off` (2026-10-06): its claims are void and the snapshot reads it as `asleep` (not
+  running, no unexpected loss).
 
 ## 6. `vss/<leaf>` readings (ADR-0027 §5, ADR-0032 §13; NodeSource §1, §6)
 
@@ -157,13 +165,13 @@ fixture and the UI spec's device entry drafted them:
 | `id`, `kind`, `variant` | device id; `node`, `brain` or `module`; `diag-port`, `guardian`, `sensor`, `relay`, … | fixture; ADR-0039 §1 |
 | `model`, `board`, `fw` | human model name, compiled-in board profile, firmware version | UI spec §3.7, §5.1 |
 | `etag` | SHA-256 (hex) of the manifest's canonical JSON | sensor-detection §5 |
-| `priority` | the owner's priority set at pairing, for role ties | ADR-0037 §3 |
-| `memory.psram_kb` | PSRAM fitted, from the board profile | ADR-0037 Amendment 14 |
-| `roles[]` | roles it may hold, the owner's order: `{role, scope?, max_clients?, priority?}` | ADR-0037 §2–§3, A14 |
+| `priority` | the owner's priority set at pairing, for role ties; **absent** when none is set (the claim then carries `priority: null`) | ADR-0037 §3 |
+| `memory.psram_kb` | PSRAM fitted, from the board profile; `0` when none | ADR-0037 Amendment 14 |
+| `roles[]` | roles it may hold, the owner's order: `{role, scope?, max_clients?, priority?}`; the gate is not listed (it is declared by `transmit`), so the node publishes `[]` | ADR-0037 §2–§3, A14 |
 | `transmit[]` | `{bus_id}` of the car buses whose transmit gate it holds | ADR-0037 Consequences |
-| `links[]` | how it is reached: `{kind: wifi \| ethernet \| t1s \| usb \| ble, via?, segment?}` | ADR-0039 Consequences |
-| `power` | `{class, wake_paths, parked_ma}` | UI spec §3.8 |
-| `items[]` | `{id, kind, origin: board \| detected \| harness \| config, status: ok \| absent \| fault \| no_signal \| refused, reason?, part?, signals?}` | ADR-0032 B1; sensor-detection §7 |
+| `links[]` | how it is reached: `{kind: wifi \| ethernet \| t1s \| usb \| ble, via?, segment?}`; `via` and `segment` are optional (the node sends `[{"kind":"wifi"}]`) | ADR-0039 Consequences |
+| `power` | `{class, wake_paths, parked_ma?}`; `parked_ma` optional (the node sends none yet) | UI spec §3.8 |
+| `items[]` | `{id, kind, origin: board \| detected \| harness \| config, status: ok \| absent \| fault \| no_signal \| unverified \| refused, bus?, reason?, part?, signals?}`; `bus` names the bus an interface item serves | ADR-0032 B1; sensor-detection §2, §7 |
 | `problems[]` | `{item, code}` | ADR-0032 B3; sensor-detection §7 |
 | `signals[]`, `actions[]` | as the UI spec's device entry; each action declares `category`, `tier`, `states`, `remote`, `runs_on`, `needs_brain`, `queueable` (never for Tier 2+) and `expires_max_s` | UI spec §3.8, §5.1; app-model §13.1; ADR-0040 §5 |
 | `tap` | raw-tap capability: buses, protocols, max rate | ADR-0039 Consequences |
@@ -174,6 +182,19 @@ fixture and the UI spec's device entry drafted them:
 - `alarm_critical` requires a wired link; the mesh bridge declares no actions (ADR-0027
   §9, ADR-0038 §2).
 - A consumer drops a field of the wrong type and keeps the rest (NodeSource §16 P3).
+- **`unverified`** (sensor-detection §2): the item is there but not yet confirmed; the
+  node's K-line item is `unverified` until an init on the bus succeeds, then `ok` (a new
+  manifest and `etag`). Consumers show it as "Not verified yet", neither ok nor a fault,
+  and keep reading the device.
+- **`etag` as built** (sensor-detection amendment of 2026-10-06): the SHA-256 (lower-case
+  hex) of the manifest without `etag` as canonical JSON (keys sorted at every level, no
+  whitespace, UTF-8), and the published bytes are that JSON with `"etag"` added last.
+- **As built (2026-10-06, firmware 0426ea5)** the node publishes `schema`, `id`, `kind`
+  (`node`), `variant` (`diag-port`), `model`, `board` (`host-sim` in its host tests), `fw`,
+  `priority` (when set), `memory`, `roles` (`[]`), `transmit`, `links`, `power` and one
+  item, the K-line interface `{bus: "kline-diag", id: "kline", kind: "kline", origin:
+  "board", status}`; the other fields come later. This corrects the drafted shapes above
+  (which had `via`, `parked_ma` and roles on the node).
 
 ### 7.2 Role claims
 
@@ -214,7 +235,13 @@ Topic `ostler/v1/<vid>/<device>/role/<role>[/<scope>]`, retained, QoS 1, payload
   every **100 ms or at 8 kB**, MQTT 5 content type **`application/vnd.ostler.tap.v1`** and
   user property **`first_seq`** (as built, firmware v0 sets neither yet).
 - **`time` events** map `t_us` to UTC between marks; consumers order unsynced records by
-  `seq` only. `seq` gaps are reported, never filled.
+  `seq` only. `seq` gaps are reported, never filled. As built (raw-tap amendment of
+  2026-10-06): an event record (type 1, bus 0xFF, code 6, proto 0, flags 0) whose payload
+  is a CBOR map with the text keys `t_us` (unsigned, the header's instant), `utc_ns`
+  (unsigned ns since the Unix epoch), `source` (`sntp`; later `ublox-pps`) and `err_us`
+  (unsigned or null), written before the first synced record of a session and before any
+  record a second or more after the last mark. The Brain maps linearly between marks and
+  stamps its pcapng export in UTC (NodeSource §16).
 - **`tap/ctl`** (Brain → node): start, stop, buses, filters. **`lab/req`**
   `{id, bus_id, service bytes, grant?}` and **`lab/resp`** `{id, verdict, reply bytes, t_us}`;
   lab reads run only in service mode; the node gate decides and logs a `gate` event.
@@ -458,8 +485,12 @@ authentication (§13). Nothing on this bus reaches a vehicle bus.
   owner-approved format binds the token to a node-issued challenge and the node's clock
   (§10). The Python reference reports a bad signature as `grant_used`; the approved code
   is `grant_invalid`.
-- **Power states:** the Brain's parser (`node/messages.py`) accepts `awake`, `held`,
-  `waking`, `asleep` and `shutting_down`, not yet `off` (§5).
+- **Power states:** the Brain's parser (`node/messages.py`) accepts every ADR-0040 state,
+  `off` included (2026-10-06; §5).
+- **Manifest shapes:** the NodeSource cluster fixture drafted `links[].via`,
+  `power.parked_ma` and roles on the node; the firmware (0426ea5) sends none of them and
+  adds `items[].bus` and the `unverified` status. §7.1 records both: the drafted fields stay
+  optional.
 
 ## Notes on sources
 
@@ -468,6 +499,10 @@ authentication (§13). Nothing on this bus reaches a vehicle bus.
 `docs/specs/sensor-detection.md` (accepted), `firmware/README.md` (topics and payloads).
 Platform: `src/openostler/node/messages.py`, `node/cluster.py`,
 `tests/fixtures/node/cluster.jsonl` and `status-power.jsonl` at main 1a41e38.
+v1.1: `ostler-firmware` `origin/main` 0426ea5 (2026-10-06): `firmware/README.md`,
+`firmware/node/host/fixtures/` (`td5-vectors.jsonl`, `slabs-vectors.jsonl`,
+`lifecycle.jsonl`), the raw-tap spec's and the sensor-detection spec's amendments of
+2026-10-06, `CHANGELOG.md`.
 
 ## Changelog
 
@@ -476,3 +511,9 @@ Platform: `src/openostler/node/messages.py`, `node/cluster.py`,
   `grant_invalid`, and `kline*` buses as K-line gate buses. Consolidates ADR-0026, -0027,
   -0028, -0032, -0033, -0037, -0038, -0039, -0040 and the approved specs; open questions
   in §17.
+- 2026-10-06 — v1.1: as-built notes from the node firmware (0426ea5) and its fixtures:
+  the sleep and shutdown sequences (§4); `off` accepted by the Brain (§5); manifest
+  `priority` absent when unset, `psram_kb` 0, `roles` `[]`, `links` without `via`,
+  `power` without `parked_ma`, items with `bus` and `unverified`, the `etag`'s canonical
+  JSON (§7.1); the `time` event's CBOR keys and the Brain's UTC mapping (§8). No decision
+  changed.

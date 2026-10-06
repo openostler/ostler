@@ -20,7 +20,7 @@ from openostler.logbook.tap import (RECORD_IDENTITY_ENV, TapRecorder,
                                     identity_recording_enabled, read_tap)
 from openostler.node import tap as T
 from openostler.node.messages import parse_tap_rest, tap_subscriptions
-from tests.fake_node import VID, tap_messages
+from tests.fake_node import VID, tap_messages, time_event
 
 SESSION = "01M48AFR80CDXA0ZQ1XBS3VHSS"
 OTHER = "01M48AFR80CDXA0ZQ1XBS3VHST"
@@ -57,14 +57,93 @@ def test_fixture_batches_round_trip_through_the_codec():
     assert len(meta) == 1 and meta[0]["retain"] and data and not any(m["retain"] for m in data)
     h = T.parse_header(meta[0]["payload"])
     assert h["scrub"] == "on" and h["boot_id"] == 7 and T.valid_session(h["session"])
-    seqs = []
+    seqs, records = [], []
     for m in data:
-        records, trailing = T.parse_records(m["payload"])
-        assert trailing == 0 and records
-        assert b"".join(T.encode_record(r) for r in records) == m["payload"]
-        seqs += [r.seq for r in records]
-        assert all(r.proto == T.PROTO_KLINE_MSG and r.type == T.TYPE_DATA for r in records)
+        batch_records, trailing = T.parse_records(m["payload"])
+        assert trailing == 0 and batch_records
+        assert b"".join(T.encode_record(r) for r in batch_records) == m["payload"]
+        records += batch_records
+    seqs = [r.seq for r in records]
     assert seqs == list(range(len(seqs)))   # the node numbers every record, no gap
+    # data: kline_msg records; events: only the clock's time marks (firmware 0426ea5)
+    marks = [r for r in records if r.is_event]
+    assert marks and all(T.is_time_event(r) and r.bus == 0xFF and r.proto == 0
+                         and r.flags == 0 for r in marks)
+    assert all(r.proto == T.PROTO_KLINE_MSG and r.type == T.TYPE_DATA
+               for r in records if not r.is_event)
+    # a mark precedes every synced record by less than a second (raw-tap amendment)
+    last = None
+    for r in records:
+        if T.is_time_event(r):
+            last = r.t_us
+        elif not r.flags & T.FLAG_UNSYNCED:
+            assert last is not None and 0 <= r.t_us - last < 1_000_000, r.seq
+
+
+@pytest.mark.parametrize("name", ["td5-vectors.jsonl", "slabs-vectors.jsonl", "lifecycle.jsonl"])
+def test_the_firmware_time_events_decode_and_map_to_utc(name):
+    """The node's ``time`` events (code 6, CBOR ``{t_us, utc_ns, source, err_us}``; raw-tap
+    amendment of 2026-10-06): every one decodes, maps its own instant, and the fixture's
+    wall clock (from 2026-10-06T10:00:00Z, advancing with the fake bus) comes back."""
+    records = [r for m in tap_messages(name) if m["topic"].endswith("/data")
+               for r in T.parse_records(m["payload"])[0]]
+    marks = [r for r in records if T.is_time_event(r)]
+    assert marks
+    for r in marks:
+        ev = T.parse_time_event(r.payload)
+        assert ev is not None and ev["t_us"] == r.t_us and ev["source"] == "sntp"
+        assert ev["err_us"] is None  # SNTP on ESP-IDF gives no estimate
+        assert list(T.parse_time_event(r.payload)) == ["t_us", "utc_ns", "source", "err_us"]
+    tm = T.TimeMap(records)
+    assert len(tm) == len({r.t_us for r in marks}) and tm.sources == ["sntp"]
+    t0 = 1_791_280_800 * 10**9   # 2026-10-06T10:00:00Z
+    for r in marks:
+        assert tm.utc_ns(r.t_us) == T.parse_time_event(r.payload)["utc_ns"]
+    utcs = [tm.utc_ns(r.t_us) for r in records]
+    assert utcs == sorted(utcs) and t0 <= utcs[0] < t0 + 60 * 10**9
+
+
+def test_time_event_payloads_are_checked():
+    good = bytes.fromhex("a4") + b"\x64t_us\x1a\x00\x0f\x42\x40" + b"\x66utc_ns\x1b" + \
+        (1_791_280_800 * 10**9).to_bytes(8, "big") + b"\x66source\x64sntp\x66err_us\x19\x01\xf4"
+    assert T.parse_time_event(good) == {"t_us": 1_000_000, "utc_ns": 1_791_280_800 * 10**9,
+                                        "source": "sntp", "err_us": 500}
+    assert T.parse_time_event(b"") is None
+    assert T.parse_time_event(b"\x80") is None                       # an array
+    assert T.parse_time_event(good[:-3]) is None                     # truncated
+    assert T.parse_time_event(b"\xa1\x64t_us\x01") is None           # no utc_ns
+    assert T.parse_time_event(b"\xbf\xff") is None                    # indefinite length
+    neg = b"\xa2\x64t_us\x20\x66utc_ns\x01"                           # t_us -1
+    assert T.parse_time_event(neg) is None
+    extra = b"\xa3\x64t_us\x01\x66utc_ns\x02\x63new\xf5"            # unknown key kept out
+    assert T.parse_time_event(extra) == {"t_us": 1, "utc_ns": 2, "source": None, "err_us": None}
+
+
+def _mark(seq, t_us, utc_ns, *, cbor_t_us=None):
+    body = time_event(t_us if cbor_t_us is None else cbor_t_us, utc_ns)
+    return rec(seq, body, t_us=t_us, typ=T.TYPE_EVENT, d=T.EV_TIME, bus=0xFF, proto=0)
+
+
+def test_the_test_encoder_writes_the_firmware_bytes():
+    """``tests/fake_node.py`` ``time_event`` (used to re-stamp a looping node's tap) writes
+    the node's exact bytes: four keys in order, shortest-form heads, ``err_us`` null."""
+    marks = [r for m in tap_messages("lifecycle.jsonl") if m["topic"].endswith("/data")
+             for r in T.parse_records(m["payload"])[0] if T.is_time_event(r)]
+    assert marks and all(time_event(r.t_us, T.parse_time_event(r.payload)["utc_ns"]) == r.payload
+                         for r in marks)
+
+
+def test_the_time_map_is_linear_between_marks_and_holds_the_offset_outside():
+    U = 1_791_280_800 * 10**9
+    tm = T.TimeMap([_mark(0, 1_000_000, U), rec(1, REQ, t_us=1_500_000),
+                    _mark(2, 2_000_000, U + 1_000_100_000),      # the node clock ran 100 µs slow
+                    _mark(3, 3_000_000, U + 7, cbor_t_us=5)])    # its CBOR t_us disagrees: unused
+    assert len(tm) == 2
+    assert tm.utc_ns(1_000_000) == U and tm.utc_ns(2_000_000) == U + 1_000_100_000
+    assert tm.utc_ns(1_500_000) == U + 500_050_000                # linear between marks
+    assert tm.utc_ns(500_000) == U - 500_000_000                  # before: first mark's offset
+    assert tm.utc_ns(2_500_000) == U + 1_500_100_000              # after: last mark's offset
+    assert not T.TimeMap([rec(0, REQ)]) and T.TimeMap([]).utc_ns(5) is None
 
 
 def test_a_truncated_batch_keeps_only_whole_records():
@@ -323,15 +402,55 @@ def test_a_tap_fixture_round_trips_to_pcapng_with_its_gaps_reported(tmp_path):
     assert (gap["from"], gap["to"]) == (lost[0], lost[-1])
     taps = read_tap(str(tmp_path), {"tap": w.entries()})
     pc = read_pcapng(to_pcapng(taps, {"id": "20261006T100000Z"}))
-    assert pc["ifaces"] == [{"linktype": LINKTYPE_USER0, "name": "kline-diag", "tsresol": 6}]
-    assert "not UTC" in pc["shb_comment"]
+    # the node's time events are on an events interface, opened by the first mark
+    assert pc["ifaces"] == [{"linktype": LINKTYPE_USER1, "name": "node events", "tsresol": 6},
+                            {"linktype": LINKTYPE_USER0, "name": "kline-diag", "tsresol": 6}]
+    assert "Timestamps are UTC, mapped from each node's time events" in pc["shb_comment"]
     want = [r for m in data if m is not lost_batch for r in T.parse_records(m["payload"])[0]]
+    tm = T.TimeMap(want)
+    assert tm
     assert [p["data"] for p in pc["packets"]] == [r.payload for r in want]
-    assert [p["t_us"] for p in pc["packets"]] == [r.t_us for r in want]
-    assert [p["flags"] for p in pc["packets"]] == [2 if r.dir == T.DIR_TX_ECHO else 1 for r in want]
-    after = next(p for p in pc["packets"] if f"seq {lost[-1] + 1}" in p["comments"])
+    # UTC in µs since the epoch, from the marks that arrived (2026-10-06T10:00Z onwards)
+    assert [p["t_us"] for p in pc["packets"]] == [tm.utc_ns(r.t_us) // 1000 for r in want]
+    assert pc["packets"][0]["t_us"] // 10**6 - 1_791_280_800 in range(0, 60)
+    assert [p["flags"] for p in pc["packets"]] == [
+        None if r.is_event else 2 if r.dir == T.DIR_TX_ECHO else 1 for r in want]
+    mark = next(p for p in pc["packets"] if p["flags"] is None)
+    assert any(c.startswith("time mark: t_us ") and "2026-10-06T10:00:" in c and
+               c.endswith(", sntp)") for c in mark["comments"])
+    after = next(p for p in pc["packets"] if f"seq {lost[-1] + 1}" in p["comments"]
+                 or f"event 6 seq {lost[-1] + 1}" in p["comments"])
     assert f"seq gap: records {lost[0]}..{lost[-1]} lost ({len(lost)})" in after["comments"]
-    assert pc["drops"] == {0: len(lost)}
+    assert sum(pc["drops"].values()) == len(lost)
+
+
+def test_a_tap_without_time_events_keeps_the_node_clock(tmp_path):
+    """No ``time`` event (a node without a clock, or an older firmware): the export keeps
+    ``t_us`` as before and says so on the interface."""
+    w, _ev, _c, _s = _writer(tmp_path)
+    w.header("node", SESSION, header())
+    w.batch("node", SESSION, batch(rec(0, REQ, flags=T.FLAG_UNSYNCED), rec(1, REPLY[:3])))
+    w.close()
+    pc = read_pcapng(to_pcapng(read_tap(str(tmp_path), {"tap": w.entries()}), {"id": "x"}))
+    assert [p["t_us"] for p in pc["packets"]] == [1_000_000, 1_001_000]
+    assert not any("extrapolated" in c for p in pc["packets"] for c in p["comments"])
+    assert w.entries()[0]["time_marks"] == 0
+
+
+def test_unsynced_records_before_the_first_mark_are_extrapolated_and_say_so(tmp_path):
+    U = 1_791_280_800 * 10**9
+    w, _ev, _c, _s = _writer(tmp_path)
+    w.header("node", SESSION, header())
+    w.batch("node", SESSION, batch(rec(0, REQ, t_us=500_000, flags=T.FLAG_UNSYNCED),
+                                   _mark(1, 1_000_000, U), rec(2, REQ, t_us=1_250_000)))
+    w.close()
+    assert w.entries()[0]["time_marks"] == 1
+    pc = read_pcapng(to_pcapng(read_tap(str(tmp_path), {"tap": w.entries()}), {"id": "x"}))
+    assert [p["t_us"] for p in pc["packets"]] == [U // 1000 - 500_000, U // 1000,
+                                                 U // 1000 + 250_000]
+    assert "recorded before the node's clock was set: UTC extrapolated" in \
+        pc["packets"][0]["comments"]
+    assert all("UTC extrapolated" not in c for c in pc["packets"][2]["comments"])
 
 
 def test_a_1a_reply_exports_with_only_the_placeholder(tmp_path):

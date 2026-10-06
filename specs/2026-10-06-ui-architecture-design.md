@@ -2,7 +2,7 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.9
+version: 0.10
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
@@ -397,8 +397,10 @@ mTLS sessions its parked broker admits, at most 5 until the bench proves more), 
 candidate only when it lists `pbroker`, its `power.class` is `always` and `psram_kb` ≥ 2048,
 ADR-0037 Amendments 13–14), `transmit` (the car buses whose transmit gate it
 holds, by `bus_id`) and `items` (each sensor, receiver or I/O point, with `origin` = `board`,
-`detected`, `harness` or `config` and `status` = `ok`, `absent`, `fault`, `no_signal` or
-`refused`; ADR-0032 Amendments B1). **Unknown types degrade** to a generated
+`detected`, `harness` or `config` and `status` = `ok`, `absent`, `fault`, `no_signal`,
+`unverified` or `refused`; ADR-0032 Amendments B1; *2026-10-06: `unverified` added, as the
+node publishes it for its K-line item until an init succeeds (sensor-detection §2); it is
+drawn as "Not verified yet", neither ok nor a fault*). **Unknown types degrade** to a generated
 tile; `schema` is versioned. **D2-only leftovers stay under `x`.** **`unit` is a key copied verbatim from
 the pinned VSS 6.1 `units.yaml`** (`Celsius`, `km/h`, `kPa`), checked by a test (ADR-0016).
 
@@ -807,3 +809,5 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   `driver_side` in the pack layout (rail on the left until the pack declares it).
   Playwright covers 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and
   an axe WCAG 2.2 AA scan per class.
+- 2026-10-06: v0.10, §5.1 item `status` gains `unverified` (the node's K-line item until an
+  init succeeds; `ostler-firmware` 0426ea5, sensor-detection §2).
