@@ -37,6 +37,21 @@ describe("reduceSnapshot", () => {
 });
 
 describe("staleness", () => {
+  it("never shows a node's stale value as live (NodeSource spec §6.4)", () => {
+    const now = 100_000;
+    const s = reduceSnapshot(initialLive, snap({ module: "td5", signals: {
+      rpm: { v: 800, u: "rpm", stale: true, age_s: 30 },
+      temp: { v: 80, u: "°C", stale: true, age_s: null },
+      fresh: { v: 1, u: "", stale: false, age_s: 0.2 },
+      young: { v: 2, u: "", stale: true, age_s: 2.5 },
+    } }), now);
+    expect(staleAge(s.seen.rpm, now, true)).toBe(30);
+    expect(s.seen.temp).toBeUndefined(); // age unknown: "not live", no history point
+    expect(s.history.temp).toBeUndefined();
+    expect(staleAge(s.seen.fresh, now, true)).toBeNull();
+    expect(staleAge(s.seen.young, now, true)).not.toBeNull(); // stale even when young
+  });
+
   it("records when each signal last updated, but not from a lost link", () => {
     let s = reduceSnapshot(initialLive, snap({ signals: { rpm: { v: 800, u: "rpm" } } }), 1000);
     expect(s.seen.rpm).toBe(1000);

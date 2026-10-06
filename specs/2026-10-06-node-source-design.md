@@ -2,16 +2,17 @@
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06 (answers in §15). A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
 # NodeSource — the Brain ingests node data over MQTT — design
 
-**Status:** approved v0.2 (owner, 2026-10-06; answers in §15). Build in phases P1–P4. It applies
+**Status:** approved v0.2 (owner, 2026-10-06; answers in §15); v0.3: P1 built (§16). Build
+in phases P1–P4. It applies
 [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) §3 ("the brain consumes the
 node's VSS messages over IP") to the platform's server, and changes no ADR. Where it needs a
 decision it lists it in §15.
@@ -145,10 +146,10 @@ MQTT reader thread fills the table, the poll thread only reads it.
 - **Readings with no pack field** (a guardian's IMU, a sensor node's EGT, any GNSS fix) go to
   a new snapshot field `vss`: `{<VSS path>: {sel, value, unit, ts_utc, age_s, stale, c,
   sources: {<device>/<source>: {...}}}}`, built by §6.5.
-- **The pack id in leaves.** The node plan says `d2` where the platform's pack id is `lr_d2`
-  (`ostler-firmware` `firmware/node/packs/d2/node-plan.json`, 2026-10-06). NodeSource maps the node's pack
-  id through the manifest or a one-line alias in the pack's data, never in platform code
-  (§15 Q3).
+- **The pack id in leaves.** The node publishes the platform's pack id, `lr_d2`
+  (`vss/lr_d2.<module>.<field>`; `ostler-firmware` ceb4cc7, owner answer 3), so no alias or
+  mapping exists anywhere. A leaf naming another pack is kept and reported once in the
+  connection log.
 
 ### 6.3 Values, units, confidence, labels
 
@@ -398,6 +399,25 @@ The owner took the recommendations on every question.
 9. **Tap retention:** tap batches are recorded only during a recorded session. No rolling
    buffer.
 
+## 16. As built (P1, v0.3)
+
+- `openostler.mqtt` (codec, `MqttClient`, `StdlibMqttClient`), `openostler.node`
+  (`messages`, `table`, `select`), `web/node_source.py` (`NodeFeed`, `NodeSource`),
+  `--source node` in `tools/dashboard.py`, `tests/e2e_server.py --node`.
+- Judgement calls: the device table is keyed by `(device, leaf, source)`, not
+  `(device, topic)`, because the node publishes two modules' readings of one VSS path on one
+  topic (the D2 battery voltage from the Td5 and SLABS); `vss` lists every `Vehicle.*`
+  reading, pack-decoded ones included, so §6.5 can prefer the bus value; a field with no
+  observed interval yet is stale after 15 s (3 × an assumed 5 s); `last_seen_utc` counts
+  live messages only; a reconnect forgets each device's `status` and `power` until the
+  retained copies return; the boot id is compared as a growing counter, so retained copies
+  from an older boot are marked "before restart" in any arrival order; a node source
+  records no sessions until P2; `devices` is an extra snapshot field.
+- Not in P1, in `TODO.md`: the serial source's refusal beside a gate-holding node needs the
+  role claims (P3; today `--serial` with `--source node` is refused), GNSS selection by
+  ADR-0032 A4, mDNS discovery, the §10 wording in the UI (the UI already never draws a
+  stale value as live), and a Mosquitto service in CI for the `needs_broker` tests.
+
 ## Notes on sources
 
 - `ostler-firmware` at f59ac00 (2026-10-06): `firmware/README.md` (topics and payloads),
@@ -418,3 +438,5 @@ The owner took the recommendations on every question.
   MQTT 5 client, Brain converts units at U3, node pack id aligns to `lr_d2`, `boot` id in
   VSS payloads, mTLS on loopback, request-topic split kept, serial source refuses beside a
   gate-holding node, session ends on `asleep`, tap recorded only in sessions.
+- 2026-10-06 — v0.3: P1 built (§16). §6.2: the node publishes `lr_d2` directly (firmware
+  ceb4cc7), no alias; VSS payloads carry `boot`; fixtures from the firmware host tests.

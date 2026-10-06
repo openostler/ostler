@@ -18,6 +18,7 @@ const fixtures = import.meta.glob<unknown>("./fixtures/*.json", { eager: true, i
 const SCHEMA_FOR: Record<string, z.ZodType> = {
   snapshot: Snapshot,
   "snapshot-kline": Snapshot,
+  "snapshot-node": Snapshot,
   "fields-td5": FieldsResponse,
   "fields-slabs": FieldsResponse,
   "faults-airbag": FaultsResponse,

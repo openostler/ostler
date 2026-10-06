@@ -1078,6 +1078,9 @@ _INLINE_COMMANDS = frozenset({"start_csv", "stop_csv", "set_fault_watch", "shutd
 # switch sources). Not module commands: the registry gate does not apply to them.
 _SERVER_COMMANDS = frozenset({"select_module", "read_all_faults",
                               "connect", "disconnect", "set_port"}) | PROBE_COMMANDS
+# Server commands that open the serial port themselves. With a source that never touches
+# the car (NodeSource: the node reads it, ADR-0032) they are refused.
+_BUS_COMMANDS = frozenset({"read_all_faults", "set_port"}) | PROBE_COMMANDS
 # Generic per-source commands every module offers (not in the command registry).
 _GENERIC_SOURCE_COMMANDS = frozenset({"clear_faults", "read_block"})
 # Prefixes of module-command families (``active_pack().module_command_prefixes``): an
@@ -2385,6 +2388,9 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         """
         from .. import commands
 
+        if action in _BUS_COMMANDS and not getattr(self.source, "touches_car", True):
+            return ("the Brain never touches the car: the node reads it (ADR-0032), so "
+                    f"{action} is not available with a node source"), "conflict"
         if action in PROBE_COMMANDS:
             # Probing an unknown car (detection, an init sweep) is Parked-only (spec §2).
             return self._probe_refusal(params), None
@@ -2419,6 +2425,12 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         """
         if self._paused:
             return "disconnected"
+        fixed = getattr(self.source, "conn_for", None)
+        fixed = fixed(status) if fixed is not None else None
+        if fixed is not None:  # the source defines its states (NodeSource spec §10)
+            if fixed == "connected":
+                self._ever_connected = True
+            return fixed
         if status == "connected":
             self._ever_connected = True
             return "connected"
@@ -2465,7 +2477,16 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         snap["allow_shutdown"] = self._allow_shutdown  # Settings "Shut down Pi" button
         snap["conn"] = self._conn
         snap.update(_stamp(time.time()))
+        snap.setdefault("source_kind", getattr(self.source, "source_kind", "serial"))
         bat = (snap.get("signals") or {}).get("battery")
+        if not isinstance(bat, dict):
+            # A node's selected battery voltage when no ``battery`` field is present
+            # (NodeSource spec §6.5); a stale one is never shown as the live voltage.
+            sel = (snap.get("vss") or {}).get("Vehicle.LowVoltageBattery.CurrentVoltage")
+            bat = ({"v": sel.get("value")} if isinstance(sel, dict) and not sel.get("stale")
+                   else None)
+        elif bat.get("stale") is True:
+            bat = None  # a node's stale reading (per-signal ``stale``) is not the voltage now
         v = bat.get("v") if isinstance(bat, dict) else None
         snap["battery_v"] = (float(v) if isinstance(v, (int, float)) and not isinstance(v, bool)
                              else None)

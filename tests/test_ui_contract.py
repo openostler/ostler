@@ -159,6 +159,45 @@ def _kline_snapshot(_base):
         srv.server_close()
 
 
+def _node_snapshot(_base):
+    """A snapshot from NodeSource: a simulated node replays the firmware's SLABS fixture
+    through the fake broker (NodeSource spec §13, P1)."""
+    from openostler.metrics import is_known
+    from openostler.pack import active_pack
+    from openostler.web.node_source import NodeFeed, node_sources, store_lookup
+    from tests.fake_broker import FakeBroker
+    from tests.fake_node import VID, FakeNode, case, load
+
+    pack = active_pack()
+    msgs = [m for m in load("slabs-vectors.jsonl") if "/vss/" in m["topic"]]
+    with FakeBroker() as broker:
+        node = FakeNode(broker.host, broker.port).connect()
+        for m in msgs:
+            node.send(m)  # stored before the Brain subscribes
+        node.send(case("awake"))  # QoS 1: its PUBACK means the broker has stored them all
+        feed = NodeFeed(VID, broker.host, broker.port, client_id="contract-nodesource",
+                        pack_id=pack.id, lookup=store_lookup(), canonical=pack.canonical,
+                        is_known=is_known, log=lambda _m: None)
+        feed.start()
+        srv = DiagServer(host="127.0.0.1", port=0, source=node_sources(feed, pack.module_ids()),
+                         active="slabs", csv_dir=_tmp_dir(), record_sessions=False, geocoder=None)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            deadline = time.time() + 5
+            while time.time() < deadline and len(feed.table.view("slabs", 0, 0)["signals"]) < 18:
+                time.sleep(0.02)
+            for m in msgs[-6:]:
+                node.send(m)  # a few live values
+            time.sleep(0.2)
+            srv.poll_once()
+            return _get(f"http://127.0.0.1:{srv.server_address[1]}", "/snapshot")
+        finally:
+            srv.shutdown()
+            srv.server_close()
+            feed.stop()
+            node.stop()
+
+
 def _queued(base):
     """A contribution while the endpoint is offline: 202 ``{ok: true, queued: true}``."""
     _post(base, "/community/consent", {"consent": True})
@@ -182,6 +221,7 @@ def _post(base, path, body):
 CASES = {
     "snapshot": lambda b: _get(b, "/snapshot"),
     "snapshot-kline": _kline_snapshot,
+    "snapshot-node": _node_snapshot,
     "pack": lambda b: _get(b, "/pack"),
     "version": lambda b: _get(b, "/version"),
     "fields-td5": lambda b: _get(b, "/fields?module=td5"),

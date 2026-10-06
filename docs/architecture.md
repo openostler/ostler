@@ -2,14 +2,14 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.0
+version: 2.1
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
-  contracts in api/) and the dev commands.
+  contracts in api/, NodeSource and the MQTT client) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -33,9 +33,13 @@ pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 # Dashboard: always live (ignition on, stationary); there is no mock/demo mode
 PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--replay FILE|pack]
 
+# A Brain: read the car through the node's MQTT messages (read-only, NodeSource P1)
+PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
+    --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key [--vid VID]
+
 # UI development without a car: the test-only server on simulated sources
-# (the same one Playwright drives)
-PYTHONPATH=src python3 tests/e2e_server.py
+# (the same one Playwright drives); --node serves them through NodeSource and a fake broker
+PYTHONPATH=src python3 tests/e2e_server.py [--node]
 ```
 
 `pyproject.toml` sets `pythonpath = ["src", "."]`, so `pytest` works without
@@ -56,6 +60,8 @@ OBD-II         obd/: the J1979 service layer over an ObdRequestLink (kline/obd_l
                can/obd.py)
 CAN            can/: frame-level CanLink beside Transport (SocketCAN, slcan, GVRET,
                python-can), passive bitrate detection, ISO-TP, TxGate
+MQTT / node    mqtt/: stdlib MQTT 5 codec + client; node/: the device table (a Brain
+               reads the node's VSS messages; web/node_source.py is the DataSource)
 EcuSession     session.py: shared lifecycle/keepalive/read_block + tolerant establish retry
 VehiclePack    pack.py: the contract + loader (entry-point group "openostler.vehicle");
                module layers (D2: td5/ slabs/ airbag/ …) live in the pack repo
@@ -159,6 +165,26 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     and C `TxGate` (ADR-0032), checked by the shared vectors in `tests/vectors/can/`.
     Tests run on `tests/fake_can.py` (a virtual-clock bus); `needs_vcan` tests use a real
     `vcan0` when the runner has one.
+- **NodeSource: the Brain reads the node (`mqtt/`, `node/`, `web/node_source.py`,
+  [spec](../specs/2026-10-06-node-source-design.md), ADR-0032).**
+  - `openostler.mqtt` is our stdlib MQTT 5 client behind the `MqttClient` interface (a
+    paho adapter could replace it without touching NodeSource); the same codec drives
+    the test broker `tests/fake_broker.py`. TLS is mTLS via `tls_context()`; `mqtt://` is
+    for a lab broker only (`--mqtt-insecure-lab`).
+  - `NodeFeed` holds one read-only connection (`status`, `power`, `vss/+` of one `vid`;
+    No Local, Retain As Published off, clean start) and fills `node.DeviceTable` from the
+    MQTT thread; `NodeSource` (one per pack module, all over one feed) builds the snapshot
+    from it under a lock. Selecting a module only filters the view.
+  - Staleness is per signal on the node's own clock (`t_us`); a retained value at
+    subscribe time is "last known"; reboots come from the payload's `boot` id (or `t_us`
+    going backwards); confidence is never raised (the lower of node and store wins).
+    Units pass through until U3.
+  - A source declares `source_kind` (`serial`, `kline`, `node`), may map its statuses to
+    `conn` (`conn_for`, used by `_next_conn`), and `touches_car = False` makes the server
+    refuse the commands that open the serial port itself (`read_all_faults`, `set_port`,
+    the probes). P1 publishes nothing and records no sessions (P2).
+  - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/`;
+    `tests/fake_node.py` replays them; `needs_broker` tests use a real Mosquitto.
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -270,3 +296,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   model, decoders, `PidTable`, Diagnostics, the Mode 04 gate, shared vectors.
 - 2026-10-06 — CAN path (`can/`): CanLink and backends, passive bitrate detection,
   ISO-TP, TxGate, the J1979 CAN adapter, LoggingCanLink, the fake bus and shared vectors.
+- 2026-10-06 — v2.1, NodeSource P1: `mqtt/` (stdlib MQTT 5 client), `node/` (the device
+  table), `web/node_source.py`, `--source node`, `source_kind`, `conn_for`, `touches_car`.

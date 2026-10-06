@@ -25,6 +25,11 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
     PYTHONPATH=src python3 tools/dashboard.py --audio pi --imu auto \
         --tls-cert pi.crt --tls-key pi.key
 
+    # a Brain: read the car through the node's MQTT messages instead of a cable
+    # (NodeSource, specs/2026-10-06-node-source-design.md; read-only, phase P1)
+    PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
+        --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key
+
     # a sniff feed for the admin Decode tab without a car (the homelab runs this):
     # ``pack`` loops the installed vehicle pack's demo sniff log (``demo.sniff_log``)
     PYTHONPATH=src python3 tools/dashboard.py --replay pack
@@ -82,7 +87,23 @@ def build_docs(pack, dict_path: "str | None" = None, extra_dirs=()):
 def main() -> int:
     pack = active_pack()
     ap = argparse.ArgumentParser(description=f"{pack.name} realtime dashboard")
+    ap.add_argument("--source", choices=("serial", "node"), default="serial",
+                    help="serial (default): the K-line cable, the lab and dev path; node: the "
+                         "node's MQTT messages (a Brain; read-only)")
     ap.add_argument("--serial", help="serial port of the K-line cable (omit → auto-detect)")
+    ap.add_argument("--mqtt", metavar="URL",
+                    help="--source node: the broker, mqtts://host[:8883] (the Brain's broker, "
+                         "or the node's in the lab); there is no default address")
+    ap.add_argument("--mqtt-ca", help="--source node: the CA certificate (PEM) of the broker")
+    ap.add_argument("--mqtt-cert", help="--source node: this Brain's client certificate (PEM)")
+    ap.add_argument("--mqtt-key", help="--source node: the client certificate's key (PEM)")
+    ap.add_argument("--mqtt-client-id", default=None,
+                    help="--source node: the MQTT client id (default <host>-nodesource)")
+    ap.add_argument("--mqtt-insecure-lab", action="store_true",
+                    help="--source node: allow a plain mqtt:// lab broker (no TLS); never in a car")
+    ap.add_argument("--vid", default=None,
+                    help="--source node: the vehicle id in the node's topics (default: "
+                         "OSTLER_VEHICLE_ID, else this device's logs/vehicle.json vid)")
     ap.add_argument("--module", default=None,
                     help="module to start on (default: the vehicle pack's default, "
                          f"{pack.default_module}; one of {', '.join(pack.module_ids())})")
@@ -156,6 +177,12 @@ def main() -> int:
         return 2
     if bool(args.tls_cert) != bool(args.tls_key):
         ap.error("--tls-cert and --tls-key must be given together")
+    if args.source == "node" and args.serial:
+        # One bus, one tester: the node holds the K-line; a cable beside it would collide
+        # and bypass its transmit gate (NodeSource spec §14, owner answer 7).
+        ap.error("--serial and --source node exclude each other: the node reads the car")
+    if args.source == "node" and not args.mqtt:
+        ap.error("--source node needs --mqtt mqtts://host[:port] (no hard-coded broker)")
     if args.gps.strip().lower() == "mock":
         ap.error("--gps mock was removed (ADR-0011: no demo mode); "
                  "use tests/e2e_server.py for a simulated car")
@@ -183,7 +210,21 @@ def main() -> int:
         gps = open_gps(gps_spec)
     except Exception as exc:  # noqa: BLE001 — no GPS must never stop the dashboard
         print(f"GPS: unavailable for {gps_spec!r} ({type(exc).__name__}: {exc}) — continuing without")
-    modules = pack.sources(port, raw_log_dir=raw_log_dir, state_dir=_repo)
+    feed = None
+    if args.source == "node":
+        from openostler.logbook.vehicle import local_vid, state_dir_for
+        from openostler.web.node_source import build_feed, node_sources
+        vid = args.vid or local_vid(state_dir_for(args.sessions_dir or
+                                                  os.path.join(_repo, "logs", "sessions")))
+        try:
+            feed = build_feed(args.mqtt, vid, ca=args.mqtt_ca, cert=args.mqtt_cert,
+                              key=args.mqtt_key, insecure_lab=args.mqtt_insecure_lab,
+                              client_id=args.mqtt_client_id)
+        except (ValueError, OSError) as exc:  # ssl.SSLError is an OSError
+            ap.error(f"--source node: {exc}")
+        modules = node_sources(feed, pack.module_ids())
+    else:
+        modules = pack.sources(port, raw_log_dir=raw_log_dir, state_dir=_repo)
     active = canonical_module(args.module or args.slabs_alias) or pack.default_module
     if active not in modules:
         ap.error(f"unknown module {args.module or args.slabs_alias!r} "
@@ -236,6 +277,9 @@ def main() -> int:
         admin_password=args.admin_password,
         allow_shutdown=args.allow_shutdown,
         gps=gps, sessions_dir=sessions_dir,
+        # Recording a node's values (sessions driven by its power and status, the raw tap)
+        # is phase P2 of the NodeSource spec; until then a node source records nothing.
+        record_sessions=feed is None,
         audio=args.audio, imu=args.imu, geocoder=geocoder,
         kline_detect=args.kline_detect, kline_profile=args.kline_profile,
     )
@@ -263,7 +307,12 @@ def main() -> int:
           f" · IMU {rs['imu']['state']}"
           f"{' (' + rs['imu']['reason'] + ')' if rs['imu'].get('reason') else ''}")
     print(f"Dashboard: {scheme}://localhost:{args.port}   (modules: {', '.join(modules)} · active: {active})")
-    print(f"Live port: {port}")
+    if feed is not None:
+        feed.log = lambda msg: srv._conn_log(f"node: {msg}")
+        feed.start()
+        print(f"Node source: {args.mqtt} · vehicle {feed.vid} · read-only, not recording (P1)")
+    else:
+        print(f"Live port: {port}")
     print(f"Place names: {'geocoder ' + geocoder if geocoder and not args.public else 'offline only'}")
     print(f"GPS: {gps_spec} → {getattr(gps, 'src', None) or 'none'} · sessions → {sessions_dir}"
           f"{'' if srv._recorder is not None else ' (recording unavailable)'}")
@@ -287,6 +336,9 @@ def main() -> int:
         srv.serve()
     except KeyboardInterrupt:
         srv.stop()
+    finally:
+        if feed is not None:
+            feed.stop()
     return 0
 
 

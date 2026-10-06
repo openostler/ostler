@@ -1,0 +1,366 @@
+# SPDX-FileCopyrightText: 2026 OpenOstler contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""The device table: node messages in, snapshot pieces out (NodeSource spec §6, §10).
+
+Pure and clock-injected: :meth:`DeviceTable.ingest` takes the Brain's monotonic and wall
+time of receipt, :meth:`DeviceTable.view` the Brain's time now. The MQTT reader thread
+ingests, the poll thread views; a lock keeps them apart and ``view`` never blocks on I/O.
+
+Honesty rules carried here:
+
+- **Confidence is never raised.** The node's ``c`` and the Brain's installed pack store are
+  compared and the lower wins; a mismatch is reported once.
+- **Staleness per signal (§6.4).** Age is measured on the node's own clock (``t_us``)
+  against the device's latest *live* message, so no clock sync is needed. A retained value
+  delivered at subscribe time is the last known value: stale, aged by its ``ts`` when the
+  node had SNTP, "age unknown" otherwise, until a live message for it arrives. A value is
+  stale past ``max(3 × its observed interval, 2 s)`` (an EMA of its own arrivals).
+- **Reboots.** A changed ``boot`` id (exact) or, for nodes without one, ``t_us`` or
+  ``power.since_us`` going backwards marks a reboot: older values keep their reading but
+  lose their node-clock age and are marked ``before_restart``.
+- Nothing is zeroed or invented: a non-numeric value is dropped (and reported once).
+
+Keys are ``(device, leaf, source)``: two modules of one node publishing the same VSS path
+(the Discovery 2 battery voltage from the Td5 and from SLABS) share one retained topic,
+and keeping the source in the key stops one module's live value replacing the other's.
+"""
+from __future__ import annotations
+
+import datetime as _dt
+import threading
+from dataclasses import dataclass, field
+from typing import Callable, Optional
+
+from .messages import POWER, STATUS, VSS, VssValue, parse_power, parse_status, parse_topic, parse_vss
+from .select import select
+
+STALE_FLOOR_S = 2.0
+STALE_FACTOR = 3.0
+# Until a field has two live arrivals its interval is unknown; assume this pace (the node's
+# slowest module rotation is several seconds per field).
+DEFAULT_INTERVAL_S = 5.0
+EMA_ALPHA = 0.3
+PROVEN, CANDIDATE = "proven", "candidate"
+FAULTS_NOTE = "not read by the node yet"
+
+# (module, field name) → (confidence, limits) from the Brain's installed pack store.
+FieldLookup = Callable[[str, str], "Optional[tuple[str, Optional[tuple[float, float]]]]"]
+
+
+def range_status(value: "float | None", limits) -> "str | None":
+    """The pack sources' range rule: ok / low / high, or suspect when outside the range by
+    more than its whole span; None without limits."""
+    if value is None or not limits:
+        return None
+    lo, hi = limits
+    span = (hi - lo) or 1.0
+    if value < lo - span or value > hi + span:
+        return "suspect"
+    if value < lo:
+        return "low"
+    if value > hi:
+        return "high"
+    return "ok"
+
+
+def lower_confidence(*levels: "str | None") -> str:
+    """``proven`` only when every known level is ``proven``; anything else is a candidate."""
+    known = [lv for lv in levels if lv is not None]
+    if not known or any(lv != PROVEN for lv in known):
+        return CANDIDATE
+    return PROVEN
+
+
+def parse_utc(ts: "str | None") -> "float | None":
+    if not ts:
+        return None
+    try:
+        return _dt.datetime.strptime(ts.replace("Z", "+0000"),
+                                     "%Y-%m-%dT%H:%M:%S.%f%z").timestamp()
+    except ValueError:
+        try:
+            return _dt.datetime.strptime(ts.replace("Z", "+0000"),
+                                         "%Y-%m-%dT%H:%M:%S%z").timestamp()
+        except ValueError:
+            return None
+
+
+def utc(epoch: float) -> str:
+    d = _dt.datetime.fromtimestamp(epoch, tz=_dt.timezone.utc)
+    return d.strftime("%Y-%m-%dT%H:%M:%S.") + f"{d.microsecond // 1000:03d}Z"
+
+
+@dataclass
+class Reading:
+    device: str
+    val: VssValue
+    rx: float                    # Brain monotonic receive time
+    retained: bool               # still only the stored value from subscribe time
+    epoch: int                   # the device's boot epoch when received
+    interval: "float | None" = None
+    last_live_rx: "float | None" = None
+    last_live_t_us: "int | None" = None
+
+
+@dataclass
+class Device:
+    id: str
+    status: "str | None" = None
+    power: "dict | None" = None
+    boot: "int | None" = None
+    epoch: int = 0
+    anchor: "tuple[int, float] | None" = None   # (t_us, Brain rx) of the latest live message
+    max_t_us: "int | None" = None
+    since_us: "int | None" = None
+    last_live_wall: "float | None" = None        # Brain wall time of the latest live message
+    last_any_rx: "float | None" = None
+    readings: "dict[tuple[str, str], Reading]" = field(default_factory=dict)
+
+
+class DeviceTable:
+    def __init__(self, vid: str, *, pack_id: "str | None" = None,
+                 lookup: "FieldLookup | None" = None,
+                 canonical: "Callable[[str], str | None] | None" = None,
+                 is_known: "Callable[[str], bool] | None" = None,
+                 log: "Callable[[str], None] | None" = None) -> None:
+        self.vid = vid
+        self.pack_id = pack_id
+        self._lookup = lookup or (lambda module, name: None)
+        self._canonical = canonical or (lambda m: m)
+        self._is_known = is_known or (lambda path: True)
+        self._log = log or (lambda msg: None)
+        self._lock = threading.Lock()
+        self._devices: "dict[str, Device]" = {}
+        self._once: "set[str]" = set()
+        self.ignored = 0  # messages on topics P1 does not read (tap, manifest …)
+
+    # ---- reporting ---------------------------------------------------------------- #
+    def _note(self, key: str, msg: str) -> None:
+        if key not in self._once:
+            self._once.add(key)
+            self._log(msg)
+
+    def devices(self) -> "list[str]":
+        with self._lock:
+            return sorted(self._devices)
+
+    def forget_liveness(self) -> None:
+        """A (re)connect to the broker: drop every device's ``status`` and ``power`` (the
+        broker re-sends the retained ones) and the node-clock anchors; readings stay, aged
+        by their ``ts`` until live messages arrive."""
+        with self._lock:
+            for dev in self._devices.values():
+                dev.status = dev.power = None
+                dev.anchor = None
+
+    # ---- ingest (MQTT reader thread) ------------------------------------------------ #
+    def ingest(self, topic: str, payload: bytes, retain: bool, now: float,
+               wall: float) -> bool:
+        """One message. ``retain`` is the delivered retain flag (with Retain As Published
+        off: a stored value sent at subscribe time). True when it was used."""
+        t = parse_topic(topic)
+        if t is None or t.vid != self.vid or not t.device:
+            self.ignored += 1
+            return False
+        with self._lock:
+            dev = self._devices.get(t.device)
+            if t.kind not in (STATUS, POWER, VSS):
+                self.ignored += 1
+                return False
+            if dev is None:
+                dev = self._devices[t.device] = Device(t.device)
+            dev.last_any_rx = now
+            if not retain:
+                dev.last_live_wall = wall
+            if t.kind == STATUS:
+                st = parse_status(payload)
+                if st is None:
+                    self._note(f"status:{t.device}", f"{t.device}: unreadable status payload")
+                    return False
+                dev.status = st
+                return True
+            if t.kind == POWER:
+                pw = parse_power(payload)
+                if pw is None:
+                    self._note(f"power:{t.device}", f"{t.device}: unreadable power record")
+                    return False
+                since_us = pw.get("since_us")
+                if (isinstance(since_us, int) and dev.since_us is not None
+                        and since_us < dev.since_us and not retain):
+                    self._reboot(dev, "power.since_us went backwards")
+                if isinstance(since_us, int):
+                    dev.since_us = since_us
+                dev.power = pw
+                return True
+            return self._ingest_vss(dev, t.rest, payload, retain, now)
+
+    def _reboot(self, dev: Device, why: str) -> None:
+        dev.epoch += 1
+        dev.anchor = None
+        dev.max_t_us = None
+        self._log(f"{dev.id}: node restart detected ({why}); older values are marked "
+                  "'before restart'")
+
+    def _ingest_vss(self, dev: Device, leaf: str, payload: bytes, retain: bool,
+                    now: float) -> bool:
+        if not leaf:
+            return False
+        val = parse_vss(leaf, payload)
+        if val is None:
+            self._note(f"json:{dev.id}/{leaf}", f"{dev.id}: {leaf}: not a JSON object, dropped")
+            return False
+        if val.value is None:
+            self._note(f"nan:{dev.id}/{leaf}", f"{dev.id}: {leaf}: non-numeric value dropped")
+            return False
+        # Reboot detection: the boot id (an NVS counter that only grows) is exact, so a
+        # higher id is a newer boot whatever order retained copies arrive in; t_us going
+        # backwards in live messages is the fallback for nodes without it.
+        if val.boot is not None:
+            if dev.boot is not None and val.boot > dev.boot:
+                self._reboot(dev, f"boot id {dev.boot} → {val.boot}")
+            if dev.boot is None or val.boot > dev.boot:
+                dev.boot = val.boot
+        elif (not retain and val.t_us is not None and dev.max_t_us is not None
+              and val.t_us < dev.max_t_us):
+            self._reboot(dev, "t_us went backwards")
+        if val.path is not None and not self._is_known(val.path):
+            self._note(f"metric:{val.path}", f"unknown VSS path {val.path} (kept, flagged "
+                                              "m_unknown)")
+        pl = val.pack_leaf
+        if pl is not None and self.pack_id and pl[0] != self.pack_id:
+            self._note(f"pack:{pl[0]}", f"{dev.id}: pack leaf {leaf} names pack {pl[0]!r}, "
+                                        f"the Brain runs {self.pack_id!r}")
+        stale_boot = val.boot is not None and dev.boot is not None and val.boot < dev.boot
+        epoch = dev.epoch - 1 if stale_boot else dev.epoch
+        key = (leaf, val.source)
+        old = dev.readings.get(key)
+        r = Reading(dev.id, val, now, retain, epoch)
+        if old is not None:
+            r.interval, r.last_live_rx, r.last_live_t_us = (old.interval, old.last_live_rx,
+                                                            old.last_live_t_us)
+            if retain and not old.retained:
+                return True  # a late stored copy never replaces a live value
+        if not retain and not stale_boot:
+            if r.last_live_rx is not None:
+                same_clock = (val.t_us is not None and r.last_live_t_us is not None
+                              and old is not None and old.epoch == dev.epoch
+                              and val.t_us > r.last_live_t_us)
+                dt = ((val.t_us - r.last_live_t_us) / 1e6 if same_clock
+                      else now - r.last_live_rx)
+                if dt > 0:
+                    r.interval = dt if r.interval is None else (
+                        EMA_ALPHA * dt + (1 - EMA_ALPHA) * r.interval)
+            r.last_live_rx, r.last_live_t_us = now, val.t_us
+            if val.t_us is not None:
+                if dev.anchor is None or val.t_us >= dev.anchor[0]:
+                    dev.anchor = (val.t_us, now)
+                dev.max_t_us = max(dev.max_t_us or 0, val.t_us)
+        dev.readings[key] = r
+        return True
+
+    # ---- view (poll thread) --------------------------------------------------------- #
+    def _age(self, dev: Device, r: Reading, now: float, wall: float) -> "float | None":
+        v = r.val
+        if (r.epoch == dev.epoch and dev.anchor is not None and v.t_us is not None
+                and not (r.retained and v.t_us > dev.anchor[0])):
+            node_now = dev.anchor[0] + (now - dev.anchor[1]) * 1e6
+            return max(0.0, (node_now - v.t_us) / 1e6)
+        t = parse_utc(v.ts)
+        if t is not None:
+            return max(0.0, wall - t)
+        if not r.retained:
+            return max(0.0, now - r.rx)  # a lower bound: received live that long ago
+        return None
+
+    def _signal(self, dev: Device, r: Reading, now: float, wall: float) -> dict:
+        v = r.val
+        module = self._canonical(v.module) if v.module else None
+        info = self._lookup(module, v.name) if (module and v.name) else None
+        store_c, limits = (info if info else (None, None))
+        node_c = v.c if v.c in (PROVEN, CANDIDATE) else CANDIDATE
+        c = lower_confidence(node_c, store_c)
+        if store_c is not None and store_c != node_c:
+            self._note(f"conf:{module}.{v.name}",
+                       f"{module}.{v.name}: the node says {node_c}, the Brain's pack store "
+                       f"says {store_c}; showing {c} (node and Brain on different pack versions?)")
+        age = self._age(dev, r, now, wall)
+        threshold = max(STALE_FACTOR * (r.interval or DEFAULT_INTERVAL_S), STALE_FLOOR_S)
+        stale = r.retained or age is None or age > threshold or r.epoch != dev.epoch
+        sig = {"v": v.value, "u": v.unit, "s": range_status(v.value, limits), "c": c,
+               "ts_utc": v.ts, "age_s": None if age is None else round(age, 3),
+               "stale": stale, "src": f"{dev.id}/{v.source}" if v.source else dev.id}
+        if v.state is not None:
+            sig["label"] = v.state
+        if v.raw is not None:
+            sig["raw"] = v.raw
+        if v.path is not None:
+            sig["m"] = v.path
+            if not self._is_known(v.path):
+                sig["m_unknown"] = True
+        if r.epoch != dev.epoch:
+            sig["before_restart"] = True
+        return sig
+
+    def view(self, module: "str | None", now: float, wall: float) -> dict:
+        """``{signals, vss, device, devices}`` for the active module: the pack fields the
+        node reads for it (by the source tag's module), every ``Vehicle.*`` path with its
+        sources and selection, and the device that serves the module."""
+        with self._lock:
+            signals: "dict[str, dict]" = {}
+            best_rx: "dict[str, float]" = {}
+            paths: "dict[str, list]" = {}
+            serving: "dict[str, float]" = {}
+            for dev in self._devices.values():
+                for r in dev.readings.values():
+                    v = r.val
+                    sig = self._signal(dev, r, now, wall)
+                    rmod = self._canonical(v.module) if v.module else None
+                    if v.name and module is not None and rmod == module:
+                        serving[dev.id] = max(serving.get(dev.id, -1.0), r.rx)
+                        cur = signals.get(v.name)
+                        if cur is None or (_rank(sig, dev.id) < _rank(cur, best_rx[v.name])):
+                            signals[v.name] = sig
+                            best_rx[v.name] = dev.id
+                    if v.path is not None:
+                        paths.setdefault(v.path, []).append(
+                            {"device": dev.id, "src": sig["src"], "stale": sig["stale"],
+                             "age_s": sig["age_s"], "pack_decoded": v.pack_decoded,
+                             "sig": sig})
+            vss = {}
+            for path, cands in sorted(paths.items()):
+                chosen = select(cands)
+                s = chosen["sig"]
+                vss[path] = {
+                    "sel": chosen["src"], "value": s["v"], "unit": s["u"],
+                    "ts_utc": s["ts_utc"], "age_s": s["age_s"], "stale": s["stale"],
+                    "c": s["c"],
+                    "sources": {c["src"]: {k: c["sig"][k] for k in
+                                           ("v", "u", "ts_utc", "age_s", "stale", "c")}
+                                for c in cands},
+                }
+            if serving:
+                dev_id = max(sorted(serving), key=lambda d: serving[d])
+            else:
+                with_status = sorted(d for d, dv in self._devices.items()
+                                     if dv.status is not None or dv.power is not None)
+                dev_id = with_status[0] if with_status else None
+            dev = self._devices.get(dev_id) if dev_id else None
+            device = None
+            if dev is not None:
+                device = {"device": dev.id, "status": dev.status,
+                          "power": dict(dev.power) if dev.power else None,
+                          "boot": dev.boot,
+                          "last_seen_utc": utc(dev.last_live_wall) if dev.last_live_wall else None}
+            return {"signals": signals, "vss": vss, "device": device,
+                    "devices": sorted(self._devices)}
+
+
+def _rank(sig: dict, device: str):
+    age = sig.get("age_s")
+    return (bool(sig.get("stale")), age is None, age or 0.0, device)
+
+
+__all__ = ["DEFAULT_INTERVAL_S", "FAULTS_NOTE", "Device", "DeviceTable", "Reading",
+           "STALE_FLOOR_S", "lower_confidence", "parse_utc", "range_status", "utc"]

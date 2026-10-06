@@ -44,6 +44,36 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **NodeSource, phase P1: read-only ingest of the node's MQTT messages**
+  ([spec](specs/2026-10-06-node-source-design.md) v0.3; ADR-0032). New core packages, stdlib
+  only (no new dependency, ADR-0035): `src/openostler/mqtt/` (an MQTT 5 codec for both
+  directions and `StdlibMqttClient` behind the `MqttClient` interface: CONNECT with a will
+  and session expiry, SUBSCRIBE with No Local, Retain As Published and Retain Handling,
+  QoS 0/1, keep-alive with the broker's Server Keep Alive, reconnect with jittered back-off
+  1 s doubling to 30 s, TLS 1.2+ with a client certificate) and `src/openostler/node/` (the
+  device table: per-signal staleness on the node's own clock, retained-at-subscribe values
+  shown as last known, reboots from the payload's `boot` id or, without one, `t_us` going
+  backwards, confidence never raised against the Brain's pack store, unknown VSS paths
+  flagged, VIN-shaped `vid`s refused, selection for a VSS path from several sources).
+  `web/node_source.py`: `NodeFeed` (one read-only connection: `status`, `power`, `vss/+`)
+  and one `NodeSource` per pack module; `tools/dashboard.py --source node --mqtt
+  mqtts://… --mqtt-ca/--mqtt-cert/--mqtt-key` (plain `mqtt://` only with
+  `--mqtt-insecure-lab`; `--serial` and `--source node` exclude each other; a node source
+  records no sessions until P2). Snapshot fields (additive): `source_kind` on every
+  snapshot, and for a node source `node`, `vss`, `devices`, `faults_note`, the statuses
+  `asleep` and `broker-down`, and per-signal `m`, `m_unknown`, `label`, `raw`, `ts_utc`,
+  `age_s`, `stale`, `src`, `before_restart`; `battery_v` falls back to the selected
+  `Vehicle.LowVoltageBattery.CurrentVoltage`. `api/openapi.yaml` (`NodeState`,
+  `NodePower`, `VssReading`) and `api/asyncapi.yaml` (the `brain-broker` server and the
+  node's `status`, `power` and `vss` channels) document them. With a node source the server
+  refuses `read_all_faults`, `set_port` and the probes (409, the Brain never touches the
+  car) and module actions answer 503 until P4. Tests: codec conformance, the client on an
+  in-process fake broker (`tests/fake_broker.py`: retained, wills, keep-alive, session and
+  message expiry, ACL, mTLS), the firmware's host-test fixtures
+  (`tests/fixtures/node/`, `ostler-firmware` ceb4cc7), the OpenAPI snapshot and AsyncAPI
+  payload contracts, safety (no bus import, read-only subscriptions, nothing published),
+  an optional `needs_broker` Mosquitto test, and the UI fixture `snapshot-node.json`. The
+  UI never draws a node's stale value as live. The D2 pack is untouched.
 - **CI `vcan` job.** Loads `vcan` (from `linux-modules-extra` if needed) and, when the
   runner kernel has it, `can-isotp`, brings up `vcan0` and runs the `needs_vcan` tests:
   `SocketCanLink` round-trip and a new `KernelIsoTpChannel` round-trip against a kernel
