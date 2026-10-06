@@ -2,7 +2,7 @@
 title: "ADR-0029 — Accounts, multi-vehicle garage, sharing and social"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0029 — Accounts, multi-vehicle garage, sharing and social
+
+> **Amended by [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), 2026-10-06:** §8 gains a **coarse** location level (the mesh default), and §9 names the mesh as a social transport. See [Amendments (mesh)](#amendments-2026-10-06-mesh).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It approves
@@ -157,3 +159,18 @@ Recorded on acceptance; the statements above already read this way.
 - **Gate wording:** the gate for car-touching actions is on the node (ADR-0032).
 - **Garage:** "the base hardware physically connected" now reads "the node" (§6).
 - **Motorbikes:** a guardian-variant or Lite node with the phone as the screen (§10).
+
+## Amendments (2026-10-06, mesh)
+
+With [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md) (accepted with the owner's answers
+of 2026-10-06). The decision text above is unchanged; where these entries differ, they win.
+
+- **A coarse location level** (§8). The per-share location levels become: none, **coarse**
+  (about ±3 km), place names, precise, or live during a ride. Coarse is the default when
+  position sharing over a mesh is first enabled (ADR-0038 §5); a live ride may raise it.
+- **The mesh is a social transport** (§7, §9). Groups, rides and convoys may use the
+  car-to-car mesh of ADR-0038 (the Meshtastic-compatible LoRa add-on first) beside the LAN,
+  Tailscale and the Ostler Cloud relay. A mesh is a remote path (ADR-0033 §6): Read and
+  alerts only, positions off until opted in per channel, never a VIN, `<vid>`, plate or
+  account name on air, and mesh identities never stand in for Ostler accounts, tokens or
+  device keys (ADR-0038 §6).

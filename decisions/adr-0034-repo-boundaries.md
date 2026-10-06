@@ -2,17 +2,18 @@
 title: "ADR-0034 — Repo boundaries: one platform repo, first-class firmware, packs as data, later hardware and contract repos"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, specs/2026-10-06-app-model-design.md, SCOPE.md]
 summary: >
-  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`.
+  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build.
 ---
 
 # ADR-0034 — Repo boundaries
 
 > **Amended 2026-10-06:** optional UI apps may live in their own `ostler-app-<x>` repos;
-> the shell and core apps stay in `ostler`. See [Amendments](#amendments-2026-10-06).
+> the shell and core apps stay in `ostler`; the Meshtastic bridge lives in a marked GPL-3
+> repo, `ostler-bridge-meshtastic` (ADR-0038). See [Amendments](#amendments-2026-10-06).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). **Amends** the repo tables of
@@ -132,3 +133,15 @@ so the hardware stays open as the code does). GPL-3 reuse stays in marked module
   Community apps load only as sandboxed iframes on web hosts (app-model spec §5, §7).
   Confirmation: CI in `ostler` validates every pinned app's manifest and `shell` range, and a
   proposal for an app repo still names cadence or contributors, as the rule requires.
+- **A marked GPL-3 repo for the Meshtastic bridge** (owner answer of 2026-10-06 to the
+  mesh questions, [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md) §3). The rule's
+  ground is **licence**: the bridge uses Meshtastic's GPL-3.0 protobufs, so it cannot live
+  in an AGPL-plus-commercial repo (ADR-0025). The table gains one row:
+
+  | Repo | Visibility, licence | Contents | When |
+  |---|---|---|---|
+  | `ostler-bridge-meshtastic` | public; **GPL-3.0-or-later**, marked GPL-3 | The thin VSS bridge between a Meshtastic-compatible radio (USB serial, BLE or TCP) and the Ostler broker: no actions, its own `in/` and `state/` topics only, rate limits and privacy defaults (ADR-0038 §2–§5); runs as a separate program on the brain or alongside the phone app | When the LoRa add-on work starts |
+
+  Core, the C decoder and the node firmware never import or link it; it talks to Ostler only
+  over MQTT under its own ACL. It is excluded from the commercial build, and its `reuse lint`
+  shows GPL-3.0-or-later.

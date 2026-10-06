@@ -2,7 +2,7 @@
 title: "muki01 OBD2-Diagnostic-UI — screens, protocol and what Ostler should take"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -202,7 +202,7 @@ SYSTEMS…" bar; exits with `scale(1.1)` and a 10 px blur. Purely decorative: it
 | PID selection | Checkbox grid of supported PIDs | Rates per state on the signal; user dashboards deferred | Channel picker in replay only |
 | Theme | Manual light/dark toggle, light default | Night dark automatically | Auto/Day/Night in `Preferences.tsx` |
 | Driving lockout | None; the 0–100 timer is meant for driving | Parked/Idling/Moving, server-enforced | None (U2) |
-| Device admin | Wi-Fi, static IP, OTA firmware/assets, no auth | More → Devices; Tier gates; threat model before U5 | None |
+| Device admin | Wi-Fi, static IP, OTA firmware/assets, no auth | More → Network; Tier gates; threat model before U5 | None |
 | Safety | No tiers | Five tiers plus comfort | `confirm.ts` levels |
 
 **Net.** Ostler's spec is well ahead on architecture, safety and honesty. This repo's value is in
@@ -241,8 +241,8 @@ clear, a full VIN, decorative splash and hero, and no lockouts.
 | Selected and connected protocol display | `protocol-status` | partly | Link sheet "Bus" rung, U1 | read | ideas-only | S |
 | PID checkbox grid ("Monitor Parameters") | `selectPID_Boxes` | partly (replay channel picker) | Live area: searchable signal picker that also sets poll set, U4; per-vehicle diff later (ADR-0018 Q6) | read | ideas-only | M |
 | Dark mode switch in `localStorage` | `applyTheme` | yes (auto, day, night) | Already covered; keep auto | read | — | — |
-| Wi-Fi SSID, password and static IP form with octet filter | `wifiChange_Form`, input filter | no | More → Devices → *device* network page, U5 (for our ESP32 add-ons); octet filter idea | comfort | port with notice (filter, ~20 lines) or clean-room | S |
-| OTA firmware and SPIFFS upload | `firmwareUpdate_Form` | no | More → Devices → Update, U5; **needs auth, signed images, progress, Parked** | procedure | ideas-only | L |
+| Wi-Fi SSID, password and static IP form with octet filter | `wifiChange_Form`, input filter | no | More → Network → *device* network page, U5 (for our ESP32 add-ons); octet filter idea | comfort | port with notice (filter, ~20 lines) or clean-room | S |
+| OTA firmware and SPIFFS upload | `firmwareUpdate_Form` | no | More → Network → *device* → Update, U5; **needs auth, signed images, progress, Parked** | procedure | ideas-only | L |
 | "Saved, device will reboot" modal | `#overlay` | partly (sheets) | Device settings result sheet, U5 | — | ideas-only | S |
 | Gzip asset build for SPIFFS | `build_spiffs.bat` | n/a | Firmware tooling for our ESP32 devices (cross-platform script) | — | ideas-only | S |
 | Not-connected placeholder per screen | `statusBox*` | yes (`ConnectionNotice`, `StatusGate`) | Keep ours (adds stale-grey) | read | — | — |

@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.6
+version: 0.7
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`.
 ---
 
 # UI architecture — design
@@ -22,6 +22,10 @@ in `depends_on`. **Amended on 2026-10-06 (v0.4)** for the node/brain direction
 approvals ([ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md)); the spec
 stays approved and the changes are listed in the changelog. **Amended on 2026-10-06 (v0.5)**
 with the app model (§3.6, [app-model spec](2026-10-06-app-model-design.md), draft).
+**Amended on 2026-10-06 (v0.7)** with the owner's networking answers: §3.7 (Network page,
+peer view and cluster view), the manifest fields of §5.1 and the device pages of §6
+([ADR-0037](../decisions/adr-0037-role-holders-and-handover.md),
+[ADR-0038](../decisions/adr-0038-mesh-car-to-car-and-off-grid.md)).
 
 ## 1. Context and goals
 
@@ -115,7 +119,7 @@ is built, not hard-coded.
 | **Diagnose** | Identity bar · **Scan all** · system list (§4.2) · per system **Overview · Faults · Live · Tests · Procedures · Settings** · fault → related live data and tests | Faults, Inputs, Outputs, Settings, Utilities, ModuleSelect |
 | **Logs** | One timeline: drives, parked periods, alarm events, faults, notes, scan reports. **Analysis** is the session detail; replay and Rewind live here | Logs, Analysis, Rewind |
 | **Security** | Alarm state, events, tracker map, geofences, clips (Parked only). Present with any node: every node has GPS and a basic alarm; the guardian variant adds tamper and IMU | — |
-| **More** | Garage, Devices, Integrations (MQTT/HA, OVMS, OwnTracks), Preferences, Privacy, **Developer** (Decode mode, Label, Coverage, Docs), About (service-mode entry) | cog, admin tabs |
+| **More** | Garage, **Network** (devices and device pages, links, role holders, uplinks, remote access, pairing; §3.7), Integrations (MQTT/HA, OVMS, OwnTracks), Preferences, Privacy, **Developer** (Decode mode, Label, Coverage, Docs), About (service-mode entry) | cog, admin tabs |
 
 The D2 keeps its NanoCom words as **pack labels** over the canonical areas (Live → Inputs, Tests →
 Outputs, Procedures → Utilities). An area with no items disappears; one the pack declares but has
@@ -163,19 +167,21 @@ reach the car except through the gate (§7). **Nothing is built before U1**; U1 
 seams. Detail and open questions: [app-model spec](2026-10-06-app-model-design.md) (draft);
 evidence: [app model research](../references/research/ui/app_model.md).
 
-### 3.7 Proposed amendment (2026-10-06, pending owner answers): Network page, peer view and cluster view
+### 3.7 Network page, peer view and cluster view (accepted 2026-10-06)
 
-*Not yet decided; §3.4 and §6 stand until the owner answers. Roles and handover:
-[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md) (proposed); evidence:
+*Accepted by the owner on 2026-10-06 (v0.7): Network is a core app that absorbs More →
+Devices. Roles and handover:
+[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md); mesh links:
+[ADR-0038](../decisions/adr-0038-mesh-car-to-car-and-off-grid.md); evidence:
 [cluster view research](../references/research/cluster_view.md).*
 
-**More → Devices becomes More → Network.** One page for the whole cluster, filled by the
+**More → Devices is now More → Network.** One page for the whole cluster, filled by the
 Network core app (app-model spec §3), with these sections:
 
 | Section | Shows | Source |
 |---|---|---|
-| **Devices** | every paired device: name, kind and variant (node, guardian, brain, add-on), model, firmware and manifest `etag`, IPv6/IPv4 addresses and mDNS name, "reached via" (T1S segment, Ethernet, Wi-Fi, BLE through the phone), health and last seen, an **Open device page** link; tap → the device page (today's More → Devices → *device*, with add-on app contributions) | retained manifests and `status` (ADR-0037 §3) |
-| **Transports and links** | T1S segments (PLCA on, coordinator, node count, CRC errors), Ethernet, Wi-Fi (AP clients, RSSI), BLE, LoRa or other mesh links (ADR-0038, proposed; a mesh is its own subnet, Read and alerts only), CAN fallback; health per link | device link counters |
+| **Devices** | every paired device: name, kind and variant (node, guardian, brain, add-on), model, firmware and manifest `etag`, IPv6/IPv4 addresses and mDNS name, "reached via" (T1S segment, Ethernet, Wi-Fi, BLE through the phone), health and last seen, an **Open device page** link; tap → the device page (More → Network → *device*, formerly More → Devices → *device*, with add-on app contributions) | retained manifests and `status` (ADR-0037 §3) |
+| **Transports and links** | T1S segments (PLCA on, coordinator, node count, CRC errors), Ethernet, Wi-Fi (AP clients, RSSI), BLE, LoRa or other mesh links (ADR-0038; a mesh is its own subnet or network and a remote path, Read and alerts only), CAN fallback; health per link | device link counters |
 | **Roles** | each single-holder role (transmit gate per bus, parked broker, time source, PLCA coordinator per segment, uplink manager): holder, since, term, candidates in order, last handover and why; "No holder" in amber, "No gate for this bus" where it applies | role claims (ADR-0037) |
 | **Uplinks and metering** | sources, Auto or pinned, failover order, metered flag, budget and usage (ADR-0028 §3–4) | uplink policy API, byte counters |
 | **Remote access** | the tiers in use (LAN, Tailscale, Ostler Cloud, HA Cloud) and the "Remote control enabled" badge (ADR-0033 §6) | install config, read-only |
@@ -201,12 +207,14 @@ by mDNS (`_ostler-mod._tcp`) and on its broker, each with variant, firmware, hea
 roles it claims, and a link to that peer's own page. Opening a hidden guardian's page shows
 the diagnostic node, the relay box, the brain and so on. It never acts on a peer; each peer's
 own page acts under its own gate. Shape: one shared `peers` view (a subset of the Network
-page's Devices and Roles rows), served by the firmware; see the app-model spec's proposed
-amendment for how it relates to the shell.
+page's Devices and Roles rows), served by the firmware; the
+[app-model spec §12](2026-10-06-app-model-design.md#12-the-network-app-and-device-pages-accepted-2026-10-06)
+sets how it relates to the shell (it stays outside the app model).
 
-**Changes if accepted:** §3.4's More row reads "Network" for "Devices"; §6's "More → Devices"
-pages become "More → Network → *device*"; the capability manifest (§5.1) gains `roles` and
-`transmit` per bus (ADR-0037 Consequences).
+**Changes made (v0.7):** §3.4's More row reads "Network" for "Devices"; §6's "More → Devices"
+pages are "More → Network → *device*"; the capability manifest (§5.1) gains `board`, `roles`,
+`transmit` per bus and `items` with `origin` and `status` (ADR-0037 Consequences, ADR-0032
+Amendments B).
 
 ## 4. The vehicle model in the UI
 
@@ -292,12 +300,17 @@ Data the UI renders. `GET /pack` grows into it; later `GET /vehicles/<vid>/capab
   "signals": [ { "id": "td5.coolant_temp", "system": "td5", "group": "Temperatures",
                  "metric": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature",
                  "class": "temperature", "unit": "Celsius", "dec": 0, "span": [-40, 130],
-                 "normal": [80, 100], "confidence": "proven", "category": "primary",
+                 "normal": [80, 100], "confidence": "proven", "ha_category": "primary",
                  "rate": { "parked": 0, "ignition": 1, "driving": 5 } } ],
   "dtc_sources": [ { "id": "td5", "system": "td5", "kind": "kwp_18", "clear_action": "td5.clear_faults" } ],
   "actions": [ { "id": "slabs.compressor", "system": "slabs", "safety": "actuator", "tier": 2,
                  "confirm": "preconditions", "status": "verified", "states": ["parked"], "remote": false } ],
   "devices": [ { "id": "node", "kind": "node", "variant": "diag-port", "transport": "mqtt",
+                 "board": "esp32-s3-devkitc",
+                 "roles": [ { "role": "pbroker" }, { "role": "plca", "scope": "t1s0" } ],
+                 "transmit": [ { "bus_id": "kline-diag" } ],
+                 "items": [ { "id": "imu", "kind": "imu", "origin": "detected", "status": "ok" },
+                            { "id": "tacho", "kind": "pulse", "origin": "config", "status": "no_signal" } ],
                  "signals": ["node.alarm.state", "node.gps.fix"], "actions": ["node.arm"],
                  "slots": { "strip": "security", "destination": "security" } } ],
   "views": [ { "id": "body", "slot": "home", "type": "lr_d2/body" } ], "x": { "util_lids": [] } }
@@ -305,8 +318,15 @@ Data the UI renders. `GET /pack` grows into it; later `GET /vehicles/<vid>/capab
 
 Rules: **field config lives on the signal** (`dec`, `class`, `span`, `normal`, `limits`), so views
 list only ids. **`confidence` stays two-valued** (CONSTITUTION): a J1979 decode is `candidate` per
-car until a car result exists. **`class`/`category` borrow Home Assistant's `device_class` and
-entity categories** (`diagnostic` collapses by default). **Unknown types degrade** to a generated
+car until a car result exists. **`class`/`ha_category` borrow Home Assistant's `device_class` and
+entity categories** (`diagnostic` collapses by default); the field is `ha_category`, not
+`category`, so it never collides with an action's `category` (ADR-0033). A system's
+`category` (`powertrain`, …) is its domain group (§4.2). **Device entries** (§6) carry the
+hardware facts the Network page shows: `board` (the compiled-in board profile), `roles` (roles
+the device can hold, with scope; ADR-0037 §2), `transmit` (the car buses whose transmit gate it
+holds, by `bus_id`) and `items` (each sensor, receiver or I/O point, with `origin` = `board`,
+`detected`, `harness` or `config` and `status` = `ok`, `absent`, `fault`, `no_signal` or
+`refused`; ADR-0032 Amendments B1). **Unknown types degrade** to a generated
 tile; `schema` is versioned. **D2-only leftovers stay under `x`.** **`unit` is a key copied verbatim from
 the pinned VSS 6.1 `units.yaml`** (`Celsius`, `km/h`, `kPa`), checked by a test (ADR-0016).
 
@@ -381,7 +401,7 @@ vss-tools (dev-only) and checked in CI; the OVMS alias table comes from OVMS `me
 
 A device is an entry in `capabilities.devices` with its own signals, actions and views, ids prefixed
 by the device id (`node.armed`, `hevac.set_temp`). Devices contribute to **slots** and never
-edit a pack layout; each kind may claim one strip slot and one destination or More → Devices page.
+edit a pack layout; each kind may claim one strip slot and one destination or More → Network → *device* page (§3.7).
 Device actions pass the same gate (§7). **The node and its variants come first**, each through the
 **capability manifest its hardware publishes at boot** (ADR-0032): a diagnostic-port node declares
 diagnostics and security; a hidden guardian variant declares tracking, IMU, tamper and arm state and
@@ -392,10 +412,10 @@ point** (`openostler.device`) mirroring `VehiclePack`.
 | Device | Strip | Home card | Page | Actions and gating |
 |---|---|---|---|---|
 | **Alarm** (every node; the guardian variant adds tamper, IMU and a backup battery) | Security: Disarmed / Armed / Alerting / Tamper | parked: state + last event | **Security**: state, events (filtered Logs), map | Security category: arming allowed while Moving, disarming Parked only. The node and guardian have no outputs; sirens, the car's native alarm or an immobiliser come only through a future I/O module, each with its own ADR (ADR-0033). Notifications work with the brain off and no cloud. Remote: reads plus arming and disarming the software alarm (audited, owner notified), per ADR-0033 §6; more only with the install override (§7) |
-| **AC / HEVAC** (separate ESP32, its own API) | climate chip: setpoint + fan; HU-wide may add a bottom climate strip | cabin/ambient temps | More → Devices → Climate | setpoints are `add-on device` actions (Comfort category) on our own device, not car writes (ADR-0018); allowed while Moving; local only (§7) |
+| **AC / HEVAC** (separate ESP32, its own API) | climate chip: setpoint + fan; HU-wide may add a bottom climate strip | cabin/ambient temps | More → Network → Climate | setpoints are `add-on device` actions (Comfort category) on our own device, not car writes (ADR-0018); allowed while Moving; local only (§7) |
 | **Cameras** (go2rtc) | live-camera chip; REC shared | last clip (Parked) | Security → Clips (Parked); HU-wide secondary pane | reverse pre-empts the screen **only once a fast path exists**, assist-only until then; underbody/front live below 10 km/h; no playback unless Parked. **Future:** 360° surround view as another camera kind under the same rules (owner note, ADR-0018; own spec) |
 | **Tracker** (every node; better antennas on the guardian variant) | in the Security chip (fix age) | location when parked (opt-in) | Security / Map | read-only; location stays on the device unless opted in (ADR-0009) |
-| **Relay boards** (our own, later) | none by default | user-pinned channels | More → Devices → Relays | each channel declares its category (Accessories) and tier, default Tier 2, Parked only, local only; interlocks on the device and the node gate; every car function a board switches needs its own ADR first |
+| **Relay boards** (our own, later) | none by default | user-pinned channels | More → Network → Relays | each channel declares its category (Accessories) and tier, default Tier 2, Parked only, local only; interlocks on the device and the node gate; every car function a board switches needs its own ADR first |
 
 With no add-on fitted nothing renders for it: no empty cards or greyed slots. Security is always present, because every node has GPS and a basic alarm.
 
@@ -672,3 +692,11 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   health, role holders, uplinks and metering, remote access, certificates and pairing), adds
   a read-only peer view to every device's own page, and builds the cluster view from each
   device's published manifest (ADR-0037, proposed).
+- 2026-10-06: v0.7, owner's networking answers (stays approved; ADR-0037, ADR-0038). §3.7 is
+  accepted: Network is a core app that absorbs More → Devices (devices and device pages,
+  transports and link health, role holders, uplinks and metering, remote access,
+  certificates and pairing), every device's own page gains a read-only peer view, and the
+  cluster view is built from each device's published manifest; §3.4's More row and §6's
+  device pages read Network; §5.1's device entries gain `board`, `roles`, `transmit` and
+  `items` (with `origin` and `status`), and the signal's Home Assistant entity category is
+  renamed `ha_category` so it never collides with ADR-0033's action `category`.

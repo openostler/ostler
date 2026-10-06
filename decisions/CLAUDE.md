@@ -39,8 +39,8 @@ Immutable Architecture Decision Records: one locked decision per file.
 - `adr-0035-languages-by-tier.md` — C/C++ (ESP-IDF) for the node and decoder; Python for lab, tools, brain and MCP (stdlib + pyserial, optional extras, ctypes native decoder with Python fallback); TypeScript UI with generated types; Rust only for a measured hot path.
 - `adr-0036-vin-and-identity-data-in-recordings.md` — identity replies scrubbed at write by default; opt-in install option for security decoding; never leaves the device.
 
-- `adr-0037-role-holders-and-handover.md` — PROPOSED: single-holder roles (transmit gate per bus, never handed over; parked broker; time source; PLCA coordinator; uplink manager) with static priority set at pairing, retained claims + LWT + mDNS hints, timeouts and split-brain rules; authority always stays with the executing gate.
-- `adr-0038-mesh-car-to-car-and-off-grid.md` — PROPOSED: mesh only between cars, to a base or off-grid, as its own subnet; a mesh is a remote path (Read and alerts only); Meshtastic-compatible LoRa add-on first behind a separate GPL-3 VSS bridge; MeshCore and Reticulum to bench-test; Babel if a Wi-Fi IP mesh is wanted.
+- `adr-0037-role-holders-and-handover.md` — ACCEPTED: single-holder roles (transmit gate per bus, never handed over; parked broker; time source, best clock first; PLCA coordinator; uplink manager) with static priority set at pairing, the guardian alongside as standby, retained claims + LWT + mDNS hints, timeouts and split-brain rules; authority always stays with the executing gate.
+- `adr-0038-mesh-car-to-car-and-off-grid.md` — ACCEPTED: mesh only between cars, to a base or off-grid, as its own subnet; a mesh is a remote path (Read and alerts only); Meshtastic-compatible LoRa add-on first behind a separate GPL-3 VSS bridge; richer mesh (MeshCore, Reticulum and others) later, references only; Babel if a Wi-Fi IP mesh is wanted.
 
 ADR-0005 (NanoCom sniff workflow) and ADR-0007 (BCU SecurityAccess) are Discovery 2
 decisions and stay in the D2 pack repo; their numbers are not reused.

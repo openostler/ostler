@@ -11,7 +11,7 @@ summary: >
 
 # Mesh networking: car-to-car, base/camp and off-grid
 
-Research for [ADR-0038](../../decisions/adr-0038-mesh-car-to-car-and-off-grid.md) (draft).
+Research for [ADR-0038](../../decisions/adr-0038-mesh-car-to-car-and-off-grid.md) (accepted 2026-10-06).
 Facts were checked live on **2026-10-06** from each project's repository (licence file,
 last commit, latest tag) and docs. **(U)** means unverified. Nothing here is copied from
 the sources; it is paraphrased with links.

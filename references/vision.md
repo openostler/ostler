@@ -2,11 +2,11 @@
 title: "Vision — where Ostler is going in the long term"
 area: references
 status: draft
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [GOALS.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/ecosystem_architecture.md, references/research/addons_catalogue.md]
 summary: >
-  The long-term half of the goals, split out of GOALS.md (v2.0 keeps the short half): the gaps Ostler fills and the peers it works with, who it is for, the product pillars, the hardware path (one ESP32 diagnostic node with an optional brain: Ostler Lite is the node alone, Ostler is node plus brain; the guardian is a hidden node hardware variant with no outputs; sensor nodes and other modules as add-ons, each with its own web page), the add-on vision (LoRa/Meshtastic, Wi-Fi HaLow, B.A.T.M.A.N. mesh and more), a multi-vehicle garage, sharing and a social layer, connectivity and remote access (any modem, Starlink, failover, Tailscale, Ostler Cloud, HA Cloud), a Matter bridge, AI-native access through an MCP server behind the same gates, the repo and product map, the business model, success measures and open questions. Decisions: ADR-0028 to ADR-0036.
+  The long-term half of the goals, split out of GOALS.md (v2.0 keeps the short half): the gaps Ostler fills and the peers it works with, who it is for, the product pillars, the hardware path (one ESP32 diagnostic node with an optional brain: Ostler Lite is the node alone, Ostler is node plus brain; the guardian is a hidden node hardware variant with no outputs; sensor nodes and other modules as add-ons, each with its own web page), the add-on vision (a Meshtastic-compatible LoRa add-on first, Wi-Fi HaLow, Babel if a Wi-Fi IP mesh is wanted, and more), a multi-vehicle garage, sharing and a social layer, connectivity and remote access (any modem, Starlink, failover, Tailscale, Ostler Cloud, HA Cloud), a Matter bridge, AI-native access through an MCP server behind the same gates, the repo and product map, the business model, success measures and open questions. Decisions: ADR-0028 to ADR-0038.
 ---
 
 # Vision
@@ -82,7 +82,7 @@ reimplemented; GPL-3 code goes only into marked GPL-3 modules or packs.
 | **Standard networking** | **IP backbone** | **10BASE-T1S** for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 for our own cameras later, Wi-Fi/USB for displays; the brain routes and firewalls between segments (the node is the hub when it is off); CAN and a wake wire as the dev-kit and µA-wake fallback ([ADR-0026](../decisions/adr-0026-module-bus-10base-t1s.md), [ADR-0027](../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md)) | core | Decided; T1S bench planned ([bench plan](t1s_bench_plan.md)) |
 | **Standard networking** | **Discovery, messages, security** | mDNS/DNS-SD zero-config; MQTT 5 with a VSS topic tree; NTP from GNSS; per-node identity, mTLS and authenticated commands; no default passwords | core | Decided; module-bus message spec next |
 | **Standard networking** | **Module contract** | One module manifest (identity, VSS signals, safety-tiered actions, events, UI slots, OTA) so modules are interchangeable and third-party modules are possible; DevicePack adapters for foreign devices; a conformance kit | core | Designed (ADR-0027, UI spec §6); spec with the module-bus message spec |
-| **Integrations** | **Home Assistant and the IoT world** | Opt-in MQTT with Home Assistant device discovery, an OVMS v3-compatible topic tree, OwnTracks, Traccar OsmAnd, ntfy; Matter ecosystems reached through a bridge (read-only), never inside modules | add-on | Phase 1; not built |
+| **Integrations** | **Home Assistant and the IoT world** | Opt-in MQTT with Home Assistant device discovery, an OVMS v3-compatible topic tree, OwnTracks, Traccar OsmAnd, ntfy; Matter ecosystems reached through a bridge (Read, alarm arming and disarming; Comfort switches only with the install override), never inside modules | add-on | Phase 1; not built |
 | **Integrations** | **Community data** | Packs as CC BY-SA data, OBDb-compatible, with evidence and fixtures; opt-in anonymous contribution; upstreaming to OBDb | core | D2 data is CC BY-SA; evidence/fixtures planned |
 
 **One UI for every vehicle** ties the pillars together: the UI is generated from a
@@ -153,9 +153,12 @@ modules**, like a smart-home hub and its devices
 Sensor nodes, cameras, I/O and relay modules and displays are the start. The module contract is
 open, so the list is open too. Some directions:
 
-- **Long-range links:** LoRa/Meshtastic for convoy messages and positions off-grid
-  (overlanders, bikers), Wi-Fi HaLow for a long-range link back to home, and a
-  B.A.T.M.A.N.-adv or 802.11s mesh between cars in a convoy.
+- **Long-range links:** a convoy mesh that is **Meshtastic-compatible first** (a LoRa
+  add-on for messages, positions and alerts off-grid, for overlanders and bikers), with
+  **Babel if a Wi-Fi IP mesh is wanted** between cars or at camp; Wi-Fi HaLow for a
+  long-range link back to home. A mesh is a remote path, Read and alerts only, and a richer
+  car-to-car mesh (MeshCore, Reticulum and others) is a later add-on
+  ([ADR-0038](../decisions/adr-0038-mesh-car-to-car-and-off-grid.md)).
 - **Vehicle extras:** TPMS, GNSS/RTK, winch and light control, dash buttons and keypads,
   a trailer module, a weather station, leisure battery and solar monitoring, fridge and
   camper kit, EV charger integration.
@@ -203,9 +206,13 @@ the alarm path and the in-car app never depend on the internet.
 ## 8. The wider smart home
 
 - **Home Assistant first:** MQTT with HA discovery, then whatever HA adds.
-- **A Matter bridge** in the long term, so Matter ecosystems see the car's sensors. It is a
-  bridge only, never inside modules, read-only at first, and its certification cost
-  (about $7,500 a year plus $3,000 per product) is an open question for official hardware.
+- **A Matter bridge**, so Matter ecosystems see the car. It is a bridge only, never inside
+  modules: through Home Assistant and Matterbridge until Ostler is at scale, and a certified
+  Ostler bridge only then (about $7,500 a year plus $3,000 per product). Its entities: Read
+  values (battery, charge, cabin temperature, "car is home", alarm state), arming and
+  disarming the software alarm (disarm Parked only, audited and notified), and preheat or
+  aux-heater switches **only with the install override**
+  ([ADR-0027 Amendments](../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md#amendments-2026-10-06-networking-answers)).
 
 ## 9. AI-native
 
@@ -291,13 +298,19 @@ our brand ([TRADEMARKS.md](../TRADEMARKS.md)).
 - ~~Where the MQTT broker lives while parked.~~ On the node, bridged by the brain when awake
   ([ADR-0028](../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md)). Still open: the module-bus message spec
   ([ADR-0027](../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md)).
-- Whether official hardware ships a native Matter bridge, and so pays for certification.
+- ~~Whether official hardware ships a native Matter bridge, and so pays for certification.~~
+  Only at scale; until then Home Assistant and Matterbridge (ADR-0027 Amendments).
 - How a standalone module's own web page is secured (no default passwords, ADR-0027) and
   how it hands over to the main UI once joined. With no brain, trust comes from phone
   pairing keys (no Pi CA).
 
 ## Changelog
 
+- 2026-10-06: v1.2, owner's networking answers (ADR-0037, ADR-0038, ADR-0027 Amendments):
+  the convoy mesh is Meshtastic-compatible first, Babel if a Wi-Fi IP mesh is wanted, and a
+  richer mesh later; the Matter bridge goes through HA and Matterbridge until at scale, with
+  the entity set (Read, alarm arm and disarm, preheat and aux heater only with the install
+  override); the Matter open question is answered.
 - 2026-10-06: v1.1, node/brain direction (ADR-0032 to ADR-0036): the buddy is gone; Ostler
   Lite is the node alone and Ostler is node plus brain; the guardian is a hidden node
   hardware variant with no outputs; KKL is dev-only; dev kit and own boards reframed (node
