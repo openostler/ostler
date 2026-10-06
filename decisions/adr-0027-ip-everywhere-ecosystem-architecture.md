@@ -2,17 +2,18 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS device certificates, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; ADR-0026 as amended) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules (a long-term goal). Amended by the owner on 2026-10-06 (ADR-0028): the base is the Pi plus an always-on ESP32 buddy and the guardian is an add-on; uplinks are existing in-car Wi-Fi, hotspots or any USB dongle, with selection, failover and metering; a parked broker on the buddy bridged to the Pi's Mosquitto; security is standard practice (TLS/mTLS, MQTT auth and ACLs, passkeys or passwords for people) rather than a custom envelope; modules host their own web pages.
+  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS device certificates, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; ADR-0026 as amended) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules (a long-term goal). Amended by the owner on 2026-10-06 (ADR-0028): the base is the Pi plus an always-on ESP32 buddy and the guardian is an add-on; uplinks are existing in-car Wi-Fi, hotspots or any USB dongle, with selection, failover and metering; a parked broker on the buddy bridged to the Pi's Mosquitto; security is standard practice (TLS/mTLS, MQTT auth and ACLs, passkeys or passwords for people) rather than a custom envelope; modules host their own web pages. Amended again on 2026-10-06 (networking answers, ADR-0037/0038): Matter via Home Assistant and Matterbridge until at scale, with alarm disarm allowed and Comfort switches only with the install override; NTP runs on the time-role holder; PLCA IDs live in each device's install configuration; mesh and Matter are remote paths.
 ---
 
 # ADR-0027 — IP everywhere: the ecosystem architecture
 
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §5), 2026-10-06:** the Amendments' "Base and guardian" entry (node replaces the buddy; the guardian is a node variant) and §9's "one server gate" wording for car-touching actions (that gate is on the node).
 > **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (§6–§7), 2026-10-06:** the "notify-only alarm" line and "Tier ≥ 2 not reachable from any remote path" (phone approval over local links; install override).
+> **Amended 2026-10-06 (networking answers, [ADR-0037](adr-0037-role-holders-and-handover.md), [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md)):** §12 Matter is a bridge through Home Assistant and Matterbridge, certified only at scale, with alarm disarm allowed and Comfort switches only with the install override; §3/§7 NTP runs on the time-role holder; §4 PLCA IDs live in each device's install configuration; mesh and Matter are remote paths. See [Amendments (networking answers)](#amendments-2026-10-06-networking-answers).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -161,7 +162,7 @@ Video never crosses the T1S segment.
 - The car reaches Matter ecosystems through a **bridge**: Home Assistant with an open-source
   bridge today, and possibly a native, opt-in, read-only bridge on the Pi later.
 - Certification is decided only if hardware sales justify it.
-- *See the [proposed Matter amendment](#proposed-amendment-2026-10-06-pending-owner-answers-matter-bridge-only) (pending).*
+- *Amended 2026-10-06: see [Amendments (networking answers)](#amendments-2026-10-06-networking-answers), Matter.*
 
 ## Confirmation
 
@@ -253,24 +254,31 @@ above are marked where they changed.
   [ADR-0032](adr-0032-one-node-optional-brain.md): the ESP32 node replaces the buddy and
   holds the only transmit gate; the guardian is a node variant.
 
-## Proposed amendment (2026-10-06, pending owner answers): Matter, bridge only
+## Amendments (2026-10-06, networking answers)
 
-*Not yet accepted; §12 stands until the owner answers. Evidence: live checks of 2026-10-06
-([CSA membership](https://csa-iot.org/become-member/),
+Accepted by the owner on 2026-10-06 with the answers to the networking questions
+([ADR-0037](adr-0037-role-holders-and-handover.md),
+[ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md)). Question numbers in brackets are the
+owner's numbering for that day. The decision text above is unchanged; where these entries
+differ, they win.
+
+### Matter, bridge only (§12; owner Q6, Q7)
+
+*Evidence: live checks of 2026-10-06 ([CSA membership](https://csa-iot.org/become-member/),
 [esp-matter](https://github.com/espressif/esp-matter),
 [Matterbridge](https://github.com/Luligu/matterbridge)).*
 
-- **Today: a bridge we do not certify.** Home Assistant picks up our MQTT discovery, and
-  Matterbridge (Apache-2.0, 3.10.12 on 2026-10-02) or the community Home Assistant Matter
-  Hub add-on (original archived January 2026, a fork continues; U) re-exposes it to Matter
-  controllers. Nothing in our code speaks Matter.
-- **Later: a certified Ostler bridge** on the brain, a separate process (matter.js or
-  connectedhomeip, Apache-2.0). Live costs: Adopter **$7,500 a year** and **$3,000 per
-  product** ($2,500 per derivative); Participant $21,500 a year with $2,000 per product
-  ($1,500 derivative); Promoter $112,500 a year plus initiation; Associate free but only
-  white-labels a certified product ($2,500 plus $500 a year). Test-lab fees are extra (U).
-  Matter 1.6 shipped on 2026-06-17.
-- **Exposed entities, each declaring category and tier (ADR-0033):**
+- **Until we are at scale: a bridge we do not certify** (owner Q6). Home Assistant picks up
+  our MQTT discovery, and Matterbridge (Apache-2.0, 3.10.12 on 2026-10-02) or the community
+  Home Assistant Matter Hub add-on (original archived January 2026, a fork continues; U)
+  re-exposes it to Matter controllers. Nothing in our code speaks Matter.
+- **A certified Ostler bridge only "once we're huge"**, that is at scale: on the brain, a
+  separate process (matter.js or connectedhomeip, Apache-2.0). Live costs for that decision:
+  Adopter **$7,500 a year** and **$3,000 per product** ($2,500 per derivative); Participant
+  $21,500 a year with $2,000 per product ($1,500 derivative); Promoter $112,500 a year plus
+  initiation; Associate free but only white-labels a certified product ($2,500 plus $500 a
+  year). Test-lab fees are extra (U). Matter 1.6 shipped on 2026-06-17.
+- **Exposed entities, each declaring category and tier (ADR-0033)** (owner Q7):
 
   | Entity | Category, tier | Matter mapping (U where no exact type) |
   |---|---|---|
@@ -279,17 +287,39 @@ above are marked where they changed.
   | Cabin temperature | Read, 0 | Temperature sensor |
   | "Car is home" | Read, 0 | Occupancy or contact sensor |
   | Alarm state | Read, 0 | Contact or boolean state; no alarm-panel type (U) |
-  | Arm the software alarm | Security, 1 | On/off switch, arming only by default |
+  | Arm and disarm the software alarm | Security, 1 | On/off switch; disarm Parked only, audited and notified to the owner |
   | Preheat, aux heater | Comfort, 1 | On/off switch, **only with the install override** |
 
 - **Every command goes through the node gate** (ADR-0032), which re-checks role, category,
-  tier, driving state and transport. **Matter is a remote path** (ADR-0033 §6): Read plus
-  alarm arming; disarming and Comfort switches are refused unless
-  `OSTLER_ALLOW_REMOTE_CONTROL` is set on the node, and nothing above Tier 1 is ever exposed.
-  A Matter fabric has no per-user identity, so the bridge acts under one owner-issued
-  token with a narrowed role.
+  tier, driving state and transport. **Matter is a remote path** (ADR-0033 §6 as amended):
+  Read plus arming and **disarming** the software alarm, consistent with over-the-air
+  disarm (ADR-0033 §6 amendment); preheat and aux-heater switches are refused unless
+  `OSTLER_ALLOW_REMOTE_CONTROL` is set on the node; nothing above Tier 1 is ever exposed, and
+  Tier 2+ never runs over Matter, override or not. A Matter fabric has no per-user identity,
+  so the bridge acts under one owner-issued token with a narrowed role.
 - **Never** for the in-car module bus or the car-to-car mesh
-  ([ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), draft).
+  ([ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md)).
 - **Native Matter add-on modules** (Espressif ESP-Matter SDK, Apache-2.0, release v1.6
   with v1.7 on main) stay a later option for home-side devices only, each certified as its
   own product.
+
+### Time (§3, §7)
+
+- **NTP runs on the time-role holder** ([ADR-0037](adr-0037-role-holders-and-handover.md)
+  §2), not always on the Pi: the device with the best clock (GNSS, with PPS where wired)
+  serves NTP/SNTP to every segment, and the role hands over when that device is lost.
+  chrony on the brain stays the implementation when the brain holds the role; which device
+  carries the 10 Hz u-blox is pending (product-family research; ADR-0032 Amendments).
+
+### PLCA IDs (§4)
+
+- **PLCA node IDs live in each device's install configuration.** They are still assigned at
+  pairing, and the full ID table for a segment is stored in the signed install
+  configuration of every device on it, so a standby (the guardian alongside the node,
+  ADR-0026 Amendment 8) can take over as coordinator without the brain.
+
+### Remote paths (§5, §12)
+
+- **Mesh and Matter are remote paths** under ADR-0033 §6: a mesh carries Read and alerts
+  only (ADR-0038 §2); Matter carries Read plus alarm arming and disarming, and Comfort only
+  with the install override (above). Neither is a local link, whatever radio it rides on.

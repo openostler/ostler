@@ -95,8 +95,9 @@ Owner direction (item 2, 2026-10-06): the **guardian's built-in GNSS** does secu
 tracking at about 1 Hz and saves battery while parked; a **10 Hz u-blox** does drive
 logging, replay, Drive mode and the speed-vs-wheel-speed check. Merging picks the best fix:
 the u-blox while driving, the guardian when parked or when the node is gone. Positions carry
-source tags and shared time. The merge rules are proposed in
-[ADR-0032's proposed amendment](../../decisions/adr-0032-one-node-optional-brain.md#proposed-amendment-2026-10-06-pending-owner-answers);
+source tags and shared time. The merge rules are in
+[ADR-0032's Amendments](../../decisions/adr-0032-one-node-optional-brain.md#amendments-2026-10-06-gps-split-and-sensor-detection)
+(accepted 2026-10-06; u-blox placement pending);
 sensor detection is in [node sensors](node_sensors.md). Checked live on 2026-10-06.
 
 ### The guardian's receiver today (LilyGO T-SIM7670G-S3)

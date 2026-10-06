@@ -2,16 +2,17 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Lite and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions.
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Lite and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category.
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.2 for owner review (Q1, Q2, Q5 and Q9 answered 2026-10-06; §11). **Do not build before U1** (UI spec §10): U1 only
+**Status:** draft v0.3 for owner review (Q1, Q2, Q5, Q6 and Q9–Q12 answered 2026-10-06; §11).
+Q3, Q4, Q7 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
 stays the authority for layout classes, the strip, destinations, driving states, the
@@ -58,17 +59,17 @@ roles (UI spec §5.4) plus app contributions. The shell alone owns:
 | **Diagnose** | core | `ostler` | Diagnose destination: systems, areas, Scan all (UI spec §4.2–4.3) |
 | **Logs** | core | `ostler` | Logs destination: timeline, Analysis, replay, Rewind |
 | **Security** | core | `ostler` | Security destination: alarm, events, tracker map, geofences |
-| **Network** | core | `ostler` | More → Network: uplinks, remote access, pairing, node AP (ADR-0028, ADR-0032) |
+| **Network** | core | `ostler` | More → Network: the whole cluster (UI spec §3.7): devices and every device page, transports and link health, role holders, uplinks and metering, remote access, certificates and pairing, node AP (ADR-0028, ADR-0032, ADR-0037, ADR-0038; §12) |
 | **Cameras** | optional, first-party | `ostler-app-cameras` | Security → Clips, live-camera chip, HU-wide secondary pane, reverse template |
 | **Social** | optional, first-party | `ostler-app-social` | More → Apps; groups and rides (ADR-0029 P4) |
 | **Decode lab** | core, enabled only in service mode | `ostler` (Q5, answered) | More → Developer (UI spec §8.4); hidden unless service mode (the experimental/dev mode, UI spec §3.5) is on |
-| **Add-on module apps** | optional; declarative first | the module's repo | More → Devices → *device*, Home card, strip device slot (UI spec §6) |
+| **Add-on module apps** | optional; declarative first | the module's repo | More → Network → *device* (slot `network:device:<id>`), Home card, strip device slot (UI spec §6) |
 
 Core apps are ordinary apps with `trust: core`, so the registry is exercised by five users from
 day one (rule of two). Decode lab's manifest adds a `requires.mode: "service"` rule, so the
 registry hides it unless service mode is on, and it leaves with service mode when Moving.
-Optional apps live in their own `ostler-app-<x>` repos now (Q1; ADR-0034 amendment). Garage, Devices, Integrations, Preferences, Privacy and About stay shell
-pages under More.
+Optional apps live in their own `ostler-app-<x>` repos now (Q1; ADR-0034 amendment). Garage, Integrations, Preferences, Privacy and About stay shell
+pages under More; Devices is part of the Network app (§12).
 
 ## 4. The app manifest
 
@@ -134,6 +135,10 @@ phase UA).
   `audio`); `identity` does not exist, because the VIN never reaches the UI (ADR-0036).
 - **`i18n`** keys are namespaced by app id; units format through `Intl` in the shell.
 - **`icons`** prefer a Material Symbols name (U1 icon set) with an SVG fallback.
+- **Slot names** are `destination:<id>` (for example `destination:security`), `strip:device`,
+  `pane:secondary`, `more:network` (the Network page under More), `sheet:link` (a row in the
+  Link chip's sheet, UI spec §3.2) and `network:device:<id>` (a device's page inside Network,
+  where add-on module apps contribute). New slots are added only by a platform change.
 
 ### 4.3 Hosts
 
@@ -345,17 +350,25 @@ kinds wait for a real third-party app and an ADR.
    run as an iframe under the commercial licence?
 5. ~~**Decode lab.**~~ **Answered 2026-10-06:** a core app in `ostler`, enabled only in
    service mode, the experimental/dev mode (§3; UI spec §8.4).
-6. **Network** as a core app under More, covering uplinks, remote access and pairing: agreed?
+6. ~~**Network** as a core app under More, covering uplinks, remote access and pairing.~~
+   **Answered 2026-10-06:** yes, widened to the whole cluster and absorbing Devices (Q10, §12).
 7. **Catalog.** A future app catalog is a new outbound path: wanted, and from where?
 8. **Enablement scope.** Per install (recommended) or per vehicle?
 9. ~~**Phone app.**~~ **Answered 2026-10-06:** Companion model with a server; a bundled
    shell, core and declarative apps for Lite and offline; fixed native features; no runtime
    third-party code (§7.1, which records the store-policy check and its risks).
+10. ~~**Network as a core app** that absorbs Devices, rather than two pages?~~ **Answered
+    2026-10-06:** yes; Network is a core app that absorbs More → Devices (§12.1).
+11. ~~**Device pages** outside the app model?~~ **Answered 2026-10-06:** yes; the
+    firmware-served device page stays outside the app model (§12.2).
+12. ~~**Owner operations** (pairing, revoking, uplinks): API calls or a new category?~~
+    **Answered 2026-10-06:** owner-role API operations (ADR-0029 §5), not a new ADR-0033
+    category (§12.1).
 
-## 12. Proposed amendment (2026-10-06, pending owner answers): the Network app and device pages
+## 12. The Network app and device pages (accepted 2026-10-06)
 
-*Not yet decided; §3 and Q6 stand until the owner answers. Context: UI spec §3.7 (proposed),
-[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md) (proposed), [cluster view
+*Accepted by the owner on 2026-10-06 (Q6, Q10–Q12). Context: UI spec §3.7,
+[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md), [cluster view
 research](../references/research/cluster_view.md).*
 
 **12.1 Network as a core app that absorbs Devices.** The Network row of §3 grows from
@@ -392,13 +405,13 @@ only the platform may ship.
 
 - **No actions.** Pairing, revoking a certificate and changing an uplink are **owner-role API
   operations** (ADR-0029 §5), not ADR-0033 action categories; they are refused on remote
-  paths (ADR-0033 §6) and checked by the device that holds them, never by the page. Whether
-  they need a category of their own is open (Q12).
+  paths (ADR-0033 §6) and checked by the device that holds them, never by the page. They
+  are not a new action category (Q12).
 - **`hosts: cloud`** renders read-only (§4.3).
 - `cluster.read` returns the view each host builds from retained manifests, `status` and role
   claims (ADR-0037 §3); its schema lives with the module contract (ADR-0034).
-- The `more:network`, `sheet:link` and `network:device:<id>` slot names are new and need
-  adding to the slot list if accepted.
+- The `more:network`, `sheet:link` and `network:device:<id>` slot names are in the slot
+  list (§4.2).
 
 **12.2 The device's own page is a shell-less device page.** Each device's local web page
 (ADR-0028 §7, ADR-0032 §6) is **not an app and not the shell**: it is served by the firmware
@@ -411,17 +424,10 @@ peer's own page. It never acts on a peer. When a full-app host is reachable, the
 "Open in Ostler" (a deep link to Network → *this device*). The peer view and the Network
 page's Devices rows share one JSON shape so one test can check both.
 
-**12.3 If accepted:** §3's Network row and its "Garage, Devices, Integrations…" sentence
-change as above; §3's add-on module apps row reads "Network → *device*"; Q6 is answered; U5
-carries the peer view and UA the Network app.
-
-**Open questions added by this amendment:**
-
-10. **Network as a core app** that absorbs Devices (12.1), rather than Network and Devices as
-    two pages?
-11. **Device pages:** confirm the firmware-served page stays outside the app model (12.2).
-12. **Owner operations** (pairing, revoking, uplinks): plain owner-role API calls, or a new
-    category (for example "Administration") in ADR-0033?
+**12.3 Changes made (v0.3):** §3's Network row and its "Garage, Devices, Integrations…"
+sentence read as above; §3's add-on module apps row reads "More → Network → *device*"; the
+slot names join §4.2; Q6 and Q10–Q12 are answered (§11). U5 carries the peer view and UA the
+Network app.
 
 ## 13. Proposed amendment (2026-10-06, pending owner answers): power states, wake and queued actions
 
@@ -496,6 +502,13 @@ without `permissions.wake` cannot cause a wake; leases are released on unmount; 
 - 2026-10-06: proposed amendment §12, pending owner answers (no version change): Network as a
   core app that absorbs More → Devices, its manifest, the firmware-served device page with a
   read-only peer view, and open questions 10–12.
+- 2026-10-06: v0.3, owner answers on networking. §12 is accepted: Network is a core app
+  that absorbs More → Devices (its §3 row widened to the whole cluster page of UI spec §3.7;
+  add-on module apps contribute to `network:device:<id>`); the firmware-served device page
+  stays outside the app model, with a read-only peer view; pairing, revoking and uplink
+  changes are owner-role API operations, not a new category. §4.2 lists the slot names,
+  `more:network`, `sheet:link` and `network:device:<id>` included. Q6 and Q10–Q12 answered.
+  Stays draft: Q3, Q4, Q7 and Q8 are open.
 - 2026-10-06: proposed amendment §13, pending owner answers (no version change): action
   fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a
   "Needs the hub" placeholder; `permissions.wake`; per-device power records in the cluster

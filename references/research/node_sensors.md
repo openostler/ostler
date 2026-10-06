@@ -12,8 +12,9 @@ summary: >
 # Node sensors: detection, budgets, timing, parked current and placement
 
 Research for the owner's item 3 of 2026-10-06: **one firmware, manifest from hardware.** It
-backs the proposed amendment at the end of
-[ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md#proposed-amendment-2026-10-06-pending-owner-answers)
+backs the amendment at the end of
+[ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md#amendments-2026-10-06-gps-split-and-sensor-detection)
+(accepted 2026-10-06)
 and the draft firmware spec for sensor detection (to live in `ostler-firmware` as
 `docs/specs/sensor-detection.md`, ADR-0034). GPS receivers are covered in
 [hardware research §GPS split](hardware.md#gps-split-two-receivers-two-jobs-2026-10-06).
