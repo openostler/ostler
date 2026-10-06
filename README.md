@@ -7,7 +7,7 @@
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
 existing systems into a connected IoT platform, with diagnostics and telemetry at the
 core. **Ostler Diagnostics** is the node at the OBD port, working alone and offline with
-your phone; **Ostler Brain** adds a **brain** (a Linux computer) for the full local app,
+your phone; **Ostler Brain** adds an optional Linux compute box for the full local app,
 cameras, replay and analysis; **Ostler Guardian** is the hidden, battery-backed node variant.
 Add-on modules join either over standard networking, the way devices join a smart home:
 sensor nodes, cameras, I/O and relay modules, displays. Every device speaks IP
