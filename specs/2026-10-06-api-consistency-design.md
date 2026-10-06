@@ -1,15 +1,19 @@
 ---
 title: "API consistency — error envelope, status codes, query strings, RFC 3339 timestamps, GeoJSON traces — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0017-open-standards-first.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
-  Makes the HTTP/SSE API consistent before U1. Every API error becomes one JSON envelope {ok: false, error, code?} (HTML only for app pages), status codes follow one table (400/401/403/404/409/413/500, plus the existing 416/503), and one route matcher ignores the query string everywhere. Epoch timestamps gain RFC 3339 UTC `Z` siblings (`ts_utc`, `since_utc`, `t0_utc`, `start_utc`), the replay track gains a GeoJSON LineString Feature (`trace`) and a GeoJSON export, and the old fields are removed one minor release later. Covers OpenAPI versioning, deprecation markers, the new contract-test rules, a non-breaking step order and the D2 pack impact.
+  Approved by the owner on 2026-10-06. Makes the HTTP/SSE API consistent before U1. Every API error becomes one JSON envelope {ok: false, error, code?} (HTML only for app pages, and an unknown browser page gets the app shell), status codes follow one table (202 for a queued contribution with ok: true; 400/401/403/404/409/413/500; 502 when the car refuses and 504 on a poll-thread timeout; plus the existing 416/503), and one route matcher ignores the query string everywhere. Epoch timestamps gain RFC 3339 UTC `Z` siblings (`ts_utc`, `since_utc`, `t0_utc`, `start_utc`), the replay track gains a GeoJSON LineString Feature (`trace`) and a GeoJSON export, and the old fields are removed one minor release later. Covers OpenAPI versioning, deprecation markers, the new contract-test rules, a non-breaking step order and the D2 pack impact.
 ---
 
 # API consistency — design
+
+**Status:** approved by the owner on 2026-10-06; the answers are in
+[Decisions](#decisions-2026-10-06). The questions the owner did not take up stay open with
+the drafted default.
 
 ## Context
 
@@ -54,13 +58,20 @@ on `ok`/`error`. Status-code changes therefore do not break the UI; field rename
   `application/json`. `error` is one English sentence for people; clients never parse it.
   `code` is an optional stable token (`^[a-z][a-z0-9_]*$`) for programs: `bad_request`,
   `auth_required`, `public_mode`, `read_only`, `not_found`, `not_recording`,
-  `disconnected`, `too_large`, `unavailable`, `internal`. Extra fields stay allowed
-  (`diff` on automap, `queued` on community).
+  `disconnected`, `too_large`, `unavailable`, `internal`, `car_refused`, `car_timeout`.
+  Extra fields stay allowed (`diff` on automap).
 - **Rule:** a 4xx/5xx JSON body is always the envelope, and a 2xx body never carries
   `ok: false`.
 - **HTML stays only for app pages** (`/`, `/admin`, legacy pages), whose success is HTML
   and whose 401 stays bodiless so the browser shows its Basic Auth prompt. `/doc` success
   stays an HTML fragment; its 404 becomes the envelope.
+- **An unknown browser page gets the app shell** (owner Q17, 2026-10-06). A `GET` for an
+  unknown path whose `Accept` header prefers `text/html`, and which is not a static-asset
+  path (it has no file extension), answers 200 with the app's `index.html`, so the UI's own
+  router shows its not-found view and deep links survive a reload. Any other unknown
+  request (an API client, `Accept: application/json` or none, another method, a missing
+  `.js`) gets the JSON 404 envelope. The legacy page is served instead only when no build
+  is present, as `/` does today.
 - **Mechanism.** `_Handler.send_error()` is overridden to write the envelope (no body
   for `HEAD`), which also covers the stdlib's own 501, 400 and 414. One
   `_error(status, error, code=None)` helper replaces the inline `self._json({"ok": False,
@@ -72,6 +83,7 @@ on `ok`/`error`. Status-code changes therefore do not break the UI; field rename
 
 | Status | Meaning | Examples |
 |---|---|---|
+| 202 | Accepted, not yet done | a community contribution queued offline: `{ok: true, queued: true, error?}` |
 | 400 | Bad input | malformed JSON, invalid param, unknown command or export format, calibration or automap samples that cannot be solved |
 | 401 | Admin auth missing or wrong | any `x-ostler-access: admin` route |
 | 403 | Refused by policy | public-mode refusal (`_PUBLIC_REFUSAL`), a write to a synthetic session |
@@ -80,7 +92,9 @@ on `ok`/`error`. Status-code changes therefore do not break the UI; field rename
 | 413 | Body too large | `_read_capped` |
 | 416 | Bad range (unchanged) | `GET /sessions/{id}/audio/{track}` |
 | 500 | Unexpected failure | an uncaught exception, an `OSError` writing the store or captures |
+| 502 | The car refused | a `/command` the ECU answered with a negative response (`car_refused`, with the NRC) |
 | 503 | Temporarily unavailable (unchanged) | index not ready, recording or catalog not available |
+| 504 | The car did not answer in time | a `/command` that timed out on the poll thread (`car_timeout`) |
 
 Corrections:
 
@@ -90,17 +104,20 @@ Corrections:
 | `POST /command` `split_session` not recording, `disconnected — connect first`, shutdown not enabled | 400 | 409 |
 | `POST /command` recording not available | 400 | 503 |
 | `POST /command` unknown command or bad params | 400 | 400 (unchanged) |
+| `POST /command` the ECU's negative response / a poll-thread timeout | 400 | 502 `car_refused` / 504 `car_timeout` |
 | `POST /calib`, `/automap` failure | 200 | 400 (`no_match` for an automap with no fit) |
 | `POST /capture` write failure | 200 | 500 |
 | `POST /signal` unknown module, missing fields, bad `metric` / `OSError` | 400 / 400 | 400 / 500 |
 | `POST /community/*` community disabled | 400 | 409 |
+| `POST /community/contribute` queued offline | 200 with `ok: false, queued: true` | 202 with `ok: true, queued: true` |
 | `GET /sessions/{id}/data` or `/export` `OSError` | 400 | 500 |
-| unknown route, missing `/doc`, missing static file, unsupported method | HTML | envelope |
+| unknown route, missing `/doc`, missing static file, unsupported method | HTML | envelope; the app shell for an unknown browser page (§1) |
 
 For `/command`, `refusal()` and the inline commands return `{ok: false, error, code}`; one
 table `_STATUS_FOR_CODE` maps `code` to the status. An `ok: false` without a `code` keeps
-400 until every producer sets one. An action the car itself fails, or a poll-thread
-timeout, is an open question (Q1).
+400 until every producer sets one. A car-side failure is 502 and a poll-thread timeout is
+504 (owner Q15, 2026-10-06): the server is a gateway to the car, so these say "the car",
+not "your request", is the problem.
 
 ## 3. Query strings
 
@@ -135,7 +152,7 @@ stdlib helper (`openostler/timefmt.py`, `rfc3339_utc(epoch_s)`), promoted from
   `t` is not on the wire (`/captures` sends `t: null` for file rows); any reader treats a
   naive time as unknown, never guesses an offset.
 - **Exemptions, documented in the wire conventions:** durations and session offsets in
-  ms (`t`, `t_ms`, `start_ms`); CSV columns; the accel sample arrays (Q4).
+  ms (`t`, `t_ms`, `start_ms`); CSV columns; the accel sample arrays (open question 4).
 
 ## 5. Tracks
 
@@ -191,7 +208,11 @@ stdlib helper (`openostler/timefmt.py`, `rfc3339_utc(epoch_s)`), promoted from
   runtime an unknown GET/POST/PATCH/DELETE path, `PUT /snapshot`, `/doc?id=nope`,
   `/nope.js` and an admin route without auth return a valid envelope.
 - **Status table.** Every documented status is in §2's table; every `ok: false` fixture
-  maps to a non-2xx status and every 2xx fixture lacks `ok: false`.
+  maps to a non-2xx status and every 2xx fixture lacks `ok: false`. A fake ECU's negative
+  response and a fake poll timeout give 502 and 504; a queued contribution gives 202 with
+  `ok: true, queued: true`.
+- **App shell.** An unknown path with `Accept: text/html` answers 200 with the app shell;
+  the same path with `Accept: application/json`, and `/nope.js`, answer the 404 envelope.
 - **Timestamps.** Every schema property named `*_utc` references `Rfc3339Utc`; every
   `EpochSeconds` use is `deprecated: true` until 0.2.0, then the schema is absent; every
   `*_utc` fixture string matches `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$`;
@@ -202,7 +223,8 @@ stdlib helper (`openostler/timefmt.py`, `rfc3339_utc(epoch_s)`), promoted from
 
 UI side: `schemas.ts` adds the new fields; fixtures are regenerated
 (`UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py`), plus new fixtures
-`command-not-recording` (409) and `error-not-found` (404) mapped in `FIXTURE_ROUTES` and
+`command-not-recording` (409), `error-not-found` (404) and `community-queued` (202)
+mapped in `FIXTURE_ROUTES` and
 `schemas.test.ts`. Existing asserts follow: the public refusals in `tests/test_web.py`
 and `tests/test_sessions_api.py` become 403 (step 1); `tests/test_logbook.py`,
 `test_replay_api.py` and `test_connection_state.py` move to the new fields (step 4).
@@ -213,8 +235,11 @@ Each step is one PR, green on `pytest -q`, `npm run check` and `npm run e2e`, an
 breaks the UI or a pack on its own.
 
 1. **Errors, statuses and routing (server, OpenAPI, tests).** §1–§3 and their tests;
-   `ErrorReply.code`; CHANGELOG *Changed*/*Fixed*. The UI needs no change because
-   `parse()` reads bodies whatever the status. This is a behaviour change for outside
+   `ErrorReply.code`; the 502/504 car-side codes, the 202 queued contribution and the app
+   shell for unknown browser pages; CHANGELOG *Changed*/*Fixed*. The UI needs one change:
+   the community toast reads `queued: true` with `ok: true` as "saved, will send later"
+   instead of an error. Otherwise `parse()` reads bodies whatever the status, and the UI
+   router gains a not-found view for the app shell. This is a behaviour change for outside
    clients that key on status, which `0.y` allows; it is listed in the CHANGELOG.
 2. **Additive fields (server, OpenAPI, fixtures).** Add `ts_utc`, both `since_utc`,
    `t0_utc`, `trace`, the `start_utc` param, UTC capture rows and `fmt=geojson`; mark the
@@ -248,23 +273,31 @@ Checked in the pack repo (2026-10-06):
 ## Out of scope
 
 Auth changes (done in #7); URL versioning (`/v1/…`, U6); MQTT and HA discovery (U5);
-`405`/`HEAD`/`OPTIONS`; serving the app shell for unknown HTML navigations (Q5); on-disk
+`405`/`HEAD`/`OPTIONS`; on-disk
 session formats (CSV columns keep epoch `Utc`, which the wire conventions allow).
 
-## Open questions
+## Decisions (2026-10-06)
 
-1. **Car-side `/command` failures:** an ECU negative response as 502 and a poll-thread
-   timeout as 504 (outside the listed table), or both stay 400?
-2. **Queued community contributions** (`{ok: false, queued: true}`): 202 with `ok: true`?
-   It changes the UI's toast.
-3. **Automap with no fit:** 400, or 422 for "valid input, no answer"?
+The owner answered on 2026-10-06 (owner question numbers in brackets).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Car-side `/command` failures | (Q15) 502 when the car refuses (ECU negative response), 504 on a poll-thread timeout (§2) |
+| 2 | Queued community contributions | (Q16) 202 with `ok: true, queued: true`; the UI toast changes (§2, §8 step 1) |
+| 5 | Unknown path with `Accept: text/html` | (Q17) Serve the app shell instead of the JSON 404 (§1) |
+
+**Still open** (not raised with the owner; each keeps the drafted default until answered):
+
+3. **Automap with no fit:** 400 (drafted, `no_match`), or 422 for "valid input, no answer"?
 4. **Accel samples** (`[epoch_ms, ax, ay, az]`, up to 5,000 per POST): a documented
-   exemption, or `t0_utc` plus ms offsets?
-5. **Unknown path with `Accept: text/html`:** the JSON 404, or the app shell?
-6. Are `Deprecation`/`Link` headers worth it, or do OpenAPI `deprecated` and the
+   exemption (drafted), or `t0_utc` plus ms offsets?
+6. Are `Deprecation`/`Link` headers worth it (drafted), or do OpenAPI `deprecated` and the
    CHANGELOG suffice for a local API with one first-party client?
-7. **Shutdown not enabled:** 409 (state) or 403 (policy, kept for public mode)?
+7. **Shutdown not enabled:** 409 (drafted, state) or 403 (policy, kept for public mode)?
 
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft.
+- 2026-10-06 — v0.2: approved by the owner. 502/504 for car-side failures and timeouts;
+  202 with `ok: true` for a queued contribution; the app shell for unknown browser pages;
+  questions 3, 4, 6 and 7 keep their drafted defaults and stay open.

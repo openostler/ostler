@@ -1,15 +1,19 @@
 ---
 title: "CanLink, passive bitrate detection and ISO-TP — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/canbus_headunit.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/README.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Draft. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe on a silent bus; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k).
+  Approved by the owner on 2026-10-06. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe per rate on a silent bus, 500k then 250k automatically; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (our own pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN; can-isotp only as a dev-time test reference, superseding that detail of ADR-0020) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k).
 ---
 
 # CanLink, passive bitrate detection and ISO-TP — design
+
+**Status:** approved by the owner on 2026-10-06; the answers are in
+[§14](#14-decisions-2026-10-06). The questions the owner did not take up stay open and
+block nothing before bench work.
 
 ## Context
 
@@ -122,7 +126,9 @@ frame. `caps.error_frames = "flags"` marks this as weaker evidence (§4).
    Parked: per rate, 500k first, reopen with `one-shot on` and listen-only off, send one
    `0x7DF 02 01 00` frame. An ACK (own-message echo) with no error frame confirms the rate.
    **The first error frame stops detection**: back to listen-only, `"bitrate not confirmed"`.
-   No ACK and no error moves to 250k. A link without `one_shot` refuses the probe.
+   No ACK and no error moves to 250k automatically (owner Q9, 2026-10-06), after the
+   driving state is read again: still Parked, or the 250k probe is refused. A link without
+   `one_shot` refuses the probe.
 5. **Noisy bus** (frames seen, never 20 clean): stay listen-only, `"bitrate not confirmed"`;
    the user may retry or set the rate in Developer under service mode.
 
@@ -145,6 +151,15 @@ per ECU, `0x21` backoff) is the shared logic in `obd/link.py`. Functional reques
 always single frames; a payload over 7 bytes on a functional ID is refused.
 
 ## 6. ISO-TP (ISO 15765-2)
+
+**Our own implementation** (owner Q8, 2026-10-06). ISO-TP is written here in pure Python
+(stdlib only): one code path on every backend, every frame visible to `TxGate`, no new
+runtime dependency. **can-isotp (MIT) is used only as a test reference**: a dev-only
+differential test (T16) checks our channel against it; it is never imported at runtime,
+vendored or shipped. **This supersedes one detail of
+[ADR-0020](../decisions/adr-0020-can-links-listen-only-by-default.md)**, which named
+userspace can-isotp for non-SocketCAN links; the rest of ADR-0020 stands, and the ADR
+itself is not edited.
 
 **`IsoTpChannel`** (pure Python, one `(tx_id, rx_id, extended)` pair) and **`IsoTpMux`**
 (one functional TX, many RX reassemblers keyed by rx id) share one state machine:
@@ -259,6 +274,8 @@ of git (CONSTITUTION).
 | T13 | LoggingCanLink with a VIN reply | VIN absent from JSONL and candump (ASCII and hex) |
 | T14 | `IsoTpSniffer` on someone else's session | reassembled, no FC sent |
 | T15 | J1979 fixtures F1c, F3–F5, F11 over `CanObdRequestLink` | same results as the decoder-level tests |
+| T16 | differential, dev-only: the same SF/FF/CF/FC sequences (BS, STmin, WAIT, SN wrap) through our channel and can-isotp | identical payloads and FC bytes; skipped when can-isotp is absent, never a runtime import |
+| T17 | silent bus: no ACK at 500k, then Moving before the 250k probe | the 250k probe is refused; listen-only |
 
 ## 12. Migration
 
@@ -266,6 +283,7 @@ of git (CONSTITUTION).
   has no CAN.
 - `pyproject.toml` gains the optional `[can]` extra (python-can) with a comment that it is
   never installed on a Pi; `THIRD_PARTY_LICENSES.md` notes it as optional LGPL-3.
+  can-isotp goes only in the `[dev]` extra, as T16's reference; no runtime code imports it.
 - The Pi image gains the systemd capability and a note on loading `can-isotp` (optional).
 - The 2026-10-02 CAN emulation spec (head-unit side) later reuses `CanLink` for the private
   bus; its device traffic follows the add-on device rules, not this allowlist (ADR-0020).
@@ -278,20 +296,26 @@ CAN-FD frames and ISO-TP FD; J1939; `ObdRequestLink` for ELM/STN; `MqttCanLink`;
 UDS services beyond Tier 0 reads; extended and mixed ISO-TP addressing; the TWAI firmware
 node; netlink without `ip`; any write, routine or security service (Tier 4 needs an ADR).
 
-## 14. Open questions
+## 14. Decisions (2026-10-06)
 
-1. **ISO-TP in userspace:** ADR-0020 names can-isotp (MIT) for non-SocketCAN links. This spec
-   proposes our own stdlib channel instead (one code path, every frame visible to `TxGate`, no
-   new dependency), with can-isotp as a dev-only differential test oracle. Is that acceptable,
-   or should can-isotp be vendored with its notice?
+The owner answered on 2026-10-06 (owner question numbers in brackets).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | ISO-TP in userspace: our own, or vendor can-isotp? | (Q8) Our own pure-Python channel; can-isotp (MIT) only as a test reference (§6, T16). Supersedes ADR-0020's can-isotp detail |
+| 5 | After a no-ACK, no-error 500k probe, move to 250k automatically? | (Q9) Yes, automatically, Parked only, re-checked before the 250k probe (§4, T17) |
+
+**Still open** (not raised with the owner; none blocks the fake-bus work):
+
 2. May our FC carry a non-zero STmin on slow controllers (MCP2515), departing from the
    ISO 15765-4 tester values, or must such links use the kernel channel only?
 3. `ip` with `CAP_NET_ADMIN` now, or a stdlib rtnetlink client later to drop the iproute2
    dependency?
-4. Default pad byte: `0x55`, `0xAA` or `0x00`?
-5. After a 500k one-shot probe gets an error frame, ADR-0023 stops detection. Should a
-   no-ACK, no-error result at 500k really move on to 250k automatically (as drafted here)?
+4. Default pad byte: `0x55`, `0xAA` or `0x00`? §5 drafts `0x55`.
 
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft.
+- 2026-10-06 — v0.2: approved by the owner. Our own ISO-TP, can-isotp as a dev-only test
+  reference (supersedes that ADR-0020 detail; T16); silent-bus 500k → 250k automatic and
+  Parked only (T17); questions 2–4 stay open.
