@@ -352,6 +352,77 @@ kinds wait for a real third-party app and an ADR.
    shell, core and declarative apps for Lite and offline; fixed native features; no runtime
    third-party code (§7.1, which records the store-policy check and its risks).
 
+## 12. Proposed amendment (2026-10-06, pending owner answers): the Network app and device pages
+
+*Not yet decided; §3 and Q6 stand until the owner answers. Context: UI spec §3.7 (proposed),
+[ADR-0037](../decisions/adr-0037-role-holders-and-handover.md) (proposed), [cluster view
+research](../references/research/cluster_view.md).*
+
+**12.1 Network as a core app that absorbs Devices.** The Network row of §3 grows from
+"uplinks, remote access, pairing, node AP" to the whole cluster page of UI spec §3.7:
+devices (variant, firmware, addresses, reached via, health), transports and link health,
+role holders, uplinks and metering, remote access, certificates and pairing. **Devices stops
+being a shell page** (§3's last paragraph): the device list and each device page live inside
+Network, and add-on module apps contribute to `network:device:<id>` instead of More → Devices.
+It stays core because every product tier needs it and it renders the pairing flow, which
+only the platform may ship.
+
+```jsonc
+{ "schema": 1, "id": "ostler.network", "name": "Network", "version": "1.0.0",
+  "shell": "^1.0", "trust": "core",                   // assigned by the registry (§4.2)
+  "source": { "repo": "https://github.com/openostler/ostler", "license": "AGPL-3.0-or-later",
+              "publisher": "openostler" },
+  "entry": { "kind": "bundled", "module": "@ostler/app-network" },
+  "hosts": ["head_unit", "phone", "desktop", "cloud"],
+  "requires": { "product": ["ostler", "lite"], "devices": [], "node_variants": [],
+                "signals": [],
+                "api": ["cluster.read", "uplinks.read", "uplinks.write", "pairing.write",
+                        "certs.read"] },
+  "activation": ["onDestination:more"],
+  "contributes": { "slots": [ { "slot": "more:network", "view": "cluster", "order": 10 },
+                              { "slot": "sheet:link", "view": "roles_row" } ] },
+  "actions": [],                                       // no car or device actions
+  "views": [ { "id": "cluster", "driving": { "parked": "full", "idling": "full", "moving": false } },
+             { "id": "roles_row", "driving": { "parked": "full", "idling": "full",
+                                               "moving": { "template": "telltale_list" } } } ],
+  "permissions": { "data": [], "notifications": true, "storage": "app" },
+  "i18n": { "default": "en", "messages": "i18n/{locale}.json" },
+  "icons": [ { "symbol": "lan" } ] }
+```
+
+- **No actions.** Pairing, revoking a certificate and changing an uplink are **owner-role API
+  operations** (ADR-0029 §5), not ADR-0033 action categories; they are refused on remote
+  paths (ADR-0033 §6) and checked by the device that holds them, never by the page. Whether
+  they need a category of their own is open (Q12).
+- **`hosts: cloud`** renders read-only (§4.3).
+- `cluster.read` returns the view each host builds from retained manifests, `status` and role
+  claims (ADR-0037 §3); its schema lives with the module contract (ADR-0034).
+- The `more:network`, `sheet:link` and `network:device:<id>` slot names are new and need
+  adding to the slot list if accepted.
+
+**12.2 The device's own page is a shell-less device page.** Each device's local web page
+(ADR-0028 §7, ADR-0032 §6) is **not an app and not the shell**: it is served by the firmware
+(`ostler-firmware`, ADR-0034), works with no brain and no phone app, and is generated from
+the device's own capability manifest. It follows the shell's rules where they apply:
+controls declare category and tier, every action is checked by that device's gate, nothing
+is drawn for absent hardware. It gains a read-only **peer view**: the peers it sees by mDNS
+and on its broker, their variant, firmware, health and role claims, each with a link to that
+peer's own page. It never acts on a peer. When a full-app host is reachable, the page offers
+"Open in Ostler" (a deep link to Network → *this device*). The peer view and the Network
+page's Devices rows share one JSON shape so one test can check both.
+
+**12.3 If accepted:** §3's Network row and its "Garage, Devices, Integrations…" sentence
+change as above; §3's add-on module apps row reads "Network → *device*"; Q6 is answered; U5
+carries the peer view and UA the Network app.
+
+**Open questions added by this amendment:**
+
+10. **Network as a core app** that absorbs Devices (12.1), rather than Network and Devices as
+    two pages?
+11. **Device pages:** confirm the firmware-served page stays outside the app model (12.2).
+12. **Owner operations** (pairing, revoking, uplinks): plain owner-role API calls, or a new
+    category (for example "Administration") in ADR-0033?
+
 ## Changelog
 
 - 2026-10-06: v0.1, first draft from the [app model research](../references/research/ui/app_model.md):
@@ -363,3 +434,6 @@ kinds wait for a real third-party app and an ADR.
   server, bundled fallback for Lite and offline, fixed native features, no runtime third-party
   code, shell version rule) and a live store-policy check with its risks. Stays draft: Q3, Q4,
   Q6, Q7 and Q8 are open.
+- 2026-10-06: proposed amendment §12, pending owner answers (no version change): Network as a
+  core app that absorbs More → Devices, its manifest, the firmware-served device page with a
+  read-only peer view, and open questions 10–12.
