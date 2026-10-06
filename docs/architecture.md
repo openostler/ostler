@@ -81,8 +81,9 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - **`EcuSession` is where module layers share behaviour.**
   - Subclasses set `name` and call `_establish(after=…)`.
   - Td5 passes `after=self.connect` (StartDiagnosticSession + SecurityAccess seed→key).
-  - SLABS passes `after=None`, because its services work right after fast init. It also
-    sets `_keepalive_sub = None` so it gets a bare `3E`.
+  - SLABS passes `after=None`, because its services work right after fast init. Its
+    K-line profile's `keepalive` is a bare `3E`, which `tester_present()` sends; a session
+    built without a profile uses the legacy `_keepalive_sub` (SLABS sets it to `None`).
 - **`EcuSession.read_block(lids) -> {lid_hex: bytes}`** has exactly the shape
   `sniff/automap.py` consumes. That lets a live session feed the differential mapper.
 - **Signal store (each pack's `signals/*.json`, loaded by `signals/`).**

@@ -32,7 +32,9 @@ class EcuSession:
     """
 
     name: str = "ECU"
-    _keepalive_sub: "int | None" = 0x01  # TesterPresent sub; SLABS overrides → None (bare 3E)
+    # TesterPresent sub-byte for a session built without a profile (the legacy path; SLABS
+    # overrides → None, a bare 3E). With a profile, ``profile.keepalive`` decides.
+    _keepalive_sub: "int | None" = 0x01
     # Does the module have a StartDiagnosticSession to close cleanly? Td5 → True; SLABS and
     # Airbag run the services right after init and have no session to close.
     _has_session: bool = False
@@ -88,7 +90,15 @@ class EcuSession:
         return out
 
     def tester_present(self) -> None:
-        """Keepalive (``3E`` → ``7E``) — keep the session alive between requests."""
+        """Keepalive (``3E`` → ``7E``) — keep the session alive between requests.
+
+        With a profile its ``keepalive`` frame goes out (``3E 01``, or a bare ``3E``;
+        spec K-line profiles §4.1, migration step 2). Without a profile, or with a profile
+        that has no keep-alive (``None``), the legacy ``3E <_keepalive_sub>`` applies."""
+        p = self.profile
+        if p is not None and p.keepalive is not None:
+            self._kwp.request(p.keepalive[0], p.keepalive[1:])
+            return
         self._kwp.tester_present(self._keepalive_sub)
 
     def keepalive_if_due(self) -> bool:
