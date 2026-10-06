@@ -2,14 +2,15 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.1
+version: 2.2
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
-  contracts in api/, NodeSource and the MQTT client) and the dev commands.
+  contracts in api/, NodeSource, the MQTT client and node recording with the raw tap)
+  and the dev commands.
 ---
 
 # Architecture and key seams
@@ -33,7 +34,7 @@ pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 # Dashboard: always live (ignition on, stationary); there is no mock/demo mode
 PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--replay FILE|pack]
 
-# A Brain: read the car through the node's MQTT messages (read-only, NodeSource P1)
+# A Brain: read the car through the node's MQTT messages (read-only; records the raw tap)
 PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
     --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key [--vid VID]
 
@@ -182,9 +183,12 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   - A source declares `source_kind` (`serial`, `kline`, `node`), may map its statuses to
     `conn` (`conn_for`, used by `_next_conn`), and `touches_car = False` makes the server
     refuse the commands that open the serial port itself (`read_all_faults`, `set_port`,
-    the probes). P1 publishes nothing and records no sessions (P2).
+    the probes). NodeSource publishes nothing (requests are P4).
+  - **Recording (P2).** `logbook/node.py` holds the recorder's node rules; while a session
+    is open `_sync_tap` subscribes the raw tap and `logbook/tap.py` writes `.otap` files
+    after the identity check (`node/tap.py`); `logbook/pcapng.py` exports them, scrubbed.
   - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/`;
-    `tests/fake_node.py` replays them; `needs_broker` tests use a real Mosquitto.
+    `tests/fake_node.py` replays them; `needs_broker` tests use a real Mosquitto (CI job).
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -298,3 +302,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   ISO-TP, TxGate, the J1979 CAN adapter, LoggingCanLink, the fake bus and shared vectors.
 - 2026-10-06 — v2.1, NodeSource P1: `mqtt/` (stdlib MQTT 5 client), `node/` (the device
   table), `web/node_source.py`, `--source node`, `source_kind`, `conn_for`, `touches_car`.
+- 2026-10-06 — v2.2, NodeSource P2: node sessions (`logbook/node.py`), the raw tap
+  (`node/tap.py`, `logbook/tap.py`, `logbook/pcapng.py`), the CI `broker` job.

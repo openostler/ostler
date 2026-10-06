@@ -26,7 +26,8 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
         --tls-cert pi.crt --tls-key pi.key
 
     # a Brain: read the car through the node's MQTT messages instead of a cable
-    # (NodeSource, specs/2026-10-06-node-source-design.md; read-only, phase P1)
+    # (NodeSource, specs/2026-10-06-node-source-design.md; read-only; records sessions and
+    # the raw tap, with identity data scrubbed unless OSTLER_RECORD_IDENTITY is set)
     PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
         --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key
 
@@ -277,9 +278,8 @@ def main() -> int:
         admin_password=args.admin_password,
         allow_shutdown=args.allow_shutdown,
         gps=gps, sessions_dir=sessions_dir,
-        # Recording a node's values (sessions driven by its power and status, the raw tap)
-        # is phase P2 of the NodeSource spec; until then a node source records nothing.
-        record_sessions=feed is None,
+        # A node source records too (NodeSource spec §7, P2): sessions follow the node's
+        # power and status, and the raw tap is written beside the CSV while one records.
         audio=args.audio, imu=args.imu, geocoder=geocoder,
         kline_detect=args.kline_detect, kline_profile=args.kline_profile,
     )
@@ -310,7 +310,9 @@ def main() -> int:
     if feed is not None:
         feed.log = lambda msg: srv._conn_log(f"node: {msg}")
         feed.start()
-        print(f"Node source: {args.mqtt} · vehicle {feed.vid} · read-only, not recording (P1)")
+        print(f"Node source: {args.mqtt} · vehicle {feed.vid} · read-only; sessions and the raw "
+              f"tap recorded (identity scrub "
+              f"{'OFF: OSTLER_RECORD_IDENTITY is set' if srv._recorder is not None and srv._recorder.record_identity else 'on'})")
     else:
         print(f"Live port: {port}")
     print(f"Place names: {'geocoder ' + geocoder if geocoder and not args.public else 'offline only'}")

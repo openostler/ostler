@@ -116,6 +116,14 @@ export const NodePower = z.object({
   reason: z.string().optional(),
 });
 
+/** The raw-tap subscription while a session records (NodeSource spec §7); null otherwise. */
+export const NodeTap = z.object({
+  session: z.string().nullable(),
+  state: z.string(), // "connecting" | "waiting" | "receiving"
+  batches: z.number().optional(),
+});
+export type NodeTap = z.infer<typeof NodeTap>;
+
 /** The node that serves the active module (a node source only). */
 export const NodeState = z.object({
   device: z.string().nullable(),
@@ -124,7 +132,7 @@ export const NodeState = z.object({
   boot: z.number().nullable().optional(),
   last_seen_utc: z.string().nullable(),
   broker: z.object({ connected: z.boolean(), host: z.string() }),
-  tap: z.null().optional(),
+  tap: NodeTap.nullable().optional(),
 });
 export type NodeState = z.infer<typeof NodeState>;
 
@@ -477,7 +485,12 @@ export const SessionMeta = z.object({
   end_pos: LonLat.nullable(),
   synthetic: z.boolean(),
   recording: z.boolean(),
-  source: z.string(), // "mock" | "live" | "demo"
+  source: z.string(), // "mock" | "live" | "node" | "demo"
+  /** A node session (NodeSource spec §7): the devices seen, the decoding pack, its raw-tap files and why it ended. */
+  devices: z.array(z.string()).optional(),
+  pack: z.object({ id: z.string(), version: z.string().nullable().optional() }).nullable().optional(),
+  tap: z.array(z.looseObject({ session: z.string(), device: z.string(), file: z.string() })).optional(),
+  end_reason: z.string().nullable().optional(), // "idle" | "node_asleep" | "closed" | "split"
   audio: z.array(z.lazy(() => AudioTrack)).default([]),
   accel_cal: z.lazy(() => AccelCal).nullable().optional(),
 });

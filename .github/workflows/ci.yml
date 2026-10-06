@@ -79,6 +79,31 @@ jobs:
         env:
           OSTLER_REQUIRE_VCAN: "1"
 
+  # The stdlib MQTT 5 client and NodeSource against a real Mosquitto (NodeSource spec §13):
+  # retained and will handling, a resumed session (the raw tap's), mTLS and the spec §5
+  # ACL. The test job skips these; here a skip is a failure (OSTLER_REQUIRE_BROKER).
+  broker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - name: Install Mosquitto (the binary; each test starts its own broker)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends mosquitto openssl
+          sudo systemctl stop mosquitto || true
+          dpkg-query -W mosquitto openssl
+      - name: needs_broker tests (a skip fails the job)
+        run: pytest -q -rs -m needs_broker tests/test_mqtt_mosquitto.py
+        env:
+          OSTLER_REQUIRE_BROKER: "1"
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5

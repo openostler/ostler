@@ -2,10 +2,10 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.1
+version: 2.2
 updated: 2026-10-06
 summary: >
-  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource phases P2–P4 and follow-ups, data-hub ideas. Vehicle work lives in each pack.
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource phases P3–P4 and follow-ups, data-hub ideas. Vehicle work lives in each pack.
 ---
 
 # TODO — Ostler platform
@@ -61,13 +61,20 @@ Updated 2026-10-06. Check off when done.
 
 ## NodeSource ([spec](specs/2026-10-06-node-source-design.md))
 
-P1 (read-only ingest) is built. Open:
+P1 (read-only ingest) and P2 (recording and raw tap) are built. Open:
 
-- [ ] **P2 recording and raw tap:** sessions driven by the node's `status` and `power`
+- [x] **P2 recording and raw tap:** sessions driven by the node's `status` and `power`
       (end at once on `asleep`, `end_reason: node_asleep`), `vss` columns (`<path>` and
       `<path>@<device>`), `tap/+/meta` and `tap/+/data` (session expiry 60 s), the
       `.otap` files and `meta.json` `tap`, the Brain-side scrub check, `fmt=pcapng`, the
-      `node.tap` snapshot field. Until then `--source node` records no sessions.
+      `node.tap` snapshot field.
+- [ ] **Tap time to UTC:** the pcapng export stamps the node's `t_us` (µs since boot); map
+      it to UTC from the tap's `time` events (raw-tap §2.4, CBOR) once the node emits them
+      (decode lab, spec §14).
+- [ ] **Parked periods and alarm events** in the logbook from the node's `power` and alarm
+      topics (ADR-0010 amendment; spec §7 "in a later spec").
+- [ ] **Firmware and manifest `etag` in node session meta** once the manifest is
+      published (P3).
 - [ ] **P3 Network page:** `manifest` and `role/#` subscriptions, `GET /cluster`, the role
       table. With the role claims, a **serial source refuses to start when the vehicle's
       node holds the `kline-diag` gate** (owner answer 7); P1 has no gate claim to read,
@@ -90,8 +97,9 @@ P1 (read-only ingest) is built. Open:
 - [ ] **UI states of §10** ("Node asleep · wakes on …", "Node offline", "Waiting for the
       node", "Node not reading <module>", "before restart"): the snapshot carries them; the
       UI shows only the generic connection states and stale ages so far.
-- [ ] **Mosquitto conformance in CI:** a service container so the `needs_broker` tests
-      (`tests/test_mqtt_mosquitto.py`) run instead of skipping; add TLS and the ACL there.
+- [x] **Mosquitto conformance in CI:** the `broker` job installs Mosquitto on the runner
+      and runs the `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`, mTLS and the ACL
+      included.
 - [ ] Unit conversion to VSS units happens at U3 for the node and serial paths alike.
 
 ## Roadmap — data-hub direction (not scheduled)

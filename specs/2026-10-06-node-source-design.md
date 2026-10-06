@@ -2,17 +2,17 @@
 title: "NodeSource — the Brain ingests node data over MQTT — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-api-consistency-design.md, docs/architecture.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
+  Approved by the owner on 2026-10-06 (answers in §15); phase P1 (read-only ingest) built in v0.3, phase P2 (recording and raw tap) in v0.4. A new DataSource, NodeSource, lets the Brain consume what the node publishes over MQTT 5 (retained VSS values, power, status with an offline will, raw-tap batches) instead of driving a KKL cable: the read-only subscription set and QoS; the connection to the Brain's broker (bridged to the node's parked broker) with an mTLS client certificate and a per-device ACL that never subscribes to request topics it does not own; mapping node messages into the snapshot (pack field names, VSS paths and metrics, units passed through until U3, confidence never raised, per-signal staleness from t_us and ts, source tags, ADR-0032 selection for composite readings); recorder integration (decoded values and raw tap side by side, identity scrub re-checked, sessions driven by the node's power and status); additive snapshot, SSE, OpenAPI and AsyncAPI changes; Network page data; requests to the node gate (requester-owned topics, request id, category, tier, MQTT 5 expiry, Tier 0-1 queueable only), the Brain never transmitting on a car bus; offline, asleep and stale states; replay; the KKL and serial sources kept as selectable lab and dev sources. Recommends a minimal stdlib MQTT 5 client (no new dependency, no ADR) over the optional paho-mqtt extra (2.1.0, EPL-2.0 or EDL-1.0, checked 2026-10-06), with an adapter seam. Phases P1 read-only ingest, P2 recording and raw tap, P3 Network page, P4 requests; tests on a fake broker with fixtures from the firmware host tests.
 ---
 
 # NodeSource — the Brain ingests node data over MQTT — design
 
-**Status:** approved v0.2 (owner, 2026-10-06; answers in §15); v0.3: P1 built (§16). Build
-in phases P1–P4. It applies
+**Status:** approved v0.2 (owner, 2026-10-06; answers in §15); v0.3: P1 built, v0.4: P2
+built (§16). Build in phases P1–P4. It applies
 [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) §3 ("the brain consumes the
 node's VSS messages over IP") to the platform's server, and changes no ADR. Where it needs a
 decision it lists it in §15.
@@ -399,7 +399,9 @@ The owner took the recommendations on every question.
 9. **Tap retention:** tap batches are recorded only during a recorded session. No rolling
    buffer.
 
-## 16. As built (P1, v0.3)
+## 16. As built
+
+### P1 (v0.3)
 
 - `openostler.mqtt` (codec, `MqttClient`, `StdlibMqttClient`), `openostler.node`
   (`messages`, `table`, `select`), `web/node_source.py` (`NodeFeed`, `NodeSource`),
@@ -417,6 +419,60 @@ The owner took the recommendations on every question.
   role claims (P3; today `--serial` with `--source node` is refused), GNSS selection by
   ADR-0032 A4, mDNS discovery, the §10 wording in the UI (the UI already never draws a
   stale value as live), and a Mosquitto service in CI for the `needs_broker` tests.
+
+### P2 (v0.4)
+
+- **Code.** `logbook/node.py` (the recorder's node rules), `node/tap.py` (the raw-tap codec
+  and the identity scrub), `logbook/tap.py` (`TapRecorder`, the `.otap` files),
+  `logbook/pcapng.py` (the export), `SessionRecorder.tap_message`, `NodeFeed.start_tap` /
+  `stop_tap` / `tap_state`, `DiagServer._sync_tap`; `fmt=pcapng` on the export route. The
+  dashboard and `tests/e2e_server.py --node` now record; the CI `broker` job runs the
+  `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`.
+- **§7 sessions.** A node session opens on the node's `status: online`, `power.state`
+  `awake` or `held` and at least one live (not stale) value, signal or `vss`; `status:
+  asleep` ends it at once with `end_reason: node_asleep`; `offline` (`status: error`) and
+  `broker-down` pause it and the 300 s idle rule ends it (`end_reason: idle`). `close` and
+  `split` record `closed` and `split`. A poll with nothing live writes no row.
+- **§7 columns and time.** Stale values (per-signal `stale`) are never written. `vss`
+  adds `<path>` from the selected reading and `<path>@<device>` from that device's
+  freshest live source; their channel group is `vss` and their confidence `candidate`
+  (the store has no record for a path; never raised). `Utc`: a GPS fix first (unchanged),
+  then the node's wall clock (a live reading's `ts_utc` plus its age), then the Brain's,
+  with `time_unsynced` (and `time_synced` on recovery) in `events.jsonl`.
+- **§7 identity.** Signal names keep the recorder's rule; VSS paths are checked per
+  segment with camel case split (`SerialNumber`), and the `VehicleIdentification` branch
+  is never written. The tap: a header with `scrub: on` is re-checked with the node's rule
+  and a miss is logged (`tap_scrub`, `missed: true`); `scrub: off` or no header is kept
+  unscrubbed only when the Brain's own install option is on, otherwise the Brain scrubs
+  (`scrub: "brain"` in the meta). **The Brain's option is the environment variable
+  `OSTLER_RECORD_IDENTITY`** (read only from the process environment, like
+  `OSTLER_ALLOW_REMOTE_CONTROL`; off by default).
+- **§7 tap files.** One `<session>/tap/<tap session>.otap` per tap session and device: the
+  v1 records after the Brain's check, appended per batch, fsynced at most once a second.
+  `meta.json` `tap` entries carry `session, device, file, boot_id, scrub, buses, clock,
+  started, seq_first, seq_last, records, bytes, gaps, lost, overflow, brain_scrubbed,
+  brain_dropped`. A tap session spans recorded sessions (one per node boot), so
+  `seq_first` is wherever this session's subscription began.
+- **§4 tap subscription.** Its own connection, client id `<id>-tap`, session expiry 60 s:
+  clean start for each new run (no batch from an earlier session), no clean start on its
+  reconnects (queued QoS 1 batches arrive); subscribed while a session is open (recording
+  or paused), unsubscribed then disconnected when it ends (owner answer 9). The snapshot's
+  `node.tap` is `{session, state: connecting | waiting | receiving, batches}` while
+  subscribed.
+- **§8 pcapng.** One interface per tap session and bus, K-line as `LINKTYPE_USER0` (no
+  registered K-line link type), CAN as `LINKTYPE_CAN_SOCKETCAN`, events as
+  `LINKTYPE_USER1` (CBOR payload); timestamps are the node's `t_us`, not UTC (stated in
+  the section comment); `seq` gaps as packet comments and `isb_ifdrop`. A session without
+  a tap answers 400 (`bad_request`).
+- **Judgement calls.** `end_reason`, `devices`, `pack` and `tap` are written for node
+  sessions only, so cable sessions and the pack's byte-stable demo logs are unchanged;
+  per-byte K-line records and unknown protocols are dropped when the Brain must scrub (they
+  cannot be framed alone; the node's v0 emits none); duplicates by `seq` are skipped as
+  QoS 1 redeliveries; a non-ULID tap session id never names a file; a second device
+  reusing a tap session id gets `<session>-<device>.otap`; the `pack.version` is the
+  pack distribution's version (null for a pack without one).
+- **Not in P2, in `TODO.md`:** UTC for tap timestamps from `time` events, parked periods
+  and alarm events from the node, and the firmware and manifest `etag` in the meta (P3).
 
 ## Notes on sources
 
@@ -440,3 +496,8 @@ The owner took the recommendations on every question.
   gate-holding node, session ends on `asleep`, tap recorded only in sessions.
 - 2026-10-06 — v0.3: P1 built (§16). §6.2: the node publishes `lr_d2` directly (firmware
   ceb4cc7), no alias; VSS payloads carry `boot`; fixtures from the firmware host tests.
+- 2026-10-06 — v0.4: P2 built (§16 P2): sessions driven by the node's status and power,
+  live values and `vss` columns only, the raw tap on its own 60 s-session connection while
+  a session is open, `.otap` files and `meta.json` `tap`, the Brain-side scrub with the
+  install option `OSTLER_RECORD_IDENTITY`, `fmt=pcapng`, read-only replay, the CI
+  `broker` job.

@@ -19,8 +19,8 @@ Playwright (run from ui/) and UI development without a car:
 ``--start disconnected`` starts with polling paused (snapshot ``conn: disconnected``), for
 the connection-sheet flows. ``--node`` serves the car through NodeSource instead: an
 in-process fake MQTT broker and a simulated node replaying the firmware's fixtures
-(``tests/fixtures/node/``), read-only and not recording (NodeSource spec P1). Never deploy
-this: it fabricates every value it serves.
+(``tests/fixtures/node/``), read-only; it records sessions and the raw tap like a Brain
+(NodeSource spec P2). Never deploy this: it fabricates every value it serves.
 """
 from __future__ import annotations
 
@@ -111,7 +111,7 @@ def build(args) -> DiagServer:
     docs = build_docs(pack)  # the Docs tab from the pack's sources, as tools/dashboard.py does
     modules = node_modules(pack) if args.node else fake_modules(gps=gps)
     srv = DiagServer(
-        modules, host=args.host, port=args.port, record_sessions=not args.node,
+        modules, host=args.host, port=args.port,
         poll_interval=args.interval, stream_interval=args.interval,
         active="slabs" if args.slabs else "td5", menus=MENUS, docs=docs, sniffer=sniffer,
         captures_path=os.path.join(os.path.dirname(sessions_dir), "labeled_captures.jsonl"),

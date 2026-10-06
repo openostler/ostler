@@ -12,7 +12,8 @@ NodeSource tests (`tests/test_node_*.py`) and by `tests/e2e_server.py --node`.
 The generated files are synthetic: fake ECUs, the identity scrub on, no VIN, `vid`
 `d2-bench`. Real car captures are never committed (Constitution). Regenerate them in the
 firmware repo (`cmake --build build/host --target node-fixtures`) and copy them here,
-noting the commit above. Tap batches (`tap/<session>/data`) are read from phase P2 on;
-the P1 tests skip them.
+noting the commit above. The tap header and batches (`tap/<session>/meta|data`) drive the
+P2 tests (`tests/test_node_tap.py`, `tests/test_node_recording.py`): the codec, the
+`.otap` writer and the pcapng round trip.
 
 Licence: CC BY-SA 4.0 (vehicle data, `LICENSE-DATA`; `REUSE.toml`).

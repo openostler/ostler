@@ -44,6 +44,42 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **NodeSource, phase P2: recording and the raw tap**
+  ([spec](specs/2026-10-06-node-source-design.md) v0.4 §7, §16; ADR-0032, ADR-0036). A node
+  source now records sessions (`tools/dashboard.py --source node` and
+  `tests/e2e_server.py --node` record; the D2 cable path is unchanged). Sessions follow the
+  node (`logbook/node.py`): one opens only with the node `online`, `awake` or `held`, and a
+  live value, so values retained at subscribe time never open or fill one; `status:
+  asleep` ends it at once (`end_reason: node_asleep`); `offline` or a lost broker pauses it
+  and the 300 s idle rule ends it. Stale values are never written; `vss` readings add the
+  columns `<path>` (the selected source) and `<path>@<device>`; identity paths (VIN,
+  serials, `VehicleIdentification`) are never written; `Utc` follows the node's synced
+  clock (`time_unsynced` in `events.jsonl` otherwise). Node sessions' `meta.json` adds
+  `source: "node"`, `devices`, `pack` `{id, version}`, `tap` and `end_reason`
+  (`schemas/session-meta.schema.json`). **Raw tap:** while a session is open a second
+  connection (`<id>-tap`, session expiry 60 s, clean start per run, resumed on reconnects)
+  subscribes to `tap/+/meta` and `tap/+/data` and unsubscribes when it ends (owner answer
+  9: no rolling buffer); `logbook/tap.py` writes each batch to
+  `<session>/tap/<tap session>.otap`, fsynced at most once a second, logs `seq` gaps
+  (`tap_gap`, never filled), skips redeliveries and counts `overflow` events. The
+  Brain-side identity check (`node/tap.py`, the node's rule: framed `5A`/`49` replies keep
+  service and option then the 8-byte placeholder, unframed runs holding those bytes are
+  replaced, CAN ISO-TP identity messages blanked, per-byte records dropped when a scrub is
+  due): a header with `scrub: off` is kept unscrubbed only when this install's
+  `OSTLER_RECORD_IDENTITY` is set (environment only), and a node that said `on` is
+  re-checked. **`GET /sessions/<id>/export?fmt=pcapng`** (`logbook/pcapng.py`, stdlib):
+  K-line as `LINKTYPE_USER0`, CAN as `LINKTYPE_CAN_SOCKETCAN`, events as `LINKTYPE_USER1`,
+  the node's `t_us` as timestamps, `seq` gaps as comments and drop counts; unframed records
+  dropped and identity replies scrubbed whatever the setting. The snapshot's `node.tap` is
+  `{session, state, batches}` while subscribed (else null); the replay screen offers "Raw
+  tap (pcapng)" for a session with a tap. `api/openapi.yaml` (`NodeTap`, `SessionTap`,
+  `SessionMeta` node fields, the `pcapng` format) and `api/asyncapi.yaml` (the tap meta and
+  data channels) document them; node sessions replay read-only like any other.
+- **CI `broker` job.** Installs Mosquitto (and `openssl`) on the runner and runs the
+  `needs_broker` tests with `OSTLER_REQUIRE_BROKER=1`, so they cannot pass by skipping:
+  retained and will handling, a resumed 60 s session delivering queued QoS 1 (the tap's
+  shape), and NodeSource over mTLS against the spec §5 ACL (`tap/ctl` never delivered, no
+  client certificate refused).
 - **NodeSource, phase P1: read-only ingest of the node's MQTT messages**
   ([spec](specs/2026-10-06-node-source-design.md) v0.3; ADR-0032). New core packages, stdlib
   only (no new dependency, ADR-0035): `src/openostler/mqtt/` (an MQTT 5 codec for both

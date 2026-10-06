@@ -49,6 +49,11 @@ def vss_messages(names=VECTORS) -> "list[dict]":
     return [d for n in names for d in load(n) if "/vss/" in d["topic"]]
 
 
+def tap_messages(name: str = "td5-vectors.jsonl") -> "list[dict]":
+    """The raw-tap header and batches of one vector run (``tap/<session>/meta|data``)."""
+    return [d for d in load(name) if "/tap/" in d["topic"]]
+
+
 def topic(kind: str, vid: str = VID, device: str = DEVICE) -> str:
     return f"ostler/v1/{vid}/{device}/{kind}"
 
@@ -89,8 +94,11 @@ class FakeNode:
 
     def run_loop(self, interval: float = 0.05) -> None:
         msgs = vss_messages()
+        tap = tap_messages()
         self.send(case("awake"))
+        seq = 0
         while not self._stop.is_set():
+            seq = self._send_tap(tap, seq)
             for m in msgs:
                 if self._stop.is_set():
                     return
@@ -105,6 +113,28 @@ class FakeNode:
                     return
                 self._stop.wait(interval)
 
+    def _send_tap(self, tap: "list[dict]", seq: int) -> int:
+        """The fixture's tap header and batches, renumbered to continue ``seq`` and timed
+        now, so a looping node's tap has no gaps or repeats."""
+        from openostler.node.tap import encode_record, parse_records
+
+        t_us = int((time.monotonic() - self._t0) * 1e6) + 1_000_000
+        for m in tap:
+            if m["topic"].endswith("/meta"):
+                self.send(m)
+                continue
+            records, _ = parse_records(m["payload"])
+            out = []
+            for r in records:
+                out.append(encode_record(type(r)(t_us, seq, r.type, r.bus, r.dir, r.proto,
+                                                 r.flags, r.payload)))
+                seq, t_us = seq + 1, t_us + 1000
+            try:
+                self.client.publish(m["topic"], b"".join(out), 1, False)
+            except OSError:
+                break
+        return seq
+
     def start_loop(self, interval: float = 0.05) -> None:
         threading.Thread(target=self.run_loop, args=(interval,), daemon=True).start()
 
@@ -113,4 +143,4 @@ class FakeNode:
         self.client.disconnect()
 
 
-__all__ = ["DEVICE", "FakeNode", "VID", "case", "load", "topic", "vss_messages"]
+__all__ = ["DEVICE", "FakeNode", "VID", "case", "load", "tap_messages", "topic", "vss_messages"]
