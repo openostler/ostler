@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/layout.schema.json",
+  "title": "Vehicle pack UI layout",
+  "description": "A pack's layout.json, served as VehiclePack.layout in GET /pack. Permissive on purpose: the keys below are checked where present, and a pack may add keys its custom views read (UI spec §5.3). New platform-level keys should be added here; pack-private ones are better prefixed x-.",
+  "type": "object",
+  "properties": {
+    "group_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Order of signal groups on the Inputs page."
+    },
+    "drive": {
+      "type": "object",
+      "description": "Per-module Drive view: module id to a view.",
+      "additionalProperties": { "$ref": "#/$defs/driveView" }
+    },
+    "util_lids": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": { "example": { "type": "string" }, "note": { "type": "string" } }
+      }
+    },
+    "notices": {
+      "type": "object",
+      "additionalProperties": { "type": "object", "additionalProperties": { "type": "string" } }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "tile": {
+      "type": "object",
+      "required": ["signal"],
+      "properties": {
+        "signal": { "type": "string" },
+        "label": { "type": "string" },
+        "gauge": { "type": "boolean" },
+        "dec": { "type": "integer", "minimum": 0 },
+        "scale": { "type": "number" },
+        "unit": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "driveView": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "description": "tiles, or a custom view type a pack registers." },
+        "health": { "type": "boolean" },
+        "tiles": { "type": "array", "items": { "$ref": "#/$defs/tile" } }
+      },
+      "additionalProperties": true
+    }
+  }
+}

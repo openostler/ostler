@@ -17,6 +17,12 @@ the store (``update_meta``, ``set_place``, note writes, ``delete``) and by ``syn
 which the recorder's ``on_change`` calls when a session opens or closes. Meta carries
 ``name``, ``description``, ``place_start``/``place_end``/``place`` and a computed
 ``note_count``.
+
+U0 (specs/2026-10-06-u0-seams-design.md): every meta read carries ``vid``. A session
+recorded before U0 (or a demo log) has none on disk and reads as the local vehicle's vid
+(``SessionStore(..., vid=None, state_dir=None)``: ``OSTLER_VEHICLE_ID``, else
+``<state_dir>/vehicle.json``, state dir defaulting to the parent of ``root``). Files are
+never rewritten for it.
 """
 from __future__ import annotations
 
@@ -36,6 +42,7 @@ from . import places as _places
 from .notes import NoteLog, read_notes
 from .recorder import (MIN_FREE_BYTES, _read_meta, parse_header, rotate_sessions,
                        write_json_atomic)
+from .vehicle import local_vid, state_dir_for
 
 _SAFE_ID = re.compile(r"^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$")
 MAX_TRACK = 5000
@@ -308,10 +315,16 @@ def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
 
 class SessionStore:
     def __init__(self, root: str, demo_root: "str | None" = _PACK,  # type: ignore[assignment]
-                 index_path: "str | None" = None) -> None:
+                 index_path: "str | None" = None, vid: "str | None" = None,
+                 state_dir: "str | None" = None) -> None:
         if demo_root is _PACK:
             demo_root = _demo_pkg.demo_root()
         self.root = str(root)
+        # U0: a session without ``vid`` (recorded before U0, or a demo) reads as the local
+        # vehicle's vid (``vid``, else OSTLER_VEHICLE_ID or <state_dir>/vehicle.json),
+        # resolved once on first read. Files on disk are never rewritten.
+        self._vid = vid
+        self.state_dir = state_dir or state_dir_for(self.root)
         self.demo_root = str(demo_root) if demo_root else None
         self.index = None
         if index_path:
@@ -345,11 +358,19 @@ class SessionStore:
                 return os.path.join(base, sid), demo
         return None
 
-    @staticmethod
-    def _load(path: str, demo: bool, public: bool, sid: str) -> dict:
+    @property
+    def vid(self) -> str:
+        """The local vehicle id that legacy sessions read as."""
+        if self._vid is None:
+            self._vid = local_vid(self.state_dir)
+        return self._vid
+
+    def _load(self, path: str, demo: bool, public: bool, sid: str) -> dict:
         meta = _read_meta(os.path.join(path, "meta.json"))
         if meta is None:
             raise KeyError(sid)
+        if not meta.get("vid"):
+            meta["vid"] = self.vid
         if demo:
             meta = {**meta, "synthetic": True, "source": meta.get("source") or "demo",
                     "recording": False}

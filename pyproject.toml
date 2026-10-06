@@ -17,8 +17,18 @@ Homepage = "https://ostler.tech"
 Source = "https://github.com/openostler/ostler"
 
 [project.optional-dependencies]
-# Dev-only tools (ADR-0017); never installed on a Pi. reuse is GPL-3.0-or-later, CI only.
-dev = ["pytest>=7", "reuse>=5", "ruff>=0.8", "pyyaml>=6", "openapi-spec-validator>=0.7.1", "jsonschema>=4.18"]
+# Dev-only tools (ADR-0002, ADR-0017); never installed on a Pi. reuse is GPL-3.0-or-later,
+# CI only. vss-tools (ADR-0016) needs Python >= 3.11, so it is skipped on older
+# interpreters; tools/build_metrics.py and the metrics.json freshness test need it.
+dev = [
+    "pytest>=7",
+    "reuse>=5",
+    "ruff>=0.8",
+    "pyyaml>=6",
+    "openapi-spec-validator>=0.7.1",
+    "jsonschema>=4.18",
+    "vss-tools==6.1.0; python_version >= '3.11'",
+]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack
@@ -28,6 +38,7 @@ dev = ["pytest>=7", "reuse>=5", "ruff>=0.8", "pyyaml>=6", "openapi-spec-validato
 where = ["src"]
 
 [tool.setuptools.package-data]
+"openostler" = ["metrics.json", "vss_leaves.json"]
 "openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*"]
 "openostler.geo" = ["*.tsv.gz"]
 

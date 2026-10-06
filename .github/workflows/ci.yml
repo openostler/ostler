@@ -40,6 +40,10 @@ jobs:
         run: pytest -q
         env:
           OSTLER_REQUIRE_PACK: "1"
+      - name: metrics.json is current (vss-tools from the [dev] extra, ADR-0016)
+        run: |
+          python -c "import vss_tools" || { echo "vss-tools missing: the [dev] extra installs it on Python >= 3.11"; exit 1; }
+          python tools/build_metrics.py --check
 
   lint:
     runs-on: ubuntu-latest

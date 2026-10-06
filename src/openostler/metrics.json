@@ -1,0 +1,501 @@
+{
+ "generated_by": "tools/build_metrics.py from vss/ostler.vspec over vss/upstream",
+ "metrics": [
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "float",
+   "description": "Vehicle acceleration in Y (lateral acceleration).",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Acceleration.Lateral",
+   "type": "sensor",
+   "unit": "m/s^2"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "ovms": "v.p.acceleration"
+   },
+   "datatype": "float",
+   "description": "Vehicle acceleration in X (longitudinal acceleration).",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Acceleration.Longitudinal",
+   "type": "sensor",
+   "unit": "m/s^2"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "float",
+   "description": "Vehicle acceleration in Z (vertical acceleration).",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Acceleration.Vertical",
+   "type": "sensor",
+   "unit": "m/s^2"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "light",
+    "ovms": "v.e.headlights"
+   },
+   "datatype": "boolean",
+   "description": "Indicates if light is on or off. True = On. False = Off.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Body.Lights.Beam.Low.IsOn",
+   "type": "actuator",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_device_class": "temperature",
+    "ha_state_class": "measurement",
+    "ovms": "v.e.cabintemp"
+   },
+   "datatype": "float",
+   "description": "Ambient air temperature inside the vehicle.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Cabin.HVAC.AmbientAirTemperature",
+   "type": "sensor",
+   "unit": "Celsius"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "ovms": "v.e.throttle"
+   },
+   "datatype": "uint8",
+   "description": "Accelerator pedal position as percent. 0 = Not depressed. 100 = Fully depressed.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Chassis.Accelerator.PedalPosition",
+   "type": "sensor",
+   "unit": "percent"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "ovms": "v.e.footbrake"
+   },
+   "datatype": "uint8",
+   "description": "Brake pedal position as percent. 0 = Not depressed. 100 = Fully depressed.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Chassis.Brake.PedalPosition",
+   "type": "sensor",
+   "unit": "percent"
+  },
+  {
+   "aliases": {
+    "ovms": "v.e.handbrake"
+   },
+   "datatype": "boolean",
+   "description": "Parking brake status. True = Parking Brake is Engaged. False = Parking Brake is not Engaged.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Chassis.ParkingBrake.IsEngaged",
+   "type": "actuator",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "ovms": "v.p.altitude"
+   },
+   "datatype": "double",
+   "description": "Current altitude relative to WGS 84 reference ellipsoid, as measured at the position of GNSS receiver antenna.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.CurrentLocation.Altitude",
+   "type": "sensor",
+   "unit": "m"
+  },
+  {
+   "aliases": {
+    "ovms": "v.p.direction"
+   },
+   "datatype": "double",
+   "description": "Current heading relative to geographic north. 0 = North, 90 = East, 180 = South, 270 = West.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.CurrentLocation.Heading",
+   "type": "sensor",
+   "unit": "degrees"
+  },
+  {
+   "aliases": {
+    "ovms": "v.p.latitude"
+   },
+   "datatype": "double",
+   "description": "Current latitude of vehicle in WGS 84 geodetic coordinates, as measured at the position of GNSS receiver antenna.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.CurrentLocation.Latitude",
+   "type": "sensor",
+   "unit": "degrees"
+  },
+  {
+   "aliases": {
+    "ovms": "v.p.longitude"
+   },
+   "datatype": "double",
+   "description": "Current longitude of vehicle in WGS 84 geodetic coordinates, as measured at the position of GNSS receiver antenna.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.CurrentLocation.Longitude",
+   "type": "sensor",
+   "unit": "degrees"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "temperature",
+    "ha_state_class": "measurement",
+    "ovms": "v.e.temp"
+   },
+   "datatype": "float",
+   "description": "Air temperature outside the vehicle.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Exterior.AirTemperature",
+   "type": "sensor",
+   "unit": "Celsius"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "current",
+    "ha_state_class": "measurement",
+    "ovms": "v.b.12v.current"
+   },
+   "datatype": "float",
+   "description": "Current current flowing in/out of the low voltage battery. Positive = Current flowing in to battery, e.g. during charging or driving. Negative = Current flowing out of battery, e.g. when using the battery to start a combustion engine.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.LowVoltageBattery.CurrentCurrent",
+   "type": "sensor",
+   "unit": "A"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "voltage",
+    "ha_state_class": "measurement",
+    "obdb": "starterBatteryVoltage",
+    "ovms": "v.b.12v.voltage"
+   },
+   "datatype": "float",
+   "description": "Current Voltage of the low voltage battery.",
+   "extension": false,
+   "ostler_role": "battery",
+   "path": "Vehicle.LowVoltageBattery.CurrentVoltage",
+   "type": "sensor",
+   "unit": "V"
+  },
+  {
+   "aliases": {},
+   "datatype": "uint16",
+   "description": "Rear left ride-height sensor reading in raw counts (uncalibrated, no unit).",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {},
+   "datatype": "uint16",
+   "description": "Rear right ride-height sensor reading in raw counts (uncalibrated, no unit).",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Chassis.RideHeight.RearRightRaw",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_device_class": "distance",
+    "ha_state_class": "total_increasing",
+    "obdb": "distanceSinceDTCsCleared"
+   },
+   "datatype": "uint32",
+   "description": "Distance travelled since the diagnostic trouble codes were last cleared (OBD 01 PID 31).",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Diagnostics.DistanceSinceDtcClear",
+   "type": "sensor",
+   "unit": "m"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "obdb": "storedDTCCount"
+   },
+   "datatype": "uint8",
+   "description": "Stored (confirmed) DTC count across systems (OBD 01 PID 01 bits A0-A6, or a pack equivalent).",
+   "extension": true,
+   "ostler_role": "health",
+   "path": "Vehicle.Ostler.Diagnostics.DtcCount",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {},
+   "datatype": "boolean",
+   "description": "True when every supported readiness monitor has completed since the codes were cleared (OBD 01 PID 01 bytes B-D).",
+   "extension": true,
+   "ostler_role": "health",
+   "path": "Vehicle.Ostler.Diagnostics.IsReadinessComplete",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_device_class": "problem",
+    "obdb": "checkEngineLightOn"
+   },
+   "datatype": "boolean",
+   "description": "Malfunction indicator lamp requested (OBD 01 PID 01 bit A7, or a pack equivalent).",
+   "extension": true,
+   "ostler_role": "health",
+   "path": "Vehicle.Ostler.Diagnostics.MilOn",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "uint8",
+   "description": "Pending (not yet confirmed) DTC count across systems (OBD service 07, or a pack equivalent).",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Diagnostics.PendingDtcCount",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "uint8",
+   "description": "Number of supported readiness monitors not yet complete since the codes were cleared.",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Diagnostics.ReadinessIncompleteCount",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_device_class": "pressure",
+    "ha_state_class": "measurement"
+   },
+   "datatype": "uint16",
+   "description": "Engine oil pressure.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.EOP",
+   "type": "sensor",
+   "unit": "kPa"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "temperature",
+    "ha_state_class": "measurement",
+    "obdb": "engineCoolantTemperature"
+   },
+   "datatype": "float",
+   "description": "Engine coolant temperature.",
+   "extension": false,
+   "ostler_role": "coolant",
+   "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature",
+   "type": "sensor",
+   "unit": "Celsius"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "temperature",
+    "ha_state_class": "measurement",
+    "obdb": "engineOilTemperature"
+   },
+   "datatype": "float",
+   "description": "EOT, Engine oil temperature.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.EngineOil.Temperature",
+   "type": "sensor",
+   "unit": "Celsius"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "running"
+   },
+   "datatype": "boolean",
+   "description": "Engine Running. True if engine is rotating (Speed > 0).",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.IsRunning",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "obdb": "massAirFlow"
+   },
+   "datatype": "uint16",
+   "description": "Grams of air drawn into engine per second.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.MAF",
+   "type": "sensor",
+   "unit": "g/s"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "pressure",
+    "ha_state_class": "measurement"
+   },
+   "datatype": "uint16",
+   "description": "Manifold absolute pressure possibly boosted using forced induction.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.MAP",
+   "type": "sensor",
+   "unit": "kPa"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "float",
+   "description": "Engine speed measured as rotations per minute.",
+   "extension": false,
+   "ostler_role": "rpm",
+   "path": "Vehicle.Powertrain.CombustionEngine.Speed",
+   "type": "sensor",
+   "unit": "rpm"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "obdb": "throttlePosition"
+   },
+   "datatype": "uint8",
+   "description": "Current throttle position.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.CombustionEngine.TPS",
+   "type": "sensor",
+   "unit": "percent"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement"
+   },
+   "datatype": "float",
+   "description": "Current consumption in liters per 100 km.",
+   "extension": false,
+   "ostler_role": "consumption",
+   "path": "Vehicle.Powertrain.FuelSystem.InstantConsumption",
+   "type": "sensor",
+   "unit": "l/100km"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "distance",
+    "ha_state_class": "measurement"
+   },
+   "datatype": "uint32",
+   "description": "Remaining range in meters using only liquid fuel.",
+   "extension": false,
+   "ostler_role": "range",
+   "path": "Vehicle.Powertrain.FuelSystem.Range",
+   "type": "sensor",
+   "unit": "m"
+  },
+  {
+   "aliases": {
+    "ha_state_class": "measurement",
+    "obdb": "fuelTankLevel"
+   },
+   "datatype": "uint8",
+   "description": "Level in fuel tank as percent of capacity. 0 = empty. 100 = full.",
+   "extension": false,
+   "ostler_role": "fuel",
+   "path": "Vehicle.Powertrain.FuelSystem.RelativeLevel",
+   "type": "sensor",
+   "unit": "percent"
+  },
+  {
+   "aliases": {
+    "ovms": "v.e.gear"
+   },
+   "datatype": "int8",
+   "description": "The current gear. 0=Neutral, 1/2/..=Forward, -1/-2/..=Reverse.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.Transmission.CurrentGear",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {},
+   "datatype": "boolean",
+   "description": "Is gearbox in low range mode or not. False = Normal/High range engaged. True = Low range engaged.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.Transmission.IsLowRangeEngaged",
+   "type": "actuator",
+   "unit": null
+  },
+  {
+   "aliases": {
+    "ha_device_class": "temperature",
+    "ha_state_class": "measurement"
+   },
+   "datatype": "float",
+   "description": "The current gearbox temperature.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.Powertrain.Transmission.Temperature",
+   "type": "sensor",
+   "unit": "Celsius"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "speed",
+    "ha_state_class": "measurement",
+    "obdb": "speed",
+    "ovms": "v.p.speed"
+   },
+   "datatype": "float",
+   "description": "Vehicle speed.",
+   "extension": false,
+   "ostler_role": "speed",
+   "path": "Vehicle.Speed",
+   "type": "sensor",
+   "unit": "km/h"
+  },
+  {
+   "aliases": {
+    "ha_device_class": "distance",
+    "ha_state_class": "total_increasing",
+    "obdb": "odometer",
+    "ovms": "v.p.odometer"
+   },
+   "datatype": "uint32",
+   "description": "Odometer reading, total distance traveled during the lifetime of the vehicle.",
+   "extension": false,
+   "ostler_role": null,
+   "path": "Vehicle.TraveledDistance",
+   "type": "sensor",
+   "unit": "m"
+  }
+ ],
+ "vss_version": "6.1"
+}

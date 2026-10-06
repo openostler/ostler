@@ -29,7 +29,7 @@ T0 = 1791277200.0  # 2026-10-06T09:00:00Z (a day after the demo session)
 META_KEYS = {"id", "name", "start_utc", "end_utc", "duration_s", "rows", "parts", "modules",
              "channels", "has_gps", "distance_km", "max_speed_kmh", "bbox", "start_pos",
              "end_pos", "synthetic", "recording", "source", "audio", "accel_cal",
-             "description", "place_start", "place_end", "place"}
+             "description", "place_start", "place_end", "place", "vid"}
 
 
 class Clock:

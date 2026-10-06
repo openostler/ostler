@@ -353,6 +353,7 @@ export type Place = z.infer<typeof Place>;
 
 export const SessionMeta = z.object({
   id: z.string(),
+  vid: z.string().optional(), // the vehicle id (U0); a legacy session reads as the local vid
   name: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   place: Place.nullable().optional(),

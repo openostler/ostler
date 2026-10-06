@@ -104,6 +104,9 @@ class Signal:
     # this many bytes (a LID whose layout differs by ECU variant, e.g. Td5 21 1B 8 vs 10).
     # One record per length may share a name. See specs/2026-10-04-reply-length-layouts-design.md.
     length: "int | None" = None
+    # The canonical meaning (ADR-0016): an optional COVESA VSS path such as
+    # ``Vehicle.Speed``, known to ``openostler.metrics``. Pack-private fields leave it unset.
+    metric: "str | None" = None
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -154,6 +157,7 @@ def _record_to_signal(r: dict) -> Signal:
         span=tuple(r["span"]) if r.get("span") else None,
         normal=tuple(r["normal"]) if r.get("normal") else None,
         length=int(r["length"]) if r.get("length") is not None else None,
+        metric=r.get("metric") or None,
     )
 
 
@@ -192,14 +196,24 @@ def upsert_field(module: str, record: dict) -> None:
     """Write a confirmed/candidate mapping to the store (write-back).
 
     Replaces an existing record with the same ``(lid, offset, name)``, otherwise appends.
-    Default ``confidence="candidate"``; legacy values are normalised. Atomic rewrite (temp + rename) so the file
-    never ends up half-written."""
+    Default ``confidence="candidate"``; legacy values are normalised. An optional ``metric``
+    (a VSS path, ADR-0016) is kept when :func:`openostler.metrics.is_known` accepts it,
+    dropped when empty, and refused (``ValueError``) otherwise. Atomic rewrite (temp +
+    rename) so the file never ends up half-written."""
     def _norm_lid(v) -> str:
         return f"{(int(v, 16) if isinstance(v, str) else int(v)):02X}"
 
     rec = dict(record)
     rec["confidence"] = normalize_confidence(rec.get("confidence"))
     rec["lid"] = _norm_lid(rec["lid"])
+    if not rec.get("metric"):
+        rec.pop("metric", None)
+    else:
+        from ..metrics import is_known
+
+        if not is_known(rec["metric"]):
+            raise ValueError(f"metric {rec['metric']!r} is not a known VSS path "
+                             "(metrics.json or the pinned VSS tree)")
     key = (rec["lid"], int(rec["offset"]), rec["name"])
     rows = load_records(module)
     for i, r in enumerate(rows):

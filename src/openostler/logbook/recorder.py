@@ -29,6 +29,10 @@ ADR-0010 additions (specs/2026-10-05-replay-notes-capture-design.md):
   method)``; ``GPS_LonAcc``/``GPS_LatAcc`` from every GPS fix.
 * Audio: ``audio_put(...)``/``audio_stop(...)`` for phone chunks, ``set_pi_audio(PiAudio)``
   for the Pi's microphone; tracks are listed in ``meta.audio``.
+
+U0 (specs/2026-10-06-u0-seams-design.md): every new non-synthetic session's ``meta.json``
+carries ``vid``, the vehicle id from ``vid=``, ``OSTLER_VEHICLE_ID`` or
+``<state_dir>/vehicle.json`` (``logbook/vehicle.py``).
 """
 from __future__ import annotations
 
@@ -49,6 +53,7 @@ from . import motion
 from . import places as _places
 from .audio import AudioTrackWriter
 from .notes import NoteLog, read_notes
+from .vehicle import local_vid, state_dir_for
 
 IDLE_S = 300.0          # end after this long without a connected poll
 FSYNC_S = 1.0           # fsync the data file at most this often
@@ -311,6 +316,7 @@ class _Session:
         self.paused = False
         self.user: dict = {k: None for k in USER_KEYS}   # name, description, place*
         self.written: dict = {}                            # user fields last written
+        self.vid: "str | None" = None                      # U0: the vehicle id
 
     @property
     def name(self) -> "str | None":
@@ -341,8 +347,15 @@ class SessionRecorder:
                  trust_clock: bool = True, min_free_bytes: int = MIN_FREE_BYTES,
                  fsync: Callable[[int], None] = os.fsync,
                  accel_hz: int = DEFAULT_ACCEL_HZ,
-                 on_change: "Callable[[str], None] | None" = None) -> None:
+                 on_change: "Callable[[str], None] | None" = None,
+                 vid: "str | None" = None, state_dir: "str | None" = None) -> None:
         self.root = str(root)
+        # U0: every new session carries the vehicle id. ``vid`` pins it (tests, tools);
+        # otherwise it is resolved when a session opens from ``OSTLER_VEHICLE_ID`` or
+        # ``<state_dir>/vehicle.json`` (default state dir: the parent of ``root``).
+        # Synthetic sessions get one only when ``vid`` is given.
+        self.vid = vid
+        self.state_dir = state_dir or state_dir_for(self.root)
         self._clock, self._mono = clock, mono
         self.source, self.synthetic = source, synthetic
         self.poll_hz, self.trust_clock = poll_hz, trust_clock
@@ -674,6 +687,9 @@ class SessionRecorder:
         mode = snap.get("mode")
         self._src = self.source or (mode if mode in ("mock", "live", "demo") else "live")
         s = _Session(sid, path, now, m)
+        # A synthetic session (the pack's committed demo logs) belongs to no vehicle and
+        # stays byte-stable: it gets a vid only when one is passed in.
+        s.vid = self.vid or (None if self.synthetic else local_vid(self.state_dir))
         s.name, self._next_name = getattr(self, "_next_name", None), None
         s.columns = self._columns(s)
         s.units = {c: ch.UNITS.get(c, "") for c in s.columns}
@@ -950,8 +966,9 @@ class SessionRecorder:
         dur = (m if recording else s.end_m) - s.start_m
         numeric = [c for c in s.columns if c not in ch.TIME_CHANNELS
                    and c not in ch.TEXT_CHANNELS and (s.has_gps or not c.startswith("GPS_"))]
-        return {
+        meta = {
             "id": s.id,
+            "vid": s.vid,
             "name": s.user.get("name"),
             "description": s.user.get("description"),
             "place_start": s.user.get("place_start"),
@@ -978,6 +995,9 @@ class SessionRecorder:
             "audio": self._audio_entries(s),
             "accel_cal": s.accel_cal,
         }
+        if meta["vid"] is None:
+            del meta["vid"]
+        return meta
 
     def _adopt_external(self, s: _Session, path: str) -> None:
         """Keep edits another writer made to the user fields since our last write."""

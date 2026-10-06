@@ -27,6 +27,8 @@ Details:
 * ``histogram`` buckets are newest first; ``group="day"`` with ``year`` keeps that year.
   It accepts the same filters as ``page`` (keyword arguments).
 * Thread-safe: one connection guarded by a lock (``check_same_thread=False``).
+* Schema 3 (U0) adds a ``vid`` column: the session's vehicle id as the store reads it (a
+  legacy session without one reads as the local vid). Opening an older index rebuilds it.
 """
 from __future__ import annotations
 
@@ -38,14 +40,14 @@ import sqlite3
 import threading
 import time
 
-SCHEMA_VERSION = 2   # 2: module ids stored canonical (legacy aliases normalised)
+SCHEMA_VERSION = 3   # 2: module ids stored canonical (legacy aliases normalised); 3: vid
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 RECONCILE_S = 60.0
 _WORD = re.compile(r"\w+", re.UNICODE)
 _COLS = ("id", "start_ms", "end_ms", "duration_s", "distance_km", "max_speed_kmh", "modules",
          "place", "place_end", "name", "description", "note_count", "has_gps", "synthetic",
-         "recording", "notes", "sig", "meta_json")
+         "recording", "notes", "sig", "meta_json", "vid")
 _FTS_COLS = ("name", "description", "place", "place_end", "notes")
 
 
@@ -191,7 +193,7 @@ class SessionIndex:
             "end_ms INTEGER, duration_s REAL, distance_km REAL, max_speed_kmh REAL, "
             "modules TEXT, place TEXT, place_end TEXT, name TEXT, description TEXT, "
             "note_count INTEGER NOT NULL DEFAULT 0, has_gps INTEGER, synthetic INTEGER, "
-            "recording INTEGER, notes TEXT, sig TEXT, meta_json TEXT NOT NULL)")
+            "recording INTEGER, notes TEXT, sig TEXT, meta_json TEXT NOT NULL, vid TEXT)")
         db.execute("CREATE INDEX sessions_order ON sessions (start_ms DESC, id DESC)")
         db.execute("CREATE INDEX sessions_public ON sessions "
                    "(synthetic, start_ms DESC, id DESC)")
@@ -246,7 +248,7 @@ class SessionIndex:
                 meta.get("name"), meta.get("description"), int(meta.get("note_count") or 0),
                 int(bool(meta.get("has_gps"))), int(bool(meta.get("synthetic"))),
                 int(bool(meta.get("recording"))), note_text, sig,
-                json.dumps(meta, ensure_ascii=False, separators=(",", ":")))
+                json.dumps(meta, ensure_ascii=False, separators=(",", ":")), meta.get("vid"))
 
     def _put(self, row: tuple) -> None:
         db = self._db

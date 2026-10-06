@@ -106,17 +106,18 @@ path = "src/openostler/geo/places.tsv.gz"
 SPDX-FileCopyrightText = "GeoNames <https://www.geonames.org/>"
 SPDX-License-Identifier = "CC-BY-4.0"
 
-# COVESA Vehicle Signal Specification (ADR-0016): the pinned upstream release, our overlay
-# and the metrics catalogue generated from them, all MPL-2.0 like VSS itself.
+# COVESA Vehicle Signal Specification (ADR-0016). The pinned upstream release and the leaf
+# list generated from it are MPL-2.0 like VSS itself; our overlay is vehicle data (CC BY-SA,
+# SPDX header in the file); metrics.json mixes VSS descriptions with our aliases.
 [[annotations]]
-path = "vss/upstream/**"
+path = ["vss/upstream/**", "src/openostler/vss_leaves.json"]
 SPDX-FileCopyrightText = "Contributors to COVESA"
 SPDX-License-Identifier = "MPL-2.0"
 
 [[annotations]]
-path = ["vss/ostler.vspec", "src/openostler/metrics.json"]
+path = "src/openostler/metrics.json"
 SPDX-FileCopyrightText = [
     "2026 OpenOstler contributors",
     "Contributors to COVESA",
 ]
-SPDX-License-Identifier = "MPL-2.0"
+SPDX-License-Identifier = "MPL-2.0 AND CC-BY-SA-4.0"
