@@ -33,7 +33,7 @@ describe("the shell on a head unit (HU-7, 1024×600)", () => {
     expect(nav).toHaveClass("rail");
     expect(within(nav).getAllByRole("button").map((b) => b.textContent)).toEqual(["Home", "Diagnose", "Logs", "More", "Drive"]);
     expect(document.querySelector(".app")).toHaveAttribute("data-layout", "hu7");
-    expect(document.querySelector(".app")).toHaveAttribute("data-side", "left"); // no driver_side in the pack yet
+    expect(document.querySelector(".app")).toHaveAttribute("data-side", "right"); // the pack's driver_side (the D2 is RHD)
     const strip = screen.getByRole("banner", { name: "Status" });
     expect(await within(strip).findByText("Car battery 12.6 V")).toBeInTheDocument();
     expect(within(strip).getByText(/^Time /)).toBeInTheDocument();
@@ -62,13 +62,13 @@ describe("the shell on a head unit (HU-7, 1024×600)", () => {
     expect(screen.getByRole("region", { name: "Drive mode" })).toBeInTheDocument();
   });
 
-  it("puts the rail on the side the kiosk flag names", async () => {
-    window.history.replaceState(null, "", "/?display=headunit&side=right");
+  it("puts the rail on the side the kiosk flag names, over the pack's driver_side", async () => {
+    window.history.replaceState(null, "", "/?display=headunit&side=left");
     setViewport(800, 480); // a head-unit browser reporting an odd size
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await destinations();
-    expect(document.querySelector(".app")).toHaveAttribute("data-side", "right");
+    expect(document.querySelector(".app")).toHaveAttribute("data-side", "left");
     expect(document.querySelector(".app")).toHaveAttribute("data-layout", "hu7");
   });
 

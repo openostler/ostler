@@ -79,7 +79,8 @@ test("strip: no title, fits 360 px; Diagnose: one Module control, % mapped only 
   await page.goto("/");
   const strip = page.locator("header");
   await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
-  await expect(strip.getByText("D2 Diag")).toHaveCount(0);
+  await expect(page).toHaveTitle("Ostler"); // the document title, as the Web App Manifest's name
+  await expect(strip.getByText(/D2 Diag|Ostler/)).toHaveCount(0);
   await expect(strip.getByRole("combobox")).toHaveCount(0); // module select moved to Diagnose
   const fits = async () => strip.evaluate((h) => h.scrollWidth <= h.clientWidth);
   expect(await fits()).toBe(true);

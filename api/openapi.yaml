@@ -2313,6 +2313,7 @@ components:
           type: object
           description: The pack's screen layout; every part is optional so a minimal pack works.
           properties:
+            driver_side: {type: string, enum: [left, right], description: "The driver's side; the rail goes on it (UI spec §3.3). Absent means left."}
             group_order: {type: array, items: {type: string}}
             drive: {type: object, additionalProperties: {type: object, additionalProperties: true}}
             body: {type: object, additionalProperties: true}

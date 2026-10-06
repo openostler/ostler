@@ -5,6 +5,10 @@
   "description": "A pack's layout.json, served as VehiclePack.layout in GET /pack. Permissive on purpose: the keys below are checked where present, and a pack may add keys its custom views read (UI spec §5.3). New platform-level keys should be added here; pack-private ones are better prefixed x-.",
   "type": "object",
   "properties": {
+    "driver_side": {
+      "enum": ["left", "right"],
+      "description": "The side the driver sits on (right for a right-hand-drive vehicle). Landscape layouts put the navigation rail on this side; the kiosk flag side= overrides it, and the rail is on the left when it is absent (UI spec §3.3)."
+    },
     "group_order": {
       "type": "array",
       "items": { "type": "string" },
