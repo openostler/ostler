@@ -2,13 +2,15 @@
 title: "ADR-0002 — Layered Python core with a stdlib-only server"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-09-30
+version: 1.1
+updated: 2026-10-06
 summary: >
   The protocol stack stays Python, strictly layered (transport → K-line → KWP2000 → session → modules), with pyserial as the only runtime dependency and a stdlib HTTP+SSE server.
 ---
 
 # ADR-0002 — Layered Python core with a stdlib-only server
+
+> **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§8–§9), 2026-10-06:** the production link and decode layers move to a portable C decoder on the node; Python stays the lab, reference decoder, server and high-level features (languages by tier in ADR-0035).
 
 - **Date:** 2026-09-30
 - **Status:** accepted

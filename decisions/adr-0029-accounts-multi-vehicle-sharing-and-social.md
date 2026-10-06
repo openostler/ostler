@@ -1,20 +1,22 @@
 ---
 title: "ADR-0029 — Accounts, multi-vehicle garage, sharing and social"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-06
-depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, CONSTITUTION.md]
+depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md]
 summary: >
-  Proposed, from the owner's direction of 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code), passkeys first with passwords as the fallback, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (owner, driver, viewer, mechanic/guest, time-boxed) are ceilings over the existing safety tiers; the server takes the minimum of role, share, token, transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle physically connected; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths stay Tier 0. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking.
+  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking.
 ---
 
 # ADR-0029 — Accounts, multi-vehicle garage, sharing and social
 
 - **Date:** 2026-10-06
-- **Status:** proposed (owner direction, 2026-10-06; awaiting approval of
-  [the accounts and sharing spec](../specs/2026-10-06-accounts-sharing-design.md) v0.1,
-  which holds the detail and the open questions).
+- **Status:** accepted (owner, 2026-10-06). It approves
+  [the accounts and sharing spec](../specs/2026-10-06-accounts-sharing-design.md) v0.2,
+  which holds the detail. Amended in place on acceptance with the owner's answers and
+  [ADR-0033](adr-0033-action-categories-and-approvals.md) (see
+  [Amendments](#amendments-2026-10-06-owner-answers)).
 
 ## Context
 
@@ -43,7 +45,7 @@ summary: >
 
 - Local-first: accounts live on the device and work with no internet and no cloud.
 - Standard practice only: WebAuthn, scrypt, OAuth-style tokens, RFC 8628, TLS.
-- Safety travels with the action: one server gate; roles only narrow it.
+- Safety travels with the action: one gate (on the node for car-touching actions); roles only narrow it.
 - Privacy: VIN, raw captures and location never leave the device by default.
 - No new runtime dependency without saying so (GOALS §2.6).
 
@@ -52,8 +54,11 @@ summary: >
 1. **Local users per device.** Ostler is multi-user, not multi-tenant: one device serves
    one owner's household and the vehicles it is connected to. The **owner** is created on
    first run with a one-time setup code shown on the device's own display or console (a
-   physical step, no default password). An existing `--admin-password` seeds the owner's
-   password on upgrade.
+   physical step, no default password). **Ostler Lite** (a node with no brain,
+   [ADR-0032](adr-0032-one-node-optional-brain.md)) has no display or console: the owner is
+   bootstrapped by **pairing a phone** with the node, a physical step on the node itself, and
+   the pairing keys on the phone sign the owner in. An existing `--admin-password` seeds the
+   owner's password on upgrade.
 2. **Authentication.** Passkeys (WebAuthn) are the primary method and **passwords are
    always available** as the fallback, hashed with `hashlib.scrypt`. Sessions are
    `__Host-` cookies (Secure, HttpOnly, SameSite=Strict) plus an Origin check. Passkeys
@@ -64,21 +69,26 @@ summary: >
 4. **Tokens.** Scoped, revocable, expiring API tokens, stored as hashes only. Scopes name
    vehicles, a maximum tier and data classes. AI and MCP clients use them (ADR-0030, in
    progress); headless clients pair with the OAuth device flow (RFC 8628). Tokens default
-   to Tier 0.
-5. **Roles are ceilings, not keys.** Owner (Tiers 0–3), mechanic/guest (0–3, always
-   time-boxed), driver (0–1 plus comfort and alarm arming), viewer (0). The effective
-   permission is the **minimum** of role, share, token scope, transport (any remote path is
-   Tier 0, as today) and driving state. Tier 4 stays unrunnable. No role skips a confirm,
-   a precondition or a lockout; the server enforces all of it.
-6. **Garage.** The default vehicle is the one the base hardware is physically connected
-   to, identified per UI spec §4.4. Other vehicles appear only through **shares**. A
+   to the Read category (Tier 0).
+5. **Roles grant categories; tiers cap them.** Roles grant the action categories of
+   [ADR-0033](adr-0033-action-categories-and-approvals.md), each capped by its tier:
+   Owner (all categories, up to Tier 3), Driver (Read, Comfort, Security, Maintenance, plus
+   Accessories if granted), Viewer (Read; location only if shared), Mechanic (Read,
+   Maintenance, Actuator tests, Procedures; always time-boxed). The effective permission is
+   the **intersection** of the role's, share's and token's categories at the **minimum**
+   tier, then the transport rule (ADR-0033 §6: local links; remote paths read-only unless
+   the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is set) and the driving-state
+   rule. The head-unit kiosk session gets Read and Comfort only. Tier 4 stays unrunnable.
+   No role skips a confirm, a precondition or a lockout; the gate enforces all of it, on the
+   node for car-touching actions (ADR-0032).
+6. **Garage.** The default vehicle is the one the node is on, identified per UI spec §4.4. Other vehicles appear only through **shares**. A
    nearby Ostler device found by mDNS is shown as "nearby", with no data, until an invite
    is accepted. Shared data stays on its own device and is pulled on demand, never mirrored.
 7. **Sharing.** Invites by link or QR carry a role, an expiry, a single-use secret (in the
    URL fragment) and the host device's certificate fingerprint, so device-to-device TLS is
    pinned without a public CA. Every share can be revoked; every grant, use and revocation
-   is in an audit log. Transport is the LAN, Tailscale, or the future Ostler Cloud relay
-   (ADR-0028, in progress).
+   is in an audit log. Transport is the LAN, Tailscale, or the Ostler Cloud relay
+   (ADR-0028); shares over Tailscale or the relay are remote paths under ADR-0033 §6.
 8. **Per-share privacy.** Location is off unless granted per share (none, place names,
    precise, or live during a ride). **No share ever carries a VIN or its HMAC** (a masked
    VIN at most, ADR-0018 Q7), a raw capture, or audio.
@@ -87,7 +97,9 @@ summary: >
    and Telegram links, Facebook's share dialog, Discord webhooks, the owner's own Telegram
    bot). Nothing is posted automatically without a per-destination opt-in. No ads, no
    tracking, no third-party login.
-10. **Phases.** P1 local users, roles and tokens (may precede U6); P2 garage with LAN
+10. **Motorbikes.** Bikes are served by a guardian-variant or Lite node, with the phone as
+    the screen (ADR-0032).
+11. **Phases.** P1 local users, roles and tokens (may precede U6); P2 garage with LAN
     shares (with U6); P3 remote shares over Tailscale or the relay; P4 groups and rides;
     P5 integrations. Each needs its own approved spec or spec section first.
 
@@ -95,8 +107,9 @@ summary: >
 
 - Server tests: every route requires a session or token, except bootstrap, login and the
   public-mode allowlist; each role and each share level is refused above its ceiling;
-  a remote principal is refused Tier 1+; Moving refuses Tiers 1–3 for every role, owner
-  included; an expired or revoked token or share fails at once.
+  the ADR-0033 matrix (role × category × tier × driving state × transport, override off and
+  on) holds; the kiosk session is refused outside Read and Comfort; an expired or revoked
+  token or share fails at once.
 - A test that no VIN, HMAC fingerprint, raw capture or audio appears in any share
   response, invite payload or audit entry.
 - A test that no credential, token or invite secret is stored or logged in clear.
@@ -111,6 +124,8 @@ summary: >
   existing routes.
 - A new state file, `auth.db` (stdlib `sqlite3`, as the logbook index already uses).
 - Passkeys depend on stable device names; the ADR-0021 trust spec must name them.
+- On Ostler Lite there is no Pi CA; trust comes from pairing (ADR-0032), so passkeys need a
+  device name the phone app can reach; until then Lite uses pairing keys and passwords.
 
 ## Alternatives considered
 
@@ -124,3 +139,21 @@ summary: >
   the owner's control; on-demand pulls keep revocation real.
 - **ActivityPub federation now.** Deferred: public-by-default, no reliable deletion, heavy.
   Kept as a candidate for public club pages only.
+
+## Amendments (2026-10-06, owner answers)
+
+Recorded on acceptance; the statements above already read this way.
+
+- **Passkeys:** accepted as the optional extra `openostler[passkeys]` (`cryptography`);
+  passwords are always available.
+- **Driver tier:** replaced by action categories
+  ([ADR-0033](adr-0033-action-categories-and-approvals.md)); roles grant categories, each
+  capped by its tier (§5). Drivers may clear codes (Maintenance), never actuator tests.
+- **Phone approval:** a paired phone may approve Tier 2–3 over local links only, per
+  ADR-0033 §6, with the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override for remote use.
+- **Transport rule:** "any remote path is Tier 0" is replaced by ADR-0033 §6.
+- **Lite bootstrap:** Ostler Lite has no display or console, so the owner is created by
+  phone pairing (§1).
+- **Gate wording:** the gate for car-touching actions is on the node (ADR-0032).
+- **Garage:** "the base hardware physically connected" now reads "the node" (§6).
+- **Motorbikes:** a guardian-variant or Lite node with the phone as the screen (§10).

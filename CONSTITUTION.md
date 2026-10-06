@@ -2,7 +2,7 @@
 title: Constitution
 area: root
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-06
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
@@ -40,8 +40,16 @@ summary: >
   names no pack, module id or alias. `tests/test_layering.py` enforces both rules.
 - **A pack's `signals/*.json` is the single source of truth for its LID field mappings**
   (for the Discovery 2 pack, `src/d2diag/signals/` in its repo).
-  Write it only via `upsert_field`; never hand-paste `Signal(...)` rows. The ESP32 decode
-  header is generated from it, never hand-copied.
+  Write it only via `upsert_field`; never hand-paste `Signal(...)` rows. It stays the
+  single source of truth on every tier: the native C decoder consumes the pack JSON as
+  data, never a generated header or a hand-copied table
+  ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
+- **The brain never touches the car** ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
+  Only the node talks to the car's buses; the brain (and the cloud, phone and Home
+  Assistant) consume the node's VSS messages over IP.
+- **Node firmware and the C decoder never depend on Python** (ADR-0032,
+  [ADR-0035](decisions/adr-0035-languages-by-tier.md)). Packs reach the C decoder only as
+  JSON data, never as code.
 - **Confidence is honest.** Every field is `proven` (verified against the car) or
   `candidate` (derived or unverified). Nothing is promoted to `proven` without a car
   result recorded in the pack's car-test plan (for the D2 pack,
@@ -52,10 +60,12 @@ summary: >
   alike. Never use bare `close()`. `_establish` sends a best-effort `82` before every init.
 - **SLABS is polled lightly:** ~1 Hz keepalive with a bare `3E` (never `3E 01`), heights
   each cycle, faults at most every 10th poll.
-- **Keep `tolerant=True`** on KWP2000 for cheap KKL cables.
+- **Keep `tolerant=True`** on KWP2000 for cheap KKL cables. The KKL cable path is the
+  dev path; production K-line runs on the node (ADR-0032).
 - **K-line is a shared bus:** one module at a time, establish → read → release.
-- **K-line access is serialized on the poll thread.** Only server-state commands run
-  inline on the HTTP thread.
+- **K-line access is serialized.** In production it is serialized on the node (ADR-0032);
+  on the server path (lab and dev) it is serialized on the poll thread, and only
+  server-state commands run inline on the HTTP thread.
 - **macOS serial ports are `/dev/cu.*`**, never `/dev/tty.*`.
 
 ### Safety
@@ -64,16 +74,41 @@ summary: >
   confirmation, and are documented as stationary with ignition on.
 - **Sniffed commands from a reference tool (e.g. NanoCom) are never replayed** to the car
   for a write, coding or SecurityAccess function without its own ADR (see ADR-0005).
+- **The node transmit gate is the only path to the car**
+  ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)). The brain or phone may mint
+  a grant; the node verifies it. No other device, link or service transmits to the car.
+- **Alarm paths never depend on the brain or the internet**
+  ([ADR-0033](decisions/adr-0033-action-categories-and-approvals.md)): node or guardian
+  to notification works with the brain off and no cloud, and a confirmation test proves it.
+- **Clearing fault codes is made safe, not restricted** (ADR-0033): codes, freeze frames
+  and readiness are snapshotted to the logbook first; only parked or idling; one
+  confirmation; an extra warning for safety systems (airbag, ABS, brakes); every clear is
+  audited (who cleared what). An ECU refusal is shown honestly.
+- **Phone approval of Tier 2–3 actions works over local links only** (node Wi-Fi/AP, BLE,
+  the in-car LAN), from a paired device of a user whose role allows it, with every gate
+  rule re-checked on the node (ADR-0033). Remote paths (Tailscale, cloud relay) are
+  read-only unless the install-level override `OSTLER_ALLOW_REMOTE_CONTROL` is set; it is
+  off by default and can never be set remotely.
+- **An "accept" inside an AI client never counts** as a confirmation or approval.
+- **VIN and identity data are never recorded by default**
+  ([ADR-0036](decisions/adr-0036-vin-and-identity-data-in-recordings.md)). Recording them
+  is an opt-in for security decoding work; even then they never leave the device (never
+  uploaded, shared, contributed, put in fixtures or committed).
 - **Raw car captures (`logs/`, `captures/`) are never committed:** they may contain VIN
   or EKA data.
 
 ### Code and tests
-- **Zero runtime dependencies above pyserial** for the Python package. The React/TS UI is
-  built ahead of time and shipped as static files (ADR-0004), so a Pi install stays
-  Node-free.
+- **Core Python stays stdlib + pyserial**
+  ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). Optional extras are
+  `[passkeys]`, `[mcp]` and `[can]`; the native C decoder loads through stdlib `ctypes`,
+  with the Python reference decoder as the fallback. A new runtime dependency or language
+  still needs an ADR. The React/TS UI is built ahead of time and shipped as static files
+  (ADR-0004), so a Pi install stays Node-free.
 - **Tests run without hardware** against `tests/fakes.py::FakeKLineEcu`. Platform tests run
   against `tests/fake_pack.py`; tests that need the Discovery 2 pack are marked
   `needs_pack`, and CI installs the pack so they never skip there.
+- **Shared test vectors** (bytes in → VSS out, plus init and gate cases), seeded from the
+  golden tests, run in CI against both the C and the Python decoder (ADR-0032).
 - **Prefer open standards** ([ADR-0017](decisions/adr-0017-open-standards-first.md)); the
   canonical signal namespace is **COVESA VSS**
   ([ADR-0016](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md)).
@@ -101,3 +136,13 @@ summary: >
   `needs_pack` test rule added.
 - 2026-10-06 — Added the open-standards rule (ADR-0017) and COVESA VSS as the canonical
   signal namespace (ADR-0016).
+- 2026-10-06 — v1.5, node/brain split and safety amendments (ADR-0032, ADR-0033,
+  ADR-0035, ADR-0036): the brain never touches the car; node firmware and the C decoder
+  never depend on Python; packs reach the C decoder only as JSON and the signal store
+  stays the single source of truth (no generated header); K-line is serialized on the node
+  in production (server path is lab/dev); the KKL path is the dev path; new safety rules
+  (node transmit gate is the only path, alarm paths independent of brain and internet,
+  clear-codes rules, local-only phone approval with the `OSTLER_ALLOW_REMOTE_CONTROL`
+  override, AI-client accepts never count, VIN/identity data off by default and never
+  leaving the device); the dependency rule restated with optional extras and the ctypes
+  decoder; shared C/Python test vectors in CI.

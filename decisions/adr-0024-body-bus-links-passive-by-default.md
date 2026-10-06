@@ -2,7 +2,7 @@
 title: "ADR-0024 — Body-bus links (BMW I/K-Bus): passive by default"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/muki01/bmw_ibus_kbus.md, references/research/muki01/README.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0024 — Body-bus links (BMW I/K-Bus): passive by default
+
+> **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (alarm notify-only line), 2026-10-06:** alarm outputs may come later through an I/O or relay module, each with its own ADR, never on the guardian.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06; proposal (iii) of the

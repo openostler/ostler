@@ -2,7 +2,7 @@
 title: "ADR-0020 — CAN links: listen-only by default"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/canbus_headunit.md, references/research/hardware.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0002-layered-stdlib-core.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0020 — CAN links: listen-only by default
+
+> **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§2, §8), 2026-10-06:** the link order and the gate location change: the node's gate is the only transmit path (the brain or phone mint grants, the node verifies them) and SocketCAN/slcan on the Pi become lab and dev links; listen-only by default and the allowlist rule stand.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the CAN and head-unit research)

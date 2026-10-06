@@ -2,7 +2,7 @@
 title: "10BASE-T1S for the module bus — parts, drivers, wake, power and cost"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/hardware.md, references/research/canbus_headunit.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md]
 summary: >
@@ -10,6 +10,10 @@ summary: >
 ---
 
 # 10BASE-T1S for the module bus
+
+> **Update (2026-10-06, ADR-0032):** the PLCA coordinator is the **Ostler node** (the
+> always-on ESP32 diagnostic node that replaces the base pack's "buddy"; the guardian is a
+> node hardware variant). Below, "node" without "Ostler" still means any T1S station.
 
 Research for [ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md); bench plan in
 [t1s_bench_plan.md](../t1s_bench_plan.md). Prices were checked live in **October 2026** and
@@ -152,7 +156,7 @@ standby-capable part (SN65HVD230 Rs pin, TJA1042, TJA1145) is needed
 ([hardware.md](hardware.md)). **Answer: T1S wake exists in silicon and in an OA spec, but it
 is unproven in software, all-or-nothing, and needs a careful power design; CAN wake is
 proven and selective.** Until a bench proves T1S wake, µA nodes stay on CAN, or use a
-**separate wake line** (one shared open-drain wire, pulled by any node or the guardian).
+**separate wake line** (one shared open-drain wire, pulled by any module or the Ostler node).
 
 ## 7. Power over the pair, EMC
 
@@ -189,7 +193,7 @@ gateway between the module bus and the computer tier.
    pin the Pi kernel; keep the overlay and module build in our repo.
 2. **No TC10 in software; no selective wake.** Mitigation: CAN or a wake wire for µA nodes.
 3. **Coordinator is a single point.** If node 0 sleeps or dies, followers fall back (U).
-   Mitigation: the always-powered node is coordinator; test coordinator loss.
+   Mitigation: the always-powered Ostler node (ADR-0032) is coordinator; test coordinator loss.
 4. **Single source per footprint.** Vendors are not pin-compatible, but the OA TC6 SPI
    protocol is shared, so a second source costs a layout, not new software.
 5. **EMC in a car** with unshielded multidrop and our own harness: CMC choice, ground
@@ -202,8 +206,9 @@ gateway between the module bus and the computer tier.
 - **Adopt 10BASE-T1S with PLCA for our own module bus** when we build hardware, on the
   **LAN8651** (SPI MAC-PHY) for both the Pi and ESP32-S3 nodes; LAN867x only where an MCU
   has an EMAC. Keep NCN26010/DP83TD555J/ADIN1140 as second sources (same OA TC6 protocol).
-- **Coordinator = the guardian** (always powered) or the Pi when it is the only awake node;
-  `node-cnt` set from the module inventory.
+- **Coordinator = the Ostler node** (the always-powered ESP32 diagnostic node, ADR-0032;
+  this note first said the guardian); `node-cnt` set from the module inventory. Open: which
+  device coordinates when a guardian variant sits alongside the node.
 - **Keep CAN** as the dev-kit/fallback transport and for **µA wake nodes** until a bench
   shows T1S sleep/wake end to end. Use a **separate wake wire** in the harness either way.
 - **Never Wi-Fi for alarm-critical links.**

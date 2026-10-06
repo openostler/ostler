@@ -241,7 +241,7 @@ HTML/PDF and JSON through the OS share sheet; uploads are opt-in.
 
 Use **five tiers** on the existing safety classes (`read | actuator | service | gated`) and
 apply them identically on every path. That includes the UI, MQTT, HA and schedules, and
-remote paths stay read-only as in the platform spec.
+remote paths stay read-only by default (ADR-0033 §6: phone approval over local links only; install override for developers).
 
 | Tier | Examples | Gate |
 |---|---|---|

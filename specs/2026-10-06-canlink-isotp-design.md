@@ -2,18 +2,19 @@
 title: "CanLink, passive bitrate detection and ISO-TP — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/canbus_headunit.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/README.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Approved by the owner on 2026-10-06. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe per rate on a silent bus, 500k then 250k automatically; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (our own pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN; can-isotp only as a dev-time test reference, superseding that detail of ADR-0020) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k).
+  Approved by the owner on 2026-10-06. The CAN path of the comms core: a frame-level CanLink beside the byte Transport (ADR-0020) with SocketCAN on stdlib AF_CAN first, then slcan (serial or TCP, for the WiCAN Pro) and GVRET, and python-can only as an optional desktop extra. Links open listen-only. Passive bitrate detection follows ADR-0023 (500k then 250k, 20 clean frames, then a single 01 00; one Parked-only one-shot probe per rate on a silent bus, 500k then 250k automatically; a pack-declared rate skips detection) and send() raises until the rate is confirmed. 11-bit and 29-bit OBD addressing. An IsoTpChannel (our own pure Python everywhere, kernel CAN_ISOTP as an option on SocketCAN; can-isotp only as a dev-time test reference, superseding that detail of ADR-0020) with SF/FF/CF/FC, STmin, block size and ISO 15765-4 timeouts, and a mux that collects one reply per ECU. A TxGate (pack allowlist + Parked + server grant beyond Tier 0 reads), LoggingCanLink with VIN scrub, a FakeCanBus for tests, and hardware notes (CarPiHAT MCP2515 limits; gs_usb or MCP2518FD for 500k). Amended for the node/brain direction (ADR-0032, ADR-0034): this Python CanLink and TxGate are the lab/reference; production CAN I/O is the node's TWAI in C and the production gate is the node's C TxGate, the only path to the car, verifying grants minted by the brain or a paired phone; SocketCAN, slcan and python-can on the Pi are lab/dev paths.
 ---
 
 # CanLink, passive bitrate detection and ISO-TP — design
 
 **Status:** approved by the owner on 2026-10-06; the answers are in
 [§14](#14-decisions-2026-10-06). The questions the owner did not take up stay open and
-block nothing before bench work.
+block nothing before bench work. Amended on 2026-10-06 (v0.3) for the node/brain
+direction; see [§7.1](#71-production-the-nodes-twai-and-c-txgate).
 
 ## Context
 
@@ -216,6 +217,31 @@ states` (default `["parked"]`)`}`. `TxGrant` is a plain core dataclass (`action,
 expires, nonce`) so the web layer can mint it without core importing `web`. Every refusal
 is logged with its reason; every permitted non-Tier-0 frame is logged with the action.
 
+### 7.1 Production: the node's TWAI and C TxGate
+
+Amendment, 2026-10-06 ([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md),
+[ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md),
+[ADR-0034](../decisions/adr-0034-repo-boundaries.md)). This spec is still built as
+approved, in Python, and it becomes the **lab/reference** implementation:
+
+- **Production CAN I/O is the node's TWAI controller, in C.** The node opens it
+  listen-only, runs the same ADR-0023 detection and the same ISO-TP rules, and publishes
+  decoded VSS messages; the brain never touches the car bus.
+- **The production gate is the node's C `TxGate`, the only path to the car.** It applies
+  the same rules as above (rate, Tier 0 exception, allowlist + Parked + grant, the
+  "never" list) and re-reads the driving state on the node at send time.
+- **Grants are minted by the brain or a paired phone and verified by the node.** A
+  `TxGrant` becomes a signed, short-lived, single-use token for one action and tier; the
+  node checks the signature, the expiry, the nonce and its own state before any frame
+  leaves. Grants are minted only over local links; a remote path mints none unless the
+  install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is set (ADR-0033).
+- **SocketCAN, slcan and python-can on the Pi are lab/dev paths** (bench work, decoding,
+  sniffing and the reference tests), not the production route to the car.
+- **Shared test vectors** (frames in, results out, plus the gate cases T4, T5, T8 and
+  T17) are seeded from §11 and run in CI against both the C build and this Python
+  reference.
+- The TWAI node firmware is tracked in `ostler-firmware` (ADR-0034), not in this repo.
+
 ## 8. `LoggingCanLink` and scrub
 
 Wraps any `CanLink` and keeps `LoggingTransport`'s discipline (line-buffered, fsync every
@@ -294,7 +320,7 @@ of git (CONSTITUTION).
 
 CAN-FD frames and ISO-TP FD; J1939; `ObdRequestLink` for ELM/STN; `MqttCanLink`; J2534;
 UDS services beyond Tier 0 reads; extended and mixed ISO-TP addressing; the TWAI firmware
-node; netlink without `ip`; any write, routine or security service (Tier 4 needs an ADR).
+node (tracked in `ostler-firmware`, ADR-0034; see §7.1); netlink without `ip`; any write, routine or security service (Tier 4 needs an ADR).
 
 ## 14. Decisions (2026-10-06)
 
@@ -319,3 +345,9 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
 - 2026-10-06 — v0.2: approved by the owner. Our own ISO-TP, can-isotp as a dev-only test
   reference (supersedes that ADR-0020 detail; T16); silent-bus 500k → 250k automatic and
   Parked only (T17); questions 2–4 stay open.
+- 2026-10-06 — v0.3: amendment for the node/brain direction (stays approved; §7.1). The
+  Python `CanLink` and `TxGate` are the lab/reference; production CAN I/O is the node's
+  TWAI in C and the production gate is the node's C `TxGate`, the only path to the car;
+  grants are minted by the brain or a paired phone and verified by the node; SocketCAN,
+  slcan and python-can on the Pi are lab/dev paths; the TWAI node is tracked in
+  `ostler-firmware` (ADR-0034).

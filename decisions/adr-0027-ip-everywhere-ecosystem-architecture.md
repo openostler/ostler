@@ -2,7 +2,7 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -10,6 +10,9 @@ summary: >
 ---
 
 # ADR-0027 — IP everywhere: the ecosystem architecture
+
+> **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §5), 2026-10-06:** the Amendments' "Base and guardian" entry (node replaces the buddy; the guardian is a node variant) and §9's "one server gate" wording for car-touching actions (that gate is on the node).
+> **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (§6–§7), 2026-10-06:** the "notify-only alarm" line and "Tier ≥ 2 not reachable from any remote path" (phone approval over local links; install override).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -244,3 +247,7 @@ above are marked where they changed.
   never the only option; Home Assistant Cloud through Home Assistant. Every remote path
   passes the same server gate.
 - **Matter** (§12). A bridge is a long-term goal; modules still do not implement Matter.
+- **Node and brain (later, 2026-10-06).** The "Base and guardian" entry above and §9's
+  "one server gate" for car-touching actions are superseded in part by
+  [ADR-0032](adr-0032-one-node-optional-brain.md): the ESP32 node replaces the buddy and
+  holds the only transmit gate; the guardian is a node variant.

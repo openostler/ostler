@@ -292,7 +292,7 @@ Events are values with a timestamp in the snapshot; the store marks them `x-ostl
 
 - **Alarm (Phase 2, read-only):** the guardian keys on **metrics, not the pack**: a door,
   boot or bonnet opening, `KeyFobEvent = UNLOCK` without our disarm, `IsKeyPresent`,
-  `LowVoltageSystemState` leaving `OFF`, and the bus-wake event. Notify-only (ADR-0024).
+  `LowVoltageSystemState` leaving `OFF`, and the bus-wake event. Triggers are read-only; alarm outputs only through a future I/O module (ADR-0033).
 - **Steering-wheel buttons (later, U2):** `SteeringWheelButton` events become Drive-mode
   input (next card, mute alerts), mapped in the UI by metric. Read-only.
 - **Transmit is out of scope:** no allowlist, actions, `send` call, IKE `16`/`41` request,

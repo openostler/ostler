@@ -1,23 +1,23 @@
 ---
 title: "ADR-0030 — AI-native access: an MCP server over the API and a pack-author skill"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-06
-depends_on: [specs/2026-10-06-mcp-server-design.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-api-consistency-design.md]
+depends_on: [specs/2026-10-06-mcp-server-design.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-api-consistency-design.md]
 summary: >
-  Ostler becomes AI-native through open standards. An MCP server (Model Context Protocol, 2026-07-28 with 2025-11-25 fallback) runs as a separate integration process over the local HTTP API and capability manifest, duplicating nothing car-specific; it ships as the optional extra openostler[mcp] on the official MIT Python SDK, so the core stays stdlib plus pyserial. AI clients pass the same server gate as people: Tier 0 reads open; Tier 1 only through a pending action a human approves on a trusted Ostler screen; Tiers 2–3 handed to the car's screen, Parked; Tier 4 has no tool. Read-only while Moving, VIN never exposed, location only with scope and toggles, owner-granted revocable tokens (ADR-0029), local transports only (stdio, then LAN Streamable HTTP), every call audited. A repo Agent Skill, skill/pack-author, scaffolds packs, runs the decode workflow to candidate-only results and enforces the hard rules before a PR.
+  Accepted by the owner on 2026-10-06. Ostler becomes AI-native through open standards. An MCP server (Model Context Protocol, 2026-07-28 with 2025-11-25 fallback) runs as a separate integration process over the local HTTP API and capability manifest, duplicating nothing car-specific; it ships as the optional extra openostler[mcp] on the official MIT Python SDK, so the core stays stdlib plus pyserial. AI clients pass the same gates as people: Tier 0 reads open; Tier 1 only through a pending action approved on a trusted Ostler screen by a user whose role grants Maintenance; Tiers 2–3 handed to the car's screen or a paired phone on a local link (ADR-0033), Parked; an accept inside an AI client never counts; Tier 4 has no tool. Read-only while Moving, VIN never exposed, location only with scope and toggles, owner-granted revocable tokens (ADR-0029), local transports only (stdio, then LAN Streamable HTTP), every call audited. A repo Agent Skill, skill/pack-author, scaffolds packs, runs the decode workflow to candidate-only results and enforces the hard rules before a PR.
 ---
 
 # ADR-0030 — AI-native access: an MCP server over the API and a pack-author skill
 
 - **Date:** 2026-10-06
-- **Status:** proposed (owner direction, 2026-10-06: "make it AI native, so MCP server,
+- **Status:** accepted (owner direction, 2026-10-06: "make it AI native, so MCP server,
   connectors etc, so AI [assistants] can actually diagnose the car, do things, gain context;
   add a skill in the repo for when people want to add reference packs or do more testing for
-  finding unknown bits", and the outline the owner endorsed). It becomes accepted when the
-  owner approves the [MCP server spec](../specs/2026-10-06-mcp-server-design.md) v0.1, which holds the detail and
-  the open questions.
+  finding unknown bits", and the outline the owner endorsed). It approves the [MCP server spec](../specs/2026-10-06-mcp-server-design.md)
+  v0.2, which holds the detail. Amended in place on acceptance (see
+  [Amendments](#amendments-2026-10-06-owner-answers)).
 
 ## Context
 
@@ -37,8 +37,9 @@ summary: >
   handling. They confirm the read-only default; none has a human-approval path or K-line.
 - [ADR-0002](adr-0002-layered-stdlib-core.md) keeps the runtime to stdlib plus pyserial and
   needs an ADR for a new runtime dependency; GOALS needs one for a new outbound path.
-- Accounts and tokens are [ADR-0029](adr-0029-accounts-multi-vehicle-sharing-and-social.md)
-  (proposed in parallel); this ADR consumes its tokens and roles.
+- Accounts and tokens are [ADR-0029](adr-0029-accounts-multi-vehicle-sharing-and-social.md);
+  roles, categories and phone approval are
+  [ADR-0033](adr-0033-action-categories-and-approvals.md). This ADR consumes them.
 
 ## Decision drivers
 
@@ -54,19 +55,23 @@ summary: >
    process that talks to the local HTTP API with a token. It is never in the server process
    and imports no core comms module and no pack. Tools and resources are generated from
    `api/openapi.yaml` and the capability manifest; resources use `ostler://vehicle/<vid>/…`.
-2. **Packaging.** The optional extra `openostler[mcp]` uses the official Python MCP SDK (MIT).
+2. **Packaging.** The optional extra `openostler[mcp]` uses the official Python MCP SDK (MIT),
+   confirmed by the owner.
    This ADR is the one ADR-0002 asks for, and it covers this extra only: the core install, the
    server and the Pi image keep stdlib plus pyserial. Tool definitions stay data, so a stdlib
    server can replace the SDK without a contract change.
 3. **Same gates as a person.** The server enforces the tiers, not the MCP layer:
    - **Tier 0** reads are open to a token with the read scope, in every driving state, except
      tools that switch modules (scan), which are refused while Moving.
-   - **Tier 1** (clear faults) runs only as a **pending action** that a human approves on a
-     trusted Ostler screen signed in as the owner, Parked, re-checked at execution, logged with
-     before/after values.
-   - **Tiers 2–3** are handed to a trusted in-car Ostler screen (head unit or display; whether
-     the owner's phone also counts is open in the spec), Parked, or Idling where the action
-     declares `engine_running_ok`; the human runs the test or wizard there, with Stop.
+   - **Tier 1** (clear faults, the Maintenance category) runs only as a **pending action**
+     that a human approves on a trusted Ostler screen signed in as a user **whose role grants
+     Maintenance**, Parked or Idling (ADR-0033 §5, with its automatic snapshot), re-checked at
+     execution, logged with before/after values.
+   - **Tiers 2–3** are handed to a trusted in-car Ostler screen (head unit or display) or a
+     **paired phone on a local link** of a user whose role grants the category
+     ([ADR-0033](adr-0033-action-categories-and-approvals.md) §6), Parked, or Idling where the
+     action declares `engine_running_ok`; the human runs the test or wizard there, with Stop.
+     Remote approval needs the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override.
    - **Tier 4** has no tool, no scope and no pending-action type. ECU writes, coding and
      security access stay disabled until their own ADRs exist.
    - **While Moving** an MCP client is read-only. MCP elicitation answered inside a client never
@@ -95,8 +100,9 @@ summary: >
 - Layering tests: nothing in core or `web` imports `openostler.mcp`; it imports no pack.
 - A catalog test: every MCP tool maps to a documented API operation with a tier, scope and
   states, and none targets Tier 4 or a raw-frame route.
-- Server tests on the fake pack: no Tier 1+ effect without a trusted-screen approval; client
-  elicitation never executes; refusals while Moving or with unknown speed; expiry and
+- Server tests on the fake pack: no Tier 1+ effect without a trusted-screen approval by a user
+  whose role grants the category; a paired phone's Tier 2–3 approval is honoured on a local
+  link and refused remotely without the override; client elicitation never executes; refusals while Moving or with unknown speed; expiry and
   revocation cancel pending actions.
 - A VIN-pattern test over every MCP output, and a location test with the scope and toggle off.
 - `check_pack.py` fails on seeded hard-rule violations.
@@ -125,3 +131,16 @@ summary: >
   ADR-0022 and ADR-0024; decoding stays read-only.
 - **A bespoke AI API or plugin format.** Rejected: ADR-0017; MCP and Agent Skills are open.
 - **A cloud connector first.** Rejected: local-first; a new outbound path needs its own ADR.
+
+## Amendments (2026-10-06, owner answers)
+
+Recorded on acceptance; the statements above already read this way.
+
+- **SDK:** the official Python MCP SDK as the optional extra `openostler[mcp]` is confirmed
+  (spec §14 Q1).
+- **Tier 1 approver:** a signed-in user whose role grants the Maintenance category
+  ([ADR-0033](adr-0033-action-categories-and-approvals.md)), not only the owner.
+- **Phone approval:** a paired phone may approve Tier 2–3 over local links, per ADR-0033 §6
+  (spec §14 Q2). Remote approval only with the install-level override.
+- **Unchanged:** an accept or elicitation answered inside an AI client never counts as
+  confirmation.

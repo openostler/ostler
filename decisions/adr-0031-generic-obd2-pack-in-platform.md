@@ -2,7 +2,7 @@
 title: "ADR-0031 — generic_obd2 pack ships in-platform under packs/"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0031 — generic_obd2 pack ships in-platform under packs/
+
+> **Amended 2026-10-06 ([ADR-0034](adr-0034-repo-boundaries.md), [ADR-0035](adr-0035-languages-by-tier.md)):** packs are portable JSON for the C decoder; `generic_obd2`'s J1979 decode ports to C later.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06; Q10 of the
@@ -86,3 +88,17 @@ Discovery 2 pack keeps `discovery2-diag` / `d2diag`.
   it. It stays the exit if the cadence diverges.
 - **Bring back an unconditional built-in fallback.** Rejected: ADR-0015 removed it because
   it imported a pack by name.
+
+## Amendments (2026-10-06)
+
+Amended by [ADR-0034](adr-0034-repo-boundaries.md) (repo boundaries) and
+[ADR-0035](adr-0035-languages-by-tier.md) (languages by tier). Where `generic_obd2`
+lives and how the loader picks it stand.
+1. **Packs are portable JSON.** `generic_obd2`'s data (PIDs, metrics, DTC text, profiles)
+   is JSON that the shared C decoder reads on the node as well as the Python reference on
+   the brain; Python in the pack is lab-only.
+2. **J1979 decode ports to C later.** The J1979 service layer keeps being built in Python
+   per its approved spec; its decode ports to the C decoder in `ostler-firmware` once it is
+   stable, checked by shared test vectors.
+3. **The exit stays.** If the pack's cadence diverges, it still moves to its own
+   `ostler-pack-generic-obd2` repo under ADR-0034's split rule.

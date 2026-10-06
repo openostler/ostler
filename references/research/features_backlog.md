@@ -2,11 +2,11 @@
 title: "Feature backlog from the research — tagged core / add-on / moonshot"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/platform.md, references/research/landscape.md]
 summary: >
-  Ideas the research surfaced, each tagged core / add-on / moonshot with the open-source project to build on: TPMS via rtl_433, Meshtastic convoy tracking, GoPro telemetry sync, dashcam ingest, log-format import/export, OVMS/OwnTracks interop, CAN intrusion detection, camera streaming, lap timing, and (from the muki01 audits, v1.1) K-line profiles and auto-detect, a shared J1979 layer, passive CAN bitrate detection, screen-driven polling, BMW I/K-Bus and a BMW E-series pack. A parking lot, not a commitment — each needs a spec.
+  Ideas the research surfaced, each tagged core / add-on / moonshot with the open-source project to build on: TPMS via rtl_433, Meshtastic convoy tracking, GoPro telemetry sync, dashcam ingest, log-format import/export, OVMS/OwnTracks interop, CAN intrusion detection, camera streaming, lap timing, and (from the muki01 audits, v1.1) K-line profiles and auto-detect, a shared J1979 layer, passive CAN bitrate detection, screen-driven polling, BMW I/K-Bus and a BMW E-series pack. Updated 2026-10-06 for ADR-0032/0033: the notifier is owned by the node, the phone↔node link (Web Bluetooth/BLE) is core, relay boxes become our own relay boards with an ADR per switching function. A parking lot, not a commitment — each needs a spec.
 ---
 
 # Feature backlog from the research
@@ -14,6 +14,12 @@ summary: >
 This is a parking lot, not a commitment. Each item needs a spec (and an ADR if it adds an
 outbound data path, a tab or a dependency) before any code. The platform guardrails apply
 ([platform.md](platform.md) §6).
+
+> **Update (2026-10-06, ADR-0032/0033):** the always-on ESP32 is the **node** (the
+> guardian is a node hardware variant) and the Pi is the optional **brain**. The
+> phone↔node link is core, so #20 moves from moonshot to core. Alarm outputs and relays
+> come through our own I/O / relay boards later, with an ADR per car-switching function;
+> the "notify-only" alarm rule is dropped.
 
 **Tags:**
 
@@ -28,7 +34,7 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 1 | **Speak OVMS v3 MQTT topics** | add-on | Topic layout reimplemented from [ovms.md](ovms.md) | The ovms-home-assistant integration and OVMS Connect then work with our node. Cheap and high value. |
 | 2 | **OwnTracks location JSON** | add-on | OwnTracks protocol | Dawarich, Reitti and HA's OwnTracks integration then work. Location is opt-in (ADR-0009). |
 | 3 | **Traccar OsmAnd upload with backfill** | add-on | Traccar (Apache) | Replays the logbook when coverage returns |
-| 4 | **ntfy / Telegram / SMS notifier ladder** | add-on | ntfy, Telegram Bot API, modem AT commands | Owned by the guardian |
+| 4 | **ntfy / Telegram / SMS notifier ladder** | add-on | ntfy, Telegram Bot API, modem AT commands | Owned by the node (any variant), so it works with the brain off and no cloud |
 | 5 | **TPMS** (pressure and temperature per wheel, slow-leak flag) | add-on | rtl_433 (Pi + RTL-SDR) / rtl_433_ESP (CC1101) (GPL, ✓ since ADR-0012) | Sensor IDs also give a "known vehicle" fingerprint. Feeds automatic flags. |
 | 6 | **Meshtastic convoy tracking** off-grid | add-on | Meshtastic firmware / python (GPL-3 ✓) | Positions without cell coverage, relayed to HA through OwnTracks once back online. Good for overlanding. |
 | 7 | **Camera streams in the PWA** | add-on | go2rtc / MediaMTX (MIT), ESP32-CAM_MJPEG2SD (AGPL ✓) | Wi-Fi cameras; alarm-triggered clips |
@@ -44,10 +50,10 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 17 | **Rover 14CUX / MEMS packs** | add-on | libcomm14cux, librosco (GPL-3 ✓) | Classic Range Rover and Rover V8 owners |
 | 18 | **Discovery 3/4 collaboration** | core | jlr-scanner (AGPL ✓) | Shared vehicle packs rather than a rewrite |
 | 19 | **Discover undocumented LR ECUs** | core (developer) | CaringCaribou (GPL-3 ✓) | Scans which services and IDs an ECU answers, read-only |
-| 20 | **Web Bluetooth path to the PWA** | moonshot | esp32-isotp-ble-bridge (MIT), niro-spy pattern | Phone talks to an ESP32 bridge directly, with no Pi |
+| 20 | **Phone ↔ node link** (BLE through the native wrapper, Web Bluetooth where available, or the node's Wi-Fi AP) | core | esp32-isotp-ble-bridge (MIT), niro-spy pattern; Capacitor wrapper | The phone talks to the node directly, with no brain: the Ostler Lite app path (ADR-0032) |
 | 21 | **SignalK-style data model** | core (design) | SignalK (Apache) | Its path/metadata scheme is a model for our metric namespace |
 | 22 | **Head-unit CAN-box emulator module** | add-on | esp32-canbox-nissan (MIT), canbox (⚠️ reference only) | Old car → new head unit (the "CAN/OBD emulator" module) |
-| 23 | **Relay-box module** on the private CAN bus | add-on | Waveshare 8DI-8RO-C, ESPHome | Outputs are gated like any other action |
+| 23 | **I/O / relay boards** (off-the-shelf now, our own later) on the module bus | add-on | Waveshare 8DI-8RO-C; open-source driver libraries (not ESPHome itself) | Each output declares category and tier; an ADR per car-switching function before it ships (ADR-0033) |
 | 24 | **ODX import** | moonshot | odxtools (MIT), OpenSOVD (Apache) | Only from files the user owns; never shipped (DMCA lesson) |
 | 25 | **Cloud** (hosted sync, fleet, remote access) | moonshot | — | Funding route (ADR-0012). Fully AGPL or open-core: still an open question. |
 | 26 | **Display as thin client**: the PWA in kiosk mode on any tablet, phone or head-unit browser | core | Existing PWA | The owner's direction (direction spec v0.2). No CAN-box work needed. |
@@ -58,9 +64,9 @@ outbound data path, a tab or a dependency) before any code. The platform guardra
 | 31 | **J1979 service layer shared by K-line and CAN** (modes 01–0A, multi-frame, multi-ECU, support bitmaps) | core | SAE J1979 / OBDb SAEJ1979 (CC BY-SA); muki01 bugs as test fixtures | The engine of #16; test-first from the muki01 defect list |
 | 32 | **Passive CAN bitrate detection and ISO-TP** before the first request | core | ISO 15765-4; can-isotp (MIT) | Amends ADR-0020: listen first, then one `01 00`; a silent-bus probe is Parked only |
 | 33 | **Poll only what is on screen** (visible-signals subscription) | core | muki01 reader page-driven polling (idea) | U3; K-line bandwidth follows the screen |
-| 34 | **Freeze frame, readiness and coverage in Diagnose** (snapshot in fault detail, Home readiness card, support counts) | core | J1979 Modes 01/02/09 | U3/U4; masked VIN only |
+| 34 | **Freeze frame, readiness and coverage in Diagnose** (snapshot in fault detail, Home readiness card, support counts) | core | J1979 Modes 01/02/09 | U3/U4; masked VIN only; identity data never recorded by default (ADR-0036) |
 | 35 | **Manufacturer K-line protocols**: KW1281, BMW DS2, Opel KW82, Honda | add-on | Facts from muki01 KLine library (non-commercial headers); kw1281test (MIT) | U7, one per pack, each with a fixture |
 | 36 | **BMW I/K-Bus framer and capture** (passive) | add-on | muki01 BMW_IBus_KBus (facts only); node-bmw-client (MIT) | Starts in the BMW pack; becomes platform only when a second body-bus pack (L322) needs it |
-| 37 | **BMW E-series pack**, read-only first (doors, lamps, odometer, speed, temperatures, key fob, ignition) | add-on | node-bmw-client (MIT), muki01 frames re-verified on a car | Feeds alarm triggers (notify-only). Body-bus transmit (lights, locks, automations, CDC emulation) waits for its own ADR |
+| 37 | **BMW E-series pack**, read-only first (doors, lamps, odometer, speed, temperatures, key fob, ignition) | add-on | node-bmw-client (MIT), muki01 frames re-verified on a car | Feeds alarm triggers. Body-bus transmit (lights, locks, automations, CDC emulation) waits for its own ADR |
 | 38 | **Performance timing** (0–100 from logged speed, armed Parked) | add-on | muki01 Diagnostic UI (idea) | Computed after the run, never a stopwatch while Moving |
-| 39 | **Device settings template and signed OTA** for our ESP32 add-ons | core | muki01 Diagnostic UI (MIT; anti-patterns avoided) | U5, after the threat model; no default AP password |
+| 39 | **Device settings template and signed OTA** for the node, its variants and our ESP32 add-ons | core | muki01 Diagnostic UI (MIT; anti-patterns avoided) | U5, after the threat model; no default AP password |

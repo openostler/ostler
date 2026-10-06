@@ -254,7 +254,7 @@ Sources: [messages](https://docs.openvehicles.com/en/latest/protocol_v2/messages
    - extend it so a **pack-supplied layout (JSON) can compose any page** from these widgets. That is Mark Webb-Johnson's 2020 "templates per vehicle type and per screen type", which OVMS never shipped.
 5. **Use hook points on generic pages.** A pack or device can inject a panel into Drive or Home at named slots, as with `/dashboard:body.pre`, instead of forking the page. Document the slot list, and avoid OVMS's "contact us if you miss a hook" by giving every generic page header, body and footer slots.
 6. **Keep a notification log that doubles as a console.** The 200-entry chat-style list mixing alerts, commands and results, with tap-to-resend, is shared by Android and iOS, and OVMS Connect ships a console too. Fit for us:
-   - put the alarm (notify-only) events in this log;
+   - put the alarm events in this log;
    - keep raw commands behind Experimental/admin.
 7. **Store per-vehicle UI preferences**, keyed by vehicle ID: hidden tabs, quick actions, colours. Ostler will hold more than one vehicle pack and profile.
 8. **Make quick actions a user-picked subset of catalog actions**, plus a "custom command" escape hatch for admin.

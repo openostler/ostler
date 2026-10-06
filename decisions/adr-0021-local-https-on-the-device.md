@@ -2,7 +2,7 @@
 title: "ADR-0021 — Local HTTPS on the device"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, docs/https_on_the_pi.md, references/research/standards.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0021 — Local HTTPS on the device
+
+> **Amended by [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** "the Pi" here means the brain; Ostler Lite has no Pi, so trust there comes from phone pairing, with no Pi CA (see Amendments).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06: "yes" to local HTTPS on the Pi)
@@ -59,3 +61,17 @@ summary: >
 
 - **Localhost-only PWA features.** Rejected: phones are a main display.
 - **A public certificate for every device.** Rejected: needs a domain and internet per car.
+
+## Amendments (2026-10-06)
+
+Recorded with the node/brain direction
+([ADR-0032](adr-0032-one-node-optional-brain.md)).
+
+- **"The Pi" is the brain.** Where a brain is fitted, it serves the local HTTPS described
+  above, and the trust setup still needs its spec.
+- **Ostler Lite has no Pi.** With a node alone, trust comes from **phone pairing**: pairing
+  keys held on the phone, with no per-device CA on a Pi.
+- **The phone app and the node trust each other through pairing keys.** The app ships as a
+  PWA in a native wrapper (Capacitor), which reaches the node over BLE or the node's Wi-Fi
+  AP; that link is authenticated by the pairing keys exchanged when the phone is paired,
+  never by a shared default certificate or password.

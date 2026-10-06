@@ -2,18 +2,20 @@
 title: "K-line profiles and detection — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/obd2_kline_reader.md, references/research/muki01/README.md, specs/2026-10-06-u0-seams-design.md, CONSTITUTION.md]
 summary: >
-  Approved by the owner on 2026-10-06. Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server flag, a parked confirmation and a speed veto until U2); module-scan sweeps are Parked-only too, and a detected profile is remembered per vehicle (vid) so a re-init never probes. Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7.
+  Approved by the owner on 2026-10-06. Implements ADR-0022. A frozen KLineProfile dataclass in kline/profiles.py (line format, iso9141 or kwp2000 framing, header and length modes, checksum, P1–P4, W1–W5, pre-init and abandoned-session idle, keep-alive, release, init method fast/5baud/none) with three built-ins; packs override through a new ModuleSpec.kline mapping that the future pack manifest transport block mirrors. kline.detect() tries functional fast init, then 5-baud 0x33 sent 8N1, requires the inverted address, classifies and decodes key bytes, and is refused unless Parked (an interim server flag, a parked confirmation and a speed veto until U2); module-scan sweeps are Parked-only too, and a detected profile is remembered per vehicle (vid) so a re-init never probes. Adds ISO 9141-2 framing, a poll-thread keep-alive, release and P3-min rules, a snapshot `link` object with OpenAPI and Zod updates, fakes and muki01 regression fixtures. The D2 pack's behaviour and golden test are unchanged; manufacturer protocols stay in U7. Amended for the node/brain direction (ADR-0032): the profile JSON schema is the canonical cross-language form the node's C link layer will read, the remembered profile also lives in node NVS for Lite, the ESP32 node path becomes production and KKL dev-only, and a later step ports the link layer to C with shared test vectors.
 ---
 
 # K-line profiles and detection — design
 
 **Status:** approved by the owner on 2026-10-06; the answers are in
 [Decisions](#decisions-2026-10-06). The questions the owner did not take up stay open and
-block nothing in the first step.
+block nothing in the first step. Amended on 2026-10-06 (v0.4) for the node/brain
+direction without undoing the implemented v0.3; see
+[§8.1](#81-the-node-path-adr-0032).
 
 ## Context
 
@@ -302,6 +304,33 @@ ignored; any `~address` is not accepted; no 5.5 s idle before a first init.
 2. **D2 pack** (its own repo, later): declare the §1 overrides and build sessions through
    `from_profile`; the golden test and a raw-capture replay must show identical TX bytes
    and timings. Raising `p3_min` or the abandoned rule for the D2 is a car-test item.
+3. **Port to C, later** ([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md)):
+   once the K-line facts are stable, port profiles, detection, framing and hygiene to the
+   node's portable C link layer (in `ostler-firmware`). Shared test vectors (bytes on the
+   line in, profile, key bytes and frames out, plus the init and gate cases) are seeded
+   from the golden tests and the §7 fixtures, and run in CI against both the C build and
+   this Python reference.
+
+### 8.1 The node path (ADR-0032)
+
+The implemented v0.3 stays as built; this section only places it in the node/brain
+direction.
+
+- **The schema is the cross-language contract.** `schemas/kline-profile.schema.json` is
+  the canonical form of a profile. The node's C link layer reads profiles as JSON in this
+  form (built-ins and pack overrides alike), so `KLineProfile` in Python and the C struct
+  are two readers of one schema, never two definitions.
+- **The remembered profile also lives on the node.** For Ostler Lite (a node with no
+  brain) the remembered `{profile, key_bytes, address, detected_utc}` entry per `vid` is
+  kept in the node's NVS, so a node reboot while driving re-inits without probing, as in
+  §2. With a brain present the brain's state file and the node's NVS copy hold the same
+  entry; the node's copy is the one the link layer uses.
+- **Production K-line is the ESP32 node; the KKL cable is dev-only.** The KKL/FTDI
+  `SerialTransport` path stays for the lab, bench work and the Python reference tests.
+  The node runs the same profiles, the Parked-only probing rule and the same gate, and the
+  gate on the node is the only path to the car.
+- Open question 4 (the `~address` byte over the ESP32 bridge) now belongs to the node
+  firmware's K-line driver.
 
 ## 9. Out of scope
 
@@ -343,3 +372,8 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
   decode was re-checked against the ISO 14230-2 key-word layout (2000–2031); a KB1 with
   neither HB bit set keeps the functional header, and with neither AL bit the format
   length.
+- 2026-10-06 — v0.4: amendment for the node/brain direction (ADR-0032); the implemented
+  v0.3 is unchanged. The profile JSON schema is the canonical cross-language form the
+  node's C link layer reads; the remembered profile also lives in node NVS for Lite; the
+  ESP32 node path becomes production and KKL dev-only (§8.1); a later migration step 3
+  ports the link layer to C with shared test vectors seeded from the golden tests.
