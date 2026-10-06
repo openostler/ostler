@@ -2,7 +2,7 @@
 title: "In-car and head-unit UI — industry patterns, distraction rules and gaps in our PWA (Oct 2026)"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md]
 summary: >
@@ -10,6 +10,9 @@ summary: >
 ---
 
 # In-car and head-unit UI (October 2026)
+
+> **Update (2026-10-06, ADR-0032/0033):** every setup has a node with GPS and a basic alarm,
+> so Security is always present; the landing screen follows driving state (UI spec).
 
 Scope: what the Ostler PWA must become to sit on an Android head unit in kiosk mode (then
 an Ostler launcher) while still working on phones, tablets and desktops. Brands below are
@@ -146,7 +149,7 @@ limited string length, limited list items and depth, no video, no setup).
 
 Signals already in the pack fixtures that a lockout can use (status per the protocol handoff;
 treat as candidate until proven in the car): `speed`, `wheel_speed_*`, `reverse_gear`,
-`neutral_gear`, `reverse_light`, `side_lights`. GPS speed arrives with the guardian/u-blox.
+`neutral_gear`, `reverse_light`, `side_lights`. GPS speed arrives with the node's GPS or the u-blox.
 
 ## 5. Gaps
 
@@ -170,7 +173,7 @@ treat as candidate until proven in the car): `speed`, `wheel_speed_*`, `reverse_
 ## 6. Recommendations
 
 ### 6.1 Five destinations, Drive as a mode (confirms the platform spec)
-`Home · Diagnose · Logs · Security (Map when no guardian) · More`, cap 5, matching the CarPlay
+`Home · Diagnose · Logs · Security · More` (Security is present with any node, since every node has GPS and a basic alarm; the old "Map when no guardian" fallback is gone), cap 5, matching the CarPlay
 tab ceiling [C2] and the five-step task limit [G4]. Mapping from today:
 - **Home** — zero-layer cards: vehicle visualisation, warnings, battery/charging, last trip, a big
   **Drive** button. The current Drive tiles become Drive mode.

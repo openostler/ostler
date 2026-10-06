@@ -18,7 +18,7 @@ here before implementation starts.
 - `2026-10-05-session-logbook-design.md` — always-on session recording, GPS, Logs tab with map replay, VBO/GPX/CSV export (ADR-0009).
 - `2026-10-05-replay-notes-capture-design.md` — whole-app read-only replay, notes, audio + accel recording, map v2, Decode/Label admin (ADR-0010).
 - `2026-10-06-logs-at-scale-design.md` — place names, paged/searchable logs + scrubber, editable records, live-only recording, no demo mode (ADR-0011).
-- `2026-10-06-platform-direction-design.md` — DRAFT: the open vehicle platform direction (packs, guardian hardware, MQTT/HA, alarm, IA, phases).
+- `2026-10-06-platform-direction-design.md` — DRAFT: the open vehicle platform direction, reframed on the node and optional brain (ADR-0032): packs, node firmware, MQTT/HA, alarm, app, phases.
 - `2026-10-06-phase0-vehiclepack-decoupling-design.md` — Phase 0: D2 behind a VehiclePack contract in place (ADR-0013 step 1).
 - `2026-10-06-u0-seams-design.md` — APPROVED: U0 seams: VSS 6.1 overlay and `metrics.json`, `metric` on store records, vehicle id (`vid`), JSON Schemas, OpenAPI/AsyncAPI, repo hygiene, D2 metrics.
 - `2026-10-06-api-consistency-design.md` — APPROVED: one JSON error envelope, status-code table, query strings everywhere, RFC 3339 `_utc` fields and GeoJSON traces with a one-release deprecation window.
@@ -26,8 +26,8 @@ here before implementation starts.
 - `2026-10-06-j1979-service-layer-design.md` — APPROVED: shared OBD-II (J1979) service layer for K-line and CAN; PID data from the pack's store; VIN never logged; Mode 04 as Tier 1.
 - `2026-10-06-canlink-isotp-design.md` — APPROVED (ADR-0020/0023): frame-level `CanLink` (SocketCAN, slcan/WiCAN, GVRET), passive bitrate detection, pure-Python ISO-TP, transmit grants.
 - `2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md` — APPROVED for `generic_obd2` (ADR-0024/0025/0031): fallback pack (OBDb import) in-platform; the read-only `bmw_e` I/K-Bus pack is DEFERRED until a car or bench exists.
-- `2026-10-06-accounts-sharing-design.md` — DRAFT (ADR-0029): local users, passkeys and passwords, roles, tokens, garage shares and invites, later social and integrations.
-- `2026-10-06-mcp-server-design.md` — DRAFT (ADR-0030): Ostler MCP server (resources, tools, prompts) under the tier gates, and the `skill/pack-author/` skill.
+- `2026-10-06-accounts-sharing-design.md` — APPROVED (ADR-0029/0033): local users, passkeys and passwords, roles, tokens, garage shares and invites, later social and integrations.
+- `2026-10-06-mcp-server-design.md` — APPROVED (ADR-0030/0033): Ostler MCP server (resources, tools, prompts) under the tier gates, and the `skill/pack-author/` skill.
 - `2026-10-06-ui-architecture-design.md` — APPROVED (ADR-0016, ADR-0018): head-unit-first UI for any vehicle: layout classes, status strip, five destinations, driving lockouts, garage, capability manifest and render tiers, add-on devices, safety tiers, decode pipeline.
 
 Discovery 2 specs (NanoCom capture, HEVAC control, DTC coverage, fault-screen import,

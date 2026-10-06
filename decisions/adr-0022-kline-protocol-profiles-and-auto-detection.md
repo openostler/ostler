@@ -2,7 +2,7 @@
 title: "ADR-0022 — K-line protocol profiles and auto-detection"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/muki01/README.md, references/research/muki01/obd2_kline_reader.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, CONSTITUTION.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0022 — K-line protocol profiles and auto-detection
+
+> **Amended by [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** the KKL cable path becomes dev-only; production K-line runs on the node, and the server tests also become node tests through shared vectors (see Amendments).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06; proposal (i) of the
@@ -100,3 +102,20 @@ init-timing notes; changing the default needs a car result and a new ADR.
 - **5-baud first, as the muki01 reader does.** Rejected: a 2 s init where fast init takes
   100 ms, and KWP ECUs are the common case.
 - **Auto-probe manufacturer protocols too.** Rejected: unknown frames on an unknown car.
+
+## Amendments (2026-10-06)
+
+Recorded with the node/brain direction
+([ADR-0032](adr-0032-one-node-optional-brain.md)); the profile model and the detection
+rules above stand.
+
+- **The KKL cable is dev-only.** It stays for the lab, bench work and the Python reference
+  tests.
+- **Production K-line runs on the node.** The node's portable C link layer reads the same
+  profiles (in the `schemas/kline-profile.schema.json` form), applies the same detection
+  order and the same Parked-only probing rule, and its gate is the only path to the car
+  ([K-line spec §8.1](../specs/2026-10-06-kline-profiles-detection-design.md#81-the-node-path-adr-0032)).
+- **The server tests become node tests too.** The Confirmation cases (detection order,
+  classification, the 8N1 address, Parked-only `detect()`, re-init without probing) become
+  shared test vectors, seeded from the golden tests, run in CI against both the C build and
+  the Python reference.

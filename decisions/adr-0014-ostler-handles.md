@@ -2,7 +2,7 @@
 title: "ADR-0014 — Ostler handles: openostler org and package, @ostler npm, @ostler.tech; trademark policy"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0014 — Ostler handles and the trademark policy
+
+> **Amended 2026-10-06 ([ADR-0032](adr-0032-one-node-optional-brain.md), ADR-0034):** the product family adds "Ostler Lite" and "Ostler"; "node" and "brain" are working names; the guardian is a node variant.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It amends the naming in ADR-0013.
@@ -94,3 +96,17 @@ These are owner actions.
 - ADR-0013's `ostler` import and repo names are replaced by the table above.
 - `src/d2diag/pack.py` reads `openostler.vehicle`, and `pyproject.toml` registers under it.
 - Step 2 of ADR-0013 (the repo split) waits for the `openostler` org to exist.
+
+## Amendments (2026-10-06)
+
+Amended with the owner's direction of 2026-10-06 (ADR-0032, one node with an optional
+brain; [ADR-0034](adr-0034-repo-boundaries.md), repo boundaries). The handles above stand.
+1. **Product family.** The brand split adds two tiers: **Ostler Lite** (the ESP32 node
+   alone, with the phone app or Ostler Cloud) and **Ostler** (the node plus a Pi brain).
+   Ostler Cloud stays as named.
+2. **Working names.** "Node" and "brain" are working names, not yet product names;
+   "Ostler Node" above is one of them.
+3. **The guardian is a node variant.** "Ostler Guardian" names a hardware variant of the
+   node (same firmware, built for security), not a separate product line or an add-on.
+4. **Repos.** The org also gets `ostler-pack-<x>` repos, and later `ostler-hardware` and a
+   module contract repo (ADR-0034).

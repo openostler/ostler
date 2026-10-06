@@ -2,10 +2,10 @@
 title: "Security policy"
 area: root
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 summary: >
-  How to report a vulnerability (GitHub private vulnerability reporting), what is in scope (platform, vehicle packs, device-side code, release artefacts), the 14-day acknowledgement target, supported versions (main plus the latest release), coordinated disclosure, EU CRA and UK PSTI readiness, and the hard safety lines for testing against vehicles.
+  How to report a vulnerability (GitHub private vulnerability reporting), what is in scope (platform, vehicle packs, device-side code including the node and its variants, release artefacts), the node security baseline, the 14-day acknowledgement target, supported versions (main plus the latest release), coordinated disclosure, EU CRA and UK PSTI readiness, and the hard safety lines for testing against vehicles.
 ---
 
 # Security policy
@@ -39,15 +39,24 @@ Please include:
   (including the committed build in `src/openostler/web/static/`).
 - **Vehicle packs** published by the project, starting with the Discovery 2 pack
   (`d2diag`): its decoders, menus, actions and safety gates.
-- **Device-side code**: Pi install and deploy scripts, the Docker image, and ESP32
-  firmware (for example the K-line node and the planned guardian).
+- **Device-side code**: brain (Pi) install and deploy scripts, the Docker image, and the
+  ESP32 node firmware and its hardware variants (the diagnostic node and the guardian
+  variant), including the C decoder and the node's transmit gate
+  ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
 - **Release artefacts**: the sdist and wheel, SBOMs and build provenance attached to
   releases.
 
 Particularly interesting: anything that bypasses a safety gate (an actuator test, a
-write, coding or SecurityAccess without its explicit confirmation), any write path to an
-airbag/SRS module, authentication bypass on the local server, and leaks of VIN, EKA or
-location data.
+write, coding or SecurityAccess without its explicit confirmation), any path to the car
+that does not go through the node's transmit gate, a remote path that can approve or run
+a Tier 2–3 action without the install-level override, any write path to an airbag/SRS
+module, authentication or pairing bypass on the node or the local server, and leaks of
+VIN, identity, EKA or location data.
+
+**The node security baseline** (what we build to, and what reports may test against):
+secure boot, flash encryption, signed OTA updates (firmware and packs), pairing before
+any control or data access, no default passwords, and the transmit gate on the node
+itself, so grants minted by a brain or phone are verified there.
 
 **Out of scope:** third-party services (map tile servers, OpenStreetMap Nominatim, Google
 Fonts), vulnerabilities in a vehicle's own ECUs (report those to the manufacturer), and
@@ -90,7 +99,8 @@ These are not negotiable, and the same rules bind the project
   SecurityAccess traffic to a car.
 - Prefer the hardware-free fakes and the fake pack for proofs of concept.
 - Do not access, keep or publish other people's data (VINs, locations, session logs). If
-  you come across any, stop, tell us, and delete it.
+  you come across any, stop, tell us, and delete it. Identity data you record on your own
+  car stays on the device ([ADR-0036](decisions/adr-0036-vin-and-identity-data-in-recordings.md)).
 
 Good-faith research that follows this policy is welcome; we will not pursue it.
 

@@ -2,7 +2,7 @@
 title: "CAN-bus scanners and head-unit integrations — interfaces, protocols, CAN-box emulation and in-car display paths (Oct 2026)"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/hardware.md, references/research/ui/head_unit_ui.md]
 summary: >
@@ -10,6 +10,11 @@ summary: >
 ---
 
 # CAN-bus scanners and head-unit integrations (October 2026)
+
+> **Update (2026-10-06, ADR-0032/0033):** in production the car's buses are spoken by the
+> ESP32 **node**, whose transmit gate is the only path to the car; the Pi is the optional
+> **brain**, and the Pi-side CAN interfaces below become lab/dev links. The guardian is a
+> node hardware variant, and the alarm is no longer described as notify-only.
 
 **Scope.** This extends [hardware.md](hardware.md) (the kit), [landscape.md](landscape.md) §6, §11
 and §12 (project lists), [ui/head_unit_ui.md](ui/head_unit_ui.md) (layout and distraction rules), and the
@@ -102,7 +107,7 @@ LoggingCanLink      the same JSONL capture discipline as LoggingTransport; also 
 ```
 
 - **ELM/STN is not a `CanLink`.** It is an `ObdRequestLink`. The protocol layer asks for "service + data → response" and does not see frames. can327 can promote an ELM to a degraded `SocketCanLink` [K1].
-- **MQTT is telemetry, not a link.** WiCAN's MQTT and HA paths are for when the Pi is off, through the guardian or broker, as **read-only** ingest.
+- **MQTT is telemetry, not a link.** WiCAN's MQTT and HA paths are for when the brain is off, through the node's parked broker, as **read-only** ingest.
 - **Plugin registration** follows the existing plan (`d2diag.transport` entry points, [platform.md](platform.md) §2).
 
 **Interface priority:**
@@ -176,8 +181,8 @@ angle · `0x27` amplifier · `0x30` version · `0x41` body/doors.
 
 **Goal:** any CAN-box-capable head unit shows Ostler data (speed, doors, reverse, climate, trip, radar, TPMS) on its **own native screens**, with no app on the head unit.
 
-- **Data source.** The D2 has no comfort CAN, so the input is **Ostler**, not vehicle CAN: Pi signals
-  (K-line SLABS speed, `reverse_gear`, `side_lights`), the HEVAC add-on and the guardian's opto inputs, over
+- **Data source.** The D2 has no comfort CAN, so the input is **Ostler**, not vehicle CAN: node signals
+  (K-line SLABS speed, `reverse_gear`, `side_lights`), the HEVAC add-on and the node's opto inputs, over
   the **private CAN bus** (preferred: works while the Pi boots) or Wi-Fi/MQTT. On CAN cars a pack may also
   decode comfort CAN **read-only** through a listen-only TWAI.
 - **Hardware.** ESP32-CAN-X2 ([hardware.md](hardware.md)): port 1 on the private bus, port 2 listen-only on
@@ -213,7 +218,7 @@ angle · `0x27` amplifier · `0x30` version · `0x41` body/doors.
   (AAOS) video, games, browsers. "Apps outside these categories are NOT allowed." **There is no diagnostics
   or vehicle-data category.**
 - **IoT** = "take actions on connected devices", e.g. enabling home security systems [AA2]. Arming our
-  notify-only guardian or flagging a Mark *might* qualify; that depends on review (U).
+  alarm (on the node or its guardian variant) or flagging a Mark *might* qualify; that depends on review (U).
 - **Car hardware API** [AA3] gives the app the **car's** speed, energy and mileage
   (`com.google.android.gms.permission.CAR_SPEED`, …): car → app, so useless for showing *our* data.
 - **CarPlay** [CP1][CP2]: audio, video (parked), messaging/VoIP, navigation, EV charging, fuelling, parking,
@@ -266,7 +271,7 @@ angle · `0x27` amplifier · `0x30` version · `0x41` body/doors.
 
 **Interfaces (priority):** 1 SocketCAN `CanLink` · 2 ESP32 slcan/GVRET · 3 WiCAN Pro over TCP slcan +
 read-only MQTT ingest · 4 STN/ELM `ObdRequestLink` · 5 python-can extras · 6 J2534. Listen-only on every
-vehicle bus; TX only through the pack allowlist + Parked + the server gate.
+vehicle bus; TX only through the pack allowlist + Parked + the node's transmit gate (ADR-0032; SocketCAN/slcan on the Pi become lab/dev links).
 
 **Head-unit path:**
 1. **Kiosk PWA now**, as the spec already says. Fully Kiosk or a minimal WebView wrapper, with "sleep after ACC" so it resumes.

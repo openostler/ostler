@@ -2,11 +2,11 @@
 title: "Ecosystem architecture — IP everywhere, standard discovery and a module contract"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/connectivity_uplink.md, references/research/t1s_module_bus.md, references/research/hardware.md, references/research/standards.md, references/research/platform.md, references/research/canbus_headunit.md, decisions/adr-0026-module-bus-10base-t1s.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Live research (October 2026) behind ADR-0027: Ostler as a smart-home-like automotive ecosystem with IP on every device. Network segments (10BASE-T1S for modules, standard Ethernet or PoE cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi/USB for displays) with live part and product prices; the Pi as router; dual-stack addressing; NTP from GNSS, PTP later; zero-config with mDNS/DNS-SD. A verdict per standard: MQTT 5 with HA discovery and a VSS topic tree, Matter (reach it through a bridge, never inside modules; costs), VISS/KUKSA, SOME/IP and DDS, LwM2M, SUIT/MCUboot, mTLS and MACsec. Product taxonomy (base pack = Pi plus an always-on ESP32 buddy; the guardian and others are add-ons), the module contract, and comparisons with smart-home ecosystems and zonal E/E architectures. Uplinks, the parked broker, remote access and provisioning moved to the connectivity research (ADR-0028).
+  Live research (October 2026) behind ADR-0027: Ostler as a smart-home-like automotive ecosystem with IP on every device. Network segments (10BASE-T1S for modules, standard Ethernet or PoE cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi/USB for displays) with live part and product prices; the Pi as router; dual-stack addressing; NTP from GNSS, PTP later; zero-config with mDNS/DNS-SD. A verdict per standard: MQTT 5 with HA discovery and a VSS topic tree, Matter (reach it through a bridge, never inside modules; costs), VISS/KUKSA, SOME/IP and DDS, LwM2M, SUIT/MCUboot, mTLS and MACsec. Product taxonomy (updated for ADR-0032: Ostler Lite = an always-on ESP32 node; Ostler = node plus a Pi brain; the guardian is a hidden node hardware variant; sensor nodes and others are add-ons), the module contract, and comparisons with smart-home ecosystems and zonal E/E architectures. Uplinks, the parked broker, remote access and provisioning moved to the connectivity research (ADR-0028).
 ---
 
 # Ecosystem architecture
@@ -19,13 +19,24 @@ parked broker, remote access and provisioning are in the
 live in **October 2026**, are per unit and exclude VAT unless stated. **(U)** means unverified,
 so confirm it before relying on it.
 
-**The idea (owner, 2026-10-06).** Ostler works like a smart home, but for a car. A **base
-hardware pack** interfaces with the car you already have. Its diagnostics and telemetry
-make the car's existing systems connected. **Add-on modules** (alarm/guardian, cameras,
-relay boxes, sensors, displays) then join over **standard networking**. Three limits
+> **Update (2026-10-06, ADR-0032/0033):** the "base pack" of a Pi plus an ESP32 "buddy"
+> is replaced by **one ESP32 node with an optional brain**. The node owns the car and
+> power (K-line/CAN I/O, decoding to VSS, the transmit gate, GPS, optional 4G, the parked
+> broker, brain power, PLCA coordinator); the Pi **brain** owns compute and network and
+> never touches the car. The guardian is a node **hardware variant** (hidden, no outputs).
+> Every path to the car ends at the node's transmit gate; remote paths are read-only
+> unless the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is set. The IANA name is
+> used unregistered in development and submitted at module contract v1. Stale lines below
+> are fixed; the rest is kept as researched.
+
+**The idea (owner, 2026-10-06).** Ostler works like a smart home, but for a car. A diagnostic
+**node** (optionally with a **brain**) interfaces with the car you already have. Its
+diagnostics and telemetry make the car's existing systems connected. **Add-on modules**
+(sensor nodes, cameras, I/O and relay modules, displays) then join over **standard
+networking**. Three limits
 apply:
 - "Standard networking everywhere" covers **our** ecosystem. The car's own buses (K-line,
-  CAN, I/K-Bus) are interfaced at the edge by the base pack and are never replaced
+  CAN, I/K-Bus) are interfaced at the edge by the node and are never replaced
   (ADR-0020, ADR-0022, ADR-0024).
 - Cameras cannot share a T1S segment, which carries 10 Mbit/s shared between all nodes.
 - Low-power wake over T1S is unproven, so CAN or a wake wire stays as the fallback (ADR-0026).
@@ -36,12 +47,12 @@ apply:
 
 | Segment | Physical layer | Who is on it | Why |
 |---|---|---|---|
-| **Module segment** | 10BASE-T1S, PLCA, multidrop (ADR-0026) | guardian, relay box, sensor/button nodes, HEVAC controller, gauges | one pair for up to 8+ nodes on 25 m; about $5 per node; bounded access latency ([T1S research](t1s_module_bus.md)) |
+| **Module segment** | 10BASE-T1S, PLCA, multidrop (ADR-0026) | the node and its guardian variant, I/O / relay modules, sensor/button nodes, HEVAC controller, gauges | one pair for up to 8+ nodes on 25 m; about $5 per node; bounded access latency ([T1S research](t1s_module_bus.md)) |
 | **Camera segment** | standard Ethernet now (100BASE-TX/GbE, 12 V or PoE); 100BASE-T1 only for our own cameras later | IP cameras | one 5 MP H.265 stream is several Mbit/s (U), so a single camera would consume most of a 10 Mbit/s T1S segment |
 | **Client segment** | Wi-Fi access point on the Pi; USB tethering (NCM/RNDIS) | head unit, phones, tablets, laptops | displays are thin clients of the PWA ([direction spec](../../specs/2026-10-06-platform-direction-design.md)) |
-| **Uplinks** | existing in-car Wi-Fi, phone hotspot, home Wi-Fi, any USB 3G/4G dongle; Starlink, a high-speed gateway, guardian LTE as options ([connectivity §3](connectivity_uplink.md#3-uplinks-sources-selection-failover-and-metering)) | cloud (opt-in), Home Assistant | the base has no SIM; outbound is opt-in and off by default |
+| **Uplinks** | existing in-car Wi-Fi, phone hotspot, home Wi-Fi, any USB 3G/4G dongle; Starlink, a high-speed gateway, the node's optional 4G (per-device IoT SIM) as options ([connectivity §3](connectivity_uplink.md#3-uplinks-sources-selection-failover-and-metering)) | cloud (opt-in), Home Assistant | no SIM by default; outbound is opt-in and off by default |
 | **Fallback / dev kit** | CAN (module mapping per ADR-0026), Wi-Fi for convenience modules | µA-wake nodes, dev boards | ADR-0026; never Wi-Fi for alarm-critical links |
-| **Car buses (edge only)** | K-line, vehicle CAN, I/K-Bus, OBD-II | the car's ECUs | spoken by the base pack's front ends under ADR-0020/0022/0024; never bridged to our network |
+| **Car buses (edge only)** | K-line, vehicle CAN, I/K-Bus, OBD-II | the car's ECUs | spoken by the node's front ends under ADR-0020/0022/0024; never bridged to our network |
 
 ### 1.2 Cameras: 100BASE-T1 against standard Ethernet or PoE (live prices)
 
@@ -96,7 +107,7 @@ apply:
 - All of this is OS configuration (systemd-networkd, nftables, an mDNS proxy), **not Python
   dependencies**, so ADR-0002 is untouched.
 - **The car's buses stay behind the vehicle-interface front ends.** Nothing on any IP segment
-  can address a car ECU except through the platform's server gate (ADR-0020: no MQTT → vehicle CAN).
+  can address a car ECU except through the node's transmit gate (ADR-0032; ADR-0020: no MQTT → vehicle CAN).
 
 ### 1.4 Addressing
 
@@ -156,14 +167,16 @@ apply:
    - mDNS is RFC 6762 and DNS-SD is RFC 6763 ([RFC 6763](https://www.rfc-editor.org/rfc/rfc6763)).
    - Across routed segments the Pi runs an **RFC 8766 discovery proxy** (or an avahi
      reflector on dev kits) ([RFC 8766](https://www.rfc-editor.org/rfc/rfc8766.html)).
-   - Our service name is to be registered with IANA; the draft request is in
-     [connectivity §6](connectivity_uplink.md#6-draft-iana-service-name-registration-the-owner-submits).
+   - Our service name is used unregistered during development; the drafted IANA request
+     ([connectivity §6](connectivity_uplink.md#6-draft-iana-service-name-registration-the-owner-submits))
+     is submitted at module contract v1.
 3. **Pair.** The owner confirms the pairing on the Pi: a button press on the module within a
    window, or a QR/setup code (the Matter pattern). The Pi issues a per-node certificate and
    broker credentials, and assigns the PLCA ID. Nothing has a default password (UK PSTI).
 4. **Describe.** The node publishes its **module manifest** (§3.2), retained. The platform adds
    it to `capabilities.devices` (UI spec §6) and generates Home Assistant discovery from it.
-5. **Run.** Telemetry flows on VSS-named topics, and commands go only through the server gate.
+5. **Run.** Telemetry flows on VSS-named topics, and commands go only through the gate
+   (anything touching the car ends at the node's transmit gate).
    Last-will messages mark the node offline.
 
 ## 2. Standards for discovery and interop: verdicts
@@ -171,9 +184,9 @@ apply:
 | Standard | Verdict | Use |
 |---|---|---|
 | **mDNS / DNS-SD** (RFC 6762/6763, RFC 8766 proxy) | **ADOPT** | Zero-config discovery of modules, the broker, the Pi's web UI and cameras; the same mechanism that Matter and HA use |
-| **MQTT 5** (OASIS) | **ADOPT** inside the car; 3.1.1 stays acceptable at the HA edge | **The in-car message bus.** We need v5 features: response topic and correlation data for commands, message expiry (stale data looks stale), user properties (confidence), reason codes. ESP-MQTT supports v5 and mutual TLS ([ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/protocols/mqtt.html)). The broker is Mosquitto on the Pi while awake (an OS package and a separate process, so ADR-0002 holds); Espressif's ESP-IDF Mosquitto port on the always-on buddy hosts a parked minimal set, bridged by the Pi ([connectivity §2](connectivity_uplink.md#2-mqtt-broker-on-the-always-on-esp32-feasibility)) |
+| **MQTT 5** (OASIS) | **ADOPT** inside the car; 3.1.1 stays acceptable at the HA edge | **The in-car message bus.** We need v5 features: response topic and correlation data for commands, message expiry (stale data looks stale), user properties (confidence), reason codes. ESP-MQTT supports v5 and mutual TLS ([ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/protocols/mqtt.html)). The broker is Mosquitto on the Pi while awake (an OS package and a separate process, so ADR-0002 holds); Espressif's ESP-IDF Mosquitto port on the always-on node hosts a parked minimal set, bridged by the Pi ([connectivity §2](connectivity_uplink.md#2-mqtt-broker-on-the-always-on-esp32-feasibility)) |
 | **VSS topic scheme** (ADR-0016) | **ADOPT** | `ostler/v1/<vid>/<device>/…` with VSS paths (§3.3). HA discovery and the OVMS tree are generated aliases at the edge, never the internal names |
-| **Home Assistant MQTT device discovery** | **ADOPT** (U5) | One `homeassistant/device/<id>/config` per module, with `dev`, `o` and `cmps` blocks ([HA](https://www.home-assistant.io/integrations/mqtt/)), generated from the module manifest. HA sees the car and each module as devices, with read-only buttons only |
+| **Home Assistant MQTT device discovery** | **ADOPT** (U5) | One `homeassistant/device/<id>/config` per module, with `dev`, `o` and `cmps` blocks ([HA](https://www.home-assistant.io/integrations/mqtt/)), generated from the module manifest. HA sees the car and each module as devices; buttons follow the ADR-0033 remote rule (read-only by default) |
 | **Matter**, add-on modules as Matter devices | **AVOID** | See §2.1 |
 | **Matter**, a bridge exposing the car to Matter controllers | **ADOPT-LATER** (a long-term goal, owner 2026-10-06), opt-in, read-only | See §2.1 |
 | **COVESA VISS v3** (WebSocket, HTTP, MQTT, gRPC; RC published 2025-01-31) | **ADOPT-LATER** as the external vehicle-data API shape | Our topics and payloads already follow VSS paths and VISS-like `{value, ts}` ([COVESA](https://covesa.global/covesa-viss-version-3-0-release-candidate/), [transport](https://raw.githack.com/COVESA/vehicle-information-service-specification/main/spec/VISSv3.0_Transport.html)). A conformant endpoint is a bridge, added when a client needs it (standards.md §8.3) |
@@ -231,7 +244,7 @@ apply:
 
 - **Per-node identity.**
   - Each module generates its key pair on the device; on the ESP32-S3 it is protected by
-    flash encryption and secure boot (U: confirm on the guardian).
+    flash encryption and secure boot (U: confirm on the node and its variants).
   - At pairing the Pi's local CA signs it. This is the same per-device CA question as ADR-0021.
 - **mTLS to the broker** (port 8883). Per-node ACLs let a module publish only under its own
   subtree and subscribe only to its own command topics. Telemetry consumers are
@@ -256,11 +269,12 @@ apply:
 
 | Product | Contents | Tag |
 |---|---|---|
-| **Base hardware pack** (the core) | Linux brain: Pi 5 + CarPiHAT now, our CM5/i.MX93 board later, woken on demand (always-on optional for EVs). **ESP32 buddy** (always on): wake and Pi power, read-only bus listening while parked, basic alarm, the parked broker, the PLCA coordinator while parked; no SIM of its own (ADR-0028). **Vehicle interface**: K-line (L9637-class), 2 × CAN (listen-only by default), OBD-II harness, optional body-bus front end, ignition and 12 V sense. **Network**: T1S port (LAN8651, the PLCA coordinator while awake), an Ethernet port for cameras, a Wi-Fi AP for displays, GNSS for time and logging. **Software**: diagnostics, logbook and telemetry, broker, discovery proxy, local CA, HA/MQTT integration | core |
-| **Guardian** (alarm and tracker) | The always-on alarm system and gateway: ESP32-S3 with LTE and GNSS on its own cell; a **notify-only** alarm with escalation; works with 12 V cut; a CAN or wake-wire fallback | add-on |
-| **Relay box** | Switched outputs; each channel declares a tier (default Tier 2, Parked-only, never remote; UI spec §6) | add-on |
-| **Sensor and button nodes** | Door/bonnet/tilt/temperature inputs, panel buttons; read-only signals and events | add-on |
-| **HEVAC controller** | The owner's separate project; joins through the contract; `comfort` actions | add-on (external) |
+| **Ostler Lite: the node** (the core, ADR-0032) | Always-on ESP32-S3 (PSRAM). **Vehicle interface**: K-line (L9637-class), 2 × CAN (listen-only by default), OBD-II harness, optional body-bus front end, ignition and 12 V sense; decoding to VSS with the C decoder and pack JSON; the **transmit gate**, the only path to the car. GPS, optional 4G (per-device IoT SIM), basic alarm, the parked broker, the PLCA coordinator, brain power and wake. Its own web page; the phone app over BLE or its Wi-Fi AP | core |
+| **Ostler: node + brain** | Adds a Linux brain: Pi 5 + CarPiHAT now, our CM5/i.MX93 board later, woken by the node (always-on optional for EVs); never touches the car. **Network**: T1S port (LAN8651), an Ethernet port for cameras, a Wi-Fi AP for displays. **Software**: the full app, logbook and replay, broker (bridged to the node's), discovery proxy, local CA, HA/MQTT integration, the decode lab | core |
+| **Guardian** (node hardware variant) | Same node firmware on hidden hardware: own backup cell, tamper, IMU, better antennas, GNSS, optional 4G; tracker and alarm triggers with escalation; works with 12 V cut; **no outputs** | core variant |
+| **I/O / relay modules** (later) | Switched and alarm outputs; each control declares its category and tier (Accessories default Tier 2, Parked-only; UI spec §6, ADR-0033); an ADR per car-switching function | add-on |
+| **Sensor and button nodes** | Door/bonnet/tilt/temperature inputs, fast tacho, EGT, boost/oil, wideband AFR, accelerometers, panel buttons; read-only, isolated taps; source-tagged signals and events | add-on |
+| **HEVAC controller** | The owner's separate project; joins through the contract; Comfort-category actions | add-on (external) |
 | **Cameras** | Standard ONVIF/RTSP IP cameras on the camera segment through a DevicePack adapter; our own cameras later | add-on |
 | **Displays** | Head unit, phones and tablets as PWA clients; the Ostler Android launcher later | core / add-on |
 | **Third-party modules** | Anything that implements the contract and passes the conformance kit ("works with Ostler", [TRADEMARKS.md](../../TRADEMARKS.md)) | add-on |
@@ -274,19 +288,21 @@ has the same shape as a `capabilities.devices` entry in the
 - **Identity:** `id`, `vendor`, `model`, `hw`, `fw`, `contract` (an integer major), and a
   certificate fingerprint. Never a VIN.
 - **Class and links:**
-  - `class` is one of guardian, relay, sensor, button, climate, camera, display, other;
+  - `class` is one of node, guardian, relay, sensor, button, climate, camera, display, other;
   - `links` lists t1s, ethernet, wifi or can;
   - `power` is always_on, switched or wake_capable;
   - `alarm_critical: true` requires a wired link (ADR-0026).
 - **Signals:** VSS paths (ADR-0016; our extensions under `Vehicle.Ostler.*`), units verbatim,
   rate, `expire_after`, and confidence (`proven`/`candidate`).
 - **Actions:**
-  - `id` and `tier` (UI spec §7);
-  - `comfort` only if the action never reaches a vehicle ECU or bus (ADR-0018);
+  - `id`, `category` (ADR-0033) and `tier` (UI spec §7);
+  - the "add-on device" render class (formerly `comfort`, renamed by ADR-0033) only if the
+    action never reaches a vehicle ECU or bus (ADR-0018);
   - `parked_only`, `remote` (false by default), interlocks, and whether the device enforces
     it too.
-  - Every action passes the **one server gate**. Modules accept commands only from an
-    authenticated broker client whose ACL allows them (mTLS, MQTT 5 auth).
+  - Every action passes the gate; anything touching the car ends at the **node's transmit
+    gate** (ADR-0032). Modules accept commands only from an authenticated broker client
+    whose ACL allows them (mTLS, MQTT 5 auth).
 - **Events:** names and payloads (e.g. `alarm.triggered`, `button.pressed`).
 - **UI slots:** one strip slot and one page at most (UI spec §6). Views come from a
   DevicePack, never from the module.
@@ -299,8 +315,8 @@ has the same shape as a `capabilities.devices` entry in the
     second device). This is the Zigbee2MQTT converter pattern.
 - **Conformance kit:**
   - schema validation and a simulated broker;
-  - gate tests: no Tier ≥ 2 action is reachable remotely, and an unauthenticated command is
-    rejected;
+  - gate tests: no Tier ≥ 2 action is reachable remotely without the install-level
+    override (ADR-0033), and an unauthenticated command is rejected;
   - an offline test that a stale value is flagged.
 
 ### 3.3 Topic tree (proposal for the module-bus message spec)
@@ -315,7 +331,8 @@ ostler/v1/<vid>/<device>/ota                   LwM2M-object-5-style state
 ```
 
 `<vid>` is the device-local vehicle handle (ADR-0018), never the VIN. `<vid>=vehicle` with
-`<device>=base` carries the car's own signals from the base pack. HA discovery and the OVMS
+`<device>=base` carries the car's own signals from the node (the device name is settled
+in the module-bus message spec). HA discovery and the OVMS
 tree are generated from this tree.
 
 ## 4. Comparisons
@@ -341,9 +358,9 @@ tree are generated from this tree.
   down to "software-less" endpoints such as the Microchip LAN866x for LEDs, audio and
   actuators
   ([Electropages](https://www.electropages.com/2025/11/advancing-zonal-architecture-10base-t1s-endpoints-delivers-smarter-remote-connectivity)).
-- **The mapping.** The **Pi** is the central compute; the base pack's **vehicle interface** is
-  a zonal controller's legacy gateway, but receive-first and gated; the **T1S segments** are
-  the edge; the **buddy** is the always-on body controller and the **guardian** the add-on
+- **The mapping.** The **brain** is the central compute; the **node** is a zonal
+  controller's legacy gateway, but receive-first and gated, and the always-on body
+  controller; the **T1S segments** are the edge; the **guardian variant** is the hidden
   telematics and alarm controller.
 - **The difference.** OEMs replace the car's buses; we sit beside them and never replace them.
 - **Later.** A larger vehicle (van, overlander) may want a **zone hub** module: a T1S
@@ -353,9 +370,10 @@ tree are generated from this tree.
 
 1. The T1S driver maturity and coordinator-loss behaviour are covered by the
    [bench plan](../t1s_bench_plan.md). Add a test for a CSMA/CD node joining a PLCA segment.
-2. **Where the broker lives while parked:** decided in ADR-0028 (buddy, bridged).
+2. **Where the broker lives while parked:** decided in ADR-0028, on the node since
+   ADR-0032 (bridged by the brain when awake).
 3. Pi Wi-Fi as an AP and a client at once: one radio, one channel (ADR-0028); bench it (U).
 4. A CA and key-rotation design (ADR-0021) and MACsec are U5 threat-model items; the IANA
-   request is drafted ([connectivity §6](connectivity_uplink.md#6-draft-iana-service-name-registration-the-owner-submits)).
+   request is drafted for submission at module contract v1 ([connectivity §6](connectivity_uplink.md#6-draft-iana-service-name-registration-the-owner-submits)).
 5. Matter certification cost against the benefit, if official hardware ships a native
    bridge.

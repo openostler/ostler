@@ -4,13 +4,15 @@
 > diagnostics and live data, then grows with add-ons.**
 
 **Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
-your car. A base hardware pack interfaces with the vehicle you already have and turns its
+your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
 existing systems into a connected IoT platform, with diagnostics and telemetry at the
-core. Add-on modules then join over standard networking, the way devices join a smart
-home: the alarm/guardian, cameras, relay boxes, sensors and displays. Every device speaks
-IP on an automotive-Ethernet backbone (10BASE-T1S for modules, faster Ethernet for
-cameras), and they all use the same VSS-named, MQTT-style messages, so modules are
-interchangeable and integrate with Home Assistant and the wider IoT world.
+core. **Ostler Lite** is the node alone, working offline with your phone; **Ostler** adds
+a **brain** (a Linux computer) for the full local app, cameras, replay and analysis.
+Add-on modules join either over standard networking, the way devices join a smart home:
+sensor nodes, cameras, I/O and relay modules, displays. Every device speaks IP
+(10BASE-T1S for modules, faster Ethernet for cameras), and they all use the same
+VSS-named, MQTT-style messages, so modules are interchangeable and integrate with Home
+Assistant and the wider IoT world.
 
 This repository is the **platform** (the OpenOstler code). Vehicle knowledge ships
 separately, as **vehicle packs**.
@@ -31,20 +33,23 @@ The goals, principles, hard lines and near-term roadmap are in **[GOALS.md](GOAL
 the long-term picture (add-ons, garage and sharing, connectivity, AI-native access) is in
 **[references/vision.md](references/vision.md)**, with module ideas in the
 [add-ons catalogue](references/research/addons_catalogue.md). The architecture is
-[ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md).
+[ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md) and
+[ADR-0032](decisions/adr-0032-one-node-optional-brain.md) (one node, optional brain).
 
-- **Base pack:** a Linux computer (a Raspberry Pi today) plus an ESP32 "buddy", with
-  diagnostics and telemetry at the core. It interfaces with the car's own buses (K-line,
-  CAN, OBD-II) at the edge and never replaces them: the Discovery 2 first, then other Land
-  Rovers, any OBD-II car, modern CAN/UDS and pre-OBD cars, each as a community vehicle pack.
-- **Add-ons:** the guardian (always-on, **notify-only** alarm and gateway), cameras, relay
-  boxes, sensors, buttons and displays, and more. Each module hosts its own small web page
-  and works on its own. We are making a Home Assistant for cars, not reinventing the wheel.
-- **Hard lines:** nothing writes to a car without the safety gates; no EKA or key
-  programming in any default path; the VIN is never logged or uploaded; private by
-  default, no cloud needed.
-- **Funding:** official hardware (the base pack and add-on modules) and an optional Ostler
-  Cloud subscription, with AGPL code plus a commercial licence.
+- **Ostler Lite and Ostler:** an ESP32 node (optional 4G) alone, or the node plus a brain
+  (a Raspberry Pi today), with diagnostics and telemetry at the core. The node interfaces
+  with the car's own buses (K-line, CAN, OBD-II) at the edge and never replaces them: the
+  Discovery 2 first, then other Land Rovers, any OBD-II car, modern CAN/UDS and pre-OBD
+  cars, each as a community vehicle pack. The guardian is a hidden, battery-backed node
+  hardware variant with no outputs.
+- **Add-ons:** sensor nodes, cameras, a future I/O / relay module, buttons and displays,
+  and more. Each module hosts its own small web page and works on its own. We are making
+  a Home Assistant for cars, not reinventing the wheel.
+- **Hard lines:** nothing writes to a car except through the node's transmit gate; no EKA
+  or key programming in any default path; VIN and identity data are never recorded by
+  default and never leave the device; private by default, no cloud needed.
+- **Funding:** official hardware (the node, node + brain and add-on modules) and an
+  optional Ostler Cloud subscription, with AGPL code plus a commercial licence.
 
 Done so far: the `VehiclePack` decoupling, the platform/pack repo split, a dev server, a
 version tracker and the UI research. Next: the UI seams and head-unit shell, then opt-in
@@ -52,9 +57,11 @@ MQTT/Home Assistant.
 
 ## What the platform does
 
-- **Comms core:** raw transport (pyserial, an ESP32 bridge), K-line framing with fast and
-  5-baud slow init, KWP2000 with a tolerant mode for cheap KKL cables, and a session
-  lifecycle (establish → read → release).
+- **Comms core (the Python lab and reference):** raw transport (pyserial, an ESP32
+  bridge), K-line framing with fast and 5-baud slow init, KWP2000 with a tolerant mode for
+  cheap KKL cables (a dev-only path), and a session lifecycle (establish → read →
+  release). In production the link layer and decoder run on the node in portable C,
+  reading the same pack JSON; the Python decoder stays the reference and the fallback.
 - **The `VehiclePack` contract**
   ([ADR-0013](decisions/adr-0013-repo-split-and-vehicle-pack-contract.md)): modules, data
   sources, the signal and fault-meaning stores, actions, menus, the fault scan, sniff
@@ -68,7 +75,9 @@ MQTT/Home Assistant.
   index, and CSV, VBO and GPX export.
 - **A passive sniff decoder** and capture tooling for reverse engineering.
 - **A mobile-first web dashboard:** a stdlib HTTP + SSE server and a React + TypeScript app
-  in [`ui/`](ui/). The built app is committed, so running it needs Python only. A
+  in [`ui/`](ui/). The built app is committed, so running it needs Python only, plus the
+  optional native decoder library. The same app runs on the brain, in Ostler Cloud and on
+  the phone as a PWA in a native wrapper (Capacitor) for Bluetooth and local Wi-Fi. A
   password-gated `/admin` console adds the mapping tabs.
 
 ## Quick start
@@ -136,18 +145,30 @@ VehiclePack     (openostler.pack — entry-point group "openostler.vehicle")
 KWP2000 → K-Line → Transport            (no vehicle knowledge)
 ```
 
+The stack above is this repo's Python code, which runs on the **brain** (and in the lab).
+In production the car side lives on the **node** ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)):
+it owns the K-line/CAN I/O, decodes to VSS with the portable C decoder from pack JSON,
+and holds the **transmit gate, the only path to the car**. The brain never touches the
+car; like the phone, the cloud and Home Assistant, it consumes the node's VSS messages
+over IP and may mint grants that the node verifies.
+
 [docs/architecture.md](docs/architecture.md) has the code map, and [SCOPE.md](SCOPE.md)
 the layering boundary.
 
 ## Safety
 
 K-line is a shared bus, and a pack can write to ECUs. The platform enforces a
-conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabulary.md)):
+conservative command gate ([ADR-0008](decisions/adr-0008-unified-status-vocabulary.md)),
+which moves to the node in production; action categories and approvals follow
+[ADR-0033](decisions/adr-0033-action-categories-and-approvals.md):
 
 - Reads and live data are read-only.
 - Actuator tests run only when you press the button, behind a confirmation. They are
   documented as stationary with the ignition on.
 - Gated items (security writes, coding) have no runnable action.
+- Phone approval of Tier 2–3 works over local links only; remote paths (Tailscale, cloud
+  relay) are read-only unless the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is
+  set (off by default, never settable remotely).
 - Pack-specific rules live in the pack. For example, the Discovery 2 airbag module is
   read-only by construction.
 

@@ -204,7 +204,7 @@ display text (IKE `1A`/`23`, MID/GT `21`/`23`/`A5`); BMBT `48` buttons.
   `74` key in, IKE `11` ignition on, and **any bus wake**. The TH3122 EN/wake design draws
   only transceiver sleep current until the body bus wakes, which fits the guardian's power
   budget. Optional Tier 2 indicators: the GM `4E` "clown-nose" LED (armed) and the LCM 3 s
-  hazard flash (locate). Both are gated and never remote; the alarm stays notify-only.
+  hazard flash (locate). Both are gated and never remote; alarm outputs come only via a future I/O module (ADR-0033).
 - **(d) Head-unit integration: read yes, transmit later.**
   - **Read:** MFL buttons (`32`/`3B`) as head-unit input for Drive mode (U1/U2), plus
     the radio, DSP and phone state.

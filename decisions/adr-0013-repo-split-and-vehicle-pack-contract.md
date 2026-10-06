@@ -2,7 +2,7 @@
 title: "ADR-0013 — Split into an Ostler platform, the D2 pack, firmware and a closed cloud; VehiclePack contract"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, specs/2026-10-06-platform-direction-design.md, SCOPE.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0013 — Repo split and the VehiclePack contract
+
+> **Amended by [ADR-0034](adr-0034-repo-boundaries.md), 2026-10-06:** `ostler-firmware` is first-class now and takes the D2 `esp32/kline_node`; packs are JSON data plus optional lab Python and C keygen plugins; hardware and contract repos come later.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner decisions, 2026-10-06)
@@ -99,3 +101,20 @@ Rules:
 - **Keep a monorepo with packs as sub-packages.** Simpler for now, but it mixes the closed cloud's needs and per-vehicle data ownership into one repo. Kept only as the interim state during Phase 0.
 - **Platform keeps this repo's identity.** Rejected by the owner: the D2 work keeps its name and history here.
 - **Fork per vehicle.** Rejected: it duplicates the protocol core and the signal store.
+
+## Amendments (2026-10-06)
+
+Amended by [ADR-0034](adr-0034-repo-boundaries.md) (repo boundaries). The platform/pack
+split, the VehiclePack contract and the cloud boundary above stand.
+1. **Firmware is first-class now.** `ostler-firmware` holds the portable C decoder, the
+   link layer, every node variant (diagnostic node, guardian, sensor nodes) and the
+   per-pack keygen C plugins. It is created now, not "when that work starts".
+2. **`esp32/kline_node` moves.** The D2 pack's `esp32/kline_node` moves to
+   `ostler-firmware` when that repo is created; it no longer belongs in the pack row above.
+3. **Packs are data first.** A pack (`ostler-pack-<x>`; the D2 pack keeps
+   `discovery2-diag`) holds JSON data the C decoder reads, optional lab-only Python and
+   optional C keygen plugin source.
+4. **Later repos.** `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module
+   contract and conformance kit get their own repo at contract v1.
+5. **The split rule.** A new repo only when toolchain, licence, release cadence or
+   contributors differ.

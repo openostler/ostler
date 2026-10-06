@@ -2,13 +2,15 @@
 title: "ADR-0004 — React + TypeScript dashboard, shipped as static assets"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-09-30
+version: 1.1
+updated: 2026-10-06
 summary: >
   The dashboard moves from two single-file vanilla-JS pages to one Vite + React + TypeScript app, built ahead of time and served as static files by the existing Python server.
 ---
 
 # ADR-0004 — React + TypeScript dashboard, shipped as static assets
+
+> **Amended by [ADR-0035](adr-0035-languages-by-tier.md), 2026-10-06:** UI types are generated from OpenAPI/AsyncAPI; the phone app is the same build packaged with Capacitor.
 
 - **Date:** 2026-09-30
 - **Status:** accepted
@@ -47,3 +49,16 @@ Vitest and Testing Library.
 - Consolidate into one vanilla-JS file with ES modules. Rejected: cheaper, but still
   untyped and hard for agents to change safely.
 - Rewrite the whole stack in TypeScript. Rejected: see ADR-0002.
+
+## Amendments (2026-10-06)
+
+Amended by [ADR-0035](adr-0035-languages-by-tier.md) (languages by tier). The decision to
+build the UI with Vite, React and strict TypeScript and ship it as static files stands.
+1. **Generated types.** The TS types are generated from the platform's OpenAPI and
+   AsyncAPI contracts instead of hand-mirroring the snapshot contract; CI fails when the
+   committed types differ from a fresh generation. The drift test above becomes that check.
+2. **One app in three places.** The same build serves the cloud, the brain and the phone.
+   On the phone it runs as a PWA inside a native wrapper such as Capacitor, which gives it
+   Bluetooth and local Wi-Fi access (needed for the phone-to-node link, especially on iOS).
+   The Pi install stays Node-free; the native wrapper is built separately.
+3. **Path.** The build output now lives under `src/openostler/web/static/` (ADR-0015).

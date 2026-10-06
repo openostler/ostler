@@ -2,14 +2,16 @@
 title: "ADR-0010 — Read-only whole-app replay; notes, audio and motion capture"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-10-05
+version: 1.1
+updated: 2026-10-06
 depends_on: [decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0008-unified-status-vocabulary.md]
 summary: >
   Sessions also record an events stream so the whole UI can be replayed read-only; notes (live ⚑ and retrospective, Grafana/Foxglove-style points or ranges with tags) live per session and absorb Capture labels; cabin audio (phone or Pi) and acceleration (phone, Pi IMU or GPS-derived) are opt-in, stay on the device and are never public; satellite imagery is Esri World Imagery with attribution, swappable.
 ---
 
 # ADR-0010 — Read-only whole-app replay; notes, audio and motion capture
+
+> **Amended by [ADR-0036](adr-0036-vin-and-identity-data-in-recordings.md) and [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** "Identity reads never store their values" becomes "never recorded by default; never leaves the device" (ADR-0036); recordings keep raw bytes alongside decoded values and replay follows the recorded vehicle's pack (ADR-0032).
 
 - **Date:** 2026-10-05
 - **Status:** accepted (extends ADR-0009)
@@ -49,3 +51,24 @@ Owners want to replay a drive across every page, mark moments while driving, hea
 - **Record full snapshots as JSON every poll.** Rejected: about 10× the size of events plus columns, and the information is redundant.
 - **A paid or keyed satellite provider by default.** Rejected: owners shouldn't need an account. The provider can be swapped by configuration.
 - **BNO055/085 IMUs.** Rejected: they need I2C clock stretching, which the Pi handles badly.
+
+## Amendments (2026-10-06)
+
+Recorded with the node/brain direction
+([ADR-0032](adr-0032-one-node-optional-brain.md)); the decision above otherwise stands.
+
+- **Whole-app replay is kept**, read-only, as decided above.
+- **Replay across vehicles.** Replaying another vehicle's session switches the UI to that
+  session's vehicle pack and capability manifest, and switches back on exit; the active
+  vehicle and its live link are untouched
+  ([UI spec §4.1](../specs/2026-10-06-ui-architecture-design.md#41-garage-and-active-vehicle-switcher)).
+- **Sessions record the pack id, the pack version and the manifest `etag`**, so a replay
+  renders with what was recorded.
+- **Logs replay also covers parked periods and alarm events**, not only drives.
+- **Identity data** follows [ADR-0036](adr-0036-vin-and-identity-data-in-recordings.md):
+  recording identity replies is an opt-in, off by default; when off they are scrubbed at
+  write and every other raw byte is kept; when on they still never leave the device.
+- **"HTTPS on the Pi" means HTTPS on the brain.** Wherever this ADR says "the Pi" as a
+  host (HTTPS, cabin audio, the IMU), read "the brain". The IMU may instead be on the
+  guardian variant of the node (ADR-0032), whose readings arrive as source-tagged VSS
+  signals in the same session.

@@ -2,7 +2,7 @@
 title: "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/connectivity_uplink.md, references/research/ecosystem_architecture.md, references/research/hardware.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0028 — Base hardware, connectivity and remote access
+
+> **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §4–§5, §16), 2026-10-06:** §1 base definition (the node replaces the buddy; the guardian is a node variant), §2 power states (node wakes and cleanly shuts down the brain with a timeout), and all "buddy" wording (read "node"); §9's IANA request is submitted at module contract v1, unregistered in development.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; from the

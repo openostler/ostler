@@ -2,14 +2,23 @@
 title: "Platform research — vehicle packs, plugins, MQTT/Home Assistant, alarm, mobile IA, phasing"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [SCOPE.md, CONSTITUTION.md, references/research/landscape.md, references/research/ovms.md]
 summary: >
-  How to grow the D2 tool into a universal platform without bloat: declarative per-vehicle packs (OBDb/OVD/Zigbee2MQTT-style, keeping our ranges/confidence/safety), a monorepo with core/vehicles/integrations layers and entry-point plugins, MQTT with HA discovery plus OVMS- and OwnTracks-compatible topics, a notify-only alarm owned by the ESP32 guardian, a Home/Diagnose/Logs/Security/More IA, and a phased roadmap with guardrails.
+  How to grow the D2 tool into a universal platform without bloat: declarative per-vehicle packs (OBDb/OVD/Zigbee2MQTT-style, keeping our ranges/confidence/safety), a monorepo with core/vehicles/integrations layers and entry-point plugins, MQTT with HA discovery plus OVMS- and OwnTracks-compatible topics, an alarm owned by the always-on ESP32 node (updated 2026-10-06 for ADR-0032/0033: the guardian is a node hardware variant, the notify-only rule is dropped, the node gate is the only path to the car), a Home/Diagnose/Logs/Security/More IA, and a phased roadmap with guardrails.
 ---
 
 # Platform research
+
+> **Update (2026-10-06, ADR-0032/0033):** the always-on ESP32 is now the **node** (the
+> guardian is a hidden node hardware variant with no outputs) and the Pi is the optional
+> **brain**. The node's transmit gate is the only path to the car. The alarm is no longer
+> "notify-only": outputs come later through an I/O / relay module with an ADR per
+> car-switching function, and alarm paths never depend on the brain or the internet.
+> Remote paths are read-only unless the install-level `OSTLER_ALLOW_REMOTE_CONTROL`
+> override is set. The C decoder on the node reads the pack JSON directly (no generated
+> header). Stale lines below are fixed; the rest is kept as researched.
 
 ## 1. Vehicle packs: a declarative, per-vehicle definition that drives the UI
 
@@ -57,7 +66,7 @@ vehicles/lr_d2_td5/
 
 **Rules:**
 - `upsert_field` stays the only writer.
-- The ESP32 header is generated from the pack.
+- The node's C decoder reads the pack JSON as data (ADR-0032); no generated header.
 - `catalog.py` still works out each item's status.
 - The UI is generated from `group`, `metric`, `span`/`normal` and `actions.safety`.
 
@@ -118,7 +127,7 @@ All publishing is opt-in and off by default.
    - Re-publish when `homeassistant/status` goes online.
    - Two availability topics:
      - `brain`: the Pi, which runs only with the ignition on;
-     - `tracker`: the ESP32 guardian, always on.
+     - `tracker`: the ESP32 node (or its guardian variant), always on.
    - Set `expire_after` on live sensors, so "car off" never looks like valid but stale data.
 2. **An OVMS v3-compatible tree**, so ovms-home-assistant and OVMS Connect work. See [ovms.md](ovms.md).
    - `ovms/<user>/<vid>/metric/<path>` (retained)
@@ -146,7 +155,7 @@ All publishing is opt-in and off by default.
 
 - A **stdlib MQTT 3.1.1 client** is feasible: about 300–400 lines covering QoS 0/1, LWT, reconnect and TLS. The precedent is MicroPython's `umqtt.simple`.
 - `paho-mqtt` could be an optional extra, but that needs an ADR because the constitution keeps dependencies to the stdlib.
-- The guardian uses ESP-IDF's `esp-mqtt`.
+- The node uses ESP-IDF's `esp-mqtt`.
 
 ## 4. Alarm and tracker
 
@@ -160,7 +169,7 @@ Modelled on HA and [Alarmo](https://github.com/nielsfaber/alarmo):
 DISARMED → ARMING (exit delay; baseline IMU/GPS captured) → ARMED_AWAY | ARMED_TRANSPORT (ferry/tow) | SERVICE
 ARMED_* → ALERT_NOTICE (weak trigger; log + low-priority notify) | PENDING (entry delay) → TRIGGERED → ALERTING (escalation)
 ALERTING → DISARMED (ack) | ARMED (timeout; retrigger cap per sensor)
-TAMPER (guardian power loss, battery disconnect, GNSS jamming, bus silence) → always notify
+TAMPER (node or guardian power loss, battery disconnect, GNSS jamming, bus silence) → always notify
 ```
 
 ### Triggers
@@ -184,7 +193,8 @@ TAMPER (guardian power loss, battery disconnect, GNSS jamming, bus silence) → 
   2. **ntfy**
   3. Telegram
   4. **SMS through the modem** as the no-data fallback
-- **The guardian owns all of this**, so an alert never waits for the Pi to boot.
+- **The node (or its guardian variant) owns all of this**, so an alert never waits for the
+  brain to boot and works with the brain off and no internet (ADR-0033, tested).
 - **Parked duty cycle** scales with battery voltage and days parked.
 - **Alarm events and parked periods** land on the same logbook / flags timeline (ADR-0010).
 
@@ -210,7 +220,7 @@ TAMPER (guardian power loss, battery disconnect, GNSS jamming, bus silence) → 
 | **Drive** | A full-screen live mode, opened from Home or automatically when connected and moving. A mini-bar returns to it. **Not a tab.** | Drive |
 | **Diagnose** | Module list → per-module **Faults · Live · Tests · Settings · Utilities** | Faults, Inputs, Outputs, Settings, Utilities |
 | **Logs** | One timeline: drives, parked periods, alarm events, faults, notes. Filter chips: Drives / Parked / Alerts / Faults. **Analysis** is the session detail. | Logs, Analysis |
-| **Security** | Arm state, map, geofences, alerts (a filtered Logs view). Appears when a guardian is installed; otherwise the slot is "Map". | — |
+| **Security** | Arm state, map, geofences, alerts (a filtered Logs view). Present with any node (every node has GPS and a basic alarm, so the old "Map when no guardian" fallback is gone). | — |
 | **More** | Add-ons (MQTT/HA, OVMS, OwnTracks, Traccar, notifiers), Settings, Privacy (location toggles), Developer (Decode / Label / Docs) | Admin tabs |
 
 - **Wide screens** use a navigation rail with every destination.
@@ -224,15 +234,15 @@ TAMPER (guardian power loss, battery disconnect, GNSS jamming, bus silence) → 
 |---|---|
 | **0, now** | Extract the pack schema in place (no behaviour change); layering tests; the new IA |
 | **1** | Opt-in, read-only MQTT/HA, OVMS-compatible topics, OwnTracks, Traccar OsmAnd, ntfy |
-| **2** | ESP32 guardian (tracker + notify-only alarm); the Security tab appears |
+| **2** | Node firmware, one firmware for all variants (tracker + alarm basics); the Security tab appears |
 | **3** | `generic_obd2` pack (proves the platform is universal) |
-| **4** | CAN add-ons: relay box, head-unit/OBD emulator. **HEVAC is a separate ESP32 project** that we only talk to. |
+| **4** | Add-on modules: I/O / relay module (an ADR per car-switching function), head-unit/OBD emulator. **HEVAC is a separate ESP32 project** that we only talk to. |
 | **Moonshot** | Remote OEM disarm, remote start, ODX/ARXML import, cloud fleet, other makes. **Each needs its own ADR and gate.** |
 
 **Guardrails:**
 1. **Rule of two:** no core abstraction until a second pack needs it. D2 and generic OBD-II are the two.
 2. **D2 stays first-class:** it is the reference pack and conformance fixture, and ships as the default.
 3. **The core only shrinks.** Everything else is a pack or an integration, and import tests enforce this.
-4. **Safety travels with the action, not the transport.** Every path (UI, MQTT, HA, schedules) goes through the same gate. Remote paths get read-only actions only; arming the software alarm is its own low-risk class.
+4. **Safety travels with the action, not the transport.** Every path (UI, MQTT, HA, schedules) goes through the same gate rules, and the node's transmit gate is the only path to the car. Phone approval of Tier 2–3 is local-only; remote paths are read-only unless the install-level override is set (ADR-0033).
 5. **A new top-level tab, a new outbound data path or a new runtime dependency each needs an ADR.** Five tabs is a hard cap.
 6. **SCOPE.md names the layers:** core (comms + interpretation), packs (vehicles), integrations (consumers and add-ons).

@@ -2,7 +2,7 @@
 title: "ADR-0026 — Module bus: 10BASE-T1S, with CAN and Wi-Fi as fallback"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/t1s_module_bus.md, references/t1s_bench_plan.md, references/research/hardware.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0026 — Module bus: 10BASE-T1S, with CAN and Wi-Fi as fallback
+
+> **Amended by [ADR-0032](adr-0032-one-node-optional-brain.md) and [ADR-0033](adr-0033-action-categories-and-approvals.md), 2026-10-06:** the PLCA coordinator is the node, Lite trust comes from pairing with the broker on the node, and the guardian is a node variant (see Amendments 3–7).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06; from the
@@ -144,3 +146,20 @@ The owner amended this ADR on the day it was accepted:
 2. **Bench parts.** ESP32 boards come from another supplier; when T1S parts cannot be had,
    an Ethernet or Wi-Fi backbone may stand in for prototyping. T1S is still confirmed only
    by the T1S measurements of the bench plan.
+
+Later on 2026-10-06, with the node/brain direction
+([ADR-0032](adr-0032-one-node-optional-brain.md),
+[ADR-0033](adr-0033-action-categories-and-approvals.md)):
+3. **PLCA coordinator.** The always-powered PLCA coordinator (node 0) is **the node**, or
+   the guardian variant when it replaces the plain node.
+4. **Lite trust.** On Ostler Lite (no brain) the node holds the MQTT broker, and trust
+   comes from pairing; there is no Pi CA. With a brain fitted, its broker bridges to the
+   node's.
+5. **Alarm-critical links work with the Pi off.** The driver "alarm-critical links must
+   work with the Pi off and with no radio" is elevated to ADR-0033's tested rule: node →
+   notification works with the brain off and no cloud, checked by a confirmation test.
+6. **The guardian is a node variant, not an add-on module.** It is the same firmware on
+   security-built hardware (ADR-0032), so it is not counted among the add-on modules in
+   the Context.
+7. **Wake.** "The guardian's wake of the Pi" now reads **the node wakes the brain**; that
+   wake still uses a wire, never Wi-Fi.

@@ -2,7 +2,7 @@
 title: "ADR-0015 — Repo split executed: the openostler platform repo and the d2diag pack"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0014-ostler-handles.md, specs/2026-10-06-phase0-vehiclepack-decoupling-design.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0015 — Repo split executed
+
+> **Amended by [ADR-0034](adr-0034-repo-boundaries.md), 2026-10-06:** `esp32/` moves to `ostler-firmware`, `hardware/` to `ostler-hardware` at PCB time; `tools/esp32_read.py` becomes a lab client of the node.
 
 - **Date:** 2026-10-06
 - **Status:** accepted. It carries out step 2 of ADR-0013, with the names fixed in
@@ -108,3 +110,15 @@ history of every kept path is preserved (`git log --follow` works). Two passes:
   defeats the entry-point contract.
 - **Keep the built-in fallback for convenience.** Rejected: it is an import of a pack by
   name, which ADR-0013 forbids; the explicit error is clearer.
+
+## Amendments (2026-10-06)
+
+Amended by [ADR-0034](adr-0034-repo-boundaries.md) (repo boundaries). The split as
+executed above stands; the D2 pack column changes as follows.
+1. **`esp32/`** leaves the D2 pack for `ostler-firmware` when that repo is created
+   (history kept with `git filter-repo`); its D2-specific parts become the pack's JSON and
+   its keygen C plugin.
+2. **`hardware/`** leaves the D2 pack for `ostler-hardware` (CERN-OHL-S) when PCB work
+   starts.
+3. **`tools/esp32_read.py`** stays in the platform as a lab client of the node, not as
+   part of the firmware.

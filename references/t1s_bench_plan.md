@@ -2,7 +2,7 @@
 title: "10BASE-T1S bench plan — 3 nodes, PLCA, MQTT, sleep, wake and cranking"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/t1s_module_bus.md, decisions/adr-0026-module-bus-10base-t1s.md, references/research/hardware.md]
 summary: >
@@ -10,6 +10,10 @@ summary: >
 ---
 
 # 10BASE-T1S bench plan
+
+> **Update (2026-10-06, ADR-0032):** in the car the PLCA coordinator is the **Ostler
+> node** (the always-on ESP32 diagnostic node), not the guardian, which is now a node
+> hardware variant. The bench keeps the Pi as Node A for convenience.
 
 Background and sources: [T1S research](research/t1s_module_bus.md). Decision:
 [ADR-0026](../decisions/adr-0026-module-bus-10base-t1s.md), whose Confirmation is this
@@ -32,7 +36,8 @@ boards come from **another supplier** than DigiKey, which is out of stock (owner
 ```
 
 Node A coordinates PLCA and runs the MQTT broker (Mosquitto) for the bench. In the car
-the coordinator is the guardian (ADR-0026); Test 8 covers losing it.
+the coordinator is the Ostler node, the always-on ESP32 (ADR-0032; ADR-0026 first said
+the guardian); Test 8 covers losing it.
 
 ## 2. Parts
 

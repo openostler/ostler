@@ -2,14 +2,24 @@
 title: "Hardware research — development kit now, own hardware later"
 area: references
 status: stable
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/ovms.md, hardware/README.md]
 summary: >
-  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS guardian on its own 18650, 10 Hz u-blox for logging, KKL K-line, WiCAN Pro, Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own board; risks.
+  Off-the-shelf development kit (Pi 5 + CarPiHAT PRO 5, an always-on ESP32-S3 LTE/GNSS node (ADR-0032; the guardian is its hidden battery-backed variant), 10 Hz u-blox for logging, KKL K-line, WiCAN Pro, Waveshare/Autosport Labs ESP32 add-on modules) with prices and parked current; compute options compared; power, wake and buses; ready-made car products (AutoPi, Freematics, OVMS) as fallbacks; the path to our own boards (a node board with a guardian variant, a separate brain board); risks. Updated 2026-10-06 for ADR-0032/0033: one ESP32 node with an optional Pi brain, no buddy, the guardian as a hidden node variant with no outputs, KKL dev-only.
 ---
 
 # Hardware research: a development kit now, our own hardware later
+
+> **Update (2026-10-06, ADR-0032/0033):** one ESP32-S3 **node** owns the car and power
+> (K-line/CAN I/O, decoding, the transmit gate, GPS, optional 4G, the parked broker, brain
+> power); the Pi is the optional **brain** and never touches the car. There is no separate
+> buddy: read "buddy" below as the node. The **guardian** is now a node hardware variant
+> (same firmware, hidden, battery-backed, tamper and IMU, **no outputs**); its LilyGO
+> T-SIM7670G-S3 + IMU breakout is the starting prototype. The KKL cable on the Pi is the
+> dev path only. Alarm outputs (siren, native alarm, immobiliser) come later via a
+> separate I/O / relay module, with an ADR per car-switching function. Lines that
+> contradict this have been fixed; the architecture below is kept as history.
 
 Prices are UK/US as of October 2026. **(U)** means unverified, so measure or confirm before relying on it.
 
@@ -27,9 +37,10 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 - **The Pi Zero 2 W is ruled out**, because of availability.
 
 > **Amended by [ADR-0028](../../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md) (2026-10-06):**
-> the always-on ESP32 described below is now the **base "buddy"**. It handles wake, the buses,
+> the always-on ESP32 described below is now the **base "buddy"** (since ADR-0032: the node). It handles wake, the buses,
 > Pi power and a small parked MQTT broker; the base has no SIM, and any USB dongle works.
-> The **guardian** is an add-on: the always-on alarm and gateway, optionally with LTE.
+> The **guardian** is an add-on: the always-on alarm and gateway, optionally with LTE
+> (since ADR-0032: a node hardware variant with no outputs).
 > The private CAN module bus is replaced by 10BASE-T1S, with CAN as fallback
 > ([ADR-0026](../../decisions/adr-0026-module-bus-10base-t1s.md)). The kit and prices below still apply.
 
@@ -60,9 +71,9 @@ Prices are UK/US as of October 2026. **(U)** means unverified, so measure or con
 | GPS for drive logging | **A dedicated u-blox at 10 Hz**: keep the current USB GPS, or use a **[SparkFun MAX-M10S Qwiic](https://www.sparkfun.com/sparkfun-gnss-receiver-breakout-max-m10s-qwiic.html)**, plus an antenna | 0–55 | The logger needs 10 Hz (map, speed traces, G-G). The modem's GNSS is about 1 Hz and may have to share time with LTE (U). |
 | Wake and alarm inputs | PC817 4-channel opto board (screw terminals) and **[Adafruit LSM6DSOX](https://adafruit.com/product/4438)** (STEMMA, plus one jumper wire for the interrupt pin) | 15 | Ignition, OEM alarm/siren and doors; wake on motion |
 | Guardian → Pi link | One GPIO driving a CarPiHAT input through an opto/relay board, plus a UART link | 5 | Check the CarPiHAT's power-on logic first (U). Fallback: **[Witty Pi 5 HAT+](https://thepihut.com/products/witty-pi-5-hat-real-time-clock-and-power-management-for-raspberry-pi)**. |
-| K-line (Td5) | **Keep the KKL USB cable** on the Pi | 0 | Proven |
+| K-line (Td5) | **Keep the KKL USB cable** on the Pi for development only; production K-line runs on the node (ADR-0032) | 0 | Proven |
 | OBD front end for later cars and always-on K-line | **[MeatPi WiCAN Pro](https://www.crowdsupply.com/meatpi-electronics/wican-pro)** ($89; backordered until about December 2026) and an OBD Y-splitter (£17) | 85 | Fallback: [SparkFun OBD-II UART](https://www.sparkfun.com/sparkfun-obd-ii-uart.html) (STN1110, £53.50). It might pass the Td5 seed-key exchange, but its timing is unknown, so bench-test it first (U). |
-| Add-on: relay box / alarm I/O | **[Waveshare ESP32-S3-ETH-8DI-8RO-C](https://thepihut.com/products/8-channel-esp32-s3-wi-fi-relay-module-with-can-interface)** | 43 | 7–36 V input; DIN rail; isolated CAN; 8 isolated inputs (5–36 V); 8 × 10 A relays; RTC. A more compact alternative is the [M5Stack StamPLC](https://docs.m5stack.com/en/products/sku/K141) (15 mA standby). |
+| Add-on: I/O / relay module (later; ADR per car-switching function) | **[Waveshare ESP32-S3-ETH-8DI-8RO-C](https://thepihut.com/products/8-channel-esp32-s3-wi-fi-relay-module-with-can-interface)** | 43 | 7–36 V input; DIN rail; isolated CAN; 8 isolated inputs (5–36 V); 8 × 10 A relays; RTC. A more compact alternative is the [M5Stack StamPLC](https://docs.m5stack.com/en/products/sku/K141) (15 mA standby). |
 | Add-on: CAN bridge / emulator | **[Autosport Labs ESP32-CAN-X2](https://wiki.autosportlabs.com/ESP32-CAN-X2)** ($54.95, in stock) | 42 | 2× CAN; automotive 6–20 V input; JST pigtails |
 | Camera (later) | **[M5 Timer Camera X](https://thepihut.com/collections/new-products-maker/products/timer-camera-x-ov3660-esp32-psram)** (2 µA sleep, own battery), XIAO ESP32-S3 Sense, or Pi Camera 3 | 13–35 | Over Wi-Fi to go2rtc on the Pi |
 | Mobile data | **1NCE** IoT SIM (about £11 for 10 years and 500 MB) | 11 | Enough for MQTT telemetry. Use giffgaff data-only if video is ever needed. 3G is switched off in the UK. |
@@ -163,7 +174,7 @@ The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (
 
 | Bus | Plan |
 |---|---|
-| K-line | KKL on the Pi. On the ESP32 side: WiCAN Pro or the STN1110 board. L9637D breakouts aren't really sold (the chip is obsolete). |
+| K-line | On the node (ESP32-S3 with a K-line transceiver) in production; KKL on the Pi for development only. Other ESP32-side options: WiCAN Pro or the STN1110 board. L9637D breakouts aren't really sold (the chip is obsolete). |
 | CAN on the Pi | CarPiHAT, or a Waveshare 2-CH CAN FD HAT |
 | CAN on the ESP32 | TWAI + SN65HVD230 (~£3) or an M5 Unit CAN |
 | Add-on bus | Private CAN at 250/500 kbit/s. 11-bit ID = 4-bit class + 7-bit node. Heartbeat / command / state messages, ISO-TP for config and OTA. Never share wires with vehicle CAN. |
@@ -181,14 +192,15 @@ The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (
 > [ADR-0027](../../decisions/adr-0027-ip-everywhere-ecosystem-architecture.md) and the
 > [ecosystem research](ecosystem_architecture.md).
 
-- **One board** combining:
-  - CM5 (or i.MX93);
-  - ESP32-S3;
-  - SIM7670;
+- **A node board** (ADR-0032) combining:
+  - ESP32-S3 with PSRAM;
   - TJA1051 CAN;
   - an L9637-class K-line transceiver;
-  - an ignition/opto front end;
-  - an 18650/LiFePO4 charger with a thermistor.
+  - an ignition/opto front end and brain power switching;
+  - GNSS and an optional SIM7670-class 4G modem.
+- **A guardian variant** of the node board: backup 18650/LiFePO4 cell with a thermistor
+  charger, IMU, tamper sensing, better antennas; no outputs.
+- **A separate brain board:** CM5 (or i.MX93), a LAN8651 for T1S, the camera Ethernet port.
 - **Firmware and drivers carry over** thanks to the hardware-abstraction-layer contract.
 
 ## Risks
@@ -201,5 +213,5 @@ The usual parasitic allowance is 20–50 mA. 40 Ah at 4 mA is more than a year (
 | RF and EMC | Separate antennas, external GNSS antenna, twisted-pair CAN, ferrites |
 | Battery-drain bugs | Firmware low-voltage cutoff, staged power-down, hard timeouts |
 | Vehicle bus | Listen-only by default; our module bus is physically separate |
-| UK insurance and law | A DIY alarm is not Thatcham-rated, so position it as **notify-only** alongside the OEM alarm. Declare any immobiliser. Sirens must stop within 5 minutes. Tracking other drivers raises GDPR consent issues. |
-| Td5 | No CAN diagnostics; keep K-line with seed-key on the Pi |
+| UK insurance and law | A DIY alarm is not Thatcham-rated, so position it alongside the OEM alarm, not as a replacement; any outputs (siren, immobiliser) come only through a later I/O / relay module with its own ADR (ADR-0033). Declare any immobiliser. Sirens must stop within 5 minutes. Tracking other drivers raises GDPR consent issues. |
+| Td5 | No CAN diagnostics; K-line with seed-key on the node (a C keygen plugin; the Python version stays the lab reference), KKL on the Pi for development |

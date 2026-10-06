@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers plus a comfort class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest.
 ---
 
 # UI architecture — design
@@ -17,7 +17,10 @@ summary: >
 gets its own spec. It refines the IA row of the
 [platform direction](2026-10-06-platform-direction-design.md) and changes none of its decisions.
 The evidence is the seven notes in [`references/research/ui/`](../references/research/ui/), listed
-in `depends_on`.
+in `depends_on`. **Amended on 2026-10-06 (v0.4)** for the node/brain direction
+([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md)) and action categories and
+approvals ([ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md)); the spec
+stays approved and the changes are listed in the changelog.
 
 ## 1. Context and goals
 
@@ -29,7 +32,7 @@ process-wide `active_pack()`) shaped as the D2 `layout.json`, with custom views 
 
 **Goals (the owner's brief).** (1) Every vehicle: generic OBD-II (one ECU), multi-ECU K-line cars
 like the D2, modern CAN/UDS, pre-OBD, with no vehicle-type checks in screens. (2) More than one
-vehicle, with a garage and a switcher. (3) The alarm/guardian (notify-only), the AC/HEVAC controller
+vehicle, with a garage and a switcher. (3) The node's alarm (the guardian variant for hidden security; alarm outputs only later via an I/O module, ADR-0033), the AC/HEVAC controller
 (a separate ESP32 project we only talk to), cameras, the tracker and the relay box, without clutter.
 (4) Head-unit first, still good on phone, tablet and desktop. (5) Generated UI evaluated, not
 assumed (§5.3). (6) A dev pipeline for detecting and decoding cars (§8).
@@ -59,6 +62,8 @@ assumed (§5.3). (6) A dev pipeline for detecting and decoding cars (§8).
 
 Chosen by aspect and height, not width alone; a kiosk flag (`?display=headunit&side=left|right`)
 overrides detection because head-unit browsers report odd DPIs. The 900 px cap stays only on phone.
+On phones the same app ships as a PWA packaged in a native wrapper (Capacitor) for Bluetooth and
+local Wi-Fi to the node, especially on iOS (ADR-0032); the layout classes are unchanged.
 
 | Class | Trigger | Shell (px) | Content area |
 |---|---|---|---|
@@ -82,7 +87,7 @@ right by severity:
 | 4 | **REC** | logging state; tap → Logs |
 | 5 | **Security** | Disarmed / Armed / Alerting, or the tracker fix in Map mode (§6) |
 | 6 | **Device slot** | climate setpoint + fan, or a live-camera chip; one on HU-7/phone, two on HU-wide |
-| 7 | **12 V** | from the vehicle, else the guardian |
+| 7 | **12 V** | from the vehicle, else the node |
 | 8 | **Clock** | |
 | 9 | **Mark** | one-tap flag, the one action safe at any speed |
 
@@ -108,12 +113,17 @@ is built, not hard-coded.
 | **Home** | Zero-layer cards (§5.4): vehicle card (silhouette + health), role tiles, warnings, last trip, parked security/location, device cards, the "unknown vehicle" banner, a large **Drive** button | Drive's health strip |
 | **Diagnose** | Identity bar · **Scan all** · system list (§4.2) · per system **Overview · Faults · Live · Tests · Procedures · Settings** · fault → related live data and tests | Faults, Inputs, Outputs, Settings, Utilities, ModuleSelect |
 | **Logs** | One timeline: drives, parked periods, alarm events, faults, notes, scan reports. **Analysis** is the session detail; replay and Rewind live here | Logs, Analysis, Rewind |
-| **Security** | Alarm state, events, tracker map, geofences, clips (Parked only). **Map** when no guardian | — |
+| **Security** | Alarm state, events, tracker map, geofences, clips (Parked only). Present with any node: every node has GPS and a basic alarm; the guardian variant adds tamper and IMU | — |
 | **More** | Garage, Devices, Integrations (MQTT/HA, OVMS, OwnTracks), Preferences, Privacy, **Developer** (Decode mode, Label, Coverage, Docs), About (service-mode entry) | cog, admin tabs |
 
 The D2 keeps its NanoCom words as **pack labels** over the canonical areas (Live → Inputs, Tests →
 Outputs, Procedures → Utilities). An area with no items disappears; one the pack declares but has
 not mapped stays visible as `untranscribed`.
+
+**Landing screen follows the driving state** (amendment 2026-10-06). The five destinations stay;
+only the screen the app opens on changes: **Drive mode when Moving**, **Security when Parked and
+armed**, **Diagnose in service mode**, otherwise Home. A manual choice holds until the state
+changes.
 
 ### 3.5 Drive mode, driving states and service mode
 
@@ -121,16 +131,17 @@ not mapped stays visible as `untranscribed`.
 It opens from Home, and automatically on entering Moving on head-unit classes.
 
 **Driving state** is computed by the platform, so the server can enforce it, from vehicle speed (any
-system in session), then GPS speed (guardian or u-blox), then proven gear/handbrake signals.
+system in session), then GPS speed (the node's GPS, a guardian variant or a u-blox), then proven gear/handbrake signals.
 
 | State | Rule | Allowed | Locked ("Available when parked") |
 |---|---|---|---|
 | **Parked** | speed 0 for > 5 s and engine off, or handbrake/neutral where known | everything its tier allows | — |
-| **Idling** | engine running, speed 0 | reading, Logs, cameras, text entry; Tier 2 only if the action declares `engine_running_ok` | Tiers 1, 3, 4; video other than cameras |
-| **Moving** | > 5 km/h for > 2 s; leave below 2 km/h for 3 s | Drive mode, telltale sheet (≤ 30 characters a line), Mark, reverse/low-speed camera, climate setpoints | Tiers 1–4, text entry, Docs, Analysis, replay scrubbing, clip playback, system switching, Decode and service mode (auto-exit), lists > 6 items or > 2 levels |
+| **Idling** | engine running, speed 0 | reading, Logs, cameras, text entry; **Maintenance** (Tier 1: clear codes, reset service interval; ADR-0033); Comfort and Security arming; Tier 2 only if the action declares `engine_running_ok` | other Tier 1 actions, Tiers 3, 4; video other than cameras |
+| **Moving** | > 5 km/h for > 2 s; leave below 2 km/h for 3 s | Drive mode, telltale sheet (≤ 30 characters a line), Mark, reverse/low-speed camera, climate setpoints, Comfort actions (driver-safe UI) and Security arming (ADR-0033) | Tiers 1–4 other than Comfort and arming, text entry, Docs, Analysis, replay scrubbing, clip playback, system switching, Decode and service mode (auto-exit), lists > 6 items or > 2 levels |
 
 **Unknown speed** counts as Moving on head-unit classes. A phone is a passenger device we cannot
-verify: reading stays open and actions keep today's "vehicle stationary" precondition. K-line
+verify: reading stays open and actions keep today's "vehicle stationary" precondition. The server
+re-checks the state from the node on every action, whichever device asked. K-line
 carries one session at a time, so in a SLABS session the Td5 speed is absent and GPS covers it.
 
 **Service mode** merges admin and Experimental: a long-press on the version line in More → About
@@ -150,6 +161,12 @@ Experimental items and Decode mode. It is refused, and exits, when Moving.
   K-line); K-line traffic is never interleaved.
 - **Switcher:** the strip's Vehicle chip opens a sheet of vehicle cards; More → Garage edits them.
   With one vehicle neither appears. Every session carries `vid` from U0.
+- **Replay across vehicles (U6, amendment 2026-10-06).** Whole-app replay stays
+  ([ADR-0010](../decisions/adr-0010-replay-notes-audio-motion.md)). Replaying another vehicle's
+  session switches the UI to that session's pack and capability manifest, and switches back to
+  the active vehicle on exit; the active vehicle and its live link are untouched. Every session
+  records its **pack id, pack version and manifest `etag`**, so replay renders what was recorded.
+  Logs replay covers drives, **parked periods and alarm events** alike.
 
 ### 4.2 Vehicle → systems → function areas
 
@@ -182,7 +199,9 @@ Tried in order, stopping at the first confident match:
 1. **Read identity:** OBD Mode 09 VIN, CALID, ECU names; UDS `F187`/`F189`; KWP `1A`.
 2. **Decode the VIN on the device,** in memory, against a bundled WMI/model-year table. Only `{make,
    model_year, region}` and a masked form (`SAL…****`) leave that function. The VIN is **never
-   logged, recorded, captured, put in fixtures or uploaded**; the garage keeps an HMAC under a
+   recorded by default and never leaves the device** (an opt-in for security decoding work keeps
+   identity replies in raw recordings on the device only; ADR-0036): never logged in clear,
+   put in fixtures or uploaded; the garage keeps an HMAC under a
    device-local secret to recognise the car again. Online lookups (e.g. NHTSA vPIC) are opt-in and
    masked.
 3. **Match pack `detection`:** WMI + year, CALID/ECU-name or `F187` patterns, K-line probes.
@@ -218,8 +237,9 @@ Data the UI renders. `GET /pack` grows into it; later `GET /vehicles/<vid>/capab
   "dtc_sources": [ { "id": "td5", "system": "td5", "kind": "kwp_18", "clear_action": "td5.clear_faults" } ],
   "actions": [ { "id": "slabs.compressor", "system": "slabs", "safety": "actuator", "tier": 2,
                  "confirm": "preconditions", "status": "verified", "states": ["parked"], "remote": false } ],
-  "devices": [ { "id": "guardian", "kind": "alarm", "transport": "mqtt", "signals": ["guardian.state"],
-                 "actions": ["guardian.arm"], "slots": { "strip": "security", "destination": "security" } } ],
+  "devices": [ { "id": "node", "kind": "node", "variant": "diag-port", "transport": "mqtt",
+                 "signals": ["node.alarm.state", "node.gps.fix"], "actions": ["node.arm"],
+                 "slots": { "strip": "security", "destination": "security" } } ],
   "views": [ { "id": "body", "slot": "home", "type": "lr_d2/body" } ], "x": { "util_lids": [] } }
 ```
 
@@ -300,25 +320,30 @@ vss-tools (dev-only) and checked in CI; the OVMS alias table comes from OVMS `me
 ## 6. Add-on devices
 
 A device is an entry in `capabilities.devices` with its own signals, actions and views, ids prefixed
-by the device id (`guardian.armed`, `hevac.set_temp`). Devices contribute to **slots** and never
+by the device id (`node.armed`, `hevac.set_temp`). Devices contribute to **slots** and never
 edit a pack layout; each kind may claim one strip slot and one destination or More → Devices page.
-Device actions pass the same gate (§7). The guardian comes first, as a built-in module appending its
-block; **the second device (HEVAC) triggers a `DevicePack` entry point** (`openostler.device`)
-mirroring `VehiclePack`.
+Device actions pass the same gate (§7). **The node and its variants come first**, each through the
+**capability manifest its hardware publishes at boot** (ADR-0032): a diagnostic-port node declares
+diagnostics and security; a hidden guardian variant declares tracking, IMU, tamper and arm state and
+no diagnostics; absent sensors never appear. Every control in a node or add-on manifest declares
+its category and tier (ADR-0033). **The second add-on device (HEVAC) triggers a `DevicePack` entry
+point** (`openostler.device`) mirroring `VehiclePack`.
 
 | Device | Strip | Home card | Page | Actions and gating |
 |---|---|---|---|---|
-| **Alarm / guardian** (notify-only) | Security: Disarmed / Armed / Alerting / Tamper | parked: state + last event | **Security**: state, events (filtered Logs), map | arm/disarm of the *software* alarm only; it never actuates the car. Remote: arm/disarm and reads only |
-| **AC / HEVAC** (separate ESP32, its own API) | climate chip: setpoint + fan; HU-wide may add a bottom climate strip | cabin/ambient temps | More → Devices → Climate | setpoints are `comfort` actions on our own device, not car writes (ADR-0018); allowed while Moving; not remote by default |
+| **Alarm** (every node; the guardian variant adds tamper, IMU and a backup battery) | Security: Disarmed / Armed / Alerting / Tamper | parked: state + last event | **Security**: state, events (filtered Logs), map | Security category: arming allowed while Moving, disarming Parked only. The node and guardian have no outputs; sirens, the car's native alarm or an immobiliser come only through a future I/O module, each with its own ADR (ADR-0033). Notifications work with the brain off and no cloud. Remote: reads plus arming (never disarming) the software alarm, per ADR-0033 §6; more only with the install override (§7) |
+| **AC / HEVAC** (separate ESP32, its own API) | climate chip: setpoint + fan; HU-wide may add a bottom climate strip | cabin/ambient temps | More → Devices → Climate | setpoints are `add-on device` actions (Comfort category) on our own device, not car writes (ADR-0018); allowed while Moving; local only (§7) |
 | **Cameras** (go2rtc) | live-camera chip; REC shared | last clip (Parked) | Security → Clips (Parked); HU-wide secondary pane | reverse pre-empts the screen **only once a fast path exists**, assist-only until then; underbody/front live below 10 km/h; no playback unless Parked. **Future:** 360° surround view as another camera kind under the same rules (owner note, ADR-0018; own spec) |
-| **Tracker** (in the guardian) | in the Security chip (fix age) | location when parked (opt-in) | Security / Map | read-only; location stays on the device unless opted in (ADR-0009) |
-| **Relay box** (private CAN, Phase 4) | none by default | user-pinned channels | More → Devices → Relays | each channel declares its tier, default Tier 2, Parked only, never remote; interlocks on the device and the server |
+| **Tracker** (every node; better antennas on the guardian variant) | in the Security chip (fix age) | location when parked (opt-in) | Security / Map | read-only; location stays on the device unless opted in (ADR-0009) |
+| **Relay boards** (our own, later) | none by default | user-pinned channels | More → Devices → Relays | each channel declares its category (Accessories) and tier, default Tier 2, Parked only, local only; interlocks on the device and the node gate; every car function a board switches needs its own ADR first |
 
-With no device fitted nothing renders: no empty cards or greyed slots; Security shows Map.
+With no add-on fitted nothing renders for it: no empty cards or greyed slots. Security is always present, because every node has GPS and a basic alarm.
 
-**`comfort` class (ADR-0018).** A device action may declare `comfort` only if it never writes to
-a vehicle ECU or bus (HEVAC setpoints, camera switching). Comfort actions are allowed while Moving,
-are not remote by default, and still pass the server gate. Anything that reaches the vehicle keeps
+**`add-on device` render class (ADR-0018, renamed by ADR-0033).** Formerly the `comfort` class;
+renamed so it does not clash with the Comfort action category (§7); the manifest value is
+`addon_device`. A device action may declare it only if it never writes to a vehicle ECU or bus (HEVAC setpoints, camera
+switching). Such actions are allowed while Moving, are local only by default, and still pass
+the gate. Anything that reaches the vehicle keeps
 the tiers in §7. CAN transmit rules are in
 [ADR-0020](../decisions/adr-0020-can-links-listen-only-by-default.md).
 
@@ -331,16 +356,54 @@ serves every path; the UI only renders friction.
 | Tier | From | Examples | Gate | States |
 |---|---|---|---|---|
 | **0 Read** | `read` | codes, live data, ident, readiness | none; stale-grey on link loss | all |
-| **1 Clear** | action flagged `clears` | clear DTCs (KWP `14`, OBD `04`) | one confirm naming system and consequence ("Clear 3 codes from SLABS? Freeze frames will be lost"); offer a report first; re-read to verify | Parked |
+| **1 Clear** | action flagged `clears` | clear DTCs (KWP `14`, OBD `04`), reset service interval | an **automatic snapshot** of codes, freeze frames and readiness to the logbook first; one confirm naming system and consequence ("Clear 3 codes from SLABS? Freeze frames will be lost"); an **extra warning for safety systems** (airbag, ABS, brakes) in the same confirm; re-read to verify; an **audit entry** (who cleared what); NRC `0x22` shown honestly | Parked or Idling for Maintenance |
 | **2 Actuate** | `actuator` | lamps, relays, compressor, injector test | precondition checklist from live data, else ticked; ActiveTestBanner with Stop; auto-timeout; leaving stops it | Parked (Idling if `engine_running_ok`) |
 | **3 Procedure** | `service` | bleed, height calibration, adaptive reset | step wizard, preconditions re-checked each step, 12 V floor, abort anywhere; typed confirm | Parked |
 | **4 Code** | `gated` | coding, security access, airbag or calibration writes | **listed for honesty, never runnable;** the server refuses | none |
 
+### 7.1 Action categories, the second axis (ADR-0033)
+
+Tiers keep setting the safety rules (confirmations, parked-only, moving lockouts). **Roles grant
+categories**, and each category is capped by its tier:
+
+| Category | Examples | Tier | While Moving |
+|---|---|---|---|
+| **Read** | live data, faults, logs, location | 0 | allowed |
+| **Comfort** | AC/heater, seat heaters, lights, windows, aux heater | 1 | allowed (driver-safe UI) |
+| **Security** | arm/disarm, locks, find my car | 1 | arming allowed; disarming Parked only |
+| **Accessories** | relay outputs, spotlights, winch, camera recording | 1–2, set per add-on | per add-on |
+| **Maintenance** | clear codes, reset service interval | 1 | Parked or Idling only |
+| **Actuator tests** | injector, wastegate, SLABS pump | 2 | Parked only |
+| **Procedures** | bleeding, calibrations, adaptation resets | 3 | Parked only |
+| **Coding** | ECU writes | 4 | disabled until each has its own ADR |
+
+| Default role | Categories |
+|---|---|
+| **Owner** | all, up to Tier 3 |
+| **Driver** | Read, Comfort, Security, Maintenance (+ Accessories if granted); no actuator tests |
+| **Viewer** | Read only; location only if shared |
+| **Mechanic** | Read, Maintenance, Actuator tests, Procedures; time-boxed |
+
+The **head-unit kiosk session** (no sign-in) gets **Read and Comfort** only; clearing codes needs a
+signed-in driver. Each add-on and node variant declares the category and tier of every control in
+its manifest. **Drivers may clear codes**: clearing is made safe rather than restricted (the Tier 1
+row above; [J1979 spec §5](2026-10-06-j1979-service-layer-design.md#5-mode-04-clear-dtcs-is-a-tier-1-maintenance-action)).
+
+### 7.2 Phone approval and remote paths (ADR-0033)
+
+- **Phones can approve Tier 2–3** when the phone is a paired device of a user whose role grants the
+  category. Approval runs over **local links only** (the node's Wi-Fi AP, BLE, the in-car LAN).
+  Parked-only rules and the re-checks still apply on the node gate; Stop is on the phone; an
+  "accept" inside an AI client never counts.
+- **Remote paths** (Tailscale, cloud relay) are **read-only by default**. The install-level
+  override `OSTLER_ALLOW_REMOTE_CONTROL` (environment or install config, default off, never
+  settable remotely) allows remote control for developers while the threat model matures.
+
 **Constitution rules unchanged:** nothing writes to the car without these gates; Airbag/SRS is
 read-only by construction; no SecurityAccess, coding or write is sent, and no sniffed write
 replayed, without its own ADR; actuator tests are documented as stationary with ignition on. Also:
-remote paths get Tier 0 only (plus software-alarm arm/disarm); Tiers 1–3 are refused while Moving or
-below the "ECU session" rung; `candidate`/`experimental` status shows on the button and in the
+remote paths are read-only unless the install override is set (§7.2); Tiers 1–3 are refused while
+Moving (except Comfort and arming, §7.1) or below the "ECU session" rung; `candidate`/`experimental` status shows on the button and in the
 confirm; buttons name the action; every Tier 1+ action is logged with before/after values. A write
 tier with backup and diff would need its own ADR. **Imported actions** (OVMS, ADR-0019) keep their
 tier, are `experimental` and `remote: false`, and run only in service mode, Parked, with a per-action
@@ -434,8 +497,8 @@ Phase 0, U5 in its Phase 2, U4 in its Phase 3.
 | **U2 Driving state** | platform driving state (vehicle → GPS), UI lockouts, server refusal of Tiers 1–3 while Moving, service mode with frame | Moving fixture locks actions, text and video; server tests |
 | **U3 Manifest** | Python-generated capabilities (D2 on tiers 2+3), field config onto signals, derived tiers, Scan all with seven states and reports; the visible-signals poll subscription (rule below) | golden manifests for D2 and the fake pack; scan-state tests; a test that every recorded channel is still polled with no screen open |
 | **U4 Second pack** | `generic_obd2`, `generateViews()` (tier 1), single-system collapse, connect-time manifest, local VIN decode, unknown-vehicle banner | view snapshots; ELM fake; a test that no VIN reaches logs |
-| **U5 Devices** | guardian in `devices`, Security destination and chip; HEVAC then extracts `DevicePack`; cameras | device fake; "no device, no chrome" tests |
-| **U6 Garage** | `garage.json`, `VehicleSession` per vid, `/vehicles/<vid>/…` (old routes alias the active vid), switcher, Garage page | two fake vehicles on one port, never interleaved |
+| **U5 Devices** | the node and its variants in `devices` from their capability manifests, Security destination and chip; HEVAC then extracts `DevicePack`; cameras | device fake; "no device, no chrome" tests |
+| **U6 Garage** | `garage.json`, `VehicleSession` per vid, `/vehicles/<vid>/…` (old routes alias the active vid), switcher, Garage page; replay of another vehicle's session switches pack and manifest (§4.1) | two fake vehicles on one port, never interleaved; replay enters and exits another vehicle's manifest |
 | **U7 Decode** | evidence block, `fixtures`, `scrub` CI (D2 proven fields first), OBDb import/export, then Decode-mode screens | fixture and scrub CI |
 
 **Polling rule (U3).** The recording set is the baseline: every recorded channel is always
@@ -478,13 +541,13 @@ where possible", Q2–Q11 with "yes" to each recommendation. Q1 is
 | 1 | Canonical namespace | COVESA VSS 6.1 paths; OVMS/HA/OBDb names are generated aliases (§5.6, ADR-0016) |
 | 2 | Function-area names | Canonical areas with pack labels; the D2 still reads Inputs/Outputs/Utilities |
 | 3 | Rail side | The vehicle's `driver_side` (right for the D2); the kiosk flag overrides |
-| 4 | `comfort` class | Yes, only for our own add-ons that never write to a vehicle ECU (§6); car actions keep the five tiers |
-| 5 | Unknown speed | Moving on head units; on phones reading stays open, actions keep the stationary precondition |
+| 4 | `comfort` class | Yes, only for our own add-ons that never write to a vehicle ECU (§6); car actions keep the five tiers. *Renamed the `add-on device` render class by ADR-0033 (2026-10-06)* |
+| 5 | Unknown speed | Moving on head units; on phones reading stays open, actions keep the stationary precondition. *Amended by ADR-0033: a paired phone may approve Tier 2–3 over local links (§7.2)* |
 | 6 | Generated UI scope | The three tiers; user-arranged dashboards deferred; no remote layout server or composed screens |
 | 7 | VIN in the garage | HMAC fingerprint and masked form only, never the full VIN |
 | 8 | Service-mode entry | Long-press plus password; `/admin` kept on desktop for one release |
 | 9 | Reverse pre-emption | Only after the fast path exists; assist-only until then. 360° cameras are a future item (§6) |
-| 10 | U4 / U5 order | Guardian (U5) first; `generateViews()` only with `generic_obd2` |
+| 10 | U4 / U5 order | Guardian (U5) first; `generateViews()` only with `generic_obd2`. *Amended by ADR-0032: the guardian is a node variant; U5 starts with the node and its variants* |
 | 11 | Write/coding tier | Tier 4 non-runnable; any write path needs its own ADR |
 
 Related: reuse from OVMS and OBDb is [ADR-0019](../decisions/adr-0019-reuse-from-ovms-and-obdb.md);
@@ -522,3 +585,16 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   visible-signals subscription only raises priority or rate, never removes a recorded channel;
   §10.1 notes that U4 needs ADR-0022 (K-line profiles and detection) and ADR-0023 (passive CAN
   bitrate detection).
+- 2026-10-06: v0.4, amendment for the node/brain direction (stays approved; ADR-0032, ADR-0033).
+  §7.1 adds action categories as a second axis to tiers, default roles and the kiosk session
+  (Read + Comfort); the Tier 1 row runs Parked or Idling for Maintenance with an automatic
+  snapshot, a safety-system warning and an audit entry; §3.5 lets Idling permit Maintenance and
+  Moving permit Comfort and arming; §7.2 adds phone approval of Tier 2–3 over local links and the
+  `OSTLER_ALLOW_REMOTE_CONTROL` install override, replacing "remote is Tier 0"; §3.4 adds the
+  landing screen that follows the driving state and makes Security present with any node (no more
+  "Map when no guardian"); §4.1 adds cross-vehicle replay (pack and manifest switch, sessions
+  record pack id, version and manifest `etag`, parked periods and alarm events); §4.4 VIN wording
+  per ADR-0036; §5.1 and §6 bring in the node and its variants through a per-hardware capability
+  manifest, GPS and 12 V from the node, relay boards as our own later boards with an ADR per
+  switching function, and the `comfort` render class renamed `add-on device`; §3.1 notes the phone
+  app packaged with Capacitor; §11 Q4, Q5 and Q10 annotated.

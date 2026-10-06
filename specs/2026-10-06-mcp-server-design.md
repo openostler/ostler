@@ -1,20 +1,22 @@
 ---
 title: "MCP server and pack-author skill — AI-native access to the car through the same gates — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-06
-depends_on: [CONSTITUTION.md, GOALS.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-api-consistency-design.md, references/research/ui/decode_pipeline.md]
+depends_on: [CONSTITUTION.md, GOALS.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-api-consistency-design.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Draft. An Ostler MCP server so MCP clients (coding assistants, desktop chat apps, local agents) can read the car, diagnose faults, search the logbook and help decode unknown cars. It is a thin, separate process over the local HTTP API (OpenAPI/AsyncAPI plus the capability manifest), shipped as the optional extra openostler[mcp] on the official MIT Python SDK, targeting MCP 2026-07-28 with fallback to 2025-11-25. Resources under ostler://vehicle/<vid>/…, a tool table with tier and driving state per tool, three prompts, owner-granted revocable scoped tokens (ADR-0029), stdio first then LAN Streamable HTTP, an audit log, and a pending-action flow in which a human approves Tier 1 on a trusted Ostler screen (AI never gets a bypass; Tiers 2–3 are handed to the car's screen; Tier 4 never). Also designs the skill/pack-author Agent Skill (scaffold a pack, decode workflow, hard-rule checks, validators before PR). Phases P1–P4; waits on the API consistency spec.
+  Approved by the owner on 2026-10-06 (ADR-0030). An Ostler MCP server so MCP clients (coding assistants, desktop chat apps, local agents) can read the car, diagnose faults, search the logbook and help decode unknown cars. It is a thin, separate process over the local HTTP API (OpenAPI/AsyncAPI plus the capability manifest), shipped as the optional extra openostler[mcp] on the official MIT Python SDK, targeting MCP 2026-07-28 with fallback to 2025-11-25. Resources under ostler://vehicle/<vid>/…, a tool table with tier and driving state per tool, three prompts, owner-granted revocable scoped tokens (ADR-0029), stdio first then LAN Streamable HTTP, an audit log, and a pending-action flow in which a human whose role grants Maintenance approves Tier 1 on a trusted Ostler screen (AI never gets a bypass; an accept inside the client never counts; Tiers 2–3 are handed to the car's screen or a paired phone on a local link, per ADR-0033; Tier 4 never). Also designs the skill/pack-author Agent Skill (scaffold a pack, decode workflow, hard-rule checks, validators before PR). Phases P1–P4; waits on the API consistency spec.
 ---
 
 # MCP server and pack-author skill — design
 
-**Status:** draft v0.1, for owner review. The decision is
+**Status:** approved by the owner on 2026-10-06 (v0.2). The decision is
 [ADR-0030](../decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md). Accounts and
-tokens are [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md) (proposed);
-this spec uses its tokens and does not define them.
+tokens are [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md);
+categories, phone approval and the remote rule are
+[ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md). This spec uses them and
+does not define them. Q1 and Q2 are answered (§14); the rest block nothing in P1.
 
 ## 1. Context and goals
 
@@ -98,8 +100,8 @@ includes unknown speed on head-unit classes (ADR-0018 Q5).
 | `summarise_session {id, metrics[]}` | per-channel min/max/mean/time-in-range, faults, notes | 0 | `sessions` | ✓ | ✓ | ✓ |
 | `compare_sessions {id, baseline_id, metrics[]}` | the same summary side by side, with deltas | 0 | `sessions` | ✓ | ✓ | ✓ |
 | `start_recording` · `stop_recording {name?}` | server-state commands (`start_csv`/`stop_csv`) | server state | `recording` | ✓ | ✓ | ✗ (owner: read-only while moving) |
-| `request_clear_faults {system, reason}` | creates a pending action (§5); returns its id | 1 | `max_tier` ≥ 1 | ✓ | ✗ | ✗ |
-| `request_action {action_id, params}` | hands a Tier 2–3 action to the car's screen (§5) | 2–3 | `max_tier` ≥ 2 or 3 | ✓ | per `engine_running_ok` | ✗ |
+| `request_clear_faults {system, reason}` | creates a pending action (§5); returns its id | 1 (Maintenance) | `max_tier` ≥ 1 + Maintenance | ✓ | ✓ (the ECU may refuse, NRC `0x22`; reported honestly) | ✗ |
+| `request_action {action_id, params}` | hands a Tier 2–3 action to the car's screen or a paired phone on a local link (§5) | 2–3 | `max_tier` ≥ 2 or 3 + the action's category | ✓ | per `engine_running_ok` | ✗ |
 | `get_pending_action {id}` | status: `waiting`, `approved`, `declined`, `expired`, `done`, `failed`, with before/after values | 0 | the requesting token | ✓ | ✓ | ✓ |
 | `decode_capture_mark {label}` · `decode_read_sniff` · `decode_propose {from, to}` | marker in the capture, sniff grid, `automap` proposals (P4) | 0 | `decode` + service mode | ✓ | ✓ | ✗ |
 
@@ -128,15 +130,20 @@ answered inside the MCP client, which may be automated or configured to auto-app
    client's token. The server checks scope, tier and state, and stores a pending action with
    the token's label, the client's reason, the system and consequence text the UI would show
    (UI spec §7), a 120 s expiry, and the before-values.
-2. The approval card appears on every trusted screen: a screen signed in as the owner
-   (ADR-0029) on the head unit, the in-car display or the owner's paired phone. It says which
+2. The approval card appears on every trusted screen: a screen signed in as a user whose
+   role grants the action's category (ADR-0029, ADR-0033), on the head unit, the in-car
+   display or that user's paired phone on a local link. The kiosk session never approves. It says which
    connected app asked and why, and offers "Save a report first" for clears.
-3. **Tier 1:** the human taps Approve (or Decline). The server re-checks state and
-   preconditions **at execution**, runs the action through the normal gate, re-reads to
-   verify, and logs before/after values.
+3. **Tier 1:** a user whose role grants Maintenance taps Approve (or Decline). The server
+   writes the automatic snapshot (codes, freeze frames, readiness; ADR-0033 §5), re-checks
+   state and preconditions **at execution** (Parked or Idling), runs the action through the
+   normal gate, re-reads to verify, and logs before/after values.
 4. **Tiers 2–3:** approval opens the normal actuator banner or procedure wizard on that
    screen. The human runs it, with Stop and the timeouts; the MCP client only sees status.
-   These are approved only on the head unit or in-car display, Parked (§14 Q2: phones).
+   These are approved on the head unit, the in-car display or a **paired phone on a local
+   link** of a user whose role grants the category (ADR-0033 §6), Parked (or Idling where
+   `engine_running_ok`); the node gate re-checks at execution and the phone shows Stop.
+   Over a remote path this needs the install-level `OSTLER_ALLOW_REMOTE_CONTROL` override.
 5. The tool returns the pending id at once. Clients that support the MCP Tasks extension get a
    task in `input_required`, then `completed`/`failed`; others poll `get_pending_action`. When
    the client supports URL-mode elicitation, the server sends the approval page URL on the
@@ -172,8 +179,10 @@ answered inside the MCP client, which may be automated or configured to auto-app
   an authorization-code flow with PKCE and client ID metadata documents, for clients that only
   speak that, if ADR-0029's spec takes it on (§14 Q4). Origin validation on every request
   (DNS-rebinding defence); loopback plus LAN only; never forwarded to the internet.
-- **Remote rule.** An MCP client is a remote path in UI spec §7 terms: Tier 0 directly, and
-  anything above only through §5.
+- **Remote rule.** An MCP client never acts above Read directly, whatever its transport:
+  anything above goes through §5, and a human approves it under ADR-0033 §6 (local links,
+  or remote only with the install override). An accept or elicitation inside the client
+  never counts.
 
 ## 7. Privacy
 
@@ -197,7 +206,7 @@ Settings → Connected apps shows it per token. Rotation by size; retention set 
 
 ## 9. Implementation choice: SDK extra, not a stdlib server
 
-- **Recommended:** `openostler[mcp]` on the official Python MCP SDK (MIT, compatible with
+- **Decided (owner, 2026-10-06):** `openostler[mcp]` on the official Python MCP SDK (MIT, compatible with
   AGPL-3.0-or-later). The SDK tracks the protocol's churn: 2026-07-28 made the core stateless
   (no `initialize`, `server/discover`, multi-round-trip input requests, Tasks) while many
   clients still speak 2025-11-25, and the SDK negotiates both. It also carries the OAuth
@@ -230,7 +239,7 @@ All land in the HTTP API (for every client), each in its own phase spec:
 |---|---|---|
 | **P1 Read-only, stdio** | `openostler-mcp` stdio; resources §3; Tier 0 tools except `run_scan_report`; prompts; audit log; token from env | API consistency steps 1–2; ADR-0029 P1 tokens on API routes |
 | **P2 LAN HTTP + tokens** | Streamable HTTP on the device; resource subscriptions for live signals; Connected apps page; scopes enforced server-side; `run_scan_report`, recording control | P1; U2 driving state; U3 manifest; ADR-0029 P1 |
-| **P3 Tier 1 with confirmation** | Pending actions (§5), approval card, `request_clear_faults`, Tasks support; Tier 2–3 hand-off (`request_action`) after a car test of the card | P2; a car-tested approval card |
+| **P3 Tier 1 with confirmation** | Pending actions (§5), approval card for users whose role grants the category, `request_clear_faults` with the automatic snapshot, Tasks support; Tier 2–3 hand-off (`request_action`) to the in-car screen or a paired phone on a local link, after a car test of the card | P2; a car-tested approval card; ADR-0033 categories in the gate |
 | **P4 Skill and decode tools** | `skill/pack-author/` (§12); `decode_*` tools behind service mode | P1 for reads; U7 evidence and scrub for full Verify. The skill's docs can land any time after approval |
 
 ## 12. The `skill/pack-author/` Agent Skill
@@ -288,7 +297,9 @@ from the docs manifest (Agent Skills frontmatter differs from ours); that change
 - Catalog: `mcp/catalog.json` matches `api/openapi.yaml`; every tool has a tier, scope and
   state row; no tool targets a Tier 4 action or a raw-frame route.
 - Gates, against a fake-pack server: every Tier 1+ request without approval does nothing to
-  `FakeKLineEcu`; approval from a non-trusted session is refused; Moving and unknown speed
+  `FakeKLineEcu`; approval from a non-trusted session, the kiosk session or a user whose
+  role lacks the category is refused; a paired phone's Tier 2–3 approval is honoured on a
+  local link and refused remotely without the override; Moving and unknown speed
   refuse `request_*`, recording control and `run_scan_report`; a pending action expires and is
   cancelled on Moving, link loss and revocation; one pending action at a time.
 - Elicitation: a form-mode "accept" from the client never executes an action.
@@ -300,10 +311,12 @@ from the docs manifest (Agent Skills frontmatter differs from ours); that change
 - Skill: `check_pack.py` fails on seeded violations; `new_pack.py` output passes the pack
   conformance tests and `reuse lint`.
 
-## 14. Open questions
+## 14. Questions
 
-1. SDK extra (recommended) or a stdlib stdio server for P1 to keep zero new dependencies?
-2. Tier 2–3 approval on the owner's phone, or head unit and in-car display only (proposed)?
+1. ~~SDK extra or a stdlib stdio server?~~ **Answered:** the official Python MCP SDK as the
+   optional extra `openostler[mcp]`.
+2. ~~Tier 2–3 approval on the owner's phone?~~ **Answered:** yes, from a paired phone of a
+   user whose role grants the category, over local links only, per ADR-0033 §6.
 3. Recording control while Moving: refused (proposed, "read only while moving") or allowed,
    since it touches only the server?
 4. ADR-0029's token model: add the `scan`, `recording` and `decode` grants, and an
@@ -329,3 +342,7 @@ a simulator); we reuse ideas only. Agent Skills format: agentskills.io specifica
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft.
+- 2026-10-06 — v0.2: approved by the owner (ADR-0030 accepted). Q1 (SDK extra) and Q2
+  (phone approval, local links only, ADR-0033) answered; Tier 1 approved by a user whose role
+  grants Maintenance, Parked or Idling, with the automatic snapshot; the remote rule follows
+  ADR-0033; P3 updated.

@@ -2,18 +2,23 @@
 title: "J1979 service layer — modes 01–0A over K-line and CAN — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-06
 depends_on: [CONSTITUTION.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, references/research/muki01/README.md, references/research/muki01/obd2_can_bus_library.md, references/research/muki01/obd2_kline_reader.md, references/research/ui/vehicle_data_model.md, references/research/ui/decode_pipeline.md]
 summary: >
-  Approved by the owner on 2026-10-06. A stdlib-only, transport-agnostic SAE J1979 layer in src/openostler/obd/, shared by K-line (ISO 9141-2, KWP2000) and CAN (ISO 15765-4). It speaks to an ObdRequestLink that returns replies keyed by ECU address and does its own multi-frame work (ISO-TP on CAN, multi-message sequences on K-line). It covers chained support bitmaps for modes 01, 02, 06 and 09; decoders for modes 01–0A that read PID formulas as data (OBDb SAEJ1979, CC BY-SA, imported into the generic_obd2 pack's store); P/C/B/U DTCs for modes 03, 07 and 0A; freeze frame with its trigger DTC; readiness into Vehicle.Ostler.Diagnostics.*; Mode 06 results; and Mode 09 CALID, CVN and ECU name, with the VIN decoded locally and never logged. Mode 04 is a Tier 1 action; Mode 08 is never sent; a CAN DTC reply whose count disagrees with its length falls back and warns. supported() feeds the connect-time capability manifest, values carry their store record's VSS metric and the platform derives Vehicle.Ostler.Diagnostics.*, and the tests are written first from the muki01 defects. J1979-2 (OBD on UDS) is noted for later.
+  Approved by the owner on 2026-10-06. A stdlib-only, transport-agnostic SAE J1979 layer in src/openostler/obd/, shared by K-line (ISO 9141-2, KWP2000) and CAN (ISO 15765-4). It speaks to an ObdRequestLink that returns replies keyed by ECU address and does its own multi-frame work (ISO-TP on CAN, multi-message sequences on K-line). It covers chained support bitmaps for modes 01, 02, 06 and 09; decoders for modes 01–0A that read PID formulas as data (OBDb SAEJ1979, CC BY-SA, imported into the generic_obd2 pack's store); P/C/B/U DTCs for modes 03, 07 and 0A; freeze frame with its trigger DTC; readiness into Vehicle.Ostler.Diagnostics.*; Mode 06 results; and Mode 09 CALID, CVN and ECU name, with the VIN decoded locally and never logged. Mode 04 is a Tier 1 Maintenance action (Parked or Idling, an automatic snapshot first, one confirmation, an audit entry; ADR-0033); Mode 08 is never sent; a CAN DTC reply whose count disagrees with its length falls back and warns. supported() feeds the connect-time capability manifest, values carry their store record's VSS metric and the platform derives Vehicle.Ostler.Diagnostics.*, and the tests are written first from the muki01 defects. J1979-2 (OBD on UDS) is noted for later. This Python layer is the lab/reference; the production link layer moves to the node in C later, checked by shared test vectors (ADR-0032).
 ---
 
 # J1979 service layer — design
 
 **Status:** approved by the owner on 2026-10-06; the answers are in
 [§12](#12-decisions-2026-10-06). The questions the owner did not take up stay open and
-block nothing before a car fixture.
+block nothing before a car fixture. Amended on 2026-10-06 (v0.3) for the node/brain
+direction: Mode 04 follows the action categories of
+[ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md), and this layer is
+the lab/reference for a later C port on the node
+([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md)); see
+[§10.1](#101-lab-reference-and-the-node).
 
 ## Context
 
@@ -207,22 +212,48 @@ same decoder without MIL or count. Labels are our own words.
   spec §8); UDS `62 F1 90` and `62 F1 8C`. `LoggingTransport` and `LoggingCanLink` write
   `<redacted n bytes>` in their place (packs spec §2.7).
 
-## 5. Mode 04: clear DTCs is a Tier 1 action
+## 5. Mode 04: clear DTCs is a Tier 1 Maintenance action
 
-Mode 04 also erases freeze frames, readiness and Mode 06 results. It reaches the car
-**only** through `J1979.clear_dtcs(grant)`; a guard test checks no other path builds `04`.
+Mode 04 also erases freeze frames, readiness and Mode 06 results. Clearing codes is made
+safe rather than restricted
+([ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md)): it sits in the
+**Maintenance** category at Tier 1, so drivers may clear as well as owners and mechanics.
+It reaches the car **only** through `J1979.clear_dtcs(grant)`; a guard test checks no
+other path builds `04`.
 
-1. **Server gate (U2):** the pack's `Command(clears=True)` derives Tier 1 (UI spec §7):
-   refused unless Parked, local (remote paths get Tier 0 only) and confirmed. The confirm
-   names the ECUs and the cost ("Clear 3 codes? Freeze frames and readiness monitors will be
-   reset; permanent codes stay."). The gate mints a short-lived, single-use `ClearGrant`; on
-   CAN the frame also needs the pack's allowlist entry ([CanLink spec §7](2026-10-06-canlink-isotp-design.md)).
-2. **A report first:** "Save a report first" stores 03, 07, 0A, freeze frames and
-   readiness (identity masked) to Logs.
-3. **Send** one functional `04`; record each ECU's `44` or NRC. NRC `0x22` (engine running)
-   reads "Switch the engine off, ignition on, and try again".
-4. **Re-read** 03, 07, 0A and PID 01, and log before and after with the action (UI spec §7).
+1. **Server gate (U2):** the pack's `Command(clears=True)` derives Tier 1, category
+   Maintenance (UI spec §7). It is refused unless:
+   - the driving state is **Parked or Idling** (never Moving);
+   - the user's role grants Maintenance (Owner, Driver and Mechanic by default; Viewer and
+     the unsigned head-unit kiosk session never do: clearing needs a signed-in user);
+   - the request comes over a **local link** (the in-car LAN, the node's Wi-Fi AP or BLE).
+     Remote paths (Tailscale, cloud relay) stay read-only unless the install-level
+     override `OSTLER_ALLOW_REMOTE_CONTROL` is set in the environment or install config
+     (default off, never settable remotely; ADR-0033);
+   - the user gives **one confirmation**. It names the ECUs and the cost ("Clear 3 codes?
+     Freeze frames and readiness monitors will be reset; permanent codes stay. A snapshot
+     is saved to the logbook first.").
+   The gate mints a short-lived, single-use `ClearGrant`; on CAN the frame also needs the
+   pack's allowlist entry ([CanLink spec §7](2026-10-06-canlink-isotp-design.md)).
+2. **Safety-system warning:** when any code to be cleared belongs to a safety system
+   (airbag/SRS, ABS, brakes, as tagged by the pack or by the code's system category), the
+   confirmation carries an extra warning that the fault may be real and the system may not
+   work as intended. It is still one confirmation, not a second dialog. Airbag/SRS ECUs
+   that a pack marks read-only by construction (CONSTITUTION) are never cleared at all.
+3. **Automatic snapshot first:** before `04` is sent, the layer stores 03, 07, 0A,
+   freeze frames and readiness (identity masked) to the logbook as a "before clear" event.
+   This is automatic and replaces the former optional "Save a report first". If the
+   snapshot cannot be written, the clear is not sent.
+4. **Send** one functional `04`; record each ECU's `44` or NRC. **NRC `0x22`
+   (conditions not correct)** is shown honestly per ECU: while idling many ECUs refuse,
+   and the UI says so ("The engine ECU refused while the engine is running. Switch the
+   engine off, ignition on, and try again.") rather than reporting a generic failure or
+   pretending the clear worked.
+5. **Re-read** 03, 07, 0A and PID 01, and log before and after with the action (UI spec §7).
    Remaining permanent codes are explained, not shown as a failure.
+6. **Audit:** every attempt writes an audit entry: who (user and device), when, the driving
+   state, which ECUs and codes were cleared, each ECU's `44` or NRC, and a link to the
+   snapshot. Refusals at the gate are audited too.
 
 **Mode 08 is never sent** (owner Q6, 2026-10-06; inventory row 22), not even its `08 00`
 bitmap: it is listed as `planned` and not runnable. A guard test checks that no path builds
@@ -299,6 +330,10 @@ ISO 9141 / J1979 `FakeKLineEcu`.
 | F14 | multi-PID reply `41 0C … 0D … 05 …` and an unknown PID in the middle | walk stops, rest `malformed` |
 | F15 | Mode 06 CAN records across UASIDs | scaling and `passed` |
 | F16 | Mode 04 | refused without a grant; one functional `04`; re-read 03/07/0A/01; NRC `22` text |
+| F16a | Mode 04 snapshot | 03, 07, 0A, freeze frames and readiness stored to the logbook before `04` is sent; a failed snapshot write blocks the clear |
+| F16b | Mode 04 driving state | granted when Parked and when Idling; refused when Moving; an idling ECU's NRC `22` shown per ECU, others' `44` kept |
+| F16c | Mode 04 safety warning | a code from an airbag, ABS or brake system adds the warning to the single confirmation; no warning otherwise; SRS read-only ECUs never sent `04` |
+| F16d | Mode 04 audit | one audit entry per attempt (user, device, state, ECUs, codes, per-ECU result, snapshot link); gate refusals audited; remote request refused unless `OSTLER_ALLOW_REMOTE_CONTROL` is set |
 | F17 | Mode 08 guard | no code path builds a service `08` request, `08 00` included |
 
 Fixture VINs are built at test time from parts, so no VIN literal sits in the tree and the
@@ -314,6 +349,17 @@ a two-ECU CAN fake.
 - `THIRD_PARTY_LICENSES.md` notes that no muki01 code was used (the OBDb pin is the pack's).
 - `clears` and `ClearGrant` arrive with the U2 gate; until then no route mints a grant, so
   `clear_dtcs` cannot run.
+
+### 10.1 Lab reference and the node
+
+This Python layer is built as approved and stays the **lab/reference** implementation
+([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md)). The production link layer
+(K-line and CAN I/O, the transmit gate, and the request engine) moves to the node in
+portable C once the facts are stable. The two builds are checked by **shared test
+vectors** (bytes in, results out, plus the gate and Mode 04 cases), seeded from the §9
+fixtures and run in CI against both. On the node, the brain or a paired phone mints the
+`ClearGrant` and the node's gate verifies it. Discovery, re-decoding of recordings and
+analysis stay in Python.
 
 ## 11. Out of scope
 
@@ -351,3 +397,10 @@ codes (Q12, [packs spec §2.6](2026-10-06-vehicle-packs-generic-obd2-bmw-e-desig
 - 2026-10-06 — v0.1: first draft.
 - 2026-10-06 — v0.2: approved by the owner. Mode 08 never sent (guard test F17); the
   `count_mismatch` fallback confirmed; questions 2, 4 and 5 stay open.
+- 2026-10-06 — v0.3: amendment for the node/brain direction (stays approved). Mode 04 is
+  a Tier 1 Maintenance action (ADR-0033): Parked or Idling, an automatic logbook snapshot
+  replaces "save a report first", one confirmation, an extra safety-system warning, an
+  audit entry, NRC `0x22` shown honestly, drivers may clear; remote clearing only with the
+  `OSTLER_ALLOW_REMOTE_CONTROL` install override. This layer is the lab/reference for a
+  later C link layer on the node (ADR-0032) with shared test vectors (§10.1). Tests
+  F16a–F16d added.
