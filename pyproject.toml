@@ -16,7 +16,7 @@ Homepage = "https://ostler.tech"
 Source = "https://github.com/openostler/ostler"
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "pyyaml>=6", "openapi-spec-validator>=0.7.1", "jsonschema>=4.18"]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack
