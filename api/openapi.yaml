@@ -1640,7 +1640,7 @@ components:
       description: The live state, pushed over `/events` every poll and returned by `/snapshot`.
       required: [status]
       properties:
-        status: {type: string, description: "connected | connecting | error | no-cable | needs-detect (a K-line source with no profile: nothing is sent until a Parked detect_protocol) | asleep (a node source: the node sleeps cleanly) | broker-down (a node source: the Brain cannot reach the MQTT broker)"}
+        status: {type: string, description: "connected | connecting | error | no-cable | needs-detect (a K-line source with no profile: nothing is sent until a Parked detect_protocol) | asleep (a node source: the node sleeps cleanly, or its power record says `off`) | broker-down (a node source: the Brain cannot reach the MQTT broker)"}
         source_kind: {type: string, description: "serial (a pack's cable source) | kline (the generic K-line link source) | node (NodeSource: the node's MQTT messages)"}
         node:
           description: A node source's node; absent for cable sources.
@@ -1710,7 +1710,7 @@ components:
       description: The node's ADR-0040 power record, as published on its `power` topic.
       required: [state]
       properties:
-        state: {type: string, description: "awake | held | waking | asleep | shutting_down"}
+        state: {type: string, description: "off | asleep | waking | awake | held | shutting_down (ADR-0040 §1)"}
         since: {type: [string, "null"], description: "RFC 3339 UTC when the state began; null until the node's clock is set."}
         since_us: {type: integer, description: "The node's monotonic clock when the state began."}
         class: {type: string}
@@ -1783,18 +1783,18 @@ components:
         kind: {type: string, description: "node | brain | module (a guardian and a sensor node are `node` with that variant)"}
         variant: {type: string, description: "diag-port | guardian | sensor | …"}
         model: {type: string}
-        board: {type: string, description: The compiled-in board profile.}
+        board: {type: string, description: "The compiled-in board profile (`host-sim` in the firmware's host tests)."}
         fw: {type: string}
         etag: {type: string}
-        priority: {type: number, description: "The owner's priority from pairing (higher first, ADR-0037 §3)."}
+        priority: {type: number, description: "The owner's priority from pairing (higher first, ADR-0037 §3); absent when none is set (the claim then carries `priority: null`)."}
         memory:
           type: object
           properties:
-            psram_kb: {type: number}
+            psram_kb: {type: number, description: "PSRAM fitted; 0 when the board has none."}
           additionalProperties: true
         roles:
           type: array
-          description: "Roles the device may hold (ADR-0037 §2, §3): `{role, scope?, max_clients?, priority?}`."
+          description: "Roles the device may hold (ADR-0037 §2, §3): `{role, scope?, max_clients?, priority?}`. The gate is not listed here: it is declared by `transmit` (the node publishes `roles: []`)."
           items:
             type: object
             required: [role]
@@ -1821,15 +1821,16 @@ components:
               id: {type: string}
               kind: {type: string}
               origin: {type: string, enum: [board, detected, harness, config]}
-              status: {type: string, enum: [ok, absent, fault, no_signal, refused]}
+              status: {type: string, enum: [ok, absent, fault, no_signal, unverified, refused], description: "`unverified`: present but not yet confirmed (the node's K-line item until an init on the bus succeeds; sensor-detection §2). Shown as \"Not verified yet\", neither ok nor a fault."}
+              bus: {type: string, description: "The bus id an interface item serves (the node's K-line item: `kline-diag`)."}
             additionalProperties: true
-        links: {type: array, items: {type: object, additionalProperties: true}, description: "How the device is reached (USB, T1S segment, Ethernet, Wi-Fi, BLE)."}
+        links: {type: array, items: {type: object, additionalProperties: true}, description: "How the device is reached (USB, T1S segment, Ethernet, Wi-Fi, BLE): `{kind, via?, segment?}`; the node sends `[{kind: wifi}]`."}
         power:
           type: object
           properties:
             class: {type: string, enum: [always, wakeable, check_in, none]}
             wake_paths: {type: array, items: {type: string}}
-            parked_ma: {type: number}
+            parked_ma: {type: number, description: "Optional; the node does not send it yet."}
           additionalProperties: true
         actions:
           type: array
@@ -2668,6 +2669,7 @@ components:
         gaps: {type: integer}
         lost: {type: integer}
         overflow: {type: integer}
+        time_marks: {type: integer, description: "The node's `time` events stored (raw-tap §2.4): with at least one the pcapng export stamps UTC; none keeps the node's clock since boot."}
         brain_scrubbed: {type: integer}
         brain_dropped: {type: integer}
       additionalProperties: true

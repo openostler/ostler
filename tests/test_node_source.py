@@ -131,6 +131,7 @@ def test_asleep_waking_offline_and_values_are_never_zeroed(rig):
     rig.node.connect()
     alpha(rig.node, 1234, 1_000_000)
     for state, status, conn in (("asleep", "asleep", "disconnected"),
+                                ("off", "asleep", "disconnected"),  # ADR-0040: no supply
                                 ("waking", "connecting", "connecting"),
                                 ("awake", "connected", "connected")):
         rig.node.send(case(state))
@@ -157,7 +158,7 @@ def test_broker_down_then_back(tmp_path):
             r.sync()
             port = r.broker.port
             r.broker.stop()
-            assert wait_for(lambda: r.poll()["status"] == "broker-down")
+            assert wait_for(lambda: r.poll()["status"] == "broker-down", timeout=5)
             snap = r.poll()
             assert snap["conn"] == "lost" and snap["error"] == "Brain cannot reach the broker"
             assert snap["signals"]["alpha_speed"]["v"] == 5.0  # kept with its age
@@ -165,7 +166,9 @@ def test_broker_down_then_back(tmp_path):
             time.sleep(0.3)
             with FakeBroker(port=port):
                 assert wait_for(lambda: r.feed.connected, timeout=5)
-                assert r.poll()["status"] == "connecting"  # no status from the node yet
+                # the feed's own state follows its connect callback, so wait for it too;
+                # no status from the node yet, so it reads connecting
+                assert wait_for(lambda: r.poll()["status"] == "connecting", timeout=5)
         finally:
             r.close()
 
@@ -255,7 +258,8 @@ def test_node_payloads_match_the_asyncapi_schemas():
     vss_v = jsonschema.Draft202012Validator(msgs["nodeVss"]["payload"])
     power_v = _validator(_load(OPENAPI), "/components/schemas/NodePower")
     status_v = jsonschema.Draft202012Validator(msgs["nodeStatus"]["payload"])
-    for name in ("td5-vectors.jsonl", "slabs-vectors.jsonl", "status-power.jsonl"):
+    for name in ("td5-vectors.jsonl", "slabs-vectors.jsonl", "lifecycle.jsonl",
+                 "status-power.jsonl"):
         for m in load(name):
             kind = m["topic"].split("/")[4]
             if kind == "vss":

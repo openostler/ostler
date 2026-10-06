@@ -364,8 +364,10 @@ class NodeSource(DataSource):
         elif dev["status"] == "offline":
             snap["status"] = "error"
             snap["error"] = "Node offline"
-        elif dev["status"] == "asleep" or state == "asleep":
-            snap["status"] = "asleep"  # a clean sleep (ADR-0037 Amendment 8, ADR-0040 §1)
+        elif dev["status"] == "asleep" or state in ("asleep", "off"):
+            # a clean sleep (ADR-0037 Amendment 8, ADR-0040 §1); ``off`` (no supply, from its
+            # power owner) is not running either, and is no unexpected loss
+            snap["status"] = "asleep"
         elif state == "waking":
             snap["status"] = "connecting"
             snap["connect_phase"] = "waking"

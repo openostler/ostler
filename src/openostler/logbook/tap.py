@@ -14,6 +14,10 @@ by the node's ``t_us`` (raw-tap §2.4).
 - **Sequence.** ``seq`` gaps are logged as ``tap_gap`` events and counted, never filled;
   a ``seq`` already written (a QoS 1 redelivery) is skipped. ``overflow`` events from the
   node are counted and logged.
+- **Time.** The node's ``time`` events (raw-tap §2.4, CBOR ``{t_us, utc_ns, source,
+  err_us}``) are stored with the other records and counted (``time_marks`` in the meta);
+  readers map ``t_us`` to UTC from them (``node/tap.py`` ``TimeMap``, the pcapng export).
+  A file without one keeps the node's clock only.
 - **Identity scrub, checked again (ADR-0036).** A header with ``scrub: on``: the Brain
   re-applies the node's rule and logs anything the node missed. ``scrub: off`` (or no
   header yet) is accepted only when this install's own option ``OSTLER_RECORD_IDENTITY``
@@ -28,8 +32,8 @@ import os
 import re
 from typing import Callable, Optional
 
-from ..node.tap import (EV_OVERFLOW, IdentityScrub, TapRecord, encode_record, parse_header,
-                        parse_records, valid_session)
+from ..node.tap import (EV_OVERFLOW, IdentityScrub, TapRecord, encode_record, is_time_event,
+                        parse_header, parse_records, valid_session)
 
 RECORD_IDENTITY_ENV = "OSTLER_RECORD_IDENTITY"
 _TRUE = frozenset({"1", "true", "yes", "on"})
@@ -62,6 +66,7 @@ class _Stream:
         self.lost = 0
         self.duplicates = 0
         self.overflow = 0
+        self.time_marks = 0
         self.malformed = 0
         self.scrub = IdentityScrub()
         self.mode: "str | None" = None
@@ -78,6 +83,7 @@ class _Stream:
                 "seq_first": self.seq_first, "seq_last": self.seq_last,
                 "records": self.records, "bytes": self.bytes,
                 "gaps": self.gaps, "lost": self.lost, "overflow": self.overflow,
+                "time_marks": self.time_marks,
                 "brain_scrubbed": self.scrub.scrubbed, "brain_dropped": self.scrub.dropped}
 
 
@@ -149,6 +155,8 @@ class TapRecorder:
             kept = self._check(st, r)
             if kept is None:
                 continue
+            if is_time_event(kept):
+                st.time_marks += 1
             if st.seq_first is None:
                 st.seq_first = r.seq
             st.seq_last = r.seq

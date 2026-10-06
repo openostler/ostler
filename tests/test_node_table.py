@@ -81,6 +81,8 @@ def test_parse_topic_and_payloads():
     assert parse_topic("other/v1/x/y/z") is None and parse_topic("ostler/v1/x") is None
     assert parse_status(b"online") == "online" and parse_status(b"{}") is None
     assert parse_power(case("asleep")["payload"])["state"] == "asleep"
+    assert parse_power(case("shutting_down")["payload"])["state"] == "shutting_down"
+    assert parse_power(case("off")["payload"])["state"] == "off"  # ADR-0040 §1
     assert parse_power(b'{"state":"dancing"}') is None and parse_power(b"[]") is None
     v = parse_vss("lr_d2.slabs.any_door", load("slabs-vectors.jsonl")[0]["payload"])  # power
     assert v is not None and v.value is None  # a power record is not a value

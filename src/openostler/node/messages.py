@@ -24,8 +24,10 @@ MANIFEST, ROLE = "manifest", "role"
 # ADR-0037 §3 and its Amendment 8 (ADR-0040 §1): ``asleep`` is a clean sleep, ``offline``
 # the will (an unexpected loss).
 STATUS_VALUES = ("online", "offline", "asleep")
-# ADR-0040 §1 power states (the node publishes awake and shutting_down today).
-POWER_STATES = ("awake", "held", "waking", "asleep", "shutting_down")
+# ADR-0040 §1 power states. The node publishes awake, asleep and shutting_down today;
+# ``off`` (no supply) comes from a device's power owner (who publishes it is open, module-bus
+# spec §17) and is accepted as a state the device is not running in.
+POWER_STATES = ("off", "awake", "held", "waking", "asleep", "shutting_down")
 
 # A VIN: 17 characters, digits and capitals without I, O, Q (ISO 3779). A ``vid`` that looks
 # like one is refused, as the node refuses it (ADR-0036).

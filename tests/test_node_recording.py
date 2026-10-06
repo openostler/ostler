@@ -21,7 +21,9 @@ import pytest
 from openostler.logbook import recorder as recmod
 from openostler.logbook.recorder import SessionRecorder
 from openostler.logbook.store import SessionStore, read_rows
+from openostler.logbook.tap import read_tap
 from openostler.mqtt import StdlibMqttClient, codec
+from openostler.node.tap import TimeMap, is_time_event
 from openostler.web.node_source import NodeFeed, node_sources
 from openostler.web.server import DiagServer
 from tests.fake_broker import FakeBroker
@@ -561,3 +563,9 @@ def test_the_simulated_nodes_looping_tap_records_without_gaps(rr):
     rr.srv.close_recorder()
     t = SessionStore(rr.sessions).meta(sid)["tap"][0]
     assert (t["seq_first"], t["seq_last"], t["gaps"], t["records"]) == (0, 2 * seq - 1, 0, 2 * seq)
+    # its time events are re-stamped for the new t_us, so every mark is used: UTC now
+    store = SessionStore(rr.sessions)
+    ((entry, records),) = read_tap(os.path.join(rr.sessions, sid), store.meta(sid))
+    marks = [r for r in records if is_time_event(r)]
+    assert t["time_marks"] == len(marks) > 0 and len(TimeMap(records)) == len(marks)
+    assert abs(TimeMap(records).utc_ns(records[-1].t_us) / 1e9 - time.time()) < 60

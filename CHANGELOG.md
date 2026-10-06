@@ -72,6 +72,24 @@ their own changelogs.
   App Manifest (`/manifest.webmanifest`), `Intl` (CLDR) units in the shell. Playwright runs
   at 1024×600, 1280×720, 1920×720 and 393×852 with target-size asserts and an axe WCAG 2.2
   AA scan per layout class (`@axe-core/playwright`, a pinned dev dependency, MPL-2.0).
+- **NodeSource reads what the node firmware now publishes**
+  ([spec](specs/2026-10-06-node-source-design.md) v0.7 §16; module-bus message spec v1.1).
+  The node fixtures are the firmware's own (`ostler-firmware` 0426ea5: the two vector runs
+  and the new `lifecycle.jsonl`, with the manifest, the gate claim and its release, the
+  clean sleep and the tap `time` events); hand-written lines remain only for what the node
+  cannot publish yet (other devices, a second gate claim, vehicle roles held by the node,
+  `held`/`waking`/`off`, the will). **The pcapng export stamps UTC**: the tap's `time`
+  events (code 6, CBOR `{t_us, utc_ns, source, err_us}`, raw-tap amendment of 2026-10-06)
+  map each record's `t_us` linearly between marks (`node/tap.py` `TimeMap`,
+  `parse_time_event`, a stdlib CBOR subset); records the node flagged unsynced say their
+  time is extrapolated; a tap without time events keeps the node clock as before, and each
+  interface says which. `meta.json` `tap` entries gain `time_marks` (OpenAPI `SessionTap`,
+  `schemas/session-meta.schema.json`). **`power.state: off`** (ADR-0040 §1) is accepted
+  and reads as `asleep` in the snapshot (the node is not running; no unexpected loss).
+  OpenAPI `NodeManifest`: item `status` gains `unverified` (the K-line item until an init
+  succeeds; sensor-detection §2) and items a `bus`; `priority` absent when unset,
+  `psram_kb` 0 and `parked_ma` optional are documented; the AsyncAPI manifest example is the
+  node's real one. No change to the D2 cable path.
 - **NodeSource, phase P3: Network page data (backend only)**
   ([spec](specs/2026-10-06-node-source-design.md) v0.5 §11, §16; ADR-0037, ADR-0040). The
   feed also subscribes, read-only, to each device's retained capability `manifest` and its

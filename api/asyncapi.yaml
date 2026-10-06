@@ -365,12 +365,14 @@ components:
         $ref: "./openapi.yaml#/components/schemas/NodeManifest"
       examples:
         - name: diag-node
-          payload: {schema: 1, id: node, kind: node, variant: diag-port, board: esp32-s3-devkitc,
-                    fw: "0.1.0", etag: "9f2c…", priority: 10, memory: {psram_kb: 8192},
-                    roles: [{role: pbroker, max_clients: 5}, {role: time}],
-                    transmit: [{bus_id: kline-diag}],
-                    power: {class: always, wake_paths: [ignition, door], parked_ma: 5},
-                    items: [{id: kline, kind: kline, origin: board, status: ok}]}
+          summary: As the node firmware publishes it (`ostler-firmware` 0426ea5, host build).
+          payload: {schema: 1, id: node, kind: node, variant: diag-port,
+                    model: "Ostler Diagnostics (dev build)", board: host-sim, fw: "0.1.0",
+                    priority: 10, memory: {psram_kb: 0}, roles: [],
+                    transmit: [{bus_id: kline-diag}], links: [{kind: wifi}],
+                    power: {class: check_in, wake_paths: [timer]},
+                    items: [{bus: kline-diag, id: kline, kind: kline, origin: board, status: ok}],
+                    etag: "0a06d9bf8150fb347a95feb3a4805e8333c0902024b9e429f3d3da880ff1b8fd"}
     nodeRoleClaim:
       name: nodeRoleClaim
       title: Role claim
@@ -427,7 +429,10 @@ components:
       payload:
         type: string
         format: binary
-        description: Raw-tap v1 records, little-endian (raw-tap §2.2).
+        description: >
+          Raw-tap v1 records, little-endian (raw-tap §2.2). `time` events (code 6, bus 0xFF)
+          carry a CBOR map `{t_us, utc_ns, source, err_us}` (raw-tap amendment of
+          2026-10-06); the Brain maps `t_us` to UTC from them.
 
     snapshot:
       name: snapshot
