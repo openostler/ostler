@@ -2,16 +2,16 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, Decode lab, add-on module apps) ship from their own repos as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Sandboxed iframes and signed runtime modules are later options behind an ADR. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions.
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Lite and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions.
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.1 for owner review. **Do not build before U1** (UI spec §10): U1 only
+**Status:** draft v0.2 for owner review (Q1, Q2, Q5 and Q9 answered 2026-10-06; §11). **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
 stays the authority for layout classes, the strip, destinations, driving states, the
@@ -31,7 +31,7 @@ draw an approval or reach the car other than through the gate; (4) the same buil
 head unit, phone (Capacitor), desktop and cloud (ADR-0032 §11), offline.
 
 **Non-goals.** Separate PWAs or windows per app. A public app store. Third-party code loaded
-at runtime in v1. Apps that define new car actions (actions come from packs and device
+at runtime in v1, and inside the native phone app ever (§7.1). Apps that define new car actions (actions come from packs and device
 manifests). User-arranged dashboards (deferred by ADR-0018 Q6).
 
 ## 2. The shell's responsibilities
@@ -61,11 +61,13 @@ roles (UI spec §5.4) plus app contributions. The shell alone owns:
 | **Network** | core | `ostler` | More → Network: uplinks, remote access, pairing, node AP (ADR-0028, ADR-0032) |
 | **Cameras** | optional, first-party | `ostler-app-cameras` | Security → Clips, live-camera chip, HU-wide secondary pane, reverse template |
 | **Social** | optional, first-party | `ostler-app-social` | More → Apps; groups and rides (ADR-0029 P4) |
-| **Decode lab** | optional, first-party | `ostler-app-decode` (open question Q5) | More → Developer, service mode only (UI spec §8.4) |
+| **Decode lab** | core, enabled only in service mode | `ostler` (Q5, answered) | More → Developer (UI spec §8.4); hidden unless service mode (the experimental/dev mode, UI spec §3.5) is on |
 | **Add-on module apps** | optional; declarative first | the module's repo | More → Devices → *device*, Home card, strip device slot (UI spec §6) |
 
-Core apps are ordinary apps with `trust: core`, so the registry is exercised by four users from
-day one (rule of two). Garage, Devices, Integrations, Preferences, Privacy and About stay shell
+Core apps are ordinary apps with `trust: core`, so the registry is exercised by five users from
+day one (rule of two). Decode lab's manifest adds a `requires.mode: "service"` rule, so the
+registry hides it unless service mode is on, and it leaves with service mode when Moving.
+Optional apps live in their own `ostler-app-<x>` repos now (Q1; ADR-0034 amendment). Garage, Devices, Integrations, Preferences, Privacy and About stay shell
 pages under More.
 
 ## 4. The app manifest
@@ -119,7 +121,8 @@ phase UA).
   `core` only for apps built from the platform repo.
 - **`requires`** decides visibility, as UI spec §6 decides device chrome: no camera, no Cameras
   app chrome. Signals and devices are matched against the capability manifest (§5 there);
-  `product: ["ostler"]` hides an app on Ostler Lite.
+  `product: ["ostler"]` hides an app on Ostler Lite. `mode: "service"` shows an app only in service mode
+  (Decode lab).
 - **`actions`** lists capability-manifest action ids (or `<device>.*` patterns) the app may
   request, each with its **category and tier copied from that manifest**. The registry refuses
   a manifest whose pair differs from the capability manifest or breaks ADR-0033's caps. The
@@ -136,7 +139,9 @@ phase UA).
 
 `head_unit` (HU-7, HU-9/10, HU-wide), `phone` (Capacitor and browser), `desktop`, `cloud`
 (Ostler Cloud serving the app remotely: every action is a remote path, read-only unless the
-install override is set, ADR-0033 §6). An app absent from a host is not offered there.
+install override is set, ADR-0033 §6). An app absent from a host is not offered there. The
+native phone app is a host with fixed limits (§7.1): it never offers third-party code
+(`iframe` or community `module` apps); first-party apps served by a brain or the cloud are fine.
 
 ### 4.4 Driver-safe templates
 
@@ -169,7 +174,7 @@ Contributions render from the manifest without activating the app.
 |---|---|---|---|
 | `bundled` | in the shell's realm, lazy chunk | review + pin; lint forbids direct `fetch` to action routes and imports of shell internals | UA |
 | `declarative` | no app code; shell tiers 1–2 (UI spec §5.3) | by construction | with U4/U5 |
-| `iframe` | `sandbox="allow-scripts"`, opaque origin, `postMessage` RPC, a scoped token per app | by construction; no cookies, no DOM access | later, ADR first |
+| `iframe` | `sandbox="allow-scripts"`, opaque origin, `postMessage` RPC, a scoped token per app | by construction; no cookies, no DOM access | later, ADR first; the only kind for community code (Q2), web hosts only (brain, cloud, browser), never in the native phone app or the shell's origin |
 | `module` | runtime `import()` with hash-pinned import map, signed | signature only | later, ADR first, maybe never |
 
 Every app view sits in an **error boundary**; a crash shows "App stopped" and the shell keeps
@@ -204,9 +209,11 @@ send `X-Ostler-App: <id>` so the audit log names them.
   `ostler-app.json`, an ESM build (React as a peer dependency), types and `i18n/`. Releases are
   GitHub releases with SBOM and provenance (ADR-0017). Licence: AGPL-3.0-or-later for apps
   bundled into the shell (ADR-0012); third-party licences are Q4.
-- **Repo rule.** ADR-0034 keeps "the whole UI" in `ostler` and splits only on toolchain,
-  licence, cadence or contributors. Social and module apps differ in cadence and contributors;
-  Cameras and Decode lab may not (Q1). Placing an app in its own repo needs ADR-0034's test.
+- **Repo rule (Q1, answered 2026-10-06).** Optional UI apps (Cameras, Social, add-on module
+  apps, community apps) may live in their own `ostler-app-<x>` repos now, on the grounds of
+  release cadence and contributors ([ADR-0034](../decisions/adr-0034-repo-boundaries.md),
+  amendment of 2026-10-06). The shell and the core apps, Decode lab included, stay in
+  `ostler`.
 - **Bundling (UA).** The platform's `ui/package.json` pins each enabled optional app exactly;
   Dependabot proposes bumps; CI validates every manifest, checks the `shell` range and runs
   the app's contract tests. The build emits one lazy chunk per app; disabled apps cost only
@@ -223,6 +230,56 @@ send `X-Ostler-App: <id>` so the audit log names them.
   carry `app: {id, min_version}`. When such a device appears, the shell offers "Use the
   Climate app" if that app is bundled and compatible; otherwise the generated device view
   (UI spec §5.3 tier 1) is used. A device works with **no app**; nothing auto-installs.
+- **Community apps (Q2, answered 2026-10-06).** Community code may load, but only as
+  `iframe` apps: an opaque origin, a scoped revocable token narrowed to its manifest, never
+  the shell's origin. That kind is a web-host feature (brain, cloud, a browser); the native
+  phone app never offers it (§7.1). It still waits for its own ADR (§9).
+
+### 7.1 Amendment (2026-10-06): the phone build
+
+Owner decision of 2026-10-06 (Q9), refining ADR-0032 §11 ("one app in three places").
+
+1. **Companion model with a server.** With a brain (Ostler) or Ostler Cloud reachable, the
+   Capacitor app loads the shell and every app (core, optional and runtime-loaded first-party
+   apps) from that server, as a browser would, in the way Home Assistant's Companion app shows
+   the user's own server frontend. New apps need no store update; the native app never changes
+   its own features at runtime (App Store 2.5.2, Play policy).
+2. **Bundled fallback for Lite and offline.** With no brain and no internet the phone talks
+   straight to the node, which serves only its small manifest-generated page. The app
+   therefore ships a bundled shell, the core apps (Diagnose, Logs, Security, Network) and the
+   declarative add-on apps (manifest plus generated views). **Lite works fully offline with
+   only the node.**
+3. **Native features, fixed in the binary:** BLE and local Wi-Fi to the node, notifications,
+   location, background tasks and approval of Tier 2–3 actions over local links within
+   ADR-0033 §6. They give the app real native value (App Store 4.2).
+4. **No runtime third-party code in the native app.** `iframe` community apps stay a
+   web-host feature (brain, cloud, browser); when the shell runs inside the native app the
+   registry does not offer them, even when the server serves them. Live updates to the
+   bundled web code are for bug fixes only, never new features.
+5. **Versions.** The bundled and the server-served shells must both satisfy each app
+   manifest's `shell` range. With a server reachable the phone prefers the server's newer
+   shell; offline it falls back to the bundled one.
+6. **Store policy check (live, 2026-10-06; detail in the
+   [research note §7](../references/research/ui/app_model.md#7-store-policy-check)).** Apple
+   2.5.2 still bars downloaded code that adds or changes features; 4.2 still asks for more than
+   a repackaged website; Play bans downloaded native code but exempts JavaScript in a webview,
+   provided runtime-loaded code cannot cause policy breaches; Home Assistant's app is listed as
+   a client for the user's own server, with native sensors, location, notifications and
+   widgets; Capgo and Capacitor present web-layer updates as allowed but within the reviewed
+   purpose, with no guarantee. Nothing found contradicts the plan. **Risks:**
+   - **Capacitor `server.url` is documented as development-only** (and `allowNavigation`
+     likewise). Loading a server shell needs a production design: a native webview navigation
+     the wrapper controls, or the bundled shell fetching server-served app chunks. Phase UA
+     must pick one before the phone build.
+   - **Native bridge exposure.** Apple 4.7.2 forbids exposing native APIs to downloaded HTML5
+     mini apps without permission, and Play forbids a JavaScript interface on untrusted or
+     unverified URLs. The bridge must answer only the paired brain or cloud origin over HTTPS
+     (ADR-0021), and server-loaded apps reach native features only through the shell's SDK.
+   - **Reviewer judgment.** "Changes features" (2.5.2) is decided per review; the Home
+     Assistant precedent helps but is not a ruling. The store listing should say the app is a
+     client for the user's own Ostler.
+   - **Ionic Appflow live updates** are being wound down (sunset reported for 2027-12-31);
+     do not depend on it. Capgo or a self-hosted updater fits the bug-fix-only rule.
 
 ## 8. Explicit non-goals and hard lines
 
@@ -278,23 +335,31 @@ kinds wait for a real third-party app and an ADR.
 
 ## 11. Open questions for the owner
 
-1. **Repo split.** Do optional apps get their own repos now (an ADR-0034 amendment naming
-   cadence and contributors), or stay in `ostler/apps/` until an outside contributor appears?
-2. **Third-party code.** Ever load community code? If so, iframe-only (recommended), or also
-   signed runtime modules?
+1. ~~**Repo split.**~~ **Answered 2026-10-06:** own `ostler-app-<x>` repos now for optional
+   apps (cadence, contributors); the shell and core apps stay in `ostler`. ADR-0034 amended (§7).
+2. ~~**Third-party code.**~~ **Answered 2026-10-06:** yes, in sandboxed iframes only (opaque
+   origin, scoped token, never the shell's origin), on web hosts only, never in the native
+   phone app (§5, §7, §7.1). Signed runtime modules are not adopted for community code.
 3. **Signing keys.** Only the project key, or may an owner add a publisher key locally?
 4. **Licences.** Must bundled apps be AGPL-compatible (yes by ADR-0012), and may a closed app
    run as an iframe under the commercial licence?
-5. **Decode lab.** An optional app in its own repo, or core (UI spec §8.4 puts it in More →
-   Developer)?
+5. ~~**Decode lab.**~~ **Answered 2026-10-06:** a core app in `ostler`, enabled only in
+   service mode, the experimental/dev mode (§3; UI spec §8.4).
 6. **Network** as a core app under More, covering uplinks, remote access and pairing: agreed?
 7. **Catalog.** A future app catalog is a new outbound path: wanted, and from where?
 8. **Enablement scope.** Per install (recommended) or per vehicle?
-9. **Phone app.** Does the Capacitor build ship the same bundled set, with no runtime code
-   (recommended, App Store rule 2.5.2)?
+9. ~~**Phone app.**~~ **Answered 2026-10-06:** Companion model with a server; a bundled
+   shell, core and declarative apps for Lite and offline; fixed native features; no runtime
+   third-party code (§7.1, which records the store-policy check and its risks).
 
 ## Changelog
 
 - 2026-10-06: v0.1, first draft from the [app model research](../references/research/ui/app_model.md):
   shell responsibilities, the app manifest, driver-safe templates, lifecycle and isolation
   kinds, the shell ↔ app API, optional apps from their own repos, U1 seams and phase UA.
+- 2026-10-06: v0.2, owner answers. Q1: optional apps in their own repos now (ADR-0034
+  amended). Q2: community code only in sandboxed iframes, web hosts only. Q5: Decode lab is a
+  core app shown only in service mode. Q9: §7.1 adds the phone build (Companion model with a
+  server, bundled fallback for Lite and offline, fixed native features, no runtime third-party
+  code, shell version rule) and a live store-policy check with its risks. Stays draft: Q3, Q4,
+  Q6, Q7 and Q8 are open.

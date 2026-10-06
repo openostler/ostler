@@ -2,7 +2,7 @@
 title: "App model — one shell, apps by manifest: how car platforms, dashboards and editors host plugins, and what Ostler should copy"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md]
 summary: >
@@ -234,6 +234,35 @@ brain at install, or the shell before `import()`) is an open question for the sp
    typed shell context, one action path, per-destination lazy chunks and error boundaries,
    strip chips as data, route names, CSP `script-src 'self'`).
 
+## 7. Store policy check
+
+Checked live on 2026-10-06 for the phone build (app-model spec §7.1); paraphrased.
+
+- **Apple 2.5.2** still says an app must be self-contained and may not download or run code
+  that adds or changes its features (a narrow exception covers coding-education apps).
+  **4.2** still asks for features beyond a repackaged website, and 4.2.2 rules out apps that
+  are mostly web clippings or links. **4.7** now admits HTML5/JavaScript mini apps and
+  plug-ins not in the binary, but the host answers for them, and **4.7.2** forbids exposing
+  native APIs to that software without Apple's permission. No last-updated date was shown.
+- **Google Play, Device and Network Abuse:** no downloading executable native code (dex,
+  JAR, `.so`) from outside Play; JavaScript in a webview is outside that ban, but code loaded
+  at run time must not allow policy breaches, and a webview with an added JavaScript
+  interface must not load untrusted or unverified URLs.
+- **Home Assistant Companion:** listed on the App Store as a client for the user's own Home
+  Assistant server; it shows that server's frontend in a webview and adds native sensors,
+  location, notifications, widgets, Watch and CarPlay surfaces (version 2026.9.3 current).
+  Its July 2026 change of OS minimums was about Apple's tools, not review.
+- **Capacitor:** `server.url` and `allowNavigation` are documented as **not for production**
+  (live-reload use); the deploying-updates guide calls web-layer updates store-compatible.
+- **Live updates:** Capgo says it ships only the web layer and advises a store release for
+  native changes or anything that alters the reviewed purpose, and it promises no review
+  outcome. Ionic stopped selling Appflow in February 2025, with a sunset reported for
+  2027-12-31 (third-party and Ionic support pages; not re-read on ionic.io).
+
+**Fit with the owner's plan:** no contradiction. Risks to carry: a production way to load the
+server shell (not `server.url`); the native bridge only for the paired HTTPS origin (4.7.2,
+Play's JavaScript-interface rule); reviewer judgment on 2.5.2; no dependence on Appflow.
+
 ## Sources
 
 All checked 2026-10-06; content paraphrased.
@@ -257,3 +286,12 @@ All checked 2026-10-06; content paraphrased.
   [@module-federation/vite](https://cdn.jsdelivr.net/npm/@module-federation/vite@1.16.12/README.md) ·
   [Web Application Manifest](https://www.w3.org/TR/appmanifest/)
 - OVMS: [OVMS UI note](ovms_ui.md) (sources there).
+- Store policy (§7): [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/) ·
+  [Play Device and Network Abuse](https://support.google.com/googleplay/android-developer/answer/9888379) ·
+  [HA Companion docs](https://companion.home-assistant.io/docs/core/) ·
+  [HA app listing](https://apps.apple.com/us/app/home-assistant/id1099568401) ·
+  [HA Apple platform support, 2026-07-07](https://www.home-assistant.io/blog/2026/07/07/companion-app-changing-support-for-apple-platforms/) ·
+  [Capacitor config](https://capacitorjs.com/docs/config) ·
+  [Capacitor deploying updates](https://capacitorjs.com/docs/guides/deploying-updates) ·
+  [Capgo FAQ](https://capgo.app/docs/faq/) · [Appflow live updates](https://ionic.io/docs/appflow/deploy/intro) ·
+  [Capawesome on Appflow's sunset](https://capawesome.io/docs/blog/migrating-from-ionic-appflow-to-capawesome-cloud/)

@@ -2,7 +2,7 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
@@ -156,8 +156,8 @@ stream, the app registry, the safety-gate client and every approval surface) tha
 features as **apps declared by a manifest**: requirements against the capability manifest,
 slot contributions, the actions they use with category and tier, a driving rule per view
 (while Moving only shell-drawn templates) and hosts. **Core apps** (Diagnose, Logs, Security,
-Network) stay in the platform repo and fill the destinations above; **optional apps**
-(Cameras, Social, Decode lab, add-on module apps) may ship from their own repos, bundled at
+Network, plus Decode lab in service mode, §8.4) stay in the platform repo and fill the
+destinations above; **optional apps** (Cameras, Social, add-on module apps) may ship from their own repos, bundled at
 build time or declarative-only. Apps are **never separate PWAs**, never draw approvals and never
 reach the car except through the gate (§7). **Nothing is built before U1**; U1 only leaves the
 seams. Detail and open questions: [app-model spec](2026-10-06-app-model-design.md) (draft);
@@ -479,7 +479,9 @@ start a pack".
 In **More → Developer**, behind service mode, refused while Moving: **Detect → Scan → Sniff →
 Correlate → Label → Verify → Contribute**, growing today's admin Decode and Label tabs. Sniff is a
 byte grid with a bit-flip heat map; Verify shows the evidence checklist; Contribute previews the
-exact JSON before anything leaves. `CoverageMap` stays the progress view.
+exact JSON before anything leaves. `CoverageMap` stays the progress view. It ships as
+**Decode lab**, a core app in the platform repo shown only in service mode (owner, 2026-10-06;
+[app-model spec](2026-10-06-app-model-design.md) §3).
 
 ## 9. Comparison
 
@@ -618,3 +620,5 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   platform repo, optional apps from their own repos, no separate PWAs and nothing built before
   U1; §10's U1 row leaves the app-model seams. Detail in the draft
   [app-model spec](2026-10-06-app-model-design.md).
+- 2026-10-06: v0.6 (stays approved). §8.4 and §3.6: Decode lab is a core app in the platform
+  repo, shown only in service mode (owner answer to app-model spec Q5).
