@@ -1,19 +1,19 @@
 ---
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-06
 depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
-  Proposed, pending owner answers. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. MeshCore and Reticulum/LXMF are bench-tested as the richer car-to-car layer for the social app; Styrene and Ratspeak stay references; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted.
+  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted.
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
 
 - **Date:** 2026-10-06
-- **Status:** proposed (draft for the owner; nothing here is accepted until the open
-  questions are answered). Builds on
+- **Status:** accepted (owner answers, 2026-10-06; see
+  [Amendments](#amendments-2026-10-06-owner-answers)). Builds on
   [ADR-0027](adr-0027-ip-everywhere-ecosystem-architecture.md) and
   [ADR-0033](adr-0033-action-categories-and-approvals.md); evidence in the
   [mesh research](../references/research/mesh_networking.md).
@@ -42,7 +42,7 @@ summary: >
 - Core and node firmware stay commercially licensable (ADR-0012, ADR-0025).
 - Low power, off-grid, no internet needed.
 
-## Decision (proposed)
+## Decision
 
 **1. Placement.** No mesh inside the car. A mesh is its own subnet (IP meshes) or its own
 non-IP network (LoRa), joined to the car network only at the brain or a gateway, behind the
@@ -55,7 +55,8 @@ mesh.
 - The bridge declares **no actions** in its manifest. The broker ACL lets it publish only
   under its own `in/` and `state/` topics and never to an action, grant or command topic.
 - Remote alarm arm and disarm (ADR-0033 §6 as amended) is **not** offered over a mesh, and
-  `OSTLER_ALLOW_REMOTE_CONTROL` does not open mesh paths (open question 3).
+  `OSTLER_ALLOW_REMOTE_CONTROL` does not open mesh paths: nothing above Read and alerts,
+  with the override on or off (ADR-0033 Amendments of 2026-10-06).
 
 **3. First: a Meshtastic-compatible LoRa add-on.**
 - Step one: any Meshtastic radio the owner has, over USB serial, BLE or TCP, bridged on the
@@ -83,16 +84,17 @@ identity) is never derived from, stored as, or used as an Ostler device certific
 key or passkey (ADR-0029, ADR-0032 §12), and no mesh platform's single root secret (for
 example Styrene's) may hold ours. Pairing a radio with the bridge is a local physical step.
 
-**7. The richer car-to-car layer** for groups, rides and convoys (ADR-0029 P4) is chosen by
-a bench test of **MeshCore** and **Reticulum/LXMF** (as an unmodified program on the brain).
-**Styrene** and **Ratspeak** stay references until their provenance and maturity settle;
-any fleet-ops feature (remote exec, reboot, config push) is off or absent on every Ostler
-device.
+**7. The richer car-to-car layer** for groups, rides and convoys (ADR-0029 P4) is a
+**later goal or add-on**. When it is taken up, a bench test of **MeshCore**,
+**Reticulum/LXMF**, **Styrene** and **Ratspeak** chooses it (the plan below). Until then all
+four are **references only**: nothing in Ostler runs or bundles them, **Reticulum
+included**. Any fleet-ops feature (remote exec, reboot, config push) is off or absent on
+every Ostler device.
 
 **8. Wi-Fi IP mesh**, only if a use appears: **Babel** on the brain or a travel router, its
 own routed subnet. batman-adv only behind the same routed edge, never bridged.
 
-## Bench-test plan (richer layer)
+## Bench-test plan (richer layer, later)
 
 Two cars or a car and a camp, 2–4 LoRa boards of one model per stack, EU868:
 - the same scripted traffic (position every 2 min, ten texts, five alerts) over 1, 2 and 3
@@ -114,16 +116,18 @@ Two cars or a car and a camp, 2–4 LoRa boards of one model per stack, EU868:
 - **Gate matrix (ADR-0033):** the mesh transport is refused for every category above Read,
   with the install override on or off.
 - **Licence check:** `reuse lint` shows the bridge as GPL-3 and core never imports it.
-- **Bench:** the plan above, with results in a reference note before the richer layer is
-  chosen.
+- **Bench (later):** the plan above, with results in a reference note before the richer
+  layer is chosen.
 
 ## Consequences
 
 - The module-bus message spec gains the mesh bridge topics and the mesh transport value.
 - The add-ons catalogue's LoRa and mesh rows point here; the vision's batman-adv line is
   replaced by Babel-if-needed.
-- The UI's links view shows mesh links (UI spec §3.7, proposed Network page) with airtime and
+- The UI's links view shows mesh links (UI spec §3.7, the Network page) with airtime and
   peers heard.
+- The GPL-3 bridge has its own marked repo, `ostler-bridge-meshtastic`
+  (GPL-3.0-or-later; ADR-0034 Amendments).
 - A GPL-3 pack or program joins the excluded list for the commercial build.
 
 ## Alternatives considered
@@ -132,19 +136,28 @@ Two cars or a car and a camp, 2–4 LoRa boards of one model per stack, EU868:
 - **batman-adv as the convoy mesh.** Not chosen: L2 floods mDNS and broadcast, needs a
   bigger MTU, Linux only; Babel keeps the routed model.
 - **Reticulum first.** Not chosen: far fewer radios in people's hands, a restrictive licence
-  and an absent maintainer; kept for the richer layer.
+  and an absent maintainer; a reference only, kept for the later richer layer.
 - **Meshtastic code inside the node firmware.** Rejected: GPL-3 in the node would break the
   commercial build, and a mesh does not belong next to the gate.
 - **Our own LoRa protocol.** Rejected: no interop with radios people own (ADR-0017).
 
-## Open questions (owner)
+## Amendments (2026-10-06, owner answers)
 
-1. Is the LoRa add-on Meshtastic-compatible first, as proposed, or MeshCore first?
-2. Which of Reticulum/LXMF, Styrene and Ratspeak (and MeshCore) to bench-test for the
-   richer layer? Proposed: MeshCore and Reticulum/LXMF only.
-3. Should remote arming (never disarming) ever be allowed over a mesh, for example from a
-   camp base? Proposed: no.
-4. On Ostler Lite, may the node itself be the mesh gateway (alarm alerts to a camp with no
-   brain and no phone), given the placement says "brain or gateway"?
-5. Is the Reticulum License's no-AI-training clause acceptable alongside our MCP server and
-   AI tooling (ADR-0030), even when run as a separate program?
+The owner answered on 2026-10-06 and accepted this ADR; the text above already reads this
+way. Question numbers in brackets are the owner's numbering for the networking questions of
+that day.
+
+1. **LoRa add-on first** (owner Q4: yes). The LoRa add-on is **Meshtastic-compatible first**,
+   and the bridge is a **separate GPL-3 program** (§3), in its own marked repo
+   `ostler-bridge-meshtastic` (ADR-0034 Amendments).
+2. **Richer mesh** (owner Q5). Bench tests of MeshCore, Reticulum/LXMF, Styrene and Ratspeak
+   are a **later goal or add-on**; until then all four are kept as references (§7).
+3. **Reticulum is reference-only.** Nothing runs or bundles it now, so its licence's
+   use restrictions (the no-AI-training clause beside our MCP server, ADR-0030) are
+   reviewed only if the richer layer is taken up.
+4. **A mesh is a remote path** (§2; ADR-0033 Amendments of 2026-10-06): Read and alerts
+   only; never Tier 2+, and no arming or disarming over a mesh, with the install override on
+   or off.
+5. **Still open, not blocking:** whether, on Ostler Lite, the node itself may be the mesh
+   gateway (alarm alerts to a camp with no brain and no phone); until decided, the bridge
+   runs on the brain or the phone app (§3).

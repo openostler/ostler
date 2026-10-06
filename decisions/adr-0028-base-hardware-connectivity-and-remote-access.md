@@ -2,7 +2,7 @@
 title: "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/connectivity_uplink.md, references/research/ecosystem_architecture.md, references/research/hardware.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
@@ -12,6 +12,7 @@ summary: >
 # ADR-0028 — Base hardware, connectivity and remote access
 
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §4–§5, §16), 2026-10-06:** §1 base definition (the node replaces the buddy; the guardian is a node variant), §2 power states (node wakes and cleanly shuts down the brain with a timeout), and all "buddy" wording (read "node"); §9's IANA request is submitted at module contract v1, unregistered in development.
+> **Amended by [ADR-0037](adr-0037-role-holders-and-handover.md), 2026-10-06:** the uplink manager (§1, §4) is a single-holder role (brain → node); §1's open point is answered (a guardian alongside the node is the standby parked broker, PLCA coordinator and time source). See [Amendments](#amendments-2026-10-06-role-holders).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; from the
@@ -194,7 +195,21 @@ On the bench, with the dev kit (Pi, buddy board, one T1S or Wi-Fi module):
   records that a second radio is needed.
 - **Provisioning:** a fresh ESP32 module joins Wi-Fi by Improv over BLE from Chrome, and by the
   captive portal from iOS Safari.
-</content>
-</invoke>
-<invoke name="Bash">
-<parameter name="command">cd /home/user/ostler && grep -n "Tier\|remote" decisions/adr-0018-ui-architecture-decisions.md | head -20
+
+## Amendments (2026-10-06, role holders)
+
+With [ADR-0037](adr-0037-role-holders-and-handover.md) (accepted with the owner's answers of
+2026-10-06). The decision text above is unchanged; where these entries differ, they win.
+
+- **Uplink manager is a role** (§1, §4). The "uplink manager" in §1's Pi row is the
+  single-holder **uplink manager role** of ADR-0037 §2, with the candidates brain → node:
+  the brain writes the NetworkManager/ModemManager profiles while it is awake; when it
+  sleeps the node manages the shared default route with its own uplink. The guardian is
+  not a candidate and keeps its SIM for the alarm path. Selection, failover and metering
+  (§4) are unchanged, whichever device holds the role.
+- **Guardian handover answered** (§1's open point, §5's fallback). A guardian fitted
+  **alongside** the node is the **standby** for the parked broker and the PLCA coordinator
+  (if wired to that segment), and a time-source candidate, by the rules and timeouts of
+  ADR-0037 §4–§5, at a parked-current cost. §5's fallback "the guardian hosts the parked
+  broker" is this standby role. A guardian that **replaces** the node holds those roles
+  outright (ADR-0026 Amendment 3).

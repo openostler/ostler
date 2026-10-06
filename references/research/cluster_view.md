@@ -13,7 +13,7 @@ summary: >
 
 Research for the owner's item "every node shows its peers; the full app shows the whole
 cluster; some roles have exactly one holder". It feeds
-[ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md) (proposed) and the
+[ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md) (accepted 2026-10-06) and the
 proposed amendments to the [UI spec](../../specs/2026-10-06-ui-architecture-design.md) and
 the [app-model spec](../../specs/2026-10-06-app-model-design.md). Sources were checked live
 on 2026-10-06 and are paraphrased.

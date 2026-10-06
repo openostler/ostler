@@ -2,7 +2,7 @@
 title: "ADR-0033 — Action categories, roles, phone approval, safe fault clearing and alarm paths"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, CONSTITUTION.md]
 summary: >
@@ -10,6 +10,8 @@ summary: >
 ---
 
 # ADR-0033 — Action categories, roles, phone approval, safe fault clearing and alarm paths
+
+> **Amended 2026-10-06 (networking answers, [ADR-0037](adr-0037-role-holders-and-handover.md), [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), [ADR-0027](adr-0027-ip-everywhere-ecosystem-architecture.md#amendments-2026-10-06-networking-answers)):** §6's remote paths include the mesh and Matter; Tier 2+ never runs over Home Assistant, MQTT, Matter or a mesh; Matter may disarm, and preheat or aux-heater switches over Matter need the install override; §3's add-on actions are checked by the executing gate, which wakes the brain only if needed. See [Amendments](#amendments-2026-10-06-networking-answers).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06, with the owner's answers on phone
@@ -233,3 +235,40 @@ Clearing is **Maintenance, Tier 1**. Drivers may clear.
   by whoever takes over an account.
 - **Keep the alarm notify-only.** Rejected by the owner; outputs come through a separate,
   separately decided module.
+
+## Amendments (2026-10-06, networking answers)
+
+Recorded with [ADR-0037](adr-0037-role-holders-and-handover.md) and
+[ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md) (both accepted with the owner's answers
+of 2026-10-06) and the Matter entry of ADR-0027's Amendments. Question numbers in brackets
+are the owner's numbering for that day. The decision text above is unchanged; where these
+entries differ, they win.
+
+1. **More remote paths** (§6). The remote paths are Tailscale, the Ostler Cloud relay, Home
+   Assistant and MQTT from outside, device-to-device shares, **a car-to-car mesh**
+   (ADR-0038) and **Matter** (ADR-0027 Amendments). Neither a mesh nor Matter is a local
+   link, whatever radio it rides on.
+2. **Tier 2+ never over Home Assistant, MQTT, Matter or a mesh**, with the install override
+   on or off. The override still opens only the other remote paths (Tailscale, the relay,
+   shares), under every other rule of §6.
+3. **Matter** (owner Q7). Matter may **disarm** the software alarm, consistent with
+   over-the-air disarm (§6 as amended): Security category, Parked only, audited and
+   notified to the owner. **Preheat and aux-heater switches** (Comfort) over Matter run only
+   when `OSTLER_ALLOW_REMOTE_CONTROL` is set on the node. Nothing above Tier 1 is exposed to
+   Matter.
+4. **Mesh.** A mesh carries **Read and alerts only**: no arming, no disarming and no action
+   of any category, and the install override does not open it (ADR-0038 §2).
+5. **Add-on actions and the executing gate** (owner Q8; §3). "The brain's gate does so for
+   add-on actions" reads: **the executing gate** does so, that is the target device's own
+   gate and interlocks (and the node's transmit gate for anything that reaches a car bus).
+   An add-on action **wakes the brain if the brain is needed**, or **wakes the target module
+   directly** when it is not; a sleeping brain neither blocks nor approves it, and no UI or
+   role holder gains authority by asking (ADR-0037 §1, §7). The detailed power-state and
+   wake model is the power-state work (ADR-0040 draft, pending).
+
+Confirmation additions: the gate matrix's transport axis gains `mesh` and `matter`; the
+mesh is refused above Read with the override on or off; Matter is refused at Tier 2+ in
+every cell, runs a disarm Parked only with an audit entry and an owner notification, and
+runs preheat or aux heater only with the override on; an add-on action with the brain
+asleep is checked by the target device's gate, and refused there when it fails that gate's
+own checks.

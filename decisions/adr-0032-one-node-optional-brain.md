@@ -2,14 +2,16 @@
 title: "ADR-0032 — One node, optional brain (Ostler Lite and Ostler)"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md]
 summary: >
-  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027.
+  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027. Amended 2026-10-06: GPS split (the guardian's 1 Hz modem GNSS for security, a 10 Hz u-blox for drive logging, every fix a tagged reading, best fix selected, GNSS time served by the time-role holder) with the u-blox placement pending product-family research; sensor detection (board profile, detected chips, declared config or harness ID, one manifest with origin and status per item, read-only probing).
 ---
 
 # ADR-0032 — One node, optional brain
+
+> **Amended 2026-10-06 (owner answers):** §5, §6, §13 and §14 gain the GPS split and sensor detection; the 10 Hz u-blox's placement is **pending (product-family research)**. See [Amendments](#amendments-2026-10-06-gps-split-and-sensor-detection).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). Supersedes parts of
@@ -218,13 +220,16 @@ supported path until it passes.
   the facts are stable.
 - **Cloud-only Lite.** Rejected: the car must work offline with a phone.
 
-## Proposed amendment (2026-10-06, pending owner answers)
+## Amendments (2026-10-06, GPS split and sensor detection)
 
-*Not yet decided; §5, §6, §13 and §14 stand until the owner answers. Owner items 2 (GPS
-split) and 3 (sensor detection on nodes), 2026-10-06. Research: [hardware research, GPS
+*Accepted by the owner on 2026-10-06 (owner items 2, GPS split, and 3, sensor detection on
+nodes), except the placement of the 10 Hz u-blox, which is **pending (product-family
+research)**: an "Ostler Diagnostics" OBD-port node is being designed, and where the receiver
+sits follows from that work. §5, §6, §13 and §14 above are unchanged; these entries add to
+them. Research: [hardware research, GPS
 split](../references/research/hardware.md#gps-split-two-receivers-two-jobs-2026-10-06) and
-[node sensors](../references/research/node_sensors.md). Related draft:
-[ADR-0037](adr-0037-role-holders-and-handover.md) (time source role).*
+[node sensors](../references/research/node_sensors.md). Related:
+[ADR-0037](adr-0037-role-holders-and-handover.md) (time source role, best clock first).*
 
 ### A. GPS split: two receivers, two jobs
 
@@ -236,10 +241,12 @@ split](../references/research/hardware.md#gps-split-two-receivers-two-jobs-2026-
   leaves the guardian seeing the sky.
 - **A 10 Hz u-blox** (MAX-M10S or NEO-M9N class; NEO-M9V with dead reckoning as an option):
   drive logging, replay, Drive mode, the driving-state fallback and the speed-vs-wheel-speed
-  check. It sits **on the diagnostic node** (UART, time pulse to a node GPIO), so it works on
-  Ostler Lite, gives the node gate its own fast speed source, and makes the node the best
-  clock. A USB u-blox on the brain stays a dev path and an option. When the guardian replaces
-  the node, it carries the u-blox on its I²C port.
+  check. **Its placement is pending (product-family research).** The candidates are the
+  diagnostic node or the "Ostler Diagnostics" OBD-port node being designed (UART, time
+  pulse to a GPIO), which would work on Ostler Lite, give the node gate its own fast speed
+  source and make that device the best clock; a USB u-blox on the brain stays a dev path
+  and an option. Whichever device carries it publishes it in its manifest; nothing below
+  depends on where it sits.
 
 **A2. Every fix is a tagged reading.** Fixes publish as `Vehicle.CurrentLocation.*` (with
 `GNSSReceiver.FixType`, `HorizontalAccuracy`) plus speed, each with:
@@ -247,10 +254,10 @@ split](../references/research/hardware.md#gps-split-two-receivers-two-jobs-2026-
 the shared clock**, horizontal and speed accuracy, satellites used, the receiver's rate, and
 `dr: true` when a dead-reckoning receiver is coasting.
 
-**A3. Shared time.** GNSS time is the reference. The device holding the time role (ADR-0037
-draft) disciplines its clock from GNSS, with PPS where wired, and serves SNTP on the car
-LAN; with the u-blox on the node, the node is the best clock whether or not a brain is
-present. Readings from a device with no synced clock carry `time: unsynced` and are merged
+**A3. Shared time.** GNSS time is the reference. The device holding the time role (ADR-0037)
+disciplines its clock from GNSS, with PPS where wired, and serves SNTP on the car LAN; the
+role goes to the best clock first (ADR-0037 §2), normally the device carrying the u-blox,
+wherever that ends up. Readings from a device with no synced clock carry `time: unsynced` and are merged
 by receive order only, never across devices by timestamp.
 
 **A4. Selection (best fix, not fusion, in v1).** A fix is **usable** when its fix type is 3D
@@ -321,7 +328,10 @@ scheme go in the `ostler-firmware` spec `docs/specs/sensor-detection.md` (ADR-00
 manifest additions (`origin`, `status`, `problems`) go to the module-bus message spec and the
 UI spec's §5 device entries.
 
-**Open questions for the owner:** u-blox on the node (recommended) or on the brain; MAX-M10S
-or NEO-M9N, and whether to pay for dead reckoning (NEO-M9V); the accuracy limit and
-hysteresis values; JSON (recommended) or TOML for the node config; resistor harness ID now
-with an EEPROM later; whether per-tooth timing may ever run on the diagnostic node.
+**Pending and open:**
+- **Pending (product-family research):** which device carries the 10 Hz u-blox (A1).
+- **Open, settled with that research or on the bench:** MAX-M10S or NEO-M9N, and whether
+  to pay for dead reckoning (NEO-M9V); the accuracy limit and hysteresis values of A4 (the
+  values above are starting points); a resistor harness ID now with an EEPROM later;
+  whether per-tooth timing may ever run on the diagnostic node. The node config is JSON
+  (B1).

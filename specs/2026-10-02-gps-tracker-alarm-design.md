@@ -2,17 +2,29 @@
 title: "GPS tracker + alarm integration + remote disarm — Design"
 area: specs
 status: draft
-version: 1.0
-updated: 2026-10-02
-depends_on: [specs/2026-10-02-hardware-platform-design.md, docs/discovery-2-td5/bcu.md]
+version: 1.1
+updated: 2026-10-06
+depends_on: [specs/2026-10-02-hardware-platform-design.md, docs/discovery-2-td5/bcu.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0037-role-holders-and-handover.md]
 summary: >
   An always-on, low-power subsystem that reports GPS position, detects alarm/security
   events by tapping the BCU's physical signals (car off), and performs an authenticated,
   fail-secure remote disarm by emulating a paired RF fob. Covers the car-off constraints,
-  hardware, the security threat model, and the phased plan.
+  hardware, the security threat model, and the phased plan. Superseded in part (2026-10-06):
+  the GNSS and modem hardware follow ADR-0032 and ADR-0037 (guardian SIM7670G GNSS for
+  security tracking; a 10 Hz u-blox for drive logging, placement pending).
 ---
 
 # GPS tracker + alarm integration + remote disarm — Design
+
+> **Superseded in part (2026-10-06).** The GNSS and modem hardware below (u-blox NEO-M8N/M9N
+> on the tracker, SIM7080G) is replaced by the GPS split of
+> [ADR-0032](../decisions/adr-0032-one-node-optional-brain.md) (Amendments) and the time
+> role of [ADR-0037](../decisions/adr-0037-role-holders-and-handover.md): the **guardian's
+> SIM7670G** GNSS (1 Hz) and modem do security tracking, geofences and check-ins; a **10 Hz
+> u-blox** on the node or the "Ostler Diagnostics" OBD-port node does drive logging and the
+> speed cross-check, its **placement pending (product-family research)**; time is served by
+> the time-role holder, best clock first. The remote-disarm and threat-model sections stand
+> as a draft and still need their own ADR (ADR-0033 §7).
 
 ## Goal
 
@@ -103,3 +115,5 @@ SIM, LIS3DH, opto/level-shifted taps on door/bonnet/siren/indicator, and the fob
 ## Changelog
 
 - 2026-10-02 — Initial design drafted from the GPS/alarm/remote-disarm conversation.
+- 2026-10-06 — v1.1: superseded in part by ADR-0032 (GPS split) and ADR-0037 (time role);
+  a note at the top records the new GNSS and modem split; u-blox placement pending.
