@@ -51,8 +51,9 @@ Updated 2026-10-06. Check off when done.
 - [ ] **CAN on the Pi image** ([CanLink spec](specs/2026-10-06-canlink-isotp-design.md)
       §3, §12): add `AmbientCapabilities=CAP_NET_ADMIN` to `openostler.service` so
       `CanIfControl` can run `ip link set can0 …`; note `modprobe can-isotp` (optional,
-      for `KernelIsoTpChannel`). Add a CI job that loads `vcan` so the `needs_vcan` tests
-      run instead of skipping.
+      for `KernelIsoTpChannel`).
+- [x] **CI job with `vcan`** so the `needs_vcan` tests run instead of skipping: the `vcan`
+      job in `.github/workflows/ci.yml` (`OSTLER_REQUIRE_VCAN=1`).
 - [ ] **Wire the CAN path into the server** (after U2/U4): the link chip (mode, rate,
       `listen_only: "requested"`), the connection ladder's Bus rung from `DetectResult`,
       `RateMemory` under the state dir, the server gate minting `TxGrant`s, and the pack

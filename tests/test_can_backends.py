@@ -8,6 +8,7 @@ a fake raw socket; slcan; GVRET; python-can through a stand-in module; and
 from __future__ import annotations
 
 import json
+import os
 import socket
 import struct
 import sys
@@ -16,7 +17,7 @@ from collections import deque
 
 import pytest
 
-from openostler.can import CanFrame, TxGate
+from openostler.can import CanFrame, KernelIsoTpChannel, TxGate
 from openostler.can import gvret, slcan, socketcan
 from openostler.can.frame import pad
 from openostler.can.link import CanError
@@ -151,10 +152,24 @@ def test_socketcan_link_listen_only_open_recv_send_and_one_shot(monkeypatch):
     assert ip.calls[-2][ip.calls[-2].index("listen-only") + 1] == "on"   # back to listen-only
 
 
+def _need(missing: "str | None", env: str) -> None:
+    """Skip when ``missing`` names an absent prerequisite; with ``env`` set (the CI ``vcan``
+    job) fail instead, so that job can never pass by skipping."""
+    if missing is None:
+        return
+    if os.environ.get(env, "").strip() not in ("", "0"):
+        pytest.fail(f"{env} is set but {missing}")
+    pytest.skip(missing)
+
+
+def _need_vcan0() -> None:
+    _need(None if "vcan0" in list_can_interfaces() else "there is no vcan0 on this runner",
+          "OSTLER_REQUIRE_VCAN")
+
+
 @pytest.mark.needs_vcan
 def test_vcan_roundtrip():
-    if "vcan0" not in list_can_interfaces():
-        pytest.skip("no vcan0 on this runner")
+    _need_vcan0()
     a = socketcan.SocketCanLink("vcan0", gate=TxGate())
     b = socketcan.SocketCanLink("vcan0")
     a.open(None)
@@ -166,6 +181,36 @@ def test_vcan_roundtrip():
     assert got is not None and got.id == 0x7DF and got.data == REQ.data
     a.close()
     b.close()
+
+
+@pytest.mark.needs_vcan
+def test_vcan_kernel_isotp_roundtrip():
+    """``KernelIsoTpChannel`` on ``vcan0`` against a kernel ``CAN_ISOTP`` ECU socket: a
+    single-frame request out, a multi-frame reply back (the kernel sends the FC)."""
+    _need_vcan0()
+    try:
+        socket.socket(socket.AF_CAN, socket.SOCK_DGRAM, socket.CAN_ISOTP).close()
+        missing = None
+    except (AttributeError, OSError) as e:
+        missing = f"kernel CAN_ISOTP is unavailable (modprobe can-isotp): {e}"
+    _need(missing, "OSTLER_REQUIRE_CAN_ISOTP")
+    link = socketcan.SocketCanLink("vcan0", gate=TxGate())
+    link.open(None)
+    link.confirm_rate("declared")
+    ecu = socket.socket(socket.AF_CAN, socket.SOCK_DGRAM, socket.CAN_ISOTP)
+    ecu.bind(("vcan0", 0x7E0, 0x7E8))                 # rx the tester's 7E0, tx 7E8
+    ecu.settimeout(2.0)
+    ch = KernelIsoTpChannel(link, 0x7E0, 0x7E8)
+    try:
+        ch.send(b"\x01\x00")
+        assert ecu.recv(4095) == b"\x01\x00"
+        reply = b"\x41\x00" + bytes(range(1, 19))      # 20 bytes: FF + CFs
+        ecu.send(reply)
+        assert ch.recv(2.0) == reply
+    finally:
+        ch.close()
+        ecu.close()
+        link.close()
 
 
 def test_list_can_interfaces(tmp_path):
