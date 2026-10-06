@@ -4,7 +4,9 @@
 
 /**
  * Typed access to the Python server. Every call validates the response with its Zod
- * schema and throws ApiError on transport or shape failure — callers show a toast.
+ * schema and throws ApiError on transport or shape failure — callers show a toast. The
+ * body is read whatever the HTTP status: every API error is the JSON envelope
+ * {ok: false, error, code?}, so a refusal parses like any other reply.
  * Admin routes rely on the browser's Basic Auth session from /admin.
  */
 import type { z } from "zod";
@@ -76,7 +78,10 @@ export async function postJson<S extends z.ZodType>(
   return parse(res, schema, path);
 }
 
-/** POST /command. A 400 still carries {ok:false, error} — it is returned, not thrown. */
+/**
+ * POST /command. A refusal (400/403/409, 502 when the car refuses, 504 on a timeout …)
+ * still carries the {ok:false, error, code} envelope — it is returned, not thrown.
+ */
 export function command(action: string, params?: Record<string, unknown>) {
   return postJson("/command", params ? { action, params } : { action }, CommandReply);
 }
@@ -125,7 +130,7 @@ export const api = {
   sessionAudioUrl: (id: string, track: string) =>
     `/sessions/${encodeURIComponent(id)}/audio/${encodeURIComponent(track)}`,
   /** A download URL (the browser fetches it; not JSON). */
-  sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx") =>
+  sessionExportUrl: (id: string, fmt: "csv" | "vbo" | "gpx" | "geojson") =>
     `/sessions/${encodeURIComponent(id)}/export?fmt=${fmt}`,
   fields: (module: string) => getJson(`/fields?module=${encodeURIComponent(module)}`, FieldsResponse),
   faults: (module: string) => getJson(`/faults?module=${encodeURIComponent(module)}`, FaultsResponse),

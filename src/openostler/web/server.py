@@ -35,9 +35,12 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
+from ..kwp2000.kwp2000 import NegativeResponse
 from ..pack import active_pack, canonical_module
 from ..ports import list_serial_ports, resolve_serial_port
+from ..timefmt import rfc3339_utc
 from .docs import DocLibrary
 from .sources import DataSource
 
@@ -45,7 +48,7 @@ from .sources import DataSource
 # Session ids are directory names (``YYYYMMDDTHHMMSSZ[-N]``, demo ids alike): anything else
 # is answered 404 before it reaches the store (no path traversal through the URL).
 _SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,80}$")
-_EXPORT_FORMATS = ("csv", "vbo", "gpx", "notes")
+_EXPORT_FORMATS = ("csv", "vbo", "gpx", "geojson", "notes")
 _DEFAULT_MAX_POINTS = 2000
 
 # ---- replay API (ADR-0010) ---- #
@@ -87,13 +90,74 @@ def _not_recording_error() -> "type[Exception]":
         return _NoSuchError
 
 
-class ApiError(Exception):
-    """A replay-API refusal: HTTP ``code`` plus an English ``error`` message."""
+# ---- errors (specs/2026-10-06-api-consistency-design.md §1-§2) ---- #
+# Every API error body is ``{ok: false, error, code?}``: ``error`` is an English sentence
+# for people, ``code`` a stable token for programs. ``_STATUS_FOR_CODE`` maps a ``code`` to
+# its HTTP status (a ``/command`` reply with ``ok: false`` and no ``code`` answers 400).
+_STATUS_FOR_CODE = {
+    "bad_request": 400,
+    "no_match": 400,          # /automap: valid samples, no raw field explains them
+    "auth_required": 401,
+    "public_mode": 403,       # refused on the public server (_PUBLIC_REFUSAL)
+    "read_only": 403,         # a write to a synthetic (demo) session
+    "not_found": 404,
+    "not_recording": 409,
+    "disconnected": 409,
+    "community_off": 409,     # community disabled on this server, or sharing not enabled
+    "conflict": 409,          # another conflict with server state (shutdown not enabled …)
+    "too_large": 413,
+    "internal": 500,
+    "car_refused": 502,       # the ECU answered with a negative response (0x7F + NRC)
+    "unavailable": 503,
+    "car_timeout": 504,       # no answer from the poll thread in time
+}
+# The code an error gets when its producer names none.
+_CODE_FOR_STATUS = {400: "bad_request", 401: "auth_required", 403: "public_mode",
+                    404: "not_found", 409: "conflict", 413: "too_large", 500: "internal",
+                    502: "car_refused", 503: "unavailable", 504: "car_timeout"}
+# "NegativeResponse: negative response to service 0x31: NRC 0x22 (…)": how a source that
+# catches its own exceptions reports the ECU's refusal (kwp2000.NegativeResponse).
+_NRC_TEXT = re.compile(r"\bNegativeResponse\b.*?NRC 0x([0-9A-Fa-f]{2})")
 
-    def __init__(self, code: int, error: str) -> None:
+
+def _status_for(result: "dict") -> int:
+    """The HTTP status of a ``{ok, error?, code?}`` reply: 200 when ``ok``, else by
+    ``code`` (400 without one)."""
+    if result.get("ok"):
+        return 200
+    return _STATUS_FOR_CODE.get(str(result.get("code") or ""), 400)
+
+
+def _fail(error: str, code: "str | None" = None, **extra) -> "dict":
+    """An ``ok: false`` reply (``code`` omitted when None)."""
+    out: "dict" = {"ok": False, "error": error}
+    if code:
+        out["code"] = code
+    out.update(extra)
+    return out
+
+
+def _car_coded(result: "dict") -> "dict":
+    """A source reply as the ``/command`` route sends it: an ECU negative response that the
+    source reported as text gets ``code: car_refused`` and its ``nrc`` (a source that sets
+    ``code`` itself is left alone)."""
+    if not isinstance(result, dict) or result.get("ok") or result.get("code"):
+        return result
+    m = _NRC_TEXT.search(str(result.get("error") or ""))
+    if m:
+        return {**result, "code": "car_refused", "nrc": int(m.group(1), 16)}
+    return result
+
+
+class ApiError(Exception):
+    """An API refusal: HTTP ``code`` plus an English ``error`` message and an optional
+    stable ``kind`` (sent as the envelope's ``code``)."""
+
+    def __init__(self, code: int, error: str, kind: "str | None" = None) -> None:
         super().__init__(error)
         self.code = code
         self.error = error
+        self.kind = kind
 
 
 def _store_module_for(mid: "str | None") -> str:
@@ -119,11 +183,11 @@ def _catalog_response(module: "str | None") -> "tuple[dict, int]":
     module = store
     known = {m.get("store_module") for m in catalog.module_summary()}
     if store not in known:
-        return {"ok": False, "error": f"unknown module: {module}"}, 404
+        return _fail(f"unknown module: {module}", "not_found"), 404
     try:
         body = catalog.build_catalog(store)
     except (KeyError, ValueError) as exc:
-        return {"ok": False, "error": f"unknown module: {module} ({exc})"}, 404
+        return _fail(f"unknown module: {module} ({exc})", "not_found"), 404
     return {"module": module, **body}, 200
 
 _DASHBOARD = Path(__file__).with_name("dashboard.html")        # legacy v1 (reference only)
@@ -174,18 +238,60 @@ def _calibrate(req: "dict") -> "dict":
     except (TypeError, ValueError, IndexError):
         fit = None
     if fit is None:
-        return {"ok": False, "error": "need ≥2 samples with different raw values"}
-    lid = req.get("lid", 0)
-    if isinstance(lid, str):
-        lid = int(lid, 16)
-    sig = suggest_signal(
-        (req.get("name") or "signal"), int(lid), int(req.get("offset", 0)),
-        (req.get("kind") or "u16"), fit["scale"], fit["bias"], (req.get("unit") or ""),
-    )
+        return _fail("need ≥2 samples with different raw values", "bad_request")
+    try:
+        lid = req.get("lid", 0)
+        if isinstance(lid, str):
+            lid = int(lid, 16)
+        sig = suggest_signal(
+            (req.get("name") or "signal"), int(lid), int(req.get("offset", 0)),
+            (req.get("kind") or "u16"), fit["scale"], fit["bias"], (req.get("unit") or ""),
+        )
+    except (TypeError, ValueError) as exc:
+        return _fail(f"{type(exc).__name__}: {exc}", "bad_request")
     return {"ok": True, "signal": sig, **fit}
 
 
 _capture_lock = threading.Lock()
+
+# RFC 9745: the responses that still carry a deprecated field say so. The deprecations of
+# specs/2026-10-06-api-consistency-design.md §6 date from 2026-10-06 (release 0.1.0); the
+# fields go in 0.2.0. The Link points at the CHANGELOG's Deprecated entry.
+_DEPRECATED_SINCE = 1791244800  # 2026-10-06T00:00:00Z
+_DEPRECATION_HEADERS = {
+    "Deprecation": f"@{_DEPRECATED_SINCE}",
+    "Link": '<https://github.com/openostler/ostler/blob/main/CHANGELOG.md>; '
+            'rel="deprecation"; type="text/markdown"',
+}
+
+
+def _stamp(now: float) -> "dict":
+    """The snapshot's time: ``ts_utc`` (RFC 3339 UTC ``Z``) and the deprecated ``ts``
+    (epoch seconds, removed in 0.2.0)."""
+    return {"ts": now, "ts_utc": rfc3339_utc(now)}
+
+
+def _audio_start_ms(query: "dict") -> "float | None":
+    """The track start of ``POST /sessions/<id>/audio`` in epoch ms: ``start_utc`` (RFC 3339
+    UTC) wins over the deprecated ``start`` (epoch ms); None when neither is given."""
+    import datetime as _dt
+
+    stamp = query.get("start_utc")
+    if stamp:
+        try:
+            t = _dt.datetime.fromisoformat(stamp.strip().replace("Z", "+00:00"))
+        except ValueError:
+            raise ApiError(400, "start_utc must be an RFC 3339 date-time") from None
+        if t.tzinfo is None:
+            raise ApiError(400, "start_utc must carry a UTC offset (Z)")
+        return t.timestamp() * 1000.0
+    start = query.get("start")
+    if start in (None, ""):
+        return None
+    try:
+        return float(start)
+    except ValueError:
+        raise ApiError(400, "start must be epoch ms") from None
 
 
 def _append_capture(path: "str | None", rec: "dict") -> "dict":
@@ -193,14 +299,16 @@ def _append_capture(path: "str | None", rec: "dict") -> "dict":
     dataset for mapping analysis)."""
     if not path:
         return {"ok": True, "stored": False}
-    row = {"t": time.strftime("%Y-%m-%d %H:%M:%S"),
+    # ``t`` is RFC 3339 UTC ``Z`` (spec §4). The file is append-only: rows written before
+    # 0.1.0 keep a local time without an offset, which a reader treats as unknown.
+    row = {"t": rfc3339_utc(time.time()),
            "module": rec.get("module"), "lid": rec.get("lid"),
            "raw": rec.get("raw"), "text": rec.get("text")}
     try:
         with _capture_lock, open(path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     except OSError as exc:
-        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        return _fail(f"{type(exc).__name__}: {exc}", "internal")
     return {"ok": True, "stored": True}
 
 
@@ -209,14 +317,18 @@ def _automap(req: "dict") -> "dict":
     from ..sniff.automap import solve
 
     try:
-        return solve(
+        res = solve(
             req.get("samples") or [],
             [str(x) for x in (req.get("candidate_lids") or [])],
             (req.get("name") or "signal"),
             (req.get("unit") or ""),
         )
     except (ValueError, TypeError, KeyError, IndexError) as exc:
-        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+        return _fail(f"{type(exc).__name__}: {exc}", "bad_request")
+    if not res.get("ok") and not res.get("code"):
+        # with a byte diff the readings were usable but nothing fits; without, too few
+        res = {**res, "code": "no_match" if "diff" in res else "bad_request"}
+    return res
 
 
 def _writable_modules() -> "tuple[str, ...]":
@@ -232,14 +344,17 @@ def _signal_upsert(req: "dict") -> "dict":
 
     module = _store_module_for(str(req.get("module") or "").lower())
     if module not in _writable_modules():
-        return {"ok": False, "error": f"unknown module: {module!r}"}
+        return _fail(f"unknown module: {module!r}", "bad_request")
     rec = req.get("record") or {}
-    if not rec.get("name") or rec.get("lid") is None or rec.get("offset") is None:
-        return {"ok": False, "error": "record requires at least name, lid, offset"}
+    if not isinstance(rec, dict) or not rec.get("name") or rec.get("lid") is None \
+            or rec.get("offset") is None:
+        return _fail("record requires at least name, lid, offset", "bad_request")
     try:
         upsert_field(module, rec)
-    except (OSError, ValueError, TypeError, KeyError) as exc:
-        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+    except OSError as exc:  # the store could not be written: our failure, not the request's
+        return _fail(f"{type(exc).__name__}: {exc}", "internal")
+    except (ValueError, TypeError, KeyError) as exc:
+        return _fail(f"{type(exc).__name__}: {exc}", "bad_request")
     return {"ok": True, "module": module, "name": rec["name"]}
 
 
@@ -383,38 +498,68 @@ def _capture_value(cap) -> "dict":
     return out
 
 
+def _prefers_html(accept: "str | None") -> bool:
+    """Whether an ``Accept`` header ranks HTML above JSON: a browser navigating to a page,
+    not an API client (``*/*`` alone or no header is an API client)."""
+    html = as_json = 0.0
+    for part in (accept or "").split(","):
+        media, _, params = part.partition(";")
+        q = 1.0
+        for param in params.split(";"):
+            key, _, value = param.partition("=")
+            if key.strip().lower() == "q":
+                try:
+                    q = float(value)
+                except ValueError:
+                    q = 0.0
+        media = media.strip().lower()
+        if media in ("text/html", "application/xhtml+xml"):
+            html = max(html, q)
+        elif media == "application/json":
+            as_json = max(as_json, q)
+    return html > 0 and html > as_json
+
+
+# The last path segment has an extension: a file (``/app.js``), never an app page.
+_FILE_EXT = re.compile(r"\.[^/]*$")
+_AUTH_REALM = 'Basic realm="Ostler admin"'
+
+
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:  # silent log
         pass
 
+    # Routing compares ``path`` (the request path without its query string, computed once
+    # per request by ``_path``), never ``self.path``: a query string is accepted on every
+    # route (specs/2026-10-06-api-consistency-design.md §3).
     def do_GET(self) -> None:  # noqa: N802
+        path = self._path()
         # The app is served at "/" ("/v2" kept as an alias for old bookmarks). "/admin"
         # is the same app behind a password: the page detects /admin and shows the
         # mapping tabs. The hand-written legacy pages stay reachable behind admin as a
         # reference until the new app has been used in the car (ADR-0004).
-        if self.path in ("/", "/index.html", "/v2", "/v2.html"):
+        if path in ("/", "/index.html", "/v2", "/v2.html"):
             self._send(_app_html(), "text/html; charset=utf-8")
-        elif self.path in ("/admin", "/admin/", "/admin.html"):
-            if not self._require_admin():
+        elif path in ("/admin", "/admin/", "/admin.html"):
+            if not self._require_admin(page=True):
                 return
             self._send(_app_html(), "text/html; charset=utf-8")
-        elif self.path in ("/legacy/v2", "/legacy/v2.html"):
-            if not self._require_admin():
+        elif path in ("/legacy/v2", "/legacy/v2.html"):
+            if not self._require_admin(page=True):
                 return
             self._send(_DASHBOARD_V2.read_bytes(), "text/html; charset=utf-8")
-        elif self.path in ("/v1", "/v1.html", "/legacy/v1", "/legacy/v1.html"):
-            if not self._require_admin():
+        elif path in ("/v1", "/v1.html", "/legacy/v1", "/legacy/v1.html"):
+            if not self._require_admin(page=True):
                 return
             self._html()
-        elif self.path == "/events":
+        elif path == "/events":
             self._sse()
-        elif self.path == "/snapshot":
-            self._json(self.server.latest)
-        elif self.path.split("?")[0] == "/map":
+        elif path == "/snapshot":
+            self._json(self.server.latest, headers=_DEPRECATION_HEADERS)
+        elif path == "/map":
             if not self._require_admin():
                 return
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
+            q = self._qs()
             mod = _query_module(q, self.server._active)
             mp = self.server.legacy_menu(mod)
             if mp is None:
@@ -424,204 +569,221 @@ class _Handler(BaseHTTPRequestHandler):
                 "modules": list(self.server._menus),
                 "coverage": self.server.coverage(),
             })
-        elif self.path.split("?")[0] == "/sniff":
+        elif path == "/sniff":
             if not self._require_admin():
                 return
             if self.server.sniffer is None:
                 self._json({"module": None, "modules": [], "lids": []})
             else:
-                from urllib.parse import parse_qs, urlparse
-                q = parse_qs(urlparse(self.path).query)
+                q = self._qs()
                 self._json(self.server.sniffer.snapshot(q.get("module", [None])[0]))
-        elif self.path.split("?")[0] == "/signals":
+        elif path == "/signals":
             if not self._require_admin():
                 return
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
-            self._json(_signals_list(_query_module(q)))
-        elif self.path.split("?")[0] == "/fields":
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
-            self._json(_fields_list(_query_module(q)))
-        elif self.path.split("?")[0] == "/faults":
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
-            self._json(_faults_list(_query_module(q)))
-        elif self.path.split("?")[0] == "/pack":
+            self._json(_signals_list(_query_module(self._qs())))
+        elif path == "/fields":
+            self._json(_fields_list(_query_module(self._qs())))
+        elif path == "/faults":
+            self._json(_faults_list(_query_module(self._qs())))
+        elif path == "/pack":
             # Public (also in public mode): the vehicle pack's manifest (modules, aliases,
             # UI layout). The UI loads it once at boot.
             self._json(active_pack().manifest())
-        elif self.path.split("?")[0] == "/version":
+        elif path == "/version":
             # Public: what is running (platform + pack versions and commits) for Settings.
             from ..version import build_info
             self._json(build_info(active_pack()))
-        elif self.path.split("?")[0] == "/catalog":
+        elif path == "/catalog":
             # Public (also in public mode): read-only item metadata for the module pages.
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
+            q = self._qs()
             try:
                 body, code = _catalog_response(q.get("module", [None])[0])
             except ImportError:
-                body, code = {"ok": False, "error": "catalog not available"}, 503
+                body, code = _fail("catalog not available", "unavailable"), 503
             self._json(body, code=code)
-        elif self.path.split("?")[0] == "/sessions" or self.path.startswith("/sessions/"):
-            self._sessions_get()
-        elif self.path.split("?")[0] == "/captures":
+        elif path == "/sessions" or path.startswith("/sessions/"):
+            self._sessions_get(path)
+        elif path == "/captures":
             if not self._require_admin():
                 return
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
+            q = self._qs()
             self._api(lambda: self.server.captures(q.get("module", [None])[0]))
-        elif self.path == "/community":
+        elif path == "/community":
             c = self.server.community
             self._json(c.state() if c is not None else {"consent": None, "endpoint": None})
-        elif self.path == "/docs":
+        elif path == "/docs":
             if not self._require_admin():
                 return
             self._json({"docs": self.server.docs.index()})
-        elif self.path.split("?")[0] == "/doc":
+        elif path == "/doc":
             if not self._require_admin():
                 return
-            from urllib.parse import parse_qs, urlparse
-            q = parse_qs(urlparse(self.path).query)
-            frag = self.server.docs.html(q.get("id", [""])[0])
+            doc_id = self._qs().get("id", [""])[0]
+            frag = self.server.docs.html(doc_id)
             if frag is None:
-                self.send_error(404)
+                self._error(404, f"unknown document: {doc_id}", "not_found")
             else:
                 self._send(frag.encode("utf-8"), "text/html; charset=utf-8")
         else:
-            f = _static_file(self.path)
-            if f is None or f.name == "index.html":
-                self.send_error(404)
-                return
-            ctype = _CONTENT_TYPES.get(f.suffix) or (
-                mimetypes.guess_type(f.name)[0] or "application/octet-stream")
-            # Vite fingerprints everything under /assets/ → safe to cache forever.
-            cache = ("public, max-age=31536000, immutable"
-                     if self.path.startswith("/assets/") else "no-cache")
-            self._send(f.read_bytes(), ctype, cache=cache)
+            f = _static_file(path)
+            if f is not None and f.name != "index.html":
+                ctype = _CONTENT_TYPES.get(f.suffix) or (
+                    mimetypes.guess_type(f.name)[0] or "application/octet-stream")
+                # Vite fingerprints everything under /assets/ → safe to cache forever.
+                cache = ("public, max-age=31536000, immutable"
+                         if path.startswith("/assets/") else "no-cache")
+                self._send(f.read_bytes(), ctype, cache=cache)
+            elif self._wants_app_shell(path):
+                # A browser deep link to a page the server does not know: the app shell,
+                # so the UI shows its own not-found view and a reload keeps the URL.
+                self._send(_app_html(), "text/html; charset=utf-8")
+            else:
+                self._error(404, "not found", "not_found")
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path == "/command":
-            length = int(self.headers.get("Content-Length", 0) or 0)
-            raw = self.rfile.read(length) if length else b"{}"
-            try:
-                cmd = json.loads(raw or b"{}")
-            except (ValueError, TypeError):
-                cmd = {}
-            # The basic-mode scan is sequential over several modules (slow init
-            # for airbag) → give it plenty of time; other commands are fast.
-            timeout = 45.0 if cmd.get("action") == "read_all_faults" else 8.0
-            result = self.server.enqueue_command(cmd, timeout=timeout)
-            self._json(result, code=200 if result.get("ok") else 400)
-        elif self.path == "/calib":
+        path = self._path()
+        if path == "/command":
+            self._api(self._command)
+        elif path == "/calib":
             if not self._require_admin():
                 return
-            length = int(self.headers.get("Content-Length", 0) or 0)
-            raw = self.rfile.read(length) if length else b"{}"
-            try:
-                req = json.loads(raw or b"{}")
-            except (ValueError, TypeError):
-                req = {}
-            self._json(_calibrate(req))
-        elif self.path == "/automap":
+            self._api(lambda: _calibrate(self._json_body()))
+        elif path == "/automap":
             if not self._require_admin():
                 return
-            length = int(self.headers.get("Content-Length", 0) or 0)
-            raw = self.rfile.read(length) if length else b"{}"
-            try:
-                req = json.loads(raw or b"{}")
-            except (ValueError, TypeError):
-                req = {}
-            self._json(_automap(req))
-        elif self.path == "/capture":
+            self._api(lambda: _automap(self._json_body()))
+        elif path == "/capture":
             if not self._require_admin():
                 return
-            body = self._body()
-            res = _append_capture(self.server.captures_path, body)
-            if res.get("ok"):
-                self.server.capture_note(body)  # into the recording session, if any
-            self._json(res)
-        elif self.path.split("?")[0] == "/notes/live":
+            self._api(self._capture)
+        elif path == "/notes/live":
             self._api(lambda: self.server.live_note(self._json_body()))
-        elif self.path.startswith("/sessions/"):
-            self._sessions_post()
-        elif self.path == "/signal":
+        elif path.startswith("/sessions/"):
+            self._sessions_post(path)
+        elif path == "/signal":
             if not self._require_admin():
                 return
-            res = _signal_upsert(self._body())
-            self._json(res, code=200 if res.get("ok") else 400)
-        elif self.path in ("/community/consent", "/community/contribute") and self.server._public:
+            self._api(lambda: _signal_upsert(self._json_body()))
+        elif path in ("/community/consent", "/community/contribute") and self.server._public:
             # A public visitor must not change this device's sharing choice or upload
             # readings in its name.
-            self._json({"ok": False, "error": _PUBLIC_REFUSAL}, 403)
-        elif self.path == "/community/consent":
+            self._error(403, _PUBLIC_REFUSAL, "public_mode")
+        elif path == "/community/consent":
             # Not admin-gated: the first-run Consent screen and Preferences belong to the
             # device's own user (the LAN UI); public mode is refused above.
             c = self.server.community
             if c is None:
-                self._json({"ok": False, "error": "community disabled"}, 400)
+                self._error(409, "community disabled", "community_off")
             else:
-                body = self._body()
-                self._json(c.set_consent(bool(body.get("consent")), body.get("vehicle")))
-        elif self.path == "/community/contribute":
+                def _consent() -> dict:
+                    body = self._json_body()
+                    return c.set_consent(bool(body.get("consent")), body.get("vehicle"))
+                self._api(_consent)
+        elif path == "/community/contribute":
             # Contributions come from the admin Coverage Map, so they need admin auth.
             if not self._require_admin():
                 return
             c = self.server.community
             if c is None:
-                self._json({"ok": False, "error": "community disabled"}, 400)
+                self._error(409, "community disabled", "community_off")
             else:
-                self._json(c.contribute(self._body()))
+                # queued offline → 202 {ok: true, queued: true} (see _api)
+                self._api(lambda: c.contribute(self._json_body()))
         else:
-            self.send_error(404)
+            self._error(404, "not found", "not_found")
 
     def do_PATCH(self) -> None:  # noqa: N802
-        sid, rest = self._session_parts()
+        path = self._path()
+        sid, rest = self._session_parts(path)
         if sid is not None and not rest:  # PATCH /sessions/<id> {name?, description?}
             if not _SESSION_ID.match(sid):
-                self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+                self._error(404, f"unknown session: {sid}", "not_found")
                 return
             self._api(lambda: self.server.patch_session(sid, self._json_body()))
             return
         if sid is None or len(rest) != 2 or rest[0] != "notes":
-            self._json({"ok": False, "error": "not found"}, 404)
+            self._error(404, "not found", "not_found")
             return
         self._api(lambda: self.server.edit_note(sid, rest[1], self._json_body()))
 
     def do_DELETE(self) -> None:  # noqa: N802
-        sid, rest = self._session_parts()
+        path = self._path()
+        sid, rest = self._session_parts(path)
         if sid is None or len(rest) != 2 or rest[0] != "notes":
-            self._json({"ok": False, "error": "not found"}, 404)
+            self._error(404, "not found", "not_found")
             return
         self._api(lambda: self.server.delete_note(sid, rest[1]))
 
-    # ---- replay API helpers (ADR-0010) --------------------------------- #
-    def _session_parts(self) -> "tuple[str | None, list[str]]":
-        """``/sessions/<id>/a/b`` → ("<id>", ["a", "b"]); (None, []) for anything else."""
-        from urllib.parse import unquote, urlparse
+    # ---- request helpers ----------------------------------------------- #
+    def _path(self) -> str:
+        """The request path without its query string or fragment."""
+        return urlsplit(self.path).path
 
-        parts = [unquote(p) for p in urlparse(self.path).path.split("/") if p]
+    def _qs(self) -> "dict[str, list[str]]":
+        """The parsed query string (every value of every parameter)."""
+        return parse_qs(urlsplit(self.path).query)
+
+    def _query(self) -> "dict[str, str]":
+        """The parsed query string, the first value of each parameter."""
+        return {k: v[0] for k, v in self._qs().items() if v}
+
+    def _wants_app_shell(self, path: str) -> bool:
+        """An unknown ``GET`` answered with the app shell: a browser page (``Accept``
+        prefers HTML) whose path has no file extension (a missing ``.js`` stays 404)."""
+        return not _FILE_EXT.search(path) and _prefers_html(self.headers.get("Accept"))
+
+    def _command(self) -> dict:
+        """``POST /command``: queue or run the command; the reply's ``code`` sets the status."""
+        cmd = self._json_body()
+        srv = self.server
+        # The basic-mode scan is sequential over several modules (slow init
+        # for airbag) → give it plenty of time; other commands are fast.
+        timeout = srv.scan_timeout if cmd.get("action") == "read_all_faults" \
+            else srv.command_timeout
+        return srv.enqueue_command(cmd, timeout=timeout)
+
+    def _capture(self) -> dict:
+        body = self._json_body()
+        res = _append_capture(self.server.captures_path, body)
+        if res.get("ok"):
+            self.server.capture_note(body)  # into the recording session, if any
+        return res
+
+    # ---- replay API helpers (ADR-0010) --------------------------------- #
+    def _session_parts(self, path: str) -> "tuple[str | None, list[str]]":
+        """``/sessions/<id>/a/b`` → ("<id>", ["a", "b"]); (None, []) for anything else."""
+        from urllib.parse import unquote
+
+        parts = [unquote(p) for p in path.split("/") if p]
         if len(parts) < 2 or parts[0] != "sessions":
             return None, []
         return parts[1], parts[2:]
 
-    def _query(self) -> "dict[str, str]":
-        from urllib.parse import parse_qs, urlparse
-
-        return {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items() if v}
-
     def _api(self, fn) -> None:
-        """Run a replay-API call: its dict → 200 JSON, an :class:`ApiError` → its code."""
+        """Run an API call and send its dict. A reply with ``ok: false`` gets the status of
+        its ``code`` (400 without one), a queued one (``ok: true, queued: true``) 202,
+        anything else 200. An :class:`ApiError` → its status and the error envelope; any
+        other exception → 500 ``internal``."""
         try:
             body = fn()
         except ApiError as exc:
-            self._json({"ok": False, "error": exc.error}, exc.code)
+            self._api_error(exc)
             return
         except Exception as exc:  # noqa: BLE001
-            self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 500)
+            self._error(500, f"{type(exc).__name__}: {exc}", "internal")
             return
-        self._json(body)
+        if isinstance(body, dict) and body.get("ok") is False:
+            code = _status_for(body)
+            if "code" not in body and code in _CODE_FOR_STATUS:
+                body = {**body, "code": _CODE_FOR_STATUS[code]}
+            self._json(body, code)
+        elif isinstance(body, dict) and body.get("ok") is True and body.get("queued") is True:
+            self._json(body, 202)
+        else:
+            self._json(body)
+
+    def _api_error(self, exc: ApiError) -> None:
+        self._error(exc.code, exc.error, exc.kind)
 
     def _read_capped(self, cap: int) -> bytes:
         """The request body, refusing (413) anything over ``cap`` bytes unread."""
@@ -645,6 +807,7 @@ class _Handler(BaseHTTPRequestHandler):
         return self.rfile.read(length) if length else b""
 
     def _json_body(self) -> "dict":
+        """The JSON object body (an empty body is ``{}``); 400 when it is not one."""
         raw = self._read_capped(_JSON_BODY_MAX)
         try:
             body = json.loads(raw or b"{}")
@@ -654,11 +817,11 @@ class _Handler(BaseHTTPRequestHandler):
             raise ApiError(400, "body must be a JSON object")
         return body
 
-    def _sessions_post(self) -> None:
+    def _sessions_post(self, path: str) -> None:
         """``POST /sessions/<id>/notes | audio | accel | accel_cal``."""
-        sid, rest = self._session_parts()
+        sid, rest = self._session_parts(path)
         if sid is None or len(rest) != 1:
-            self._json({"ok": False, "error": "not found"}, 404)
+            self._error(404, "not found", "not_found")
             return
         what = rest[0]
         srv = self.server
@@ -681,7 +844,7 @@ class _Handler(BaseHTTPRequestHandler):
         elif what == "accel_cal":
             self._api(lambda: srv.put_accel_cal(sid, self._json_body()))
         else:
-            self._json({"ok": False, "error": "not found"}, 404)
+            self._error(404, "not found", "not_found")
 
     def _send_audio(self, sid: str, track: str) -> None:
         """``GET /sessions/<id>/audio/<track>`` with single-range HTTP Range support."""
@@ -689,10 +852,10 @@ class _Handler(BaseHTTPRequestHandler):
             path, ctype = self.server.audio_file(sid, track)
             size = os.path.getsize(path)
         except ApiError as exc:
-            self._json({"ok": False, "error": exc.error}, exc.code)
+            self._api_error(exc)
             return
         except OSError:
-            self._json({"ok": False, "error": f"unknown track: {track}"}, 404)
+            self._error(404, f"unknown track: {track}", "not_found")
             return
         rng = _parse_range(self.headers.get("Range"), size)
         if rng == "invalid":
@@ -722,17 +885,14 @@ class _Handler(BaseHTTPRequestHandler):
                 left -= len(chunk)
 
     # ---- session logbook (public, filtered in public mode) ------------- #
-    def _sessions_get(self) -> None:
+    def _sessions_get(self, path: str) -> None:
         """``/sessions`` (paged), ``/sessions/histogram``, ``/sessions/<id>``,
         ``/sessions/<id>/data``, ``/sessions/<id>/export``.
 
         Public routes; in public mode the store only exposes synthetic sessions, so a real
         (location-bearing) session answers 404 exactly like an unknown id (ADR-0009)."""
-        from urllib.parse import parse_qs, urlparse
-
-        url = urlparse(self.path)
-        q = parse_qs(url.query)
-        parts = [p for p in url.path.split("/") if p][1:]  # drop "sessions"
+        q = self._qs()
+        parts = [p for p in path.split("/") if p][1:]  # drop "sessions"
         store = self.server.session_store
         public = self.server._public
         if store is None:
@@ -741,7 +901,7 @@ class _Handler(BaseHTTPRequestHandler):
             elif parts == ["histogram"]:
                 self._json({"group": "month", "buckets": []})
             else:
-                self._json({"ok": False, "error": "session logbook not available"}, 404)
+                self._error(404, "session logbook not available", "not_found")
             return
         if not parts:  # paged + filtered through the SessionIndex (spec 2026-10-06 §3)
             self._api(lambda: self.server.sessions_page(self._query()))
@@ -755,7 +915,7 @@ class _Handler(BaseHTTPRequestHandler):
             return
         if not _SESSION_ID.match(sid) or len(rest) > 1 or (
                 rest and rest[0] not in ("data", "export", "events", "notes")):
-            self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
+            self._error(404, f"unknown session: {sid}", "not_found")
             return
         if rest and rest[0] == "events":
             self._api(lambda: self.server.session_events(sid))
@@ -773,24 +933,27 @@ class _Handler(BaseHTTPRequestHandler):
                 try:
                     max_points = int(q.get("max", [_DEFAULT_MAX_POINTS])[0])
                 except (TypeError, ValueError):
-                    self._json({"ok": False, "error": "max must be an integer"}, 400)
+                    self._error(400, "max must be an integer", "bad_request")
                     return
                 if max_points < 2:
-                    self._json({"ok": False, "error": "max must be ≥ 2"}, 400)
+                    self._error(400, "max must be ≥ 2", "bad_request")
                     return
-                self._json(store.data(sid, channels, max_points=max_points, public=public))
+                self._json(store.data(sid, channels, max_points=max_points, public=public),
+                           headers=_DEPRECATION_HEADERS)
             else:
                 fmt = (q.get("fmt", ["csv"])[0] or "").lower()
                 if fmt not in _EXPORT_FORMATS:
-                    self._json({"ok": False, "error": f"unknown export format: {fmt!r} "
-                                f"(csv|vbo|gpx|notes)"}, 400)
+                    self._error(400, f"unknown export format: {fmt!r} "
+                                f"({'|'.join(_EXPORT_FORMATS)})", "bad_request")
                     return
                 filename, ctype, body = store.export(sid, fmt, public=public)
                 self._send_download(body, ctype, filename)
         except KeyError:
-            self._json({"ok": False, "error": f"unknown session: {sid}"}, 404)
-        except (ValueError, OSError) as exc:
-            self._json({"ok": False, "error": f"{type(exc).__name__}: {exc}"}, 400)
+            self._error(404, f"unknown session: {sid}", "not_found")
+        except ValueError as exc:
+            self._error(400, f"{type(exc).__name__}: {exc}", "bad_request")
+        except OSError as exc:  # the session files could not be read: our failure
+            self._error(500, f"{type(exc).__name__}: {exc}", "internal")
 
     def _send_download(self, body: bytes, content_type: str, filename: str) -> None:
         safe = re.sub(r'[^A-Za-z0-9_.-]', "_", os.path.basename(filename or "session"))
@@ -801,14 +964,6 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
-
-    def _body(self) -> "dict":
-        length = int(self.headers.get("Content-Length", 0) or 0)
-        raw = self.rfile.read(length) if length else b"{}"
-        try:
-            return json.loads(raw or b"{}")
-        except (ValueError, TypeError):
-            return {}
 
     # ---- admin gate (HTTP Basic Auth) --------------------------------- #
     # Protects the mapping/dev surface (/admin + automap/capture/signal/calib/…).
@@ -830,14 +985,21 @@ class _Handler(BaseHTTPRequestHandler):
                 return True
         return False
 
-    def _require_admin(self) -> bool:
-        """True if the call may proceed; otherwise a 401 is sent and False returned."""
+    def _require_admin(self, page: bool = False) -> bool:
+        """True if the call may proceed; otherwise a 401 is sent and False returned.
+
+        An app ``page`` gets an empty body, so the browser shows its Basic Auth prompt;
+        an API route gets the error envelope (``auth_required``)."""
         if self._admin_ok():
             return True
-        self.send_response(401)
-        self.send_header("WWW-Authenticate", 'Basic realm="Ostler admin"')
-        self.send_header("Content-Length", "0")
-        self.end_headers()
+        if page:
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", _AUTH_REALM)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+        else:
+            self._error(401, "admin authentication required", "auth_required",
+                        headers={"WWW-Authenticate": _AUTH_REALM})
         return False
 
     # ---- responses ----------------------------------------------------- #
@@ -854,19 +1016,43 @@ class _Handler(BaseHTTPRequestHandler):
     def _html(self) -> None:
         self._send(_DASHBOARD.read_bytes(), "text/html; charset=utf-8")
 
-    def _json(self, obj: "dict", code: int = 200) -> None:
+    def _json(self, obj: "dict", code: int = 200, headers: "dict | None" = None) -> None:
         body = json.dumps(obj).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _error(self, status: int, error: str, code: "str | None" = None,
+               headers: "dict | None" = None, **extra) -> None:
+        """Send the error envelope ``{ok: false, error, code}``."""
+        self._json(_fail(error, code or _CODE_FOR_STATUS.get(status), **extra), status,
+                   headers=headers)
+
+    def send_error(self, code: int, message: "str | None" = None,
+                   explain: "str | None" = None) -> None:
+        """The stdlib's own errors (400 bad request line, 414, 501 unsupported method …)
+        as the JSON envelope instead of its HTML page; no body for ``HEAD``."""
+        short = self.responses.get(code, ("Error", ""))[0]
+        body = json.dumps(_fail(message or short, _CODE_FOR_STATUS.get(code))).encode("utf-8")
+        self.send_response(code, message)
+        self.send_header("Connection", "close")
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if self.command != "HEAD" and code >= 200 and code not in (204, 205, 304):
+            self.wfile.write(body)
 
     def _sse(self) -> None:
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Connection", "keep-alive")
+        for name, value in _DEPRECATION_HEADERS.items():  # the snapshot's ts and since
+            self.send_header(name, value)
         self.end_headers()
         try:
             while True:
@@ -916,6 +1102,10 @@ class ConnectAborted(Exception):
 class DiagServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+    # How long ``POST /command`` waits for the poll thread (seconds); past it the reply is
+    # 504 ``car_timeout``. The multi-module fault scan gets longer.
+    command_timeout = 8.0
+    scan_timeout = 45.0
 
     def __init__(
         self,
@@ -1165,27 +1355,29 @@ class DiagServer(ThreadingHTTPServer):
         """``delete_session {id}``: refused in public mode, for synthetic (demo) sessions
         and for the session being recorded right now."""
         if self._public:
-            return {"ok": False, "error": "deleting sessions is not available in public mode"}
+            return _fail("deleting sessions is not available in public mode", "public_mode")
         sid = str((params or {}).get("id") or "")
         store = self.session_store
         if store is None:
-            return {"ok": False, "error": "session logbook not available"}
+            return _fail("session logbook not available", "unavailable")
         if not _SESSION_ID.match(sid):
-            return {"ok": False, "error": f"unknown session: {sid}"}
+            return _fail(f"unknown session: {sid}", "not_found")
         try:
             meta = store.meta(sid)
         except KeyError:
-            return {"ok": False, "error": f"unknown session: {sid}"}
+            return _fail(f"unknown session: {sid}", "not_found")
         if meta.get("synthetic"):
-            return {"ok": False, "error": "synthetic sessions are read-only"}
+            return _fail(_SYNTHETIC_REFUSAL, "read_only")
         if (self._recording_status() or {}).get("session") == sid:
-            return {"ok": False, "error": "session is being recorded"}
+            return _fail("session is being recorded", "conflict")
         try:
             store.delete(sid)
         except KeyError:
-            return {"ok": False, "error": f"unknown session: {sid}"}
-        except (ValueError, PermissionError) as exc:
-            return {"ok": False, "error": str(exc)}
+            return _fail(f"unknown session: {sid}", "not_found")
+        except PermissionError as exc:
+            return _fail(str(exc), "conflict" if "recorded" in str(exc) else "read_only")
+        except ValueError as exc:
+            return _fail(str(exc), "bad_request")
         return {"ok": True, "deleted": sid}
 
     # ---- session index + place names (spec 2026-10-06 §2-3) ------------ #
@@ -1438,7 +1630,7 @@ class DiagServer(ThreadingHTTPServer):
         """``PATCH /sessions/<id> {name?, description?}`` → ``{ok, meta}``. Trimmed, capped
         (80 / 2000 characters), empty → null. 403 in public mode and for synthetic sessions."""
         if self._public:
-            raise ApiError(403, _PUBLIC_REFUSAL)
+            raise ApiError(403, _PUBLIC_REFUSAL, "public_mode")
         fields: "dict" = {}
         for key, cap in (("name", _NAME_MAX), ("description", _DESCRIPTION_MAX)):
             if key not in body:
@@ -1461,7 +1653,7 @@ class DiagServer(ThreadingHTTPServer):
         except KeyError:
             raise ApiError(404, f"unknown session: {sid}") from None
         except PermissionError as exc:
-            raise ApiError(403, str(exc) or _SYNTHETIC_REFUSAL) from None
+            raise ApiError(403, str(exc) or _SYNTHETIC_REFUSAL, "read_only") from None
         except ValueError as exc:
             raise ApiError(400, str(exc)) from None
         # (The recorder adopts this edit on its next meta write of an open session.)
@@ -1539,22 +1731,20 @@ class DiagServer(ThreadingHTTPServer):
         imu = params.get("imu", opts["imu"])
         hz = params.get("accel_hz", opts["accel_hz"])
         if audio not in ("off", "pi"):
-            return {"ok": False, "error": "audio must be off or pi", "options": opts}
+            return _fail("audio must be off or pi", "bad_request", options=opts)
         if imu not in ("off", "on"):
-            return {"ok": False, "error": "imu must be off or on", "options": opts}
+            return _fail("imu must be off or on", "bad_request", options=opts)
         if isinstance(hz, bool) or hz not in _ACCEL_HZ:
-            return {"ok": False, "error": "accel_hz must be 10, 25 or 50", "options": opts}
+            return _fail("accel_hz must be 10, 25 or 50", "bad_request", options=opts)
         name = params.get("name")
         if name is not None and not isinstance(name, str):
-            return {"ok": False, "error": "name must be a string", "options": opts}
+            return _fail("name must be a string", "bad_request", options=opts)
         if audio == "pi" and opts["audio"] != "pi":
             st = self._pi_audio_state()
             if st["state"] == "unavailable":
-                return {"ok": False, "error": f"Pi audio unavailable: {st['reason']}",
-                        "options": opts}
+                return _fail(f"Pi audio unavailable: {st['reason']}", "conflict", options=opts)
         if imu == "on" and self._imu_source is None:
-            return {"ok": False, "error": f"IMU unavailable: {self._imu_reason}",
-                    "options": opts}
+            return _fail(f"IMU unavailable: {self._imu_reason}", "conflict", options=opts)
         self._rec_opts = {"audio": audio, "imu": imu, "accel_hz": int(hz)}
         rec = self._recorder
         if name is not None:
@@ -1594,19 +1784,19 @@ class DiagServer(ThreadingHTTPServer):
         """``split_session``: end the recording session and start a new one now. Refused in
         public mode and unless a session is ``recording`` (ADR-0011). → ``{ok, session}``."""
         if self._public:
-            return {"ok": False, "error": "splitting sessions is not available in public mode"}
+            return _fail("splitting sessions is not available in public mode", "public_mode")
         rec = self._recorder
         if rec is None:
-            return {"ok": False, "error": "session recording is not available"}
+            return _fail("session recording is not available", "unavailable")
         with self._rec_lock:
             if self._rec_closed:
-                return {"ok": False, "error": "session recording is not available"}
+                return _fail("session recording is not available", "unavailable")
             if not self.is_recording():
-                return {"ok": False, "error": NOT_RECORDING}
+                return _fail(NOT_RECORDING, "not_recording")
             try:
                 sid = rec.split(self.latest)
             except _not_recording_error() as exc:
-                return {"ok": False, "error": str(exc) or NOT_RECORDING}
+                return _fail(str(exc) or NOT_RECORDING, "not_recording")
             status = self._recording_status()
         self.latest = {**self.latest, "recording": status}
         return {"ok": True, "session": sid}
@@ -1685,16 +1875,16 @@ class DiagServer(ThreadingHTTPServer):
         """(directory, meta) of a session that may be written: refused (403) in public
         mode and for synthetic sessions; 404 when unknown."""
         if self._public:
-            raise ApiError(403, _PUBLIC_REFUSAL)
+            raise ApiError(403, _PUBLIC_REFUSAL, "public_mode")
         path, meta = self._session_path(sid, False)
         if meta.get("synthetic"):
-            raise ApiError(403, _SYNTHETIC_REFUSAL)
+            raise ApiError(403, _SYNTHETIC_REFUSAL, "read_only")
         return path, meta
 
     def _require_recording(self, sid: str) -> "dict":
         status = self._recording_status()
         if not status or status.get("session") != sid:
-            raise ApiError(409, f"session {sid} is not being recorded")
+            raise ApiError(409, f"session {sid} is not being recorded", "not_recording")
         return status
 
     # ---- events -------------------------------------------------------- #
@@ -1724,7 +1914,7 @@ class DiagServer(ThreadingHTTPServer):
         except KeyError as exc:
             raise ApiError(404, f"unknown note: {exc.args[0] if exc.args else ''}") from None
         except PermissionError as exc:
-            raise ApiError(403, str(exc)) from None
+            raise ApiError(403, str(exc), "read_only") from None
         except ValueError as exc:
             raise ApiError(400, str(exc)) from None
 
@@ -1772,7 +1962,7 @@ class DiagServer(ThreadingHTTPServer):
         """``POST /notes/live``: a note stamped "now" in the recording session. Refused with
         409 unless a session is ``recording`` (ADR-0011: never while paused or idle)."""
         if self._public:
-            raise ApiError(403, _PUBLIC_REFUSAL)
+            raise ApiError(403, _PUBLIC_REFUSAL, "public_mode")
         kind = body.get("kind") or "mark"
         if kind not in _NOTE_KINDS:
             raise ApiError(400, "kind must be mark, note or capture")
@@ -1785,7 +1975,7 @@ class DiagServer(ThreadingHTTPServer):
             if self._rec_closed:
                 raise ApiError(503, "session recording is not available")
             if not self.is_recording():
-                raise ApiError(409, NOT_RECORDING)
+                raise ApiError(409, NOT_RECORDING, "not_recording")
             if capture is not None:  # the same capture via /capture and /notes/live → one
                 recent, sid = self._recent_capture, getattr(rec, "session_id", None)
                 if recent and recent[1] == sid and recent[2] == capture and \
@@ -1795,7 +1985,7 @@ class DiagServer(ThreadingHTTPServer):
                 sid, note = rec.note(text=f.get("text", ""), tags=f.get("tags", []), kind=kind,
                                      capture=capture, snapshot=self.latest)
             except _not_recording_error() as exc:
-                raise ApiError(409, str(exc) or NOT_RECORDING) from None
+                raise ApiError(409, str(exc) or NOT_RECORDING, "not_recording") from None
             except ValueError as exc:
                 raise ApiError(400, str(exc)) from None
             if capture is not None:
@@ -1841,8 +2031,10 @@ class DiagServer(ThreadingHTTPServer):
 
     # ---- audio (spec §3) ----------------------------------------------- #
     def put_audio(self, sid: str, query: "dict", data: bytes) -> "dict":
-        """``POST /sessions/<id>/audio?track=&seq=&mime=&start=[&end=1]``: one chunk of a
-        phone track into the session being recorded (``end=1`` closes the track)."""
+        """``POST /sessions/<id>/audio?track=&seq=&mime=&start_utc=[&end=1]``: one chunk of
+        a phone track into the session being recorded (``end=1`` closes the track). The
+        track start is ``start_utc`` (RFC 3339) or the deprecated ``start`` (epoch ms);
+        ``start_utc`` wins when both are given."""
         self.check_writable(sid)
         track = query.get("track") or ""
         if not _TRACK_ID.match(track):
@@ -1854,22 +2046,18 @@ class DiagServer(ThreadingHTTPServer):
         if seq < 0:
             raise ApiError(400, "seq must be ≥ 0")
         mime = (query.get("mime") or "audio/webm").strip()
-        start = query.get("start")
-        try:
-            start_ms = float(start) if start not in (None, "") else None
-        except ValueError:
-            raise ApiError(400, "start must be epoch ms") from None
+        start_ms = _audio_start_ms(query)
         end = query.get("end") in ("1", "true")
         rec = self._recorder
         if rec is None or self._rec_closed:
-            raise ApiError(409, f"session {sid} is not being recorded")
+            raise ApiError(409, f"session {sid} is not being recorded", "not_recording")
         try:
             entry = rec.audio_put(track, seq, data, mime=mime, start_ms=start_ms, session=sid,
                                   source="phone")
             if end:
                 entry = rec.audio_stop(track) or entry
         except KeyError:
-            raise ApiError(409, f"session {sid} is not being recorded") from None
+            raise ApiError(409, f"session {sid} is not being recorded", "not_recording") from None
         except (ValueError, OSError) as exc:
             raise ApiError(400, str(exc)) from None
         return {"ok": True, "track": track, "seq": seq, "bytes": entry.get("bytes", 0),
@@ -1911,11 +2099,11 @@ class DiagServer(ThreadingHTTPServer):
         self._require_recording(sid)
         with self._rec_lock:
             if self._rec_closed:
-                raise ApiError(409, f"session {sid} is not being recorded")
+                raise ApiError(409, f"session {sid} is not being recorded", "not_recording")
             try:
                 rows = self._recorder.feed_accel(clean, source, session=sid)
             except KeyError:
-                raise ApiError(409, f"session {sid} is not being recorded") from None
+                raise ApiError(409, f"session {sid} is not being recorded", "not_recording") from None
             except (ValueError, TypeError) as exc:
                 raise ApiError(400, f"{type(exc).__name__}: {exc}") from None
         return {"ok": True, "samples": len(clean), "rows": rows}
@@ -1939,7 +2127,7 @@ class DiagServer(ThreadingHTTPServer):
         self._require_recording(sid)
         with self._rec_lock:
             if self._rec_closed:
-                raise ApiError(409, f"session {sid} is not being recorded")
+                raise ApiError(409, f"session {sid} is not being recorded", "not_recording")
             try:  # also writes meta.accel_cal and the accel_cal event
                 cal = self._recorder.set_accel_cal(matrix, source, method)
             except ValueError as exc:
@@ -2052,7 +2240,7 @@ class DiagServer(ThreadingHTTPServer):
             "source": self.source.name,
             "connect_phase": phase,
             "conn": self._conn,
-            "ts": time.time(),
+            **_stamp(time.time()),
         }
 
     def _all_sources(self) -> list:
@@ -2088,7 +2276,7 @@ class DiagServer(ThreadingHTTPServer):
             return self.recording_options(params)
         if action == "split_session":
             return self.split_session()
-        return {"ok": False, "error": f"unknown command: {action}"}
+        return _fail(f"unknown command: {action}", "bad_request")
 
     def _spawn_poweroff(self) -> None:
         """Fire the OS poweroff after a short delay so the HTTP reply flushes to the
@@ -2106,7 +2294,7 @@ class DiagServer(ThreadingHTTPServer):
         """Power off the host (the Pi in the car). Guarded by --allow-shutdown so dev
         on a laptop can never trigger it. A stopgap until proper power control exists."""
         if not self._allow_shutdown:
-            return {"ok": False, "error": "shutdown is not enabled on this host"}
+            return _fail("shutdown is not enabled on this host", "conflict")
         self._spawn_poweroff()
         return {"ok": True, "shutting_down": True}
 
@@ -2120,19 +2308,21 @@ class DiagServer(ThreadingHTTPServer):
             try:
                 res = self._run_inline(action, cmd.get("params") or {})
             except Exception as exc:  # noqa: BLE001
-                res = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+                res = _fail(f"{type(exc).__name__}: {exc}", "internal")
             self._record_command(action, res)
             return res
-        why = self.refusal(action, cmd.get("params") or {})
+        why, code = self._refusal(action, cmd.get("params") or {})
         if why:
             if action not in _SERVER_COMMANDS:
                 self._record_command(action, {"ok": False, "error": why})
-            return {"ok": False, "error": why}
+            return _fail(why, code)
         holder = {"result": None, "event": threading.Event()}
         self._commands.put((cmd, holder))
         if holder["event"].wait(timeout):
             return holder["result"]
-        return {"ok": False, "error": "timeout — no response from the diagnostic layer"}
+        # The poll thread did not answer in time (a slow establishment, a silent ECU): the
+        # car side, not the request, is the problem → 504 (spec §2).
+        return _fail("timeout — no response from the diagnostic layer", "car_timeout")
 
     def handle_error(self, request, client_address) -> None:
         """Silence harmless client disconnects (the browser closing fetch/SSE)."""
@@ -2167,6 +2357,11 @@ class DiagServer(ThreadingHTTPServer):
         return getattr(self.source, "store_module", None) or _store_module_for(self._active)
 
     def refusal(self, action: str, params: "dict | None" = None) -> "str | None":
+        """Why ``action`` must not run now (None = allowed); see :meth:`_refusal`."""
+        return self._refusal(action, params)[0]
+
+    def _refusal(self, action: str,
+                 params: "dict | None" = None) -> "tuple[str | None, str | None]":
         """Why ``action`` must not run now (None = allowed).
 
         Server commands and the generic ``clear_faults``/``read_block`` are not module
@@ -2174,24 +2369,30 @@ class DiagServer(ThreadingHTTPServer):
         :func:`openostler.commands.refusal`; an unregistered action that looks like a module
         command (``output_*``, ``injector_*``, a SLABS actuator name …) is refused as unknown.
         While disconnected, no source command runs.
+
+        → ``(why, code)``: the reason and its error ``code`` (``public_mode`` for a refusal
+        only the public server makes, ``disconnected``, ``bad_request`` for an unknown
+        action; None for the other policy refusals, which answer 400).
         """
         from .. import commands
 
         if action in _SERVER_COMMANDS or action in _INLINE_COMMANDS:
-            return None
+            return None, None
         store = self.store_module()
         if action not in _GENERIC_SOURCE_COMMANDS:
             if commands.get(store, action) is None:
                 if _looks_like_module_command(action):
-                    return f"unknown action for {store}: {action}"
+                    return f"unknown action for {store}: {action}", "bad_request"
             else:
-                why = commands.refusal(store, action, trust=str((params or {}).get("trust", "")),
-                                       public=self._public)
+                trust = str((params or {}).get("trust", ""))
+                why = commands.refusal(store, action, trust=trust, public=self._public)
                 if why:
-                    return why
+                    public_only = self._public and not commands.refusal(
+                        store, action, trust=trust, public=False)
+                    return why, ("public_mode" if public_only else None)
         if self._paused:
-            return "disconnected — connect first"
-        return None
+            return "disconnected — connect first", "disconnected"
+        return None, None
 
     # ---- connection state ---------------------------------------------- #
     def _next_conn(self, status: "str | None") -> str:
@@ -2249,7 +2450,7 @@ class DiagServer(ThreadingHTTPServer):
         snap["fault_watch"] = self._fault_watch  # fast fault-polling on/off
         snap["allow_shutdown"] = self._allow_shutdown  # Settings "Shut down Pi" button
         snap["conn"] = self._conn
-        snap["ts"] = time.time()
+        snap.update(_stamp(time.time()))
         bat = (snap.get("signals") or {}).get("battery")
         v = bat.get("v") if isinstance(bat, dict) else None
         snap["battery_v"] = (float(v) if isinstance(v, (int, float)) and not isinstance(v, bool)
@@ -2273,8 +2474,10 @@ class DiagServer(ThreadingHTTPServer):
         else:
             c = commands.get(self.store_module(), action)
             if c is not None and c.stop:
-                self._active_test = {"action": c.action, "label": c.label,
-                                     "since": time.time(), "stop": c.stop}
+                now = time.time()
+                # ``since`` (epoch s) is deprecated for ``since_utc``; removed in 0.2.0
+                self._active_test = {"action": c.action, "label": c.label, "since": now,
+                                     "since_utc": rfc3339_utc(now), "stop": c.stop}
         self.latest = {**self.latest,
                        "active_test": dict(self._active_test) if self._active_test else None}
 
@@ -2322,9 +2525,9 @@ class DiagServer(ThreadingHTTPServer):
         session and reconnect with it."""
         spec = port.strip() if isinstance(port, str) else ""
         if not spec:
-            return {"ok": False, "error": "port required ('auto' or a device path)"}
+            return _fail("port required ('auto' or a device path)", "bad_request")
         if spec.startswith("/dev/tty."):
-            return {"ok": False, "error": "macOS: use the /dev/cu.* port, never /dev/tty.*"}
+            return _fail("macOS: use the /dev/cu.* port, never /dev/tty.*", "bad_request")
         self._release_source()
         for src in self._all_sources():
             try:
@@ -2363,7 +2566,7 @@ class DiagServer(ThreadingHTTPServer):
         A legacy alias selects its canonical module."""
         name = _store_module_for(name) if name else name
         if name not in self._modules:
-            return {"ok": False, "error": f"unknown module: {name}"}
+            return _fail(f"unknown module: {name}", "bad_request")
         if name != self._active:
             self._release_source()  # stop a latched test, then release the K-line session
             self._active = name
@@ -2437,15 +2640,18 @@ class DiagServer(ThreadingHTTPServer):
                     holder["result"] = self._run_inline(action, cmd.get("params") or {})
                 else:
                     # re-check on the poll thread: the module may have switched since queuing
-                    why = self.refusal(action, cmd.get("params") or {})
+                    why, code = self._refusal(action, cmd.get("params") or {})
                     if why:
-                        holder["result"] = {"ok": False, "error": why}
+                        holder["result"] = _fail(why, code)
                     else:
-                        res = self.source.command(action, cmd.get("params"))
+                        res = _car_coded(self.source.command(action, cmd.get("params")))
                         self._note_command_result(action, res)
                         holder["result"] = res
+            except NegativeResponse as exc:  # the ECU refused: 502 with its NRC (spec §2)
+                holder["result"] = _fail(f"{type(exc).__name__}: {exc}", "car_refused",
+                                         nrc=exc.nrc)
             except Exception as exc:  # noqa: BLE001
-                holder["result"] = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+                holder["result"] = _fail(f"{type(exc).__name__}: {exc}", "internal")
             if action not in _SERVER_COMMANDS:  # module commands (inline ones: enqueue_command)
                 self._record_command(action, holder["result"])
             holder["event"].set()

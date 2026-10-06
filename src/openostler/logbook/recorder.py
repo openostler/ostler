@@ -48,6 +48,7 @@ import threading
 import time
 from typing import Callable
 
+from ..timefmt import rfc3339_utc
 from . import channels as ch
 from . import motion
 from . import places as _places
@@ -410,10 +411,13 @@ class SessionRecorder:
                 self._end(self._s, self._clock(), self._mono())
 
     def status(self) -> "dict | None":
-        """The snapshot ``recording`` field: ``{session, since, rows, state}`` or None;
-        ``state`` is ``"recording"`` or ``"paused"`` (open but disconnected)."""
+        """The snapshot ``recording`` field: ``{session, since, since_utc, rows, state}`` or
+        None; ``state`` is ``"recording"`` or ``"paused"`` (open but disconnected).
+        ``since`` (epoch seconds) is deprecated for ``since_utc`` (RFC 3339 UTC ``Z``) and
+        goes in 0.2.0 (specs/2026-10-06-api-consistency-design.md §4)."""
         s = self._s
-        return None if s is None else {"session": s.id, "since": s.start_s, "rows": s.rows,
+        return None if s is None else {"session": s.id, "since": s.start_s,
+                                       "since_utc": rfc3339_utc(s.start_s), "rows": s.rows,
                                        "state": "paused" if s.paused else "recording"}
 
     @property

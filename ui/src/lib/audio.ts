@@ -7,13 +7,15 @@
  *
  * MediaRecorder at 24 kbps Opus (WebM) where supported, else AAC in MP4 (iOS Safari), with a
  * 5 s timeslice. Each chunk is POSTed raw to
- *   /sessions/<id>/audio?track=<uuid>&seq=<n>&mime=<type>&start=<epoch ms, seq 0 only>
+ *   /sessions/<id>/audio?track=<uuid>&seq=<n>&mime=<type>&start_utc=<RFC 3339, seq 0 only>
  * in order (one upload at a time, a few retries; the server re-orders up to 10 chunks).
  *
  * Browsers stop the mic when the page is hidden, so the recorder reports "lost" and, when the
  * page is visible again, re-acquires the mic and the screen Wake Lock and starts a new track.
  * All browser globals come in through `AudioDeps` so tests drive a fake MediaRecorder.
  */
+
+import { toUtc } from "./time";
 
 export const OPUS = "audio/webm;codecs=opus";
 export const MP4 = "audio/mp4";
@@ -31,10 +33,10 @@ export function pickMime(isTypeSupported: (t: string) => boolean): string {
   return "";
 }
 
-/** Query string for one chunk upload. `start` (epoch ms) is sent only on seq 0. */
+/** Query string for one chunk upload. `start_utc` (RFC 3339 UTC) is sent only on seq 0. */
 export function chunkUrl(session: string, track: string, seq: number, mime: string, startMs: number): string {
   const q = new URLSearchParams({ track, seq: String(seq), mime });
-  if (seq === 0) q.set("start", String(Math.round(startMs)));
+  if (seq === 0) q.set("start_utc", toUtc(Math.round(startMs)));
   return `/sessions/${encodeURIComponent(session)}/audio?${q.toString()}`;
 }
 

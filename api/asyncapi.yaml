@@ -19,8 +19,10 @@ info:
     **Wire conventions** are those of `api/openapi.yaml`
     (`components.x-ostler-wire-conventions`): RFC 3339 UTC `Z` timestamps for new fields,
     COVESA VSS units (ADR-0016), GeoJSON (RFC 7946) positions and traces, `vid` on
-    sessions. The snapshot's `ts`, `recording.since` and `active_test.since` are legacy
-    epoch seconds.
+    sessions. The snapshot carries `ts_utc`, `recording.since_utc` and
+    `active_test.since_utc`; the epoch-seconds `ts`, `recording.since` and
+    `active_test.since` are deprecated and go in 0.2.0. The stream's response sends
+    `Deprecation` (RFC 9745) and a `Link rel="deprecation"` while they remain.
 
     **Coming:** MQTT 3.1.1 channels at U5 (standards research §2 and §8.2).
   license:
@@ -44,7 +46,7 @@ channels:
     title: Live snapshots (SSE)
     description: >
       `GET /events` answers `200 text/event-stream` with `Cache-Control: no-cache` and
-      `Connection: keep-alive`. The address is matched exactly: a query string answers 404.
+      `Connection: keep-alive`. A query string is accepted (and ignored).
     servers:
       - $ref: "#/servers/device"
     messages:
@@ -90,6 +92,7 @@ components:
             allow_shutdown: false
             conn: connected
             ts: 1791226936.05
+            ts_utc: "2026-10-05T19:42:16.050Z"
             battery_v: 14.07
             active_test: null
             gps: null

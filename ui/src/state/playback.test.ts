@@ -40,9 +40,9 @@ describe("playback maths", () => {
     expect(clockAt(a, 100_000, 8, 0, 60_000)).toEqual({ time: 60_000, ended: true });
   });
 
-  it("utcOffset comes from the first row with a UTC", () => {
-    expect(utcOffset([0, 200, 400], [null, 1_000_200, 1_000_400])).toBe(1_000_000);
-    expect(utcOffset([0, 200], [null, null])).toBeNull();
+  it("utcOffset is the instant of session ms 0 (t0_utc)", () => {
+    expect(utcOffset({ t0_utc: "2026-10-05T09:00:00.000Z" })).toBe(1_791_190_800_000);
+    expect(utcOffset({ t0_utc: null })).toBeNull();
   });
 
   it("formats session time and local clock time", () => {

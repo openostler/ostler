@@ -19,10 +19,10 @@ const tick = (ms = 0) => act(() => vi.advanceTimersByTime(ms));
 
 describe("connOf", () => {
   it("prefers snap.conn and falls back to the legacy status", () => {
-    expect(connOf({ status: "connected", conn: "lost", signals: {}, faults: [] })).toBe("lost");
-    expect(connOf({ status: "connected", signals: {}, faults: [] })).toBe("connected");
-    expect(connOf({ status: "no-cable", signals: {}, faults: [] })).toBe("error");
-    expect(connOf({ status: "connecting", signals: {}, faults: [] })).toBe("connecting");
+    expect(connOf({ status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", conn: "lost", signals: {}, faults: [] })).toBe("lost");
+    expect(connOf({ status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [] })).toBe("connected");
+    expect(connOf({ status: "no-cable", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [] })).toBe("error");
+    expect(connOf({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [] })).toBe("connecting");
     expect(connOf(null)).toBeNull();
   });
   it("auto-opens in error | lost | disconnected | reconnecting, not when dismissed or blocked", () => {

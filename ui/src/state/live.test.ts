@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { Snapshot } from "../api/schemas";
 import { HISTORY_LEN, initialLive, reduceSnapshot, staleAge } from "./live";
 
-const snap = (over: Partial<Snapshot>): Snapshot => ({ status: "connected", signals: {}, faults: [], ...over });
+const snap = (over: Partial<Snapshot>): Snapshot => ({ status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], ...over });
 
 describe("reduceSnapshot", () => {
   it("records numeric history and caps it", () => {
@@ -19,9 +19,9 @@ describe("reduceSnapshot", () => {
   });
 
   it("builds the connection sequence and closes it once connected", () => {
-    let s = reduceSnapshot(initialLive, snap({ status: "connecting", connect_phase: "opening the cable" }), 0);
-    s = reduceSnapshot(s, snap({ status: "connecting", connect_phase: "opening the cable" }), 5);
-    s = reduceSnapshot(s, snap({ status: "connecting", connect_phase: "sending init (try 1/3)" }), 10);
+    let s = reduceSnapshot(initialLive, snap({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", connect_phase: "opening the cable" }), 0);
+    s = reduceSnapshot(s, snap({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", connect_phase: "opening the cable" }), 5);
+    s = reduceSnapshot(s, snap({ status: "connecting", ts_utc: "2026-10-05T09:00:00.000Z", connect_phase: "sending init (try 1/3)" }), 10);
     s = reduceSnapshot(s, snap({ status: "connected" }), 20);
     s = reduceSnapshot(s, snap({ status: "connected" }), 30);
     expect(s.seq.map((x) => x.phase)).toEqual(["opening the cable", "sending init (try 1/3)", "session established"]);

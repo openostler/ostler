@@ -41,7 +41,10 @@ export type PortInfo = z.infer<typeof PortInfo>;
 export const ActiveTest = z.object({
   action: z.string(),
   label: z.string(),
-  since: z.number(),
+  /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
+  since: z.number().optional(),
+  /** RFC 3339 UTC: when the test was started. */
+  since_utc: z.string(),
   stop: z.string(),
 });
 export type ActiveTest = z.infer<typeof ActiveTest>;
@@ -63,7 +66,10 @@ export type GpsFix = z.infer<typeof GpsFix>;
 /** The session being recorded right now (null when idle). */
 export const Recording = z.object({
   session: z.string(),
-  since: z.number(),
+  /** @deprecated epoch seconds; use since_utc (removed in API 0.2.0) */
+  since: z.number().optional(),
+  /** RFC 3339 UTC: when the session started. */
+  since_utc: z.string(),
   rows: z.number(),
   /** "recording" while connected; "paused" while the car is disconnected (no rows written). */
   state: z.string().optional(), // absent = "recording" (older servers)
@@ -88,8 +94,10 @@ export const Snapshot = z.object({
   connect_phase: z.string().nullable().optional(),
   /** Connection state (ADR-0008 spec): disconnected|connecting|connected|lost|reconnecting|error. */
   conn: z.string().optional(),
-  /** Server epoch seconds of this snapshot. */
+  /** @deprecated server epoch seconds of this snapshot; use ts_utc (removed in API 0.2.0) */
   ts: z.number().optional(),
+  /** RFC 3339 UTC instant of this snapshot. */
+  ts_utc: z.string(),
   /** Car battery in volts, or null when unknown. */
   battery_v: z.number().nullable().optional(),
   port: PortInfo.optional(),
@@ -204,11 +212,24 @@ export const FaultScanEntry = z.object({
 });
 export type FaultScanEntry = z.infer<typeof FaultScanEntry>;
 
+/**
+ * The error envelope of every API error (4xx/5xx): `error` is for people, `code` a stable
+ * token for programs (`not_found`, `public_mode`, `car_refused` …). Open: unknown codes and
+ * extra fields are kept.
+ */
+export const ErrorReply = z.looseObject({
+  ok: z.literal(false),
+  error: z.string(),
+  code: z.string().optional(),
+});
+export type ErrorReply = z.infer<typeof ErrorReply>;
+
 /** Every /command reply: {ok, message|error} plus action-specific extras. */
 export const CommandReply = z.looseObject({
   ok: z.boolean(),
   message: z.string().optional(),
   error: z.string().optional(),
+  code: z.string().optional(),
   file: z.string().optional(),
   path: z.string().optional(),
   rows: z.number().optional(),
@@ -224,6 +245,7 @@ export type CommandReply = z.infer<typeof CommandReply>;
 export const AutomapReply = z.looseObject({
   ok: z.boolean(),
   error: z.string().optional(),
+  code: z.string().optional(),
   mode: z.string().optional(), // "numeric" | "state"
   lid: z.string().optional(),
   offset: z.number().optional(),
@@ -245,11 +267,13 @@ export type AutomapReply = z.infer<typeof AutomapReply>;
 
 export const OkReply = z.looseObject({
   ok: z.boolean(),
-  error: z.string().optional(),
+  error: z.string().nullable().optional(),
+  code: z.string().optional(),
   stored: z.boolean().optional(),
   module: z.string().optional(),
   name: z.string().optional(),
   consent: z.boolean().optional(),
+  /** a community contribution accepted while offline (HTTP 202, `ok` is true) */
   queued: z.boolean().optional(),
 });
 export type OkReply = z.infer<typeof OkReply>;
@@ -388,13 +412,30 @@ export const SessionHistogram = z.object({
 export type SessionHistogram = z.infer<typeof SessionHistogram>;
 export const SessionMetaReply = z.looseObject({ ok: z.boolean(), error: z.string().optional(), meta: SessionMeta.optional() });
 
-/** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; track = [lon, lat, t_ms]. */
+/** A GeoJSON (RFC 7946) LineString Feature: [lon, lat] positions, properties.t_ms = session ms each. */
+export const GeoJsonTrace = z.looseObject({
+  type: z.literal("Feature"),
+  geometry: z.looseObject({
+    type: z.literal("LineString"),
+    coordinates: z.array(z.tuple([z.number(), z.number()])),
+  }),
+  properties: z.looseObject({ t_ms: z.array(z.number()) }),
+});
+export type GeoJsonTrace = z.infer<typeof GeoJsonTrace>;
+
+/** Columnar replay data: t = session ms; ch[name][i] aligns with t[i]; trace = the GPS track. */
 export const SessionData = z.object({
   id: z.string(),
   t: z.array(z.number()),
-  utc: z.array(z.number().nullable()),
+  /** @deprecated epoch ms per sample; use t0_utc + t (removed in API 0.2.0) */
+  utc: z.array(z.number().nullable()).optional(),
+  /** RFC 3339 UTC instant of session ms 0 (null without a UTC time). */
+  t0_utc: z.string().nullable(),
   ch: z.record(z.string(), z.array(z.number().nullable())),
-  track: z.array(z.tuple([z.number(), z.number(), z.number()])),
+  /** @deprecated [lon, lat, t_ms]; use trace (removed in API 0.2.0) */
+  track: z.array(z.tuple([z.number(), z.number(), z.number()])).optional(),
+  /** The GPS track as GeoJSON (null below two positions). */
+  trace: GeoJsonTrace.nullable(),
   decimated: z.boolean(),
   /** Text channels aligned with t (faults joined with "; ", module). */
   text: z.record(z.string(), z.array(z.string().nullable())).optional(),

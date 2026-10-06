@@ -92,8 +92,8 @@ function SessionActions({ meta, canDelete, onDeleted }: { meta: SessionMeta; can
       <details className="replay-menu">
         <summary className="rchip">Export</summary>
         <div className="replay-menu-body card">
-          {(["csv", "vbo", "gpx"] as const).map((f) => (
-            <a key={f} className="btn block" href={api.sessionExportUrl(meta.id, f)} download>{f.toUpperCase()}</a>
+          {(["csv", "vbo", "gpx", "geojson"] as const).map((f) => (
+            <a key={f} className="btn block" href={api.sessionExportUrl(meta.id, f)} download>{f === "geojson" ? "GeoJSON" : f.toUpperCase()}</a>
           ))}
         </div>
       </details>

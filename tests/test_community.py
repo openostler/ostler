@@ -109,7 +109,7 @@ def test_offline_outbox_queues_then_flushes(tmp_path):
 
     r1 = c.contribute({"module": "td5", "name": "a"})
     c.contribute({"module": "td5", "name": "b"})
-    assert r1["ok"] is False and r1["queued"] is True    # queued, never lost
+    assert r1["ok"] is True and r1["queued"] is True     # queued (accepted), never lost
     assert c.state()["pending"] == 2
 
     p.online = True                                      # back online
@@ -132,7 +132,8 @@ def test_offline_is_graceful(tmp_path):
     r = c.set_consent(True, {"model": "Discovery 2"})
     assert r["ok"] is True and r["consent"] is True and r["registered"] is False
     assert c.consent is True                       # consent saved despite being offline
-    assert c.contribute({"module": "td5"})["ok"] is False   # graceful, no exception
+    r = c.contribute({"module": "td5"})                  # graceful, no exception
+    assert r["ok"] is True and r["queued"] is True       # accepted, waits for the network
     # reload from disk → choice persisted, no network involved
     c2 = Community(config_path=cfg, endpoint="http://127.0.0.1:59999/x")
     assert c2.consent is True and len(c2.state()["install"]) == 8

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { Snapshot } from "../api/schemas";
 import { summarize } from "./health";
 
-const snap = (over: Partial<Snapshot>): Snapshot => ({ status: "connected", signals: {}, faults: [], ...over });
+const snap = (over: Partial<Snapshot>): Snapshot => ({ status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], ...over });
 
 describe("summarize", () => {
   it("is calm when everything is normal", () => {

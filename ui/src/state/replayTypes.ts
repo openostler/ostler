@@ -44,7 +44,7 @@ export interface ReplayEventState {
   conn: string | null;
   status: string | null;
   module: string | null;
-  active_test: { action: string; label?: string; since?: number; stop?: string } | null;
+  active_test: { action: string; label?: string; since?: number; since_utc?: string; stop?: string } | null;
   fault_watch: boolean;
   logging: { recording: boolean; file?: string } | null;
   /** Last command event per action at or before t. */

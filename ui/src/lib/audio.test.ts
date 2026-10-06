@@ -83,8 +83,8 @@ describe("pickMime / chunkUrl", () => {
     expect(pickMime(() => false)).toBe("");
     expect(pickMime(() => { throw new Error("x"); })).toBe("");
   });
-  it("sends start only on seq 0", () => {
-    expect(chunkUrl("S1", "abc", 0, OPUS, 1234.4)).toBe("/sessions/S1/audio?track=abc&seq=0&mime=audio%2Fwebm%3Bcodecs%3Dopus&start=1234");
+  it("sends start_utc (RFC 3339) only on seq 0", () => {
+    expect(chunkUrl("S1", "abc", 0, OPUS, 1_791_190_800_123.4)).toBe("/sessions/S1/audio?track=abc&seq=0&mime=audio%2Fwebm%3Bcodecs%3Dopus&start_utc=2026-10-05T09%3A00%3A00.123Z");
     expect(chunkUrl("S1", "abc", 3, MP4, 1234)).toBe("/sessions/S1/audio?track=abc&seq=3&mime=audio%2Fmp4");
   });
   it("trackTime maps the cursor into a track (session ms) with offset", () => {
@@ -115,7 +115,7 @@ describe("AudioCapture with a fake MediaRecorder", () => {
     expect(f.fetch).toHaveBeenCalledTimes(2);
     const [u0, i0] = f.fetch.mock.calls[0]!;
     const [u1] = f.fetch.mock.calls[1]!;
-    expect(u0).toMatch(/^\/sessions\/S1\/audio\?track=track-1&seq=0&mime=audio%2Fwebm%3Bcodecs%3Dopus&start=\d+$/);
+    expect(u0).toMatch(/^\/sessions\/S1\/audio\?track=track-1&seq=0&mime=audio%2Fwebm%3Bcodecs%3Dopus&start_utc=\d{4}-\d{2}-\d{2}T[\d%A]+\.\d{3}Z$/);
     expect(u1).toMatch(/seq=1&mime=[^&]+$/);
     expect(i0!.method).toBe("POST");
     expect(i0!.body).toBeInstanceOf(Blob);
@@ -153,7 +153,7 @@ describe("AudioCapture with a fake MediaRecorder", () => {
     expect(a.state.track).toBe("track-2");
     rec().emit("x");
     await a.drain();
-    expect(String(f.fetch.mock.calls.at(-1)![0])).toMatch(/track=track-2&seq=0&.*start=/);
+    expect(String(f.fetch.mock.calls.at(-1)![0])).toMatch(/track=track-2&seq=0&.*start_utc=/);
   });
 
   it("reports lost when the mic track ends", async () => {

@@ -115,7 +115,7 @@ export function ReplayProvider({ children, initial = null }: { children: ReactNo
     if (!internalSeek.current) setFollowState(false);
   }, []);
   const pb = usePlaybackState(data?.t ?? EMPTY_T, { resetKey: id, pinToEnd: follow, onUserMove });
-  const offset = useMemo(() => (data ? utcOffset(data.t, data.utc) : null), [data]);
+  const offset = useMemo(() => (data ? utcOffset(data) : null), [data]);
   const events = cur?.events;
   const state = useMemo(() => foldEvents(events ?? [], pb.time), [events, pb.time]);
 

@@ -8,10 +8,12 @@ import pytest
 
 import csv
 import io
+import json
+import re
 import xml.etree.ElementTree as ET
 
 from openostler.logbook.channels import export_name, group_for
-from openostler.logbook.export import to_csv, to_gpx, to_vbo, vbo_lat, vbo_long
+from openostler.logbook.export import to_csv, to_geojson, to_gpx, to_vbo, vbo_lat, vbo_long
 from openostler.logbook.store import SessionStore
 
 pytestmark = pytest.mark.fake_pack
@@ -104,7 +106,8 @@ def test_gpx_is_valid_track():
 
 
 @pytest.mark.parametrize("fmt,ext,ctype", [("csv", "csv", "text/csv"), ("vbo", "vbo", "text/plain"),
-                                           ("gpx", "gpx", "application/gpx+xml")])
+                                           ("gpx", "gpx", "application/gpx+xml"),
+                                           ("geojson", "geojson", "application/geo+json")])
 @pytest.mark.needs_pack
 def test_store_export_demo(tmp_path, fmt, ext, ctype):
     store = SessionStore(str(tmp_path))
@@ -113,6 +116,10 @@ def test_store_export_demo(tmp_path, fmt, ext, ctype):
     assert len(body) > 1000
     if fmt == "gpx":
         ET.fromstring(body)
+    if fmt == "geojson":
+        fc = json.loads(body)
+        assert fc["type"] == "FeatureCollection" and "crs" not in fc
+        assert fc["features"][0]["geometry"]["type"] == "LineString"
     with pytest.raises(ValueError):
         store.export("20261005T090000Z", "xrk")
 
@@ -187,3 +194,38 @@ def test_store_exports_demo_notes(tmp_path):
     rows = list(csv.reader(io.StringIO(text.decode())))
     assert rows[0][-1] == "event" and sum(1 for r in rows[1:] if r[-1]) == 3
     assert "GPS_LonAcc" in rows[0] and "Height_Left" in rows[0]
+
+
+# ------------------------------------------------ GeoJSON (api-consistency spec §5) -- #
+RFC3339_Z = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$")
+
+
+def test_geojson_is_a_feature_collection_with_a_timed_line_and_note_points():
+    fc = json.loads(to_geojson(ROWS, META, notes=NOTES))
+    assert fc["type"] == "FeatureCollection" and "crs" not in fc  # RFC 7946 §4
+    line, *points = fc["features"]
+    assert line["type"] == "Feature" and line["geometry"]["type"] == "LineString"
+    coords = line["geometry"]["coordinates"]
+    assert coords == [[-1.5, 52.0], [-1.5001, 52.0001]]  # [lon, lat], every GPS point
+    props = line["properties"]
+    assert props["id"] == META["id"] and props["start_utc"] == META["start_utc"]
+    assert props["t_ms"] == [0, 500] and len(props["coordTimes"]) == len(coords)
+    assert props["coordTimes"] == ["2026-10-06T09:00:00.000Z", "2026-10-06T09:00:00.500Z"]
+    assert all(RFC3339_Z.match(t) for t in props["coordTimes"])
+    assert [p["geometry"]["type"] for p in points] == ["Point", "Point"]
+    first = points[0]
+    assert first["geometry"]["coordinates"] == [-1.5, 52.0]  # nearest GPS point to t=240
+    assert first["properties"] == {"id": "aaaa0001", "kind": "note", "text": "Clunk\nfront left",
+                                   "tags": ["noise"], "t_ms": 240,
+                                   "time": "2026-10-06T09:00:00.240Z"}
+    assert points[1]["geometry"]["coordinates"] == [-1.5001, 52.0001]
+
+
+def test_geojson_without_utc_uses_the_session_start_and_needs_two_points():
+    rows = [{"Interval": 0, "GPS_Latitude": 1.0, "GPS_Longitude": 2.0},
+            {"Interval": 1000, "GPS_Latitude": 1.5, "GPS_Longitude": 2.5}]
+    line = json.loads(to_geojson(rows, META))["features"][0]
+    assert line["properties"]["coordTimes"] == ["2026-10-06T09:00:00.000Z",
+                                                "2026-10-06T09:00:01.000Z"]
+    assert json.loads(to_geojson(rows[:1], META)) == {"type": "FeatureCollection", "features": []}
+    assert json.loads(to_geojson([], META, notes=NOTES))["features"] == []

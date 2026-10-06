@@ -71,8 +71,8 @@ const SOURCES = {
   accel_hz: 25,
 };
 const recordingSnap = (over: Partial<Snapshot> = {}): Snapshot => ({
-  status: "connected", signals: {}, faults: [], ts: 1_791_000_720,
-  recording: { session: "S1", since: 1_791_000_000, rows: 1440 },
+  status: "connected", signals: {}, faults: [], ts_utc: "2026-10-03T04:12:00.000Z",
+  recording: { session: "S1", since_utc: "2026-10-03T04:00:00.000Z", rows: 1440 },
   recording_sources: SOURCES,
   gps: { fix: true, lat: 56.6, lon: -4.6, speed_kmh: 0, heading: 0, sats: 7, hdop: 1, src: "usb", age_s: 0 },
   ...over,

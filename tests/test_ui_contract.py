@@ -109,12 +109,50 @@ def _get(base, path):
     return json.loads(urllib.request.urlopen(base + path, timeout=5).read())
 
 
+def _get_error(base, path):
+    """An error reply's body (the JSON envelope)."""
+    req = urllib.request.Request(base + path, headers={"Accept": "application/json"})
+    try:
+        urllib.request.urlopen(req, timeout=5)
+    except urllib.error.HTTPError as err:
+        return json.loads(err.read())
+    raise AssertionError(f"{path} did not fail")
+
+
+def _not_recording(_base):
+    """``split_session`` with nothing recording: a server that never polled (409)."""
+    srv = DiagServer(host="127.0.0.1", port=0, source=FakeTd5Source(), csv_dir=_tmp_dir())
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        return _post(f"http://127.0.0.1:{srv.server_address[1]}", "/command",
+                     {"action": "split_session"})
+    finally:
+        srv.shutdown()
+        srv.server_close()
+        srv.stop()
+
+
+def _tmp_dir() -> str:
+    import tempfile
+    return tempfile.mkdtemp(prefix="ostler-contract-")
+
+
+def _queued(base):
+    """A contribution while the endpoint is offline: 202 ``{ok: true, queued: true}``."""
+    _post(base, "/community/consent", {"consent": True})
+    try:
+        return _post(base, "/community/contribute", {"module": "td5", "lid": "09",
+                                                      "offset": 0, "name": "rpm"})
+    finally:
+        _post(base, "/community/consent", {"consent": False})
+
+
 def _post(base, path, body):
     req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
                                  headers={"Content-Type": "application/json"})
     try:
         return json.loads(urllib.request.urlopen(req, timeout=50).read())
-    except urllib.error.HTTPError as err:   # /command answers 400 with a JSON body
+    except urllib.error.HTTPError as err:   # an error answers the JSON envelope
         return json.loads(err.read())
 
 
@@ -140,9 +178,12 @@ CASES = {
     "docs": lambda b: _get(b, "/docs"),
     "community": lambda b: _get(b, "/community"),
     "community-consent": lambda b: _post(b, "/community/consent", {"consent": False}),
+    "community-queued": _queued,
     "command-ok": lambda b: _post(b, "/command", {"action": "set_fault_watch",
                                                   "params": {"on": False}}),
     "command-error": lambda b: _post(b, "/command", {"action": "no_such_command"}),
+    "command-not-recording": _not_recording,
+    "error-not-found": lambda b: _get_error(b, "/no/such/route"),
     "csv-start": lambda b: _post(b, "/command", {"action": "start_csv"}),
     "csv-stop": lambda b: _post(b, "/command", {"action": "stop_csv"}),
     "read-all-faults": lambda b: _post(b, "/command", {"action": "read_all_faults"}),

@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "error": "Not recording — connect to the car first",
+  "code": "not_recording"
+}

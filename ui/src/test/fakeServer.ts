@@ -49,6 +49,10 @@ export function installFakeServer(opts: {
   catalogs?: Record<string, unknown>;
   /** /catalog (no module) reply. */
   catalogModules?: unknown;
+  /** GET /community reply (default: the contract fixture). */
+  community?: unknown;
+  /** POST /community/contribute reply and its HTTP status (default: sent, 200). */
+  contribute?: { status: number; body: unknown };
 } = {}) {
   const calls: Call[] = [];
   const json = (body: unknown, status = 200) =>
@@ -73,7 +77,9 @@ export function installFakeServer(opts: {
       case "/snapshot": return json(opts.snapshot ?? snapshotFx);
       case "/fields": return json(url.searchParams.get("module") === "slabs" ? fieldsSlabs : fieldsTd5);
       case "/faults": return json({ module: url.searchParams.get("module"), faults: [] });
-      case "/community": return json(communityFx);
+      case "/community": return json(opts.community ?? communityFx);
+      case "/community/contribute":
+        return json(opts.contribute?.body ?? { ok: true, flushed: 0 }, opts.contribute?.status ?? 200);
       case "/community/consent": return json({ ok: true, consent: !!body?.consent });
       case "/map": return json(mapFx);
       case "/catalog": {
@@ -86,12 +92,15 @@ export function installFakeServer(opts: {
       case "/doc": return new Response(opts.docHtml ?? "<h1>Notes</h1><p>Body.</p>", { headers: { "Content-Type": "text/html" } });
       case "/capture": return json({ ok: true, stored: true });
       case "/signal": return json({ ok: true, module: body?.module, name: body?.record?.name });
-      case "/automap": return json(opts.automap ?? { ok: false, error: "need more samples" });
+      case "/automap": {
+        const reply = opts.automap ?? { ok: false, error: "need more samples", code: "bad_request" };
+        return json(reply, (reply as { ok: boolean }).ok ? 200 : 400);
+      }
       case "/command": {
         const reply = commands[body?.action] ?? { ok: true, message: `${body?.action} ok` };
         return json(reply, (reply as { ok: boolean }).ok ? 200 : 400);
       }
-      default: return new Response("not found", { status: 404 });
+      default: return json({ ok: false, error: "not found", code: "not_found" }, 404);
     }
   }));
   const sent = () => calls.filter((c) => c.path === "/command").map((c) => c.body as { action: string; params?: Record<string, unknown> });

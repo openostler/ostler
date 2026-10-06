@@ -30,7 +30,7 @@ const meta = (over: Partial<SessionMeta> = {}): SessionMeta => ({
 const N = 101; // 0 … 100 s, one row per second
 const T = Array.from({ length: N }, (_, i) => i * 1000);
 const data = (): SessionData => ({
-  id: "s1", t: T, utc: T.map((t) => 1_791_190_800_000 + t), decimated: false, track: [],
+  id: "s1", t: T, t0_utc: "2026-10-05T09:00:00.000Z", decimated: false, trace: null,
   ch: {
     GPS_Latitude: T.map(() => 56.6), GPS_Longitude: T.map(() => -4.6), GPS_Speed: T.map((_, i) => i),
     rpm: T.map((_, i) => (i < 60 ? 800 + i * 10 : null)), // motor stops answering at 60 s (module switch)
@@ -141,7 +141,8 @@ describe("snapshot synthesis", () => {
     const { snap } = synthesise({ meta: meta(), data: data(), events, t: 21_000 });
     expect(snap.status).toBe("connected");
     expect(snap.conn).toBe("connected");
-    expect(snap.active_test).toEqual({ action: "output_ac_fan", label: "A/C Fan", since: 20, stop: "stop_ac_fan" });
+    // the event's epoch since becomes since_utc (the snapshot shape the UI reads)
+    expect(snap.active_test).toEqual({ action: "output_ac_fan", label: "A/C Fan", since_utc: "1970-01-01T00:00:20.000Z", stop: "stop_ac_fan" });
     expect(snap.logging).toEqual({ recording: false });
     expect(snap.battery_v).toBe(14.1);
     const late = synthesise({ meta: meta(), data: data(), events, t: 56_000 }).snap;
@@ -153,12 +154,12 @@ describe("snapshot synthesis", () => {
   it("builds GPS from the GPS channels and the clock from UTC", () => {
     const { snap } = synthesise({ meta: meta(), data: data(), events, t: 5_000 });
     expect(snap.gps).toMatchObject({ fix: true, lat: 56.6, lon: -4.6, speed_kmh: 5, src: "replay" });
-    expect(snap.ts).toBe((1_791_190_800_000 + 5_000) / 1000);
+    expect(snap.ts_utc).toBe("2026-10-05T09:00:05.000Z"); // t0_utc + t
     expect(gpsAt({ ...data(), ch: { rpm: [] } }, 0)).toBeNull();
   });
 
   it("carries device-level fields from the live snapshot, never its signals", () => {
-    const base = { status: "error", signals: { rpm: { v: 1, u: "rpm" } }, faults: ["live fault"], public: true };
+    const base = { status: "error", ts_utc: "2026-10-06T09:00:00.000Z", signals: { rpm: { v: 1, u: "rpm" } }, faults: ["live fault"], public: true };
     const { snap } = synthesise({ meta: meta(), data: data(), events, t: 5_000, base });
     expect(snap.public).toBe(true);
     expect(snap.status).toBe("connected");

@@ -95,7 +95,7 @@ describe("FlagSheet", () => {
     const { unmount } = show(<FlagSheet item={{ flag: RANGE }} onClose={vi.fn()} />, replay({ session: { ...META, synthetic: true } }));
     expect(screen.queryByRole("button", { name: "Keep as note" })).toBeNull();
     unmount();
-    show(<FlagSheet item={{ flag: RANGE }} onClose={vi.fn()} />, replay(), { snap: { status: "connected", signals: {}, faults: [], public: true } });
+    show(<FlagSheet item={{ flag: RANGE }} onClose={vi.fn()} />, replay(), { snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [], public: true } });
     expect(screen.queryByRole("button", { name: "Keep as note" })).toBeNull();
     expect(screen.getByRole("button", { name: "Jump to" })).toBeInTheDocument();
   });

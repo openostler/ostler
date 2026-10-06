@@ -26,12 +26,23 @@ info:
     - `refused`: answered 403 `not available in public mode`.
     - `hidden`: answered 404 (audio is never served in public mode).
     - `partial`: some commands are refused (actuator and service actions, `delete_session`,
-      `split_session`); the reply is `{ok: false, error}` with HTTP 400.
+      `split_session`); the reply is `{ok: false, error, code: public_mode}` with HTTP 403.
 
-    **Errors.** API routes answer `{ok: false, error}` (`ErrorReply`) with the HTTP code.
-    An unknown route, or a route outside the JSON API (`/doc`, static files), answers the
-    stdlib HTML error page (`NotFoundHtml`). Routes matched with `==` on the raw request
-    path (marked `x-ostler-query-string: refused`) answer 404 when a query string is added.
+    **Errors.** Every API error is the JSON envelope `{ok: false, error, code?}`
+    (`ErrorReply`): `error` is an English sentence for people, `code` a stable token for
+    programs (`bad_request`, `auth_required`, `public_mode`, `read_only`, `not_found`,
+    `not_recording`, `disconnected`, `community_off`, `conflict`, `too_large`, `internal`,
+    `car_refused`, `car_timeout`, `unavailable`, `no_match`). A 2xx body never carries
+    `ok: false`. The statuses: 202 accepted but not yet done (a queued community
+    contribution), 400 bad input, 401 admin auth missing, 403 refused by policy (public
+    mode, a synthetic session), 404 unknown, 409 conflict with server state, 413 body too
+    large, 416 bad range, 500 unexpected failure, 502 the car refused (an ECU negative
+    response), 503 temporarily unavailable, 504 the car did not answer in time. Only the
+    app pages answer HTML; their 401 has an empty body so the browser shows its Basic
+    Auth prompt. An unknown `GET` whose `Accept` prefers `text/html` and whose path has no
+    file extension answers 200 with the app shell (the UI shows its not-found view); any
+    other unknown request answers the 404 envelope, as does a method the server lacks
+    (501). A query string is accepted on every route.
 
     **Wire conventions** are documented in `components.x-ostler-wire-conventions` and as
     named schemas (`Rfc3339Utc`, `VssUnit`, `GeoJsonPosition`, `GeoJsonLineString`, `Vid`).
@@ -120,7 +131,7 @@ paths:
             "*/*":
               schema: {type: string, format: binary}
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
   /{file}:
     get:
       tags: [app]
@@ -128,7 +139,10 @@ paths:
       summary: Any other file of the built app (favicon, manifest …); `index.html` is never served here.
       description: >
         The fallback of `do_GET`: a path that no route matches is resolved inside the
-        packaged `static/` directory (traversal-guarded). Nested paths are allowed.
+        packaged `static/` directory (traversal-guarded). Nested paths are allowed. When no
+        file matches, a browser page (`Accept` prefers `text/html`, no file extension in
+        the path) gets the app shell so the UI can show its not-found view and deep links
+        survive a reload; anything else gets the 404 envelope.
       x-ostler-access: public
       x-ostler-public-mode: open
       x-ostler-route: static
@@ -139,12 +153,14 @@ paths:
           schema: {type: string}
       responses:
         "200":
-          description: 'The file (`Cache-Control: no-cache`); the type follows its extension.'
+          description: >
+            The file (`Cache-Control: no-cache`; the type follows its extension), or the
+            app shell (`text/html`) for an unknown browser page.
           content:
             "*/*":
               schema: {type: string, format: binary}
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
 
   # ---------------------------------------------------------------- live ---------------
   /snapshot:
@@ -154,10 +170,12 @@ paths:
       summary: The latest snapshot (the same object `/events` pushes).
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: The latest snapshot.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             application/json:
               schema: {$ref: "#/components/schemas/Snapshot"}
@@ -173,10 +191,12 @@ paths:
         `api/asyncapi.yaml`.
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: An endless SSE stream.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             text/event-stream:
               schema:
@@ -199,11 +219,16 @@ paths:
         - a module action from the pack's command registry (see `/catalog` actions), with
           optional `params.trust` for typed confirmation.
 
-        The HTTP code is 200 when `ok` is true and 400 otherwise (refusals, unknown
-        actions, timeouts and errors alike).
+        The HTTP status is 200 when `ok` is true. Otherwise the reply's `code` sets it:
+        400 an unknown action, bad params or a policy refusal (experimental without trust,
+        gated, planned); 403 `public_mode` (refused on the public server) or `read_only`
+        (`delete_session` of a synthetic session); 404 `not_found` (an unknown session);
+        409 `not_recording` (`split_session`), `disconnected` or `conflict` (shutdown not
+        enabled, the session is being recorded); 500 `internal`; 502 `car_refused` (the
+        ECU answered with a negative response; `nrc` carries its code); 503 `unavailable`
+        (no session recorder); 504 `car_timeout` (the poll thread did not answer in time).
       x-ostler-access: public
       x-ostler-public-mode: partial
-      x-ostler-query-string: refused
       requestBody:
         required: true
         content:
@@ -216,10 +241,32 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/CommandReply"}
         "400":
-          description: Refused, unknown, timed out or failed (`ok` is false).
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/Error"
+        "502":
+          description: "The car refused: the ECU answered with a negative response (`code: car_refused`, `nrc`)."
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/CommandReply"}
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "503":
+          description: "Session recording is not available (`code: unavailable`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "504":
+          description: "The car did not answer in time: the poll thread timed out (`code: car_timeout`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
 
   # ---------------------------------------------------------------- metadata -----------
   /pack:
@@ -377,7 +424,6 @@ paths:
       summary: Solve scale and offset from (raw, displayed) samples and suggest a signal.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -387,12 +433,19 @@ paths:
             schema: {$ref: "#/components/schemas/CalibRequest"}
       responses:
         "200":
-          description: 'The fit, or `{ok: false, error}` (still HTTP 200).'
+          description: The fit and a suggested signal.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/CalibReply"}
+        "400":
+          description: Fewer than two samples with different raw values, a bad `lid`, or a body that is not JSON.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /automap:
     post:
       tags: [mapping]
@@ -400,7 +453,6 @@ paths:
       summary: Search the raw field (offset, type, scale or byte.bit) that explains plaintext readings.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -410,12 +462,24 @@ paths:
             schema: {$ref: "#/components/schemas/AutomapRequest"}
       responses:
         "200":
-          description: 'The solution, or `{ok: false, error}` (still HTTP 200).'
+          description: The solution.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/AutomapReply"}
+        "400":
+          description: >
+            No usable readings (`code: bad_request`), or valid readings that no raw field
+            explains (`code: no_match`, with the byte `diff`).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ErrorReply"
+                  - $ref: "#/components/schemas/AutomapReply"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /capture:
     post:
       tags: [mapping]
@@ -423,7 +487,6 @@ paths:
       summary: Append a labelled capture to the captures file; also a `capture` note in the recording session.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -433,12 +496,21 @@ paths:
             schema: {$ref: "#/components/schemas/CaptureRequest"}
       responses:
         "200":
-          description: "`stored` is false when the server has no captures file; `{ok: false, error}` on a write error."
+          description: "`stored` is false when the server has no captures file."
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          $ref: "#/components/responses/Error"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          description: "The captures file could not be written (`code: internal`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
   /captures:
     get:
       tags: [mapping]
@@ -470,7 +542,6 @@ paths:
       summary: Write a confirmed or candidate mapping back to the pack's signal store.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -485,12 +556,19 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
         "400":
-          description: Unknown or read-only module, a record without name/lid/offset, or a write error.
+          description: Unknown or read-only module, a record without name/lid/offset, or an invalid record.
           content:
             application/json:
               schema: {$ref: "#/components/schemas/ErrorReply"}
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          description: "The signal store could not be written (`code: internal`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
 
   # ---------------------------------------------------------------- docs (admin) -------
   /docs:
@@ -500,7 +578,6 @@ paths:
       summary: The index of the Documents tab.
       x-ostler-access: admin
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       responses:
@@ -534,7 +611,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
-          $ref: "#/components/responses/NotFoundHtml"
+          $ref: "#/components/responses/Error"
 
   # ---------------------------------------------------------------- community ----------
   /community:
@@ -544,7 +621,6 @@ paths:
       summary: The opt-in contribution state.
       x-ostler-access: public
       x-ostler-public-mode: open
-      x-ostler-query-string: refused
       responses:
         "200":
           description: 'The state (`{consent: null, endpoint: null}` when community is disabled).'
@@ -559,7 +635,6 @@ paths:
       description: Not admin-gated (the first-run Consent screen and Preferences belong to the device's own user); refused in public mode.
       x-ostler-access: public
       x-ostler-public-mode: refused
-      x-ostler-query-string: refused
       requestBody:
         required: true
         content:
@@ -578,13 +653,14 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "400":
+          $ref: "#/components/responses/Error"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "400":
-          description: Community is disabled on this server.
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "409":
+          $ref: "#/components/responses/CommunityOff"
+        "413":
+          $ref: "#/components/responses/TooLarge"
   /community/contribute:
     post:
       tags: [community]
@@ -593,7 +669,6 @@ paths:
       description: Sent from the admin Coverage Map, so admin auth is required; refused in public mode.
       x-ostler-access: admin
       x-ostler-public-mode: refused
-      x-ostler-query-string: refused
       security:
         - adminBasic: []
       requestBody:
@@ -603,19 +678,32 @@ paths:
             schema: {type: object, additionalProperties: true}
       responses:
         "200":
-          description: "`{ok: true, flushed}`, or `{ok: false, error}` (not enabled) or `{ok: false, queued: true, error}` (still HTTP 200)."
+          description: "Sent: `{ok: true, flushed}` (the queued ones drained with it)."
           content:
             application/json:
               schema: {$ref: "#/components/schemas/OkReply"}
+        "202":
+          description: "Accepted but not yet sent (the endpoint is offline): `{ok: true, queued: true, error?, pending}`; it is sent on a later successful call."
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/OkReply"
+                  - type: object
+                    required: [ok, queued]
+                    properties:
+                      ok: {const: true}
+                      queued: {const: true}
+        "400":
+          $ref: "#/components/responses/Error"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "400":
-          description: Community is disabled on this server.
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "409":
+          $ref: "#/components/responses/CommunityOff"
+        "413":
+          $ref: "#/components/responses/TooLarge"
 
   # ---------------------------------------------------------------- logbook ------------
   /sessions:
@@ -749,7 +837,7 @@ paths:
       parameters:
         - name: ch
           in: query
-          description: Comma-separated channel names; absent → none (time, UTC and track only).
+          description: Comma-separated channel names; absent → none (time, UTC and the trace only).
           schema: {type: string}
         - name: max
           in: query
@@ -757,6 +845,9 @@ paths:
       responses:
         "200":
           description: The data.
+          headers:
+            Deprecation: {$ref: "#/components/headers/Deprecation"}
+            Link: {$ref: "#/components/headers/DeprecationLink"}
           content:
             application/json:
               schema: {$ref: "#/components/schemas/SessionData"}
@@ -764,19 +855,25 @@ paths:
           $ref: "#/components/responses/Error"
         "404":
           $ref: "#/components/responses/Error"
+        "500":
+          $ref: "#/components/responses/Error"
   /sessions/{id}/export:
     parameters:
       - $ref: "#/components/parameters/SessionId"
     get:
       tags: [logbook]
       operationId: exportSession
-      summary: Download a session as CSV, VBO, GPX 1.1 or a notes CSV.
+      summary: Download a session as CSV, VBO, GPX 1.1, GeoJSON or a notes CSV.
       x-ostler-access: public
       x-ostler-public-mode: filtered
       parameters:
         - name: fmt
           in: query
-          schema: {type: string, enum: [csv, vbo, gpx, notes], default: csv}
+          description: >
+            `geojson` is an RFC 7946 FeatureCollection: one LineString Feature of every GPS
+            point with `coordTimes` (RFC 3339 UTC), `t_ms`, `id` and `start_utc`, plus a
+            Point Feature per note (`kind`, `text`, `tags`, `t_ms`, `time`).
+          schema: {type: string, enum: [csv, vbo, gpx, geojson, notes], default: csv}
       responses:
         "200":
           description: 'An attachment (`Content-Disposition: attachment; filename="…"`).'
@@ -790,9 +887,13 @@ paths:
               schema: {type: string, description: VBO (Racelogic).}
             application/gpx+xml:
               schema: {type: string}
+            application/geo+json:
+              schema: {type: object, description: A GeoJSON FeatureCollection.}
         "400":
           $ref: "#/components/responses/Error"
         "404":
+          $ref: "#/components/responses/Error"
+        "500":
           $ref: "#/components/responses/Error"
   /sessions/{id}/events:
     parameters:
@@ -923,9 +1024,15 @@ paths:
         - name: mime
           in: query
           schema: {type: string, default: audio/webm}
+        - name: start_utc
+          in: query
+          description: The track's start, an RFC 3339 date-time in UTC. Wins over `start`.
+          schema: {$ref: "#/components/schemas/Rfc3339Utc"}
         - name: start
           in: query
-          description: The track's start, epoch milliseconds.
+          description: The track's start, epoch milliseconds. Use `start_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
           schema: {type: number}
         - name: end
           in: query
@@ -1094,26 +1201,49 @@ components:
       (`Rfc3339Utc`), optionally with fractional seconds. Durations and offsets inside a
       session are integer milliseconds from the session start (`SessionMs`). Epoch numbers
       appear only inside CSV columns.
+      Exempt: durations and session offsets in milliseconds (`t`, `t_ms`, `start_ms`), CSV
+      columns, and the acceleration samples `[epoch_ms, ax, ay, az]` of `POST
+      /sessions/{id}/accel`.
     timestamp-deviations:
-      - "Snapshot.ts, Recording.since, ActiveTest.since: epoch seconds (EpochSeconds)."
-      - "SessionData.utc and the audio `start` query: epoch milliseconds."
-      - "Captures file rows (`t` in labeled_captures.jsonl): local time without an offset."
+      - "Snapshot.ts (epoch seconds, EpochSeconds): deprecated for Snapshot.ts_utc; removed in 0.2.0."
+      - "Recording.since (epoch seconds): deprecated for Recording.since_utc; removed in 0.2.0."
+      - "ActiveTest.since (epoch seconds): deprecated for ActiveTest.since_utc; removed in 0.2.0."
+      - "SessionData.utc (epoch ms per sample): deprecated for SessionData.t0_utc + t; removed in 0.2.0."
+      - "The audio `start` query (epoch ms): deprecated for `start_utc`; removed in 0.2.0."
+      - "Captures file rows (`t` in labeled_captures.jsonl) written before 0.1.0: local time without an offset (read as unknown; new rows are RFC 3339 UTC)."
+    deprecation: >
+      A deprecated field or parameter carries `deprecated: true` and `x-ostler-removed-in`;
+      it stays for one minor release. Responses that still carry one (`/snapshot`,
+      `/events`, `/sessions/{id}/data`) send `Deprecation: @<epoch>` (RFC 9745) and a
+      `Link` with `rel="deprecation"` to the CHANGELOG.
     units: >
       Values are sent in the storage unit of their COVESA VSS metric (ADR-0016, VSS 6.1
       units file); the UI converts for display with Intl. Today's signal-store units
       (`u`, `unit`, `units`) are the pack's strings, migrating to VSS units at U0/U3.
     geo: >
       Positions are WGS 84 decimal degrees in GeoJSON (RFC 7946) order `[lon, lat]`.
-      Traces are GeoJSON LineStrings (`GeoJsonLineString`) where a standalone trace is
-      exchanged. `SessionData.track` is a compact columnar form `[lon, lat, t_ms]`: the
-      third member is session time, not altitude, so it is not a GeoJSON position as is.
+      Traces are GeoJSON LineStrings (`GeoJsonLineString`); `SessionData.trace` is a
+      LineString Feature whose `properties.t_ms` holds each position's session ms
+      (`GeoJsonTrace`). The deprecated `SessionData.track` (`[lon, lat, t_ms]`, removed in
+      0.2.0) is not GeoJSON: its third member is session time, not altitude.
     vehicle-id: >
       Every session carries `vid` (`Vid`), the vehicle it was recorded on; added by U0-A
       as an optional string and absent on older sessions.
-    errors: "`{ok: false, error: <English sentence>}` with the HTTP status (`ErrorReply`)."
+    errors: >
+      Every API error body is `{ok: false, error: <English sentence>, code?: <token>}`
+      (`ErrorReply`) as `application/json`, with the HTTP status of the info table; a 2xx
+      body never carries `ok: false`. Clients key on `code`, never on `error`.
     openness: >
       Response objects are open (`additionalProperties: true`): clients must ignore
       unknown fields, as the UI's Zod schemas do.
+
+  headers:
+    Deprecation:
+      description: RFC 9745 — the response carries a deprecated field (since the given epoch seconds).
+      schema: {type: string, pattern: "^@[0-9]+$"}
+    DeprecationLink:
+      description: 'RFC 8288 link to the deprecation notes: `<…/CHANGELOG.md>; rel="deprecation"`.'
+      schema: {type: string}
 
   securitySchemes:
     adminBasic:
@@ -1130,7 +1260,6 @@ components:
         summary: The single-page app (the legacy v2 page when no UI build is present).
         x-ostler-access: public
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         responses:
           "200":
             $ref: "#/components/responses/Html"
@@ -1140,42 +1269,39 @@ components:
         summary: The same app behind admin auth; the page shows the mapping tabs.
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
     LegacyV2:
       get:
         tags: [app]
         summary: The hand-written legacy v2 dashboard (reference, ADR-0004).
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
     LegacyV1:
       get:
         tags: [app]
         summary: The hand-written legacy v1 dashboard (reference, ADR-0004).
         x-ostler-access: admin
         x-ostler-public-mode: open
-        x-ostler-query-string: refused
         security:
           - adminBasic: []
         responses:
           "200":
             $ref: "#/components/responses/Html"
           "401":
-            $ref: "#/components/responses/Unauthorized"
+            $ref: "#/components/responses/UnauthorizedPage"
 
   parameters:
     Module:
@@ -1202,33 +1328,46 @@ components:
       content:
         text/html:
           schema: {type: string}
-    NotFoundHtml:
-      description: Not found (the stdlib HTML error page).
-      content:
-        text/html:
-          schema: {type: string}
-    Unauthorized:
-      description: Admin auth required (empty body).
+    UnauthorizedPage:
+      description: Admin auth required (an app page; empty body, so the browser shows its Basic Auth prompt).
       headers:
         WWW-Authenticate:
           schema: {type: string, const: 'Basic realm="Ostler admin"'}
+    Unauthorized:
+      description: "Admin auth required (`code: auth_required`)."
+      headers:
+        WWW-Authenticate:
+          schema: {type: string, const: 'Basic realm="Ostler admin"'}
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
     Error:
-      description: "`{ok: false, error}`."
+      description: "`{ok: false, error, code?}`."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     Forbidden:
-      description: Refused in public mode (`not available in public mode`) or for a synthetic session (`synthetic sessions are read-only`).
+      description: "Refused in public mode (`code: public_mode`, `not available in public mode`) or for a synthetic session (`code: read_only`, `synthetic sessions are read-only`)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     NotRecording:
-      description: The session is not being recorded (`Not recording — connect to the car first`, or `session <id> is not being recorded`).
+      description: "The session is not being recorded (`code: not_recording`; `Not recording — connect to the car first`, or `session <id> is not being recorded`)."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    Conflict:
+      description: "A conflict with the server state (`code: not_recording`, `disconnected` or `conflict`)."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    CommunityOff:
+      description: "Community is disabled on this server, or sharing is not enabled (`code: community_off`)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     TooLarge:
-      description: The body is too large (2 MiB per JSON body or audio chunk; 5000 accel samples).
+      description: "The body is too large (`code: too_large`; 2 MiB per JSON body or audio chunk; 5000 accel samples)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
@@ -1242,7 +1381,7 @@ components:
       description: An RFC 3339 date-time in UTC with the `Z` suffix, e.g. `2026-10-05T09:00:00.000Z`.
     EpochSeconds:
       type: number
-      description: 'Legacy: seconds since the Unix epoch (see x-ostler-wire-conventions.timestamp-deviations).'
+      description: 'Deprecated: seconds since the Unix epoch. Every use is deprecated and goes in 0.2.0 (see x-ostler-wire-conventions.timestamp-deviations).'
     SessionMs:
       type: number
       minimum: 0
@@ -1275,6 +1414,30 @@ components:
         bbox:
           type: array
           items: {type: number}
+    GeoJsonTrace:
+      type: object
+      description: >
+        An RFC 7946 Feature with a LineString of `[lon, lat]` positions; `properties.t_ms`
+        holds each position's session ms, in the same order (the togeojson `coordTimes`
+        convention in session time: `t0_utc` + `t_ms` gives the instant).
+      required: [type, geometry, properties]
+      properties:
+        type: {const: Feature}
+        geometry:
+          allOf:
+            - $ref: "#/components/schemas/GeoJsonLineString"
+            - type: object
+              properties:
+                coordinates:
+                  type: array
+                  items: {type: array, maxItems: 2}
+        properties:
+          type: object
+          required: [t_ms]
+          properties:
+            t_ms: {type: array, items: {$ref: "#/components/schemas/SessionMs"}}
+          additionalProperties: true
+      additionalProperties: true
     NumberPair:
       type: [array, "null"]
       prefixItems: [{type: number}, {type: number}]
@@ -1293,10 +1456,21 @@ components:
     # ---- generic replies ----
     ErrorReply:
       type: object
+      description: The error envelope of every API error (4xx/5xx).
       required: [ok, error]
       properties:
         ok: {const: false}
-        error: {type: string}
+        error: {type: string, description: One English sentence for people; clients never parse it.}
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+          description: >
+            A stable token for programs: `bad_request`, `no_match`, `auth_required`,
+            `public_mode`, `read_only`, `not_found`, `not_recording`, `disconnected`,
+            `community_off`, `conflict`, `too_large`, `internal`, `car_refused`,
+            `unavailable`, `car_timeout`. Open: a client treats an unknown code by its
+            HTTP status.
+        nrc: {type: integer, description: "With `car_refused`: the ECU's negative response code (KWP2000 NRC)."}
       additionalProperties: true
     OkReply:
       type: object
@@ -1340,11 +1514,16 @@ components:
       additionalProperties: true
     ActiveTest:
       type: object
-      required: [action, label, since, stop]
+      required: [action, label, since, since_utc, stop]
       properties:
         action: {type: string}
         label: {type: string}
-        since: {$ref: "#/components/schemas/EpochSeconds"}
+        since:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the test was started. Use `since_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        since_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         stop: {type: string}
       additionalProperties: true
     GpsFix:
@@ -1364,10 +1543,15 @@ components:
     Recording:
       type: object
       description: The session being recorded right now.
-      required: [session, since, rows]
+      required: [session, since, since_utc, rows]
       properties:
         session: {type: string}
-        since: {$ref: "#/components/schemas/EpochSeconds"}
+        since:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the session started. Use `since_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        since_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         rows: {type: number}
         state: {type: string, description: "recording | paused (absent = recording)"}
       additionalProperties: true
@@ -1411,7 +1595,12 @@ components:
         conn:
           type: string
           description: "disconnected | connecting | connected | lost | reconnecting | error"
-        ts: {$ref: "#/components/schemas/EpochSeconds"}
+        ts:
+          allOf: [{$ref: "#/components/schemas/EpochSeconds"}]
+          description: When the snapshot was taken. Use `ts_utc`.
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        ts_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
         battery_v: {type: [number, "null"]}
         port: {$ref: "#/components/schemas/PortInfo"}
         active_test:
@@ -2025,14 +2214,21 @@ components:
     SessionData:
       type: object
       description: "Columnar replay data: `t` is session ms; `ch[name][i]` aligns with `t[i]`."
-      required: [id, t, utc, ch, track, decimated]
+      required: [id, t, utc, t0_utc, ch, track, trace, decimated]
       properties:
         id: {type: string}
         t: {type: array, items: {$ref: "#/components/schemas/SessionMs"}}
         utc:
           type: array
-          description: Epoch milliseconds per row (null when unknown).
+          description: Epoch milliseconds per row (null when unknown). Use `t0_utc` + `t`.
           items: {type: [number, "null"]}
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        t0_utc:
+          description: The wall-clock instant of session ms 0, from the first sample with a UTC time; null without one.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
         ch:
           type: object
           additionalProperties: {type: array, items: {type: [number, "null"]}}
@@ -2042,12 +2238,19 @@ components:
           additionalProperties: {type: array, items: {type: [string, "null"]}}
         track:
           type: array
-          description: "`[lon, lat, t_ms]` per GPS point (GeoJSON coordinate order; the third member is session ms)."
+          description: "`[lon, lat, t_ms]` per GPS point (GeoJSON coordinate order; the third member is session ms). Use `trace`."
           items:
             type: array
             prefixItems: [{type: number}, {type: number}, {type: number}]
             minItems: 3
             maxItems: 3
+          deprecated: true
+          x-ostler-removed-in: "0.2.0"
+        trace:
+          description: The GPS track as a GeoJSON LineString Feature (the same reduced points as `track`); null below two positions.
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/GeoJsonTrace"}
         decimated: {type: boolean}
       additionalProperties: true
     SessionEvent:

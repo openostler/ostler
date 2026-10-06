@@ -20,6 +20,13 @@ their own changelogs.
   `0.y.z` until the pack API is frozen: until then a minor bump (`0.y`) may break packs or
   the HTTP API, and a patch bump (`0.y.z`) does not. The version lives in
   `pyproject.toml`; release tags are `v<version>` and must match it.
+- **The HTTP/SSE API version is the platform version** (`info.version` in
+  `api/openapi.yaml` and `api/asyncapi.yaml`). While on `0.y.z`, a field, parameter or
+  route of the API is removed or renamed only after one minor release in which it is
+  marked deprecated (OpenAPI `deprecated: true` with `x-ostler-removed-in`, a *Deprecated*
+  entry here, and RFC 9745 `Deprecation`/`Link` headers on the responses that carry it).
+  Additions can come in any release. Status-code and error-body corrections are listed
+  under *Changed*.
 - **`PACK_API_VERSION`** (`src/openostler/pack.py`) is an integer major. It changes only
   when the `VehiclePack` contract breaks, and the platform refuses a pack built for
   another value.
@@ -52,14 +59,65 @@ their own changelogs.
   - This changelog and the versioning policy above.
 - THIRD_PARTY_LICENSES.md lists the UI libraries bundled in the committed build (React,
   zod, MapLibre GL JS).
+- RFC 3339 UTC timestamps and GeoJSON traces on the wire
+  ([API consistency spec](specs/2026-10-06-api-consistency-design.md) §4-§5, ADR-0017),
+  next to the fields they replace:
+  - the snapshot's `ts_utc`, `recording.since_utc` and `active_test.since_utc`;
+  - `GET /sessions/{id}/data`: `t0_utc` (the instant of session ms 0) and `trace`, a
+    GeoJSON LineString Feature with `properties.t_ms`;
+  - `POST /sessions/{id}/audio?start_utc=` (wins over `start`);
+  - `GET /sessions/{id}/export?fmt=geojson`: an RFC 7946 FeatureCollection with the
+    track (`coordTimes`, `t_ms`) and a Point per note;
+  - `openostler.timefmt.rfc3339_utc()`, the one formatter for wire timestamps;
+  - `labeled_captures.jsonl` rows are written with an RFC 3339 UTC `t` (older rows keep
+    their local time and are read as unknown).
 
 ### Changed
+- HTTP API errors and statuses follow one table
+  ([API consistency spec](specs/2026-10-06-api-consistency-design.md) §1-§2). This is a
+  behaviour change for clients that key on the status; the UI reads the body whatever
+  the status and is unaffected:
+  - every API error body is the envelope `{ok: false, error, code?}` (`ErrorReply`), with
+    a stable `code` (`bad_request`, `auth_required`, `public_mode`, `read_only`,
+    `not_found`, `not_recording`, `disconnected`, `community_off`, `conflict`,
+    `too_large`, `internal`, `car_refused`, `car_timeout`, `unavailable`, `no_match`);
+    admin API routes send it with their 401 (app pages keep a bodiless 401);
+  - `POST /command`: a public-mode refusal is 403 (was 400); `split_session` while not
+    recording, `disconnected — connect first` and shutdown not enabled are 409; no
+    session recorder is 503; an ECU negative response is 502 `car_refused` (with `nrc`)
+    and a poll-thread timeout 504 `car_timeout`; `delete_session` of a synthetic session
+    is 403, of an unknown one 404, of the open one 409;
+  - `POST /calib` and `/automap` failures are 400 (`no_match` when no raw field fits;
+    they were 200), a `/capture` write failure is 500 (was 200), a `/signal` store
+    write failure 500 (was 400), community disabled 409 (was 400), and an `OSError`
+    reading a session's data or export 500 (was 400);
+  - a community contribution queued offline answers 202 with `ok: true, queued: true`
+    (was 200 with `ok: false`); the Coverage Map toast says "saved, will send later";
+  - a body that is not a JSON object is 400 on every JSON route.
+- The UI reads only the new wire fields (API consistency spec §8 step 3): the recording
+  card and Logs use `since_utc`/`ts_utc` (`ui/src/lib/time.ts` parses RFC 3339), replay
+  takes its clock from `t0_utc` and synthesises `ts_utc`, the map and cursor read the
+  GeoJSON `trace`, phone audio sends `start_utc`, and the export menu offers GeoJSON.
 - `pyproject.toml` uses PEP 639 licence metadata (`license = "AGPL-3.0-or-later"`,
   `license-files`) and needs `setuptools>=77` to build.
 - Every GitHub Action is pinned to a full commit SHA; workflows default to
   `permissions: contents: read`.
 
+### Deprecated
+- Removed in 0.2.0 (API consistency spec §6): the snapshot's `ts`, `recording.since`
+  and `active_test.since` (epoch seconds; use the `_utc` fields), `SessionData.utc`
+  (use `t0_utc` + `t`), `SessionData.track` (use `trace`) and the audio `start` query
+  (use `start_utc`). `/snapshot`, `/events` and `/sessions/{id}/data` send
+  `Deprecation: @1791244800` (2026-10-06) and `Link: <…/CHANGELOG.md>; rel="deprecation"`.
+
 ### Fixed
+- A query string no longer turns an exact route into a 404 (`/snapshot?x`, `/events?x`,
+  `POST /command?x` …): every route matches the path without its query.
+- An unknown route, a missing `/doc` or static file and a method the server lacks
+  answered the stdlib HTML error page; they answer the JSON envelope now. An unknown
+  browser page (`Accept` prefers HTML, no file extension) gets the app shell, whose new
+  not-found view keeps deep links working after a reload.
+- `POST /calib` with an unparsable `lid` dropped the connection; it is a 400.
 - Trivial lint findings (unused imports and variables, redundant arguments); no
   behaviour change.
 

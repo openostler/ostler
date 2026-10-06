@@ -43,6 +43,24 @@ describe("vehicle pack boot", () => {
     expect(server.calls.filter((c) => c.path === "/pack")).toHaveLength(1);
   });
 
+  it("shows a not-found view for a page the server answered with the app shell", async () => {
+    const server = installFakeServer({ snapshot: connected });
+    render(<App path="/no/such/page" />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Page not found");
+    expect(screen.getByText("/no/such/page")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open the dashboard" })).toHaveAttribute("href", "/");
+    expect(server.calls).toEqual([]); // nothing is loaded for a page that does not exist
+  });
+
+  it("serves the dashboard on every app path", async () => {
+    for (const path of ["/", "/v2", "/index.html"]) {
+      installFakeServer({ snapshot: connected });
+      const { unmount } = render(<App path={path} />);
+      expect(await screen.findByRole("combobox", { name: "Module" })).toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it("shows the error card when /pack fails, and retries", async () => {
     setPack(null);
     installFakeServer({ snapshot: connected });
@@ -378,7 +396,7 @@ describe("overhaul navigation", () => {
   it("shows a latched test with Stop on every screen", async () => {
     const user = userEvent.setup();
     const server = installFakeServer({ snapshot: { ...connected,
-      active_test: { action: "bleed_power_on", label: "Power bleed", since: 0, stop: "bleed_power_off" } } });
+      active_test: { action: "bleed_power_on", label: "Power bleed", since_utc: "2026-10-05T09:00:00.000Z", stop: "bleed_power_off" } } });
     render(<App path="/" />);
     const banner = await screen.findByRole("alert");
     expect(banner).toHaveTextContent("Power bleed is running");
@@ -456,7 +474,7 @@ const replayMeta = {
   ],
 };
 const replayData = {
-  id: "s1", t: RT, utc: RT.map((t) => 1_791_190_800_000 + t), decimated: false, track: [],
+  id: "s1", t: RT, t0_utc: "2026-10-05T09:00:00.000Z", decimated: false, trace: null,
   ch: { rpm: RT.map(() => 1234), battery: RT.map(() => 13.7) },
 };
 const replayEvents = [
@@ -471,7 +489,7 @@ const replayNotes = [{ id: "n1", t: 5000, t_end: null, text: "Rough idle", tags:
 /** Session data with samples every second from 0 to `last` ms. */
 const replayDataTo = (last: number) => {
   const t = Array.from({ length: last / 1000 + 1 }, (_, i) => i * 1000);
-  return { ...replayData, t, utc: t.map((x) => 1_791_190_800_000 + x), ch: { rpm: t.map(() => 1234), battery: t.map(() => 13.7) } };
+  return { ...replayData, t, ch: { rpm: t.map(() => 1234), battery: t.map(() => 13.7) } };
 };
 
 /** The fake server plus /sessions/s1 (meta, data, events, notes). `s1` overrides the meta, and
@@ -526,7 +544,7 @@ describe("whole-app replay", () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-      const rec = { ...live, recording: { session: "s1", since: 0, rows: 61 } };
+      const rec = { ...live, recording: { session: "s1", since_utc: "2026-10-05T09:00:00.000Z", rows: 61 } };
       let last = 60_000;
       installReplayServer({ snapshot: rec }, { meta: { ...replayMeta, recording: true, end_utc: null }, data: () => replayDataTo(last) });
       render(<App path="/" />);

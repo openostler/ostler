@@ -154,7 +154,7 @@ class Community:
         is lost. A successful send also self-heals a first-run opt-in that couldn't
         register while offline (the endpoint upserts the install)."""
         if not self.consent:
-            return {"ok": False, "error": "sharing not enabled"}
+            return {"ok": False, "error": "sharing not enabled", "code": "community_off"}
         payload = self._payload(record)
         res = self._post(self.endpoint + "/contribute", payload)
         if res.get("ok"):
@@ -163,7 +163,9 @@ class Community:
             self._save()
             return {"ok": True, "flushed": sent}
         self._enqueue(payload)                          # offline → keep for later
-        return {"ok": False, "queued": True, "error": res.get("error"),
+        # Accepted, not yet sent: ``ok`` is true (the reading is safe), ``queued`` says it
+        # waits for the endpoint; the server answers 202 (api-consistency spec §2).
+        return {"ok": True, "queued": True, "error": res.get("error"),
                 "pending": len(self._cfg.get("outbox") or [])}
 
     # ---- offline outbox ------------------------------------------------- #

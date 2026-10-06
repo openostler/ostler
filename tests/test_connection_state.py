@@ -227,6 +227,9 @@ def test_latched_test_sets_and_clears_the_banner(make_server):
     test = srv.poll_once()["active_test"]
     assert test["action"] == "pump_on" and test["stop"] == "pump_off"
     assert test["label"] and test["since"] > 1e9
+    # the RFC 3339 twin of the deprecated epoch ``since`` (api-consistency spec §4)
+    from openostler.timefmt import rfc3339_utc
+    assert test["since_utc"] == rfc3339_utc(test["since"])
     assert _cmd(srv, "buzzer")["ok"]                          # a non-latched test leaves it
     assert srv.poll_once()["active_test"]["action"] == "pump_on"
     assert _cmd(srv, "pump_off")["ok"]

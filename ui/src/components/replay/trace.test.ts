@@ -7,7 +7,7 @@ import sessionData from "../../api/fixtures/session-data.json";
 import { SessionData } from "../../api/schemas";
 import {
   bboxOf, bearing, BUCKETS, bucketOf, cursorAt, defaultTraceChannel, LANE_OFFSET, laneRamp, legendGradient, lineColorExpression,
-  luminance, NO_VALUE_COLOR, offsetPolyline, RAMP, ramp, RAMPS, rangeOf, simplifyTrack, traceSegments,
+  luminance, NO_VALUE_COLOR, offsetPolyline, RAMP, ramp, RAMPS, rangeOf, simplifyTrack, trackOf, traceSegments,
 } from "./trace";
 
 /** WCAG contrast ratio between two colours. */
@@ -112,11 +112,20 @@ describe("trace segments", () => {
 
   it("works on the contract fixture", () => {
     const d = SessionData.parse(sessionData);
-    const fc = traceSegments(d, "GPS_Speed");
+    const track = trackOf(d.trace);
+    expect(track.length).toBe(d.trace!.geometry.coordinates.length);
+    expect(track[0]).toEqual([...d.trace!.geometry.coordinates[0]!, d.trace!.properties.t_ms[0]]);
+    const fc = traceSegments({ t: d.t, ch: d.ch, track }, "GPS_Speed");
     expect(fc.features.length).toBeGreaterThan(0);
-    const lons = d.track.map((p) => p[0]);
-    const lats = d.track.map((p) => p[1]);
-    expect(bboxOf(d.track)).toEqual([Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]);
+    const lons = track.map((p) => p[0]);
+    const lats = track.map((p) => p[1]);
+    expect(bboxOf(track)).toEqual([Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)]);
+  });
+
+  it("reads the track from the GeoJSON trace (none without one)", () => {
+    expect(trackOf(null)).toEqual([]);
+    expect(trackOf({ type: "Feature", geometry: { type: "LineString", coordinates: [[1, 2], [3, 4]] },
+      properties: { t_ms: [0, 500] } })).toEqual([[1, 2, 0], [3, 4, 500]]);
   });
 });
 

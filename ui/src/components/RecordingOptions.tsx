@@ -116,7 +116,7 @@ export function RecordingOptions({ onClose }: { onClose: () => void }) {
   const gpsSpeed = snap?.gps?.fix ? snap.gps.speed_kmh : null;
   useEffect(() => {
     if (cal.phase === "drive" && gpsSpeed != null) speeds.current.push([Date.now(), gpsSpeed]);
-  }, [cal.phase, gpsSpeed, snap?.ts]);
+  }, [cal.phase, gpsSpeed, snap?.ts_utc]);
 
   const session = snap?.recording?.session ?? null;
   const gpsOk = !avail.accel.gps;

@@ -34,6 +34,7 @@ import re
 import shutil
 import time
 
+from ..timefmt import rfc3339_utc_ms
 from . import channels as ch
 from . import export as _export
 from .audio import mime_for, track_file
@@ -58,6 +59,7 @@ _EXPORTS = {
     "csv": (_export.to_csv, "text/csv; charset=utf-8", "csv"),
     "vbo": (_export.to_vbo, "text/plain; charset=utf-8", "vbo"),
     "gpx": (_export.to_gpx, "application/gpx+xml", "gpx"),
+    "geojson": (_export.to_geojson, "application/geo+json", "geojson"),
     "notes": (_export.notes_csv, "text/csv; charset=utf-8", "notes.csv"),
 }
 
@@ -273,6 +275,27 @@ def reduce_track(points: "list[list[float]]", limit: int = MAX_TRACK) -> "list[l
         else:
             hi, best = mid, r
     return best
+
+
+def _t0_utc(rows: "list[dict]") -> "str | None":
+    """The wall-clock instant of session ms 0 (RFC 3339 UTC ``Z``), from the first row
+    with a ``Utc``; None when no row has one."""
+    for r in rows:
+        utc = r.get("Utc")
+        if isinstance(utc, (int, float)) and not isinstance(utc, bool):
+            return rfc3339_utc_ms(utc - float(r.get("Interval") or 0))
+    return None
+
+
+def trace_feature(track: "list[list[float]]") -> "dict | None":
+    """``[[lon, lat, t_ms], …]`` → a GeoJSON (RFC 7946) LineString Feature whose
+    ``properties.t_ms`` holds each position's session ms (the ``coordTimes`` convention in
+    session time); None below two positions (a LineString needs two)."""
+    if len(track) < 2:
+        return None
+    return {"type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": [[p[0], p[1]] for p in track]},
+            "properties": {"t_ms": [p[2] for p in track]}}
 
 
 def _minmax_buckets(t: "list", utc: "list", cols: "dict[str, list]",
@@ -527,8 +550,12 @@ class SessionStore:
             t, utc, series = _minmax_buckets(t, utc, series, max_points, src)
         text = {k: [rows[i].get(k) or None for i in src] for k in ("faults", "module")}
         text["module"] = [_canonical(m) if m else m for m in text["module"]]
-        return {"id": meta["id"], "t": t, "utc": utc, "ch": series, "text": text,
-                "track": reduce_track(track), "decimated": decimated}
+        track = reduce_track(track)
+        # ``utc`` and ``track`` are deprecated (removed in 0.2.0): ``t0_utc`` + ``t`` give each
+        # sample's instant, ``trace`` is the track as GeoJSON (api-consistency spec §4-§5).
+        return {"id": meta["id"], "t": t, "utc": utc, "t0_utc": _t0_utc(rows), "ch": series,
+                "text": text, "track": track, "trace": trace_feature(track),
+                "decimated": decimated}
 
     def delete(self, sid: str) -> None:
         """Delete a recorded session. Raises KeyError (unknown) or PermissionError (demo,
@@ -551,7 +578,7 @@ class SessionStore:
                 pass
 
     def export(self, sid: str, fmt: str, public: bool = False) -> "tuple[str, str, bytes]":
-        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | notes."""
+        """``(filename, content_type, body)`` for ``fmt`` in csv | vbo | gpx | geojson | notes."""
         fmt = (fmt or "").lower()
         if fmt not in _EXPORTS:
             raise ValueError(f"unknown export format: {fmt!r}")

@@ -16,7 +16,7 @@ const field = (name: string): Field => ({
 const t = Array.from({ length: 60 }, (_, i) => i * 1000);
 const out = (from: number) => t.map((_, i) => (i >= from && i < from + 6 ? 90 : 50));
 const DATA: SessionData = {
-  id: "s1", t, utc: t.map(() => null), track: [], decimated: false,
+  id: "s1", t, t0_utc: null, trace: null, decimated: false,
   ch: { coolant: out(10), oil: out(30) },
   text: { faults: t.map((_, i) => (i < 20 ? "" : "031: pressure switch (Current)")) },
 };

@@ -39,7 +39,7 @@ const replaying = (over: Partial<Replay> = {}): Replay => ({
 const withReplay = (r: Replay, ui: ReactNode) => <ReplayCtx.Provider value={r}>{ui}</ReplayCtx.Provider>;
 
 const appCtx = (over: Partial<AppContext> = {}): AppContext => ({
-  snap: { status: "connected", signals: {}, faults: [] }, live: initialLive, linkUp: true, module: "td5", catalog: null,
+  snap: { status: "connected", ts_utc: "2026-10-05T09:00:00.000Z", signals: {}, faults: [] }, live: initialLive, linkUp: true, module: "td5", catalog: null,
   fields: {}, faultMeaning: () => undefined, refresh: vi.fn(), prefs: { ...DEFAULT_PREFS, consentDone: true }, setPrefs: vi.fn(),
   experimental: false, admin: false, community: null, reloadCommunity: vi.fn(), goTo: vi.fn(), toast: vi.fn(),
   ackedFaults: new Set(), showFaultSheet: vi.fn(), openConnection: vi.fn(), ...over,
@@ -78,7 +78,7 @@ describe("read-only actions in replay", () => {
   it("the pill reads Replay · Exit to live, exits on click, and the connection notice is hidden", () => {
     const r = replaying();
     renderWithApp(withReplay(r, <><ConnectionPill /><ConnectionNotice /></>), {
-      snap: { status: "error", conn: "error", signals: {}, faults: [] },
+      snap: { status: "error", ts_utc: "2026-10-05T09:00:00.000Z", conn: "error", signals: {}, faults: [] },
     });
     const pill = screen.getByRole("button", { name: "Replay — Exit to live" });
     expect(pill).toHaveTextContent("Replay · Exit to live");
@@ -119,7 +119,7 @@ describe("ReplayProvider", () => {
       "/sessions/s1": { id: "s1", start_utc: "2026-10-05T09:00:00Z", end_utc: null, duration_s: 2, rows: 3, has_gps: false,
         distance_km: 0, max_speed_kmh: null, bbox: null, start_pos: null, end_pos: null, synthetic: false, recording: false,
         source: "mock", channels: [{ name: "rpm", units: "rpm" }, { name: "faults", units: "" }] },
-      "/sessions/s1/data": { id: "s1", t: T, utc: [null, null, null], ch: { rpm: [1, 2, 3] }, track: [], decimated: false },
+      "/sessions/s1/data": { id: "s1", t: T, t0_utc: null, ch: { rpm: [1, 2, 3] }, trace: null, decimated: false },
       "/sessions/s1/events": { id: "s1", events: [{ t: 0, type: "module", module: "slabs" }] },
       "/sessions/s1/notes": { id: "s1", notes: [] },
     };
@@ -155,7 +155,7 @@ describe("ReplayProvider", () => {
       if (url.pathname.endsWith("/data")) {
         const t = Array.from({ length: n + 1 }, (_, i) => i * 1000);
         n += grow;
-        body = { id: "s1", t, utc: t.map(() => null), ch: { rpm: t.map(() => 800) }, track: [], decimated: false };
+        body = { id: "s1", t, t0_utc: null, ch: { rpm: t.map(() => 800) }, trace: null, decimated: false };
       } else if (url.pathname.endsWith("/events")) body = { id: "s1", events: [] };
       else if (url.pathname.endsWith("/notes")) body = { id: "s1", notes: [] };
       return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });

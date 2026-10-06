@@ -222,8 +222,8 @@ def test_live_note_refused_when_not_recording(tmp_path, http):
     req = http(srv)
     for body in ({"kind": "mark"}, {"kind": "capture", "text": "x",
                                     "capture": {"module": "td5", "lid": "09", "raw": "01"}}):
-        assert _j(req("POST", "/notes/live", body)) == (409, {"ok": False,
-                                                              "error": NOT_RECORDING})
+        assert _j(req("POST", "/notes/live", body)) == (
+            409, {"ok": False, "error": NOT_RECORDING, "code": "not_recording"})
     assert srv._recording_status() is None  # still nothing recording
     assert not list(Path(srv._sessions_dir).glob("2*"))  # no session directory either
 
@@ -256,9 +256,9 @@ def test_live_note_refused_while_paused(tmp_path, http):
     assert srv.latest["recording"]["state"] == "paused"
     req = http(srv)
     assert _j(req("POST", "/notes/live", {"kind": "mark"})) == (
-        409, {"ok": False, "error": NOT_RECORDING})
+        409, {"ok": False, "error": NOT_RECORDING, "code": "not_recording"})
     res = srv.enqueue_command({"action": "split_session"})
-    assert res == {"ok": False, "error": NOT_RECORDING}
+    assert res == {"ok": False, "error": NOT_RECORDING, "code": "not_recording"}
     assert _j(req("POST", "/capture", {"module": "td5", "lid": "09", "raw": "02",
                                        "text": "1"}))[0] == 200
     assert _j(req("GET", f"/sessions/{sid}/notes"))[1]["notes"] == []
@@ -283,9 +283,9 @@ def test_live_note_maps_the_recorders_not_recording_to_409(tmp_path, http):
     srv._recorder.split = lambda *_a, **_k: refuse()
     req = http(srv)
     assert _j(req("POST", "/notes/live", {"kind": "mark"})) == (
-        409, {"ok": False, "error": NOT_RECORDING})
-    assert srv.enqueue_command({"action": "split_session"}) == {"ok": False,
-                                                                "error": NOT_RECORDING}
+        409, {"ok": False, "error": NOT_RECORDING, "code": "not_recording"})
+    assert srv.enqueue_command({"action": "split_session"}) == {
+        "ok": False, "error": NOT_RECORDING, "code": "not_recording"}
 
 
 def test_live_note_without_recorder(tmp_path, http):
@@ -616,7 +616,7 @@ def test_split_session(tmp_path):
     # nothing recording: a split is refused and starts nothing (ADR-0011)
     srv2 = _server(tmp_path / "b")
     res = srv2.enqueue_command({"action": "split_session"})
-    assert res == {"ok": False, "error": NOT_RECORDING}
+    assert res == {"ok": False, "error": NOT_RECORDING, "code": "not_recording"}
     assert srv2._recording_status() is None
     srv2.stop()
     srv2.server_close()

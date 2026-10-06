@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { SessionBrowser } from "../components/replay/SessionBrowser";
 import { EMPTY_VIEW, type BrowserView } from "../components/replay/sessionFormat";
+import { parseUtc } from "../lib/time";
 import "../replay.css";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
@@ -29,7 +30,7 @@ export function Logs() {
     <div className="stack logs">
       <div className="screen-head"><h2>Logs</h2><span className="sub">· recorded sessions</span></div>
       {/* re-list when a recording starts or stops (a new session appears / gets its end) */}
-      <SessionBrowser recording={snap?.recording} nowS={snap?.ts ?? now / 1000} units={prefs.units}
+      <SessionBrowser recording={snap?.recording} nowS={(parseUtc(snap?.ts_utc) ?? now) / 1000} units={prefs.units}
         onOpen={open} refreshKey={snap?.recording?.session ?? ""} view={view} onView={setView} />
     </div>
   );

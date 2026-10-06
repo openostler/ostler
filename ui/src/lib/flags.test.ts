@@ -18,7 +18,7 @@ const field = (name: string, over: Partial<Field> = {}): Field => ({
 const session = (n: number, ch: Record<string, (s: number) => number | null>, faults?: (s: number) => string | null): SessionData => {
   const t = Array.from({ length: n }, (_, i) => i * 1000);
   const data: SessionData = {
-    id: "s", t, utc: t.map(() => null), track: [], decimated: false,
+    id: "s", t, t0_utc: null, trace: null, decimated: false,
     ch: Object.fromEntries(Object.entries(ch).map(([k, f]) => [k, t.map((_, i) => f(i))])),
   };
   if (faults) data.text = { faults: t.map((_, i) => faults(i)) };
@@ -125,7 +125,7 @@ describe("detectFlags — out of range", () => {
 
   it("treats decimated min/max pairs as points", () => {
     const t = [0, 0, 5000, 5000, 10_000, 10_000, 15_000, 15_000];
-    const data: SessionData = { id: "s", t, utc: t.map(() => null), track: [], decimated: true,
+    const data: SessionData = { id: "s", t, t0_utc: null, trace: null, decimated: true,
       ch: { a: [50, 50, 50, 90, 85, 92, 50, 50] } };
     expect(detectFlags(data, fields)).toMatchObject([{ t: 5000, t_end: 10_000, peak: 92 }]);
   });
