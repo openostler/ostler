@@ -2,14 +2,16 @@
 title: "ADR-0040 — Power states and wake (asleep, waking, awake; wake requests, leases, queued actions with expiry)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/power_states.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0037-role-holders-and-handover.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06 (all recommendations). Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued (default expiry 2 min, max 10 min). The alarm path never waits for a wake. The node gets two parked modes (ready for 72 h, then deep); budget 10 mA average, floors 12.2/12.0/11.8 V (bench-tuned). Owner and Driver may wake the Hub locally and remotely within quota, a Viewer's Read only within the remote quota; a brain wake asks for confirmation only on remote requests; a guardian alongside may take the parked broker while the node is in parked-deep; Wi-Fi modules with actions stay wakeable; apps wake only through action requests and held views. Confirmation by a simulated wake harness and bench measurements.
+  Accepted by the owner on 2026-10-06 (all recommendations). Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued (default expiry 2 min, max 10 min). The alarm path never waits for a wake. The node gets two parked modes (ready for 72 h, then deep); budget 10 mA average, floors 12.2/12.0/11.8 V (bench-tuned). Owner and Driver may wake the Hub locally and remotely within quota, a Viewer's Read only within the remote quota; a brain wake asks for confirmation only on remote requests; a guardian alongside may take the parked broker while the node is in parked-deep; Wi-Fi modules with actions stay wakeable; apps wake only through action requests and held views. Confirmation by a simulated wake harness and bench measurements. Amended 2026-10-06: with no node or guardian awake, an eligible always-on add-on module may hold the parked broker (ADR-0037 Amendments), never a `check_in` or `none` device; "Hub" reads Ostler Brain (ADR-0039 Amendments).
 ---
 
 # ADR-0040 — Power states and wake
+
+> **Amended 2026-10-06 (owner, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) and [ADR-0037](adr-0037-role-holders-and-handover.md) Amendments):** read "Hub" as "Brain" (Ostler Brain); §9's parked broker may fall back to an eligible always-on add-on module, never a `check_in` or `none` device. See [Amendments](#amendments-2026-10-06-brain-rename-and-module-broker).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -314,3 +316,20 @@ of the app-model spec's §13.
    (app-model spec §13.3).
 9. **"Don't ask again"** is stored per user and device, and honoured on local links only
    (§7).
+
+## Amendments (2026-10-06, Brain rename and module broker)
+
+Recorded on 2026-10-06 with the amendments to
+[ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)
+and [ADR-0037](adr-0037-role-holders-and-handover.md#amendments-2026-10-06-parked-broker-on-add-on-modules).
+The decision text and the owner answers above are unchanged; where these entries differ,
+they win.
+
+1. **Names.** Read "Hub" (the Context's "Hub/brain", §2's "Brain (Hub)" row, §4.4's
+   refusal text, §7's sheet text, the summary and owner answer 3) as "Brain" (Ostler
+   Brain).
+2. **Role holders while asleep** (§9). With no node or guardian awake to hold it (none
+   fitted, or the node in parked-deep with no guardian), the parked broker falls back to an
+   eligible add-on module whose parked class is `always` (ADR-0037 Amendments 13–16); a
+   device whose class is `wakeable`, `check_in` or `none` never holds it. The wake arbiter
+   does not move with it (§4.2).

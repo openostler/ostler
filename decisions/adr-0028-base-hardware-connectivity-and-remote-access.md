@@ -2,7 +2,7 @@
 title: "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)"
 area: decisions
 status: locked
-version: 1.3
+version: 1.4
 updated: 2026-10-06
 depends_on: [references/research/connectivity_uplink.md, references/research/ecosystem_architecture.md, references/research/hardware.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
@@ -14,6 +14,7 @@ summary: >
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §4–§5, §16), 2026-10-06:** §1 base definition (the node replaces the buddy; the guardian is a node variant), §2 power states (node wakes and cleanly shuts down the brain with a timeout), and all "buddy" wording (read "node"); §9's IANA request is submitted at module contract v1, unregistered in development.
 > **Amended by [ADR-0037](adr-0037-role-holders-and-handover.md), 2026-10-06:** the uplink manager (§1, §4) is a single-holder role (brain → node); §1's open point is answered (a guardian alongside the node is the standby parked broker, PLCA coordinator and time source). See [Amendments](#amendments-2026-10-06-role-holders).
 > **Amended 2026-10-06 (power states and product family, [ADR-0040](adr-0040-power-states-and-wake.md), [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md)):** §2's power-state words map to ADR-0040 §1; a Diagnostics node may host a USB dongle by class (§3); provisioning gains the setup helper and hub adoption (§7); a hub-only box still has no buddy. See [Amendments (power states and product family)](#amendments-2026-10-06-power-states-and-product-family).
+> **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; from the
@@ -234,3 +235,9 @@ text and the Amendments above are unchanged; where these entries differ, they wi
 - **No buddy for hub-only boxes** (§1 as superseded). A hub with no Diagnostics node wakes
   from its power board (ignition, RTC schedule, low-voltage cut); a Diagnostics node or a
   Guardian adds remote wake, the parked broker and the alarm (ADR-0039 §8).
+
+## Amendments (2026-10-06, Brain rename)
+
+- **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
+  "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
+  unchanged.

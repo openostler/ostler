@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.8
+version: 0.9
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the hub's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the hub" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback.
 ---
 
 # UI architecture — design
@@ -30,6 +30,10 @@ peer view and cluster view), the manifest fields of §5.1 and the device pages o
 §3.8 (asleep, waking and queued actions) is accepted
 ([ADR-0040](../decisions/adr-0040-power-states-and-wake.md),
 [ADR-0039](../decisions/adr-0039-product-family-diagnostics-guardian-hub.md)).
+**Amended on 2026-10-06 (v0.9)** with the owner's Brain rename and parked-broker answers: the
+brain product is **Ostler Brain** (was Hub; ADR-0039 Amendments), and §5.1's device entries
+gain `memory` and a `pbroker` role's `max_clients` (ADR-0037 Amendments); the spec stays
+approved.
 
 ## 1. Context and goals
 
@@ -235,7 +239,7 @@ only for an unexpected loss). An asleep device keeps its last values in stale gr
 age, never zero and never "Unavailable" (§2 honest states).
 
 **Status strip (no new chip).** The brain's state lives in the **Link** chip (§3.2):
-"Hub asleep" as a rung note, "Waking hub · 12 s" with a progress ring, and a small count when
+"Brain asleep" as a rung note, "Waking Brain · 12 s" with a progress ring, and a small count when
 actions are queued ("1 queued"). Its sheet lists queued actions (name, target, expires at,
 **Cancel**), the leases this user holds, and refused wakes with their reason. Security and
 the alarm never wait for the brain, so the Security chip is unaffected.
@@ -243,17 +247,17 @@ the alarm never wait for the brain, so the Security chip is unaffected.
 **Confirmations.** Drawn by the shell only (app-model spec §2).
 - **Waking a module** (`needs_brain: false`, ADR-0040 §5): no extra confirm; the button shows
   "Waking Relay box…" then the action's own tier friction (§7).
-- **Waking the brain:** **remote** requests show a sheet, "This needs the hub. Wake it? About
+- **Waking the brain:** **remote** requests show a sheet, "This needs the Brain. Wake it? About
   30 s · uses about 30 mAh (today: 180 mAh left) · battery 12.5 V", with **Wake and run**,
   **Cancel** and the quota ("2 of 6 remote wakes left today"); it cannot be skipped. Local
-  requests wake the hub without a sheet, showing "Waking hub…" on the button (ADR-0040 §7). A
+  requests wake the Brain without a sheet, showing "Waking Brain…" on the button (ADR-0040 §7). A
   "Don't ask again" choice is stored per user and device and honoured on local links only, so
   it never removes the remote sheet.
 - **Tier 2–3:** wake first, then the normal approval (§7.2); approvals never queue.
-- **Refusals are honest:** "Hub not woken: battery 11.9 V", "Hub failed to start; locked for
+- **Refusals are honest:** "Brain not woken: battery 11.9 V", "Brain failed to start; locked for
   1 h", "Limit reached: 6 wakes this hour".
 
-**Queued actions.** The button reads "Queued · runs when the hub is ready · expires 14:35 ·
+**Queued actions.** The button reads "Queued · runs when the Brain is ready · expires 14:35 ·
 Cancel". Outcomes: Done; **Expired**; Cancelled; Refused by *device* (the executing gate's
 reason); **State changed** (the driving state moved; ADR-0040 §5). Check-in targets say
 "Runs when Relay box next checks in (≤ 10 min)".
@@ -266,12 +270,12 @@ woke what, when, why, cost, outcome). Read-only over remote paths except Wake un
 
 **Landing and brain-only views.** With the brain asleep, Home and Security render from the
 node's retained data. A view that needs the brain (full Logs, replay, clips) shows a "Needs
-the hub" card with **Wake** instead of disappearing; on Ostler Diagnostics alone (no hub
+the Brain" card with **Wake** instead of disappearing; on Ostler Diagnostics alone (no Brain
 fitted) it is absent, as today. While Moving the brain is held by the ignition lease, so no wake prompt
 appears in Drive mode.
 
 **Phone and Diagnostics standalone.** With Ostler Diagnostics alone the phone talks to the
-node only; no hub prompt exists. When the node is in **parked-deep** the phone cannot reach it (no BLE or AP): the app
+node only; no Brain prompt exists. When the node is in **parked-deep** the phone cannot reach it (no BLE or AP): the app
 says "Node asleep (deep) · wakes on ignition, door or motion · last seen 3 h" from cached or
 cloud data, and offers nothing else.
 
@@ -370,8 +374,8 @@ Data the UI renders. `GET /pack` grows into it; later `GET /vehicles/<vid>/capab
   "actions": [ { "id": "slabs.compressor", "system": "slabs", "safety": "actuator", "tier": 2,
                  "confirm": "preconditions", "status": "verified", "states": ["parked"], "remote": false } ],
   "devices": [ { "id": "node", "kind": "node", "variant": "diag-port", "transport": "mqtt",
-                 "board": "esp32-s3-devkitc",
-                 "roles": [ { "role": "pbroker" }, { "role": "plca", "scope": "t1s0" } ],
+                 "board": "esp32-s3-devkitc", "memory": { "psram_kb": 8192 },
+                 "roles": [ { "role": "pbroker", "max_clients": 5 }, { "role": "plca", "scope": "t1s0" } ],
                  "transmit": [ { "bus_id": "kline-diag" } ],
                  "items": [ { "id": "imu", "kind": "imu", "origin": "detected", "status": "ok" },
                             { "id": "tacho", "kind": "pulse", "origin": "config", "status": "no_signal" } ],
@@ -387,7 +391,11 @@ entity categories** (`diagnostic` collapses by default); the field is `ha_catego
 `category`, so it never collides with an action's `category` (ADR-0033). A system's
 `category` (`powertrain`, …) is its domain group (§4.2). **Device entries** (§6) carry the
 hardware facts the Network page shows: `board` (the compiled-in board profile), `roles` (roles
-the device can hold, with scope; ADR-0037 §2), `transmit` (the car buses whose transmit gate it
+the device can hold, with scope; ADR-0037 §2; a `pbroker` entry may carry `max_clients`, the
+mTLS sessions its parked broker admits, at most 5 until the bench proves more), `memory`
+(`psram_kb`, the PSRAM fitted, from the board profile; an add-on module is a parked-broker
+candidate only when it lists `pbroker`, its `power.class` is `always` and `psram_kb` ≥ 2048,
+ADR-0037 Amendments 13–14), `transmit` (the car buses whose transmit gate it
 holds, by `bus_id`) and `items` (each sensor, receiver or I/O point, with `origin` = `board`,
 `detected`, `harness` or `config` and `status` = `ok`, `absent`, `fault`, `no_signal` or
 `refused`; ADR-0032 Amendments B1). **Unknown types degrade** to a generated
@@ -778,3 +786,9 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   section on the Network page, "Needs the hub" cards, the phone-standalone case and manifest
   fields `power`, `runs_on`, `needs_brain`, `queueable` and `expires_max_s`. §3.7's "reached
   via" gains USB (the USB-NCM node link, ADR-0039 §4). "Lite" reads Ostler Diagnostics.
+- 2026-10-06: v0.9, owner's Brain rename and parked-broker answers (stays approved; ADR-0039
+  and ADR-0037 Amendments). The brain product is **Ostler Brain** (was Hub): §3.8's chip,
+  sheet, refusal and card texts read "Brain" ("Brain asleep", "Waking Brain", "This needs
+  the Brain", "Needs the Brain"). §5.1's device entries gain `memory` (`psram_kb`), and a
+  `pbroker` role entry may carry `max_clients` (at most 5 until the bench), so an always-on
+  add-on module with at least 2 MB of PSRAM can be the last parked-broker fallback.

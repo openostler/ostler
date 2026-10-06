@@ -2,14 +2,16 @@
 title: "ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub (raw tap, USB-IP link, setup mode, uplinks, hub-only wake, u-blox placement)"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [references/research/product_family.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/power_states.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06 (all recommendations). Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms ("brain" also an informal synonym for the Hub); the app-model `product` value `lite` becomes `diagnostics`; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5 (100 ms / 8 kB; a TLS TCP stream only if the bench fails), scrubbed on the node, recorded on the hub, unframed bytes dropped from exports, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM (data-only by default) near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module (a fitted option), Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node, closing ADR-0032's GPS placement and ranking first in ADR-0037's best-clock-first order. Records the "Lite" wording sweep, bench tests and the owner's answers.
+  Accepted by the owner on 2026-10-06 (all recommendations); amended the same day: the public name of the brain product is now Ostler Brain (was Hub). Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms ("brain" also an informal synonym for the Hub); the app-model `product` value `lite` becomes `diagnostics`; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5 (100 ms / 8 kB; a TLS TCP stream only if the bench fails), scrubbed on the node, recorded on the hub, unframed bytes dropped from exports, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM (data-only by default) near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module (a fitted option), Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node, closing ADR-0032's GPS placement and ranking first in ADR-0037's best-clock-first order. Records the "Lite" wording sweep, bench tests and the owner's answers. Amended 2026-10-06: "Ostler Hub" is renamed Ostler Brain (the optional compute box; modules work without it); read "Hub" as "Brain" throughout; a Brain-only box may get its parked broker from an eligible always-on add-on module (ADR-0037 Amendments).
 ---
 
 # ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub
+
+> **Amended 2026-10-06 (owner, Brain rename):** the public name "Ostler Hub" is now **Ostler Brain**; read "Ostler Hub" and "Hub" (the product) below as "Ostler Brain" and "Brain". This file's name keeps the old word so links stay stable. See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -236,3 +238,31 @@ this way. Question numbers are the draft's.
    (ADR-0032 Amendments A1) and makes the node's u-blox with PPS rank first in ADR-0037's
    "best clock first" order. That order is confirmed: GNSS with PPS, then GNSS without PPS,
    then a clock in holdover, then a phone seed; the owner's priority breaks ties.
+
+## Amendments (2026-10-06, Brain rename)
+
+The owner amended this ADR on 2026-10-06. The decision text and the owner answers above are
+unchanged; where these entries differ, they win.
+
+1. **Public name: Ostler Brain** (amends §1 and Owner answer 1). The optional compute box is
+   sold as **Ostler Brain**, not "Ostler Hub": the full local app, add-on routing, cameras,
+   logbooks, replay, analysis and the decode lab. Modules work without it. The family is
+   Ostler Diagnostics, Ostler Guardian and Ostler Brain; "Ostler Diagnostics + Brain" is the
+   node with a Brain. Read "Ostler Hub" and "Hub" (the product) above as "Ostler Brain" and
+   "Brain", and "hub" (the box, as in "hub-only", "node-to-hub") as "Brain". "Node" and
+   "brain" stay the internal terms, so the public and internal words now agree. The app-model
+   `product` value `ostler` (a Brain is present) and the `needs_brain` field are unchanged.
+2. **File name.** This file keeps the old word (`…-diagnostics-guardian-hub.md`) so existing
+   links do not break; its frontmatter title is left as written, like the other accepted
+   ADRs' titles in the "Lite" sweep.
+3. **Wording sweep (applied 2026-10-06).** Specs, research notes, GOALS.md, README.md and
+   references/vision.md are renamed directly. Other accepted ADRs keep their decision text
+   and gain a banner and a one-line Amendments entry: read "Hub" as "Brain". Left as
+   written: historical changelog entries, quoted owner text, this ADR's decision text and its
+   "was Hub" explanations, and generic uses that are not the product (USB hub, Home
+   Assistant or smart-home hub, network hub, hub-and-spoke, third-party product names).
+4. **§8 with an add-on module.** A Brain-only box (no Diagnostics node or Guardian) may still
+   get a parked broker from an eligible always-on add-on module, the last fallback in
+   ADR-0037's order ([ADR-0037 Amendments](adr-0037-role-holders-and-handover.md#amendments-2026-10-06-parked-broker-on-add-on-modules)).
+   That module adds no Brain wake (the Brain's power board stays its only wake source) and
+   no transmit gate.

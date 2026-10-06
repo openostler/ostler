@@ -2,7 +2,7 @@
 title: "K-line profiles and detection — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-06
 depends_on: [decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, references/research/muki01/obd2_kline_reader.md, references/research/muki01/README.md, specs/2026-10-06-u0-seams-design.md, CONSTITUTION.md]
 summary: >
@@ -321,7 +321,7 @@ direction.
   form (built-ins and pack overrides alike), so `KLineProfile` in Python and the C struct
   are two readers of one schema, never two definitions.
 - **The remembered profile also lives on the node.** For Ostler Diagnostics alone (a
-  node with no hub) the remembered `{profile, key_bytes, address, detected_utc}` entry per `vid` is
+  node with no Brain) the remembered `{profile, key_bytes, address, detected_utc}` entry per `vid` is
   kept in the node's NVS, so a node reboot while driving re-inits without probing, as in
   §2. With a brain present the brain's state file and the node's NVS copy hold the same
   entry; the node's copy is the one the link layer uses.
@@ -378,3 +378,4 @@ The owner answered on 2026-10-06 (owner question numbers in brackets).
   ESP32 node path becomes production and KKL dev-only (§8.1); a later migration step 3
   ports the link layer to C with shared test vectors seeded from the golden tests.
 - 2026-10-06: v0.5, wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).
+- 2026-10-06 — v0.6, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".

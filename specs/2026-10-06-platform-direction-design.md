@@ -2,11 +2,11 @@
 title: "Platform direction — from D2 Td5 tool to open vehicle platform (diagnostics · logger · telemetry · tracker/alarm) — design"
 area: specs
 status: draft
-version: 0.7
+version: 0.8
 updated: 2026-10-06
 depends_on: [decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, SCOPE.md, CONSTITUTION.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, references/research/platform.md, references/research/hardware.md, references/research/ovms.md, specs/2026-10-02-vehicle-integration-roadmap-design.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md]
 summary: >
-  Draft for owner review. Grows the project into an open, local-first vehicle platform: core (comms + interpretation) + declarative vehicle packs + opt-in integrations, built on one ESP32 node that owns the car and power (Ostler Diagnostics) with an optional Pi brain for compute (Ostler Hub; ADR-0032, ADR-0039), add-on modules on an IP automotive-Ethernet backbone (ADR-0027), MQTT/HA with OVMS and OwnTracks compatibility, an alarm owned by the node (the guardian is an output-free node variant; outputs later via an I/O module, ADR-0033), one app as cloud, brain and phone (PWA in Capacitor), a five-destination IA, a repo map per ADR-0034, and a phased plan with anti-bloat guardrails; D2 Td5 stays the reference pack. No implementation until approved.
+  Draft for owner review. Grows the project into an open, local-first vehicle platform: core (comms + interpretation) + declarative vehicle packs + opt-in integrations, built on one ESP32 node that owns the car and power (Ostler Diagnostics) with an optional Pi brain for compute (Ostler Brain; ADR-0032, ADR-0039), add-on modules on an IP automotive-Ethernet backbone (ADR-0027), MQTT/HA with OVMS and OwnTracks compatibility, an alarm owned by the node (the guardian is an output-free node variant; outputs later via an I/O module, ADR-0033), one app as cloud, brain and phone (PWA in Capacitor), a five-destination IA, a repo map per ADR-0034, and a phased plan with anti-bloat guardrails; D2 Td5 stays the reference pack. No implementation until approved.
 ---
 
 # Platform direction — design (draft)
@@ -35,9 +35,9 @@ Since v0.5 this sits inside a wider frame, the **smart-home-like ecosystem**
 - the **node** (an ESP32) interfaces with the car and carries diagnostics, telemetry, GPS
   and the basic alarm; on its own it is **Ostler Diagnostics**, used through the phone app or
   Ostler Cloud and fully usable offline with a phone;
-- an optional **brain** (a Pi), **Ostler Hub**, adds compute and network for **Ostler
-  Diagnostics + Hub**: the local app, add-on routing, cameras, big logbooks, replay, analysis and the decode lab. Upgrading
-  is plugging in a hub; the car side does not change ([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md));
+- an optional **brain** (a Pi), **Ostler Brain**, adds compute and network for **Ostler
+  Diagnostics + Brain**: the local app, add-on routing, cameras, big logbooks, replay, analysis and the decode lab. Upgrading
+  is plugging in a Brain; the car side does not change ([ADR-0032](../decisions/adr-0032-one-node-optional-brain.md));
 - **add-on modules** join over standard IP networking on an automotive-Ethernet backbone, on
   either tier.
 
@@ -192,3 +192,4 @@ Split only when the toolchain, licence, release cadence or contributors differ
   map follows ADR-0034; buddy, base pack and guardian-add-on wording replaced by node.
 - 2026-10-06: v0.7, product names per ADR-0039: Ostler Diagnostics (was Ostler Lite) and
   Ostler Hub (the brain; "Ostler" with a brain reads Ostler Diagnostics + Hub).
+- 2026-10-06: v0.8, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".

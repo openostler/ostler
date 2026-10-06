@@ -2,7 +2,7 @@
 title: "Add-ons catalogue — module ideas with transport, standards and phase"
 area: references
 status: draft
-version: 1.4
+version: 1.5
 updated: 2026-10-06
 depends_on: [references/vision.md, references/research/ecosystem_architecture.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/features_backlog.md]
 summary: >
@@ -19,7 +19,7 @@ were checked live in **October 2026**; **(U)** means unverified.
 > **Update (2026-10-06, ADR-0032/0033):** the guardian is no longer an add-on but a
 > **node hardware variant** (same firmware, hidden, battery-backed, no outputs); the base
 > pack's "buddy" is replaced by the node, and add-ons work with **Ostler Diagnostics** (node
-> alone) or **Ostler Diagnostics + Hub** (node + brain; names per ADR-0039). The node transmit gate is the only path to the car.
+> alone) or **Ostler Diagnostics + Brain** (node + brain; names per ADR-0039). The node transmit gate is the only path to the car.
 > The "alarms are notify-only" rule is dropped: alarm outputs come through a future I/O /
 > relay module with an ADR per car-switching function. Sensor nodes are a new family (§1).
 
@@ -95,7 +95,7 @@ not scheduled; **idea** = worth recording.
 | Module | What it does | Transport | Standards | Phase |
 |---|---|---|---|---|
 | **TPMS receiver** | Reads aftermarket or OEM tyre sensors | 315/433 MHz receiver (SDR or a sub-GHz radio) on T1S or USB | rtl_433 decoders, MQTT | later |
-| **GNSS (10 Hz u-blox)** | Drive logging, replay, Drive mode, the driving-state fallback, the speed-vs-wheel-speed check and the best clock for the time role; the guardian's 1 Hz modem GNSS stays the security tracker ([ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md) Amendments A, [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md)). **On the Ostler Diagnostics node** ([ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) §9), where with PPS it ranks first for time; a USB u-blox on the hub is the hub-only and dev path | UART on a node (time pulse to a GPIO); USB as a dev path | NMEA 0183, UBX | next |
+| **GNSS (10 Hz u-blox)** | Drive logging, replay, Drive mode, the driving-state fallback, the speed-vs-wheel-speed check and the best clock for the time role; the guardian's 1 Hz modem GNSS stays the security tracker ([ADR-0032](../../decisions/adr-0032-one-node-optional-brain.md) Amendments A, [ADR-0037](../../decisions/adr-0037-role-holders-and-handover.md)). **On the Ostler Diagnostics node** ([ADR-0039](../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md) §9), where with PPS it ranks first for time; a USB u-blox on the Brain is the Brain-only and dev path | UART on a node (time pulse to a GPIO); USB as a dev path | NMEA 0183, UBX | next |
 | **RTK** | Centimetre RTK for lap timing, surveying and trails | T1S or USB | UBX, RTCM 3 over NTRIP | later |
 | **Tracker** | A small hidden tracker on its own cell; the guardian variant covers most of this | LTE-M/NB-IoT or LoRa | OwnTracks, Traccar OsmAnd | later |
 | **OBD dongle** | A Wi-Fi/BLE OBD front end for `generic_obd2` | Wi-Fi, BLE | ELM327 AT, slcan/SocketCAN (e.g. WiCAN Pro) | next ([ADR-0031](../../decisions/adr-0031-generic-obd2-pack-in-platform.md)) |
@@ -165,6 +165,7 @@ Sources: [Morse Micro chips](https://morsemicro.com/chips),
 
 ## Changelog
 
+- 2026-10-06: v1.5, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
 - 2026-10-06: v1.4, product names per ADR-0039: Ostler Diagnostics (was Ostler Lite) and
   Ostler Hub; the bike row reads a Diagnostics node + phone; the u-blox row's placement is
   decided (on the Diagnostics node).

@@ -7,7 +7,7 @@
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
 existing systems into a connected IoT platform, with diagnostics and telemetry at the
 core. **Ostler Diagnostics** is the node at the OBD port, working alone and offline with
-your phone; **Ostler Hub** adds a **brain** (a Linux computer) for the full local app,
+your phone; **Ostler Brain** adds a **brain** (a Linux computer) for the full local app,
 cameras, replay and analysis; **Ostler Guardian** is the hidden, battery-backed node variant.
 Add-on modules join either over standard networking, the way devices join a smart home:
 sensor nodes, cameras, I/O and relay modules, displays. Every device speaks IP
@@ -38,8 +38,8 @@ the long-term picture (add-ons, garage and sharing, connectivity, AI-native acce
 [ADR-0032](decisions/adr-0032-one-node-optional-brain.md) (one node, optional brain) and
 [ADR-0039](decisions/adr-0039-product-family-diagnostics-guardian-hub.md) (product names).
 
-- **Ostler Diagnostics and Ostler Hub:** an ESP32 node (optional 4G) alone, or the node
-  plus a hub (a Raspberry Pi today), with diagnostics and telemetry at the core. The node interfaces
+- **Ostler Diagnostics and Ostler Brain:** an ESP32 node (optional 4G) alone, or the node
+  plus a Brain (a Raspberry Pi today), with diagnostics and telemetry at the core. The node interfaces
   with the car's own buses (K-line, CAN, OBD-II) at the edge and never replaces them: the
   Discovery 2 first, then other Land Rovers, any OBD-II car, modern CAN/UDS and pre-OBD
   cars, each as a community vehicle pack. The guardian is a hidden, battery-backed node
