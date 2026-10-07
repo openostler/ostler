@@ -14,7 +14,7 @@ Updated 2026-10-06. Check off when done.
 
 > **Scope:** this repo is the platform. Vehicle work (decoding modules, car tests, fault
 > data) lives in the vehicle packs: for the Discovery 2, the
-> [discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag) repo and its
+> [ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2) repo and its
 > `TODO.md` and `references/test_plan.md`.
 
 ## Repo split follow-ups (ADR-0015)

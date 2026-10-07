@@ -19,7 +19,7 @@ set -e
 # The platform and the vehicle pack are separate repos (ADR-0013, ADR-0015).
 REPO_URL="https://github.com/openostler/ostler.git"
 DEST="$HOME/ostler"
-PACK_URL="https://github.com/JamesWrightDavid/discovery2-diag.git"
+PACK_URL="https://github.com/openostler/ostler-pack-lr-d2.git"
 PACK_DEST="$HOME/discovery2-diag"
 DESKTOP="$HOME/Desktop"
 

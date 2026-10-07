@@ -315,6 +315,10 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **The D2 pack repo moved** from `JamesWrightDavid/discovery2-diag` to
+  [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (the old
+  URL redirects). CI and the Dockerfile `PACK_REPO`, `mac/install.sh`, the no-pack install
+  hint and the docs now point at the new repo; the distribution stays `d2diag`.
 - **The page title reads "Ostler"** (was "D2 Diag"), the Web App Manifest's name; a vitest
   keeps the two in step. The legacy `/legacy/v2` page is unchanged.
 - **CAN `TxGate`: `grant_invalid` and the `3E` sweep guard**

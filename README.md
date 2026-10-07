@@ -20,7 +20,7 @@ separately, as **vehicle packs**.
 
 - Website: **[ostler.tech](https://ostler.tech)**
 - Code and community: the **[openostler](https://github.com/openostler)** organisation
-- Reference pack: the **[Ostler pack for Land Rover Discovery 2](https://github.com/JamesWrightDavid/discovery2-diag)**
+- Reference pack: the **[Ostler pack for Land Rover Discovery 2](https://github.com/openostler/ostler-pack-lr-d2)**
   (`d2diag`), covering the Td5 engine, SLABS, BCU, airbag, ACE and the automatic gearbox
   over K-line.
 
@@ -88,7 +88,7 @@ MQTT/Home Assistant.
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 # a vehicle pack: the Discovery 2 reference pack (it depends on "openostler", installed above)
-pip install --no-deps "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag"
+pip install --no-deps "d2diag @ git+https://github.com/openostler/ostler-pack-lr-d2"
 pytest -q
 ```
 

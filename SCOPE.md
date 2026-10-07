@@ -76,7 +76,7 @@ This repo is the **platform** (ADR-0013, ADR-0015):
 Elsewhere:
 
 - **Vehicle packs**, e.g. the Discovery 2 pack
-  ([discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag), distribution
+  ([ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2), distribution
   `d2diag`): decoders, keygens, `signals/*.json` (written only via `upsert_field`),
   `dtc/*.json`, menus, actions, demo data, D2 tools, and the protocol knowledge with its
   car-test backlog (`references/test_plan.md`). Its ESP32 `kline_node` moves to

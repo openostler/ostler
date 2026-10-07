@@ -54,7 +54,7 @@ history of every kept path is preserved (`git log --follow` works). Two passes:
 | Platform distribution and import | `openostler` (`src/openostler/`, renamed from `src/d2diag`) |
 | Pack distribution and import | `d2diag`. Its modules are the former `vehicles/lr_d2/*` moved up: `d2diag.td5`, `d2diag.sources`, `d2diag.synth`, `d2diag.sniff.*`, … |
 | Pack object | `d2diag:PACK`, registered as `[project.entry-points."openostler.vehicle"] lr_d2` |
-| Pack repo | [JamesWrightDavid/discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag) (branch `split-pack` until merged). It depends on `openostler`. |
+| Pack repo | [JamesWrightDavid/discovery2-diag](https://github.com/openostler/ostler-pack-lr-d2) (branch `split-pack` until merged). It depends on `openostler`. |
 
 **What moved where:**
 

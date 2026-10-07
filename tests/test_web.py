@@ -294,7 +294,7 @@ def test_slabs_source_light_poll_reads_heights_only():
     # LIGHT baseline poll (sniff 2026-08-07): the SLABS poll reads ONLY heights (21 54).
     # Store-driven block reading of many LIDs destabilised the session (~7×
     # bus traffic) and has been deliberately removed — see the D2 pack's SLABS overview
-    # (references/slabs/ in discovery2-diag).
+    # (references/slabs/ in ostler-pack-lr-d2).
     from openostler.kline import KLine, encode
     from openostler.kwp2000 import KWP2000
     from d2diag.slabs import Slabs
