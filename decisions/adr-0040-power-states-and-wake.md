@@ -2,16 +2,17 @@
 title: "ADR-0040 — Power states and wake (asleep, waking, awake; wake requests, leases, queued actions with expiry)"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-06
 depends_on: [references/research/power_states.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0037-role-holders-and-handover.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06 (all recommendations). Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued (default expiry 2 min, max 10 min). The alarm path never waits for a wake. The node gets two parked modes (ready for 72 h, then deep); budget 10 mA average, floors 12.2/12.0/11.8 V (bench-tuned). Owner and Driver may wake the Hub locally and remotely within quota, a Viewer's Read only within the remote quota; a brain wake asks for confirmation only on remote requests; a guardian alongside may take the parked broker while the node is in parked-deep; Wi-Fi modules with actions stay wakeable; apps wake only through action requests and held views. Confirmation by a simulated wake harness and bench measurements. Amended 2026-10-06: with no node or guardian awake, an eligible always-on add-on module may hold the parked broker (ADR-0037 Amendments), never a `check_in` or `none` device; "Hub" reads Ostler Brain (ADR-0039 Amendments).
+  Accepted by the owner on 2026-10-06 (all recommendations). Every Ostler device publishes one power state (off, asleep, waking, awake, held, shutting down; offline only for an unexpected loss) and a reachability class (always, wakeable, check-in, none) with its wake paths. Awake is a sum of leases with expiry, as in AUTOSAR network management. Wake requests are first-class messages with a purpose, a requester, a deadline and a hold; the device wired to the wake path (the node for the brain and the wake wire) arbitrates them with role-based permission, per-requester and global rate limits, coalescing, an energy ledger, battery floors that refuse wakes, and timeouts. The owner's rule: an action declares whether it needs the brain; if yes the brain is woken and the action queued with an expiry; if no only the target module is woken through its own path; queued actions carry no authority, are re-checked by the executing gate, and never run after expiry or a driving-state change; Tier 2+ is never queued (default expiry 2 min, max 10 min). The alarm path never waits for a wake. The node gets two parked modes (ready for 72 h, then deep); budget 10 mA average, floors 12.2/12.0/11.8 V (bench-tuned). Owner and Driver may wake the Hub locally and remotely within quota, a Viewer's Read only within the remote quota; a brain wake asks for confirmation only on remote requests; a guardian alongside may take the parked broker while the node is in parked-deep; Wi-Fi modules with actions stay wakeable; apps wake only through action requests and held views. Confirmation by a simulated wake harness and bench measurements. Amended 2026-10-06: with no node or guardian awake, an eligible always-on add-on module may hold the parked broker (ADR-0037 Amendments), never a `check_in` or `none` device; "Hub" reads Ostler Brain (ADR-0039 Amendments). Amended 2026-10-06 (owner, module-bus answers): each device announces its own off (claims released, power off, status asleep, a clean disconnect) and the power owner reports cuts in its own power record as feeds; a clean shutdown is an act from the feed owner; a node check-in ends when its work is done (at most 60 s), a check-in that cannot connect within 15 s sleeps again with the interval backed off from 30 to 240 min; the 10 min quiet time and the 30 min timer stay.
 ---
 
 # ADR-0040 — Power states and wake
 
 > **Amended 2026-10-06 (owner, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md) and [ADR-0037](adr-0037-role-holders-and-handover.md) Amendments):** read "Hub" as "Brain" (Ostler Brain); §9's parked broker may fall back to an eligible always-on add-on module, never a `check_in` or `none` device. See [Amendments](#amendments-2026-10-06-brain-rename-and-module-broker).
+> **Amended 2026-10-06 (owner, module-bus answers):** the power owner reports a cut in its own record as `feeds`; each device announces its own `off`; shutdown is an `act` from the feed owner; the node's check-in ends when its work is done (60 s cap), with a 15 s connect cap and back-off. See [Amendments (feeds and check-ins)](#amendments-2026-10-06-feeds-and-check-ins).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -334,3 +335,35 @@ they win.
    eligible add-on module whose parked class is `always` (ADR-0037 Amendments 13–16); a
    device whose class is `wakeable`, `check_in` or `none` never holds it. The wake arbiter
    does not move with it (§4.2).
+
+## Amendments (2026-10-06, feeds and check-ins)
+
+Recorded with the owner's answers of 2026-10-06 to the
+[module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md#17-owner-answers-2026-10-06)
+(items 6 and 14; evidence: [power and roles practice](../references/research/power_and_roles_practice.md)
+items 6 and 14). The decision text, the owner answers and the Amendments above are
+unchanged; where these entries differ, they win. Wire detail is in the spec (§5, §11, §15).
+
+3. **Who announces `off`** (§1 table, "the power owner's report"). A device whose supply is
+   about to be cut announces it itself: claims released, a retained `power` `off`, `status`
+   `asleep`, then a clean MQTT 5 disconnect (reason 0x00, so no will); the will covers a
+   crash or an unannounced cut. The power owner's report is an additive field of **its
+   own** record, `feeds: [{target, state: on | off, since}]`, never a write to the
+   target's topics. A consumer reads a device as off when its own record or its feed
+   owner's `feeds` says so; an `offline` will after a reported cut reads as off, not as an
+   unexpected loss. `status` keeps three values.
+4. **The shutdown order** (§4 and ADR-0032 §4). A clean shutdown is an action request
+   `shutdown` with `timeout_s` and an MQTT 5 expiry, published by the power owner on its
+   own topic; the target accepts it only from the device named as its feed owner in its
+   install configuration, then runs item 3's sequence and halts; the owner cuts at `off`
+   plus a short grace or at the timeout.
+5. **The node's check-in** (§2, §4.5; firmware car profile, as built in `ostler-firmware`
+   6886716). A timer check-in ends **as soon as its work is done**, at most **60 s**
+   (claims synced, each enabled module tried once, status, manifest and claims delivered,
+   queued requests drained). A timer wake that cannot reach Wi-Fi or the broker within
+   **15 s** goes back to sleep, and each missed check-in in a row doubles the next
+   interval, **30 → 60 → 120 → 240 min**, reset by a check-in that connects or any other
+   wake. Without the cap a node parked away from its Wi-Fi stayed awake at about 31 mA,
+   some three times the 10 mA budget (§4.4). The **10 min** quiet time before sleep and the
+   **30 min** timer stay (bench values); the timer is lengthened only after the
+   engine-running wake (§3) is built.

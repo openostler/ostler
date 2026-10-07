@@ -2,17 +2,18 @@
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
-  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted.
+  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry.
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
 
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
+> **Amended 2026-10-06 (owner, module-bus answers):** the bridge's ACL also lets it publish its own `status`, `power` and `manifest`; QoS and retain per topic. See [Amendments (bridge ACL)](#amendments-2026-10-06-bridge-acl).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -178,3 +179,24 @@ Amendments above are unchanged.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Amendments (2026-10-06, bridge ACL)
+
+Recorded with the owner's answers of 2026-10-06 to the
+[module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md#17-owner-answers-2026-10-06)
+(item 12; evidence: [MQTT topic practice](../references/research/mqtt_topic_practice.md)
+Q12). The decision text and the Amendments above are unchanged; where these entries differ,
+they win.
+
+- **ACL** (§2). Besides its own `in/` and `state/` topics, the bridge publishes its own
+  `status` (with its will), `power` and `manifest` like any device. It still never
+  publishes `role/#`, `vss/+`, `act/+`, `wake/+` or `event/+`, nor any action, grant or
+  command topic, and still declares no actions.
+- **QoS and retain** (§4). Over the radio nothing is retained and nothing is retried, except
+  that alarm-state packets to paired Ostler peers ask for an acknowledgement. In the car:
+  `in/text` and `in/alert` QoS 1, not retained, with an expiry; `in/position/<peer>`
+  retained with an expiry, so a peer's last position fades; `state/link` QoS 0, retained
+  (values in the spec, §16).
+- **What it forwards** (§2, §4). The alarm state is the reading
+  `Vehicle.Ostler.Security.Alarm.State` (ADR-0016 Amendments) and alerts are `event/<name>`
+  messages chosen by an owner allowlist of class and severity.

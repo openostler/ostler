@@ -44,6 +44,19 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **Module-bus message spec v1.3: the owner's answers** (docs only;
+  [spec](specs/2026-10-06-module-bus-messages-design.md) §17, 2026-10-06). Every open
+  question is answered and written into the normative text: the grant challenge as a
+  `challenge` outcome on `act/<id>`, a pinned JWS header with `boot` and `rh`,
+  `grant_locked`; queued requests signed at delivery; `tap/ctl` and `lab/req` shapes and
+  QoS; wake expiry; bridges and the parked set; `off`, `feeds` and the `shutdown` act;
+  `event/<name>` and the `Vehicle.Ostler.Security.Alarm.State` enum; `faults/<pack>.<module>`;
+  one primary module per VSS path; TXT keys; mesh bridge QoS and ACL; the CAN fallback
+  deferred to U5; gate claims never expire, Remove device, wire conflicts; check-in caps.
+  New [ADR-0041](decisions/adr-0041-brain-ed25519-signing.md): the Brain signs grants
+  through the optional extra `openostler[signing]` (`cryptography`, shared with
+  `[passkeys]`; CONSTITUTION v1.6). Amendments to ADR-0016, ADR-0037, ADR-0038 and
+  ADR-0040; NodeSource spec v0.9 and UI spec v0.11 notes; build follow-ups in `TODO.md`.
 - **`driver_side` in the pack layout** ([UI spec](specs/2026-10-06-ui-architecture-design.md)
   §3.3; owner, 2026-10-06): `schemas/layout.schema.json` and the OpenAPI `Pack` layout gain
   `driver_side` (`"left" | "right"`). The shell puts the rail on that side (the kiosk flag
