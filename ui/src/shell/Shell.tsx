@@ -14,6 +14,10 @@ import { ReplayAudio } from "../components/replay/ReplayAudio";
 import { moduleName } from "../layout";
 import { formatClock, formatQuantity } from "../lib/units";
 import { usePack } from "../pack/store";
+import { iconOr } from "../drive/icon";
+import { ModeList } from "../drive/ModeList";
+import { parseCaps } from "../drive/presets";
+import { useDriveModes } from "../drive/useDriveModes";
 import { Drive, VehicleCard } from "../screens/Drive";
 import { useApp } from "../state/app";
 import type { useConnectionSheet } from "../state/connection";
@@ -98,25 +102,34 @@ export function Shell(p: ShellProps) {
     format: { quantity, clock },
   };
 
+  // Drive modes (drive-modes spec §6): remembered per display; `?caps=` stands in for the
+  // capability manifest (U3/U5) that will say whether a media source or a ride exists
+  const caps = useMemo(() => parseCaps(window.location.search), []);
+  const modes = useDriveModes({ cls: p.layout, pack: pack?.id ?? "", caps });
+
   const chips = stripChips({
     layout: p.layout, snap, linkUp, replaying: replay.active, admin, systemName: moduleName(module),
     unacked: p.unacked, clock: time, quantity, driveMode: p.driveMode,
+    mode: { name: modes.active.name, icon: iconOr(modes.active.icon, "speed") },
   });
   const onChip = (o: ChipOpen) => {
     if (o === "faults") p.openFaults();
     else if (o === "connection") app.openConnection();
     else if (o === "exit-replay") replay.exit();
     else if (o === "back") p.setDriveMode(false);
+    else if (o === "drive_mode") modes.cycle();
+    else if (o === "drive_mode_list") modes.openList();
     else p.goTo("logs");
   };
 
   const Destination = entry.component;
   let content: ReactNode;
   if (p.driveMode) {
-    // one screen, no page chrome (§12.3): Back is the strip's first chip, faults its telltale
+    // one screen, no page chrome (§12.3): Back is the strip's first chip, then the Drive-mode
+    // chip (drive-modes spec §6); faults are its telltale
     content = (
       <section className="drivemode stack" aria-label="Drive mode">
-        <Boundary key="drive" name="Drive mode"><Drive /></Boundary>
+        <Boundary key="drive" name="Drive mode"><Drive modes={modes} cls={p.layout} driving={p.driving} /></Boundary>
       </section>
     );
   } else {
@@ -161,6 +174,9 @@ export function Shell(p: ShellProps) {
           ? <FaultSheet faults={p.sheetFaults} onDismiss={p.dismissFaults} /> : null}
         {p.connSheet.open && !p.prefsOpen ? <ConnectionSheet onClose={p.connSheet.dismiss} downSince={p.connSheet.downSince} /> : null}
         {p.prefsOpen ? <Preferences onClose={() => p.setPrefsOpen(false)} /> : null}
+        {p.driveMode && modes.listOpen ? (
+          <ModeList modes={modes.list} current={modes.active.id} onPick={modes.pick} onClose={modes.closeList} />
+        ) : null}
         {!prefs.consentDone ? <Consent /> : null}
       </div>
     </ShellCtx.Provider>

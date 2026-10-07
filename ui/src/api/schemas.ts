@@ -76,6 +76,8 @@ export const GpsFix = z.object({
   lon: z.number().nullable(),
   speed_kmh: z.number().nullable(),
   heading: z.number().nullable(),
+  /** GNSS altitude in metres (absent from older servers). */
+  alt_m: z.number().nullable().optional(),
   sats: z.number().nullable(),
   hdop: z.number().nullable(),
   src: z.string(), // "usb" | "mock" | "replay"
@@ -208,6 +210,8 @@ export const Field = z.object({
   span: z.tuple([z.number(), z.number()]).nullable(),
   /** The healthy band shaded on it (null: no band). Status still comes from `limits`. */
   normal: z.tuple([z.number(), z.number()]).nullable(),
+  /** The COVESA VSS path the field publishes (ADR-0016); Drive modes bind to it. */
+  metric: z.string().nullable().optional(),
 });
 export type Field = z.infer<typeof Field>;
 export const FieldsResponse = z.object({ module: z.string(), fields: z.array(Field) });
@@ -654,6 +658,9 @@ export const PackSchema = z.object({
   default_module: z.string(),
   modules: z.array(PackModule),
   aliases: z.record(z.string(), z.string()),
+  /** VSS path → the modules whose fields publish it ("Not in this session" vs "Not
+   * available on this car", drive-modes spec §4.2). */
+  metrics: z.record(z.string(), z.array(z.string())).default({}),
   layout: PackLayout.default({}),
 });
 export type Pack = z.infer<typeof PackSchema>;

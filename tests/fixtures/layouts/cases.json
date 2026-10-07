@@ -1,0 +1,2997 @@
+{
+ "$comment": "Shared ostler.layout/1 validator cases (drive-modes spec §10): tests/test_layouts.py runs them through openostler.layouts and the JSON Schema, ui/src/drive/validate.test.ts through the shell's validator. errors are the rule codes both report; warnings the ones both report.",
+ "cases": [
+  {
+   "name": "valid three tiles on HU-7",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "seven tiles while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu9": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 8,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "t0",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t1",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t2",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t3",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t4",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t5",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t6",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "t0",
+         "t1",
+         "t2",
+         "t3",
+         "t4",
+         "t5",
+         "t6"
+        ],
+        "grid": {
+         "cols": 4,
+         "rows": 2
+        },
+        "place": {
+         "t0": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "t1": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "t2": [
+          2,
+          0,
+          1,
+          1
+         ],
+         "t3": [
+          3,
+          0,
+          1,
+          1
+         ],
+         "t4": [
+          0,
+          1,
+          1,
+          1
+         ],
+         "t5": [
+          1,
+          1,
+          1,
+          1
+         ],
+         "t6": [
+          2,
+          1,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.too_many_tiles"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a status line counts as two tiles",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu9": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 8,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "t0",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t1",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t2",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "t3",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "v",
+         "widget": "ostler.status_line",
+         "values": [
+          {
+           "bind": {
+            "path": "Vehicle.Speed"
+           }
+          }
+         ],
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "w",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "t0",
+         "t1",
+         "t2",
+         "t3",
+         "v",
+         "w"
+        ],
+        "grid": {
+         "cols": 4,
+         "rows": 2
+        },
+        "place": {
+         "t0": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "t1": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "t2": [
+          2,
+          0,
+          1,
+          1
+         ],
+         "t3": [
+          3,
+          0,
+          1,
+          1
+         ],
+         "v": [
+          0,
+          1,
+          2,
+          1
+         ],
+         "w": [
+          2,
+          1,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.too_many_tiles"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "sparkline style while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "sparkline",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.sparkline"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a Parked-only widget while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.sparkline",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.parked_only"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "animation while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "animate": true,
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.animation"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "refresh above 4 Hz while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "refresh_hz": 10,
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.refresh"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "map pane too small on HU-5",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu5": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "m",
+         "widget": "ostler.map",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "m",
+         "a"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "m": [
+          2,
+          0,
+          1,
+          2
+         ],
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.pane_too_small"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "three panes on HU-7",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "m",
+         "widget": "ostler.map",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "x",
+         "widget": "ostler.media",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "p",
+         "widget": "ostler.ptt",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "m",
+         "x",
+         "p"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 1
+        },
+        "place": {
+         "m": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "x": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "p": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.pane_too_small",
+    "moving.too_many_panes"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "two map panes on HU-9/10",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu9": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 8,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "m",
+         "widget": "ostler.map",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "n",
+         "widget": "ostler.map",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "m",
+         "n"
+        ],
+        "grid": {
+         "cols": 2,
+         "rows": 2
+        },
+        "place": {
+         "m": [
+          0,
+          0,
+          1,
+          2
+         ],
+         "n": [
+          1,
+          0,
+          1,
+          2
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.duplicate_pane"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "tile too small on HU-5",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu5": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a"
+        ],
+        "grid": {
+         "cols": 4,
+         "rows": 3
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.tile_too_small"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "Moving shows a slot that is not on the face",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c",
+         "zz"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ],
+         "zz": [
+          0,
+          1,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.unknown_slot"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a hidden widget while Moving",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small",
+         "hidden": true
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.hidden"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "two tiles in one cell",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.overlap"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a speed tile over the map is an overlay",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "m",
+         "widget": "ostler.map",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "s",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "m",
+         "s"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "m": [
+          0,
+          0,
+          2,
+          2
+         ],
+         "s": [
+          0,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a place outside the Moving grid",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          1,
+          1,
+          2
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.place"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a head-unit face without a Moving section",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "errors": [
+    "moving.missing"
+   ],
+   "warnings": [],
+   "schema_ok": false
+  },
+  {
+   "name": "a desktop face needs no Moving section",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "desktop": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "errors": [],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "levels out of order",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small",
+         "range": [
+          0,
+          200
+         ],
+         "levels": {
+          "warning": [
+           120,
+           100
+          ]
+         }
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "levels.order"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "levels outside the range",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small",
+         "range": [
+          0,
+          200
+         ],
+         "levels": {
+          "critical": [
+           150,
+           250
+          ]
+         }
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "levels.range"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a 31-character mode name",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "A name that is far too long to fit",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "text.too_long"
+   ],
+   "warnings": [],
+   "schema_ok": false
+  },
+  {
+   "name": "graphemes, not code points, count",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Vélo déjà vu, ça va très bien",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [],
+   "warnings": [],
+   "schema_ok": false
+  },
+  {
+   "name": "a link in a label",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small",
+         "label": "see https://example.com"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "text.url"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a newer major format",
+   "doc": {
+    "format": "ostler.layout/2",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "format.unknown"
+   ],
+   "warnings": [],
+   "schema_ok": false
+  },
+  {
+   "name": "a pack signal without a vehicle hint",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "pack": "lr_d2",
+          "signal": "td5.air_temp"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "bind.pack"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a pack signal with its vehicle hint",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "pack": "lr_d2",
+          "signal": "td5.air_temp"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    },
+    "vehicle_hint": {
+     "pack": "lr_d2"
+    }
+   },
+   "errors": [],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "four faces",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f0",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      },
+      {
+       "face": "f1",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      },
+      {
+       "face": "f2",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      },
+      {
+       "face": "f3",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "schema"
+   ],
+   "warnings": [],
+   "schema_ok": false
+  },
+  {
+   "name": "an add-on widget is a warning, not an error",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "social.ride_status",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [],
+   "warnings": [
+    "moving.unknown_widget",
+    "widget.unknown"
+   ],
+   "schema_ok": true
+  },
+  {
+   "name": "a slot used twice",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "widget.duplicate_slot"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  },
+  {
+   "name": "a style the widget does not draw",
+   "doc": {
+    "format": "ostler.layout/1",
+    "kind": "drive_mode",
+    "id": "test.case",
+    "name": "Case",
+    "classes": {
+     "hu7": [
+      {
+       "face": "f",
+       "name": "Face",
+       "grid": {
+        "cols": 6,
+        "rows": 4
+       },
+       "widgets": [
+        {
+         "slot": "a",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Speed"
+         },
+         "style": "compass",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "b",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        },
+        {
+         "slot": "c",
+         "widget": "ostler.tile",
+         "bind": {
+          "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+         },
+         "style": "number",
+         "at": [
+          0,
+          0
+         ],
+         "size": "small"
+        }
+       ],
+       "moving": {
+        "show": [
+         "a",
+         "b",
+         "c"
+        ],
+        "grid": {
+         "cols": 3,
+         "rows": 2
+        },
+        "place": {
+         "a": [
+          0,
+          0,
+          1,
+          1
+         ],
+         "b": [
+          1,
+          0,
+          1,
+          1
+         ],
+         "c": [
+          2,
+          0,
+          1,
+          1
+         ]
+        }
+       }
+      }
+     ]
+    }
+   },
+   "errors": [
+    "widget.style"
+   ],
+   "warnings": [],
+   "schema_ok": true
+  }
+ ]
+}

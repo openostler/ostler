@@ -72,6 +72,8 @@ export default defineConfig({
   worker: { format: "es" },
   server: {
     proxy: Object.fromEntries(API_ROUTES.map((r) => [r, { target: API, changeOrigin: true }])),
+    // the Drive-mode limits are shared with the server validator (src/openostler/layout_limits.json)
+    fs: { allow: [".", "../src/openostler/layout_limits.json"] },
   },
   test: {
     environment: "jsdom",

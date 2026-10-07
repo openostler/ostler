@@ -56,13 +56,13 @@ class Fix:
     src: str = field(default="", compare=False)
 
     def snapshot(self, src: "str | None" = None, now: "float | None" = None) -> dict:
-        """The snapshot ``gps`` dict: ``{fix, lat, lon, speed_kmh, heading, sats, hdop, src,
-        age_s}``. ``now`` is a ``time.monotonic()`` reading (default: now)."""
+        """The snapshot ``gps`` dict: ``{fix, lat, lon, speed_kmh, heading, alt_m, sats, hdop,
+        src, age_s}``. ``now`` is a ``time.monotonic()`` reading (default: now)."""
         now = time.monotonic() if now is None else now
         age = max(0.0, now - self.mono) if self.mono else None
         return {
             "fix": bool(self.fix), "lat": self.lat, "lon": self.lon,
-            "speed_kmh": self.speed_kmh, "heading": self.heading,
+            "speed_kmh": self.speed_kmh, "heading": self.heading, "alt_m": self.alt_m,
             "sats": self.sats, "hdop": self.hdop,
             "src": src if src is not None else (self.src or "usb"),
             "age_s": None if age is None else round(age, 1),

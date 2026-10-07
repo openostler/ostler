@@ -404,13 +404,15 @@ def _fields_list(module: str) -> "dict":
             # only an explicit band: falling back to the alarm limits would draw a
             # meaningless "normal 0–200 km/h" across the whole scale
             "normal": list(s.normal) if s.normal else None,
+            # the COVESA VSS path the field publishes (ADR-0016); Drive modes bind to it
+            "metric": s.metric,
         })
     for name, m in derived.items():
         fields.append({"name": name, "unit": m.get("unit", ""), "c": m.get("c", "candidate"),
                        "limits": None, "label": m.get("label", name),
                        "group": m.get("group", "Other"),
                        "description": m.get("description", ""), "derived": True,
-                       "span": m.get("span"), "normal": m.get("normal")})
+                       "span": m.get("span"), "normal": m.get("normal"), "metric": None})
     return {"module": module, "fields": fields}
 
 
@@ -1410,7 +1412,7 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
             except Exception:  # noqa: BLE001
                 pass
         return {"fix": False, "lat": None, "lon": None, "speed_kmh": None, "heading": None,
-                "sats": None, "hdop": None, "src": getattr(self.gps, "src", None),
+                "alt_m": None, "sats": None, "hdop": None, "src": getattr(self.gps, "src", None),
                 "age_s": None}
 
     def _recording_status(self) -> "dict | None":

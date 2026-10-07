@@ -10,7 +10,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/shell/` — the shell (U1, UI spec §3): `layoutClass.ts` (HU-5, HU-7, HU-9/10, HU-wide, phone,
   tablet, desktop; kiosk flag `?display=headunit&side=left|right`; the rail side from the pack
   layout's `driver_side`), `strip.ts` (the status strip
-  as chip descriptors; `Strip.tsx` draws them), `destinations.ts` (the registry the rail or
+  as chip descriptors; `Strip.tsx` draws them; in Drive mode Back then the `drive_mode` chip,
+  tap cycles and a 600 ms press lists), `destinations.ts` (the registry the rail or
   bottom bar is built from: `slot`, `order`, `requires`, `trust`, a lazy chunk), `routes.ts`
   (route names), `landing.ts` (driving state and landing), `context.tsx` (`useShell()`),
   `Shell.tsx` (layout, Drive mode, sheets, an error boundary per destination), `shell.css`.
@@ -19,6 +20,20 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   (registered; shown only with a node in the capability manifest, U5).
 - `src/screens/` — today's screens, held by the destinations (`Drive.tsx` also gives Home's
   vehicle card and Drive mode).
+- `src/drive/` — Drive modes (drive-modes spec, DM1): `types.ts` (`ostler.layout/1` and the
+  shared limits `../src/openostler/layout_limits.json`), `validate.ts` (the shell's validator;
+  `openostler.layouts` is the server's, both run `tests/fixtures/layouts/cases.json`),
+  `presets/*.json` (the seven presets, CC BY-SA 4.0, authored per class, never
+  scaled), `presets.ts` (availability by `requires.capabilities`, defaults and
+  rotation per class; `?caps=` stands in for the capability manifest), `useDriveModes.ts`
+  (active mode and face, rotation ≤ 4, list ≤ 6, remembered per display in localStorage until
+  DM2's server storage), `bind.ts` (VSS path → node VSS, the session's field by `metric`, then
+  GPS; otherwise an honest "Not in this session"/"Not available on this car"/"Needs the
+  node's IMU", never a zero), `DriveFace.tsx` (the Moving section on head units and the phone
+  unless the car is known Parked; the full grid on tablet/desktop; values step ≤ 4 Hz),
+  `widgets.tsx` (tile, gauge, hero, chip, inclinometer, compass, status line, map and add-on
+  panes), `ModeList.tsx` and `drive.css` (Moving type from `--drive-num`/`--drive-label`/
+  `--drive-hero`, no transition or animation).
 - `src/icons/` — the Material Symbols subset (`material-symbols/*.svg`, Apache-2.0, copied
   verbatim) and `Icon`; list a new symbol in `symbols.ts` (a test keeps both in step). The only
   icon set: never an emoji, dingbat or Unicode arrow in UI text (`glyphs.test.ts`); inline in
@@ -63,7 +78,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/styles.css` — the screens' styles over the tokens (auto day/night); `src/shell/shell.css` the shell's.
 - `e2e/` — Playwright against the test-only server `tests/e2e_server.py` (simulated car; ADR-0011);
   `shell.spec.ts` runs the five reference viewports with target-size asserts and axe (WCAG 2.2 AA),
-  and asserts Drive mode never scrolls at every head-unit size and the phone.
+  and asserts Drive mode never scrolls at every head-unit size and the phone. `drive-modes.spec.ts` covers the
+  switcher chip and every face of every preset at the six Drive sizes (no scroll, ≤ 6 tiles,
+  digits ≥ 56 px, labels ≥ 24 px, nothing clipped, glowing or moving).
 
 ## Editing rules
 

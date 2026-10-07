@@ -208,7 +208,27 @@ class VehiclePack:
                         for m in self.modules],
             "aliases": self.aliases(),
             "layout": dict(self.layout),
+            "metrics": self.metrics(),
         }
+
+    def metrics(self) -> "dict[str, list[str]]":
+        """The COVESA VSS paths this vehicle provides, each with the modules whose fields
+        publish it (ADR-0016): a Drive mode tells "Not in this session" from "Not available
+        on this car" with it (drive-modes spec §4.2)."""
+        import json
+
+        out: "dict[str, list[str]]" = {}
+        for m in self.modules:
+            path = Path(self.signals_dir) / f"{m.id}.json"
+            try:
+                records = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            for r in records if isinstance(records, list) else []:
+                metric = r.get("metric") if isinstance(r, dict) else None
+                if metric and m.id not in out.setdefault(metric, []):
+                    out[metric].append(m.id)
+        return dict(sorted(out.items()))
 
 
 # -------------------------------------------------------------------- loader -- #

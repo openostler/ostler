@@ -21,17 +21,23 @@ import type { TraceMapHandle } from "./maplibre";
 import { LANE_OFFSET, NO_VALUE_COLOR, offsetPolyline, type BBox, type Cursor, type FeatureCollection, type TraceLane } from "./trace";
 
 export type MapTrace = { fc: FeatureCollection; color: unknown[]; colors: readonly string[] };
-type Props = { a: MapTrace | null; b: MapTrace | null; bbox: BBox | null; cursor: Cursor | null };
+type Props = {
+  a: MapTrace | null; b: MapTrace | null; bbox: BBox | null; cursor: Cursor | null;
+  /** Drive mode's map pane: no basemap switch or retry button, no gestures, follows the cursor. */
+  drive?: boolean;
+  label?: string;
+};
 
 const LANES: TraceLane[] = ["a", "b"];
 
-export function TraceMap({ a, b, bbox, cursor }: Props) {
+export function TraceMap({ a, b, bbox, cursor, drive = false, label = "Session map" }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const handle = useRef<TraceMapHandle | null>(null);
   const [status, setStatus] = useState<"loading" | "map" | "blank" | "failed">("loading");
   const [basemap, setBasemapState] = useState<Basemap>(loadBasemap);
   const theme = useTheme(); // the basemap follows the theme (visual spec §7)
   const latest = useRef({ a, b, cursor, basemap, theme });
+  const driveRef = useRef(drive);
   useEffect(() => { latest.current = { a, b, cursor, basemap, theme }; });
 
   const setBasemap = (m: Basemap) => {
@@ -55,6 +61,7 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
           basemap: l.basemap, satellite: satelliteSource(bounds), theme: l.theme,
           onBlank: () => alive && setStatus("blank"),
           onReady: () => alive && setStatus("map"),
+          drive: driveRef.current,
         });
         h.setCursor(l.cursor);
         handle.current = h;
@@ -87,10 +94,11 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
       {status === "failed" ? (
         <SvgTrace lanes={{ a, b }} cursor={cursor} bbox={bbox} />
       ) : (
-        <div ref={box} className="replay-map-gl" role="region" aria-label="Session map" />
+        <div ref={box} className="replay-map-gl" role="region" aria-label={label} />
       )}
-      {status === "map" ? <BasemapSwitch value={basemap} onChange={setBasemap} /> : null}
-      {status === "blank" ? (
+      {status === "map" && !drive ? <BasemapSwitch value={basemap} onChange={setBasemap} /> : null}
+      {status === "blank" && drive ? <div className="replay-map-note">Map tiles unavailable: position only</div> : null}
+      {status === "blank" && !drive ? (
         <div className="replay-map-note">
           Map tiles unavailable — trace only{" "}
           <button type="button" className="rchip" onClick={() => { handle.current?.retry(); setStatus("loading"); }}>Retry map</button>

@@ -30,6 +30,8 @@ export const SYMBOLS = [
   "fast_rewind", "fast_forward", "play_arrow", "pause", "check", "priority_high", "keyboard_arrow_down", "chevron_left",
   "lock", "volume_up", "volume_off", "star", "star-fill", "edit", "close", "arrow_forward", "undo", "info", "circle-fill",
   "diamond", "arrow_drop_up", "arrow_drop_down", "radio_button_unchecked", "pending", "radio_button_checked", "help",
+  // DM1 (drive-modes spec §5): the preset icons
+  "dashboard", "map", "landscape", "music_note", "groups",
 ] as const;
 export type SymbolName = (typeof SYMBOLS)[number];
 

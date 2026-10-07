@@ -44,6 +44,25 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- Drive modes, DM1 (drive-modes spec v0.2 §4-§6, §8.2, §11; approved 2026-10-07): the
+  `ostler.layout/1` format (`schemas/ostler-layout.schema.json`, JSON Schema 2020-12) and one
+  set of strict Moving rules shared by two validators, `openostler.layouts` (server, stdlib)
+  and `ui/src/drive/validate.ts` (shell), over `src/openostler/layout_limits.json` and the
+  shared cases in `tests/fixtures/layouts/cases.json`: ≤ 6 tiles (a status line counts two),
+  pane limits per class and one pane of a kind, minimum tile and pane sizes per class, the
+  56 px digit and 24 px label floors, refresh ≤ 4 Hz, no sparkline, Parked-only widget or
+  animation while Moving. The seven presets as data for every layout class
+  (`ui/src/drive/presets/*.json`, CC BY-SA 4.0): Diagnostic (the pack's Drive tiles by
+  position), Dashboard (the head-unit and phone default), Map, Convoy / Ride and Split /
+  Media (hidden until a ride or a media source exists), Off-road (D2 hint; pitch and roll read
+  "Needs the node's IMU", low range "Not in this session" outside SLABS) and Minimal / Night.
+  Drive mode renders the current face's Moving section through the existing kit and the new
+  `drive-num`/`drive-label`/`drive-hero` tokens, faces switch by swipe and the arrow keys, and
+  the new `drive_mode` strip chip (after Back, found by `data-chip`) cycles a rotation of ≤ 4
+  on a tap and lists ≤ 6 on a 600 ms press. The choice is remembered per display in
+  localStorage (server storage is DM2); nothing switches by itself. `GET /fields` gains
+  `metric`, `GET /pack` gains `metrics` (VSS path to modules) and the snapshot's `gps` gains
+  `alt_m`. On the phone the Drive strip drops Link and REC so it stays one row.
 - **Per-trip sharing TS1: the bundle writer, the widened scrub and the verifier**
   ([spec](specs/2026-10-07-trip-sharing-design.md) §15 TS1, ADR-0043; no UI):
   - `openostler.logbook.share`: the L0–L4 redaction pipeline over a recorded session (ends

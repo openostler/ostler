@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+import { useEffect, useRef } from "react";
 import { MarkButton } from "../components/MarkButton";
 import { Icon } from "../icons/Icon";
 import type { ChipDescriptor, ChipOpen } from "./strip";
@@ -44,9 +45,80 @@ function StripChip({ c, onOpen }: { c: ChipDescriptor; onOpen: (o: ChipOpen) => 
     );
   }
   const open = c.open;
+  if (open === "drive_mode") return <ModeChip c={c} cls={cls} onOpen={onOpen} />;
   return (
     <button className={cls} aria-label={c.label} aria-haspopup={open === "faults" || open === "connection" ? "dialog" : undefined}
       onClick={() => onOpen(open)}>
+      <Face c={c} />
+    </button>
+  );
+}
+
+/** ShellInput's long press (shell input spec §5): 600 ms held. */
+export const LONG_PRESS_MS = 600;
+
+/**
+ * The Drive-mode chip (drive-modes spec §6): a tap (or a short Enter or Space) cycles the
+ * rotation; a long press (600 ms, touch, mouse or a held Enter) opens the mode list. The
+ * long press fires while held, so the release does not also cycle.
+ */
+function ModeChip({ c, cls, onOpen }: { c: ChipDescriptor; cls: string; onOpen: (o: ChipOpen) => void }) {
+  const timer = useRef<number | undefined>(undefined);
+  const fired = useRef(false);
+  const keyDown = useRef(false);
+  const since = useRef(0);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const long = () => {
+    window.clearTimeout(timer.current);
+    if (fired.current) return;
+    fired.current = true;
+    onOpen("drive_mode_list");
+  };
+  const start = () => {
+    fired.current = false;
+    since.current = performance.now();
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(long, LONG_PRESS_MS);
+  };
+  // a busy screen may run the release before the timer: the time held decides
+  const cancel = () => {
+    window.clearTimeout(timer.current);
+    if (since.current && performance.now() - since.current >= LONG_PRESS_MS) long();
+    since.current = 0;
+  };
+  return (
+    <button className={cls} data-chip="drive_mode" aria-label={c.label} aria-haspopup="dialog"
+      aria-description="Tap for the next mode, hold for the list"
+      onPointerDown={(e) => { if (e.button === 0) start(); }}
+      onPointerUp={cancel}
+      onPointerLeave={() => { window.clearTimeout(timer.current); since.current = 0; }}
+      onPointerCancel={() => { window.clearTimeout(timer.current); since.current = 0; }}
+      onContextMenu={(e) => e.preventDefault()}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault(); // the release decides: short cycles, long has listed already
+        if (!keyDown.current) {
+          keyDown.current = true;
+          start();
+        }
+      }}
+      onKeyUp={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        keyDown.current = false;
+        cancel();
+        if (!fired.current) onOpen("drive_mode");
+        fired.current = false;
+      }}
+      onClick={(e) => {
+        // pointer taps land here (keyboard activation is handled on key up)
+        if (e.detail === 0) return;
+        cancel();
+        if (fired.current) {
+          fired.current = false;
+          return;
+        }
+        onOpen("drive_mode");
+      }}>
       <Face c={c} />
     </button>
   );

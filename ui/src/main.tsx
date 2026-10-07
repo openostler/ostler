@@ -10,6 +10,8 @@ import "virtual:design-tokens.css";
 import "./styles.css";
 // the shell after the shared styles: its sizes win over the generic .btn and .seg rules
 import "./shell/shell.css";
+// Drive modes (drive-modes spec §4.3): after the shell, so the Moving type wins
+import "./drive/drive.css";
 // Composition root: each vehicle pack registers its Drive views (vehicles/registry.ts).
 import "./vehicles/lr_d2";
 import { loadPrefs } from "./state/prefs";

@@ -307,5 +307,41 @@
         "suspension": "Chassis/SLABS"
       }
     }
+  },
+  "metrics": {
+    "Vehicle.Chassis.Accelerator.PedalPosition": [
+      "td5"
+    ],
+    "Vehicle.Exterior.AirPressure": [
+      "td5"
+    ],
+    "Vehicle.LowVoltageBattery.CurrentVoltage": [
+      "td5",
+      "slabs"
+    ],
+    "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw": [
+      "slabs"
+    ],
+    "Vehicle.Ostler.Chassis.RideHeight.RearRightRaw": [
+      "slabs"
+    ],
+    "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature": [
+      "td5"
+    ],
+    "Vehicle.Powertrain.CombustionEngine.MAF": [
+      "td5"
+    ],
+    "Vehicle.Powertrain.CombustionEngine.MAP": [
+      "td5"
+    ],
+    "Vehicle.Powertrain.CombustionEngine.Speed": [
+      "td5"
+    ],
+    "Vehicle.Powertrain.Transmission.IsLowRangeEngaged": [
+      "slabs"
+    ],
+    "Vehicle.Speed": [
+      "td5"
+    ]
   }
 }

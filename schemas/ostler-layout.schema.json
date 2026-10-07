@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/ostler-layout.schema.json",
+  "title": "Ostler layout (ostler.layout/1)",
+  "description": "A Drive mode, Home, rail or strip layout as data (specs/2026-10-07-drive-modes-and-editing-design.md §4). Media type application/vnd.ostler.layout+json, file extension .ostler-layout.json. This schema checks the shape; the Moving limits per layout class (tile and pane counts, minimum sizes, type floors, refresh and animation) are checked by the validators that share src/openostler/layout_limits.json: openostler.layouts (server) and ui/src/drive/validate.ts (shell). Unknown fields in a known major version are allowed and kept on export (§4.2). DM1 defines kind drive_mode in full; home, rail and strip are reserved here and specified in DM3 (§4.5).",
+  "type": "object",
+  "required": ["format", "kind", "id", "name", "classes"],
+  "properties": {
+    "format": { "const": "ostler.layout/1", "description": "Format and major version; checked first (an unknown major is refused: \"Made for a newer Ostler\")." },
+    "kind": { "enum": ["drive_mode", "home", "rail", "strip"] },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$", "description": "Preset ids are ostler.<name>; user ids are minted locally." },
+    "name": { "$ref": "#/$defs/text30" },
+    "icon": { "$ref": "#/$defs/icon" },
+    "description": { "type": "string", "maxLength": 120 },
+    "base": {
+      "type": "object",
+      "required": ["preset", "version"],
+      "properties": {
+        "preset": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 }
+      },
+      "description": "What this layout was made from (the Reset target, §8.3)."
+    },
+    "version": { "type": "integer", "minimum": 1, "description": "A preset's own version (base.version of layouts made from it)." },
+    "license": { "type": "string" },
+    "author": { "type": "string", "maxLength": 60 },
+    "vehicle_hint": {
+      "type": "object",
+      "properties": { "pack": { "type": "string", "pattern": "^[a-z0-9_]+$" } },
+      "additionalProperties": false,
+      "description": "An optional discovery hint; never a vid, VIN or plate (§4.2)."
+    },
+    "requires": {
+      "type": "object",
+      "properties": {
+        "addons": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "signals_any": { "type": "array", "items": { "$ref": "#/$defs/vssPath" }, "uniqueItems": true },
+        "capabilities": {
+          "type": "array",
+          "items": { "enum": ["media_source", "ride_active"] },
+          "uniqueItems": true,
+          "description": "A mode whose capability is missing is hidden from the switcher, never shown broken (§6): Split / Media needs a media source, Convoy an active ride."
+        }
+      }
+    },
+    "theme_hint": { "enum": [null, "night_dim"], "description": "May darken, never brighten (§5.7)." },
+    "classes": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "enum": ["hu5", "hu7", "hu9", "huwide", "phone", "tablet", "desktop"] },
+      "description": "Faces per layout class, authored per class and never scaled (§4.2). A missing class falls back hu5 <- hu7 <- hu9 and tablet <- desktop."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "drive_mode" } } },
+      "then": {
+        "properties": {
+          "classes": {
+            "properties": {
+              "hu5": { "$ref": "#/$defs/drivingFaces" },
+              "hu7": { "$ref": "#/$defs/drivingFaces" },
+              "hu9": { "$ref": "#/$defs/drivingFaces" },
+              "huwide": { "$ref": "#/$defs/drivingFaces" },
+              "phone": { "$ref": "#/$defs/drivingFaces" },
+              "tablet": { "$ref": "#/$defs/faces" },
+              "desktop": { "$ref": "#/$defs/faces" }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "classes": {
+            "additionalProperties": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": { "type": "object", "required": ["face"], "properties": { "face": { "$ref": "#/$defs/slotId" } } }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "text30": { "type": "string", "minLength": 1, "maxLength": 30, "description": "Plain text, at most 30 grapheme clusters (validators count graphemes; the schema counts code points)." },
+    "icon": { "type": "string", "pattern": "^[a-z0-9_]+(-fill)?$", "description": "A Material Symbols name from the shipped catalogue; an unknown name renders the default icon." },
+    "slotId": { "type": "string", "pattern": "^[a-z0-9_]{1,16}$" },
+    "vssPath": { "type": "string", "pattern": "^Vehicle(\\.[A-Za-z0-9_]+)+$" },
+    "num": { "type": ["number", "null"] },
+    "pair": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/num" }, { "$ref": "#/$defs/num" }], "minItems": 2, "maxItems": 2 },
+    "grid": {
+      "type": "object",
+      "required": ["cols", "rows"],
+      "properties": {
+        "cols": { "type": "integer", "minimum": 1, "maximum": 12 },
+        "rows": { "type": "integer", "minimum": 1, "maximum": 8 }
+      }
+    },
+    "bind": {
+      "description": "What a widget reads. A VSS path (ADR-0016) travels between vehicles; {pack, signal} is allowed only in pack-shipped and vehicle-hinted layouts (§5.1); {drive_tile} is the n-th tile of the pack's Drive view for the system in session (the Diagnostic preset).",
+      "oneOf": [
+        { "type": "object", "required": ["path"], "properties": { "path": { "$ref": "#/$defs/vssPath" } }, "additionalProperties": false },
+        { "type": "object", "required": ["pack", "signal"], "properties": { "pack": { "type": "string" }, "signal": { "type": "string" } }, "additionalProperties": false },
+        { "type": "object", "required": ["drive_tile"], "properties": { "drive_tile": { "type": "integer", "minimum": 0, "maximum": 11 } }, "additionalProperties": false }
+      ]
+    },
+    "widget": {
+      "type": "object",
+      "required": ["slot", "widget", "at", "size"],
+      "properties": {
+        "slot": { "$ref": "#/$defs/slotId" },
+        "widget": { "type": "string", "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$", "description": "A core widget (ostler.*) or one an enabled add-on declares (§9)." },
+        "at": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 0 }, { "type": "integer", "minimum": 0 }], "minItems": 2, "maxItems": 2, "description": "Column and row in the face's Parked grid." },
+        "size": { "enum": ["small", "medium", "wide", "hero"] },
+        "span": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1 }], "minItems": 2, "maxItems": 2, "description": "Columns and rows the widget takes in the Parked grid (default from size: small 2×2, medium 4×2, wide the full row × 2, hero 4×4, clipped to the grid)." },
+        "bind": { "$ref": "#/$defs/bind" },
+        "bind2": { "$ref": "#/$defs/bind", "description": "The second state of a two-state chip (low range and diff lock as one tile, §5.5)." },
+        "style": { "enum": ["number", "arc", "bar", "chip", "text", "sparkline", "inclinometer", "compass"] },
+        "unit": { "type": "string" },
+        "dec": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "range": { "$ref": "#/$defs/pair" },
+        "levels": {
+          "type": "object",
+          "properties": {
+            "normal": { "$ref": "#/$defs/pair" },
+            "warning": { "$ref": "#/$defs/pair" },
+            "critical": { "$ref": "#/$defs/pair" }
+          },
+          "additionalProperties": false
+        },
+        "label": { "$ref": "#/$defs/text30" },
+        "label2": { "$ref": "#/$defs/text30" },
+        "icon": { "$ref": "#/$defs/icon" },
+        "hidden": { "type": "boolean" },
+        "refresh_hz": { "type": "number", "exclusiveMinimum": 0 },
+        "animate": { "type": "boolean", "description": "Never true in a Moving section (§4.3: no animation, no tweening)." },
+        "config": { "type": "object" },
+        "values": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["bind"],
+            "properties": { "bind": { "$ref": "#/$defs/bind" }, "label": { "$ref": "#/$defs/text30" }, "dec": { "type": "integer", "minimum": 0, "maximum": 4 } }
+          },
+          "description": "The status line's values (≤ 2, the value template)."
+        }
+      }
+    },
+    "moving": {
+      "type": "object",
+      "required": ["show", "grid", "place"],
+      "description": "What a driver-facing display shows while Moving (§4.3): slot ids in reading order, a coarse grid and each slot's [col, row, cols, rows].",
+      "properties": {
+        "show": { "type": "array", "items": { "$ref": "#/$defs/slotId" }, "minItems": 1, "maxItems": 12, "uniqueItems": true },
+        "grid": { "$ref": "#/$defs/grid" },
+        "place": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/slotId" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    "face": {
+      "type": "object",
+      "required": ["face", "name", "grid", "widgets"],
+      "properties": {
+        "face": { "$ref": "#/$defs/slotId" },
+        "name": { "$ref": "#/$defs/text30" },
+        "grid": { "$ref": "#/$defs/grid" },
+        "widgets": { "type": "array", "items": { "$ref": "#/$defs/widget" }, "maxItems": 24 },
+        "moving": { "$ref": "#/$defs/moving" }
+      }
+    },
+    "faces": { "type": "array", "items": { "$ref": "#/$defs/face" }, "minItems": 1, "maxItems": 3 },
+    "drivingFaces": {
+      "type": "array",
+      "items": { "allOf": [{ "$ref": "#/$defs/face" }, { "required": ["moving"] }] },
+      "minItems": 1,
+      "maxItems": 3,
+      "description": "Head-unit and phone classes: every face carries a Moving section (§4.1)."
+    }
+  }
+}

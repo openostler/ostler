@@ -56,7 +56,7 @@ passkeys = ["cryptography>=43.0,<50"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"openostler" = ["metrics.json", "vss_leaves.json"]
+"openostler" = ["metrics.json", "vss_leaves.json", "layout_limits.json"]
 "openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*", "static/fonts/*"]
 "openostler.geo" = ["*.tsv.gz"]
 "openostler.obd" = ["uas.json"]
