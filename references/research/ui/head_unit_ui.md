@@ -2,8 +2,8 @@
 title: "In-car and head-unit UI — industry patterns, distraction rules and gaps in our PWA (Oct 2026)"
 area: references
 status: stable
-version: 1.1
-updated: 2026-10-06
+version: 1.2
+updated: 2026-10-07
 depends_on: [specs/2026-10-06-platform-direction-design.md]
 summary: >
   Surveys how production in-car UIs (EV makers, AAOS, iDrive, MBUX, CarPlay/CarPlay Ultra, Android Auto) lay out persistent vehicle status, app panes, climate, security, cameras and hidden service menus, and distils the hard numbers (NHTSA 2 s / 12 s, 76 dp targets, 32/24 dp text, 5-step tasks, night polarity). Compares them with the current Ostler PWA and recommends a head-unit rail layout, a portrait phone layout, a persistent status strip, a speed-driven driving lockout and five top-level destinations.
@@ -20,11 +20,20 @@ cited only as evidence; none of their marks, names or visual signatures belong i
 
 ## 1. Hard numbers (the rules we should design to)
 
+> **Correction (2026-10-07).** The 30-character limit is **not** an NHTSA rule: the 2012
+> proposal locked out reading more than 30 characters and text entry over 6 presses, and the
+> final Phase 1 guidelines (78 FR 24818, 2013) replaced both with purpose-based lockouts
+> ([driver-distraction rules §3.3](../driver_distraction_rules.md#33-two-corrections-for-our-docs)).
+> Ostler keeps "≤ 30 characters a line" as **its own** design limit for Moving templates, with
+> the AAOS 120-character string cap as the platform ceiling. The same note also finds that
+> NHTSA's "driving" includes idling in gear (a manual car counts as not driving only with the
+> handbrake on, in neutral and below 5 mph), which the "Driving" row below understates.
+
 | Rule | Value | Source |
 |---|---|---|
 | Single glance off road | ≤ 2.0 s (≤ 15 % of glances > 2 s, for 21 of 24 test drivers) | NHTSA Phase 1 guidelines [N1][N2] |
 | Total eyes-off-road per task | ≤ 12 s | NHTSA [N1] |
-| Per se lockouts while driving | video and non-driving images, auto-scrolling text, manual text entry, reading > 30 characters (a number plus unit counts as one) | NHTSA [N1][N2] |
+| Per se lockouts while driving | non-driving video; non-driving graphical or photographic images (maps, rear camera and brief task-selection images excepted); auto-scrolling text; manual text entry for messaging, communication or browsing; reading books, web pages, social media or messages. *Corrected 2026-10-07:* the "reading > 30 characters" lockout was in the 2012 proposal only; the final 2013 text replaced it with these purpose-based lockouts | NHTSA [N1] |
 | "Driving" | transmission not in Park (a manual car has no Park, so we need speed) | NHTSA [N1]; AAOS states [A3] |
 | Portable/aftermarket devices | proposed Phase 2 guidelines: pair with the car, or offer a simplified **Driver Mode** | NHTSA Phase 2 (draft, 2016) [N3] |
 | Touch target | ≥ 76 × 76 dp; ≥ 23 dp between targets; no overlap | Android for Cars [G1][G2] |
@@ -225,7 +234,7 @@ picker, Rewind, preferences cog (move to Diagnose / Logs / More).
   Idling (engine running, speed 0), Moving (speed > 5 km/h from ECU or GPS for > 2 s; leave Moving
   only after < 2 km/h for 3 s). Unknown speed = **assume Moving** on the head-unit display.
 - **On Moving:** auto-enter Drive mode on the head unit; keep the strip; allow Drive tiles,
-  telltale sheet (≤ 30 characters per line, codes + short names), Mark, reverse/low-speed camera.
+  telltale sheet (≤ 30 characters per line, our own limit, codes + short names), Mark, reverse/low-speed camera.
 - **Locked while Moving:** all Outputs/actuator tests and settings writes (also server-side —
   safety travels with the action), text entry (notes, search), Docs, Analysis, replay scrubbing,
   dashcam/clip playback, module switching, Experimental/service mode (auto-exit), lists longer
@@ -266,7 +275,7 @@ asserting that actuations, text inputs and video are locked and targets measure 
 
 ## Sources
 - [N1] NHTSA Visual-Manual Driver Distraction Guidelines (2013): https://www.nhtsa.gov/sites/nhtsa.gov/files/distracted_driving_guidelines_for_in-vehicle_electronic_devices.pdf ; summary https://www.transportation.gov/briefing-room/us-dot-releases-guidelines-minimize-vehicle-distractions
-- [N2] Glance criteria and 30-character rule as published: https://www.govinfo.gov/content/pkg/FR-2014-09-16/pdf/2014-22028.pdf ; https://ohsonline.com/Articles/2012/02/26/New-Guidance-Lists-Unsafe-Driver-Distractions.aspx
+- [N2] Glance criteria, and the 30-character rule as proposed in 2012 (dropped from the final 2013 text; correction 2026-10-07): https://www.govinfo.gov/content/pkg/FR-2014-09-16/pdf/2014-22028.pdf ; https://ohsonline.com/Articles/2012/02/26/New-Guidance-Lists-Unsafe-Driver-Distractions.aspx
 - [N3] NHTSA Phase 2 (portable/aftermarket, Driver Mode), proposed 2016: https://www.govinfo.gov/content/pkg/FR-2016-12-05/html/2016-29051.htm
 - [G1] Android for Cars visual principles: https://developers.google.com/cars/design/design-foundations/visual-principles
 - [G2] Android Auto sizing: https://developers.google.com/cars/design/android-auto/design-system/sizing

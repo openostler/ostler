@@ -3,6 +3,14 @@
 > **Ostler: an open, smart-home-like ecosystem for your car. It reads your car's
 > diagnostics and live data, then grows with add-ons.**
 
+> **Proposed wording (2026-10-07, awaiting the owner; [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)):**
+> Ostler is an ecosystem whose main goal is **getting your car's data into apps**. A small
+> core (the shell, Diagnose, Trips, Network, and Security once a node exists) reads and
+> interprets the car; **add-ons are the product** (Social, Vehicles & Map, Maintenance &
+> Garage, Cameras, Integrations), installed from Settings → Add-ons, Home Assistant style.
+> One app, no separate apps per feature; every data class starts in ghost; Export all, and
+> nothing in core needs an Ostler-run server. Map: [docs/ecosystem.md](docs/ecosystem.md).
+
 **Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
 existing systems into a connected IoT platform, with diagnostics and telemetry at the
@@ -216,3 +224,11 @@ what was used. Vehicle-specific credits live in each pack.
   terms keep them. Decision: ADR-0012.
 - **Trademarks:** "Ostler" and "OpenOstler" are trademarks. The licences grant no rights
   to the names; see [TRADEMARKS.md](TRADEMARKS.md).
+
+## Decisions for the owner
+
+<!-- Draft-only section (2026-10-07): remove once the owner answers. -->
+
+1. **Lead the README with the proposed wording?** Recommend: yes once ADR-0042 is accepted,
+   replacing the tagline paragraph and keeping the rest. Alternative: keep the current
+   tagline and add the add-on list under "Goals".

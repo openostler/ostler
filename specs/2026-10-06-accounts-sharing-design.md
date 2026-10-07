@@ -2,11 +2,11 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.4
-updated: 2026-10-06
-depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md]
+version: 0.5
+updated: 2026-10-07
+depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, specs/2026-10-06-app-model-design.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, references/research/calls_video_camera_sharing.md, references/research/maintenance_trackers.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions.
+  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Proposed amendment (2026-10-07, awaiting the owner, §14): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node.
 ---
 
 # Accounts, multi-vehicle garage, sharing and social — design
@@ -16,6 +16,8 @@ summary: >
 categories, phone approval and the remote rule,
 [ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md). Each phase may split
 into its own spec; the questions the owner did not take up (§13) block nothing in P1.
+**Proposed amendment (2026-10-07):** [§14](#14-proposed-amendment-2026-10-07-one-permission-model-and-the-shell-screens),
+awaiting the owner, unifies the permission vocabulary and specifies the shell screens.
 
 ## 1. Where we are, plainly
 
@@ -340,6 +342,337 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
 8. Should Ostler Cloud ever hold a Meta app for automatic posts, or only share links and
    the owner's own bots?
 
+## 14. Proposed amendment (2026-10-07): one permission model and the shell screens
+
+**Status: proposed, awaiting the owner.** Nothing above changes until the owner approves; once
+approved, where this section differs from §2–§10, this section wins. It is the one
+permission model that **Social** and **Vehicles & Map** (add-ons under
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md), Proposed)
+consume: they read it through the shell API and store no permissions of their own. Evidence:
+[accounts and sign-in in practice](../references/research/accounts_social_login.md),
+[social and group-drive apps](../references/research/social_group_drive_apps.md) (D1–D9),
+[calls, video and cameras](../references/research/calls_video_camera_sharing.md) §8 (camera
+scope), [maintenance trackers](../references/research/maintenance_trackers.md) §4 (maintenance
+class). ADR text it touches: [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md#proposed-amendment-2026-10-07)
+§1, §2, §4, §7, §8, §9.
+
+### 14.1 The data-class registry
+
+One registry replaces the four overlapping vocabularies: the share levels (`view`,
+`view+logs`, §5.3), the location levels (§5.3 plus ADR-0038's coarse), the token data classes
+(§2.4) and the manifest's `permissions.data` ([app-model spec §4.2](2026-10-06-app-model-design.md)).
+The old levels survive only as **presets** (named bundles of grants).
+
+**Entry shape** (core declares its classes in code; an add-on in its manifest under
+`contributes.data_classes`, so the registry is add-on-extensible):
+
+| Field | Meaning |
+|---|---|
+| `id` | `presence`, `location` …; an add-on's own classes are `<app id>.<name>` unless first party |
+| `owner` | `core` or the app id that registers it |
+| `live` | true if it is present-tense (ghost hides it, §14.3) |
+| `detail` | its precision ladder, lowest first (§14.5); `["on"]` if it has none |
+| `max_window` | the longest a grant may last at each detail (`null` = may be indefinite) |
+| `max_audience` | the widest audience it may ever reach; `me` makes it unshareable |
+| `sensitive` | shown with a warning and never included by a preset |
+
+The registry refuses an entry whose default audience is not `me`, a live class without a
+window rule, or any class carrying an identity (the VIN and its HMAC are never a class,
+ADR-0036; nor are raw captures or Decode evidence).
+
+**Core and first-party classes:**
+
+| Class | What it covers | Live | Detail ladder | Window / cap |
+|---|---|---|---|---|
+| `presence` | online, driving, parked, "in a ride" | yes | on | any |
+| `vehicle_card` | make, model, year, nickname, photo (EXIF stripped); plate hidden unless ticked | no | basic · with plate | any |
+| `location` | position and traces | yes | none · coarse · place · precise · live | precise and live **≤ 24 h, always**; others may be indefinite |
+| `live` | live signals from the VSS stream | yes | on (a signal subset may be named) | any |
+| `trips` | trip summaries, stats, records; full recordings and replay | no | summary · full | any; traces follow `location` |
+| `faults` | fault codes, freeze frames, readiness | no | on | any |
+| `notes` | notes the author marked shareable (private notes are never a class) | no | on | any |
+| `maintenance` | service records, reminders, fuel; costs at the top level (Maintenance & Garage) | no | history · with costs | any; "for a buyer" preset has no locations |
+| `video` | live view of one named camera, granted per camera (`video:<camera>`); a **camera grant** is this class at per-camera granularity (Cameras add-on) | yes | live only (no recording, no scrub-back) | default "this ride" or 1 h; interior never indefinite and needs occupant consent at the head unit; "being viewed by N" badge; every view audited |
+| `audio` | cabin audio, voice notes, camera audio (off by default; a camera grant never implies it) | — | — | `max_audience: me` (ADR-0010); call audio is a Social call, consented per call, not a share |
+
+**Presets** map the old words: `view` = vehicle_card + live + faults; `view+logs` = that + trips
+(full); location levels = `location` at that detail; a token's `data` scope is a list of
+class ids. `maintenance` is off by default and never in a preset (maintenance research §4.4).
+Recorded clips are not shared through grants in P1–P4 (export only); a later clip grant
+would be its own class.
+
+### 14.2 Audiences and grants
+
+- **Audiences:** **me** · a **person** (a contact, §14.6) · a **group** (a ride is a group
+  audience whose grants end at ride end) · the **household**
+  (the local users and people of this device) · **public** (reserved; not before club pages,
+  after P4).
+- A **grant** is (data owner, vehicle or `*`, class, detail, audience, start, expiry). Only the
+  **data owner** makes a grant: the vehicle's owner for the vehicle's data; the signed-in
+  driver for their own presence and live location in a trip. Every grant offers durations
+  first: 1 h, until end of trip, until end of day, until I stop (where `max_window` allows).
+- A user's **user role** on this device (§3, ADR-0029 §5) is not a share: it decides what they
+  can read and do here. Grants decide what leaves anyone's control to anyone else, including
+  household members beyond their role (a Viewer sees location only through a grant).
+- Shares (§5) remain the **link** to a peer (pinned key, endpoints, transport); grants ride on
+  them. The `shares.level` and `shares.location` columns go; a `grants` table takes them.
+
+### 14.3 Ghost mode
+
+- **Default on** for every new user, and for every class an add-on registers when it is
+  installed. A grant made while ghosted exists but sends nothing that ghost hides.
+- **One master toggle** per user. Going ghost is one tap, anywhere, always allowed, and ends
+  every live share, live ride position, camera grant and mesh position at once. Becoming
+  visible offers **1 h · 24 h · until I go ghost**, and first shows a one-screen summary of
+  what each audience will see. **Timers only ever move toward ghost**: ghost never ends by
+  itself.
+- **What it hides:** every `live: true` class (presence, location, live signals, video, and
+  any live add-on class). Non-live grants (trips, faults, notes, maintenance, video,
+  vehicle card) stay as each grant says (social research D1).
+- **What it does not cost:** ghost never blocks messaging or calls; you still see others,
+  message and call (Snap, not Waze).
+- It applies on every transport, the mesh included; the device that answers enforces it.
+
+### 14.4 The visibility rule
+
+```
+visible(viewer, vid, class) =
+      not ghosted(data_owner, class)                 # master toggle or the class's own ghost
+  and viewer ∈ audience(g)    for some grant g on (vid, class), not revoked
+  and g.start <= now < g.expires                     # precise/live: expires - start <= 24 h
+  and transport_ok(viewer's path)                    # §3.2, plus the per-user local-only flag
+  then deliver at min(max detail over passing grants, class cap, path cap)
+```
+
+- Path cap: a mesh carries `coarse` at most outside a ride's private channel (ADR-0038 §5;
+  coarse = Meshtastic 13 bits).
+- Enforced where the data lives (`/peer/v1`, the token API, the Social and Map feeds served by
+  core), never only in the UI.
+
+### 14.5 Precision, and who can raise it
+
+- **Location ladder:** none · coarse (about ±3 km) · place (town or a named place) · precise ·
+  live (precise, streamed). Privacy zones trim trip ends at saved places at every level.
+- **Precise and live always expire within 24 h** (timer, arrival, trip or ride end). Renewing
+  is a new act by the data owner; nothing auto-renews.
+- **Nobody can raise another person's precision**: not the device owner, a group admin or a
+  ride leader. A group admin manages members, never members' grants.
+- **The one exception is my own SOS or crash alert**, from my own device, to my **safety
+  contacts only** (§14.7): a precise position (and live position until I mark safe, at most
+  24 h), even in ghost. It is audited and shown to me afterwards. No one else's action
+  can trigger it, and ghost never leaks by itself (the Life360 "pop" is rejected). Theft
+  alarms to the owner stay ADR-0033 §7 paths, not shares.
+
+### 14.6 Contacts, groups and invites
+
+- **Contacts** are first-class: a display name I choose, the peer link (pinned key), the groups
+  they are in, what I grant them and what they grant me, and a block flag. A **person
+  without a login** (a child, a car-share driver) is a household contact used for "who drove"
+  only (`users.can_sign_in = false`).
+- **Groups:** a name, a kind (friends, club, **safety**), a host (my device, a member's
+  device or the relay, §13 Q6), admins and members. Removing a member stops their view at
+  the next pull.
+- **Rides** are first-class too: a group-like object with members, a leader, a time window
+  and a route (§6). A **ride-scoped grant** (audience: the ride) carries live location or
+  other live classes to ride members only and **ends at ride end** (or 24 h, whichever is
+  first); leaving the ride ends it for that member.
+- **Invites**, one record with three carriers:
+  - **link** and **QR** as §5.2 (fragment secret, pinned fingerprint, 48 h default);
+  - an **8-character code** from a no-ambiguity alphabet (Crockford base32), single use,
+    **10 minutes**, five wrong tries per address then a lock; for links that cannot travel
+    (read aloud, typed on a parked head unit, a mesh text). A code carries no fingerprint,
+    so both screens then show the same short check (six digits from both keys) and the
+    share activates only on a match.
+- Accepting an invite creates the contact and shows the inviter's offered preset; nothing live
+  flows until each side leaves ghost. Friends appear only after an invite (answers §13 Q5).
+  No address-book upload, phone numbers or global directory.
+
+### 14.7 Shell screens: gap list and short specs
+
+All are core shell (ADR-0042). Today none exists except the Basic Auth prompt.
+
+| # | Screen | Host | Phase |
+|---|---|---|---|
+| S1 | First run (owner creation) | any | P1 |
+| S2 | Sign in | phone, desktop | P1 |
+| S3 | Passkeys | phone, desktop | P1b |
+| S4 | Profile switcher (head unit) | head unit | P1 |
+| S5 | Users and roles | owner | P1 |
+| S6 | Signed-in devices | own; owner sees all | P1 |
+| S7 | Contacts, groups and invites | phone, desktop | P2 |
+| S8 | Sharing ("who sees what") with View as… | phone, desktop | P1 (household), P2 |
+| S9 | Ghost toggle | status strip, every host | P1 |
+| S10 | Safety contacts | phone, desktop | P2 |
+
+- **S1 First run.** Keep the physical setup code (§2.1). One screen, Home Assistant style:
+  setup code, your name, then "Add a passkey" (when available) or a password; a line saying
+  how to recover (console `reset-owner`). Then optional "Name this car" and "Invite someone".
+  No email. On Ostler Diagnostics alone the phone app's pairing is the same screen.
+- **S2 Sign in.** Password (plus TOTP if set), a passkey button only when this origin can
+  hold one, and "Sign in with a code" (RFC 8628, Jellyfin Quick Connect UX) for TVs and second
+  screens. A local-only user on a remote path gets "This account works only in the car".
+- **S3 Passkeys.** Each passkey with the name it works on, created, last used; add; delete
+  with a warning on the last credential of the last owner. Names, in order of reach: an
+  optional **per-device public name from Ostler Cloud** (`*.<device-hash>.<domain>`, DNS-01,
+  answered locally by the Brain's DNS offline); Tailscale names; and the no-cloud path, the
+  device CA **name-constrained** to its own names, with a guided install per phone
+  (ADR-0021's trust spec records the choice). The head unit uses `http://localhost` and needs
+  none. Remote friends never need a passkey here: they use their own device.
+- **S4 Profile switcher (head unit).** The head unit always starts in the **kiosk session**
+  (Read and Comfort, bound to `localhost`, never an IP range); a profile chip in the status
+  strip reads "Car". **Switching is Parked-only**: a tile sheet of users who opted in to
+  appear, unlocked by a **6-digit local PIN** (set from a full sign-in, scrypt-hashed, valid
+  on that head unit over `localhost` only, five tries then 15 minutes locked, never mints a
+  token) or by **approval from a paired phone** on a local link. **Sign-out at ignition off**,
+  back to kiosk. **Trips record who drove**: the user, a person without a login picked from
+  the tiles (no rights), or "Car". Tier 2–3 still need phone approval (ADR-0033 §6).
+- **S5 Users and roles.** People and users in one list; per user: user role, categories added
+  or removed, expiry (Mechanic always), **"local links only"** (checked in `transport_ok`),
+  can sign in, show on the head unit, head-unit PIN reset, disable, delete (trips keep
+  "former user"). Reset sends a one-time person invite; the last owner cannot be removed.
+- **S6 Signed-in devices.** Every session and token: device label, last used, last path
+  (head unit, LAN, Tailscale, relay); revoke one, or "sign out everywhere else". Trusted
+  sessions slide 30 days and are **pruned after 90 days unused**.
+- **S7 Contacts, groups and invites.** Contacts (online state, what I share, what they share),
+  groups, pending invites sent and received with countdowns and revoke; "Add" shows QR, link
+  and code; "Enter code" or scan.
+- **S8 Sharing.** A matrix of audiences × classes for each vehicle and for me, each cell its
+  detail and countdown; add a grant as who → what → how precise → how long; presets; the
+  audit of pulls. **View as…** picks a contact, group or household member and renders the
+  car through the same server filter `/peer/v1` uses, not a UI imitation.
+- **S9 Ghost toggle.** The **visibility chip** in the status strip on every host ("Ghost", or "Visible to
+  Ride: Peak District · 1 h 20 m"), also in Settings → Sharing and in the Social and Vehicles &
+  Map headers (they read it through the shell API). On a driver-facing head unit while
+  Moving, going ghost is one tap; becoming visible waits for Parked or the phone.
+- **S10 Safety contacts.** Choose contacts (later, a non-Ostler viewer through a relay link,
+  social research D4); what each receives (SOS, crash alert, opt-in ride start and end); the
+  channel (paired-app push, the owner's notify endpoint, the guardian's SMS, ADR-0033 §7); a
+  test button.
+
+### 14.8 Social login
+
+Out of P1–P4. Later (P5 at the earliest), an optional **Ostler Cloud OIDC broker**
+(authorisation code with PKCE, a pairwise subject per device) that **links** a Google, Apple
+or Facebook identity to an existing local user, as a convenience on a new phone; the local
+passkey or password always works offline; never the only credential, never friend discovery.
+Beside it, a **generic OIDC client** (issuer, client id, secret) for self-hosters (Pocket ID,
+Authentik, Tailscale's tsidp). Never Facebook first; Apple only with an iOS companion.
+
+### 14.9 Basic Auth migration (replaces the overlap line in §2.1)
+
+1. **Release N (P1):** with `--admin-password` / `D2DIAG_ADMIN_PW` set and no `auth.db`,
+   create user `owner` with that password (scrypt) and **skip the setup code**; banner "Add a
+   passkey or rename your account".
+2. Basic Auth is accepted in release N **on the old routes only**, mapped to the owner; new
+   routes take sessions and tokens only. Each Basic request is logged with its client.
+3. Settings → Scripts mints a token per script to replace the password.
+4. **Release N+1:** Basic Auth refused, with a 401 body naming the token page. **No switch
+   re-enables it.** Public mode's "server password" becomes an owner or mechanic sign-in.
+
+### 14.10 Where `auth.db` lives, and recovery
+
+- **With a Brain:** `auth.db` (users, credentials, sessions, tokens, contacts, groups, grants,
+  audit) lives on the Brain, with the CA and pairing authority (ADR-0037 §2). It pushes a
+  **signed roster** (user ids, user-role categories, pairing-key public keys, revocations,
+  an epoch; ADR-0041 signing) to the node and guardian on change and at wake.
+- **With the Brain asleep:** nothing verifies passwords. The node and guardian accept only
+  pairing-key sign-in and signed grants against the latest roster
+  ([grant flow](../references/research/grant_flow.md)); alarm paths need neither (ADR-0033
+  §7). An owner may revoke a phone directly at the node over a local link, signed by their
+  own pairing key; the Brain reconciles at wake. Losing the Brain blocks new users and
+  pairings only.
+- **Ostler Diagnostics alone:** no `auth.db`; the node holds the roster (paired phones as
+  users). **Recovery:** the physical step on the node (button or label code, held with the
+  ignition on) re-pairs a phone as owner, **revokes every old pairing key** and keeps all
+  recorded data; previously paired phones are told when they next connect. A Brain added
+  later imports the roster at pairing.
+- **Ostler Cloud never holds `auth.db`**: at most the optional public name (S3) and, later,
+  the OIDC link (§14.8).
+
+### 14.11 "Role" means two things
+
+ADR-0037's **role holders** (transmit gate, parked broker, time source…) are device duties;
+§3's roles are user permissions. New text and code say **user role** (`user_role`) for the
+latter and **device role** or role holder for the former. Both obey ADR-0037's rule:
+holding a role grants no authority; the executing gate checks every grant.
+
+### 14.12 Data model, API and tests (deltas)
+
+- **Tables:** `users` + `can_sign_in`, `local_only`, `show_on_head_unit`, `hu_pin` (scrypt);
+  `sessions` + `label`, `last_path`, `last_used`; new `contacts`, `groups`, `group_members`,
+  `grants` (owner, vid, class, detail, audience kind and id, start, expires, revoked),
+  `ghost` (user, on, until, per-class), `roster` (epoch, signature); `invites` + `code_hash`,
+  `preset`, `max_uses`; `shares` loses `level` and `location`; trips carry `driver`.
+- **Routes:** `GET /data-classes`; `GET/POST /grants`, `DELETE /grants/<id>`; `GET/PUT
+  /me/ghost`; `GET/POST /contacts`, `/groups`; `POST /invites/code/redeem` (open,
+  rate-limited); `GET /me/sessions`, `DELETE /me/sessions/<id>`; `GET /view-as/<audience>`;
+  `GET/PUT /me/safety-contacts`; `POST /auth/hu/switch` (localhost only).
+- **Tests:** ghost on for a new user and a new add-on's classes; a precise or live grant
+  without an expiry, or over 24 h, refused; a grant by anyone but the data owner refused;
+  SOS reaches only safety contacts and is audited; View as… equals `/peer/v1` for that viewer;
+  a manifest class with a default audience other than `me` refused; code single use, 10
+  minutes, lockout; head-unit PIN refused off `localhost` and switching refused unless
+  Parked; sign-out at ignition off; Basic refused on new routes in N and everywhere in N+1;
+  a local-only user refused on every remote path.
+
+### 14.13 Accounts research gap list G1–G13, where each is addressed
+
+| # | Gap | Addressed in |
+|---|---|---|
+| G1 | Four vocabularies for "what data" | §14.1 registry; presets |
+| G2 | No friend or group object | §14.6 contacts and groups; S7 |
+| G3 | No ghost mode or duration presets | §14.3, §14.2 durations; S9 |
+| G4 | Owner recovery on Ostler Diagnostics alone | §14.10 |
+| G5 | Passkey naming for family phones | S3 (public name, name-constrained CA); ADR-0021 trust spec |
+| G6 | Head-unit switching, PIN, sign-out | S4 |
+| G7 | Person without a login; who drove | §14.6, S4, S5; `trips.driver` |
+| G8 | Per-user local links only | S5; §14.4 `transport_ok` |
+| G9 | Social login path | §14.8 |
+| G10 | Short invite code | §14.6 |
+| G11 | `auth.db` across node, Brain, guardian | §14.10 |
+| G12 | Basic Auth end date | §14.9 |
+| G13 | Session pruning | S6 (90 days) |
+
+### 14.14 Phases (deltas)
+
+P1 gains the registry, grants to me and household, ghost, S1, S2, S4–S6, S8 (household),
+S9 and the migration. P1b passkeys with S3. P2 gains contacts, groups, codes, S7, S8 and S10.
+Public audiences and non-Ostler viewers wait for P4 or later. Social login is P5 at the
+earliest.
+
+### 14.15 Decisions for the owner
+
+1. **One data-class registry replacing levels, location levels, token classes and
+   `permissions.data`?** Recommend yes, add-on-extensible, levels kept as presets.
+   Alternative: keep levels and bolt new classes (video per camera, maintenance) onto them.
+2. **What ghost hides?** Recommend live classes only (presence, location, live signals,
+   video), non-live grants untouched. Alternative: ghost hides every class.
+3. **Ghost timers?** Recommend timers only toward ghost (visible for 1 h, 24 h or until off;
+   ghost never expires). Alternative: Snap-style "ghost for 3 h" that turns visible again.
+4. **Precise and live location capped at 24 h, no auto-renew?** Recommend yes.
+   Alternative: allow "until I stop" for household only.
+5. **Can anyone raise my precision?** Recommend no one; only my own SOS or crash alert to my
+   safety contacts, audited. Alternative: a household owner may raise it for under-18 drivers.
+6. **Does a driver's ghost hide the car from the vehicle's owner?** Recommend no: the owner's
+   user role still reads their own car, and the driver is told so. Alternative: ghost hides
+   from the owner too.
+7. **8-character, 10-minute invite code with a six-digit key check?** Recommend yes.
+   Alternative: links and QR only.
+8. **Head-unit profiles: Parked-only switching, 6-digit local PIN or phone approval,
+   sign-out at ignition off?** Recommend yes. Alternative: a "remember on this car" option of
+   up to 7 days.
+9. **Optional per-device public name from Ostler Cloud for passkeys?** Recommend yes as an
+   option, with the name-constrained CA as the no-cloud path. Alternative: CA only.
+10. **Social login?** Recommend out of P1–P4; later only a link-only Ostler Cloud OIDC broker
+    plus a generic OIDC client. Alternative: never.
+11. **Basic Auth end?** Recommend release N on old routes only, refused in N+1, no re-enable.
+    Alternative: two releases of overlap.
+12. **`auth.db` on the Brain with a signed roster on the node and guardian?** Recommend yes.
+    Alternative: a replicated `auth.db` on the node too (more flash writes, two sources of
+    truth).
+13. **Say "user role" and "device role" from now on?** Recommend yes. Alternative: rename
+    ADR-0037's term to "duty".
+
 ## Changelog
 
 - 2026-10-06 — v0.1: first draft from the owner's direction (ADR-0029, proposed).
@@ -350,3 +683,4 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
   pairing; the default vehicle is the one the node is on; the confirmation matrix.
 - 2026-10-06 — v0.3: wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).
 - 2026-10-06 — v0.4, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
+- 2026-10-07 — v0.5 (proposed, awaiting the owner): §14 added: the data-class registry, audiences, ghost mode, the visibility rule, precision limits, contacts, groups and invite codes, the shell screens S1–S10, social login, the Basic Auth end, `auth.db` placement and recovery, "user role", and the research gaps G1–G13 mapped. Sections 1–13 unchanged.

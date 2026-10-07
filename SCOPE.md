@@ -2,13 +2,26 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.3
-updated: 2026-10-06
+version: 1.4
+updated: 2026-10-07
 summary: >
-  States the project's core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers.
+  v1.4 adds a proposed restatement (2026-10-07, awaiting the owner; ADR-0042 proposed): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. The approved text follows unchanged: the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers.
 ---
 
 # Scope & architecture
+
+## Proposed restatement (2026-10-07, awaiting the owner)
+
+*Proposed wording per [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)
+(proposed); the approved text below stands until the owner accepts it.*
+
+**Ostler is an ecosystem whose main goal is getting the car's data into apps. The core is
+small; the add-ons are the product.** The core's own job does not widen: it is still
+**communication with the car and interpretation of its data**, delivered through one contract
+(the snapshot and VSS stream) to the shell and its apps. The shell (with Diagnose, Trips,
+Network and Security) is the first consumer; add-ons (Social, Vehicles & Map, Maintenance &
+Garage, Cameras, Integrations, Decode lab for developers) build on it and are off by default.
+Map: [docs/ecosystem.md](docs/ecosystem.md).
 
 **The core mission of this project is communication with the car and interpretation of
 its data.** Storage and presentation (dashboards, logging, InfluxDB/Grafana) are useful,
@@ -112,3 +125,17 @@ The hard rule doesn't change: core never imports from vehicle packs or integrati
   `../Discovery 2/`, not here.
 
 See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack and [CONSTITUTION.md](CONSTITUTION.md) for the hard rules.
+
+## Changelog
+
+- 2026-10-07: v1.4, proposed restatement at the top (awaiting the owner; ADR-0042 proposed);
+  the rest unchanged.
+
+## Decisions for the owner
+
+1. **Adopt the restatement?** Recommend: yes; it keeps the layering and the hard rule and
+   names add-ons as the product. Alternative: leave SCOPE as is and state the ecosystem goal
+   only in GOALS.
+2. **"Maintenance history belongs in the sister project" (out of scope list)?** Recommend:
+   narrow it to the owner's own Discovery 2 records; maintenance as a feature now lives in the
+   Maintenance & Garage add-on. Alternative: keep the line as written.

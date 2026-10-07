@@ -2,16 +2,16 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.5
-updated: 2026-10-06
-depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, CONSTITUTION.md]
+version: 0.6
+updated: 2026-10-07
+depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/obd_telematics_apps.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`.
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`. v0.6 (proposed amendment §14, 2026-10-07, pending the owner; ADR-0042 proposed): small core (shell, Diagnose, Trips (was Logs), Network, Security once a node exists) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as a developer add-on); Settings → Add-ons catalogue and an empty-state Home; phone add-ons bundled or declarative only; SDK `trips`, `faults`, `sharing` and the data-class registry; templates incl. the new `call` (UI spec §3.5); exit guarantee; no driving score in core.
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.4 for owner review (Q1, Q2, Q5, Q6 and Q9–Q14 answered 2026-10-06; §11).
+**Status:** draft v0.6 for owner review; §14 is a proposed amendment (2026-10-07) pending the owner (Q1, Q2, Q5, Q6 and Q9–Q14 answered 2026-10-06; §11).
 Q3, Q4, Q7 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
@@ -497,7 +497,91 @@ without `permissions.wake` cannot cause a wake; leases are released on unmount; 
 14. ~~**"Don't ask again"** for brain wakes: per user and device, local links only?~~
     **Answered:** yes (§13.3; UI spec §3.8).
 
+## 14. Proposed amendment (2026-10-07): ecosystem, add-ons, Trips and templates
+
+*Proposed, pending the owner; §1–§13 stand until accepted. Decision:
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (proposed);
+map: [docs/ecosystem.md](../docs/ecosystem.md); evidence:
+[OBD and telematics apps](../references/research/obd_telematics_apps.md),
+[Speedometer/Odo teardown](../references/research/app_teardown_speedometer.md),
+[driver-distraction rules](../references/research/driver_distraction_rules.md).*
+
+**14.1 Core and add-ons (replaces §3's table when accepted).** Core (`trust: core`, repo
+`ostler`): the shell, **Diagnose**, **Trips** (Logs renamed; id `ostler.trips`, slot
+`destination:trips`), **Network**, and **Security** with `requires.devices: [{kind: "node"}]`.
+Add-ons (`trust: first_party`, off by default, own repos): **Social** (`ostler-app-social`),
+**Vehicles & Map** (`ostler-app-vehicles`), **Maintenance & Garage**
+(`ostler-app-maintenance`), **Cameras** (`ostler-app-cameras`), **Integrations** (RealDash
+CAN out, `ostler-app-lubelogger`, social integrations) and **Decode lab**, now a developer
+add-on (`requires.mode: "service"`, label Developer; code stays in `ostler`), which reopens
+Q5. The manifest gains `"kind": "core" | "addon" | "developer"`, assigned by the registry
+like `trust`. No add-on contributes a `destination:*` slot of its own.
+
+**14.2 Add-ons catalogue and empty Home (replaces "More → Apps" in §7).** Settings → Add-ons,
+tabs **Installed** and **Available**, each card labelled Core, Add-on or Developer, with its
+`requires` in words and the data classes it reads; core cannot be removed; enabling is an
+owner-role operation. Available = bundled add-ons plus declarative add-ons a device suggests
+(§7); a remote catalogue stays Q7. With no add-on enabled, Home shows one dismissible card
+of suggestions ("Track maintenance", "Share drives with friends"); never on a head unit
+while Moving.
+
+**14.3 Phone boundary (narrows §7.1).** Background location, push and pairing are native and
+fixed. Add-ons on the phone are bundled into a shell build (the phone's, or the Brain's
+under §7.1) or declarative; no fetched code. Add-ons ask the shell for push and location
+through the SDK, and the data-class registry decides who sees the result. One store app per
+platform; Android Auto, CarPlay and watch companions are later surfaces of that binary,
+each specced against its platform category first (CarPlay Driving Task: no live gauges, no
+maintenance; Android Auto: IoT). `hosts` gains `carplay`, `android_auto` and `watch` only
+with that spec.
+
+**14.4 SDK (additive).** `logs` becomes **`trips`** (trip summary index, recordings, events,
+`mark()`; odometer and engine-hours history, estimated when the car does not report them);
+new read-only **`faults`** (per-system faults and new-fault events, for "fault code seen"
+reminders); new read-only **`sharing`** (`audience(dataClass)` from the data-class registry;
+the app never sets precision or audience for another user); `notify` (push through the
+native feature, rate-limited, never message content on a head unit while Moving).
+`permissions.data` names classes from the **data-class registry** (accounts spec, proposed),
+and an add-on may register new classes in `contributes.data_classes` (accounts spec §14.1); each
+starts in ghost. This also supersedes §4.2's "token data classes of ADR-0029" wording.
+
+**14.5 Templates and lockouts (summary; authority: UI spec §3.5, proposed amendment).** The
+template set becomes `telltale_list`, `value`, `setpoint`, `camera_live`, `arm`, plus `map`,
+`media`, `tiles` (the Drive-layout grid: VSS paths with normal/warning/critical levels),
+`alert_card`, `short_list` and **`call`**, with limits per
+[driver_distraction_rules §7.2](../references/research/driver_distraction_rules.md#72-template-limits-recommended);
+task depth ≤ 3 on head units; new templates only by platform proposal citing each limit's
+source. Views may declare `"passenger_view": true` only for vehicle state, own
+location/route or a driving camera (UK reg 109); everything else offers **Open on phone**.
+**`call`**: one active audio call or push-to-talk channel; a name ≤ 30 characters (no photo),
+state and timer, ≤ 3 buttons (answer/decline, mute/end, or hold to talk); never video,
+never message text; group calls show a count, not a list.
+
+**14.6 Hard lines added to §8.** **Exit guarantee:** Trips has Export all (CSV, GPX, VBO),
+every add-on that keeps user data exports it in an open format, and nothing in core depends
+on an Ostler-run server. **No driving score in core;** scores and leaderboards only in the
+Social add-on, opt-in, speed never ranked, never exportable to insurers.
+
+**Decisions for the owner (this amendment).**
+
+1. **Accept §14?** Recommend: yes, with ADR-0042. Alternative: keep §3 and decide per feature.
+2. **Decode lab (reopens Q5): developer add-on?** Recommend: yes, code in `ostler`.
+   Alternative: keep it a core app shown in service mode.
+3. **`call` template now or with Social?** Recommend: define it now, build with Social.
+   Alternative: add it by platform proposal when Social is specced.
+4. **Manifest `kind` field?** Recommend: registry-assigned like `trust`. Alternative: derive
+   it from `trust` and `requires.mode` with no new field.
+5. **Companion hosts?** Recommend: no `carplay`/`android_auto`/`watch` host until each has a
+   spec. Alternative: reserve the names now.
+
 ## Changelog
+
+- 2026-10-07: v0.6, **proposed amendment §14**, pending the owner (ADR-0042, proposed): core
+  is the shell, Diagnose, Trips (Logs renamed), Network and Security once a node exists;
+  add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as
+  a developer add-on, reopening Q5); Settings → Add-ons catalogue and an empty-state Home;
+  the phone boundary; SDK `trips`, `faults`, `sharing`, `notify` and the data-class
+  registry; the template set with `call`, summarised from UI spec §3.5; exit guarantee and no
+  driving score in core.
 
 - 2026-10-06: v0.1, first draft from the [app model research](../references/research/ui/app_model.md):
   shell responsibilities, the app manifest, driver-safe templates, lifecycle and isolation

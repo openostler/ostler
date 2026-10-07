@@ -11,6 +11,8 @@ capability inventories) live in each vehicle pack's repo, not here (ADR-0015).
 - `https_on_the_pi.md` — local HTTPS (mkcert) so the phone mic and motion sensors work.
 - `brain_broker.md` — the Brain's Mosquitto: ACL, bridge and parked-set templates, and what
   Remove device purges.
+- `ecosystem.md` — proposed (ADR-0042): the core/add-on map, how add-ons get car data (VSS
+  stream, events, faults, trips, data-class registry) and the safety boundaries.
 
 ## Editing rules
 
