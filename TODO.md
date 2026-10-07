@@ -2,10 +2,10 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.7
+version: 2.8
 updated: 2026-10-07
 summary: >
-  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the ecosystem build order approved on 2026-10-07 (Drive-mode fit, V1–V3 visual, U2 lockouts with a legal check, Trips, NodeSource P4, add-on repos) with its mesh and media bench items, data-hub ideas. Vehicle work lives in each pack.
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the DMD-round build order approved on 2026-10-07 (approvals and the private `ostler-hub` repo, U2 core with DM1–DM3, ShellInput I1–I2 and the lockouts with Passenger view behind a flag, Trips and V2–V3 after the design review, TS1 then the share sheet, approved add-on phases, Navigation N0–N2 and Phone PH0–PH1, hub H0–H1; NodeSource P4 keeps its place) with its legal gate (reg 109, product liability, hub duties) and bench items (D2 STN session, HaLow, batman-adv, LiveKit, handover, MeshCore, Phone PH0 HFP), data-hub ideas. Vehicle work lives in each pack.
 ---
 
 # TODO — Ostler platform
@@ -17,46 +17,91 @@ Updated 2026-10-07. Check off when done.
 > [ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2) repo and its
 > `TODO.md` and `references/test_plan.md`.
 
-## Ecosystem build order (approved by the owner on 2026-10-07)
+## Build order (DMD round, approved by the owner on 2026-10-07)
 
-The owner approved the ecosystem round on 2026-10-07 ("approve all"):
-[ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md), the
-[UI spec §12](specs/2026-10-06-ui-architecture-design.md), the
-[visual design system](specs/2026-10-07-visual-design-system-design.md), the
-[app-model §14](specs/2026-10-06-app-model-design.md) and
-[accounts §14](specs/2026-10-06-accounts-sharing-design.md) amendments, and the add-on specs.
-Build in this order:
+The owner approved the DMD round on 2026-10-07 ("approve all", items 1–101 and 19a–19f):
+[ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) and
+[ADR-0034](decisions/adr-0034-repo-boundaries.md) amendments,
+[ADR-0043](decisions/adr-0043-gps-and-logs-in-shared-trips.md),
+[ADR-0044](decisions/adr-0044-adapters-on-the-brain-without-a-node.md), the
+[UI spec §13–§15](specs/2026-10-06-ui-architecture-design.md),
+[app-model §15](specs/2026-10-06-app-model-design.md),
+[accounts §15](specs/2026-10-06-accounts-sharing-design.md) and Social §12–§13 amendments,
+and the [trip-sharing](specs/2026-10-07-trip-sharing-design.md),
+[Drive modes](specs/2026-10-07-drive-modes-and-editing-design.md),
+[ShellInput](specs/2026-10-07-shell-input-design.md),
+[source adapters](specs/2026-10-07-source-adapters-design.md),
+[navigation](specs/2026-10-07-navigation-addon-design.md),
+[Phone & Comms](specs/2026-10-07-phone-comms-addon-design.md) and
+[Ostler Community](specs/2026-10-07-community-hub-design.md) specs. This replaces the
+ecosystem build order of the same day (decision list item 70). Since that order, the
+Drive-mode fit fix (B1) and visual V1a–V1d have landed. Build in this order; **NodeSource P4
+keeps its place** (below):
 
-- [ ] **1. Drive-mode fit fix** (UI spec §12.3): the HU-5 800×480 layout class, Drive mode on
-      one screen at every head-unit class, and the Playwright no-scroll assert at 800×480,
-      1024×600, 1280×720, 1280×480, 1920×720 and 393×852. Lands first, before U2.
-- [ ] **2. Visual V1–V3** (visual spec §11): V1 tokens (Night default, Day, Night dim, Deep
-      night; cyan accent; violet speed ramp), self-hosted Figtree and maps (Ostler Night/Day
-      on Brain-served PMTiles, OpenFreeMap fallback, `--bg` offline; ADR-0009 amendment);
-      V2 the component kit; V3 pages; stylelint and Playwright gates. All before U2 build work.
-- [ ] **3. U2 lockouts** (UI spec §12.1): driver-facing displays, Park evidence for Idling,
-      Passenger view (reg 109 content only, per trip, 15 min, logged locally), Open on phone,
-      the six new templates with their limits, task depth ≤ 3, the "Using Ostler while
-      driving" page.
-- [ ] **Legal check before U2 ships** (UI spec §12.1, a gate): a UK road-traffic lawyer's
-      opinion on Construction and Use regulation 109 (LCD head units and Passenger view),
-      recorded in `references/`; until then U2 ships Open on phone only, with no head-unit
-      override and no phone override. A **product-liability opinion** (EU Product Liability
-      Directive 2024/2853) before any hardware sales.
-- [ ] **4. Trips** (UI spec §12.2): Logs renamed Trips with `logs` routes aliased and the
-      `/sessions` API unchanged; the trip summary index; trip list, map-first trip detail,
-      playback, Statistics, Records and gated Sprints; End trip now, Exclude from stats,
-      Export all; no score.
-- [ ] **5. NodeSource P4** (below).
-- [ ] **6. Add-on repos** (ADR-0034 amendment of 2026-10-07): create `ostler-app-social`,
-      `ostler-app-vehicles` and `ostler-app-maintenance` from their specs, and later
-      `ostler-app-lubelogger` (after Maintenance M2). New slots `more:social`,
-      `more:vehicles` and `home:card` (app-model §14.7) and the pack contract's optional
-      `maintenance.json` (ADR-0013 amendment) come with them.
+- [ ] **1. Record the approvals** in one docs PR (this change), then **create the private
+      `ostler-hub` repo**, empty (hub decision 19e; ADR-0034 DMD-round amendment). Ask the
+      owner before creating it.
+- [ ] **2. U2 core.** Drive modes and the editable shell **DM1–DM3** (Drive-modes spec §11;
+      UI spec §15) and remote input **ShellInput I1–I2** (the Drive menu, focus ring,
+      bindings, key test), alongside the **U2 lockouts** (UI spec §12.1: driver-facing
+      displays, Park evidence for Idling, Open on phone, the six new templates with their
+      limits, task depth ≤ 3, message alerts as approved in §14, the "Using Ostler while
+      driving" page). **Passenger view ships behind a flag**, off, until the reg 109 opinion
+      is recorded (legal gate below). Still open from the ecosystem order and kept here: Trips
+      (UI spec §12.2: Logs renamed Trips with `logs` routes aliased and `/sessions` unchanged,
+      the trip summary index, trip list, map-first detail, playback, Statistics, Records,
+      gated Sprints, End trip now, Exclude from stats, Export all, no score) and visual V2–V3
+      (the component kit and pages), built only after the designs are reviewed against the
+      specs (design hand-off, `references/design/2026-10/`).
+- [ ] **3. Trip-sharing core.** **TS1 first:** the scrubber (with ISO-TP reassembly, K-line
+      and CAN identity reads, seed/key, a VIN-pattern block), the `ostler.share/1` bundle
+      writer and `ostler share verify`; **then the share sheet** (TS2–TS3, accounts P2 and the
+      accounts §15 registry pieces), More → Places, Diagnose "Get help with this fault" and
+      Decode lab "Ask for help decoding".
+- [ ] **4. The add-on phases already approved.** Create `ostler-app-social`,
+      `ostler-app-vehicles` and `ostler-app-maintenance` from their specs (ADR-0034 amendment
+      of 2026-10-07; later `ostler-app-lubelogger`, after Maintenance M2) with the slots
+      `more:social`, `more:vehicles`, `home:card` and the pack contract's optional
+      `maintenance.json`; then Social S1, Vehicles & Map V1–V2, Maintenance & Garage M1–M2.
+- [ ] **5. Navigation N0–N2 and Phone PH0–PH1.** Create `ostler-app-navigation` at N0 and
+      `ostler-app-phone` at PH0 (ask the owner before each); Valhalla on the Brain, guidance
+      through the `map` template, library, follow and planner; the HFP bench (PH0, below),
+      then calls through the Brain (PH1).
+- [ ] **6. Ostler Community H0–H1.** H0: policy and the public API contract
+      (`api/hub.openapi.yaml` in `ostler-app-hub`); then H1 in `ostler-hub` and
+      `ostler-app-hub` (create `ostler-app-hub` at H1, asking the owner first). Not open to the
+      public before the hub's legal duties are done (below).
 
-*Bench (ADR-0038 amendment of 2026-10-07, before Social phase S3):*
+*Research (ADR-0042 DMD-round amendment, items 97–101):*
+- [ ] **Home Assistant architecture round**, docs only: the Supervisor, add-on store and
+      manifest, the integrations model, dashboards, install types, update and backup, the
+      companion apps, the community and forum, each mapped to Ostler, before any of the
+      dashboard, integrations, container add-on or install-flavour items is specced.
+
+*Legal gate:*
+- [ ] **Before U2 releases Passenger view or the phone override** (UI spec §12.1): a UK
+      road-traffic lawyer's opinion on Construction and Use regulation 109 (LCD head units
+      and Passenger view), recorded in `references/`; it also answers the message-alert
+      questions (UI spec §12.1, §14): (i) sender and app names on a driver-visible screen while
+      moving (fallback "New message"); (ii) the first-line preview while Idling with Park
+      evidence or only when Parked (Parked only until then). Until then U2 ships Open on phone
+      only, with Passenger view behind its flag and no phone override.
+- [ ] **Product-liability opinion** (EU Product Liability Directive 2024/2853) before any
+      hardware sales.
+- [ ] **Before Ostler Community opens publicly (H1)**, all on Ostler as sole operator (hub
+      decision 19): a named accountable person and an EU representative; a DPIA; Online
+      Safety Act illegal-content and children's-access risk assessments; DSA
+      notice-and-action; a UK data-protection complaints process; records of processing kept
+      separate from `ostler-cloud`.
+
+*Bench:*
+- [ ] **D2 OBDLink MX+ or EX session** (source adapters A4; decision list item 68): can an STN
+      chip reach the Td5 and SLABS (one-byte-header KWP, `STIFI` fast init)? Recorded in the
+      D2 pack's `references/test_plan.md`; until then the D2 stays KKL- and node-only for
+      those modules.
 - [ ] **UK/EU HaLow pair** (camp access point, car client): range at 25 mW, airtime against
-      the 2.8 % client budget, delivery of text, PTT bursts, voice notes and stills.
+      the 2.8 % client budget, delivery of text, PTT bursts, voice notes and stills (ADR-0038
+      amendment, before Social S3).
 - [ ] **Two-car batman-adv over 802.11s pair** on 2.4 GHz, each Brain routing, Babel at the
       edge: range and throughput at 1 and 2 hops, call latency and loss, no mDNS or
       broadcast into a car segment.
@@ -65,6 +110,11 @@ Build in this order:
 - [ ] **Link handover**: a live call between internet and the Wi-Fi mesh, and a text
       falling back to LoRa.
 - [ ] **MeshCore beside Meshtastic** on the same boards with the same scripted traffic.
+- [ ] **Phone PH0 HFP bench** (Phone & Comms spec §14): a Pi 5 on Trixie as an HFP
+      hands-free unit with PipeWire telephony (mSBC, AEC, mic, audio out); PBAP and MAP with a
+      Pixel, a Samsung and an iPhone; head unit + Brain coexistence; the messenger call matrix
+      (WhatsApp, Signal, Telegram, Messenger), including whether **caller names** show or
+      read "unknown" and whether answering from the car works.
 
 ## Repo split follow-ups (ADR-0015)
 

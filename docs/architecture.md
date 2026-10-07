@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.7
+version: 2.8
 updated: 2026-10-07
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -10,8 +10,8 @@ summary: >
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
   contracts in api/, NodeSource, the MQTT client, node recording with the raw tap, the
-  cluster view, faults, events and Remove device, grant signing and the U1 UI shell) and
-  the dev commands.
+  cluster view, faults, events and Remove device, grant signing, trip sharing TS1 and the
+  U1 UI shell) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -32,6 +32,7 @@ pytest -q                        # whole suite, no hardware needed
 python tools/build_metrics.py    # regenerate metrics.json after editing vss/ (--check in CI)
 pytest -m "not needs_pack" -q    # platform-only (fake pack)
 pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
+ostler share verify ostler-share-xxxxxxxx.zip [--json]  # a share bundle: exit 0, 1 or 2
 
 # Dashboard: always live (ignition on, stationary); there is no mock/demo mode
 PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--sniff PORT]
@@ -283,6 +284,21 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     behind `GET /sessions` (keyset paging, search, filters), `/sessions/histogram` (the
     month scrubber) and `PATCH /sessions/<id>` (name and description). It rebuilds itself
     from the session files when missing or on a schema change.
+- **Trip sharing, TS1 (`logbook/share/`, [spec](../specs/2026-10-07-trip-sharing-design.md),
+  ADR-0043).**
+  - `build_share(session_dir, ShareOptions)` runs the L0–L4 pipeline on a copy of a
+    recorded session (`trace.py` trim, zones and stats; `scrub.py` the tap scrub with
+    ISO-TP reassembly; `capture.py` per-bus pcapng and candump; `ids.py` fresh ids) and
+    writes the `ostler.share/1` zip; `verify.py` is `ostler share verify` (`cli.py`, the
+    `ostler` script), run by the writer on the final bytes. Policy refusals are
+    `ShareRefused`; a verifier failure (a VIN pattern, say) is `ShareBlocked`.
+  - **One identity table** (`node/identity.py`): the platform list plus the active pack's
+    `VehiclePack.identity` (`pack.active_identity_table()`), used by the recorder's
+    `IdentityScrub`, the pcapng export and shares. `obd/vin.py` (LoggingTransport,
+    LoggingCanLink) still keeps its own prefix list.
+  - Privacy zones and their fixed offsets live in `<logs>/privacy_zones.json`
+    (`zones.ZoneStore`); the id map back to the source stays in
+    `<logs>/share_audit.jsonl`. Neither enters a bundle.
 - **Vehicle id (`logbook/vehicle.py`, UI spec §4.1).**
   - `logs/vehicle.json` (`{vid, pack, created_utc}`) is created once, next to
     `logs/sessions/`; `OSTLER_VEHICLE_ID` overrides the vid. It never holds a VIN.
@@ -372,3 +388,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-07 — v2.7, no replayed sniff feed in the product (ADR-0011): `dashboard.py`
   drops `--replay`; the Decode tab's feed is a live sniffer (`--sniff`) or its empty
   state; only `tests/e2e_server.py --replay` loops the pack's test-only `demo.sniff_log`.
+- 2026-10-07 — v2.8, trip sharing TS1: `logbook/share/` (bundle writer, scrub, verifier),
+  `node/identity.py` (the one identity table), `VehiclePack.identity`, the `ostler` command.

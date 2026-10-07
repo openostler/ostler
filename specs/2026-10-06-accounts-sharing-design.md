@@ -2,11 +2,11 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.7
+version: 0.8
 updated: 2026-10-07
 depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, specs/2026-10-06-app-model-design.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, references/research/calls_video_camera_sharing.md, references/research/maintenance_trackers.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, references/research/dmd_hub_features.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Amendment (2026-10-07, §14), approved by the owner on 2026-10-07 ("approve all"): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node. Proposed amendment (2026-10-07, DMD round, §15, v0.7, awaiting the owner): a `route` detail on the `location` ladder (finished, trimmed, simplified, no timestamps; may be indefinite; public only by explicit publish ≥ 24 h after the trip); a `link` audience for L0–L1 trips, `faults` and `vehicle_card` only; `public` brought forward for Ostler Community by explicit publish only; live-trip grant options trail_window, delay (0–6 h), show_speed and show_values; DMD-style link controls (Locked or Download, available-from, expiry, access-until, collection and download limits, states); L3–L4 stay hand-overs, never grants.
+  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Amendment (2026-10-07, §14), approved by the owner on 2026-10-07 ("approve all"): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node. Amendment (2026-10-07, DMD round, §15, v0.7), approved by the owner on 2026-10-07 ("approve all", DMD round) (v0.8): a `route` detail on the `location` ladder (finished, trimmed, simplified, no timestamps; may be indefinite; public only by explicit publish ≥ 24 h after the trip); a `link` audience for L0–L1 trips, `faults` and `vehicle_card` only; `public` brought forward for Ostler Community by explicit publish only; live-trip grant options trail_window, delay (0–6 h), show_speed and show_values; DMD-style link controls (Locked or Download, available-from, expiry, access-until, collection and download limits, states); L3–L4 stay hand-overs, never grants; hub accounts are hub-owned and never sign into a device, and later (P5 at the earliest) the §14.8 link-only broker becomes the hub's identity service, the one Ostler account `ostler-cloud` trusts (§15.5a).
 ---
 
 # Accounts, multi-vehicle garage, sharing and social — design
@@ -19,9 +19,11 @@ into its own spec; the questions the owner did not take up (§13) block nothing 
 **Amendment (2026-10-07), approved:** [§14](#14-amendment-2026-10-07-approved-one-permission-model-and-the-shell-screens),
 approved by the owner on 2026-10-07 ("approve all") (v0.6), unifies the permission
 vocabulary and specifies the shell screens.
-**Proposed amendment (2026-10-07, DMD round), awaiting the owner:**
-[§15](#15-proposed-amendment-2026-10-07-dmd-round-trip-sharing-in-the-registry) (v0.7) adds the
-registry pieces per-trip sharing needs. Until the owner answers, §14 stands unchanged.
+**Amendment (2026-10-07, DMD round), approved:**
+[§15](#15-amendment-2026-10-07-dmd-round-approved-trip-sharing-in-the-registry) (v0.7),
+approved by the owner on 2026-10-07 ("approve all", DMD round) (v0.8), adds the registry
+pieces per-trip sharing needs and the hub identity (§15.5a). Where §15 differs from §14, §15
+wins.
 
 ## 1. Where we are, plainly
 
@@ -680,12 +682,12 @@ the decision; each alternative was not chosen. Ghost mode never blocks messaging
 13. **Say "user role" and "device role" from now on?** Recommend yes. Alternative: rename
     ADR-0037's term to "duty".
 
-## 15. Proposed amendment (2026-10-07, DMD round): trip sharing in the registry
+## 15. Amendment (2026-10-07, DMD round), approved: trip sharing in the registry
 
-**Status: proposed, awaiting the owner's answers (v0.7).** Nothing in §1–§14 changes until
-then; once approved, where §15 differs from §14 it wins. Detail and tests are in the draft
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round) (v0.8); added in
+v0.7.** Where §15 differs from §14, it wins. Detail and tests are in the approved
 [per-trip sharing spec](2026-10-07-trip-sharing-design.md) and
-[ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md) (proposed). Evidence:
+[ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md) (accepted). Evidence:
 [trip and log sharing](../references/research/trip_and_log_sharing.md) §5–§7 and
 [DMD Hub features](../references/research/dmd_hub_features.md) §2.2, §2.6 and §5. It answers the
 owner's ask that a single trip can be shared at a chosen level (L0 Card, L1 Route, L2
@@ -746,9 +748,10 @@ in the fragment, or an end-to-end encrypted hub help thread to named helpers (7 
 30 at most, at most 3 downloads). The registry refuses any class that carries raw captures, as
 §14.1 says. The audit in S8 lists hand-overs beside grants.
 
-### 15.5a Hub identity is hub-owned; one Ostler account later (proposal; changes nothing in §14.8 yet)
+### 15.5a Hub identity is hub-owned; one Ostler account later (approved; changes §14.8 later)
 
-*Added in the cross-spec reconcile (DMD round, 2026-10-07), with the
+*Added in the cross-spec reconcile (DMD round, 2026-10-07) and approved by the owner on
+2026-10-07 ("approve all", DMD round; decision list item 10), with the
 [community hub spec](2026-10-07-community-hub-design.md) v0.2 §4 and its decision 10.*
 
 - **Hub accounts are the hub's, not core's.** Ostler Community (`ostler-hub`, the closed,
@@ -759,14 +762,14 @@ in the fragment, or an end-to-end encrypted hub help thread to named helpers (7 
   RFC 8628 or PKCE; the Brain stores one refresh token per device per local user, scopes
   `publish`, `read`, `help`, revocable from either side and listed in Settings → Sharing
   (S8); the hub sees a pairwise id, never a peer-key fingerprint or an `ostler-cloud` id.
-- **Later (P5 at the earliest), proposed:** the §14.8 **link-only OIDC broker** may be the
+- **Later (P5 at the earliest), decided:** the §14.8 **link-only OIDC broker** becomes the
   **hub's identity service**, trusted by `ostler-cloud` as its identity provider, so one Ostler
   account serves the hub and the cloud. §14.8's rules hold unchanged: link-only to an existing
   local user, pairwise subject per device, the local passkey or password always works offline,
   never the only credential, never friend discovery; the generic OIDC client for self-hosters
   stays.
-- **Alternative:** keep §14.8 as written, the broker in `ostler-cloud`, and make the hub a
-  client of `ostler-cloud`'s identity (decision 7 below).
+- **Alternative (not chosen):** keep §14.8 as written, the broker in `ostler-cloud`, and make
+  the hub a client of `ostler-cloud`'s identity (decision 7 below).
 
 ### 15.6 Tests (deltas)
 
@@ -780,6 +783,9 @@ differs from every peer fingerprint and cloud id; revoking the link on either si
 uploads.
 
 ### 15.7 Decisions for the owner (DMD round)
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **Add a `route` detail between `place` and `precise`, possibly indefinite?** Recommend: yes;
    without it a shared trip map expires after a day. Alternative: a separate `trace_published`
@@ -823,3 +829,8 @@ uploads.
   reconcile): §15.5a, hub identity is hub-owned (community hub spec decision 10), and the
   §14.8 link-only broker may later be the hub's identity trusted by `ostler-cloud`, with the
   alternative; test deltas; decision 7.
+- 2026-10-07 — v0.8: §15 approved by the owner on 2026-10-07 ("approve all", DMD round):
+  renamed "Amendment (2026-10-07, DMD round), approved"; where it differs from §14 it wins;
+  §15.5a approved (hub identity hub-owned; later the hub's identity is the one Ostler account
+  `ostler-cloud` trusts); every §15.7 decision answered as recommended (alternatives not
+  chosen); the trip-sharing spec and ADR-0043 cited as approved and accepted.

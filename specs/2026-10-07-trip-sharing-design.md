@@ -1,18 +1,18 @@
 ---
 title: "Per-trip sharing — five share levels, redaction, the ostler.share/1 bundle, the verifier and help me decode or diagnose — design"
 area: specs
-status: draft
-version: 0.2
+status: stable
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/trip_and_log_sharing.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md]
 summary: >
-  Draft for the owner's approval (DMD round, 2026-10-07), answering the owner's ask that a single trip can be shared at a chosen data level, up to a full log for decoding help or a diagnostics bundle. Five levels per trip: L0 Card (stats only, no map; max speed hidden on public cards), L1 Route (ends trimmed 500 m by default and never under 200 m, privacy zones of at least 500 m with a fixed random offset, simplified, no point timestamps, stats from the visible trace only), L2 Telemetry (chosen VSS signals on relative time), L3 Full log (the complete recording with the raw tap, scrubbed) and L4 Diagnostics bundle (faults, freeze frames, module info, scrubbed). L0–L2 are grants in the core registry; L3 and L4 are hand-overs, never grants (file, relay link with the key in the URL fragment, or a hub help thread), each passing `ostler share verify` first. Specifies a level × rule redaction table (R1–R16), privacy-zone maths, time handling (day, relative, real only to one person), id re-minting, a widened identity scrub with ISO-TP reassembly and a VIN-pattern block tested on recorded fixtures, the `ostler.share/1` zip and its `share.json` schema (hashes and a redaction record, not signed with the Brain key), DMD-style link controls, preview, expiry, revoke and audit, the seven-step help-me-decode or diagnose flow with CC BY-SA 4.0 contribution consent, where each piece lives (core platform, Trips, Diagnose, Decode lab, `ostler-app-hub`), phases, tests and the decisions for the owner, including the `captures` class alternative.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3, answering the owner's ask that a single trip can be shared at a chosen data level, up to a full log for decoding help or a diagnostics bundle. Five levels per trip: L0 Card (stats only, no map; max speed hidden on public cards), L1 Route (ends trimmed 500 m by default and never under 200 m, privacy zones of at least 500 m with a fixed random offset, simplified, no point timestamps, stats from the visible trace only), L2 Telemetry (chosen VSS signals on relative time), L3 Full log (the complete recording with the raw tap, scrubbed) and L4 Diagnostics bundle (faults, freeze frames, module info, scrubbed). L0–L2 are grants in the core registry; L3 and L4 are hand-overs, never grants (file, relay link with the key in the URL fragment, or a hub help thread), each passing `ostler share verify` first. Specifies a level × rule redaction table (R1–R16), privacy-zone maths, time handling (day, relative, real only to one person), id re-minting, a widened identity scrub with ISO-TP reassembly and a VIN-pattern block tested on recorded fixtures, the `ostler.share/1` zip and its `share.json` schema (hashes and a redaction record, not signed with the Brain key), DMD-style link controls, preview, expiry, revoke and audit, the seven-step help-me-decode or diagnose flow with CC BY-SA 4.0 contribution consent, where each piece lives (core platform, Trips, Diagnose, Decode lab, `ostler-app-hub`), phases, tests and the decisions for the owner, all answered as recommended (the `captures` class alternative not chosen).
 ---
 
 # Per-trip sharing — design
 
-**Status: draft, a proposal for the owner's approval (DMD round, 2026-10-07).** Nothing here
-is decided until the owner answers [Decisions for the owner](#decisions-for-the-owner). It
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** Every item
+in [Decisions for the owner](#decisions-for-the-owner) is answered as recommended. It
 answers the owner's ask: *"we should allow specific trips to be shared with different
 permission levels of what data is shared. So for example a user can share a full log, for help
 decoding, or diagnostics on their car/motorcycle."* Evidence and prior art are in
@@ -21,11 +21,11 @@ bundle, verifier, help flow), [DMD Hub features](../references/research/dmd_hub_
 §2.2, §2.6 and §5 (link controls, live trip options) and
 [community hub architecture](../references/research/community_hub_architecture.md) §5–§7. This
 spec does not repeat them. Its companions in the same round are
-[ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md) (proposed: GPS in shared and
-community trips, and the hand-over rule for L3–L4), a proposed amendment to the
-[accounts spec](2026-10-06-accounts-sharing-design.md#15-proposed-amendment-2026-10-07-dmd-round-trip-sharing-in-the-registry)
-§15 (registry pieces) and a proposed amendment to the
-[UI architecture spec](2026-10-06-ui-architecture-design.md#13-proposed-amendment-2026-10-07-dmd-round-sharing-screens-places-and-map-theme)
+[ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md) (accepted: GPS in shared and
+community trips, and the hand-over rule for L3–L4), the approved amendment to the
+[accounts spec](2026-10-06-accounts-sharing-design.md#15-amendment-2026-10-07-dmd-round-approved-trip-sharing-in-the-registry)
+§15 (registry pieces) and the approved amendment to the
+[UI architecture spec](2026-10-06-ui-architecture-design.md#13-amendment-2026-10-07-dmd-round-approved-sharing-screens-places-and-map-theme)
 §13 (screens).
 
 ## 1. Scope
@@ -51,7 +51,7 @@ adds the live-trip grant options it uses (§12).
 Binding on every path; the research's §2 has the detail.
 
 - **ADR-0009:** real sessions stay on the device; community uploads carry no GPS unless an ADR
-  adds a per-upload opt-in with trimmed ends and a preview. ADR-0043 (proposed) is that ADR.
+  adds a per-upload opt-in with trimmed ends and a preview. ADR-0043 (accepted) is that ADR.
 - **ADR-0036 §3 and §5:** every export, share, contribution and support bundle scrubs
   identity data to the fixed placeholder whatever the install option; the VIN never leaves
   (not even masked or hashed); raw car captures are never committed.
@@ -499,8 +499,14 @@ owner may then share the finished trip at L0–L1 as usual (no auto-conversion).
 - 2026-10-07 — v0.2: §14 follows the owner's direction that the community hub is a closed,
   Ostler-run service, not self-hostable; the client add-on stays open and does the encryption.
   No level, rule or decision changes.
+- 2026-10-07 — v0.3: approved by the owner on 2026-10-07 ("approve all", DMD round): every
+  decision answered as recommended (alternatives not chosen, the `captures` class included);
+  ADR-0043 accepted; the TS1 bundle and verifier are built first, before any share screen.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round; decision list items
+20–32). Each recommendation below is the decision; each alternative was not chosen.
 
 1. **Five levels L0 Card, L1 Route, L2 Telemetry, L3 Full log, L4 Diagnostics bundle, with the
    contents in §3?** Recommend: yes. Alternative: the DMD research's six presets (Card, Route,

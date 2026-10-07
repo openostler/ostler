@@ -11,11 +11,11 @@ capability inventories) live in each vehicle pack's repo, not here (ADR-0015).
 - `https_on_the_pi.md` — local HTTPS (mkcert) so the phone mic and motion sensors work.
 - `brain_broker.md` — the Brain's Mosquitto: ACL, bridge and parked-set templates, and what
   Remove device purges.
-- `ecosystem.md` — proposed (ADR-0042): the core/add-on map, how add-ons get car data (VSS
+- `ecosystem.md` — approved (ADR-0042, accepted; DMD-round amendment approved 2026-10-07): the core/add-on map (incl. Ostler Community, Navigation, Phone & Comms, later Alerts; adapters; the Home Assistant direction), how add-ons get car data (VSS
   stream, events, faults, trips, data-class registry) and the safety boundaries.
-- `feature_map_dmd.md` — draft (DMD round): every DMD2 and DMD Hub feature with its Ostler home
+- `feature_map_dmd.md` — approved 2026-10-07 as the DMD checklist (DMD round): every DMD2 and DMD Hub feature with its Ostler home
   (core, approved add-on, new add-on repo or not needed), phase and spec status; leave-outs and
-  build order.
+  the approved build order.
 
 ## Editing rules
 

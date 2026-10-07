@@ -33,6 +33,7 @@ import struct
 from ..node.tap import (DIR_TX_ECHO, FLAG_GATE, FLAG_SCRUBBED, FLAG_UNSYNCED, PROTO_CAN,
                         PROTO_CAN_FD, TapRecord, TimeMap, export_records, is_time_event,
                         parse_time_event)
+from ..pack import active_identity_table
 from ..timefmt import rfc3339_utc_ms
 
 SHB, IDB, EPB, ISB = 0x0A0D0D0A, 0x00000001, 0x00000006, 0x00000005
@@ -137,7 +138,7 @@ def _tap(sec: _Section, n: int, entry: dict, records: "list[TapRecord]") -> None
     buses = {b.get("idx"): b for b in entry.get("buses") or [] if isinstance(b, dict)}
     # Gaps are found on the stored sequence; records the export drops (unframed) are not
     # losses, and a gap before one is reported on the next record exported.
-    kept = {r.seq: r for r in export_records(records)}
+    kept = {r.seq: r for r in export_records(records, active_identity_table())}
     tmap = TimeMap(records)
     clock = (f"timestamps UTC from {len(tmap)} time marks"
              f"{' (' + ', '.join(tmap.sources) + ')' if tmap.sources else ''}" if tmap

@@ -1,7 +1,7 @@
 {
   "format": "ostler.design-index/1",
   "title": "Design hand-off index, October 2026 round",
-  "version": "0.2",
+  "version": "0.3",
   "updated": "2026-10-07",
   "readme": "references/design/2026-10/README.md",
   "naming": {
@@ -505,15 +505,15 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.1",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         },
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.2",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         }
       ],
@@ -1317,8 +1317,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.4",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "home:widget"
         }
@@ -2637,8 +2637,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.3",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         },
         {
@@ -2828,8 +2828,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.2",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         }
       ],
@@ -2993,8 +2993,8 @@
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
           "section": "§14",
-          "heading": "14. Proposed amendment (2026-10-07, DMD round): message alerts (amends §12.1 `alert_card` and the U2 legal check)",
-          "anchor": "14-proposed-amendment-2026-10-07-dmd-round-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
+          "heading": "14. Amendment (2026-10-07, DMD round), approved: message alerts (amends §12.1 `alert_card` and the U2 legal check)",
+          "anchor": "14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
           "label": "UI"
         },
         {
@@ -3008,15 +3008,15 @@
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§12",
-          "heading": "12. Proposed amendment (2026-10-07, DMD round): message alerts while Moving",
-          "anchor": "12-proposed-amendment-2026-10-07-dmd-round-message-alerts-while-moving",
+          "heading": "12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving",
+          "anchor": "12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving",
           "label": "Social"
         },
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C2 one alert pipeline"
         },
@@ -3054,7 +3054,7 @@
         "long message: Play all / Stop",
         "'Sent' for 2 s"
       ],
-      "notes": "Proposed (UI §14, Decisions M1–M4); the approved §12.1 card (Play / Later) is the alternative to draw too.",
+      "notes": "Approved 2026-10-07 (UI §14, applied into §12.1; Decisions M1–M4): sender and app with Play / Reply. The earlier §12.1 card (Play / Later) was the alternative, not chosen.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
@@ -3086,15 +3086,15 @@
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
           "section": "§14",
-          "heading": "14. Proposed amendment (2026-10-07, DMD round): message alerts (amends §12.1 `alert_card` and the U2 legal check)",
-          "anchor": "14-proposed-amendment-2026-10-07-dmd-round-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
+          "heading": "14. Amendment (2026-10-07, DMD round), approved: message alerts (amends §12.1 `alert_card` and the U2 legal check)",
+          "anchor": "14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
           "label": "UI"
         },
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§12",
-          "heading": "12. Proposed amendment (2026-10-07, DMD round): message alerts while Moving",
-          "anchor": "12-proposed-amendment-2026-10-07-dmd-round-message-alerts-while-moving",
+          "heading": "12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving",
+          "anchor": "12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving",
           "label": "Social"
         }
       ],
@@ -3222,15 +3222,15 @@
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
           "section": "§14",
-          "heading": "14. Proposed amendment (2026-10-07, DMD round): message alerts (amends §12.1 `alert_card` and the U2 legal check)",
-          "anchor": "14-proposed-amendment-2026-10-07-dmd-round-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
+          "heading": "14. Amendment (2026-10-07, DMD round), approved: message alerts (amends §12.1 `alert_card` and the U2 legal check)",
+          "anchor": "14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
           "label": "UI"
         },
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§12",
-          "heading": "12. Proposed amendment (2026-10-07, DMD round): message alerts while Moving",
-          "anchor": "12-proposed-amendment-2026-10-07-dmd-round-message-alerts-while-moving",
+          "heading": "12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving",
+          "anchor": "12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving",
           "label": "Social"
         }
       ],
@@ -3292,8 +3292,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.5",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "calls service"
         },
@@ -3307,8 +3307,8 @@
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C1 one call session"
         },
@@ -5065,8 +5065,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.4",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "more:phone"
         }
@@ -5211,16 +5211,16 @@
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C3 one favourites list"
         },
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.2",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "short_list widget"
         }
@@ -5286,8 +5286,8 @@
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C4 one call log"
         }
@@ -5419,16 +5419,16 @@
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C1 one call session"
         },
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.5",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "calls"
         }
@@ -5502,15 +5502,15 @@
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
           "section": "§14",
-          "heading": "14. Proposed amendment (2026-10-07, DMD round): message alerts (amends §12.1 `alert_card` and the U2 legal check)",
-          "anchor": "14-proposed-amendment-2026-10-07-dmd-round-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
+          "heading": "14. Amendment (2026-10-07, DMD round), approved: message alerts (amends §12.1 `alert_card` and the U2 legal check)",
+          "anchor": "14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check",
           "label": "UI"
         },
         {
           "doc": "specs/2026-10-07-social-addon-design.md",
           "section": "§13",
-          "heading": "13. Proposed amendment (2026-10-07, DMD round): comms overlap",
-          "anchor": "13-proposed-amendment-2026-10-07-dmd-round-comms-overlap",
+          "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+          "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
           "label": "Social",
           "note": "C2, C5"
         }
@@ -5571,15 +5571,15 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.1",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         },
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.2",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
         },
         {
@@ -6979,8 +6979,8 @@
         {
           "doc": "specs/2026-10-06-app-model-design.md",
           "section": "§15.4",
-          "heading": "15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots",
-          "anchor": "15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots",
+          "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+          "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model",
           "note": "more:hub"
         }

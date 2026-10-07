@@ -63,6 +63,24 @@ their own changelogs.
   localStorage (server storage is DM2); nothing switches by itself. `GET /fields` gains
   `metric`, `GET /pack` gains `metrics` (VSS path to modules) and the snapshot's `gps` gains
   `alt_m`. On the phone the Drive strip drops Link and REC so it stays one row.
+- **Per-trip sharing TS1: the bundle writer, the widened scrub and the verifier**
+  ([spec](specs/2026-10-07-trip-sharing-design.md) §15 TS1, ADR-0043; no UI):
+  - `openostler.logbook.share`: the L0–L4 redaction pipeline over a recorded session (ends
+    trim with interpolated cuts, privacy zones with a fixed CSPRNG offset stored per place
+    in `privacy_zones.json`, stats from the visible trace with the §5.4 rounding,
+    RDP simplification, day or relative time, fresh ids with an owner-only id map), the
+    `ostler.share/1` zip (sorted, 1980 entry times, `share.json` with hashes and the
+    redaction record) and per-bus `tap/bus<N>.pcapng` plus `candump` for CAN.
+  - `ostler share verify <bundle> [--json]` (library and the new `ostler` command): the
+    eight checks, exit 0, 1 or 2; the writer runs it on the final bytes and never emits a
+    failing bundle. `ostler share build` saves a bundle (the File path) and appends the
+    owner-only audit entry. `schemas/share.schema.json`.
+  - **One identity table** (`openostler.node.identity`) for the recorder, the pcapng export
+    and shares: UDS `62 F1 90`/`F1 8C` and SecurityAccess seeds and keys on every transport
+    (K-line included), ISO 9141-2 headers, any `5A`/`49` reply, plus the new pack field
+    `VehiclePack.identity` (services, DIDs, local ids, broadcast frames, diagnostic ids;
+    `active_identity_table()`). Shares reassemble ISO-TP before deciding, keep PCI bytes,
+    scrub unreassemblable messages and block (never cut) a VIN pattern.
 - **Module-bus v1.3 platform follow-ups** ([spec](specs/2026-10-06-module-bus-messages-design.md)
   v1.4 as-built notes; backend and API only, the Network page waits):
   - **`openostler[signing]`** and **`[passkeys]`** extras with one shared `cryptography`

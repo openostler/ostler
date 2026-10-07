@@ -24,7 +24,7 @@ from tests.fake_pack import FAKE_PACK
 
 SCHEMAS = Path(__file__).resolve().parents[1] / "schemas"
 NAMES = ("signal-store", "layout", "vehicle", "session-meta", "kline-profile", "can-tx-allowlist",
-         "ostler-layout")
+         "ostler-layout", "share")
 
 
 def _schema(name: str) -> dict:

@@ -1,19 +1,20 @@
 ---
 title: "Source adapters — off-the-shelf scanners (ELM327, STN/OBDLink, KKL, SocketCAN dongles, WiCAN, J2534) as Ostler data sources — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
-depends_on: [references/research/third_party_adapters.md, references/research/canbus_headunit.md, references/research/hardware.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, CONSTITUTION.md]
+depends_on: [decisions/adr-0044-adapters-on-the-brain-without-a-node.md, references/research/third_party_adapters.md, references/research/canbus_headunit.md, references/research/hardware.md, decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-06-canlink-isotp-design.md, specs/2026-10-06-j1979-service-layer-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, CONSTITUTION.md]
 summary: >
-  Draft for the owner's approval (DMD round, 2026-10-07). Lets an off-the-shelf adapter (ELM327 and clones, STN/OBDLink, vLinker, Veepeak, KKL/FTDI cables, CANable/candleLight, slcan, PCAN, Kvaser, WiCAN, Macchina, later J2534) feed the same snapshot, VSS stream, recorder and module bus as NodeSource. A SourceAdapter wraps one transport and offers the links the platform already has (ObdRequestLink, CanLink, the K-line Transport) plus a capabilities manifest, detect and clone checks, sniff, rate limits and health; an AdapterSource (source_kind adapter) decodes through the pack and J1979 decoders. Hosts: laptop and phone always; the Brain only for a vehicle with no node, which needs a Constitution and ADR-0032 amendment (a new ADR). With no hardware gate the host runs the reference TxGate in software (the soft gate, same shared vectors) and the rules are stricter than the node's: read-only by default (standard OBD and UDS reads, pack-declared read recipes); clear codes under ADR-0033 §5 only when Parked or Idling is evidenced from the bus; actuator tests, procedures and allowlisted frames only after a per-vehicle, per-adapter owner opt-in with warnings, Parked, local, never on a clone; Tier 4 never; never while Moving or with unknown speed; no remote trigger; one tester per bus, so an adapter is passive beside a node. Detection with a version-gated clone battery and a known-good list as data. Packaging in core (stdlib plus pyserial; BLE behind an optional extra), phone transports in the app binary, J2534 later as a separate add-on. Phases A0–A6, recorded-fixture tests (ADR-0011), and decisions.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; every decision answered as recommended; the Brain exception is ADR-0044 (accepted). Lets an off-the-shelf adapter (ELM327 and clones, STN/OBDLink, vLinker, Veepeak, KKL/FTDI cables, CANable/candleLight, slcan, PCAN, Kvaser, WiCAN, Macchina, later J2534) feed the same snapshot, VSS stream, recorder and module bus as NodeSource. A SourceAdapter wraps one transport and offers the links the platform already has (ObdRequestLink, CanLink, the K-line Transport) plus a capabilities manifest, detect and clone checks, sniff, rate limits and health; an AdapterSource (source_kind adapter) decodes through the pack and J1979 decoders. Hosts: laptop and phone always; the Brain only for a vehicle with no node, under ADR-0044, which amends the Constitution and ADR-0032. With no hardware gate the host runs the reference TxGate in software (the soft gate, same shared vectors) and the rules are stricter than the node's: read-only by default (standard OBD and UDS reads, pack-declared read recipes); clear codes under ADR-0033 §5 only when Parked or Idling is evidenced from the bus; actuator tests, procedures and allowlisted frames only after a per-vehicle, per-adapter owner opt-in with warnings, Parked, local, never on a clone; Tier 4 never; never while Moving or with unknown speed; no remote trigger; one tester per bus, so an adapter is passive beside a node. Detection with a version-gated clone battery and a known-good list as data. Packaging in core (stdlib plus pyserial; BLE behind an optional extra), phone transports in the app binary, J2534 later as a separate add-on. Phases A0–A6, recorded-fixture tests (ADR-0011), and decisions.
 ---
 
 # Source adapters — design
 
-**Status:** draft v0.1 for the owner's approval (DMD round, 2026-10-07). Nothing here is built.
+**Status:** approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2. Nothing here is built.
 Evidence: [third-party adapters research](../references/research/third_party_adapters.md). It
-needs a new ADR (number assigned on approval) because it amends a Constitution line (§3).
+needed a new ADR because it amends two Constitution lines (§3): that is
+[ADR-0044](../decisions/adr-0044-adapters-on-the-brain-without-a-node.md), accepted the same day.
 
 ## 1. Context
 
@@ -54,10 +55,11 @@ product (ADR-0011); importing closed apps' code or data.
 |---|---|---|
 | **Laptop** (Linux, macOS, Windows) | yes | Already the dev path (KKL, slcan, SocketCAN). Becomes a supported path, not only dev. |
 | **Phone app** (Android, iOS; ADR-0032 §11 wrapper) | yes, phase A5 | Native transports are fixed in the app binary (ADR-0042); decode and gate run in the app (§6.3). |
-| **Brain** | **only for a vehicle with no node** (recommended, decision 1) | "The Brain never touches the car" exists so the node's gate is the only path. With no node there is no gate to bypass; without this exception a Brain owner with an ELM adapter gets nothing. |
+| **Brain** | **only for a vehicle with no node** (decision 1; [ADR-0044](../decisions/adr-0044-adapters-on-the-brain-without-a-node.md)) | "The Brain never touches the car" exists so the node's gate is the only path. With no node there is no gate to bypass; without this exception a Brain owner with an ELM adapter gets nothing. |
 | **Browser only** (no app) | read-only, later (decision 6) | Chromium only: Web Bluetooth (BLE), Web Serial (USB and RFCOMM); nothing on iOS or Firefox. |
 
-The **new ADR** (number assigned on approval) would: amend the Constitution's "The brain never
+The **new ADR**, [ADR-0044](../decisions/adr-0044-adapters-on-the-brain-without-a-node.md)
+(accepted 2026-10-07), does: amend the Constitution's "The brain never
 touches the car" and "The node transmit gate is the only path to the car" to add "**…or, for a
 vehicle with no node, a third-party adapter driven through the soft gate under the adapter rules
 (this spec §7)**"; amend ADR-0032 §2/§3 to the same effect; keep ADR-0039's rejection of raw serial
@@ -365,8 +367,14 @@ CanLink FD work); OEM-protocol emulation for closed apps; selling or certifying 
 ## Changelog
 
 - 0.1 (2026-10-07): first draft for the owner (DMD round).
+- 0.2 (2026-10-07): approved by the owner on 2026-10-07 ("approve all", DMD round; decision
+  list items 62–69): every decision answered as recommended (alternatives not chosen); the new
+  ADR is ADR-0044, which amends the Constitution's two lines and ADR-0032 §2–§3.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **May the Brain host an adapter?** Recommendation: yes, only for a vehicle with no node, through
    a new ADR that amends the Constitution's two lines and ADR-0032 §2–§3 as in §3. Alternative:

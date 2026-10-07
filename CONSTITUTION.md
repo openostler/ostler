@@ -2,8 +2,8 @@
 title: Constitution
 area: root
 status: stable
-version: 1.6
-updated: 2026-10-06
+version: 1.7
+updated: 2026-10-07
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
   principles plus this project's protocol, layering, safety and data-honesty invariants.
@@ -46,7 +46,10 @@ summary: >
   ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
 - **The brain never touches the car** ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
   Only the node talks to the car's buses; the brain (and the cloud, phone and Home
-  Assistant) consume the node's VSS messages over IP.
+  Assistant) consume the node's VSS messages over IP. **Exception
+  ([ADR-0044](decisions/adr-0044-adapters-on-the-brain-without-a-node.md)):** for a vehicle
+  with no node, the brain may host a third-party adapter, driven only through the soft gate
+  under the adapter rules (R1–R10), one tester per bus, local only.
 - **Node firmware and the C decoder never depend on Python** (ADR-0032,
   [ADR-0035](decisions/adr-0035-languages-by-tier.md)). Packs reach the C decoder only as
   JSON data, never as code.
@@ -76,7 +79,11 @@ summary: >
   for a write, coding or SecurityAccess function without its own ADR (see ADR-0005).
 - **The node transmit gate is the only path to the car**
   ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)). The brain or phone may mint
-  a grant; the node verifies it. No other device, link or service transmits to the car.
+  a grant; the node verifies it. No other device, link or service transmits to the car,
+  **except, for a vehicle with no node, a third-party adapter driven through the soft gate
+  under the adapter rules** ([ADR-0044](decisions/adr-0044-adapters-on-the-brain-without-a-node.md):
+  read-only by default, nothing above Tier 0 while Moving or with unknown speed, local only,
+  never Tier 4; beside a node an adapter is passive only).
 - **Alarm paths never depend on the brain or the internet**
   ([ADR-0033](decisions/adr-0033-action-categories-and-approvals.md)): node or guardian
   to notification works with the brain off and no cloud, and a confirmation test proves it.
@@ -149,3 +156,7 @@ summary: >
   decoder; shared C/Python test vectors in CI.
 - 2026-10-06 — v1.6: the optional extra `[signing]` (the Brain's Ed25519 grant signing),
   sharing one `cryptography` requirement with `[passkeys]` (ADR-0041).
+- 2026-10-07 — v1.7: "the brain never touches the car" and "the node transmit gate is the
+  only path to the car" gain one exception (ADR-0044, approved by the owner on 2026-10-07,
+  "approve all", DMD round): for a vehicle with no node, a third-party adapter driven through
+  the soft gate under the adapter rules, one tester per bus, local only.
