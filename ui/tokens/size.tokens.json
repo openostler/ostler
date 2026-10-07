@@ -238,6 +238,23 @@
     "$value": 0.45,
     "$description": "unit size = digits × ratio, never below the class minimum"
   },
+  "focus-ring": {
+    "$description": "Shell input spec §9 (visual spec §5): the focus ring every focusable wears on :focus-visible. 3 px of focus-ring-color outside a 2 px gap of bg; no glow, no shadow, no size change, no animation.",
+    "width": {
+      "$type": "dimension",
+      "$value": {
+        "value": 3,
+        "unit": "px"
+      }
+    },
+    "gap": {
+      "$type": "dimension",
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      }
+    }
+  },
   "layout": {
     "hu5": {
       "rail-w": {

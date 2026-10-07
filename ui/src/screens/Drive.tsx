@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { createElement, useEffect, useRef } from "react";
+import { createElement, useRef } from "react";
 import { HealthStrip } from "../components/HealthStrip";
 import { StatTile } from "../components/StatTile";
 import { StatusGate } from "../components/StatusGate";
@@ -64,24 +64,13 @@ export function VehicleCard() {
 /**
  * Drive mode's screen (UI spec §12.3, drive-modes spec §6): the active mode's current face
  * alone, with no heading or fault banner; the shell's strip holds Back, the Drive-mode chip
- * and the worst telltale. `left`/`right` (arrow keys) and a horizontal swipe switch the
- * mode's faces, wrapping; they never change the mode (the chip does). Arrow keys inside the
- * strip or a sheet keep their own meaning.
+ * and the worst telltale. A horizontal swipe switches the mode's faces, wrapping, and so do
+ * `left`/`right` through ShellInput (shell/useShellInput.ts, shell input spec §6); they never
+ * change the mode (the chip does). Arrow keys inside the strip or a sheet keep their own meaning.
  */
 export function Drive({ modes, cls, driving }: { modes: DriveModes; cls: LayoutClass; driving: DrivingState }) {
   const { snap } = useApp();
   const { faces, face, stepFace, active } = modes;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-      const t = e.target as Element | null;
-      if (t?.closest?.(".strip, [role=dialog], input, textarea, select")) return;
-      e.preventDefault();
-      stepFace(e.key === "ArrowRight" ? 1 : -1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [stepFace]);
   const start = useRef<{ x: number; y: number } | null>(null);
   const current = faces[face];
   if (!current) return <div className="empty"><div className="title">This mode has nothing for this screen</div></div>;

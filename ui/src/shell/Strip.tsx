@@ -5,6 +5,7 @@
 import { useEffect, useRef } from "react";
 import { MarkButton } from "../components/MarkButton";
 import { Icon } from "../icons/Icon";
+import { LONG_PRESS_MS } from "./input";
 import type { ChipDescriptor, ChipOpen } from "./strip";
 
 /**
@@ -14,7 +15,7 @@ import type { ChipDescriptor, ChipOpen } from "./strip";
  */
 export function Strip({ chips, onOpen }: { chips: ChipDescriptor[]; onOpen: (o: ChipOpen) => void }) {
   return (
-    <header className="strip" aria-label="Status">
+    <header className="strip" aria-label="Status" data-zone="strip">
       {chips.map((c) => <StripChip key={c.id} c={c} onOpen={onOpen} />)}
     </header>
   );
@@ -47,20 +48,19 @@ function StripChip({ c, onOpen }: { c: ChipDescriptor; onOpen: (o: ChipOpen) => 
   const open = c.open;
   if (open === "drive_mode") return <ModeChip c={c} cls={cls} onOpen={onOpen} />;
   return (
-    <button className={cls} aria-label={c.label} aria-haspopup={open === "faults" || open === "connection" ? "dialog" : undefined}
+    <button className={cls} data-focus="" aria-label={c.label}
+      aria-haspopup={open === "faults" || open === "connection" ? "dialog" : undefined}
       onClick={() => onOpen(open)}>
       <Face c={c} />
     </button>
   );
 }
 
-/** ShellInput's long press (shell input spec §5): 600 ms held. */
-export const LONG_PRESS_MS = 600;
-
 /**
  * The Drive-mode chip (drive-modes spec §6): a tap (or a short Enter or Space) cycles the
  * rotation; a long press (600 ms, touch, mouse or a held Enter) opens the mode list. The
- * long press fires while held, so the release does not also cycle.
+ * long press fires while held, so the release does not also cycle. It handles its own short
+ * and long `ok` (`data-own-ok`; shell input spec §14.1), so ShellInput leaves its Enter alone.
  */
 function ModeChip({ c, cls, onOpen }: { c: ChipDescriptor; cls: string; onOpen: (o: ChipOpen) => void }) {
   const timer = useRef<number | undefined>(undefined);
@@ -87,7 +87,7 @@ function ModeChip({ c, cls, onOpen }: { c: ChipDescriptor; cls: string; onOpen: 
     since.current = 0;
   };
   return (
-    <button className={cls} data-chip="drive_mode" aria-label={c.label} aria-haspopup="dialog"
+    <button className={cls} data-chip="drive_mode" data-focus="" data-own-ok="" aria-label={c.label} aria-haspopup="dialog"
       aria-description="Tap for the next mode, hold for the list"
       onPointerDown={(e) => { if (e.button === 0) start(); }}
       onPointerUp={cancel}

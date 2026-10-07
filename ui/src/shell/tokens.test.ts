@@ -112,6 +112,41 @@ describe("W3C design tokens (ui/tokens/*.tokens.json, visual design system spec 
   });
 });
 
+// Shell input spec §9 (visual spec §5): one focus ring for every focusable, from tokens: 3 px of
+// focus-ring-color (the accent) outside a 2 px bg gap; WCAG 2.4.13 wants ≥ 3:1 against what it
+// sits on in every theme. No stylesheet draws its own focus outline or glow.
+describe("the focus ring tokens (shell input spec §9)", () => {
+  it("defines the width, gap and colour once, the colour following the theme's accent", () => {
+    expect(css).toContain("--focus-ring-width: 3px;");
+    expect(css).toContain("--focus-ring-gap: 2px;");
+    expect(css).toMatch(/^:root \{[^}]*--focus-ring-color: var\(--accent\);/m);
+    for (const theme of ["dim", "oled", "light"]) {
+      expect(css).toMatch(new RegExp(`:root\\[data-theme="${theme}"\\] \\{[^}]*--focus-ring-color: var\\(--accent\\);`));
+    }
+  });
+
+  for (const [theme, tree] of Object.entries(THEMES)) {
+    it(`${theme}: the ring is at least 3:1 against bg and every surface`, () => {
+      const low = ["bg", "surface-1", "surface-2", "surface-3"].map((bg) => [bg, contrast(hex(tree, "accent"), hex(tree, bg))] as const)
+        .filter(([, ratio]) => ratio < 3).map(([bg, ratio]) => `${bg} ${ratio.toFixed(2)}`);
+      expect(low).toEqual([]);
+    });
+  }
+
+  it("is the only focus style: every :focus-visible rule uses the tokens, none glows", () => {
+    const rules = Object.entries(SHEETS).flatMap(([file, text]) =>
+      [...text.matchAll(/([^{}]*:focus-visible[^{}]*)\{([^}]*)\}/g)].map((m) => ({ file, sel: m[1]!.trim(), body: m[2]! })));
+    expect(rules.length).toBeGreaterThan(0);
+    for (const r of rules) {
+      const outline = /outline:\s*([^;]+)/.exec(r.body)?.[1]?.trim();
+      if (outline && outline !== "none") expect(outline, `${r.file} ${r.sel}`).toContain("var(--focus-ring-width)");
+      const shadow = /box-shadow:\s*([^;]+)/.exec(r.body)?.[1]?.trim();
+      // the gap is a spread-only shadow: zero blur, so never a glow
+      if (shadow && shadow !== "none") expect(shadow, `${r.file} ${r.sel}`).toMatch(/^(inset )?0 0 0 var\(--focus-ring-gap\) var\(--bg\)$/);
+    }
+  });
+});
+
 // Visual design system spec §3.2: text on the surfaces it may sit on, ≥ 4.5:1 (WCAG 1.4.3), in
 // every theme. The spec's own exceptions are asserted as exceptions, so a change shows up.
 describe("contrast of the allowed text/surface pairs (spec §3.2)", () => {

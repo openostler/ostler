@@ -6,7 +6,7 @@ import { useState } from "react";
 import { command } from "../api/client";
 import type { FaultScanEntry } from "../api/schemas";
 import { useAction } from "../api/useAction";
-import { confirmAction } from "../components/confirm";
+import { ConfirmSheet } from "../components/ConfirmSheet";
 import { ConnectionNotice } from "../components/ConnectionNotice";
 import { CoverageBar } from "../components/CoverageBar";
 import { ScreenHead } from "../components/ScreenHead";
@@ -127,9 +127,10 @@ export function Faults() {
     try { await command("set_fault_watch", { on }); } catch (e) { toast((e as Error).message, true); }
     refresh();
   };
+  // the shell's confirm sheet (Cancel focused, shell input spec §7) before anything is written
+  const [asking, setAsking] = useState(false);
   const clear = async () => {
-    if (!confirmAction(`Clear ${faults.length} fault code(s) from ${moduleName(module)}?`,
-      "Writes to the ECU and cannot be undone. Ignition on, engine off.")) return;
+    setAsking(false);
     toast("clearing…");
     await run("clear_faults");
     window.setTimeout(refresh, 1500);
@@ -177,11 +178,16 @@ export function Faults() {
                 <Icon name="lock" size="1.1em" className="icon-inline" />Clear codes · replay
               </span>
             ) : (
-              <button className="iconbtn danger" style={{ marginLeft: "auto" }} onClick={clear}><span className="d" />Clear codes</button>
+              <button className="iconbtn danger" style={{ marginLeft: "auto" }} onClick={() => setAsking(true)}><span className="d" />Clear codes</button>
             )}
           </div>
         </div>
       )}
+      {asking ? (
+        <ConfirmSheet title={`Clear ${faults.length} fault code(s) from ${moduleName(module)}?`}
+          detail="Writes to the ECU and cannot be undone. Ignition on, engine off." confirmLabel="Clear codes" danger
+          onConfirm={() => void clear()} onCancel={() => setAsking(false)} />
+      ) : null}
       <FaultScan />
     </>
   );

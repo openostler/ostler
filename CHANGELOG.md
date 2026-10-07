@@ -44,6 +44,27 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- ShellInput, I1 (shell input spec v0.3 §2–§7, §9, §13, §14; approved 2026-10-07): the
+  shell is driven without touch. A keyboard intent layer (`ui/src/shell/input.ts`): arrows
+  move, Enter is `ok`, Escape is `back`; the arrows alone repeat (400 ms, then every 100 ms)
+  and the OS key repeat is ignored; a 600 ms long `back` is `menu` and a long `ok` is reserved
+  for edit mode (DM3), so it activates nothing. Focus zones (strip, rail or bottom bar, main,
+  sheet) with geometric spatial navigation (`ui/src/shell/focus.ts`: the 90° cone, along +
+  2 × off-axis, neighbouring zones, per-zone memory; the only trap is a sheet).
+  `useShellInput` wires them: `back` closes the newest sheet, then moves from the page to the
+  destination's rail item, then goes Home (≤ 3 presses). In Drive mode `left`/`right` switch
+  faces (DM1's `stepFace`), `ok` opens the new **Drive menu** (a `short_list` of ≤ 6 rows of
+  ≤ 30 characters: Mark while recording, Drive mode, Exit to Home, Back to Drive), and while
+  Moving (an unknown driving state counts as Moving on driver-facing classes) `back` focuses
+  the `drive_mode` chip, found by id, and from it returns to the face (§14.2). Confirm sheets
+  for gate actions (`ConfirmSheet`: catalog actions, Clear codes, Pi shutdown; they replace
+  `window.confirm` and the inline confirm card) open with Cancel focused, never count down,
+  and every sheet ignores `ok` for its first 500 ms. A focus-ring token group
+  (`focus-ring-width` 3 px, `focus-ring-gap` 2 px, `focus-ring-color` = accent) is applied to
+  every focusable through `:focus-visible`: no glow, no resize, drawn just inside the edge-tight
+  strip and rail. Tests: unit tests for the intent layer, the spatial maths, layers, the
+  Drive menu and the ring tokens; Playwright keyboard-only at all seven layout classes
+  (`e2e/input.spec.ts`).
 - Drive modes, DM1 (drive-modes spec v0.2 §4-§6, §8.2, §11; approved 2026-10-07): the
   `ostler.layout/1` format (`schemas/ostler-layout.schema.json`, JSON Schema 2020-12) and one
   set of strict Moving rules shared by two validators, `openostler.layouts` (server, stdlib)

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { api, command } from "../api/client";
 import { useApp } from "../state/app";
 import { THEME_PREFS } from "../state/theme";
-import { confirmAction } from "./confirm";
+import { ConfirmSheet } from "./ConfirmSheet";
 import { RadioOpt } from "./RadioOpt";
 import { RecordingOptions } from "./RecordingOptions";
 import { Sheet } from "./Sheet";
@@ -19,6 +19,7 @@ import { VersionCard } from "./VersionCard";
 export function Preferences({ onClose }: { onClose: () => void }) {
   const { prefs, setPrefs, snap, community, reloadCommunity, toast, admin } = useApp();
   const [recOpts, setRecOpts] = useState(false);
+  const [askShutdown, setAskShutdown] = useState(false);
   const share = community ? !!community.consent : prefs.share === true;
 
   const setShare = (v: boolean) => {
@@ -26,7 +27,7 @@ export function Preferences({ onClose }: { onClose: () => void }) {
     api.setConsent(v).then(reloadCommunity, () => toast("could not save the sharing choice", true));
   };
   const shutdown = async () => {
-    if (!confirmAction("Shut down the Pi now?", "The dashboard goes offline. Wait for the green LED to stop before cutting power.")) return;
+    setAskShutdown(false);
     try {
       const r = await command("shutdown");
       if (r.ok) { onClose(); toast("Shutting down the Pi…"); } else toast(r.error ?? "Shutdown refused", true);
@@ -105,7 +106,7 @@ export function Preferences({ onClose }: { onClose: () => void }) {
       {snap?.allow_shutdown ? (
         <section>
           <div className="kicker" style={{ marginBottom: 8 }}>Power</div>
-          <button className="btn danger block" onClick={shutdown}>Shut down Pi</button>
+          <button className="btn danger block" onClick={() => setAskShutdown(true)}>Shut down Pi</button>
           <div className="small muted pretty" style={{ marginTop: 6 }}>
             Powers off the Raspberry Pi safely. Wait for the green LED to stop before cutting power.
           </div>
@@ -116,6 +117,11 @@ export function Preferences({ onClose }: { onClose: () => void }) {
         <VersionCard />
       </section>
       <button className="btn accent" onClick={onClose}>Done</button>
+      {askShutdown ? (
+        <ConfirmSheet title="Shut down the Pi now?" confirmLabel="Shut down" danger
+          detail="The dashboard goes offline. Wait for the green LED to stop before cutting power."
+          onConfirm={() => void shutdown()} onCancel={() => setAskShutdown(false)} />
+      ) : null}
     </Sheet>
   );
 }

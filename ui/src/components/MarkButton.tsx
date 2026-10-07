@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api } from "../api/client";
 import { Icon } from "../icons/Icon";
 import type { Note } from "../api/schemas";
+import { saveLiveMark } from "../lib/mark";
 import { formatNoteTime } from "../lib/notes";
 import { useCaptureRunner } from "../lib/recordingOptions";
 import { useApp } from "../state/app";
@@ -107,17 +108,9 @@ function Mark({ toast }: { toast: (m: string, bad?: boolean) => void }) {
   const tap = async () => {
     if (busy) return;
     setBusy(true);
-    let note: Note | null = null, session: string | null = null;
-    try {
-      const r = await api.liveNote({ kind: "mark" });
-      if (r.note) { note = r.note; session = r.session ?? null; toast("Marked"); }
-      else toast(r.error ?? "Could not save the mark", true);
-    } catch {
-      toast("Could not save the mark — it will be saved with the note", true);
-    } finally {
-      setBusy(false);
-    }
-    setMark({ note, session });
+    const saved = await saveLiveMark(toast);
+    setBusy(false);
+    setMark(saved);
   };
 
   const save = async (text: string, tags: string[]) => {

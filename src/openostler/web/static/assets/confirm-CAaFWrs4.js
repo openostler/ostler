@@ -1,0 +1,1 @@
+var e=`Vehicle stationary, handbrake on, ignition on, nobody under the car.`;function t(e,t){return e===`none`?!0:e===`typed`?t.typed.trim()===t.name.trim():t.ticked.length>0&&t.ticked.every(Boolean)}export{t as n,e as t};

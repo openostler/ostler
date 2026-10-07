@@ -20,7 +20,7 @@ export function Consent() {
     api.setConsent(share).then(reloadCommunity, () => undefined);
   };
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title" data-zone="sheet">
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
           <div className="kicker">First start</div>

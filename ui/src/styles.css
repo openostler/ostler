@@ -253,7 +253,24 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
 .doc blockquote { margin: 8px 0; padding: 4px 12px; border-left: 3px solid var(--border-emph); color: var(--fg2); }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-:focus-visible { outline: 2px solid var(--ic-blue); outline-offset: 2px; }
+/* The focus ring (shell input spec §9; visual spec §5 tokens): 3 px of focus-ring-color outside
+   a 2 px gap of bg, so it reads on any surface and the map. No glow (the gap is a spread-only,
+   unblurred shadow), no size change, no animation. It shows only after a non-pointer intent
+   (:focus-visible); a tap clears it. */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-gap);
+  box-shadow: 0 0 0 var(--focus-ring-gap) var(--bg);
+}
+/* the shell's chrome sits at the screen's edges and clips (the strip never scrolls, the rail
+   is edge to edge on HU-5), so there the same ring is drawn just inside the item instead of
+   outside it: never obscured (WCAG 2.4.11), still no resize */
+:is(.strip, .rail, .bar) :focus-visible {
+  outline-offset: calc(-1 * (var(--focus-ring-width) + var(--focus-ring-gap)));
+  box-shadow: inset 0 0 0 var(--focus-ring-gap) var(--bg);
+}
+/* a zone root holding focus (Drive mode's face after `back`, shell input §14.2) is not an item */
+main:focus-visible { outline: none; box-shadow: none; }
 
 /* ---- Calm-instrument components ------------------------------------------------- */
 .health {
@@ -409,7 +426,10 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
   background: var(--surface); color: var(--text-1);
 }
 .modctl:hover, .modctl:focus-within { border-color: var(--text-3); }
-.modctl:has(.modsel:focus-visible) { outline: 2px solid var(--ic-blue); outline-offset: 2px; }
+.modctl:has(.modsel:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-gap);
+  box-shadow: 0 0 0 var(--focus-ring-gap) var(--bg);
+}
 .modctl-txt { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .modctl-k { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--text-3); }
 .modctl-v { min-width: 2ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
@@ -418,7 +438,7 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
   position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0;
   opacity: 0; cursor: pointer; font: inherit; font-size: 16px; /* 16px: no iOS zoom on focus */
 }
-.modsel:focus-visible { outline: none; }
+.modsel:focus-visible { outline: none; box-shadow: none; }
 .modsel option { color: var(--text-1); background: var(--surface); }
 /* Experimental only: verified share of the module — accent, not a status hue */
 .mappct {
@@ -487,7 +507,8 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
 .item-name { font-weight: 700; overflow-wrap: anywhere; }
 .item .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .action { display: flex; flex-direction: column; min-width: 0; }
-.action .confirm { margin-top: 0; background: var(--raised); }
+.confirm-sheet .confirm-checks, .confirm-sheet .confirm-typed { gap: var(--space-2); }
+.confirm-sheet .row.check { gap: var(--space-2); }
 .check input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: var(--accent); }
 .locked {
   display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px;
@@ -565,7 +586,6 @@ main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 .gnote-btn { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border-color: var(--accent); }
 .gnote-btn.gnote-warn { border-color: var(--warn); background: var(--warn-bg); }
 .gnote-btn.gnote-alarm { border-color: var(--alarm); background: var(--alarm-bg); }
-.gnote-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* "● Latest": re-pin the cursor to the newest sample of the drive in progress */
 .replay-follow { display: inline-flex; align-items: center; gap: 4px; }
