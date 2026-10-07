@@ -1,12 +1,12 @@
 ---
 title: "Navigation add-on — offline routing on the Brain, turn-by-turn and voice, GPX library and follow, planner and roadbook — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/dmd2_features.md, references/research/dmd2_ui_teardown.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md, references/research/trip_and_log_sharing.md, references/research/driver_distraction_rules.md, docs/ecosystem.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-community-hub-design.md]
 summary: >
-  Draft for the owner (DMD round, 2026-10-07). One new optional add-on, `ostler-app-navigation`, for cars and
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; every decision answered as recommended. One new optional add-on, `ostler-app-navigation`, for cars and
   motorcycles on and off road; it absorbs the earlier "routes" and "roadbook" add-on ideas. Routing runs on the
   Brain with Valhalla (MIT, checked live; per-request costing for car, motorcycle and off-road options, map
   matching, spoken-instruction text) behind an engine adapter, BRouter (MIT) as an optional second engine for
@@ -20,9 +20,9 @@ summary: >
   reports later over Social's transport. Privacy, offline behaviour, phases N0–N4, tests and decisions.
 ---
 
-# Navigation add-on — design (draft)
+# Navigation add-on — design
 
-**Status:** draft for the owner's approval (DMD round, 2026-10-07); nothing is built before U2 and
+**Status:** approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; nothing is built before U2 and
 V1c (visual spec §11). Evidence: [DMD2 features](../references/research/dmd2_features.md) §4–§8
 and §12, [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §2, §8, [DMD Hub
 features](../references/research/dmd_hub_features.md) §2.5, §2.9, §4,
@@ -30,7 +30,7 @@ features](../references/research/dmd_hub_features.md) §2.5, §2.9, §4,
 [trip and log sharing](../references/research/trip_and_log_sharing.md). Framing:
 [ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (small core,
 add-ons are the product). Input on head units: [ShellInput](2026-10-07-shell-input-design.md)
-(draft, this round). Facts checked live on 2026-10-07; (U) marks what was not.
+(approved, this round). Facts checked live on 2026-10-07; (U) marks what was not.
 
 ## 1. Scope and boundaries
 
@@ -131,7 +131,7 @@ Rendered by the shell, not the add-on, inside the `map` template's limits (UI sp
 position, route, next manoeuvre; no free panning or search). The add-on fills one
 `next_manoeuvre` payload; the shell draws it. The map style follows the map theme setting
 ([UI spec §13.5](2026-10-06-ui-architecture-design.md#135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence),
-proposed this round). Styling: `text-1` on `surface-glass`, arrow large,
+approved this round). Styling: `text-1` on `surface-glass`, arrow large,
 no red card, no glow, gradient or animation (teardown §6; visual spec §1).
 
 | Element | Rule |
@@ -254,7 +254,7 @@ manoeuvre; a dedicated `roadbook` template needs a platform proposal (Decision 9
   [trip-sharing spec](2026-10-07-trip-sharing-design.md) levels (L1 Route: ends trimmed 500 m, never < 200 m, privacy zones, simplified, no point times,
   public only by an explicit publish act ≥ 24 h after the trip). A **planned** route is clipped
   at core privacy zones by default and carries no times. Both share as the registry's `route`
-  detail on `location` (proposed this round) to a person, group, ride, `link` or (by explicit
+  detail on `location` (approved this round) to a person, group, ride, `link` or (by explicit
   publish) `public` audience.
 - **Rides:** a ride leader may share the active route with the ride's group audience; it shows
   on members' maps (Vehicles & Map convoy layer); reroutes are not pushed.
@@ -337,8 +337,14 @@ way app model §14.7 added `more:vehicles`. A Home card (`home:card`) offers "Na
 - 2026-10-07: v0.1, draft (DMD round): one `ostler-app-navigation` add-on, Valhalla on the Brain,
   regions shared with the visual spec, guidance through the `map` template, voice, library,
   planner, roadbook, sharing hooks, phases N0–N4.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", DMD round; decision
+  list items 3 and 33–40): every decision answered as recommended (alternatives not chosen);
+  the repo `ostler-app-navigation` is created at N0, after asking the owner.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **One navigation add-on?** Recommend: yes, `ostler-app-navigation`, absorbing routes and
    roadbook. Alternative: separate `ostler-app-routes` (library, planner) and navigation.

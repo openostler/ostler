@@ -2,16 +2,16 @@
 title: "Social add-on — messaging, push-to-talk, calls and camera sharing over the internet and meshes — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-07
 depends_on: [references/research/phone_comms.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 adds a proposed amendment (2026-10-07, DMD round), not yet approved: message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the approved "Message from name" with Play / Later. v0.4 adds a second proposed amendment (§13, DMD round), not yet approved: the comms overlap with the draft Phone & Comms add-on — one shell-owned call session and comms chip (phone calls pause PTT, call waiting instead of stacked cards), one alert pipeline whose message rate limits count across Social, SMS and bridged messengers, one favourites list, one local call log, and auto-reply only for Ostler messages.
+  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 added and v0.5 approves (owner, 2026-10-07, "approve all", DMD round) an amendment (§12): message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the earlier "Message from name" with Play / Later (§8 and Decision 5 replaced). v0.4 added and v0.5 approves a second amendment (§13, DMD round): the comms overlap with the Phone & Comms add-on (approved) — one shell-owned call session and comms chip (phone calls pause PTT, call waiting instead of stacked cards), one alert pipeline whose message rate limits count across Social, SMS and bridged messengers, one favourites list, one local call log, auto-reply only for Ostler messages, and Social as the only Ostler messenger, linking out to Ostler Community.
 ---
 
 # Social add-on — design
 
-**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; v0.3 and v0.4 add proposed amendments (§12, §13) awaiting the owner.** Nothing here is built before the app model's UA phase
+**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; the amendments §12 and §13 (v0.3, v0.4) approved by the owner on 2026-10-07 ("approve all", DMD round), v0.5.** Nothing here is built before the app model's UA phase
 and the accounts phases it depends on (§11). It is a design for the optional add-on
 `ostler-app-social` (ADR-0034, ADR-0042 "Ecosystem: small core, add-ons are the product",
 accepted). The research is linked, not repeated:
@@ -82,7 +82,8 @@ default, invite links, QR and short codes). It does not redefine any of them. Wh
 ## 4. Messaging
 
 - **Kinds:** text, voice notes, photos (S2+), locations (a pin, at the precision the share
-  allows), and **canned "I'm driving" auto-reply** while Moving.
+  allows), and **canned "I'm driving" auto-reply** while Moving (scope per §12, Ostler
+  messages only per §13 C5).
 - **Delivery ticks** (sent, delivered, read where the peer allows) per link, as Meshtastic does.
 - **Storage:** on each participant's device only (brain, or the phone on Ostler Diagnostics
   alone); the relay holds sealed envelopes until delivery, at most 7 days. Retention default
@@ -189,10 +190,15 @@ SFU; only call **state** reaches the car broker.
 
 ## 8. Driving, privacy and compliance
 
-- **Driver screens** (driver-distraction §7.1 #10): while Moving a message alert reads
-  "Message from Sam" with **Play** (read aloud) and **Later**; never message content, photos or
-  avatars. Reply by PTT voice note or the "I'm driving" auto-reply; no keyboard and no canned
-  list. Task depth ≤ 3, ending back in Drive mode. Unknown speed counts as Moving.
+- **Driver screens** (driver-distraction §7.1 #10; UI spec §12.1 as amended by its §14):
+  **replaced on 2026-10-07 by [§12](#12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving)
+  (approved, DMD round)**: while Moving a message alert is an `alert_card` with the sender and
+  the app, **Play** and **Reply** (speak a reply or one of up to five canned replies), an
+  opt-in first-line preview only for messages that arrived while Parked, and the rate limits;
+  never message content, photos or avatars while Moving. Task depth ≤ 3, ending back in Drive
+  mode. Unknown speed counts as Moving. *History:* the rule approved earlier on 2026-10-07 read
+  "Message from Sam" with **Play** and **Later**, reply by PTT voice note or the "I'm driving"
+  auto-reply, no keyboard and no canned list.
 - **ADR-0009:** location stays on the device unless a share grants it; Social sends positions
   only through the router under the registry's rules, time-limited when precise (≤ 24 h).
 - **ADR-0010:** calls are **never recorded** by Ostler and nothing from a call enters a session
@@ -247,7 +253,8 @@ SFU; only call **state** reaches the car broker.
 `telemetry` on any link; one `alert` on three links appears once in `social/inbox/alert`; an
 inbound call or camera request starts nothing without a local tap or a live grant; the driving
 matrix (screen × state) never renders video or message text on a driver-facing head unit while
-Idling or Moving; LiveKit tokens refuse rooms and grants outside the share; no media bytes on
+Moving, or Idling without Park evidence (and, until the U2 legal opinion, while Idling at all),
+plus the §12 and §13 test additions; LiveKit tokens refuse rooms and grants outside the share; no media bytes on
 the broker; no VIN, `<vid>` or plate in any envelope.
 
 ## 11. Open questions
@@ -259,29 +266,30 @@ the broker; no VIN, `<vid>` or plate in any envelope.
    requests checked by the relay?).
 4. Peer identity binding of mesh node ids: QR at the meet-up, or over IP before the ride.
 
-## 12. Proposed amendment (2026-10-07, DMD round): message alerts while Moving
+## 12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving
 
-*Proposed, not approved. Changes the §8 "Driver screens" bullet and one §10 test, extends §4's
-auto-reply and widens Decision 5 from calls to calls and message alerts. Until the owner
-answers Decisions A1–A4 at the end, §8 and Decision 5 stand as approved. Evidence:
+*Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 57–61).
+Changes the §8 "Driver screens" bullet and one §10 test (both now applied), extends §4's
+auto-reply and widens Decision 5 from calls to calls and message alerts (the new Decision 5
+below replaces the old one). Decisions A1–A4 at the end are answered as recommended. Evidence:
 [message alerts research](../references/research/message_alerts_android_auto.md) (Android Auto,
 Android for Cars, CarPlay, AAOS, the legal reading) and
 [driver-distraction rules](../references/research/driver_distraction_rules.md) §4.2, §7.1 #10.
 The shell-wide rule (every add-on's message alerts, the `alert_card` row, the U2 legal check
-and tests) is a matching proposed amendment to the
-[UI architecture spec](2026-10-06-ui-architecture-design.md) §12.1; where they differ, the UI
-spec wins.*
+and tests) is the matching approved amendment to the
+[UI architecture spec](2026-10-06-ui-architecture-design.md) §14, applied into its §12.1;
+where they differ, the UI spec wins.*
 
 **Owner's ask (2026-10-07):** "Message alerts: copy Android Auto. On the driver's head unit
 while Moving, the `alert_card` shows the sender and app, with Play (read aloud) and Reply
 (voice, or a canned reply). Add an owner opt-in to show a one-line first-line preview. Default
 stays off."
 
-**Old rule, the alternative:** while Moving a message alert reads "Message from Sam" with
+**Old rule, the alternative (not chosen):** while Moving a message alert reads "Message from Sam" with
 **Play** and **Later**; never content; reply by PTT voice note or the "I'm driving" auto-reply;
 no keyboard and **no canned list** (§8, approved 2026-10-07).
 
-**Proposed §8 "Driver screens" bullet** (replaces the approved one):
+**§8 "Driver screens" bullet** (replaces the earlier one; applied in §8):
 
 > - **Driver screens** (driver-distraction §7.1 #10; UI spec §12.1 as amended). While Moving a
 >   message alert is an `alert_card` with **the sender** ("Sam", or "Sam · Peak ride"; ≤ 30
@@ -320,28 +328,29 @@ Moving renders no text on a driver-facing display; a message that arrived while 
 its preview when the vehicle moves; canned replies cannot be edited while Moving; the rate
 limits hold; a canned reply is a message, never an action.
 
-**Proposed Decision 5** (replaces the approved one): **Calls and message alerts while
-Moving** — audio only via the `call` template, only ride members and favourites ring; message
+**Decision 5, as approved on 2026-10-07 (DMD round)** (replaces the earlier one): **Calls and
+message alerts while Moving** — audio only via the `call` template, only ride members and favourites ring; message
 alerts show sender and app with Play and Reply (voice or canned), an opt-in first-line preview
-only for messages that arrive while parked, and the rate limits above? *Recommend:* yes.
-*Alternative:* the approved Decision 5 for calls, with the approved §8 message alert
-("Message from *name*", Play / Later, no canned list).
+only for messages that arrive while parked, and the rate limits above? *Recommend:* yes (the decision).
+*Alternative (not chosen):* the earlier Decision 5 for calls, with the earlier §8 message
+alert ("Message from *name*", Play / Later, no canned list).
 
-## 13. Proposed amendment (2026-10-07, DMD round): comms overlap
+## 13. Amendment (2026-10-07, DMD round), approved: comms overlap
 
-*Proposed, not approved. Settles where Social and the proposed
-[Phone & Comms add-on](2026-10-07-phone-comms-addon-design.md) (`ostler-app-phone`, draft)
+*Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 81–82).
+Settles where Social and the
+[Phone & Comms add-on](2026-10-07-phone-comms-addon-design.md) (`ostler-app-phone`, approved)
 meet: the `call` session, the strip chip, one alert pipeline and one rate limit, favourites,
 the call log and auto-reply; and (C6, reconcile revision) where Social meets
-[Ostler Community](2026-10-07-community-hub-design.md) (draft v0.2). It changes §2's strip-chip row, §5's "Incoming calls while
-Moving" sentence and §8's audit list only where noted; everything else stands. Until the owner
-answers Decisions C1–C6 at the end, §1–§12 stand as approved or proposed. Evidence:
+[Ostler Community](2026-10-07-community-hub-design.md) (approved). It changes §2's strip-chip row, §5's "Incoming calls while
+Moving" sentence and §8's audit list only where noted; everything else stands; where it
+differs from §1–§12, it wins. Decisions C1–C6 at the end are answered as recommended. Evidence:
 [phone and comms research](../references/research/phone_comms.md),
 [message alerts](../references/research/message_alerts_android_auto.md).*
 
 **C1 — One call session, owned by the shell.** The `call` template shows one call or PTT
 channel (UI §12.1, app-model §14.5), so the shell, not an add-on, owns a single **call
-session** that Social and Phone request through the SDK (a platform proposal with the Phone
+session** that Social and Phone request through the SDK (a platform change with the Phone
 spec: `calls.request({source, label, kind: "phone"|"ostler"|"ptt"})`, `calls.state`,
 `calls.end`). Rules:
 - At most one active `call` template; a second ringing call takes the template as **call
@@ -421,6 +430,11 @@ attachment for a recipient who is not a named helper.
   only for Ostler messages); Decisions C1–C5 at the end. Revised in place the same day
   (cross-spec reconcile): C6, Ostler Community has no direct messages, so Social is the only
   messenger and may link out to forum threads; Decision C6 added.
+- 2026-10-07: v0.5, §12 and §13 approved by the owner on 2026-10-07 ("approve all", DMD
+  round) and renamed "Amendment (2026-10-07, DMD round), approved"; Decisions A1–A4 and C1–C6
+  answered as recommended (alternatives not chosen); the new Decision 5 replaces the old one;
+  §8's "Driver screens" bullet and the §10 test now carry §12's rule, the earlier rule kept
+  as history.
 
 ## Decisions for the owner
 
@@ -431,25 +445,26 @@ the decision; each alternative was not chosen.
 2. **Placement** — More → Social page plus Home card, strip chip and alert cards? *Recommend:* yes, with a new `more:social` slot by platform proposal. *Alternative:* make Social a destination in place of one of the five.
 3. **Strip chip** — a separate ride/call chip shown only while active? *Recommend:* yes. *Alternative:* fold ride and call state into core's visibility chip.
 4. **Camera grant** — a separate `camera` grant (the registry's `video` class per camera), time-boxed, live only, ghost by default, badge and audit? *Recommend:* yes, defined in core's registry. *Alternative:* a plain `video` class without per-camera grants.
-5. **Calls while Moving** — audio only via the `call` template; only ride members and favourites ring? *Recommend:* yes. *Alternative:* everyone allowed to call me rings.
+5. **Calls while Moving** — *replaced on 2026-10-07 (DMD round) by §12's Decision 5, "Calls and message alerts while Moving", approved as recommended.* The earlier text, kept as history: audio only via the `call` template; only ride members and favourites ring? *Recommend:* yes. *Alternative:* everyone allowed to call me rings.
 6. **Message encryption** — per-recipient sealing with device keys for 1:1 and groups up to ~24, MLS (RFC 9420) later? *Recommend:* yes. *Alternative:* MLS from S1.
 7. **Media stack** — LiveKit self-hosted on the relay and optionally a brain, our own token issuer, go2rtc for cameras, Matrix only as later interop? *Recommend:* yes. *Alternative:* Matrix with Element Call as the base.
 8. **Waking a parked car for calls** — off by default, opt-in per group within the ADR-0040 quota? *Recommend:* yes. *Alternative:* never wake for calls.
 9. **LoRa voice notes** — Codec2 voice notes over LoRa? *Recommend:* defer until the Meshtastic bridge ships and the bench shows the airtime. *Alternative:* build them in S3.
 10. **Phases** — S1 messaging + PTT (internet/LAN), S2 calls, S3 mesh bridges, S4 cameras? *Recommend:* yes. *Alternative:* bring the mesh (S3) before calls for off-road groups.
 
-## Decisions for the owner (proposed amendment, 2026-10-07, DMD round)
+## Decisions for the owner (amendment §12, 2026-10-07, DMD round)
 
-Open. Each has a recommendation and the alternative; the approved rule is the alternative
-where one exists.
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen (the earlier rule is the alternative
+where one exists).
 
 1. **A1 — Message card while Moving** — sender and app with **Play** and **Reply**, as Android
    Auto and CarPlay do, names covered by the U2 legal check with "New message" as the
-   fallback? *Recommend:* yes. *Alternative:* the approved rule, "Message from *name*" with
+   fallback? *Recommend:* yes. *Alternative:* the earlier rule, "Message from *name*" with
    Play / Later, never content.
 2. **A2 — Canned replies** — Reply opens a `short_list` with Speak a reply plus up to five
    owner-editable canned replies (≤ 30 characters, edited Parked only, one tap sends)?
-   *Recommend:* yes. *Alternative:* the approved rule, voice note and the "I'm driving"
+   *Recommend:* yes. *Alternative:* the earlier rule, voice note and the "I'm driving"
    auto-reply only, no canned list.
 3. **A3 — First-line preview** — owner opt-in, default off, one line ≤ 30 characters, only for
    messages that arrive while Parked or Idling with Park evidence (Parked only until the U2
@@ -462,13 +477,14 @@ where one exists.
    and ride members by default? *Recommend:* yes. *Alternative:* a card for every message, and
    auto-reply to all contacts.
 
-## Decisions for the owner (proposed amendment §13, 2026-10-07, DMD round: comms overlap)
+## Decisions for the owner (amendment §13, 2026-10-07, DMD round: comms overlap)
 
-Open. Each has a recommendation and the alternative.
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **C1 — Call session** — one shell-owned call session for Social and Phone (one `call`
    template, call waiting, phone and Social calls pause PTT, one comms chip)? *Recommend:* yes,
-   as a platform proposal with the Phone spec. *Alternative:* each add-on raises its own `call`
+   as a platform change with the Phone spec. *Alternative:* each add-on raises its own `call`
    template and the shell shows the newest.
 2. **C2 — One alert pipeline and shared rate limits** — message cards from every source count
    against one budget (one per conversation per 2 min, three per 10 min in total)?

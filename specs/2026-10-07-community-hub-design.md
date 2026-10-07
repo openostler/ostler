@@ -1,22 +1,22 @@
 ---
 title: "Ostler Community — the community hub, forum, vehicle-development workspace and wiki (closed `ostler-hub` service, open `ostler-app-hub` shell add-on) — design"
 area: specs
-status: draft
-version: 0.2
+status: stable
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/community_hub_architecture.md, references/research/dmd_hub_features.md, references/research/dmd_hub_ui_teardown.md, references/research/trip_and_log_sharing.md, references/research/dmd2_features.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  DRAFT for the owner (DMD round, 2026-10-07; v0.2 follows the owner's direction that the hub is "our own thing, closed not self hostable", also the forum, the place to develop new vehicles, connected to the wiki, in a new repo). Ostler Community is a closed service run by Ostler: one official instance, not self-hostable, in a new private repo `ostler-hub`, separate from the closed `ostler-cloud`, under ADR-0013's cloud boundary (documented API only, no platform code imported, no third-party copyleft code). The shell add-on `ostler-app-hub` stays open (AGPL) and holds the public API contract and the end-to-end encryption. It does four jobs: publish trips, routes, garage cards and events (L0–L2 grants; L3/L4 only as encrypted hand-overs to named helpers); the project forum (categories per make and model, Q&A with "solved", search, notifications, no direct messages); the vehicle-development workspace (help thread → decode cards → vehicle project → pack PR on GitHub under CC BY-SA, through a GitHub App bridge, never required); and the wiki (none exists today), hosted in the hub, with vehicle pages generated from pack releases. User rights hold: export everything, nothing in core depends on the hub (ADR-0042), a public CC BY-SA community dump, OSA/DSA/GDPR duties on Ostler as sole operator, pre-moderation until trusted, 16+ (18+ for live follow and public profiles). No federation. Never charges for safety, sharing or decode help. Screens, phases H0–H4, tests, and the revised DMD decision items B 7–19 plus new hub items.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 followed the owner's direction that the hub is "our own thing, closed not self hostable", also the forum, the place to develop new vehicles, connected to the wiki, in a new repo. Ostler Community is a closed service run by Ostler: one official instance, not self-hostable, in a new private repo `ostler-hub`, separate from the closed `ostler-cloud`, under ADR-0013's cloud boundary (documented API only, no platform code imported, no third-party copyleft code). The shell add-on `ostler-app-hub` stays open (AGPL) and holds the public API contract and the end-to-end encryption. It does four jobs: publish trips, routes, garage cards and events (L0–L2 grants; L3/L4 only as encrypted hand-overs to named helpers); the project forum (categories per make and model, Q&A with "solved", search, notifications, no direct messages); the vehicle-development workspace (help thread → decode cards → vehicle project → pack PR on GitHub under CC BY-SA, through a GitHub App bridge, never required); and the wiki (none exists today), hosted in the hub, with vehicle pages generated from pack releases. User rights hold: export everything, nothing in core depends on the hub (ADR-0042), a public CC BY-SA community dump, OSA/DSA/GDPR duties on Ostler as sole operator, pre-moderation until trusted, 16+ (18+ for live follow and public profiles). No federation. Never charges for safety, sharing or decode help. Screens, phases H0–H4, tests, and the DMD decision items B 7–19 and 19a–19f, all answered as recommended (the private `ostler-hub` repo is created now, empty, after asking the owner).
 ---
 
 # Ostler Community — design
 
-**Status: draft for the owner's approval (DMD round, 2026-10-07), v0.2.** v0.1 proposed an open,
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** v0.1 proposed an open,
 self-hostable AGPL hub. The owner then decided: *"I think the ostler hub should be our own thing,
 closed not self hostable, it's also going to serve as our forum, help us develop and code new
 vehicles, be connected to our wiki, we'll need to create a new repo for it."* This version follows
-that direction; the open, self-hostable model is kept only as the alternative in the decision
-items at the end. Nothing here is built before accounts P3 and the trip-sharing registry pieces
+that direction; the open, self-hostable model was the alternative in the decision items at the
+end, not chosen. Nothing here is built before accounts P3 and the trip-sharing registry pieces
 (§16). The research is linked, not repeated:
 [community hub architecture](../references/research/community_hub_architecture.md) (written for
 the open model; its stack, storage, moderation and law sections still apply),
@@ -25,10 +25,10 @@ the open model; its stack, storage, moderation and law sections still apply),
 [trip and log sharing](../references/research/trip_and_log_sharing.md),
 [DMD2 features](../references/research/dmd2_features.md). Per-trip levels, the bundle format and
 the scrubber are owned by the [trip-sharing spec](2026-10-07-trip-sharing-design.md); this spec
-only consumes them. ADR text it changes is a proposed amendment to
-[ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md#proposed-amendment-2026-10-07-dmd-round),
-[ADR-0034](../decisions/adr-0034-repo-boundaries.md#proposed-amendment-2026-10-07-dmd-round) and
-[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md#proposed-amendment-2026-10-07-dmd-round).
+only consumes them. ADR text it changes is the approved DMD-round amendment to
+[ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md#amendment-2026-10-07-dmd-round-approved),
+[ADR-0034](../decisions/adr-0034-repo-boundaries.md#amendment-2026-10-07-dmd-round-approved) and
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md#amendment-2026-10-07-dmd-round-approved).
 
 ## 1. Purpose and non-goals
 
@@ -428,7 +428,7 @@ is Ostler's proprietary code; the client is AGPL with the CLA.
   FIT, KML); **no images or video**. Photos at **H4** only, with perceptual hash matching first
   and **face and plate blur on the device**.
 - A code of conduct includes "no reposting other people's decodes or routes as your own", "no
-  dealer-database content" (ADR-0012) and, proposed here, "no help with defeating immobilisers,
+  dealer-database content" (ADR-0012) and, added here, "no help with defeating immobilisers,
   odometers or emissions controls" (legal check before H1).
 
 ## 15. Screens
@@ -568,13 +568,17 @@ v0.1's **H5 Federation** is dropped (B 18).
   wiki (§11, none exists today), privacy and operator duties (§13), screens P10–P14; dropped
   self-hosting, several hubs per device and H5 federation; licences now require CC BY-SA for
   public forum posts and wiki pages; decision items revised (B 7–19) and new items B 19a–19f.
+- 2026-10-07: v0.3, approved by the owner on 2026-10-07 ("approve all", DMD round): every
+  decision item (B 7–19, 19a–19f) answered as recommended (alternatives not chosen); the
+  ADR-0029, ADR-0034 and ADR-0042 DMD-round amendments approved with it.
 
 ## Decisions for the owner
 
-The hub's decisions are the items below. Each has a recommendation and an alternative; where
-v0.1's open, self-hostable model is relevant, it is the alternative.
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen. The hub's decisions are the items
+below; where v0.1's open, self-hostable model is relevant, it was the alternative.
 
-### Revised items for the DMD decision list (hub, B 7–19)
+### Items of the DMD decision list (hub, B 7–19)
 
 7. **Build it, and as what?** *Recommend:* yes, as an optional add-on pair after accounts P3: a
    **closed service run by Ostler** (`ostler-hub`, one official instance, not self-hostable) that
