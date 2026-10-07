@@ -115,7 +115,9 @@ class SniffSpec:
 @dataclass(frozen=True)
 class DemoSpec:
     sessions_dir: Path                          # committed synthetic sessions
-    sniff_log: Optional[Path] = None            # a replayable sniff log
+    # Test-only: a sniff log the test server (tests/e2e_server.py --replay) loops into the
+    # Decode tab. The product never replays it; it reads only a live sniffer (ADR-0011).
+    sniff_log: Optional[Path] = None
     generate: Optional[Callable[[str], "list[str]"]] = None   # generate(root) → [session id]
 
 

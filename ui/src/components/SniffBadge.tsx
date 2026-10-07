@@ -15,13 +15,13 @@ export function SniffBadge({ sniff, showActive = true }: { sniff: SniffState; sh
   } else if (!d) {
     text = "Checking for a sniff tap…";
   } else if (!sniff.configured) {
-    text = "No tap connected — the homelab runs a demo feed";
+    text = "No sniff source — connect the ESP32 sniffer (start the dashboard with --sniff PORT) to see live reads";
   } else if (d.status === "error") {
     cls = "red";
     text = `The sniff tap reported an error: ${d.error ?? "unknown"}`;
   } else if (d.status === "live" && d.age != null && d.age < 3) {
     cls = "green";
-    const demo = sniff.demo ? " · demo feed (recorded)" : "";
+    const demo = sniff.demo ? " · recorded test feed" : "";
     const polling = showActive && sniff.active.size ? ` · NanoCom is reading ${[...sniff.active].slice(0, 6).join(" ")}` : "";
     text = `Listening · ${sniff.fps} lines/s · ${d.frames ?? 0} reads${polling}${demo}`;
   } else if (d.age != null) {

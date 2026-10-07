@@ -53,6 +53,16 @@ class _Fix:
         self.fix, self.utc_ms, self.mono = True, utc_ms, time.monotonic()
 
 
+def demo_sniff_log(pack) -> "str | None":
+    """The pack's test-only demo sniff log (``demo.sniff_log``), or None when it ships
+    none. Only this test server replays it: the product reads a sniff feed from a live
+    port only (``tools/dashboard.py --sniff``, ADR-0011)."""
+    demo = pack.demo
+    if demo is None or demo.sniff_log is None or not os.path.exists(demo.sniff_log):
+        return None
+    return str(demo.sniff_log)
+
+
 def seed_session(root: str) -> "str | None":
     """Record one short, closed, real (non-synthetic) session into ``root``; its id."""
     from openostler.logbook.recorder import SessionRecorder
@@ -108,9 +118,9 @@ def build(args) -> DiagServer:
     gps = None if args.no_gps else FakeGps()
     sniffer = None
     from openostler.pack import active_pack
-    from tools.dashboard import build_docs, pack_replay_log
+    from tools.dashboard import build_docs
     pack = active_pack()
-    replay = pack_replay_log(pack) if args.replay == DEMO_SNIFF else args.replay
+    replay = demo_sniff_log(pack) if args.replay == DEMO_SNIFF else args.replay
     if replay and args.replay != "off":
         from openostler.web.sniffer import SnifferFeed
         sniffer = SnifferFeed.from_file(replay, delay=0.008, loop=True)

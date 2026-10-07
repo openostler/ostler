@@ -52,9 +52,9 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/snapshot', timeout=3).status == 200 else 1)"
 
 # Live, bound on all interfaces for Traefik. NOT --allow-shutdown (would let the web UI
-# power off the host). "--replay pack" loops the installed pack's synthetic demo sniff log
-# so the admin Decode tab has a feed (no car data in it). The OSM geocoder is on (the
-# default https://nominatim.openstreetmap.org; ≤1 request/s, cached in logs/geocache.json).
+# power off the host). No sniff feed: the admin Decode tab reads only a live ESP32 sniffer
+# (--sniff), so it shows its empty state here (ADR-0011: no demo mode). The OSM geocoder
+# is on (the default https://nominatim.openstreetmap.org; ≤1 request/s, cached in
+# logs/geocache.json).
 CMD ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080", \
-     "--replay", "pack", \
      "--geocoder", "https://nominatim.openstreetmap.org"]

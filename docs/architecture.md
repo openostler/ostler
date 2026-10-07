@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.6
+version: 2.7
 updated: 2026-10-07
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -34,7 +34,7 @@ pytest -m "not needs_pack" -q    # platform-only (fake pack)
 pytest tests/test_web.py -k slabs_empty_read_grace -q   # one test
 
 # Dashboard: always live (ignition on, stationary); there is no mock/demo mode
-PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--replay FILE|pack]
+PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX [--module slabs] [--fault-watch] [--csv] [--geocoder URL|off] [--sniff PORT]
 
 # A Brain: read the car through the node's MQTT messages (read-only; records the raw tap)
 PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
@@ -369,3 +369,6 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-07 — v2.6, module-bus v1.3 follow-ups: `signing.py` and the `[signing]` extra,
   faults and events from the node, the alarm state, the `primary` marker in selection,
   `power.feeds`, wire conflicts, Remove device (`node/removal.py`, `POST /cluster/remove`).
+- 2026-10-07 — v2.7, no replayed sniff feed in the product (ADR-0011): `dashboard.py`
+  drops `--replay`; the Decode tab's feed is a live sniffer (`--sniff`) or its empty
+  state; only `tests/e2e_server.py --replay` loops the pack's test-only `demo.sniff_log`.

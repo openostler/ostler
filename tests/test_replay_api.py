@@ -582,20 +582,29 @@ def test_dashboard_tls_flags_must_come_together():
     assert r.returncode == 2 and "--tls-cert and --tls-key must be given together" in r.stderr
 
 
-def test_demo_sniff_log_ships_with_the_pack_and_deploys_use_it():
+def test_demo_sniff_log_is_test_only_scaffolding_for_the_e2e_server():
     from openostler.pack import active_pack
     from openostler.web.sniffer import SnifferFeed
-    from tools.dashboard import pack_replay_log
+    from tests.e2e_server import demo_sniff_log
 
-    demo = pack_replay_log(active_pack())
+    demo = demo_sniff_log(active_pack())
     assert demo is not None
     feed = SnifferFeed.from_file(demo, delay=0, loop=False)
     feed._run()
     snap = feed.snapshot("td5")
     assert snap["frames"] > 100 and {x["lid"] for x in snap["lids"]} >= {"09", "10"}
-    # deploys replay the installed pack's log, never a hard-coded site-packages path
+
+
+def test_the_product_has_no_replayed_sniff_feed():
+    """ADR-0011: no demo mode. The dashboard reads a sniff feed only from a live port
+    (--sniff); no deploy loops a sniff log into the Decode tab."""
     for f in ("Dockerfile", "docker-compose.yml"):
-        assert '"--replay", "pack"' in (REPO / f).read_text(), f
+        assert "--replay" not in (REPO / f).read_text(), f
+    r = subprocess.run([sys.executable, str(REPO / "tools/dashboard.py"), "--help"],
+                       capture_output=True, text=True, timeout=60,
+                       env={**os.environ, "PYTHONPATH": str(REPO / "src")})
+    assert r.returncode == 0 and "--sniff" in r.stdout
+    assert "--replay" not in r.stdout
 
 
 # ---- split / name / data passthrough ---------------------------------------- #
