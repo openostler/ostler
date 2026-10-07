@@ -33,6 +33,29 @@ test("first start asks for consent before anything else", async ({ page }) => {
   await expect(page.getByText("Before you connect")).toBeHidden();
 });
 
+// Visual spec §4 (V1b, UI audit P7): Figtree is self-hosted, so an offline car renders it and
+// no page load asks a third party for a font.
+test("renders the self-hosted Figtree with every other host blocked", async ({ page }) => {
+  await returningUser(page);
+  const offsite: string[] = [];
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, (route) => {
+    offsite.push(route.request().url());
+    return route.abort();
+  });
+  const fonts: string[] = [];
+  page.on("response", (r) => { if (r.url().includes("/fonts/")) fonts.push(`${r.status()} ${r.headers()["content-type"]}`); });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Connected" })).toBeVisible();
+  const loaded = await page.evaluate(async () => {
+    const d = (globalThis as unknown as { document: { fonts: { ready: Promise<unknown>; check(f: string): boolean } } }).document;
+    await d.fonts.ready;
+    return { bold: d.fonts.check("700 16px Figtree"), regular: d.fonts.check("400 16px Figtree") };
+  });
+  expect(loaded).toEqual({ bold: true, regular: true });
+  expect(fonts).toContain("200 font/woff2");
+  expect(offsite.filter((u) => /fonts\.(googleapis|gstatic)\.com/.test(u))).toEqual([]);
+});
+
 test("simulated live data streams into Home and Inputs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");

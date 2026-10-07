@@ -83,7 +83,7 @@ build under `src/openostler/web/static/`).
 > CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 > OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The Figtree font is loaded from Google Fonts (SIL Open Font License).
+The UI's typeface is self-hosted Figtree (see below), no longer loaded from Google Fonts.
 
 ## Bundled UI libraries (committed build)
 
@@ -105,6 +105,15 @@ libraries; their licence notices travel inside the bundle and in `LICENSES/`:
   Apache-2.0); their path data is drawn inline by `ui/src/icons/Icon.tsx`. The licence text
   is `LICENSES/Apache-2.0.txt`. Add a symbol by copying its file from the same package
   version and listing it in `ui/src/icons/symbols.ts` (a test keeps the two in step).
+
+- **Figtree** (the UI typeface, visual design system spec §4): **SIL Open Font License 1.1**,
+  © 2022 The Figtree Project Authors (<https://github.com/erikdkennedy/figtree>), designed by
+  Erik Kennedy. The files `ui/public/fonts/figtree-latin.woff2` and `figtree-latin-ext.woff2`
+  (copied into the build as `static/fonts/`) are made from `ofl/figtree/Figtree[wght].ttf`
+  (version 2.002) in [google/fonts](https://github.com/google/fonts) with fontTools: the
+  weight axis limited to 400–700 and the glyphs subset to Google's Latin and Latin-ext
+  unicode ranges, every name record kept. Figtree declares no Reserved Font Name. The licence
+  text is `LICENSES/OFL-1.1.txt`; the font is never sold on its own.
 
 Map tiles and styles (OpenFreeMap, Esri imagery) are fetched at runtime and are not
 shipped.

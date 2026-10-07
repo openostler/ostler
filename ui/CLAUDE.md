@@ -26,6 +26,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   under `data-theme`; same names in every file), `data.tokens.json` (speed ramp, series, chart
   neutrals, plasma/mako), and `size.tokens.json` (space, radius, motion, font, and per layout class
   the shell sizes and type scale); `tokens/tokens.ts` turns them into `virtual:design-tokens.css`.
+- `public/fonts/` (in `ui/`) — self-hosted Figtree (OFL-1.1, variable woff2, Latin and Latin-ext);
+  `@font-face` in `src/styles.css`. Never load a font (or anything) from a third-party host.
 - `src/state/theme.ts` — theme preference → concrete `data-theme` (Auto resolved; `useTheme()`);
   `src/lib/token.ts` — `token(name)` for Canvas and MapLibre, which cannot use `var(--…)`.
 - `src/lib/units.ts` — quantities and the clock through `Intl` (CLDR units where they exist).
