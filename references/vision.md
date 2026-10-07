@@ -2,8 +2,8 @@
 title: "Vision — where Ostler is going in the long term"
 area: references
 status: draft
-version: 1.4
-updated: 2026-10-06
+version: 1.5
+updated: 2026-10-07
 depends_on: [GOALS.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/research/ecosystem_architecture.md, references/research/addons_catalogue.md]
 summary: >
   The long-term half of the goals, split out of GOALS.md (v2.0 keeps the short half): the gaps Ostler fills and the peers it works with, who it is for, the product pillars, the hardware path (one ESP32 diagnostic node with an optional brain: Ostler Diagnostics is the node, standalone with a phone; Ostler Brain is the brain it plugs into; Ostler Guardian is a hidden node hardware variant with no outputs; sensor nodes and other modules as add-ons, each with its own web page), the add-on vision (a Meshtastic-compatible LoRa add-on first, Wi-Fi HaLow, Babel if a Wi-Fi IP mesh is wanted, and more), a multi-vehicle garage, sharing and a social layer, connectivity and remote access (any modem, Starlink, failover, Tailscale, Ostler Cloud, HA Cloud), a Matter bridge, AI-native access through an MCP server behind the same gates, the repo and product map, the business model, success measures and open questions. Decisions: ADR-0028 to ADR-0040.
@@ -113,7 +113,7 @@ modules**, like a smart-home hub and its devices
   offline with a phone; Ostler Cloud is optional, never required.
 - **Ostler Brain** (sold as Ostler Diagnostics + Brain). A **brain** (the Pi now) adds compute and network: the full
   local app, add-on routing, cameras, big logbooks, replay, analysis, the decode lab and a
-  local CA. It never touches the car; it consumes the node's VSS messages over IP (USB-NCM near
+  local CA. It never touches the car (except, with no node fitted, through a third-party adapter behind a stricter software gate, [ADR-0044](../decisions/adr-0044-adapters-on-the-brain-without-a-node.md)); it consumes the node's VSS messages over IP (USB-NCM near
   the Brain, T1S elsewhere, Ethernet on prototypes). The node wakes it (ignition, a phone or cloud request,
   an alarm needing cameras, a schedule), orders a clean shutdown with a timeout, and
   serves the car alone again when it is off. Upgrading from Ostler Diagnostics is plugging in a Brain.
@@ -307,6 +307,7 @@ our brand ([TRADEMARKS.md](../TRADEMARKS.md)).
 
 ## Changelog
 
+- 2026-10-07: v1.5, the ADR-0044 exception (adapters on the Brain only with no node fitted) added to the Brain's "never touches the car" line.
 - 2026-10-06: v1.4, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
 - 2026-10-06: v1.3, product family renamed (ADR-0039): Ostler Diagnostics (was Ostler Lite),
   Ostler Hub (the brain) and Ostler Guardian; the node links to the hub by USB-NCM or T1S;

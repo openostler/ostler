@@ -2,7 +2,7 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.5
+version: 2.6
 updated: 2026-10-07
 depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
@@ -37,7 +37,7 @@ core reads and interprets the car and hands its data, safely and privately, to a
 - **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (one
   add-on per integration), and Decode lab for developers, plus hardware add-on modules.
   Map: [docs/ecosystem.md](docs/ecosystem.md).
-- **Promises:** the node gate is the only path to the car; every data class starts in ghost
+- **Promises:** the node gate is the only path to the car (one exception: with no node fitted, the Brain may host a third-party adapter under ADR-0044's software gate); every data class starts in ghost
   (shared with no one); Export all, and nothing in core needs an Ostler-run server; no
   driving score in core.
 
@@ -91,7 +91,8 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
    [ADR-0023](decisions/adr-0023-passive-can-bitrate-detection.md)), ISO 9141-2/14230
    profiles ([ADR-0022](decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md)), ISO-TP, REUSE/SPDX, SBOMs, WCAG 2.2 AA.
 3. **Safety travels with the action; the node gate is the only path to the car**
-   (ADR-0032). Every path (UI, phone, MQTT, Home Assistant, schedules, AI clients) ends at
+   (ADR-0032; the one exception is a car with no node, where the Brain may host a
+   third-party adapter behind a stricter software gate, [ADR-0044](decisions/adr-0044-adapters-on-the-brain-without-a-node.md)). Every path (UI, phone, MQTT, Home Assistant, schedules, AI clients) ends at
    the node's transmit gate, which verifies grants a brain or phone mints. Phone approval
    of Tier 2–3 works over local links only; remote paths are read-only unless the
    install-level `OSTLER_ALLOW_REMOTE_CONTROL` override is set (off by default, never set
@@ -223,6 +224,7 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-07: v2.6, the ADR-0044 exception (adapters on the Brain only with no node fitted) added to the promises and principle 3.
 - 2026-10-07: v2.5, mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042
   accepted): the proposed §0 is folded into §1 as the real text; the tagline reads "Ostler:
   an open ecosystem that gets your car's data into apps"; the core mission stays narrow.
