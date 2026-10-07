@@ -2,7 +2,7 @@
 title: "Launcher and widgets — the Android-model home screen: pages in a carousel, dock, drawer, widget host, widget setup, starter widgets, dashboard builder and theme wizard — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_integrations_dashboards.md, references/research/driver_distraction_rules.md, references/research/obd_telematics_apps.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, schemas/ostler-layout.schema.json, src/openostler/layouts.py, ui/src/drive/DriveFace.tsx]
 summary: >
@@ -384,6 +384,13 @@ records `{generator, version}` in `base` (HA research §4.4).
 
 ## 11. The theme wizard
 
+> **Amended 2026-10-07, approved by the owner:** themes follow
+> [visual spec §13](2026-10-07-visual-design-system-design.md). Theme packs may carry any
+> custom CSS against the documented hooks, images and fonts. Nothing is locked, and a theme
+> looks the same while Moving. The rules below about "tokens only, no user CSS", fixed status
+> colours, and glow and wallpaper while Moving are superseded for theme packs. The
+> content rules of the Moving templates still apply.
+
 1. **Mode:** Night, Day, Auto (sun or headlights on head units); Night dim and Deep night
    (visual spec §3).
 2. **Background:** a wallpaper from a wallpaper pack, the user's own photo (chosen Parked,
@@ -515,3 +522,5 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
   model), for ADR-0046.
 - 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
   list items 14–21 and 44–53): every decision answered as recommended (alternatives not chosen).
+- 2026-10-07: v0.3, amended (approved by the owner on 2026-10-07): §11 defers to visual
+  spec §13. Themes may use custom CSS and change anything, and look the same while Moving.

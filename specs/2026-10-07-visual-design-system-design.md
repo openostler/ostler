@@ -2,7 +2,7 @@
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-07
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
@@ -15,15 +15,16 @@ summary: >
   Material Symbols as the one icon set and bans emoji glyphs. Maps are "Ostler Night/Day" Protomaps flavours
   on brain-served regional PMTiles with an OpenFreeMap fallback. Charts are our own SVG. One component kit
   (Button to TabBar) with phone and head-unit density, enforced by stylelint and Playwright, and a migration
-  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work. Amended 2026-10-07 (OS round): validated accent colour sets beyond cyan, and icon packs mapped to Material Symbols names with fixed safety icons. Amended 2026-10-07 (§13, owner-approved): design-language themes from the Claude Design bundle; a theme file sets palette, fonts from an open-font list, corners, labels, layout, rail, strip, hero, gauges, maps and image textures; 22 built-ins with Night default; status colours, telltales, contrast, type floors and Moving limits locked; an automatic Moving-safe variant drops blur, glow and images; user background images per launcher §11.
+  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work. Amended 2026-10-07 (OS round): validated accent colour sets beyond cyan, and icon packs mapped to Material Symbols names with fixed safety icons. Amended 2026-10-07 (§13, owner-approved): design-language themes from the Claude Design bundle. A theme pack has tokens, any custom CSS (against documented, versioned data-part hooks) and assets (texture and background images, fonts); nothing is locked and themes look the same while Moving (no Moving-safe variant); content limits of Moving templates still apply; 22 built-ins with Night default; user background images per launcher §11; open decisions on a Drive-mode render check, glow on head units and publishing.
 ---
 
 # Visual design system — design
 
 > **Amended 2026-10-07 (design-language themes), approved by the owner on 2026-10-07:**
 > §13 adds the theme engine and 22 built-in themes from the
-> [Claude Design bundle](../references/design/2026-10/claude-design/README.md), image textures
-> and user backgrounds, and the open-font list. It supersedes older design references where they differ.
+> [Claude Design bundle](../references/design/2026-10/claude-design/README.md): themes may
+> change anything with custom CSS, images and fonts, and look the same while Moving. It
+> supersedes older design references where they differ.
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round):** validated accent colour sets beyond cyan are allowed (decision list item 48), and
@@ -343,133 +344,168 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 
 ## 13. Design-language themes (amendment, 2026-10-07)
 
-> **Amended 2026-10-07, approved by the owner on 2026-10-07** ("these designs … will become
-> the design language themes for the project"; "yes amend to this"). The design is the Claude
-> Design bundle in
+> **Amended 2026-10-07, approved by the owner on 2026-10-07.** The Claude Design themes
+> become the project's design language ("these designs … will become the design language
+> themes"). A second amendment the same day decided:
+>
+> - **Full flexibility.** A theme can change anything, custom CSS included ("custom CSS needs
+>   to be allowed and full flexibility … they should be able to change anything").
+> - **No Moving-safe variant.** A theme looks the same Parked and Moving ("we can just keep
+>   it the same").
+>
+> The design is the Claude Design bundle in
 > [references/design/2026-10/claude-design/](../references/design/2026-10/claude-design/README.md),
 > primarily `project/Ostler Themes.dc.html` and its token source `project/ostler-themes.js`.
 > It is the latest design iteration and supersedes older design references where they
-> differ. Sections 1–12 still hold unless this section says otherwise.
+> differ. The evidence for how deep theming works is
+> [deep theming research](../references/research/deep_theming.md). Where this section
+> conflicts with §1 principles 5–7, §4 (Figtree only), §5 (glow) or §9 (no raw values), this
+> section wins for theme packs. The kit and shell code still follow §9.
 
 ### 13.1 What a theme is
 
-A **theme** is a design language: a data object (app UI model §5, launcher spec §11), built
-only on the tokens of this spec. It changes far more than colour. A theme file sets:
+A **theme pack** (`ostler.theme/1`) is a data object (app UI model §5, launcher spec §11)
+with three layers. Each layer is optional, and a pack may use any mix of them.
 
-| Group | Fields |
-|---|---|
-| Palette | `bg`, `strip`, `rail`, `surface-1/2/3`, `text-1/2`, `accent`, `on-accent`, `secondary`, `speed-digit`, a five-step speed ramp |
-| Type | body, heading and numeral font, chosen from the open-font list (§13.6); numeral weight, italic and tracking; heading size, weight, case and tracking |
-| Shape | card radius (per corner allowed, for example 2/22/2/22), chip radius, inner-tile radius, gap |
-| Effects | border or stroke, glow, translucency and blur, texture and background image (§13.5) |
-| Labels | one label style: caps, wide caps, heavy, sentence, small caps, key-cap chip, ink tag, brass plate or drawing tag |
-| Structure | Home layout (`grid`, `mapL`, `center`, `stack`, `stackMap`), rail style (pill, block, edge bar, folder tab, floating dock, tint), strip style (bar, floating capsule, open line), speed-hero plate (round, square, chamfered, bare) |
-| Gauges and maps | gauge style (arc, thin, needle, bar, segmented, race sweep), thick strokes, shift-light bar, map style and filter, topo overlay |
-| Meta | id, name, who it is for, font licences, `light` or `dark`, head-unit suitability (night, day, or safe-variant only) |
+| Layer | Holds | For |
+|---|---|---|
+| **1. Tokens** | every token of §3–§8 (palette, status colours, ramps, type, space, radius, elevation, glow, motion), plus the structural options from the theme exploration: card, chip and tile corners (per corner allowed); label style; heading and numeral style; Home layout (`grid`, `mapL`, `center`, `stack`, `stackMap`); rail, strip and speed-hero style; gauge style; map style; theme settings (§13.4) | most themes; no CSS needed |
+| **2. `theme.css`** | **any CSS**: layout, positions, sizes, shapes, borders, shadows, filters, blur, gradients, animation, pseudo-elements, hiding or moving anything | full design languages |
+| **3. Assets** | images (textures, backgrounds, card fills, gauge faces), fonts, icon packs, map styles | material looks; §13.5 |
 
-Themes have no user CSS. A theme that is not on the open-font list, or that fails a check in
-§13.3, is refused at import with the reason in words.
+There are **no locked tokens**: a theme may change status colours, telltale styling, sizes,
+glow and blur too.
 
-### 13.2 Built-in themes
+The few fixed rules are about packaging, not looks:
 
-There are 22 built-in themes. The values are the merged result of `ostler-themes.js` in the
-bundle (`OstlerThemes.resolve`), and the theme sheets in the canvas list each one's
-swatches, fonts and contrast checks.
+- **No code.** No JS. No `@import` or `url()` that points outside the pack.
+- **Pack files only.** Fonts and images load from the pack's own files, never a remote host.
+- **Scoped CSS.** The shell wraps `theme.css` in `@layer theme` and scopes it to the app root,
+  so it cannot style the browser chrome, other origins or the iframes of community widgets.
+
+### 13.2 Stable hooks (the CSS API)
+
+`theme.css` targets **documented hooks**, never internal markup. Internal class names are
+hashed, so only the hooks below are reachable by name.
+
+- **`data-part` on every shell region and kit component**, for example:
+  - shell: `app`, `strip`, `strip-chip`, `telltale`, `rail`, `rail-item`, `dock`, `page`;
+  - kit: `card`, `card-header`, `tile`, `tile-label`, `tile-value`, `tile-unit`, `hero`,
+    `gauge`, `gauge-track`, `gauge-band`, `gauge-value`, `button`, `chip`, `segmented`,
+    `list-row`, `sheet`, `sheet-handle`;
+  - maps, charts and alerts: `map`, `map-overlay`, `donut`, `trace`, `alert-card`,
+    `short-list`, `call`.
+- **State attributes:**
+  - `data-state`: `active`, `selected`, `pressed`, `disabled`, `stale`, `missing`;
+  - `data-tone`: `ok`, `warn`, `alarm`;
+  - `data-layout`: `phone`, `tablet`, `desktop`, `hu5`, `hu7`, `hu9`, `huwide`;
+  - `data-driving`: `parked`, `idling`, `moving`, `passenger`;
+  - `data-theme-mode`: `day`, `night`, `dim`;
+  - `data-screen`: the screen id, for example `home` or `drive-dashboard-cluster`;
+  - `data-signal`: the VSS path on a tile.
+- **Every token as a CSS variable**, plus the theme's own variables.
+
+The hook list is versioned with the shell and published in the theme authoring guide. A
+hook is added freely. Renaming or removing one takes one minor release of deprecation, and
+the changelog lists every hook change. A theme declares the hook version it was written for.
+The importer warns when the theme uses hooks that have since been removed.
+
+### 13.3 Built-in themes, modes and driving
+
+There are 22 built-in themes. The values are the merged result of `ostler-themes.js`
+(`OstlerThemes.resolve`, full variant), and the canvas has a theme sheet for each one.
 
 - **Originals (rebuilt):** Night (the default), Heritage, Expedition, Glass, Minimal,
   Race, Deep night, High contrast.
 - **Round 2:** Air, Ledger, Tide, Lunar, Tactile.
 - **Round 3:** Slab, Prism, Paper, Soft, Bakelite, Clay, Tonal, Clarity, Blueprint.
 
-How the themes relate to the modes in §3.1:
+Each built-in ships as a readable pack. Where a theme's look needs CSS, such as Glass's leaf
+corners, Race's chamfered hero or Slab's offset shadows, the pack uses `theme.css`. "Duplicate
+theme" starts a new theme from any of them.
 
-- **Night** stays the default.
-- **Day** is its light pairing.
-- **Deep night** is a theme in its own right.
-- **Night dim** is not a theme. It is an automatic transform applied to any dark theme on a
-  head unit after dusk: text and accent dim, and glow, texture and background image go off.
-- **Auto** switches between the user's day theme and night theme. For example, High
-  contrast, Paper, Slab, Soft, Clay and Clarity hand over to Night after dusk.
+How themes relate to modes and driving:
 
-### 13.3 Locked in every theme
+- **Same while Moving.** A theme renders the same Parked and Moving. There is no automatic
+  Moving-safe variant. The prototype's `*Safe` values and `moving` option are not built.
+  A theme that wants a different look while driving styles `[data-driving="moving"]`
+  itself.
+- **Content limits still apply.** The Moving rules about *content* still hold, because a
+  theme changes looks, not content: Moving templates, ≤ 6 tiles, no text entry, no message
+  text, no video (UI §12.1, Drive modes §4.3).
+- **Modes.** Day, Night and Night dim stay as modes. A theme may provide each mode under
+  `[data-theme-mode]`. If it does not, the shell uses the theme as drawn in every mode.
+- **Auto** switches between the user's day theme and night theme.
 
-1. Status colours and words: ok, warn, alarm (§3.1), always with an icon and a word. Light
-   themes use the darker ink tones `#1f7a4b` / `#8a6110` / `#c0283f` for status *text*.
-   Filled telltales and chips are identical in every theme.
-2. The fault telltale, alarm alerts and the safety icons (§6) look the same in every theme.
-3. Contrast is at least 4.5:1 for text on its surface. This includes text over translucent
-   cards, textures and background images, measured against the worst case under them (§13.5).
-   Each theme ships its computed contrast table, and a unit test recomputes it.
-4. The type minimums (§4), the 76 px head-unit targets and the Moving limits (Drive modes §4.3)
-   apply whatever a theme sets.
-5. The speed ramp stays an ordinal ramp that is safe for colour blindness, never
-   green→red. The accent never marks a value (§1).
+### 13.4 Theme settings and editing
 
-### 13.4 Automatic Moving-safe variant
+A theme declares its own knobs, such as accent, texture on or off, density, gauge style,
+background dim and corner scale. "Edit theme" in More → Preferences → Theme shows them as
+controls, with no CSS needed. A knob sets a variable or toggles a `data-option` attribute
+that `theme.css` reads.
 
-The shell resolves every theme twice: full and Moving-safe. The Moving-safe variant is used
-in Drive mode, in any Moving template, and on a driver-facing head unit while Moving. It
-applies these changes:
+Two editing paths:
 
-- no blur, no glow and no texture or background image;
-- translucent surfaces swap to the theme's opaque `*Safe` surfaces;
-- numeral weights below 500 are lifted to 500.
-
-Glass, Air and Prism use their opaque variant on head units at all times; their full look
-is for phone, tablet and Parked passenger screens. §1 principles 6 and 7 are unchanged.
+- **The editor** shows the raw `theme.css` and tokens with a live preview on the five demo
+  screens (Home, Drive, Trip, Diagnose, Picker) at phone, HU-7 and HU-5. It is Parked only,
+  like all editing.
+- **Import and export** move a pack as a single file or link, like layouts.
 
 ### 13.5 Images: textures and backgrounds
 
-Material looks are **image assets in the theme pack, not CSS approximations**:
+Material looks are **image assets in the pack**: walnut, leather, carbon, topo, grids,
+moulded plastic, paper grain and so on. The prototypes' CSS gradients are placeholders.
 
-- Heritage: walnut and leather.
-- Race: carbon weave.
-- Expedition: topo contours.
-- Slab and Blueprint: grids.
-- Bakelite: moulded plastic.
-- Paper: grain.
-
-The CSS gradients in the prototypes are placeholders for those images.
-
-- **Theme images.** Each image is a WebP or SVG in the theme pack, with its role (`texture`,
-  `background`, `card-fill`), tiling, an opacity and a night dim level. The theme manifest
-  records each image's licence and author.
+- **Theme images.** A theme image is WebP, AVIF, PNG or SVG. It is referenced from tokens
+  (`texture`, `background`, `card-fill`) or from `theme.css` by a pack-relative `url()`. The
+  manifest records each image's licence and author.
 - **User backgrounds.** These are part of OS customisation (launcher spec §11). A user can
-  set a wallpaper from a wallpaper pack, their own photo, a solid colour or none, per screen
-  size. The photo is chosen while Parked, stored on the device and has its EXIF stripped. A
-  user background overrides the theme's background image, never its surfaces.
-- **Legibility.** A `scrim` token sits between the image and the content, and the 4.5:1
-  check runs against the image's brightest and darkest regions. If the check fails, the
-  scrim is raised automatically.
-- **Driving.** Images show only when the theme is not in its Moving-safe variant (§13.4) and
-  not in Night dim. Otherwise the plain `bg` replaces them.
-- **Not shipped.** Mood and reference images used while designing (for example the Air
-  reference) stay out of the repo and out of theme packs.
+  set a wallpaper from a pack, their own photo, a solid colour or none, per screen size and
+  per mode. The photo is chosen Parked, stored on the device and has its EXIF stripped. The
+  user's background overrides the theme's background image, and the theme decides how it
+  shows (scrim, blur, dim) through `[data-part="app"]`.
+- **Reference images stay out.** Mood and reference images used while designing (for
+  example the Air reference) stay out of the repo and out of packs.
 
 ### 13.6 Fonts
 
-Themes choose from a fixed list of open fonts, self-hosted like Figtree (§4, §12) and
-subset the same way:
+A pack may bundle any font whose licence allows embedding and redistribution (SIL OFL,
+Apache-2.0, or similar). The manifest names each font's licence, and the importer refuses a
+font without one. The theme exploration uses:
 
 - Figtree, Bitter, DM Serif Display, Barlow, Barlow Condensed;
 - Manrope, Atkinson Hyperlegible, Instrument Sans, IBM Plex Sans, IBM Plex Mono;
 - Outfit, Space Grotesk, Archivo, Plus Jakarta Sans, DM Sans;
 - Share Tech Mono, Nunito, Lexend, Albert Sans.
 
-All are SIL OFL 1.1, and each one added ships its licence and REUSE entry. Figtree stays the
-face of Night and the shell's fallback. The designer-checklist rule "Figtree is the face"
-now reads "Figtree by default; a theme may pick from the open-font list".
+All of them are OFL. Figtree stays the face of Night and the shell's fallback.
 
 ### 13.7 Build order
 
 | PR | Ships | Test |
 |---|---|---|
-| **T1** schema | `ostler.theme/1` JSON Schema in `schemas/`, the resolver (full and Moving-safe), and the locked-token guard | schema tests; Moving-safe resolution; refusal of locked fields |
-| **T2** themes | the 22 built-ins as data, and their fonts | contrast table per theme as a unit test; screenshot of Home, Drive (Moving), Trip, Diagnose and Picker at phone, HU-7 and HU-5 |
-| **T3** images | texture and background assets, the user background picker, scrim, Night dim and Moving drop | contrast over image; no image in a Moving screenshot |
-| **T4** picker and editor | More → Preferences → Theme: preview cards, selected state, "Edit theme" for the editable tokens | Playwright, keyboard-only |
+| **T1** schema and loader | `ostler.theme/1` JSON Schema in `schemas/`; the loader (tokens, scoped `@layer theme` CSS, pack-relative assets, no remote fetches); hashed internal classes | schema tests; a CSS `url()` to a remote host or an `@import` is refused; theme CSS cannot reach outside the app root |
+| **T2** hooks | `data-part` and state attributes on the shell and kit; the hook list as versioned JSON plus the authoring guide | a test fails if a documented hook disappears without deprecation |
+| **T3** built-ins | the 22 themes as packs (tokens + `theme.css` + fonts) | screenshots of the five demo screens at phone, HU-7 and HU-5 per theme |
+| **T4** images | texture and background assets, the user background picker | images load from the pack only |
+| **T5** picker and editor | More → Preferences → Theme: preview cards, theme settings, the CSS editor with live preview, Duplicate, Import / Export | Playwright, keyboard-only |
 
-T1 builds on V1a; T2–T4 land after the V2 kit.
+T1 builds on V1a; T2 lands with the V2 kit; T3–T5 follow.
+
+### 13.8 Open decisions
+
+These are from the [deep theming research](../references/research/deep_theming.md) §3:
+
+- **D1: A safety render check in Drive mode.** Recommended: no variant, but after a theme
+  applies on a head unit in Drive mode, the shell checks that:
+  - the fault telltale and alarm are visible;
+  - Drive digits are at least 56 px;
+  - text has at least 4.5:1 contrast.
+
+  If the check fails, Drive mode only falls back to Night, with a message saying why.
+- **D2: Glow and blur on moving head units.** Recommended: allowed, with D1 as the only guard.
+- **D3: Publishing on Ostler Community.** Recommended: no review gate, a "custom CSS" label,
+  and a preview before install.
 
 ## Decisions for the owner
 
@@ -513,3 +549,8 @@ the decision; each alternative was not chosen.
 - 0.4 (2026-10-07): amended (approved by the owner on 2026-10-07): §13 design-language
   themes from the Claude Design bundle: theme schema, 22 built-ins, locked tokens, automatic
   Moving-safe variant, image textures and user backgrounds, open-font list, build order T1–T4.
+- 0.5 (2026-10-07): amended again (approved by the owner on 2026-10-07): §13 allows custom
+  CSS and full flexibility (no locked tokens), documents stable `data-part` hooks as the CSS
+  API, drops the automatic Moving-safe variant (themes look the same while Moving), opens font
+  choice to any embeddable licence, and lists open decisions D1–D3 from the deep theming
+  research.

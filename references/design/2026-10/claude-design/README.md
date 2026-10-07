@@ -8,15 +8,22 @@ project's design-language themes.** Where older design references in this repo d
 example the single Night/Day/Night dim/Deep night theme set in the visual design system
 spec), this bundle is the newer direction. The owner approved the matching amendment the
 same day:
-[visual design system spec §13](../../../../specs/2026-10-07-visual-design-system-design.md)
-covers the theme schema, the locked tokens, the Moving-safe variant, image textures, user
-backgrounds, fonts and the build order T1–T4. Textures such as walnut, leather and carbon are
-image assets in the theme pack; the CSS gradients in the prototypes are placeholders. Safety rules never relax by
-themselves: UI §12.1, §14, Drive modes §8.1 and the visual spec's glow and type floors still
-apply.
+[visual design system spec §13](../../../../specs/2026-10-07-visual-design-system-design.md).
+Read it before building. **It overrides parts of the prototype:**
 
-These are HTML/CSS/JS **prototypes**, not production code. Rebuild them in `ui/` on the
-tokens.
+- **Any CSS.** Themes can change anything, with custom CSS written against documented
+  `data-part` hooks. No tokens are locked.
+- **Same while Moving.** Themes look the same Parked and Moving. There is no Moving-safe
+  variant, so ignore the prototype's `*Safe` values and the `moving` option of `resolve`.
+- **Images for textures.** Walnut, leather, carbon and similar are image assets in the theme
+  pack. The prototype's CSS gradients are placeholders.
+- **Backgrounds.** Users can set their own background images.
+
+The Moving *content* rules (templates, ≤ 6 tiles, no text entry, no message text) still
+apply. The research behind the amendment is
+[deep theming](../../../research/deep_theming.md).
+
+These are HTML/CSS/JS **prototypes**, not production code. Rebuild them in `ui/`.
 
 ## Build target
 
@@ -36,27 +43,18 @@ theme engine exploration. The owner chose this scope on 2026-10-07: **the engine
   - numeral italic and tracking;
   - Home layout (`LAY`: grid, mapL, center, stack, stackMap);
   - rail style (`RAIL`), strip style (`STRIP`), speed-hero plate (`HERO`) and gap.
-- **Locked for safety (every theme).** Status colours and words, the fault telltale and
-  alarm look, the Moving limits and the minimum sizes. Light themes switch to the darker
-  status-text tones (#1f7a4b / #8a6110 / #c0283f) for words on light backgrounds; filled
-  chips are unchanged.
-- **Automatic Moving-safe variant** (`resolve(id, {moving: true})`):
-  - no blur, glow or texture;
-  - the `*Safe` opaque surfaces replace translucent ones;
-  - the numeral weight is lifted to at least 500.
 - **The 22 themes.** Originals (rebuilt in round 4): Night, Heritage, Expedition, Glass,
   Minimal, Race, Deep night, High contrast. Round 2: Air, Ledger, Tide, Lunar, Tactile.
   Round 3: Slab, Prism, Paper, Soft, Bakelite, Clay, Tonal, Clarity, Blueprint.
 - **Demo screens** each theme is drawn on:
   - `TH Home`, `TH Trip`, `TH Diagnose` and `TH Picker` at HU-7 and phone;
-  - `TH Drive` at HU-7, HU-5 and phone, Moving, plus HU-7 Parked for the themes in `DIFF`;
+  - `TH Drive` at HU-7, HU-5 and phone. The prototype draws a Moving-safe frame plus a
+    Parked frame for the themes in `DIFF`; build the Parked look for all of them (§13.3).
   - `TH Sheet`, the theme sheet: swatches, contrast ratios computed by
     `OstlerThemes.contrast`, fonts and licences, settings.
 
-What the transcript says the next step is: a visual-design-system amendment and a theme
-schema for the owner's approval (which tokens stay locked, the automatic Moving-safe variant,
-theme files shared on Ostler Community, and the decisions on user accent colours and on glow
-and transparency on head units).
+The transcript said the next step was a visual-design-system amendment and a theme schema.
+That amendment is now §13 of the spec, with build order T1–T5 and the open decisions D1–D3.
 
 ## Read first
 
