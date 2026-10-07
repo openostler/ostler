@@ -2,11 +2,11 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.3
-updated: 2026-10-06
-depends_on: [SCOPE.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
+version: 2.4
+updated: 2026-10-07
+depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals: the tagline ("an open, smart-home-like ecosystem for your car; it reads your car's diagnostics and live data, then grows with add-ons"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
+  The short, canonical statement of Ostler's goals. v2.4 adds a proposed mission restatement (2026-10-07, awaiting the owner; ADR-0042 proposed): Ostler is an ecosystem whose main goal is getting the car's data into apps, with a small core and add-ons as the product, Home Assistant style. The approved text follows unchanged: the tagline ("an open, smart-home-like ecosystem for your car; it reads your car's diagnostics and live data, then grows with add-ons"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
 ---
 
 # Goals
@@ -17,6 +17,27 @@ What Ostler is for and what comes next. The long term is in
 [UI spec](specs/2026-10-06-ui-architecture-design.md) (approved, ADR-0018), the
 [ADRs](decisions/CLAUDE.md) and the [research](references/research/platform.md). Where they
 disagree with this file, they win. The hard rules are in [CONSTITUTION.md](CONSTITUTION.md).
+
+## 0. Proposed mission (2026-10-07, awaiting the owner)
+
+*Proposed wording from the owner's ecosystem direction; the approved text below stands until
+the owner accepts [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md).*
+
+> **Ostler is an ecosystem whose main goal is getting your car's data into apps.** A small
+> core reads and interprets the car and hands its data, safely and privately, to add-ons;
+> **the add-ons are the product.**
+
+- **Home Assistant style:** one core product (one app, one shell) with installable add-ons;
+  no separate apps per feature; thin Android Auto, CarPlay and watch companions maybe later,
+  each within its platform's rules.
+- **Small core:** the shell (layouts, status strip, rail, Drive mode, sign-in and invites, the
+  VSS data stream, the gate client, the app registry, the Add-ons catalogue), Diagnose,
+  **Trips** (was Logs), Network, and Security once a node exists.
+- **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, and Decode
+  lab for developers, plus hardware add-on modules. Map: [docs/ecosystem.md](docs/ecosystem.md).
+- **Promises:** the node gate is the only path to the car; every data class starts in ghost
+  (shared with no one); Export all, and nothing in core needs an Ostler-run server; no
+  driving score in core.
 
 ## 1. Tagline and mission
 
@@ -204,6 +225,9 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-07: v2.4, proposed §0 (awaiting the owner; ADR-0042 proposed): Ostler as an
+  ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the
+  product; the rest of the file unchanged.
 - 2026-10-06: v2.3, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
 - 2026-10-06: v2.2, product family renamed (ADR-0039): Ostler Diagnostics (was Ostler Lite),
   Ostler Hub (the brain; was "Ostler (full)") and Ostler Guardian; the §4 table and the
@@ -221,3 +245,12 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
   Hard lines unchanged, now §3 (were §10).
 - 2026-10-06: v1.4, smart-home-like framing and tagline; pillars regrouped into base pack,
   add-ons, networking and integrations; Phase 4 becomes add-on modules (ADR-0026, ADR-0027).
+
+## Decisions for the owner
+
+1. **Adopt §0 as the mission?** Recommend: yes, and fold it into §1 (tagline: "Ostler: an
+   open ecosystem that gets your car's data into apps"). Alternative: keep §1's tagline and
+   treat §0 as the app-layer framing only.
+2. **Keep "the core mission stays narrow" (§1, SCOPE)?** Recommend: yes; comms and
+   interpretation remain the core's job, and getting data into apps is what the ecosystem is
+   for. Alternative: widen the core's mission to include delivery to apps.

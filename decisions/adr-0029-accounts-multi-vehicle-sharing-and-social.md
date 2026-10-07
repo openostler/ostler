@@ -2,11 +2,11 @@
 title: "ADR-0029 — Accounts, multi-vehicle garage, sharing and social"
 area: decisions
 status: locked
-version: 1.3
-updated: 2026-10-06
-depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md]
+version: 1.4
+updated: 2026-10-07
+depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics".
+  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics". Proposed amendment (2026-10-07, awaiting the owner): §8's levels give way to one data-class registry with ghost mode on by default and precise location capped at 24 h; §7 gains contacts, groups and an 8-character invite code; §9 allows a later link-only social login through an Ostler Cloud OIDC broker; Basic Auth ends one release after P1 with no re-enable.
 ---
 
 # ADR-0029 — Accounts, multi-vehicle garage, sharing and social
@@ -14,6 +14,7 @@ summary: >
 > **Amended by [ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md), 2026-10-06:** §8 gains a **coarse** location level (the mesh default), and §9 names the mesh as a social transport. See [Amendments (mesh)](#amendments-2026-10-06-mesh).
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
+> **Proposed amendment (2026-10-07, awaiting the owner):** one permission model (§4, §8), contacts and invite codes (§7), a later link-only social login (§9), the Basic Auth end and `auth.db` placement (§1, Consequences). See [Proposed amendment (2026-10-07)](#proposed-amendment-2026-10-07).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It approves
@@ -189,3 +190,44 @@ Amendments above are unchanged.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Proposed amendment (2026-10-07)
+
+**Proposed, awaiting the owner; nothing above changes until approved.** The detail is
+[accounts spec §14](../specs/2026-10-06-accounts-sharing-design.md#14-proposed-amendment-2026-10-07-one-permission-model-and-the-shell-screens),
+from the [accounts](../references/research/accounts_social_login.md) and
+[social](../references/research/social_group_drive_apps.md) research. Only the decision text
+that changes is listed.
+
+- **§1 Local users.** The env admin password seeds the owner and skips the setup code. On
+  Ostler Diagnostics alone, recovery is the node's physical step with the ignition on: it
+  re-pairs a phone as owner, revokes every old pairing key and keeps the data. A person
+  without a login may exist for "who drove" only.
+- **§2 Authentication.** On the head unit, a 6-digit local PIN or a paired phone's approval
+  switches users, Parked only, over `localhost` only; sign-out at ignition off. Unused
+  trusted sessions are pruned after 90 days.
+- **§4 and §8 One permission model.** The share levels, location levels, token data classes
+  and the manifest's `permissions.data` become one add-on-extensible **data-class registry**
+  (presence, vehicle card, location, live signals, trips, faults, notes, maintenance (off by
+  default), video (camera grants, per camera, live only); audio stays unshareable). Grants target me, a person, a group, the household or
+  (later) the public. **Ghost mode** is on by default for every new user and add-on, with one
+  master toggle, and hides every live class. **Precise and live location always expire
+  within 24 h; nobody can raise another's precision**, except one's own SOS or crash alert
+  to one's own safety contacts, audited. Core holds it; Social and Vehicles & Map only read it.
+- **§7 Sharing.** Contacts, groups and rides are first-class objects (a ride-scoped grant
+  ends at ride end); invites gain an 8-character,
+  10-minute code with a six-digit key check beside link and QR.
+- **§9 Social and integrations.** "No third-party login" becomes "no third-party login as the
+  way in": later (P5 at the earliest) an optional Ostler Cloud OIDC broker may **link** a
+  social identity to an existing local user, plus a generic OIDC client; local credentials
+  always work offline.
+- **Consequences.** HTTP Basic is accepted in the P1 release on the old routes only and
+  refused in the next, with no switch to re-enable it. `auth.db` lives on the Brain, which
+  pushes a signed roster to the node and guardian; with the Brain asleep they accept pairing
+  keys and signed grants only. New text says "user role", keeping "role holder" for
+  ADR-0037's device duties.
+- **Decisions for the owner:** the thirteen items in
+  [spec §14.15](../specs/2026-10-06-accounts-sharing-design.md#1415-decisions-for-the-owner)
+  (registry, ghost scope and timers, the 24 h cap, no raising, owner vs driver ghost, invite
+  code, head-unit profiles, public name, social login, Basic Auth end, `auth.db` placement,
+  "user role").

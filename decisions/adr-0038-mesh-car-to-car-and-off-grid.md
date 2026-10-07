@@ -2,11 +2,11 @@
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
 status: locked
-version: 1.3
-updated: 2026-10-06
-depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md]
+version: 1.4
+updated: 2026-10-07
+depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, specs/2026-10-07-social-addon-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry.
+  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry. Proposed amendment 2026-10-07 (awaiting the owner): MeshCore as the second LoRa bridge; batman-adv over 802.11s allowed inside a convoy Wi-Fi mesh, routed at each brain with Babel at the edge; UK/EU HaLow is a car-to-camp uplink, not a mesh; live voice, video and camera streams only over a Wi-Fi IP mesh between ride members, never over HaLow, LoRa or MQTT; router topics and payload fields; ghost and camera consent; bench additions.
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
@@ -14,6 +14,7 @@ summary: >
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 > **Amended 2026-10-06 (owner, module-bus answers):** the bridge's ACL also lets it publish its own `status`, `power` and `manifest`; QoS and retain per topic. See [Amendments (bridge ACL)](#amendments-2026-10-06-bridge-acl).
+> **Proposed amendment (2026-10-07, mesh transports), awaiting owner approval:** MeshCore, a Wi-Fi mesh with batman-adv inside it, HaLow as an uplink, live media between ride members over Wi-Fi only. Nothing changes until approved. See [Proposed amendment (2026-10-07)](#proposed-amendment-2026-10-07).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -200,3 +201,91 @@ they win.
 - **What it forwards** (§2, §4). The alarm state is the reading
   `Vehicle.Ostler.Security.Alarm.State` (ADR-0016 Amendments) and alerts are `event/<name>`
   messages chosen by an owner allowlist of class and severity.
+
+## Changelog
+
+- 2026-10-07: v1.4, adds the Proposed amendment (2026-10-07, mesh transports) below for owner
+  approval; the accepted text above is unchanged.
+
+## Proposed amendment (2026-10-07)
+
+**Status: proposed, awaiting the owner.** Text from the
+[mesh transports research §7](../references/research/mesh_transports.md#7-proposed-amendment-to-adr-0038-accepted-for-owner-approval),
+reconciled with [calls, video and camera sharing](../references/research/calls_video_camera_sharing.md)
+§6–§8 and the [Social add-on spec](../specs/2026-10-07-social-addon-design.md) §6–§7. If
+approved, the decision text above stands except as follows; where these entries differ, they win.
+
+1. **§3, §7 — MeshCore.** MeshCore becomes the **second LoRa bridge** (`mesh-<n>` with
+   `via: meshcore`; own repo `ostler-bridge-meshcore`, MIT), built after the Meshtastic bridge
+   and the bench test. Styrene, Ratspeak and Reticulum (with its voice layer LXST, CC BY-NC-ND)
+   stay references only.
+2. **§8 — Wi-Fi mesh.** A convoy Wi-Fi IP mesh becomes a planned add-on (Social calls, video and
+   camera sharing). **Inside the mesh subnet, batman-adv over 802.11s is allowed** (`BATMAN_V`,
+   1532-byte mesh MTU). Every brain **routes** between its car and the mesh, never bridges, and
+   reflects no mDNS; **Babel** runs at each brain's routed edge to join several meshes and links
+   (convoy mesh, camp uplink, home). Moving meshes use 2.4 GHz or non-DFS 5 GHz channels;
+   directional 5 GHz is for a parked camp. This replaces "Babel, not batman-adv".
+3. **New §8a — HaLow.** In the UK and EU, HaLow (863–868 MHz: 1 MHz channels, 25 mW e.r.p.,
+   ≤ 10 % duty cycle for the access point, ≤ 2.8 % for clients) is an **access-point-to-client
+   uplink** (camp or house as the access point, the car as the client), **not a car-to-car
+   mesh**. It carries text, positions, alerts, voice notes, PTT bursts and stills; no continuous
+   calls and no video. EU-band hardware only; never 902–928 MHz kit. A HaLow mesh elsewhere is
+   out of scope.
+4. **§2 — what crosses.** Out, beyond position, alarm state and alerts: Social content (text,
+   voice notes, PTT) and the data classes a share grants (telemetry; camera under a `camera`
+   grant), on links whose class rules allow them (Social spec §6). **Live voice, video and
+   camera streams cross only a 2.4/5 GHz Wi-Fi IP mesh, only between members of the same ride**,
+   as WebRTC through a LiveKit room hosted on a brain; never over HaLow, LoRa or MQTT. LoRa
+   carries text, positions, alerts and at most four owner-picked telemetry values; Codec2 voice
+   notes over LoRa wait for the Meshtastic bridge and the bench. In: Social content and peer
+   data, shown and stored as untrusted. **Calls are never recorded** and nothing from a call
+   enters a session log (written beside ADR-0010's cabin-audio rule). **Still nothing above
+   Read; no arming, disarming, camera control or other action over any mesh**, with the install
+   override on or off.
+5. **§4 — topics.** `in/` payloads gain `id`, `class` and `via` (`meshtastic`, `meshcore`);
+   positions gain `precision_m`; `state/link` gains `rate_bps`, `duty_left_pct` and `rtt_ms`.
+   The Social router is a device `social` publishing only `social/inbox/<class>`,
+   `social/state/links`, `social/state/call` and `social/out/<bridge>/#`; with Social installed a
+   bridge subscribes to `social/out/<bridge>/#`, and its direct VSS subscriptions remain as
+   **standalone mode**. None is a command topic; media never cross the broker, only call state.
+6. **§5 — privacy.** Ghost mode (no outbound `position` or `telemetry`) is the default on every
+   link; position precision is per link and per share. A camera or microphone is never opened
+   from outside without a local tap or a live, time-boxed `camera` grant; a "being viewed" badge
+   shows on the car and every view is audited. Viewing is Read; recording, pan/tilt/zoom, IR,
+   talk-back and waking a camera stay local.
+7. **§6 — identity.** Peers are Ostler identities (ADR-0029); a peer's mesh node ids are bound
+   to them by a signed binding exchanged over IP or by QR, never derived from them.
+8. **Driving (cross-reference).** Mesh calls follow the same screen rules as any call: audio
+   only through the `call` template on a driver-facing head unit while Moving, and video never
+   on a driver-facing screen (Social spec §5).
+9. **Gate.** The gate's transport value stays `mesh` for every mesh kind, with a new audit field
+   `via` (`meshtastic`, `meshcore`, `wifi-mesh`, `halow`).
+
+**Confirmation additions.** The gate matrix's `mesh` row gains `via` and is refused above Read
+for every value; an inbound call or camera request from a peer starts nothing without the local
+tap or a live grant; ghost mode emits no `position` or `telemetry` on any link; one `alert` sent
+on three links appears once in `social/inbox/alert`; no audio or video bytes on the broker; a
+non-ride peer on the Wi-Fi mesh cannot join a ride's media room.
+
+**Bench additions** (to the plan above):
+- a **HaLow EU pair** (camp access point, car client): range at 25 mW, airtime used against the
+  2.8 % client budget, delivery of text, PTT bursts, voice notes and stills;
+- a **two-car 802.11s/batman-adv pair** on 2.4 GHz, each brain routing, Babel at the edge: range
+  and throughput at 1 and 2 hops parked and moving, call latency and loss, and that no mDNS or
+  broadcast crosses into a car segment;
+- **LiveKit on a Pi 5 brain**: CPU and memory for a 6-member voice room and a 2-member video
+  room with go2rtc passthrough;
+- **handover** of a live call between internet and the Wi-Fi mesh, and a text falling back to
+  LoRa;
+- **MeshCore beside Meshtastic** on the same boards with the same scripted traffic.
+
+### Decisions for the owner
+
+1. **MeshCore** — the second LoRa bridge after Meshtastic and the bench test, MIT, own repo? *Recommend:* yes. *Alternative:* Meshtastic only.
+2. **batman-adv inside the convoy Wi-Fi mesh** — 802.11s, routed at each brain, Babel at the edge? *Recommend:* yes. *Alternative:* Babel only, each car its own subnet (accepted §8 as is).
+3. **HaLow in the UK/EU** — a car-to-camp/house uplink for messages, PTT bursts, voice notes and stills, not a mesh? *Recommend:* yes, EU-band kit only. *Alternative:* leave HaLow out until a UK/EU mesh mode exists.
+4. **Live media over a mesh** — voice, video and camera streams only over a 2.4/5 GHz Wi-Fi mesh between ride members, never HaLow, LoRa or MQTT? *Recommend:* yes. *Alternative:* any contact on the mesh, not only ride members.
+5. **Calls never recorded** — stated beside ADR-0010's audio rule? *Recommend:* yes. *Alternative:* allow a local recording with every party's consent.
+6. **Topics and payload fields** of item 5, with standalone mode kept for bridges? *Recommend:* yes. *Alternative:* bridges keep subscribing to VSS directly and the router only reads `in/`.
+7. **LoRa voice notes** — Codec2 clips deferred until the bridge ships and the bench? *Recommend:* yes. *Alternative:* allow them in the first router release.
+8. **Bench additions** — HaLow EU pair, two-car batman-adv pair, LiveKit on a Pi 5, handover, MeshCore? *Recommend:* yes, before S3 of the Social spec. *Alternative:* bench only the LoRa stacks now.

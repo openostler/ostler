@@ -14,6 +14,7 @@ vehicle pack. For the Land Rover Discovery 2 that is the
 | [architecture.md](architecture.md) | Contributors and agents: code map, the `VehiclePack` seam, key seams, commands |
 | [tester_quickstart.md](tester_quickstart.md) | A non-programmer on a Mac: cable check, one-paste install, desktop launchers |
 | [https_on_the_pi.md](https_on_the_pi.md) | Local HTTPS on the Pi so the phone mic and motion sensors work |
+| [ecosystem.md](ecosystem.md) | Everyone (proposed, ADR-0042): what is core, what is an add-on, how add-ons get car data, the safety boundaries |
 
 Start with the root [README](../README.md), then [SCOPE.md](../SCOPE.md) and
 [CONSTITUTION.md](../CONSTITUTION.md). Decisions are in [decisions/](../decisions/CLAUDE.md);
