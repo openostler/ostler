@@ -1,17 +1,17 @@
 ---
-title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and settings — design"
+title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/design/2026-10/claude-design/README.md]
 summary: >
-  Draft (2026-10-07) for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare settings that generate the Edit theme screen. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Phases TE1–TE6 and open decisions.
+  Approved by the owner on 2026-10-07 (decisions 1–4 as recommended; decision 5 open). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Phases TE1–TE6 and open decisions.
 ---
 
 # Theme engine — design
 
-**Status:** draft for the owner's approval, 2026-10-07. It answers the owner's direction:
+**Status:** approved by the owner on 2026-10-07 ("yes agreed"), v0.2; decision 5 is still open. It answers the owner's direction:
 "the themes before were rubbish … basically custom CSS, free-form CSS files, stylesheets,
 textures, backgrounds, and layouts etc, XMLs, think of an extremely powerful way to theme",
 and the decision the same day that themes can change anything and look the same while Moving
@@ -91,7 +91,7 @@ heritage.ostskin
   "modes": ["day", "night", "dim"],
   "variations": ["walnut", "oxblood"],
   "classes": ["phone", "tablet", "hu5", "hu7", "hu9", "huwide", "desktop"],
-  "settings": "settings.json",
+  "options": "options.json",
   "assets": { "fonts": [{ "file": "assets/fonts/Bitter.woff2", "licence": "OFL-1.1" }] }
 }
 ```
@@ -275,37 +275,112 @@ image layers whose transforms and visibility are bound to values:
 - **Scope.** An expression can read:
   - `vehicle.*` (VSS signals);
   - `driving`, `mode`, `layout.class`, `time` and `sun`;
-  - `skin.settings.*`, `layout.*` and `alerts.*`.
+  - `skin.options.*`, `layout.*` and `alerts.*`.
 - **Intents.** `on-tap` takes a shell intent only: `navigate`, `open-sheet`, `drive-mode.next`,
   `media.play-pause` and similar. Car actions, writes and anything that leaves the device are
   never available to a skin. A skin changes how Ostler looks, not what it does to the car.
 
-### 3.8 Settings
+### 3.8 Theme options
 
-A skin declares settings that generate its Edit theme screen, like Shopify's settings schema
-and Obsidian's Style Settings:
+Every skin can offer **options**: anything its designer wants the user to be able to choose.
+Options appear in **More → Preferences → Theme → Options**, grouped as the designer lays them
+out, each with a thumbnail or live preview. The idea follows Shopify's settings schema and
+Obsidian's Style Settings, but an option can switch *anything*, not just a variable.
+
+**Heritage, as an example:**
+
+| Group | Option | Choices |
+|---|---|---|
+| Gauges | Gauge face | Walnut · White enamel (classic) · Black crackle · Brass |
+| Gauges | Needle | Red · Cream · Brass |
+| Gauges | Bezel | Chrome ring · Brass ring · None |
+| Gauges | Dial style | Twin dials · Single centre dial · Strip |
+| Dash | Background | Walnut · Burr elm · Brushed steel · Oxblood leather · Your photo |
+| Dash | Grain strength | slider 0–100 % |
+| Type | Numerals | Serif (Bitter) · Engraved small caps · Plain (Figtree) |
+| Sound | Indicator tick | Relay click · Soft · Off |
+
+The schema is `options.json`. An option's choices can carry token values, CSS, layout or
+template swaps, and assets:
 
 ```json
-[{ "id": "wood", "type": "select", "label": "Dash wood",
-   "options": ["walnut", "burr-elm", "none"], "default": "walnut" },
- { "id": "needle", "type": "color", "label": "Needle", "default": "token(accent)" },
- { "id": "grain", "type": "range", "label": "Grain strength", "min": 0, "max": 1, "default": 0.6 },
- { "id": "layout", "type": "select", "label": "Dashboard", "options": ["twin-dial", "single"] },
- { "id": "bg", "type": "image", "label": "Background", "accept": "background" }]
+{ "groups": [
+  { "id": "gauges", "label": "Gauges", "options": [
+    { "id": "gauge-face", "type": "choice", "label": "Gauge face", "default": "walnut",
+      "choices": [
+        { "id": "walnut", "label": "Walnut", "thumb": "assets/thumbs/face-walnut.webp",
+          "assets": { "gauge-face": "assets/textures/walnut-face.webp" },
+          "tokens": { "gauge-ink": "#f3e7cf" } },
+        { "id": "enamel", "label": "White enamel", "thumb": "assets/thumbs/face-enamel.webp",
+          "assets": { "gauge-face": "assets/textures/enamel-face.webp" },
+          "tokens": { "gauge-ink": "#1a1410", "needle": "#b3261e" } },
+        { "id": "crackle", "label": "Black crackle", "css": "styles/options/crackle.css" } ] },
+    { "id": "dial-style", "type": "choice", "label": "Dial style", "default": "twin",
+      "choices": [
+        { "id": "twin", "label": "Twin dials", "layouts": { "drive-dashboard": "layouts/drive-twin.xml" } },
+        { "id": "single", "label": "Single centre dial", "layouts": { "drive-dashboard": "layouts/drive-single.xml" } } ] } ] },
+  { "id": "dash", "label": "Dash", "options": [
+    { "id": "background", "type": "choice", "label": "Background", "default": "walnut", "allow-user-image": true,
+      "choices": [ { "id": "steel", "label": "Brushed steel",
+                     "assets": { "app-background": "assets/backgrounds/steel.avif" } } ] },
+    { "id": "grain", "type": "range", "label": "Grain strength", "min": 0, "max": 1, "default": 0.6 } ] } ] }
 ```
 
-Setting types are `toggle`, `select`, `range`, `color`, `font`, `image`, `text` and
-`variation`. Each value is exposed in three ways:
+**Option types:**
 
-- as a CSS variable, such as `--set-grain`;
-- as a `data-set-*` attribute;
-- as `skin.settings.*` in OSML.
+| Type | What it is |
+|---|---|
+| `choice` | cards with thumbnails |
+| `toggle` | on or off |
+| `range` | a slider |
+| `color` | a colour picker, optionally limited to a palette |
+| `font` | from the pack's fonts |
+| `image` | from the pack, or the user's own when `allow-user-image` is set |
+| `text` | free text |
+| `variation` | a whole token variation |
 
-Settings are saved per user profile, per vehicle and per screen size, as layouts are.
+**A choice can switch:**
+
+- token values;
+- an extra CSS file;
+- named assets (`gauge-face`, `app-background`, any name the skin uses);
+- OSML screen layouts;
+- component templates;
+- gauge definitions;
+- sounds.
+
+A choice can also set other options, as a preset: "Classic 1998" sets enamel faces, a red
+needle and a chrome bezel.
+
+**How options reach the skin:**
+
+| Where | Form |
+|---|---|
+| CSS | variables (`--opt-grain`) and attributes (`data-opt-gauge-face="enamel"`) |
+| OSML | `skin.options.*` |
+| assets | asset slots resolve to the chosen file |
+
+**Scope.** Every option can be set for all screens or overridden per screen, for example
+walnut faces on Home and enamel in Drive mode. Options are also saved per screen size, per
+mode (day or night background) and per vehicle and user profile. Options can be reset,
+exported as a preset file and shared.
+
+**Options every skin gets.** The shell adds these to every skin, so users can always change
+them whatever the designer offered:
+
+- **Background:** the skin's own choices, a wallpaper pack, the user's photo, a solid colour
+  or none. It is set per screen, screen size and mode, with dim, blur and scrim sliders. The
+  photo is stored on the device with its EXIF stripped.
+- **Accent colour**, **font size scale** (90–130 %) and **density** (compact, normal, roomy).
+- **Icon pack** and **sound pack**.
+- **My tweaks** (§3.9).
+
+The skin decides how these look through its hooks (`[data-part="app-background"]` and so
+on), and can hide a built-in option only by offering its own replacement.
 
 ### 3.9 The user layer
 
-Above any skin, the user can add small CSS snippets, XML overrides and setting values,
+Above any skin and its options, the user can add small CSS snippets and XML overrides,
 called **My tweaks**. They work like Obsidian snippets and live in the `user` cascade layer.
 My tweaks survive skin updates and can be exported.
 
@@ -314,7 +389,7 @@ My tweaks survive skin updates and can be exported.
 The skin engine resolves a skin in these steps:
 
 1. Resolve the chain `extends`, back to `ostler.base`.
-2. Merge tokens: base, then mode, then the chosen variation, then the user's settings.
+2. Merge tokens: base, then mode, then the chosen variation, then the chosen options.
 3. Pick each screen's OSML: the most specific match of screen, layout class, driving state
    and mode, searched child first, then parent.
 4. Load CSS into the layers.
@@ -349,7 +424,7 @@ in Studio and in More → Theme → Problems. **The UI never goes blank because 
 |---|---|
 | Parts | `data-part` on every shell region and kit sub-element (visual §13.2 list, extended by templates) |
 | States | `data-state`, `data-tone`, `data-driving`, `data-theme-mode`, `data-layout`, `data-screen`, `data-signal`, band attributes |
-| Variables | every token; `--sig-*` live signals; `--set-*` settings |
+| Variables | every token; `--sig-*` live signals; `--opt-*` options |
 | OSML | element and attribute names, slot names, component template names, intents |
 
 - The hook API has a semantic version. A minor version only adds hooks.
@@ -388,7 +463,7 @@ Each one demonstrates a different layer:
 | Skin | Layers it shows off |
 |---|---|
 | Night | tokens only; the reference |
-| Heritage | textures, needle-dial gauges, small-caps templates |
+| Heritage | theme options (walnut, white enamel, black crackle or brass gauge faces; walnut, burr elm, brushed steel or leather backgrounds; twin or single dial layout), textures, needle-dial gauges, small-caps templates |
 | Race | a twin-dial shell, shift-light CSS, live `--sig-rpm-ratio` |
 | Expedition | a map-first `shell.xml` |
 | Glass, Air and Prism | backdrop CSS over backgrounds |
@@ -405,7 +480,7 @@ Each is a starting point for Duplicate.
 | **TE1** | pack format, manifest schema, token layer, CSS layers with scoping and the filter, `extends`, variations, fallback and safe mode | schema tests; a remote `url()` is refused; a broken file falls back; safe mode from any state |
 | **TE2** | hook API v1 on the shell and kit, hashed internals, `--sig-*` variables, hook list JSON | a removed hook fails CI unless deprecated |
 | **TE3** | OSML screen layouts and `shell.xml`, slots, includes, conditions, the expression language | parser fuzzing; a user's tile is never lost; screenshots per screen size |
-| **TE4** | component templates, SVG gauges, assets (textures, backgrounds, fonts, icons, map, sounds), settings | screenshot matrix across the 22 built-ins |
+| **TE4** | component templates, SVG gauges, assets (textures, backgrounds, fonts, icons, map, sounds), theme options menu | screenshot matrix across the 22 built-ins |
 | **TE5** | Theme Studio: editor, preview, inspector, `skin serve`, `check`, `shoot` | Playwright |
 | **TE6** | Store and Community distribution, My tweaks | install, update, uninstall, export |
 
@@ -424,5 +499,18 @@ Each is a starting point for Duplicate.
 4. **Live signals in CSS** (`--sig-*`).
    - *Recommend:* yes, for the bound signals of the current screen, updated at most 30 Hz.
    - *Alternative:* OSML bindings only.
+
+   **Decisions 1–4 were answered by the owner on 2026-10-07 ("yes agreed"), as recommended.**
 5. **Safety render check** (visual §13.8 D1): waits for the repo rules audit the owner asked
    for.
+
+## Changelog
+
+- 0.1 (2026-10-07): first draft.
+- 0.2 (2026-10-07): approved by the owner on 2026-10-07 ("yes agreed"): decisions 1–4 as
+  recommended. §3.8 becomes theme options: designer-defined groups and choices (Heritage
+  example: walnut, white enamel, black crackle or brass gauge faces; steel, walnut or leather
+  backgrounds; dial layouts) that switch tokens, CSS, assets, layouts, templates, gauges and
+  sounds, per screen, screen size, mode and profile, with presets. It also adds the options the
+  shell gives every skin: background (including the user's photo), accent, size scale,
+  density, icon and sound packs.
