@@ -373,6 +373,15 @@ their own changelogs.
   the gauge number is HTML sized by the class's `type-num-xl` and the gauge box. A contrast test
   covers every text/surface pair the spec allows in all four themes, and axe runs in Night dim,
   Deep night and Day too.
+- **Visual design system V1b: Figtree is self-hosted** (visual spec §4, §11, §12; UI audit P7).
+  The Google Fonts `@import` is gone: the UI ships Figtree (SIL OFL 1.1) as two variable woff2
+  subsets (Latin 19 KB, preloaded; Latin-ext 9 KB; weights 400–700) in `ui/public/fonts/`,
+  built to `static/fonts/` (now package data). The legacy `/legacy/v2` page uses the same file.
+  No page load contacts `fonts.googleapis.com` or `fonts.gstatic.com`, which a Playwright run
+  with every other host blocked checks; `LICENSES/OFL-1.1.txt`, a REUSE annotation and a
+  `THIRD_PARTY_LICENSES.md` entry cover the font. The fallback stack is the spec's
+  (`system-ui`, `-apple-system`, `Segoe UI`, `Roboto`). Unit tests now read stylesheets as
+  text (`?raw`), so the "every custom property is defined" check sees real CSS.
 - **The D2 pack repo moved** from `JamesWrightDavid/discovery2-diag` to
   [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (the old
   URL redirects). CI and the Dockerfile `PACK_REPO`, `mac/install.sh`, the no-pack install

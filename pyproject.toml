@@ -52,7 +52,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "openostler" = ["metrics.json", "vss_leaves.json"]
-"openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*"]
+"openostler.web" = ["dashboard.html", "dashboard_v2.html", "static/*", "static/assets/*", "static/fonts/*"]
 "openostler.geo" = ["*.tsv.gz"]
 "openostler.obd" = ["uas.json"]
 

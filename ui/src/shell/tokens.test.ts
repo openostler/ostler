@@ -75,7 +75,7 @@ describe("W3C design tokens (ui/tokens/*.tokens.json, visual design system spec 
     expect(css).toContain("--elev-1: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.051);");
     expect(css).toContain("--dur-base: 200ms;");
     expect(css).toContain("--ease-standard: cubic-bezier(0.2, 0, 0, 1);");
-    expect(css).toContain('--font-base: Figtree, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;');
+    expect(css).toContain('--font-base: Figtree, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;');
     expect(css).toContain("--weight-bold: 700;");
     expect(css).toContain("--unit-ratio: 0.45;");
     expect(css).toContain("--radius-md: 16px;");

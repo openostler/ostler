@@ -6,8 +6,8 @@
 <title>D2 Diag</title>
 <style>
 /* Astryx neutral theme (facebook/astryx) — embedded as plain CSS variables.
-   Figtree via CDN with a system-font fallback (garage without network → the fallback applies). */
-@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap");
+   Figtree self-hosted by the app build (/fonts/, OFL-1.1); without a build the system font applies. */
+@font-face{font-family:Figtree;font-weight:400 700;font-display:swap;src:url("/fonts/figtree-latin.woff2") format("woff2")}
 :root{
   --font-base:Figtree,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
   --radius-md:10px; --radius-sm:4px;
