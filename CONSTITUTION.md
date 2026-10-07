@@ -2,7 +2,7 @@
 title: Constitution
 area: root
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-06
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
@@ -100,7 +100,8 @@ summary: >
 ### Code and tests
 - **Core Python stays stdlib + pyserial**
   ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). Optional extras are
-  `[passkeys]`, `[mcp]` and `[can]`; the native C decoder loads through stdlib `ctypes`,
+  `[passkeys]`, `[signing]`, `[mcp]` and `[can]` (`[passkeys]` and `[signing]` share one
+  `cryptography` requirement, [ADR-0041](decisions/adr-0041-brain-ed25519-signing.md)); the native C decoder loads through stdlib `ctypes`,
   with the Python reference decoder as the fallback. A new runtime dependency or language
   still needs an ADR. The React/TS UI is built ahead of time and shipped as static files
   (ADR-0004), so a Pi install stays Node-free.
@@ -146,3 +147,5 @@ summary: >
   override, AI-client accepts never count, VIN/identity data off by default and never
   leaving the device); the dependency rule restated with optional extras and the ctypes
   decoder; shared C/Python test vectors in CI.
+- 2026-10-06 — v1.6: the optional extra `[signing]` (the Brain's Ed25519 grant signing),
+  sharing one `cryptography` requirement with `[passkeys]` (ADR-0041).

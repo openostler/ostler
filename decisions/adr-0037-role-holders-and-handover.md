@@ -2,17 +2,18 @@
 title: "ADR-0037 — Role holders and handover (transmit gate, parked broker, time source, PLCA coordinator, uplink manager)"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-06
 depends_on: [references/research/cluster_view.md, references/research/connectivity_uplink.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls. Amended 2026-10-06 by ADR-0039 and ADR-0040: `status` gains `asleep`; a holder that sleeps releases its claims; a guardian alongside takes the parked broker while the node is in parked-deep; the u-blox sits on the Diagnostics node and, with PPS, ranks first for time. Amended 2026-10-06 (owner): an always-on add-on module that declares the `pbroker` role and at least 2 MB of PSRAM in its manifest is the last parked-broker fallback (node → guardian → module), so a car with only add-on modules still coordinates; deep-sleeping modules (check-in or none) are never eligible; ties go to the owner's priority, then the lowest device id; the module hands the role back when a Diagnostics node or Guardian is healthy for 60 s.
+  Accepted by the owner on 2026-10-06. Data in an Ostler car is decentralised (every device publishes its own manifest, status and readings), but a few roles must have exactly one holder at a time. The transmit gate (one per car bus) belongs to the node wired to that bus and never hands over: no holder means no transmit. The parked broker (node → guardian), the time source (best clock first, ranked by clock quality; u-blox placement pending product-family research), the PLCA coordinator (per T1S segment: node → guardian, never the brain) and the uplink manager (brain → node) move by a static priority the owner sets at pairing, with timeouts, a term number and hysteresis; no voting. A guardian fitted alongside a node is the standby for the parked broker, PLCA and time, at a parked-current cost. The cluster is shown on the Network core app, which absorbs More → Devices. An add-on action wakes the brain only if the brain is needed, otherwise the target module directly; the executing gate keeps the authority (detail: the power-state work, ADR-0040 draft, pending). Holders announce with a retained claim on their own MQTT topic, an online status with an offline will, and a roles hint in the mDNS TXT record. Split brain is made harmless rather than voted away. Holding a role never grants authority: every approval is checked by the gate that executes it, whichever UI asked. Confirmation by a simulated role harness and bench pulls. Amended 2026-10-06 by ADR-0039 and ADR-0040: `status` gains `asleep`; a holder that sleeps releases its claims; a guardian alongside takes the parked broker while the node is in parked-deep; the u-blox sits on the Diagnostics node and, with PPS, ranks first for time. Amended 2026-10-06 (owner): an always-on add-on module that declares the `pbroker` role and at least 2 MB of PSRAM in its manifest is the last parked-broker fallback (node → guardian → module), so a car with only add-on modules still coordinates; deep-sleeping modules (check-in or none) are never eligible; ties go to the owner's priority, then the lowest device id; the module hands the role back when a Diagnostics node or Guardian is healthy for 60 s. Amended 2026-10-06 (owner, module-bus answers): gate claims carry no expiry and are never timed out; any other claim on its bus silences a gate holder, whatever the claimant's status or manifest (void rules apply to views only, never re-opening a gate); a stale claim is cleared only by the owner's Remove device on a local link, which revokes the device and purges its retained topics on each broker; a K-line echo mismatch or foreign traffic before an init is a gate conflict too.
 ---
 
 # ADR-0037 — Role holders and handover
 
 > **Amended 2026-10-06 (product family and power states, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), [ADR-0040](adr-0040-power-states-and-wake.md)):** `status` gains `asleep`; a holder that sleeps releases its claims; with the node in parked-deep a guardian fitted alongside takes the parked broker; the time-source order is confirmed, with the Diagnostics node's u-blox and PPS ranking first; "Lite" reads "Ostler Diagnostics". See [Amendments (product family and power states)](#amendments-2026-10-06-product-family-and-power-states).
 > **Amended 2026-10-06 (owner, parked broker on add-on modules):** an eligible always-on add-on module (manifest `roles` lists `pbroker`, `power.class` `always`, `memory.psram_kb` ≥ 2048) is the **last** parked-broker fallback after the node and the guardian; deep-sleeping modules never are; ties by owner priority then lowest device id; it hands back when a Diagnostics node or Guardian is healthy for 60 s. See [Amendments (parked broker on add-on modules)](#amendments-2026-10-06-parked-broker-on-add-on-modules).
+> **Amended 2026-10-06 (owner, module-bus answers):** gate claims never expire; **any** other claim on a gate's bus silences it (void rules are for views only); a stale claim is cleared only by the owner's **Remove device**; a K-line echo mismatch or foreign traffic before an init is a `gate_conflict`. See [Amendments (gate claims)](#amendments-2026-10-06-gate-claims).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -335,3 +336,44 @@ above are unchanged; where these entries differ, they win.
     the module after 30 s of two signals. *Bench:* an ESP32-S3 module with 2 MB PSRAM runs
     the Mosquitto port with five mTLS clients for 24 h; peak internal heap and PSRAM use are
     recorded, and a parked alarm event from one module reaches a paired phone through it.
+
+## Amendments (2026-10-06, gate claims)
+
+Recorded with the owner's answers of 2026-10-06 to the
+[module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md#17-owner-answers-2026-10-06)
+(item 13; evidence: [power and roles practice](../references/research/power_and_roles_practice.md)
+item 13). The decision text and the Amendments above are unchanged; where these entries
+differ, they win. They follow this ADR's driver that a failure must close the path, never
+open a second, and §5's "stay listen-only until the owner removes one".
+
+19. **Gate claims never expire** (§3.2). A `gate` claim carries no MQTT 5 Message Expiry
+    and is never timed out by any device or broker: on a bus with no arbitration, silence
+    must never become permission. (The grant-flow research's self-expiring claims are not
+    adopted.)
+20. **Any claim silences a gate** (§3.2, §5; the node firmware's rule, 5971323, adopted).
+    A gate holder treats any non-empty retained claim on its bus from another device as
+    live, whatever that device's status, manifest or eligibility, and stays listen-only
+    with `gate_conflict` until the claim is released. §3.2's "a claim is void while its
+    device's status is `offline`" (and Amendment 8's `asleep`) decides what views show as
+    the holder; **voidness never re-opens a gate**.
+21. **Remove device** (§5's "until the owner removes one"). The only way to clear a stale
+    claim is the owner's **Remove device** on that device's Network page, on a local link,
+    with one confirmation naming the bus that will become writable. It revokes the
+    device's certificate and ACL entry and deletes its retained topics under
+    `ostler/v1/<vid>/<device>/#` on every broker the cluster runs, as a broker-host
+    operation (on the node's parked broker the node does it itself; no client publishes
+    under another device's topic). A device that comes back after removal is unpaired and
+    its claim is refused. On Ostler Diagnostics alone the phone app offers it over BLE or
+    the node's AP.
+22. **Conflicts on the wire** (§5). Claims miss testers that never claim. A K-line echo
+    that differs from what the node sent, or traffic during the idle wait before an init
+    that the node did not send, is a `gate_conflict` with `by: "bus"`: listen-only, the
+    session abandoned without a frame, released by the owner's acknowledgement or a quiet
+    period with no foreign traffic (bench starting point 10 min).
+23. **Confirmation (added).** *Simulated:* in the role harness, a retained gate claim from
+    an offline, unmanifested or removed device keeps the gate listen-only with
+    `gate_conflict`; Remove device clears the retained topics on both brokers and the gate
+    resumes after its claim window; no claim ever disappears by expiry. *Bench:* an
+    injected foreign frame before init and a corrupted echo each raise `gate_conflict`
+    with `by: "bus"` and no frame follows; a quiet K-line over a 24 h parked run raises
+    none (no false positives from line noise).

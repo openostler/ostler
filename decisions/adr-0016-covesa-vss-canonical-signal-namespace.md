@@ -2,14 +2,16 @@
 title: "ADR-0016 — COVESA VSS as the canonical signal namespace"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/standards.md, references/research/ui/vehicle_data_model.md, references/research/ovms_reuse.md, decisions/adr-0002-layered-stdlib-core.md]
 summary: >
-  The canonical id of a vehicle meaning is a COVESA VSS path, pinned to VSS 6.1. One overlay, vss/ostler.vspec, is the single source: it adds the Vehicle.Ostler.* extension branch and carries the OVMS, Home Assistant and OBDb alias attributes. src/openostler/metrics.json is generated from it with vss-tools (dev-only) and checked in CI. Unit keys are copied verbatim from the pinned release and checked by a test; QUDT, not UCUM; the extension branch is Vehicle.Ostler.*. Supersedes the OVMS-canonical recommendation in references/research/platform.md (research, not an ADR).
+  The canonical id of a vehicle meaning is a COVESA VSS path, pinned to VSS 6.1. One overlay, vss/ostler.vspec, is the single source: it adds the Vehicle.Ostler.* extension branch and carries the OVMS, Home Assistant and OBDb alias attributes. src/openostler/metrics.json is generated from it with vss-tools (dev-only) and checked in CI. Unit keys are copied verbatim from the pinned release and checked by a test; QUDT, not UCUM; the extension branch is Vehicle.Ostler.*. Supersedes the OVMS-canonical recommendation in references/research/platform.md (research, not an ADR). Amended 2026-10-06 (owner, module-bus answers): the alarm state is registered in the overlay as Vehicle.Ostler.Security.Alarm.State, a string enum DISARMED/ARMING/ARMED/TRIGGERED aliased to OVMS v.e.alarm and Home Assistant's alarm panel, since VSS 6.1 has no alarm node.
 ---
 
 # ADR-0016 — COVESA VSS as the canonical signal namespace
+
+> **Amended 2026-10-06 (owner, module-bus answers):** the alarm state is the overlay path `Vehicle.Ostler.Security.Alarm.State`. See [Amendments](#amendments-2026-10-06-alarm-state).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner decision, 2026-10-06, UI spec §11 Q1)
@@ -105,3 +107,20 @@ pack-private field needs no metric, and adding one never blocks a field.
 - **Home Assistant device classes.** Rejected: classes, not meanings (two temperatures
   share one class).
 - **Run vss-tools on the device.** Rejected: Python ≥ 3.11 and extra packages on the Pi.
+
+## Amendments (2026-10-06, alarm state)
+
+Recorded with the owner's answers of 2026-10-06 to the
+[module-bus message spec](../specs/2026-10-06-module-bus-messages-design.md#17-owner-answers-2026-10-06)
+(item 7; evidence: [MQTT topic practice](../references/research/mqtt_topic_practice.md)
+Q7). The decision text above is unchanged.
+
+1. **`Vehicle.Ostler.Security.Alarm.State`** is registered in `vss/ostler.vspec` as a
+   reviewed `Vehicle.Ostler.<Domain>.*` entry (the Decision's "guardian state" example):
+   VSS 6.1 and upstream master have no alarm node, and a non-standard name under a
+   standard branch (`Vehicle.Body.Alarm.*`) would break this ADR. It is a `string` sensor
+   with the allowed values `DISARMED`, `ARMING`, `ARMED`, `TRIGGERED`; aliases: OVMS
+   `v.e.alarm` (true only when `TRIGGERED`) and Home Assistant's alarm panel (`disarmed`,
+   `arming`, `armed_away`, `triggered`). On the module bus it is the one reading published
+   at QoS 1 (module-bus spec §6). If upstream VSS adds an alarm node, it is aliased at a
+   pin bump, as this ADR's pin rule says.

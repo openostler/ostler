@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.10
+version: 0.11
 updated: 2026-10-06
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback. v0.11 (plan notes, 2026-10-06; the module-bus spec's owner answers): the Network page gains the owner action Remove device, the only way to clear a stale transmit-gate claim; an approval is confirmed first and the grant challenged and signed after; a queued action is offered only when the target checks in before it would expire.
 ---
 
 # UI architecture — design
@@ -221,6 +221,19 @@ page's Devices and Roles rows), served by the firmware; the
 [app-model spec §12](2026-10-06-app-model-design.md#12-the-network-app-and-device-pages-accepted-2026-10-06)
 sets how it relates to the shell (it stays outside the app model).
 
+**Plan note (v0.11, 2026-10-06): Remove device.** With the owner's answers to the
+[module-bus message spec](2026-10-06-module-bus-messages-design.md#17-owner-answers-2026-10-06)
+(item 13), a stale transmit-gate claim never expires: any claim on a gate's bus keeps the
+gate listen-only until it is released. Each device page in Network therefore gets an
+owner-only **Remove device** action, on local links only (never over a remote path). One
+confirmation names what changes: "Remove Node 2? It is unpaired and its retained data is
+deleted. K-line (kline-diag) becomes writable by Node 1." Removal revokes the device and
+purges its retained topics on every broker (spec §7.2, §13). The Roles section makes the
+remedy one tap where it applies: "Gate silenced by Node 2's claim · Remove Node 2". A gate
+conflict seen on the wire (`by: "bus"`) shows **Acknowledge** instead. On Ostler
+Diagnostics alone the phone app offers the same action over BLE or the node's AP. Not built
+yet: the Network page UI and the Brain's remove API are open TODO items.
+
 **Changes made (v0.7):** §3.4's More row reads "Network" for "Devices"; §6's "More → Devices"
 pages are "More → Network → *device*"; the capability manifest (§5.1) gains `board`, `roles`,
 `transmit` per bus and `items` with `origin` and `status` (ADR-0037 Consequences, ADR-0032
@@ -262,7 +275,10 @@ the alarm never wait for the brain, so the Security chip is unaffected.
   1 h", "Limit reached: 6 wakes this hour".
 
 **Queued actions.** The button reads "Queued · runs when the Brain is ready · expires 14:35 ·
-Cancel". Outcomes: Done; **Expired**; Cancelled; Refused by *device* (the executing gate's
+Cancel". *Plan note (v0.11, module-bus spec §9, owner answer 2):* the shell offers to queue
+an action for a `check_in` target only when the target's `power.next_checkin` comes before
+the latest allowed expiry; otherwise it says when the target next checks in and offers
+nothing to queue. Outcomes: Done; **Expired**; Cancelled; Refused by *device* (the executing gate's
 reason); **State changed** (the driving state moved; ADR-0040 §5). Check-in targets say
 "Runs when Relay box next checks in (≤ 10 min)".
 
@@ -553,6 +569,13 @@ row above; [J1979 spec §5](2026-10-06-j1979-service-layer-design.md#5-mode-04-c
   category. Approval runs over **local links only** (the node's Wi-Fi AP, BLE, the in-car LAN).
   Parked-only rules and the re-checks still apply on the node gate; Stop is on the phone; an
   "accept" inside an AI client never counts.
+- **Confirm, then sign** (plan note v0.11; module-bus spec §10, owner answer 1). For a Tier
+  1+ action that reaches a car bus the shell shows the confirmation (or approval) first;
+  only after the user confirms does the phone or Brain ask the node for a grant challenge
+  and sign it at once, so the person is never inside the grant's 10 s window. The node
+  runs its cheap checks before it issues a challenge, so a refusal ("Not while moving")
+  shows straight after the confirmation. A queued action holds no grant; it is signed when
+  it is delivered (module-bus spec §9).
 - **Remote paths** (Tailscale, cloud relay) are **read-only by default**. The install-level
   override `OSTLER_ALLOW_REMOTE_CONTROL` (environment or install config, default off, never
   settable remotely) allows remote control for developers while the threat model matures.
@@ -822,3 +845,8 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
   badge gains **Off**, the word already in the badge list, with the note that Off wins over
   Offline because the power owner reports it. The page title reads **Ostler** (was "D2 Diag"),
   the Web App Manifest's name.
+- 2026-10-06: v0.11, plan notes from the owner's answers to the module-bus message spec
+  (v1.3 §17): §3.7 the owner action **Remove device** on a device page (local links only,
+  one confirmation naming the bus that becomes writable; the only way to clear a stale gate
+  claim) and the one-tap remedy in Roles; §3.8 queue offered only when the target checks in
+  before the expiry; §7.2 confirm first, then challenge and sign. Not built yet.
