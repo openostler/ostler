@@ -2,7 +2,7 @@
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
@@ -15,10 +15,15 @@ summary: >
   Material Symbols as the one icon set and bans emoji glyphs. Maps are "Ostler Night/Day" Protomaps flavours
   on brain-served regional PMTiles with an OpenFreeMap fallback. Charts are our own SVG. One component kit
   (Button to TabBar) with phone and head-unit density, enforced by stylelint and Playwright, and a migration
-  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work. Amended 2026-10-07 (OS round): validated accent colour sets beyond cyan, and icon packs mapped to Material Symbols names with fixed safety icons.
+  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work. Amended 2026-10-07 (OS round): validated accent colour sets beyond cyan, and icon packs mapped to Material Symbols names with fixed safety icons. Amended 2026-10-07 (§13, owner-approved): design-language themes from the Claude Design bundle; a theme file sets palette, fonts from an open-font list, corners, labels, layout, rail, strip, hero, gauges, maps and image textures; 22 built-ins with Night default; status colours, telltales, contrast, type floors and Moving limits locked; an automatic Moving-safe variant drops blur, glow and images; user background images per launcher §11.
 ---
 
 # Visual design system — design
+
+> **Amended 2026-10-07 (design-language themes), approved by the owner on 2026-10-07:**
+> §13 adds the theme engine and 22 built-in themes from the
+> [Claude Design bundle](../references/design/2026-10/claude-design/README.md), image textures
+> and user backgrounds, and the open-font list. It supersedes older design references where they differ.
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round):** validated accent colour sets beyond cyan are allowed (decision list item 48), and
@@ -336,6 +341,136 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 | stylelint, `stylelint-declaration-strict-value` | MIT | dev-only |
 | Recharts (not adopted) | MIT | — |
 
+## 13. Design-language themes (amendment, 2026-10-07)
+
+> **Amended 2026-10-07, approved by the owner on 2026-10-07** ("these designs … will become
+> the design language themes for the project"; "yes amend to this"). The design is the Claude
+> Design bundle in
+> [references/design/2026-10/claude-design/](../references/design/2026-10/claude-design/README.md),
+> primarily `project/Ostler Themes.dc.html` and its token source `project/ostler-themes.js`.
+> It is the latest design iteration and supersedes older design references where they
+> differ. Sections 1–12 still hold unless this section says otherwise.
+
+### 13.1 What a theme is
+
+A **theme** is a design language: a data object (app UI model §5, launcher spec §11), built
+only on the tokens of this spec. It changes far more than colour. A theme file sets:
+
+| Group | Fields |
+|---|---|
+| Palette | `bg`, `strip`, `rail`, `surface-1/2/3`, `text-1/2`, `accent`, `on-accent`, `secondary`, `speed-digit`, a five-step speed ramp |
+| Type | body, heading and numeral font, chosen from the open-font list (§13.6); numeral weight, italic and tracking; heading size, weight, case and tracking |
+| Shape | card radius (per corner allowed, for example 2/22/2/22), chip radius, inner-tile radius, gap |
+| Effects | border or stroke, glow, translucency and blur, texture and background image (§13.5) |
+| Labels | one label style: caps, wide caps, heavy, sentence, small caps, key-cap chip, ink tag, brass plate or drawing tag |
+| Structure | Home layout (`grid`, `mapL`, `center`, `stack`, `stackMap`), rail style (pill, block, edge bar, folder tab, floating dock, tint), strip style (bar, floating capsule, open line), speed-hero plate (round, square, chamfered, bare) |
+| Gauges and maps | gauge style (arc, thin, needle, bar, segmented, race sweep), thick strokes, shift-light bar, map style and filter, topo overlay |
+| Meta | id, name, who it is for, font licences, `light` or `dark`, head-unit suitability (night, day, or safe-variant only) |
+
+Themes have no user CSS. A theme that is not on the open-font list, or that fails a check in
+§13.3, is refused at import with the reason in words.
+
+### 13.2 Built-in themes
+
+There are 22 built-in themes. The values are the merged result of `ostler-themes.js` in the
+bundle (`OstlerThemes.resolve`), and the theme sheets in the canvas list each one's
+swatches, fonts and contrast checks.
+
+- **Originals (rebuilt):** Night (the default), Heritage, Expedition, Glass, Minimal,
+  Race, Deep night, High contrast.
+- **Round 2:** Air, Ledger, Tide, Lunar, Tactile.
+- **Round 3:** Slab, Prism, Paper, Soft, Bakelite, Clay, Tonal, Clarity, Blueprint.
+
+How the themes relate to the modes in §3.1:
+
+- **Night** stays the default.
+- **Day** is its light pairing.
+- **Deep night** is a theme in its own right.
+- **Night dim** is not a theme. It is an automatic transform applied to any dark theme on a
+  head unit after dusk: text and accent dim, and glow, texture and background image go off.
+- **Auto** switches between the user's day theme and night theme. For example, High
+  contrast, Paper, Slab, Soft, Clay and Clarity hand over to Night after dusk.
+
+### 13.3 Locked in every theme
+
+1. Status colours and words: ok, warn, alarm (§3.1), always with an icon and a word. Light
+   themes use the darker ink tones `#1f7a4b` / `#8a6110` / `#c0283f` for status *text*.
+   Filled telltales and chips are identical in every theme.
+2. The fault telltale, alarm alerts and the safety icons (§6) look the same in every theme.
+3. Contrast is at least 4.5:1 for text on its surface. This includes text over translucent
+   cards, textures and background images, measured against the worst case under them (§13.5).
+   Each theme ships its computed contrast table, and a unit test recomputes it.
+4. The type minimums (§4), the 76 px head-unit targets and the Moving limits (Drive modes §4.3)
+   apply whatever a theme sets.
+5. The speed ramp stays an ordinal ramp that is safe for colour blindness, never
+   green→red. The accent never marks a value (§1).
+
+### 13.4 Automatic Moving-safe variant
+
+The shell resolves every theme twice: full and Moving-safe. The Moving-safe variant is used
+in Drive mode, in any Moving template, and on a driver-facing head unit while Moving. It
+applies these changes:
+
+- no blur, no glow and no texture or background image;
+- translucent surfaces swap to the theme's opaque `*Safe` surfaces;
+- numeral weights below 500 are lifted to 500.
+
+Glass, Air and Prism use their opaque variant on head units at all times; their full look
+is for phone, tablet and Parked passenger screens. §1 principles 6 and 7 are unchanged.
+
+### 13.5 Images: textures and backgrounds
+
+Material looks are **image assets in the theme pack, not CSS approximations**:
+
+- Heritage: walnut and leather.
+- Race: carbon weave.
+- Expedition: topo contours.
+- Slab and Blueprint: grids.
+- Bakelite: moulded plastic.
+- Paper: grain.
+
+The CSS gradients in the prototypes are placeholders for those images.
+
+- **Theme images.** Each image is a WebP or SVG in the theme pack, with its role (`texture`,
+  `background`, `card-fill`), tiling, an opacity and a night dim level. The theme manifest
+  records each image's licence and author.
+- **User backgrounds.** These are part of OS customisation (launcher spec §11). A user can
+  set a wallpaper from a wallpaper pack, their own photo, a solid colour or none, per screen
+  size. The photo is chosen while Parked, stored on the device and has its EXIF stripped. A
+  user background overrides the theme's background image, never its surfaces.
+- **Legibility.** A `scrim` token sits between the image and the content, and the 4.5:1
+  check runs against the image's brightest and darkest regions. If the check fails, the
+  scrim is raised automatically.
+- **Driving.** Images show only when the theme is not in its Moving-safe variant (§13.4) and
+  not in Night dim. Otherwise the plain `bg` replaces them.
+- **Not shipped.** Mood and reference images used while designing (for example the Air
+  reference) stay out of the repo and out of theme packs.
+
+### 13.6 Fonts
+
+Themes choose from a fixed list of open fonts, self-hosted like Figtree (§4, §12) and
+subset the same way:
+
+- Figtree, Bitter, DM Serif Display, Barlow, Barlow Condensed;
+- Manrope, Atkinson Hyperlegible, Instrument Sans, IBM Plex Sans, IBM Plex Mono;
+- Outfit, Space Grotesk, Archivo, Plus Jakarta Sans, DM Sans;
+- Share Tech Mono, Nunito, Lexend, Albert Sans.
+
+All are SIL OFL 1.1, and each one added ships its licence and REUSE entry. Figtree stays the
+face of Night and the shell's fallback. The designer-checklist rule "Figtree is the face"
+now reads "Figtree by default; a theme may pick from the open-font list".
+
+### 13.7 Build order
+
+| PR | Ships | Test |
+|---|---|---|
+| **T1** schema | `ostler.theme/1` JSON Schema in `schemas/`, the resolver (full and Moving-safe), and the locked-token guard | schema tests; Moving-safe resolution; refusal of locked fields |
+| **T2** themes | the 22 built-ins as data, and their fonts | contrast table per theme as a unit test; screenshot of Home, Drive (Moving), Trip, Diagnose and Picker at phone, HU-7 and HU-5 |
+| **T3** images | texture and background assets, the user background picker, scrim, Night dim and Moving drop | contrast over image; no image in a Moving screenshot |
+| **T4** picker and editor | More → Preferences → Theme: preview cards, selected state, "Edit theme" for the editable tokens | Playwright, keyboard-only |
+
+T1 builds on V1a; T2–T4 land after the V2 kit.
+
 ## Decisions for the owner
 
 Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
@@ -375,3 +510,6 @@ the decision; each alternative was not chosen.
 - 0.3 (2026-10-07): amended (OS round, approved by the owner on 2026-10-07, "approve all"):
   validated accent colour sets (item 48); icon packs mapped to Material Symbols names, safety
   icons fixed (item 49).
+- 0.4 (2026-10-07): amended (approved by the owner on 2026-10-07): §13 design-language
+  themes from the Claude Design bundle: theme schema, 22 built-ins, locked tokens, automatic
+  Moving-safe variant, image textures and user backgrounds, open-font list, build order T1–T4.

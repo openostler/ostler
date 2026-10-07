@@ -6,9 +6,12 @@ as delivered so the builder can work from it.
 **Owner, 2026-10-07: this bundle is the latest iteration, and its themes become the
 project's design-language themes.** Where older design references in this repo differ (for
 example the single Night/Day/Night dim/Deep night theme set in the visual design system
-spec), this bundle is the newer direction. Bring the visual design system spec and its
-token files into line with it through a spec amendment the owner approves, as
-`references/design/2026-10/README.md` §2 describes. Safety rules never relax by
+spec), this bundle is the newer direction. The owner approved the matching amendment the
+same day:
+[visual design system spec §13](../../../../specs/2026-10-07-visual-design-system-design.md)
+covers the theme schema, the locked tokens, the Moving-safe variant, image textures, user
+backgrounds, fonts and the build order T1–T4. Textures such as walnut, leather and carbon are
+image assets in the theme pack; the CSS gradients in the prototypes are placeholders. Safety rules never relax by
 themselves: UI §12.1, §14, Drive modes §8.1 and the visual spec's glow and type floors still
 apply.
 
@@ -17,7 +20,7 @@ tokens.
 
 ## Build target
 
-**Primary design: [`project/Ostler Themes.dc.html`](project/Ostler%20Themes.dc.html)**, the
+**Primary design: `project/Ostler Themes.dc.html`**, the
 theme engine exploration. The owner chose this scope on 2026-10-07: **the engine and all 22 themes**.
 
 - **Theme token schema.** It covers palette, accent, secondary, speed ramp, radius, type
