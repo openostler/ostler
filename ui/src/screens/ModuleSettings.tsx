@@ -63,7 +63,7 @@ export function ModuleSettings() {
       ))}
       {replay.active ? (
         <div className="card small muted" role="note" aria-label="Identity in replay">
-          {idRead ? `identity read at ${formatClock(idRead.t, replay.offset)} ${idRead.ok ? "✓" : "✗"}` : "No identity read in this session up to here."}
+          {idRead ? `identity read at ${formatClock(idRead.t, replay.offset)} ${idRead.ok ? "(ok)" : "(failed)"}` : "No identity read in this session up to here."}
           <div className="dis">Identity values are never stored in a session.</div>
         </div>
       ) : identity ? (

@@ -126,6 +126,10 @@ are not shipped; their credits stay in the map's attribution control.
   © Deque Systems, Inc. A pinned dev dependency (`ui/package.json`) that runs the WCAG 2.2
   AA scan in the Playwright suite (`ui/e2e/shell.spec.ts`). Nothing of it is bundled into
   `src/openostler/web/static/`.
+- [stylelint](https://github.com/stylelint/stylelint) and
+  [stylelint-declaration-strict-value](https://github.com/AndyOGo/stylelint-declaration-strict-value):
+  **MIT**. Dev dependencies that lint the stylesheets against the design tokens
+  (`ui/stylelint.config.mjs`, `npm run lint`); nothing of them is bundled.
 
 ## REUSE
 

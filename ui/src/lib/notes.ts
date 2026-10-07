@@ -4,6 +4,7 @@
 
 /** Note helpers for the replay timeline (spec §2, §5) — pure. */
 import type { Note } from "../api/schemas";
+import type { SymbolName } from "../icons/Icon";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -29,7 +30,8 @@ export function noteAt(n: Pick<Note, "t" | "t_end">, cursor: number, tolMs = 100
   return n.t_end != null ? cursor >= n.t && cursor <= n.t_end : Math.abs(cursor - n.t) <= tolMs;
 }
 
-export const KIND_ICON: Record<string, string> = { mark: "⚑", note: "✎", capture: "◉" };
+/** The Material Symbol per note kind (visual spec §6). */
+export const KIND_ICON: Record<string, SymbolName> = { mark: "flag", note: "edit", capture: "radio_button_checked" };
 
 /** Quick tags offered on every note (spec §5). */
 export const QUICK_TAGS = ["issue", "fault", "noise", "driving", "test"] as const;

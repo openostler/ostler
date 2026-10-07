@@ -5,8 +5,9 @@
 import { summarize } from "../lib/health";
 import type { RouteName } from "../shell/routes";
 import { useApp } from "../state/app";
+import { Icon, type SymbolName } from "../icons/Icon";
 
-const ICON = { ok: "✓", warn: "!", alarm: "!", offline: "…" } as const;
+const ICON = { ok: "check", warn: "priority_high", alarm: "priority_high", offline: "more_horiz" } as const satisfies Record<string, SymbolName>;
 
 /** One line that answers "is the car OK?". Tapping it goes to the cause in Diagnose. */
 export function HealthStrip() {
@@ -17,9 +18,9 @@ export function HealthStrip() {
   return (
     <button className={`health ${h.level}`} onClick={() => target && goTo(target)} disabled={!target}
       aria-label={`Vehicle status: ${h.headline}`}>
-      <span className="hi" aria-hidden="true">{ICON[h.level]}</span>
+      <span className="hi" aria-hidden="true"><Icon name={ICON[h.level]} size={16} /></span>
       <span>{h.headline}</span>
-      {target ? <span className="rest">View ›</span> : null}
+      {target ? <span className="rest">View<Icon name="chevron_right" size="1.2em" className="icon-inline" /></span> : null}
     </button>
   );
 }

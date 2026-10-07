@@ -14,6 +14,7 @@ import { useSessionFlags } from "../state/flags";
 import { useReplay } from "../state/replay";
 import "../recording.css";
 import { Sheet } from "./Sheet";
+import { Icon } from "../icons/Icon";
 
 const AUDIO: { v: AudioChoice; name: string }[] = [
   { v: "off", name: "Off" }, { v: "phone", name: "Phone mic" }, { v: "pi", name: "Pi mic" },
@@ -42,7 +43,7 @@ function Choice<T extends string>({ label, value, options, reasons, onChange }: 
 }
 
 const FLAG_KINDS: { k: "manual" | "range" | "faults"; name: string }[] = [
-  { k: "manual", name: "Manual ⚑" }, { k: "range", name: "Sensor out of range" }, { k: "faults", name: "Faults" },
+  { k: "manual", name: "Manual marks" }, { k: "range", name: "Sensor out of range" }, { k: "faults", name: "Faults" },
 ];
 
 /**
@@ -74,7 +75,7 @@ function FlagManager() {
             <span key={m} className="chip" role="listitem">
               {m}
               <button type="button" className="rchip" aria-label={`Unmute ${m}`}
-                onClick={() => set({ muted: o.muted.filter((x) => x !== m) })}>✕</button>
+                onClick={() => set({ muted: o.muted.filter((x) => x !== m) })}><Icon name="close" size={18} /></button>
             </span>
           ))}
         </div>
@@ -197,7 +198,7 @@ export function RecordingOptions({ onClose }: { onClose: () => void }) {
               <span>Auto-detect forward from GPS{gpsOk ? "" : " (needs GPS)"}</span>
             </label>
             <button type="button" className="btn" onClick={calibrate} disabled={calibrating}>Calibrate — hold still 2 s</button>
-            {cal.msg ? <div className="small" role="status">{cal.phase === "error" ? "⚠ " : ""}{cal.msg}</div> : null}
+            {cal.msg ? <div className="small" role="status">{cal.phase === "error" ? <Icon name="warning" size="1.1em" className="icon-inline" /> : null}{cal.msg}</div> : null}
           </div>
         ) : null}
       </section>
@@ -212,7 +213,7 @@ export function RecordingOptions({ onClose }: { onClose: () => void }) {
 
       {errors.length ? (
         <div className="card warn" role="alert">
-          <b>⚠ Not everything started</b>
+          <b><Icon name="warning" size="1.1em" className="icon-inline" /> Not everything started</b>
           <ul className="opt-errors">{errors.map((e) => <li key={e}>{e}</li>)}</ul>
         </div>
       ) : null}

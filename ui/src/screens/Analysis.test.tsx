@@ -147,7 +147,7 @@ describe("Analysis — replay", () => {
     // no G-G panel without acceleration channels
     expect(document.querySelector(".replay-gg")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "‹ Sessions" }));
+    fireEvent.click(screen.getByRole("button", { name: "Back to sessions" }));
     expect(ctx.goTo).toHaveBeenCalledWith("logs");
     await screen.findByText("Nothing to show yet");
     expect(screen.queryByTestId("global-transport")).toBeNull();

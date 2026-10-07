@@ -6,6 +6,7 @@ import { parseFault } from "../lib/format";
 import { moduleName } from "../layout";
 import { useApp } from "../state/app";
 import { Sheet } from "./Sheet";
+import { Icon } from "../icons/Icon";
 
 /** Faults shown once (at startup or when new ones appear). Dismissing acknowledges them,
  * so afterwards only NEW faults alert while driving. */
@@ -13,7 +14,7 @@ export function FaultSheet({ faults, onDismiss }: { faults: string[]; onDismiss:
   const { module, faultMeaning } = useApp();
   return (
     <Sheet onClose={onDismiss} titleClass="fault-title"
-      title={<span style={{ color: "var(--ic-red)" }}>⚠ {faults.length} fault{faults.length > 1 ? "s" : ""}</span>}>
+      title={<span style={{ color: "var(--ic-red)" }}><Icon name="warning" size="1.1em" className="icon-inline" /> {faults.length} fault{faults.length > 1 ? "s" : ""}</span>}>
       <div className="small muted pretty">
         Stored/active on {moduleName(module)}. Dismiss to keep driving — after this you are only
         alerted about NEW faults.

@@ -16,6 +16,7 @@ import { readList, writeList } from "../state/prefs";
 import { canonicalModule } from "../layout";
 import { mergeReadings, recordFromSolve, signalNameFor, type LabelCapture, type Reading } from "../lib/mapping";
 import { useApp } from "../state/app";
+import { Icon } from "../icons/Icon";
 
 /** Derived status (ADR-0008) from /catalog by item name; the legacy /map ok/maybe/todo
  * is the fallback when the catalog is unavailable. */
@@ -81,14 +82,14 @@ function MappedRow({ module, cat, item, status, sniff, labels }: {
       const res = await api.upsertSignal(module, rec);
       if (!res.ok) return toast(res.error ?? "could not save", true);
       setSaved(true);
-      let msg = `${name} → signals/${module}.json (candidate)`;
+      let msg = `${name} saved to signals/${module}.json (candidate)`;
       if (community?.consent === true) {
         const sh = await api.contribute({
           module, lid: result.lid, offset: result.offset, kind: result.kind, name, our_value: null,
           confidence: "candidate", answer: { type: "map", value: result.signal ?? result.rule ?? "" },
         }).catch(() => ({ ok: false, queued: false }));
         // a queued contribution is accepted (HTTP 202, ok: true) but not sent yet
-        msg += sh.queued ? " · saved, will send later" : sh.ok ? " · shared ✓" : "";
+        msg += sh.queued ? " · saved, will send later" : sh.ok ? " · shared" : "";
         reloadCommunity();
       }
       toast(msg);
@@ -118,20 +119,20 @@ function MappedRow({ module, cat, item, status, sniff, labels }: {
               {result == null ? <span className="dis">solving…</span>
                 : !result.ok ? <span className="dis">{result.error}</span>
                 : result.mode === "numeric" ? (
-                  <div>→ <b>21 {result.lid}@{result.offset} {result.kind}</b> · R²={(result.r2 ?? 0).toFixed(3)}
-                    {result.clean ? " · clean scale ✓" : " · uncertain scale"}{result.how === "guess" ? " (guess, 1 reading)" : ""}
+                  <div>Result: <b>21 {result.lid}@{result.offset} {result.kind}</b> · R²={(result.r2 ?? 0).toFixed(3)}
+                    {result.clean ? " · clean scale" : " · uncertain scale"}{result.how === "guess" ? " (guess, 1 reading)" : ""}
                     <div className="mono dis">{result.signal}</div></div>
-                ) : <div>→ <b>{result.rule}</b></div>}
+                ) : <div>Result: <b>{result.rule}</b></div>}
               {result?.diff?.length ? (
                 <div className="dis mono">changed: {result.diff.slice(0, 8).map((d) =>
-                  `21 ${d.lid} b${d.byte}: ${d.values.map((v) => v.toString(16).padStart(2, "0")).join("→")}`).join(" · ")}</div>
+                  `21 ${d.lid} b${d.byte}: ${d.values.map((v) => v.toString(16).padStart(2, "0")).join(" > ")}`).join(" · ")}</div>
               ) : samples.length >= 2 && result ? <div className="dis">No bytes changed between readings — either this value is not in this block, or it did not change. Change it (press the pedal, open the door) and type the new value.</div> : null}
               <div className="row wrap" style={{ gap: 8, marginTop: 6 }}>
                 <span className="dis">{readings.length} reading(s) here</span>
                 {merged.fromLabels ? <span className="labels-note">+ {merged.fromLabels} label{merged.fromLabels === 1 ? "" : "s"} from Label tab</span> : null}
                 {result?.ok ? (
                   <button className="iconbtn" disabled={saved} onClick={saveToStore} title={`write to signals/${module}.json`}>
-                    {saved ? "✓ saved (candidate)" : "✓ save to store"}
+                    <Icon name="check" size="1.1em" className="icon-inline" />{saved ? "saved (candidate)" : "save to store"}
                   </button>
                 ) : null}
                 {readings.length ? <button className="iconbtn" onClick={clear}>clear {readings.length}</button> : null}
@@ -192,7 +193,7 @@ export function CoverageMap() {
     <>
       <StepHeader title="Decode" purpose="match our values to the NanoCom" steps={[
         <>Connect the NanoCom with the ESP32 sniff tap on the K-line (the dashboard reads it with <code>--sniff PORT</code>).</>,
-        <>Open the same screen on the NanoCom (e.g. Engine → Live data → Engine speed).</>,
+        <>Open the same screen on the NanoCom (e.g. Engine &gt; Live data &gt; Engine speed).</>,
         <>Type the value it shows next to our raw bytes, then <b>save</b>. After two or more readings the solver works out which bytes hold the value; <b>save to store</b> keeps the answer.</>,
       ]} />
       <div className="row wrap" style={{ gap: 8 }} role="tablist" aria-label="Module">

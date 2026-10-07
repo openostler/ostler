@@ -15,6 +15,7 @@ import { useReplay } from "../../state/replay";
 import { confirmReady } from "../confirm";
 import { InlineEdit } from "./InlineEdit";
 import { formatDuration, startTime } from "./sessionFormat";
+import { Icon } from "../../icons/Icon";
 
 /** Server caps (spec §3 PATCH /sessions/<id>). */
 const NAME_MAX = 80;
@@ -22,11 +23,15 @@ const DESC_MAX = 2000;
 /** The word typed to confirm a delete (case-sensitive, spec §5). */
 export const DELETE_WORD = "Delete";
 
-/** "‹ Sessions": leave replay and return to the Logs browser. */
+/** "< Sessions": leave replay and return to the Logs browser. */
 export function BackToSessions() {
   const { goTo } = useApp();
   const replay = useReplay();
-  return <button className="rchip replay-back" onClick={() => { replay.exit(); goTo("logs"); }}>‹ Sessions</button>;
+  return (
+    <button className="rchip replay-back" aria-label="Back to sessions" onClick={() => { replay.exit(); goTo("logs"); }}>
+      <Icon name="chevron_left" size={20} />Sessions
+    </button>
+  );
 }
 
 export function ReplayHeader({ meta, data, onDeleted }: { meta: SessionMeta; data: SessionData; onDeleted: () => void }) {

@@ -16,6 +16,7 @@ import { pageOf } from "../lib/catalog";
 import { parseFault, type ParsedFault } from "../lib/format";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
+import { Icon, type SymbolName } from "../icons/Icon";
 
 function download(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
@@ -61,7 +62,7 @@ function FaultGroup({ items, label, kind, note }: {
   );
 }
 
-const SCAN_ICON: Record<string, string> = { ok: "✓", faults: "⚠", error: "✕", unimplemented: "·" };
+const SCAN_ICON: Record<string, SymbolName> = { ok: "check", faults: "warning", error: "close", unimplemented: "more_horiz" };
 
 /** Read-all-faults scan: every module in turn, establish → read → release. Read-only. */
 function FaultScan() {
@@ -95,7 +96,7 @@ function FaultScan() {
           {report.entries.map((e) => (
             <div key={e.module} className={`ro ${e.status === "ok" ? "edge-green" : e.status === "faults" ? "edge-yellow" : e.status === "error" ? "edge-red" : "edge-grey"}`}>
               <div className="ro-top"><div className="grow">
-                <div className="ro-title">{SCAN_ICON[e.status] ?? "·"} {e.module}</div>
+                <div className="ro-title"><Icon name={SCAN_ICON[e.status] ?? "more_horiz"} size="1.1em" className="icon-inline" /> {e.module}</div>
                 {e.faults.map((f) => <div key={f} className="small">{f}</div>)}
                 {e.error ? <div className="small" style={{ color: "var(--ic-red)" }}>{e.error}</div> : null}
                 {e.note ? <div className="small dis">{e.note}</div> : null}
@@ -160,7 +161,7 @@ export function Faults() {
       <FaultGroup items={current} label="Current" kind="current" note="present now" />
       <FaultGroup items={logged} label="Logged" kind="logged" note="stored history — not necessarily present now" />
       {!parsed.length ? (
-        <div className="health ok" role="status"><span className="hi" aria-hidden="true">✓</span>
+        <div className="health ok" role="status"><span className="hi" aria-hidden="true"><Icon name="check" size={16} /></span>
           <span>No fault codes — this module reports a clean fault memory.</span></div>
       ) : (
         <div className="card">
@@ -173,7 +174,7 @@ export function Faults() {
             <button className="iconbtn" onClick={writeFile}>Write to file</button>
             {replaying ? (
               <span className="locked replay-lock" style={{ marginLeft: "auto" }} aria-label="Clear codes: replay, read only">
-                <span aria-hidden="true">🔒</span>Clear codes · replay
+                <Icon name="lock" size="1.1em" className="icon-inline" />Clear codes · replay
               </span>
             ) : (
               <button className="iconbtn danger" style={{ marginLeft: "auto" }} onClick={clear}><span className="d" />Clear codes</button>

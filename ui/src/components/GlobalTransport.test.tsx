@@ -81,7 +81,8 @@ describe("GlobalTransport flags", () => {
   it("the chip shows the note at the cursor as a button that opens the sheet", () => {
     show({ t: 11_000 });
     const status = screen.getByRole("status");
-    expect(status).toHaveTextContent("⚑ Clunk");
+    expect(status).toHaveTextContent("Clunk");
+    expect(status.querySelector('[data-icon="flag"]')).not.toBeNull();
     fireEvent.click(within(status).getByRole("button"));
     expect(screen.getByRole("dialog")).toHaveTextContent("Clunk");
     expect(screen.getByRole("button", { name: "Jump to" })).toBeInTheDocument();
@@ -90,7 +91,8 @@ describe("GlobalTransport flags", () => {
   it("the chip shows a warn flag with ⚠ and opens the flag sheet", () => {
     show({ t: 90_000 });
     const chip = within(screen.getByRole("status")).getByRole("button", { name: "Warning: Coolant 112 °C (normal 80–105)" });
-    expect(chip).toHaveTextContent("⚠ Coolant 112 °C");
+    expect(chip).toHaveTextContent("Coolant 112 °C");
+    expect(chip.querySelector('[data-icon="warning"]')).not.toBeNull();
     expect(chip).toHaveClass("gnote-warn");
     fireEvent.click(chip);
     expect(screen.getByRole("button", { name: "Mute this sensor" })).toBeInTheDocument();
@@ -99,7 +101,8 @@ describe("GlobalTransport flags", () => {
   it("the chip shows an alarm flag with ⛔", () => {
     show({ t: 201_000 });
     const chip = within(screen.getByRole("status")).getByRole("button", { name: "Alarm: P0380 Glow plug" });
-    expect(chip).toHaveTextContent("⛔ P0380 Glow plug");
+    expect(chip).toHaveTextContent("P0380 Glow plug");
+    expect(chip.querySelector('[data-icon="error"]')).not.toBeNull();
   });
 
   it("no chip between notes and flags", () => {

@@ -13,6 +13,7 @@ import { useReplay } from "../../state/replay";
 import "../../recording.css";
 import { FlagSheet, SEVERITY } from "../FlagSheet";
 import { NoteEditor, type NoteDraft } from "./NoteEditor";
+import { Icon } from "../../icons/Icon";
 
 /** Ask the panel to open its editor: an existing note by id (a chart/scrubber marker tap),
  * or a new note at a time or range (a drag on the chart). */
@@ -107,7 +108,7 @@ export function NotesPanel({ request = null, onRequestDone }: {
       ) : null}
       {rows.length === 0 ? (
         filter === "all" || filter === "notes"
-          ? <p className="muted small">No notes yet. Tap ⚑ while recording, or add one at the cursor.</p>
+          ? <p className="muted small">No notes yet. Tap Mark while recording, or add one at the cursor.</p>
           : <p className="muted small">No {filter === "range" ? "out-of-range" : "fault"} flags in this session.</p>
       ) : (
         <ul className="notes-list">
@@ -116,7 +117,7 @@ export function NotesPanel({ request = null, onRequestDone }: {
               <button className="note-jump" onClick={() => setFlagOpen(row.flag)}
                 aria-label={`${SEVERITY[row.flag.severity].word} at ${noteSpan(row.flag)}: ${row.flag.label}`}>
                 <span className="note-t">{noteSpan(row.flag)}</span>
-                <span className={`note-kind flag-icon ${row.flag.severity}`} aria-hidden="true">{SEVERITY[row.flag.severity].icon}</span>
+                <span className={`note-kind flag-icon ${row.flag.severity}`} aria-hidden="true"><Icon name={SEVERITY[row.flag.severity].icon} size={18} /></span>
                 <span className="note-body">
                   {row.flag.label}
                   <span className={`note-chip flag-word ${row.flag.severity}`}>{SEVERITY[row.flag.severity].word}</span>
@@ -127,7 +128,7 @@ export function NotesPanel({ request = null, onRequestDone }: {
             <li key={row.note.id} className={`note-row${noteAt(row.note, r.t) ? " here" : ""}`} data-note={row.note.id}>
               <button className="note-jump" onClick={() => r.seek(row.note.t)} aria-label={`Jump to ${noteSpan(row.note)}: ${row.note.text || row.note.kind}`}>
                 <span className="note-t">{noteSpan(row.note)}</span>
-                <span className="note-kind" aria-hidden="true">{KIND_ICON[row.note.kind] ?? "✎"}</span>
+                <span className="note-kind" aria-hidden="true"><Icon name={KIND_ICON[row.note.kind] ?? "edit"} size={18} /></span>
                 <span className="note-body">
                   {row.note.text || <span className="muted">{row.note.kind === "mark" ? "Mark" : "(no text)"}</span>}
                   {row.note.t_end != null ? <span className="note-chip">range</span> : null}
@@ -135,7 +136,7 @@ export function NotesPanel({ request = null, onRequestDone }: {
                 </span>
               </button>
               <button className="note-edit" aria-label={readOnly ? "View note" : "Edit note"} onClick={() => setLocal({ id: row.note.id })}>
-                {readOnly ? "…" : "✎"}
+                <Icon name={readOnly ? "more_horiz" : "edit"} size={20} />
               </button>
             </li>
           ))}

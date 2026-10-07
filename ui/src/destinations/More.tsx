@@ -69,7 +69,7 @@ function Developer({ page }: { page: DeveloperPage }) {
   return (
     <div className="stack">
       <div className="subnav">
-        <button className="btn subnav-back" onClick={() => nav.open("more")}>‹ More</button>
+        <button className="btn subnav-back" aria-label="Back to More" onClick={() => nav.open("more")}><Icon name="chevron_left" size={22} className="icon-inline" />More</button>
         <nav className="seg" aria-label="Developer">
           {DEVELOPER_PAGES.map((p) => (
             <button key={p.route} aria-current={p.route === page.route ? "page" : undefined}

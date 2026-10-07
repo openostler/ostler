@@ -11,6 +11,7 @@ import { useReplay } from "../state/replay";
 import { activeNote, NOTE_SHOW_MS } from "../state/replayState";
 import { FlagSheet, SEVERITY, type FlagSheetItem } from "./FlagSheet";
 import { Transport, type TransportTick } from "./replay/Transport";
+import { Icon } from "../icons/Icon";
 
 const NO_NOTES: readonly Note[] = [];
 const noteLabel = (n: Note) => n.text || n.tags.join(", ") || n.kind;
@@ -50,12 +51,12 @@ export function GlobalTransport() {
   const item: FlagSheetItem | null = note && (!flag || note.t >= flag.t) ? { note } : flag ? { flag } : null;
   const chip = item == null ? null : "note" in item ? (
     <button type="button" className="gnote gnote-btn" data-note={item.note.id} title={item.note.text}
-      onClick={() => setOpen(item)}>⚑ {noteLabel(item.note)}</button>
+      onClick={() => setOpen(item)}><Icon name="flag" size="1.1em" className="icon-inline" /> {noteLabel(item.note)}</button>
   ) : (
     <button type="button" className={`gnote gnote-btn gnote-${item.flag.severity}`} data-flag={item.flag.id}
       title={item.flag.label} aria-label={`${SEVERITY[item.flag.severity].word}: ${item.flag.label}`}
       onClick={() => setOpen(item)}>
-      <span aria-hidden="true">{SEVERITY[item.flag.severity].icon} </span>{item.flag.label}
+      <Icon name={SEVERITY[item.flag.severity].icon} size="1.1em" className="icon-inline" /> {item.flag.label}
     </button>
   );
   const overlay = r.error ? <span className="gnote gnote-err" role="alert">Could not load this session: {r.error}</span>

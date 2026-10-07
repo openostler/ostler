@@ -8,6 +8,7 @@ import { trackTime } from "../../lib/audio";
 import type { AudioTrack } from "../../api/schemas";
 import { useReplay } from "../../state/replay";
 import "../../recording.css";
+import { Icon } from "../../icons/Icon";
 
 const KEY = "d2diag.replayAudio";
 const NO_TRACKS: AudioTrack[] = [];
@@ -73,7 +74,7 @@ export function ReplayAudio() {
       ))}
       <button className="rchip" aria-pressed={!prefs.muted} aria-label={prefs.muted ? "Unmute audio" : "Mute audio"}
         onClick={() => update({ muted: !prefs.muted })}>
-        <span aria-hidden="true">{prefs.muted ? "🔇" : "🔊"}</span>Audio
+        <Icon name={prefs.muted ? "volume_off" : "volume_up"} size={20} />Audio
       </button>
       <button className="rchip" aria-label="Audio earlier by 0.5 s" onClick={() => update({ offset: prefs.offset - 0.5 })}>−0.5 s</button>
       <span className="off" aria-live="polite" aria-label={`Audio offset ${prefs.offset} s`}>{sign}{Math.abs(prefs.offset).toFixed(1)} s</span>

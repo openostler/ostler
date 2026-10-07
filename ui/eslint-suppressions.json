@@ -1,0 +1,32 @@
+{
+  "src/components/Consent.tsx": {
+    "ostler/no-raw-style": {
+      "count": 1
+    }
+  },
+  "src/components/replay/Chart.tsx": {
+    "ostler/no-raw-style": {
+      "count": 5
+    }
+  },
+  "src/components/replay/basemap.ts": {
+    "ostler/no-raw-style": {
+      "count": 2
+    }
+  },
+  "src/components/replay/maplibre.ts": {
+    "ostler/no-raw-style": {
+      "count": 1
+    }
+  },
+  "src/components/replay/trace.ts": {
+    "ostler/no-raw-style": {
+      "count": 5
+    }
+  },
+  "src/vehicles/lr_d2/SlabsCar.tsx": {
+    "ostler/no-raw-style": {
+      "count": 1
+    }
+  }
+}

@@ -83,7 +83,7 @@ describe("MarkButton states", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mark at the cursor" }));
     await screen.findByText("What happened?");
     expect(replay.addNote).toHaveBeenCalledWith({ t: 42_000 });
-    expect(ctx.toast).toHaveBeenCalledWith("⚑ Marked");
+    expect(ctx.toast).toHaveBeenCalledWith("Marked");
     expect(screen.getByText("Marked at 0:42")).toBeInTheDocument();
     expect(calls.some((c) => c.path === "/notes/live")).toBe(false); // never a live mark in replay
     fireEvent.change(screen.getByRole("textbox", { name: "What happened?" }), { target: { value: "clunk" } });

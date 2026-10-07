@@ -395,6 +395,16 @@ their own changelogs.
   mph 0–20 … 60+), labelled in the legend, on the map and as `speed-4` in the chart; other
   channels keep plasma/mako (now read from `data.tokens.json`), and Classic colours no longer
   applies to speed.
+- **Visual design system V1d: one icon set and a lint ratchet** (visual spec §6, §9, §11;
+  UI audit P8). Every emoji, dingbat and Unicode arrow in UI text (⏪ ⏩ ▶ ❚❚ ⚑ ⚙ ⚠ ✓ ✕ ▾ ▸ ‹ › →
+  ★ ✎ ◆ 🔒 🔊 and others, about 30 files) is now a Material Symbol (26 added to the vendored
+  subset, verbatim from `@material-symbols/svg-400` 0.47.6) or a word; back buttons are
+  named "Back to sessions" / "Back to More". `src/icons/glyphs.test.ts` fails on any such glyph
+  in a string, template, JSX text or CSS `content` in `ui/src` (© ® ™ stay allowed for
+  credits). `npm run lint` now also runs stylelint (MIT, dev-only) against raw colours and px
+  font sizes, and ESLint's `ostler/no-raw-style` bans raw hex/rgb literals and inline
+  `fontSize` in TS/TSX. Existing violations are frozen (`ui/stylelint-baseline.json`, 237;
+  `ui/eslint-suppressions.json`, 15) until V3 migrates them; a new one fails CI.
 - **The D2 pack repo moved** from `JamesWrightDavid/discovery2-diag` to
   [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (the old
   URL redirects). CI and the Dockerfile `PACK_REPO`, `mac/install.sh`, the no-pack install

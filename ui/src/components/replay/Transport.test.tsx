@@ -92,7 +92,8 @@ describe("Transport", () => {
     const onFollow = vi.fn();
     const { rerender } = render(<Harness onFollow={onFollow} />);
     const btn = screen.getByRole("button", { name: "Follow the latest sample" });
-    expect(btn).toHaveTextContent("● Latest");
+    expect(btn).toHaveTextContent("Latest");
+    expect(btn.querySelector('[data-icon="circle-fill"]')).not.toBeNull();
     expect(btn).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(btn);
     expect(onFollow).toHaveBeenCalledWith(true);

@@ -63,7 +63,7 @@ function RetroMark({ session, toast }: { session: string; toast: (m: string, bad
     setBusy(true);
     const note = await r.addNote({ t }).catch(() => null);
     setBusy(false);
-    if (note) toast("⚑ Marked");
+    if (note) toast("Marked");
     else toast("Could not save the mark — it will be saved with the note", true);
     setMark({ note, t });
   };
@@ -110,7 +110,7 @@ function Mark({ toast }: { toast: (m: string, bad?: boolean) => void }) {
     let note: Note | null = null, session: string | null = null;
     try {
       const r = await api.liveNote({ kind: "mark" });
-      if (r.note) { note = r.note; session = r.session ?? null; toast("⚑ Marked"); }
+      if (r.note) { note = r.note; session = r.session ?? null; toast("Marked"); }
       else toast(r.error ?? "Could not save the mark", true);
     } catch {
       toast("Could not save the mark — it will be saved with the note", true);

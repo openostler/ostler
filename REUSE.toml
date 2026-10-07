@@ -32,6 +32,8 @@ path = [
     "ui/package-lock.json",
     "ui/tsconfig.json",
     "ui/tsconfig.node.json",
+    "ui/eslint-suppressions.json",
+    "ui/stylelint-baseline.json",
     "vss/VERSION",
 ]
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"

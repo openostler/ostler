@@ -68,7 +68,8 @@ describe("read-only actions in replay", () => {
   it("ActionButton is a lock with the word replay", () => {
     renderWithApp(withReplay(replaying(), <ActionButton action={fan} itemName="A/C Fan" />));
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("A/C Fan: replay, read only")).toHaveTextContent("🔒A/C Fan · replay");
+    expect(screen.getByLabelText("A/C Fan: replay, read only")).toHaveTextContent("A/C Fan · replay");
+    expect(screen.getByLabelText("A/C Fan: replay, read only").querySelector('[data-icon="lock"]')).not.toBeNull();
   });
 
   it("ActionButton is a normal button when live", () => {
@@ -100,7 +101,8 @@ describe("GlobalTransport note overlay", () => {
     const { container } = render(withReplay(replaying({ data: {} as Replay["data"] }), <GlobalTransport />));
     const layer = container.querySelector(".gnote-layer");
     expect(layer).not.toBeNull();
-    expect(layer).toHaveTextContent("⚑ Clunk");
+    expect(layer).toHaveTextContent("Clunk");
+    expect(layer?.querySelector('[data-icon="flag"]')).not.toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent("Clunk");
   });
 
