@@ -20,10 +20,9 @@ services:
       args:
         # The Discovery 2 pack's git ref (ADR-0015).
         PACK_REF: "${PACK_REF:-main}"
-    # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), the installed pack's demo
-    # sniff feed (Decode tab) and the OSM geocoder on.
+    # Same as the Dockerfile CMD: live (no demo mode, ADR-0011), no sniff feed (the Decode
+    # tab reads only a live ESP32 sniffer, --sniff) and the OSM geocoder on.
     command: ["python", "tools/dashboard.py", "--host", "0.0.0.0", "--port", "8080",
-              "--replay", "pack",
               "--geocoder", "https://nominatim.openstreetmap.org"]
     restart: unless-stopped
     networks:

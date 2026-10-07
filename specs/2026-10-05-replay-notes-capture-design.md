@@ -2,8 +2,8 @@
 title: "Whole-app replay, notes, audio and accelerometer recording, replay map v2, Decode/Label admin — design"
 area: specs
 status: stable
-version: 1.3
-updated: 2026-10-06
+version: 1.4
+updated: 2026-10-07
 depends_on: [specs/2026-10-05-session-logbook-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
   Sessions record an events stream so every page can be replayed read-only from a root-level replay context with a global transport and Exit to live; live (⚑) and retrospective notes on the timeline (Capture labels become notes); opt-in phone/Pi audio and phone/Pi/GPS accelerometer from a recording-options modal; replay map gains two side-by-side traces, CVD-safe high-contrast ramps, a satellite switcher and a tiered channel picker; admin Map/Capture become Decode/Label with plain-English steps.
@@ -207,9 +207,11 @@ Each tab gets a three-step header and a glossary popover explaining LID, `21 xx`
 
 **Decode:**
 - Its solver merges `GET /captures` with its local readings.
-- With no feed, the badge reads "No tap connected" and suggests the demo feed.
+- With no feed, the badge reads "No sniff source" and says to connect the ESP32 sniffer
+  (`--sniff`); 2026-10-07: there is no demo feed in the product (ADR-0011).
 
-**Homelab:** the compose runs with `--replay` on the committed demo sniff log.
+**Homelab:** the compose runs live with no sniff feed (2026-10-07: `--replay` was removed
+from the product; only `tests/e2e_server.py` replays a sniff log).
 
 All errors are in English.
 

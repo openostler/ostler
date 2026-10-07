@@ -104,8 +104,8 @@ Run the dashboard:
 ```bash
 # Against the vehicle (ignition on, stationary); the port is auto-detected when omitted:
 PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX
-# No car: loop the pack's demo sniff log into the admin Decode tab
-PYTHONPATH=src python3 tools/dashboard.py --replay pack
+# With the ESP32 sniffer on the K-line: its live feed in the admin Decode tab
+PYTHONPATH=src python3 tools/dashboard.py --serial /dev/cu.usbserial-XXXX --sniff /dev/ttyUSB1
 ```
 
 Then open <http://localhost:8080>, from the same machine or from your phone on the same

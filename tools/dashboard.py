@@ -31,9 +31,9 @@ in the Logs tab (specs/2026-10-05-session-logbook-design.md); the session index 
     PYTHONPATH=src python3 tools/dashboard.py --source node --mqtt mqtts://brain.local:8883 \
         --mqtt-ca ca.pem --mqtt-cert brain.crt --mqtt-key brain.key
 
-    # a sniff feed for the admin Decode tab without a car (the homelab runs this):
-    # ``pack`` loops the installed vehicle pack's demo sniff log (``demo.sniff_log``)
-    PYTHONPATH=src python3 tools/dashboard.py --replay pack
+    # the admin Decode tab reads a sniff feed only from a live ESP32 sniffer port (there
+    # is no replayed or demo sniff feed in the product, ADR-0011):
+    PYTHONPATH=src python3 tools/dashboard.py --sniff /dev/ttyUSB1
 
 Then open http://localhost:8080 (or the Pi's address in the car from your phone).
 """
@@ -46,18 +46,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 
 from openostler.pack import active_pack, canonical_module  # noqa: E402
 from openostler.web.server import DiagServer  # noqa: E402
-
-
-REPLAY_PACK = "pack"
-
-
-def pack_replay_log(pack) -> "str | None":
-    """The pack's demo sniff log (``--replay pack``), or None when it ships none. Keeps
-    deploys (Dockerfile, compose) free of site-packages paths."""
-    demo = pack.demo
-    if demo is None or demo.sniff_log is None or not os.path.exists(demo.sniff_log):
-        return None
-    return str(demo.sniff_log)
 
 
 def build_docs(pack, dict_path: "str | None" = None, extra_dirs=()):
@@ -144,9 +132,6 @@ def main() -> int:
                     help="extra directory of .md files to show in the Docs tab (repeatable)")
     ap.add_argument("--sniff", metavar="PORT",
                     help="ESP32 sniff port for the Map tab (passive RX-only; reference tool polls)")
-    ap.add_argument("--replay", metavar="FILE|pack",
-                    help="replay a sniff log in the Map tab (for testing without a vehicle); "
-                         "'pack' replays the vehicle pack's demo sniff log")
     ap.add_argument("--raw-log", action="store_true",
                     help="log ALL raw TX/RX to logs/raw-<module>-<time>.log (for mapping). "
                          "Appends across reconnects; one file per module per run.")
@@ -274,21 +259,13 @@ def main() -> int:
     repo_root = _repo
     docs = build_docs(pack, args.dict_path, args.docs)
 
-    # Map tab: passive sniff feed (live ESP32 or replayed log).
+    # Decode/Map tabs: passive sniff feed from a live ESP32 sniffer only (ADR-0011: no
+    # replayed or demo sniff feed in the product; tests/e2e_server.py replays one).
     sniffer = None
     if args.sniff:
         from openostler.web.sniffer import SnifferFeed
         sniffer = SnifferFeed.from_serial(args.sniff)
-        print(f"Sniff (live): {args.sniff} → Map tab")
-    elif args.replay:
-        from openostler.web.sniffer import SnifferFeed
-        if args.replay == REPLAY_PACK:
-            args.replay = pack_replay_log(pack)
-            if args.replay is None:
-                ap.error(f"--replay {REPLAY_PACK}: the {pack.name} pack ships no demo sniff log")
-        # looping replay so the freshness badge shows "LIVE" in the preview
-        sniffer = SnifferFeed.from_file(args.replay, delay=0.008, loop=True)
-        print(f"Sniff (replay): {args.replay} → Map tab (freshness demo)")
+        print(f"Sniff (live): {args.sniff} → Decode/Map tabs")
 
     # Labeled live captures (Capture tab) → durable JSONL dataset.
     captures_path = os.path.join(repo_root, "logs", "labeled_captures.jsonl")

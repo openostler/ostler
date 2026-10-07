@@ -164,7 +164,8 @@ describe("admin mode", () => {
     const steps = within(screen.getByRole("list", { name: "How it works" })).getAllByRole("listitem");
     expect(steps).toHaveLength(3);
     expect(steps[0]).toHaveTextContent(/ESP32/);
-    expect(steps[0]).toHaveTextContent(/demo feed/);
+    expect(steps[0]).toHaveTextContent(/--sniff/);
+    expect(steps[0]).not.toHaveTextContent(/demo/);
     const btn = screen.getByRole("button", { name: "Glossary" });
     expect(btn).toHaveAttribute("aria-expanded", "false");
     await user.click(btn);
@@ -263,8 +264,10 @@ describe("Decode helpers", () => {
     expect(out).toEqual({ readings: [...local, { text: "800", raws: { "09": "03 20" } }], fromLabels: 1 });
   });
 
-  it("the badge suggests the demo feed when no tap is connected", () => {
+  it("the badge shows an honest empty state when no sniff source is configured", () => {
     render(<SniffBadge sniff={{ data: { module: null, modules: [], lids: [] }, active: new Set(), fps: 0, configured: false, demo: false, error: null }} />);
-    expect(screen.getByRole("status")).toHaveTextContent("No tap connected — the homelab runs a demo feed");
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("No sniff source — connect the ESP32 sniffer (start the dashboard with --sniff PORT) to see live reads");
+    expect(status).not.toHaveTextContent(/demo/);
   });
 });

@@ -2,8 +2,8 @@
 title: "Logs at scale — place names, paging/search/scrubber, editable records, live-only recording, no demo mode — design"
 area: specs
 status: stable
-version: 1.0
-updated: 2026-10-06
+version: 1.1
+updated: 2026-10-07
 depends_on: [specs/2026-10-05-session-logbook-design.md, specs/2026-10-05-replay-notes-capture-design.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md]
 summary: >
   Sessions get human place names (offline GeoNames nearest town within a size-scaled radius, else region; enriched by OSM Nominatim when online, cached, attributed); a SQLite session index serves keyset-paged, searchable, filterable lists and a month histogram for a Google-Photos-style scrubber; name/description are editable in place; recording happens only while connected (paused otherwise); demo/mock mode is removed from the product (two committed Demo logs replace it); delete confirms by typing "Delete".
@@ -118,7 +118,8 @@ The owner approved this on 2026-10-06. Research sources:
 **What runs instead:**
 - The server always uses live sources.
 - The simulated sources live in `tests/fake_sources.py`, used only by tests. Playwright starts `tests/e2e_server.py`.
-- The homelab runs live with `--replay` of the demo sniff and the geocoder on.
+- The homelab runs live with the geocoder on and no sniff feed (2026-10-07: the product
+  has no `--replay`; the Decode tab reads only a live sniffer, `--sniff`).
 
 **Demo logs:**
 - The pack's demo sessions dir (for the D2 pack `src/d2diag/demo/sessions/`, ADR-0015) holds two synthetic sessions:

@@ -191,7 +191,7 @@ export function CoverageMap() {
   return (
     <>
       <StepHeader title="Decode" purpose="match our values to the NanoCom" steps={[
-        <>Connect the NanoCom with the ESP32 sniff tap on the K-line — or use the demo feed.</>,
+        <>Connect the NanoCom with the ESP32 sniff tap on the K-line (the dashboard reads it with <code>--sniff PORT</code>).</>,
         <>Open the same screen on the NanoCom (e.g. Engine → Live data → Engine speed).</>,
         <>Type the value it shows next to our raw bytes, then <b>save</b>. After two or more readings the solver works out which bytes hold the value; <b>save to store</b> keeps the answer.</>,
       ]} />

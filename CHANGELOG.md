@@ -423,6 +423,14 @@ their own changelogs.
   (use `start_utc`). `/snapshot`, `/events` and `/sessions/{id}/data` send
   `Deprecation: @1791244800` (2026-10-06) and `Link: <…/CHANGELOG.md>; rel="deprecation"`.
 
+### Removed
+- `tools/dashboard.py --replay FILE|pack` (and `pack_replay_log`): the product reads a
+  sniff feed only from a live ESP32 sniffer port (`--sniff`), as ADR-0011 (no demo mode)
+  requires. The Dockerfile and `docker-compose.yml` no longer loop the pack's synthetic
+  demo sniff log into the admin Decode tab, which now shows "No sniff source — connect
+  the ESP32 sniffer (start the dashboard with --sniff PORT)" until one is connected.
+  `PackDemo.sniff_log` is test-only: `tests/e2e_server.py --replay` still loops it.
+
 ### Fixed
 - A query string no longer turns an exact route into a 404 (`/snapshot?x`, `/events?x`,
   `POST /command?x` …): every route matches the path without its query.

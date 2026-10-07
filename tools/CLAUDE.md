@@ -6,9 +6,10 @@ generators, …) live in the vehicle pack's repo (ADR-0015).
 
 ## Files
 
-- `dashboard.py` — web dashboard, always live (`--serial`, `--module`, `--replay FILE|pack`,
-  `--geocoder`; no demo mode, ADR-0011 — a simulated car is `tests/e2e_server.py`).
-  `--replay pack` loops the active pack's demo sniff log.
+- `dashboard.py` — web dashboard, always live (`--serial`, `--module`, `--sniff PORT`,
+  `--geocoder`; no demo mode, ADR-0011 — a simulated car is `tests/e2e_server.py`). The
+  admin Decode tab's sniff feed comes only from a live ESP32 sniffer (`--sniff`); there is
+  no replayed sniff log in the product (the test server's `--replay` loops one).
 - `deploy.sh` — Pi deploy (mirrors the platform and a pack checkout, `PACK_DIR`).
 - `module_scan.py` — read-only K-line address scan (logic in `src/openostler/modscan.py`,
   addresses from the pack's `SniffSpec`). A sweep is probing, so it is Parked-only: it

@@ -12,14 +12,14 @@ export type SniffState = {
   active: Set<string>;
   /** Bus lines per second since the previous poll. */
   fps: number;
-  /** False when the server answered but has no sniffer configured (no --sniff/--replay). */
+  /** False when the server answered but has no sniffer configured (no --sniff). */
   configured: boolean;
-  /** True when the feed is a recorded replay (the homelab demo), not a live tap. */
+  /** True when the feed is a recorded replay (only the test server, tests/e2e_server.py), not a live tap. */
   demo: boolean;
   error: string | null;
 };
 
-/** Poll /sniff (the passive ESP32 tap on the NanoCom's K-line traffic, or the demo replay) while mounted.
+/** Poll /sniff (the passive ESP32 tap on the NanoCom's K-line traffic) while mounted.
  * `onPoll` runs after every successful poll (outside render) with the new state. */
 export function useSniff(
   module: string | undefined,
