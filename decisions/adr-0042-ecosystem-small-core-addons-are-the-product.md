@@ -2,19 +2,20 @@
 title: "ADR-0042 — Ecosystem: small core, add-ons are the product"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, references/research/dmd2_features.md, references/research/dmd_hub_features.md, GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds four add-ons from the DMD2 and DMD Hub research: `ostler-app-hub` (open) with its closed, Ostler-run `ostler-hub` service (Ostler Community: publishing, forum, vehicle development, wiki), `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone`; puts the `ShellInput` D-pad model and per-trip sharing in core, and Crash SOS in core Security later.
+  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): four add-ons from the DMD2 and DMD Hub research, `ostler-app-hub` (open) with its closed, Ostler-run `ostler-hub` service (Ostler Community: publishing, forum, vehicle development, wiki), `ostler-app-navigation` and `ostler-app-phone` (Phone & Comms) specced now, `ostler-app-alerts` named for later; the `ShellInput` D-pad model, per-trip sharing and third-party adapter support in core, and Crash SOS in core Security later. Accepted direction, pending a Home Assistant research round: dashboards follow Home Assistant's views, sections, cards and badges; integrations (packs, data sources) and add-ons (feature apps) on one page; container add-ons on the Brain later with an ADR; install flavours (OS image, container, VM later, Python for developers); Home Assistant compatibility investigated, not promised.
 ---
 
 # ADR-0042 — Ecosystem: small core, add-ons are the product
 
-> **Proposed amendment (2026-10-07, DMD round), awaiting the owner:** four new add-ons
-> (Ostler Community, Navigation, Alerts, Phone), `ShellInput` and per-trip sharing in core,
-> Crash SOS in core Security later. See
-> [Proposed amendment](#proposed-amendment-2026-10-07-dmd-round). The accepted text is unchanged.
+> **Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD
+> round):** four new add-ons (Ostler Community, Navigation, Phone & Comms, later Alerts),
+> `ShellInput`, per-trip sharing and adapter support in core, Crash SOS in core Security later,
+> and the Home Assistant direction. See
+> [Amendment (2026-10-07, DMD round), approved](#amendment-2026-10-07-dmd-round-approved).
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all"), drafted from
@@ -163,13 +164,13 @@ each alternative was not chosen.
 6. **Remote catalogue?** Recommend: not now; Available lists bundled and device-suggested
    add-ons only. Alternative: a signed catalogue repo, with its own outbound-path ADR.
 
-## Proposed amendment (2026-10-07, DMD round)
+## Amendment (2026-10-07, DMD round), approved
 
-**Status: proposed, for the owner's approval.** The accepted decision above is unchanged until
-the owner approves this section. Source: the owner's direction of 2026-10-07 to "pull all the
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round).** Where this
+section differs from the decision above, it wins. Source: the owner's direction of 2026-10-07 to "pull all the
 features over" from DMD2 and DMD Hub, "many as add-ons, and separate repos", with the Hub as the
 social side and per-trip sharing at chosen data levels. The feature-by-feature mapping is
-[docs/feature_map_dmd.md](../docs/feature_map_dmd.md) (draft); the research is
+[docs/feature_map_dmd.md](../docs/feature_map_dmd.md) (approved as the DMD checklist); the research is
 [DMD2 features](../references/research/dmd2_features.md),
 [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md),
 [DMD Hub features](../references/research/dmd_hub_features.md),
@@ -178,18 +179,18 @@ social side and per-trip sharing at chosen data levels. The feature-by-feature m
 [community hub architecture](../references/research/community_hub_architecture.md).
 
 1. **Four new add-ons** join decision 4's right-hand column, each off by default, each in its
-   own repo under ADR-0034's rule (proposed amendment there), none created yet:
+   own repo under ADR-0034's rule (its DMD-round amendment, approved), none created yet:
 
    | Add-on | Repo(s) | What it is | Spec |
    |---|---|---|---|
-   | **Ostler Community** | `ostler-app-hub` (open AGPL shell add-on, holding the public API contract) and `ostler-hub` (a **closed service run by Ostler**, one official instance, not self-hostable, in its own private repo separate from `ostler-cloud`: Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles; web in TS/React on the shell's kit and tokens) | Publish trips and routes, help threads for decoding and diagnosis, the project **forum** (categories per make and model, Q&A, solved, search, notifications), the **vehicle-development workspace** (decode cards, vehicle projects, data-only PRs to pack repos through a GitHub App), the **wiki** (vehicle pages generated from pack releases plus community pages), clubs, events, Discover; no federation | [community hub](../specs/2026-10-07-community-hub-design.md) (draft) |
-   | **Navigation** | `ostler-app-navigation` | Routing on the Brain with an open engine (licence to verify), turn-by-turn and voice, GPX library, import/export and follow, planner, roadbook, curated routes, route sharing to the hub. It absorbs the "routes" and "roadbook" ideas. Guidance renders through the `map` template's next manoeuvre while Moving; the speed-limit tint is off by default, never logged or scored; no speed cameras in v1 | [navigation](../specs/2026-10-07-navigation-addon-design.md) (draft) |
+   | **Ostler Community** | `ostler-app-hub` (open AGPL shell add-on, holding the public API contract) and `ostler-hub` (a **closed service run by Ostler**, one official instance, not self-hostable, in its own private repo separate from `ostler-cloud`: Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles; web in TS/React on the shell's kit and tokens) | Publish trips and routes, help threads for decoding and diagnosis, the project **forum** (categories per make and model, Q&A, solved, search, notifications), the **vehicle-development workspace** (decode cards, vehicle projects, data-only PRs to pack repos through a GitHub App), the **wiki** (vehicle pages generated from pack releases plus community pages), clubs, events, Discover; no federation | [community hub](../specs/2026-10-07-community-hub-design.md) (approved) |
+   | **Navigation** | `ostler-app-navigation` | Routing on the Brain with Valhalla (MIT) behind an adapter, BRouter (MIT) optional for off-road; turn-by-turn and voice, GPX library, import/export and follow, planner, roadbook, curated routes, route sharing to the hub. It absorbs the "routes" and "roadbook" ideas. Guidance renders through the `map` template's next manoeuvre while Moving; the speed-limit tint is off by default, never logged or scored; no speed cameras in v1 | [navigation](../specs/2026-10-07-navigation-addon-design.md) (approved) |
    | **Alerts** | `ostler-app-alerts` | UK official weather, flood and closure alerts, free and opt-in; later | needs spec |
-   | **Phone** | `ostler-app-phone` | Phone mirroring (notifications, calls), Parked-only content; later | needs spec |
+   | **Phone & Comms** | `ostler-app-phone` | Phone mirroring, dialer, contacts, recents and messages; calls through the Brain as a Bluetooth hands-free kit, so calls need a Brain; Parked-only content (decision list items 71–85) | [Phone & Comms](../specs/2026-10-07-phone-comms-addon-design.md) (approved) |
 
    **Ostler Community is a closed add-on service, outside core.** It sits outside the small core
    on the add-on side, like Ostler Cloud: an Ostler-run server reached only through its open
-   add-on, under ADR-0013's cloud boundary (ADR-0034 proposed amendment). Decision 7 holds as a
+   add-on, under ADR-0013's cloud boundary (ADR-0034 DMD-round amendment, approved). Decision 7 holds as a
    hard rule and, because the hub is closed and single-operator, gains these lines:
    - **inside core, nothing:** no core app, contract or test needs `ostler-app-hub` or the hub;
      the add-on degrades to local function (shares stay on the device; help falls back to file,
@@ -216,29 +217,80 @@ social side and per-trip sharing at chosen data levels. The feature-by-feature m
      of ≤ 6 driver-safe actions while Moving, confirm sheets that open with Cancel focused, a
      3 px focus-ring token, bindings owned by the display, a key test screen, and a map theme
      independent of the app theme. It ships with U2 ([ShellInput](../specs/2026-10-07-shell-input-design.md),
-     draft). Hardware remotes are hardware add-ons that only supply key events; input is never
+     approved). Hardware remotes are hardware add-ons that only supply key events; input is never
      paywalled.
    - **Per-trip sharing**: the scrubber, the `ostler.share/1` bundle writer and
      `ostler share verify` in the platform; the share sheet in Trips; "get help with this fault"
      in Diagnose; the help-decode flow in Decode lab; privacy zones in the shell (More → Places)
-     ([trip sharing](../specs/2026-10-07-trip-sharing-design.md), draft;
-     [ADR-0043](adr-0043-gps-and-logs-in-shared-trips.md), proposed).
+     ([trip sharing](../specs/2026-10-07-trip-sharing-design.md), approved;
+     [ADR-0043](adr-0043-gps-and-logs-in-shared-trips.md), accepted).
+   - **Third-party adapter support** (`openostler/adapters/`, ELM327 and others, using the
+     existing links and gate; BLE an optional extra), with the Brain hosting an adapter only
+     for a vehicle with no node
+     ([source adapters](../specs/2026-10-07-source-adapters-design.md), approved;
+     [ADR-0044](adr-0044-adapters-on-the-brain-without-a-node.md), accepted).
    - **Crash SOS and the unplug/theft alarm** in core **Security**, later, each with its own
      spec; Crash SOS is the existing ghost exception (accounts spec §14.5).
 3. **The Add-ons catalogue** (decision 5) lists the four when bundled: Ostler Community card
-   "Needs a hub account", Navigation "Needs the Brain", Alerts "Needs internet", Phone "Needs a
-   paired phone". No remote catalogue is added.
+   "Needs a hub account", Navigation "Needs the Brain", Alerts "Needs internet", Phone & Comms
+   "Needs a paired phone" (and the Brain for calls). No remote catalogue is added.
 4. **Unchanged hard lines** (decision 9) apply to all four: none declares a car action (send to
    device is the add-on's own data between the user's devices); nothing from them renders on a
    driver-facing display while Moving except through shell templates; every class they read
-   starts in ghost.
+   starts in ghost. Decision 9's "the node gate is the only path to the car" gains one
+   exception, recorded in [ADR-0044](adr-0044-adapters-on-the-brain-without-a-node.md): for a
+   vehicle with no node, a third-party adapter driven through the soft gate under the adapter
+   rules.
 
 **Confirmation (deltas).** The import test of the Confirmation section also passes with
 `ostler-app-hub`, `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone` absent; the
 network test also passes with every hub unreachable; a ShellInput test drives every destination
 and Drive mode by keyboard only and asserts that gated confirms open with Cancel focused.
 
+### Home Assistant direction (decision list items 97–101), accepted direction
+
+From the owner's note on the Home Assistant model, approved on 2026-10-07 ("approve all", DMD round). Items 97–98 are
+accepted; items 99–101 are accepted **as direction only, pending the Home Assistant research
+round** (item 101); nothing here is specced or built until that round lands and, where named,
+its ADR is accepted.
+
+5. **Dashboards follow Home Assistant's model** (item 97, accepted). Dashboards are made of
+   **views, sections, cards and badges**, stored as data and edited in place, with a card
+   picker fed by core and add-ons. The vocabulary and structure apply to Home and the Drive
+   modes, which already store layouts as data
+   ([Drive modes and editing](../specs/2026-10-07-drive-modes-and-editing-design.md)). Keeping
+   our own vocabulary (layouts, faces, tiles, widgets) was not chosen; the specs adopt the
+   new words as they are next revised.
+6. **"Integrations" vs "add-ons"** (item 98, accepted), as Home Assistant uses them: vehicle
+   packs and data sources (adapters, the node, MQTT and Home Assistant links) are
+   **integrations**; apps that add features (Social, Phone & Comms, Navigation, Maintenance)
+   are **add-ons**. Both are listed on one Settings-style page (decision 5's catalogue grows
+   into it). Keeping "packs" and "add-ons" only was not chosen.
+7. **Container add-ons on the Brain, later** (item 99, direction pending research). A later
+   phase lets add-ons run as containers on the Brain, like Home Assistant's add-ons. It needs
+   its own research note and **ADR** first (sandboxing, resources on a Pi, updates, the add-on
+   store, and the safety gate: a container never touches the car except through the module
+   bus and the gate). Compatibility with Home Assistant add-ons is **investigated, not
+   promised**. Today's model (bundled or declarative apps, decision 3) stays until then.
+   Committing to compatibility now, or no containers ever, were not chosen.
+8. **Install flavours** (item 100, direction pending research), like Home Assistant OS,
+   Container and Core: an **Ostler OS image** for the Brain (Pi) as the main path; an
+   **Ostler Container** for people running their own server or NAS; a **VM image** later; a
+   plain **Python install** stays for developers. It needs a research note and ADR on update
+   channels, supported hardware and what each flavour can and cannot do (container add-ons
+   need the OS or a supervisor). The OS image only was not chosen.
+9. **Research next** (item 101): one research round on Home Assistant's architecture (the
+   Supervisor, add-on store and manifest, the integrations model, dashboards, install types,
+   update and backup, the companion apps, the community and forum), each part mapped to
+   Ostler, docs only, before any of items 97–100 is specced. Folding it into the next build
+   round was not chosen.
+
 ### Decisions for the owner (DMD round)
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each
+recommendation below is the decision; each alternative was not chosen. Decision 1 is as
+revised by the DMD decision list (item 2): Phone & Comms is specced now, Alerts stays named
+for later.
 
 1. **Add the four add-ons?** Recommend: yes, Ostler Community (`ostler-app-hub` + `ostler-hub`)
    and Navigation now as specs, Alerts and Phone named for later. Alternative: Community and
@@ -273,3 +325,8 @@ and Drive mode by keyboard only and asserts that gated confirms open with Cancel
   workspace and the wiki; the open `ostler-app-hub` stays; decision 7's exit guarantee gains
   explicit inside/outside lines for the hub; DMD-round decision 2 revised. The accepted text
   above is unchanged.
+- 2026-10-07 — v1.3, the DMD-round amendment is approved by the owner on 2026-10-07
+  ("approve all", DMD round) and renamed "Amendment (2026-10-07, DMD round), approved"; every
+  DMD-round decision answered as recommended; Phone becomes Phone & Comms, specced now;
+  Navigation names Valhalla; adapter support joins core (ADR-0044); the Home Assistant
+  direction (decision list items 97–101) recorded, 99–101 pending the research round.

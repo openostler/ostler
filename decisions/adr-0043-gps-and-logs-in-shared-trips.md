@@ -1,22 +1,23 @@
 ---
 title: "ADR-0043 — GPS and logs in shared trips: routes only after trimming, with preview; full logs and diagnostics only as verified hand-overs"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-07
 depends_on: [CONSTITUTION.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-06-accounts-sharing-design.md, references/research/trip_and_log_sharing.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md]
 summary: >
-  Proposed (DMD round, 2026-10-07), awaiting the owner. The ADR that ADR-0009 asks for before any community upload carries GPS. A shared or published trip may carry a route only at level L1 (or L2 with L1 ticked), only after the ends trim (500 m default, never under 200 m), privacy zones (at least 500 m, fixed random offset), simplification and the removal of point timestamps, with stats from the visible trace only, and only after the owner has seen a preview of exactly what leaves. A route reaches the `public` audience only by an explicit publish act at least 24 h after the trip. Full logs (L3) and diagnostics bundles (L4) are hand-overs, never registry grants: a scrubbed `ostler.share/1` bundle that passes `ostler share verify`, delivered by file, relay link with the key in the URL fragment, or an end-to-end encrypted hub help thread to named helpers; to any public destination they carry no location and relative time only. Bundles are not signed with the Brain key. The `captures` class is the recorded alternative.
+  Accepted: approved by the owner on 2026-10-07 ("approve all", DMD round). The ADR that ADR-0009 asks for before any community upload carries GPS. A shared or published trip may carry a route only at level L1 (or L2 with L1 ticked), only after the ends trim (500 m default, never under 200 m), privacy zones (at least 500 m, fixed random offset), simplification and the removal of point timestamps, with stats from the visible trace only, and only after the owner has seen a preview of exactly what leaves. A route reaches the `public` audience only by an explicit publish act at least 24 h after the trip. Full logs (L3) and diagnostics bundles (L4) are hand-overs, never registry grants: a scrubbed `ostler.share/1` bundle that passes `ostler share verify`, delivered by file, relay link with the key in the URL fragment, or an end-to-end encrypted hub help thread to named helpers; to any public destination they carry no location and relative time only. Bundles are not signed with the Brain key. The `captures` class was the alternative, not chosen.
 ---
 
 # ADR-0043 — GPS and logs in shared trips
 
 - **Date:** 2026-10-07
-- **Status:** proposed (DMD round, 2026-10-07), awaiting the owner's answer. Completes
+- **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all", DMD round;
+  decision list items 20–32). Completes
   [ADR-0009](adr-0009-session-logbook-and-location.md)'s condition ("community uploads never
   include GPS channels unless a later ADR adds a per-upload opt-in, with trimmed ends and a
   preview") without changing ADR-0009's default: real sessions still stay on the device.
-  Detail in the draft [per-trip sharing spec](../specs/2026-10-07-trip-sharing-design.md).
+  Detail in the approved [per-trip sharing spec](../specs/2026-10-07-trip-sharing-design.md).
   Evidence: [trip and log sharing](../references/research/trip_and_log_sharing.md),
   [DMD Hub features](../references/research/dmd_hub_features.md) §5 and
   [community hub architecture](../references/research/community_hub_architecture.md) §5–§7.
@@ -95,7 +96,7 @@ summary: >
 - ADR-0009's condition is met for L1 routes; ADR-0009 itself is unchanged and gains a pointer.
 - The accounts spec gains a `route` detail on the `location` ladder, a `link` audience, the
   `public` audience brought forward for the hub by explicit publish, live-trip grant options
-  and link controls (its proposed §15 amendment).
+  and link controls (its §15 amendment, approved).
 - Packs gain an `identity` declaration (ADR-0036 Consequences); the platform's scrub table
   widens and is shared by the recorder, exports and shares.
 - A K-line `USER0` pcapng dissector becomes useful to helpers (open question in the spec).
@@ -103,8 +104,8 @@ summary: >
 ## Alternatives considered
 
 - **A `sensitive` `captures` class** (scrubbed, never in a preset, audience one person or the
-  decode project only, at most 30 days, never `link` or `public`). Not chosen in this proposal:
-  it reverses accounts §14.1 and puts raw bytes behind a live pull path; recorded as the
+  decode project only, at most 30 days, never `link` or `public`). Not chosen (the owner
+  approved the recommendation, decision list item 21): it reverses accounts §14.1 and puts raw bytes behind a live pull path; recorded as the
   owner's alternative in the spec's Decision 2.
 - **Trim only near saved places** (Strava's default). Rejected: most users never set a place.
 - **Re-roll zone offsets per trip.** Rejected: more samples help the attacker.
@@ -120,3 +121,10 @@ summary: >
 - **ADR-0036:** applied on every share; the scrub is widened, never relaxed.
 - **ADR-0041:** the Brain key is not used for shares.
 - **ADR-0012, ADR-0033:** derived data under CC BY-SA 4.0; helpers get no actions.
+
+## Changelog
+
+- 2026-10-07 — v0.1, proposed (DMD round), drafted with the per-trip sharing spec.
+- 2026-10-07 — v1.0, accepted: approved by the owner on 2026-10-07 ("approve all", DMD
+  round); the recommendations are the decision, the `captures` class and the other
+  alternatives were not chosen.

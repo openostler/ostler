@@ -2,11 +2,11 @@
 title: "The Ostler ecosystem — core, add-ons, how add-ons get car data, and the safety boundaries"
 area: docs
 status: stable
-version: 1.3
+version: 1.4
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, references/research/addons_catalogue.md]
 summary: >
-  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds rows for Ostler Community (the open `ostler-app-hub` add-on and the closed, Ostler-run `ostler-hub` service: publishing, forum, vehicle development, wiki), Navigation, Alerts and Phone, and core ShellInput, per-trip sharing and later Crash SOS.
+  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. The amendment of 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round), adds rows for Ostler Community (the open `ostler-app-hub` add-on and the closed, Ostler-run `ostler-hub` service: publishing, forum, vehicle development, wiki), Navigation, Phone & Comms and, later, Alerts; core ShellInput, per-trip sharing, third-party adapters (the Brain only for a vehicle with no node, ADR-0044) and later Crash SOS; and points to the Home Assistant direction in ADR-0042.
 ---
 
 # The Ostler ecosystem
@@ -40,13 +40,13 @@ Developer; no remote catalogue yet). Hardware add-ons share the same catalogue. 
 | **Cameras** | add-on | `ostler-app-cameras` | Security → Clips, live chip, `camera_live` | speed, events | clips, live view |
 | **Integrations** | add-on, one per integration | own repos (e.g. `ostler-app-lubelogger`) | More → Integrations | signals, trips, maintenance | RealDash CAN out (read-only), LubeLogger bridge, social integrations |
 | **Decode lab** | developer add-on | `ostler` | More → Developer, service mode only | raw frames, signals | decode evidence for packs |
-| **Ostler Community** *(proposed, DMD round)* | add-on + closed service | `ostler-app-hub` (open, AGPL), `ostler-hub` (private, closed, run only by Ostler; not self-hostable) | More → Community (`more:hub`), hub audiences in the Trips share sheet, Diagnose → Get help, Decode lab → Ask for help, Home card (never while Moving) | trips and faults only as granted or handed over | publish L0–L2, help threads with L3/L4 hand-overs, the project forum, vehicle development (decode cards, pack PRs through a GitHub bridge), the wiki (vehicle pages from pack releases), clubs, events, Discover, Following |
-| **Navigation** *(proposed, DMD round)* | add-on | `ostler-app-navigation` | Drive `map` template's next manoeuvre, Drive-menu rows, More → Navigation (`more:navigation`), Home card | own position, speed, installed map regions | routing on the Brain, turn-by-turn, voice, GPX library and follow, planner, roadbook |
-| **Alerts** *(proposed, later)* | add-on | `ostler-app-alerts` | `alert_card`, Drive tile | own coarse position, route | UK official weather, flood and closure alerts, free, opt-in |
-| **Phone** (Phone & Comms) *(proposed, later)* | add-on; needs a Brain for calls | `ostler-app-phone` (not created) | More → Phone (`more:phone`), the `call` template via the shell's call session, the message `alert_card`, the favourites `short_list` widget and Drive-menu rows while Moving; keypad and lists Parked only | the user's own paired phone over the Brain's Bluetooth (HFP, PBAP, MAP) and the companion bridge; phone contacts and call history audience `me` only, in memory | phone mirroring (notifications), dialer, contacts (Ostler and phone, badged), recents, messages ([spec](../specs/2026-10-07-phone-comms-addon-design.md), draft) |
+| **Ostler Community** *(DMD round)* | add-on + closed service | `ostler-app-hub` (open, AGPL), `ostler-hub` (private, closed, run only by Ostler; not self-hostable) | More → Community (`more:hub`), hub audiences in the Trips share sheet, Diagnose → Get help, Decode lab → Ask for help, Home card (never while Moving) | trips and faults only as granted or handed over | publish L0–L2, help threads with L3/L4 hand-overs, the project forum, vehicle development (decode cards, pack PRs through a GitHub bridge), the wiki (vehicle pages from pack releases), clubs, events, Discover, Following |
+| **Navigation** *(DMD round)* | add-on | `ostler-app-navigation` | Drive `map` template's next manoeuvre, Drive-menu rows, More → Navigation (`more:navigation`), Home card | own position, speed, installed map regions | routing on the Brain, turn-by-turn, voice, GPX library and follow, planner, roadbook |
+| **Alerts** *(DMD round, later; named only)* | add-on | `ostler-app-alerts` | `alert_card`, Drive tile | own coarse position, route | UK official weather, flood and closure alerts, free, opt-in |
+| **Phone** (Phone & Comms) *(DMD round)* | add-on; needs a Brain for calls | `ostler-app-phone` (created at PH0) | More → Phone (`more:phone`), the `call` template via the shell's call session, the message `alert_card`, the favourites `short_list` widget and Drive-menu rows while Moving; keypad and lists Parked only | the user's own paired phone over the Brain's Bluetooth (HFP, PBAP, MAP) and the companion bridge; phone contacts and call history audience `me` only, in memory | phone mirroring (notifications), dialer, contacts (Ostler and phone, badged), recents, messages ([spec](../specs/2026-10-07-phone-comms-addon-design.md), approved) |
 
-Rows marked *proposed* come from the DMD round and wait for the owner; see
-[Proposed amendment (2026-10-07, DMD round)](#proposed-amendment-2026-10-07-dmd-round).
+Rows marked *DMD round* were approved by the owner on 2026-10-07 ("approve all", DMD round);
+see [Amendment (2026-10-07, DMD round), approved](#amendment-2026-10-07-dmd-round-approved).
 
 Hardware add-ons (sensor nodes, cameras, displays, mesh radios) join through the module
 contract and usually arrive with a declarative app the catalogue offers when the device
@@ -92,38 +92,52 @@ Home Assistant discovery, OVMS topics, OwnTracks and Traccar (GOALS §4), and th
 5. **Exit guarantee.** Export all lives in core; nothing in core depends on an Ostler-run
    server; an add-on that keeps data exports it in an open format.
 
-## Proposed amendment (2026-10-07, DMD round)
+## Amendment (2026-10-07, DMD round), approved
 
-**Status: proposed, for the owner's approval**, with the matching proposed amendments to
-[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md#proposed-amendment-2026-10-07-dmd-round)
-and [ADR-0034](../decisions/adr-0034-repo-boundaries.md#proposed-amendment-2026-10-07-dmd-round).
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round)**, with the matching
+amendments to
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md#amendment-2026-10-07-dmd-round-approved)
+and [ADR-0034](../decisions/adr-0034-repo-boundaries.md#amendment-2026-10-07-dmd-round-approved).
 Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
-[feature_map_dmd.md](feature_map_dmd.md) (draft).
+[feature_map_dmd.md](feature_map_dmd.md) (approved as the DMD checklist).
 
-- **Four add-on rows** in §1, marked *proposed*: Ostler Community
-  ([spec](../specs/2026-10-07-community-hub-design.md), draft), Navigation
-  ([spec](../specs/2026-10-07-navigation-addon-design.md), draft), Alerts (later, no spec yet)
-  and Phone (Phone & Comms: mirroring, dialer, contacts, recents, messages; needs a Brain for
-  calls; [spec](../specs/2026-10-07-phone-comms-addon-design.md), draft; later). The community hub is a closed service run by Ostler (one instance, not
+- **Four add-on rows** in §1, marked *DMD round*: Ostler Community
+  ([spec](../specs/2026-10-07-community-hub-design.md), approved), Navigation
+  ([spec](../specs/2026-10-07-navigation-addon-design.md), approved), Phone (Phone & Comms:
+  mirroring, dialer, contacts, recents, messages; needs a Brain for calls;
+  [spec](../specs/2026-10-07-phone-comms-addon-design.md), approved) and Alerts (later, named
+  only, no spec yet). The community hub is a closed service run by Ostler (one instance, not
   self-hostable, its own private repo separate from `ostler-cloud`), reached through the open
   `ostler-app-hub`; it is also the forum, the vehicle-development workspace and the wiki. It sits
   outside core: nothing in core needs it, and everything on it can be exported (ADR-0042
   decision 7).
 - **Core gains, no new destination:** `ShellInput` in the shell (D-pad input, focus zones, the
   Drive menu as a `short_list` of ≤ 6 driver-safe actions while Moving, ships with U2;
-  [spec](../specs/2026-10-07-shell-input-design.md), draft); per-trip sharing (scrubber,
+  [spec](../specs/2026-10-07-shell-input-design.md), approved); per-trip sharing (scrubber,
   `ostler.share/1`, `ostler share verify` in the platform, the share sheet in Trips, "get help
   with this fault" in Diagnose, help-decode in Decode lab, privacy zones in More → Places;
-  [spec](../specs/2026-10-07-trip-sharing-design.md), draft); later, Crash SOS and the unplug
-  alarm in Security.
-- **§2 gains two registry pieces** (accounts spec §15, proposed): a `route` detail on the
+  [spec](../specs/2026-10-07-trip-sharing-design.md), approved;
+  [ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md)); third-party adapters
+  (ELM327 and others) in `openostler/adapters/`, with the Brain hosting one only for a vehicle
+  with no node, through the soft gate
+  ([spec](../specs/2026-10-07-source-adapters-design.md), approved;
+  [ADR-0044](../decisions/adr-0044-adapters-on-the-brain-without-a-node.md)); later, Crash SOS
+  and the unplug alarm in Security.
+- **§2 gains two registry pieces** (accounts spec §15, approved): a `route` detail on the
   `location` ladder and a `link` audience, with `public` brought forward for explicit publishing.
   Full logs (L3) and diagnostics bundles (L4) are hand-overs, never grants.
 - **§3 is unchanged and applies to all four:** none declares a car action; guidance renders only
   through the `map` template while Moving; the speed-limit tint is off by default and never
   logged or scored; Phone shows only shell templates while Moving (`call`, the message
   `alert_card`, a favourites `short_list` of ≤ 6), its keypad, contacts and recents Parked
-  only; every class starts in ghost.
+  only; every class starts in ghost. §3's node-gate line gains ADR-0044's one exception: for a
+  vehicle with no node, an adapter driven through the soft gate under the adapter rules.
+- **Home Assistant direction** (ADR-0042's DMD-round amendment, items 5–9): dashboards follow
+  Home Assistant's views, sections, cards and badges; vehicle packs and data sources are
+  **integrations** and feature apps are **add-ons**, listed on one page. Container add-ons on
+  the Brain, install flavours (OS image, container, VM later, Python for developers) and Home
+  Assistant compatibility (investigated, not promised) wait for a Home Assistant research
+  round and their own ADRs.
 
 ## Changelog
 
@@ -141,6 +155,10 @@ Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
 - 2026-10-07: v1.3, the Phone row and bullets revised in place (cross-spec reconcile): Phone
   & Comms (mirroring, dialer, contacts, recents, messages; needs a Brain for calls), linked to
   its draft spec, still not created. The approved text is unchanged.
+- 2026-10-07: v1.4, the DMD-round amendment is approved by the owner on 2026-10-07 ("approve
+  all", DMD round) and renamed "Amendment (2026-10-07, DMD round), approved"; the rows lose
+  "proposed" (Alerts stays later, named only); adapters (ADR-0044) and the Home Assistant
+  direction added; DMD-round decision 4 answered as recommended.
 
 ## Decisions for the owner
 
@@ -154,8 +172,10 @@ the decision; each alternative was not chosen.
    stay in Network only.
 3. **Integrations: one add-on or one per integration?** Recommend: one per integration
    (separate enable, separate data classes). Alternative: one Integrations add-on with toggles.
-4. **(DMD round, proposed) Add the four proposed rows and the core gains?** Recommend: yes, as
-   the ADR-0042 proposed amendment says (Ostler Community as a closed, Ostler-run service with
-   an open add-on); the rows lose "proposed" when it is approved.
+4. **(DMD round) Add the four rows and the core gains?** Recommend: yes, as the ADR-0042
+   DMD-round amendment says (Ostler Community as a closed, Ostler-run service with an open
+   add-on); the rows lose "proposed" when it is approved (done 2026-10-07).
    Alternative: keep only Ostler Community and Navigation in the map until Alerts and Phone have
-   approved specs. (Reconcile note: Phone now has a draft spec, Phone & Comms; Alerts has none.)
+   approved specs. (Reconcile note: Phone now has an approved spec, Phone & Comms; Alerts has none.)
+   *Answered 2026-10-07: approved as recommended ("approve all", DMD round); the alternative
+   was not chosen.*

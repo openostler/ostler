@@ -2,17 +2,18 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.8
+version: 0.9
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/obd_telematics_apps.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`. v0.6–v0.7 (amendment §14, approved by the owner on 2026-10-07 ("approve all"); ADR-0042 accepted): small core (shell, Diagnose, Trips (was Logs), Network, Security once a node exists) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as a developer add-on); More → Add-ons catalogue (no remote catalogue yet, Q7) and an empty-state Home; phone add-ons bundled or declarative only; SDK `trips`, `faults`, `sharing` and the data-class registry; templates incl. the new `call` (UI spec §3.5, §12.1); new slots `more:social`, `more:vehicles` and `home:card`; exit guarantee; no driving score in core. v0.8 (proposed amendment §15, DMD round, pending the owner): widgets that add-ons register for Home and Drive (`contributes.widgets`, user-placed, Moving only through a shell template), Drive menu rows (`contributes.drive_menu`), slots `home:widget`, `drive:widget`, `more:hub` (the one official Community hub), `more:navigation` and `more:phone`, pinnable `more:*` pages, `short_list` as a widget Moving template, SDK `widgets`, `input`, `drive_menu` and `calls` (the one shell-owned call session).
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`. v0.6–v0.7 (amendment §14, approved by the owner on 2026-10-07 ("approve all"); ADR-0042 accepted): small core (shell, Diagnose, Trips (was Logs), Network, Security once a node exists) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as a developer add-on); More → Add-ons catalogue (no remote catalogue yet, Q7) and an empty-state Home; phone add-ons bundled or declarative only; SDK `trips`, `faults`, `sharing` and the data-class registry; templates incl. the new `call` (UI spec §3.5, §12.1); new slots `more:social`, `more:vehicles` and `home:card`; exit guarantee; no driving score in core. v0.8–v0.9 (amendment §15, DMD round, approved by the owner on 2026-10-07 ("approve all", DMD round)): widgets that add-ons register for Home and Drive (`contributes.widgets`, user-placed, Moving only through a shell template), Drive menu rows (`contributes.drive_menu`), slots `home:widget`, `drive:widget`, `more:hub` (the one official Community hub), `more:navigation` and `more:phone`, pinnable `more:*` pages, `short_list` as a widget Moving template, SDK `widgets`, `input`, `drive_menu` and `calls` (the one shell-owned call session).
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.7 for owner review; §14 is an amendment approved by the owner on
-2026-10-07 ("approve all") (Q1, Q2, Q6 and Q9–Q14 answered 2026-10-06; Q5 reopened and Q7
+**Status:** draft v0.9 for owner review; §14 is an amendment approved by the owner on
+2026-10-07 ("approve all"), and §15 an amendment approved by the owner on 2026-10-07
+("approve all", DMD round) (Q1, Q2, Q6 and Q9–Q14 answered 2026-10-06; Q5 reopened and Q7
 answered 2026-10-07; §11). Q3, Q4 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
@@ -590,17 +591,16 @@ Each recommendation is the decision; each alternative was not chosen.
 5. **Companion hosts?** Recommend: no `carplay`/`android_auto`/`watch` host until each has a
    spec. Alternative: reserve the names now.
 
-## 15. Proposed amendment (2026-10-07, DMD round): widgets, Drive menu rows, input and new slots
+## 15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots
 
-*Proposed on 2026-10-07 (v0.8), pending the owner; §1–§14 stand until it is approved. Where
-approved, §15 adds to §4.1–§4.2 (manifest and slot names), §5 (isolation) and §6 (SDK) and
+*Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.9; added in v0.8. §15 adds to §4.1–§4.2 (manifest and slot names), §5 (isolation) and §6 (SDK) and
 changes nothing else. Designs it serves:
-[Drive modes and editing](2026-10-07-drive-modes-and-editing-design.md) (draft; the widget
+[Drive modes and editing](2026-10-07-drive-modes-and-editing-design.md) (approved; the widget
 picker, Home and Drive editing, rail pinning),
-[shell input](2026-10-07-shell-input-design.md) (draft; `ShellInput`, the Drive menu),
-[navigation add-on](2026-10-07-navigation-addon-design.md) (draft) and
-[Ostler Community](2026-10-07-community-hub-design.md) (draft, v0.2) and the
-[Phone & Comms add-on](2026-10-07-phone-comms-addon-design.md) (draft). Templates and their limits are
+[shell input](2026-10-07-shell-input-design.md) (approved; `ShellInput`, the Drive menu),
+[navigation add-on](2026-10-07-navigation-addon-design.md) (approved) and
+[Ostler Community](2026-10-07-community-hub-design.md) (approved) and the
+[Phone & Comms add-on](2026-10-07-phone-comms-addon-design.md) (approved). Templates and their limits are
 unchanged (§14.5; UI spec §12.1). Revised the same day (DMD round) for the owner's "the entire
 UI is editable, with no fixed icons": apps supply only default icons and names, users may
 re-icon, rename, hide or replace any app widget or page, and core pages may be displaced from
@@ -750,6 +750,9 @@ round).**
 
 **Decisions for the owner (this amendment).**
 
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
+
 1. **Accept `contributes.widgets` with user-only placement?** Recommend: yes. Alternative:
    let an app propose a default placement on Home (like `home:card`), which the user can remove.
 2. **Moving data path for widgets?** Recommend: `widgets.publish` to a shell template only.
@@ -791,6 +794,10 @@ round).**
 
 ## Changelog
 
+- 2026-10-07: v0.9, **§15 approved by the owner on 2026-10-07 ("approve all", DMD round)**:
+  renamed "Amendment (2026-10-07, DMD round), approved"; its decisions 1–10 answered as
+  recommended (alternatives not chosen); the Drive-modes, ShellInput, navigation, Community
+  and Phone & Comms specs cited as approved. Stays draft: Q3, Q4 and Q8 are open.
 - 2026-10-07: v0.8 revised in place (DMD round, cross-spec reconcile), still pending the
   owner: `short_list` added to the widget `moving` set (Phone & Comms decision 12); slot
   `more:phone`; SDK `calls` for the one shell-owned call session (Social §13 C1); `more:hub`
