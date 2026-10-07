@@ -2,16 +2,17 @@
 title: "ADR-0013 — Split into an Ostler platform, the D2 pack, firmware and a closed cloud; VehiclePack contract"
 area: decisions
 status: locked
-version: 1.1
-updated: 2026-10-06
+version: 1.2
+updated: 2026-10-07
 depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, specs/2026-10-06-platform-direction-design.md, SCOPE.md]
 summary: >
-  The project splits into a vehicle-agnostic platform repo (working brand "Ostler", public AGPL, holds the main UI), this repo as the Land Rover Discovery 2 vehicle pack, a public firmware repo and a private closed-source cloud repo; packs plug in through a VehiclePack entry-point contract, the cloud only speaks a documented protocol, and the split happens after the code is decoupled in place.
+  The project splits into a vehicle-agnostic platform repo (working brand "Ostler", public AGPL, holds the main UI), this repo as the Land Rover Discovery 2 vehicle pack, a public firmware repo and a private closed-source cloud repo; packs plug in through a VehiclePack entry-point contract, the cloud only speaks a documented protocol, and the split happens after the code is decoupled in place. Amended 2026-10-07 (approved by the owner, "approve all"): a pack may ship an optional `maintenance.json` of cited manufacturer service schedules under its CC BY-SA data licence, validated by `schemas/maintenance.schema.json`.
 ---
 
 # ADR-0013 — Repo split and the VehiclePack contract
 
 > **Amended by [ADR-0034](adr-0034-repo-boundaries.md), 2026-10-06:** `ostler-firmware` is first-class now and takes the D2 `esp32/kline_node`; packs are JSON data plus optional lab Python and C keygen plugins; hardware and contract repos come later.
+> **Amended 2026-10-07 (approved by the owner, "approve all"):** the VehiclePack contract gains an optional `maintenance.json` (CC BY-SA, cited). See [Amendment (2026-10-07)](#amendment-2026-10-07).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner decisions, 2026-10-06)
@@ -118,3 +119,26 @@ split, the VehiclePack contract and the cloud boundary above stand.
    contract and conformance kit get their own repo at contract v1.
 5. **The split rule.** A new repo only when toolchain, licence, release cadence or
    contributors differ.
+
+## Amendment (2026-10-07)
+
+Approved by the owner on 2026-10-07 ("approve all"), from the
+[Maintenance & Garage add-on spec](../specs/2026-10-07-maintenance-garage-addon-design.md) §6
+(decision 7). The **VehiclePack contract** gains one optional item:
+
+- **`maintenance.json`**: the manufacturer service schedules for the pack's vehicles, as an
+  array of task templates with `applies_to` (engine, market, years), a required `citation`
+  and a `confidence`, validated by `schemas/maintenance.schema.json`. It is pack **data**
+  under the pack's **CC BY-SA** data licence (ADR-0012): community-sourced and cited, never
+  copied from a handbook. A pack without it is valid; the Maintenance & Garage add-on reads
+  it through the platform, and user edits override it per vehicle. The platform's
+  `generic_obd2` pack ships a generic set.
+
+The rules above stand: the platform never imports a pack, and packs run contract tests in CI
+(the schema joins them when the add-on's M0 seams land).
+
+## Changelog
+
+- 2026-10-06: v1.0–v1.1, accepted and amended by ADR-0034.
+- 2026-10-07: v1.2, Amendment (2026-10-07): optional `maintenance.json` in the VehiclePack
+  contract (CC BY-SA, cited), approved by the owner ("approve all").

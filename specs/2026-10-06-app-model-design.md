@@ -2,17 +2,18 @@
 title: "App model — one shell, features as apps declared by a manifest — design"
 area: specs
 status: draft
-version: 0.6
+version: 0.7
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/app_model.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/obd_telematics_apps.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, CONSTITUTION.md]
 summary: >
-  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`. v0.6 (proposed amendment §14, 2026-10-07, pending the owner; ADR-0042 proposed): small core (shell, Diagnose, Trips (was Logs), Network, Security once a node exists) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as a developer add-on); Settings → Add-ons catalogue and an empty-state Home; phone add-ons bundled or declarative only; SDK `trips`, `faults`, `sharing` and the data-class registry; templates incl. the new `call` (UI spec §3.5); exit guarantee; no driving score in core.
+  Draft for owner review; not built before U1. One shell (launcher, status strip, driving states and landing, auth and session, the VSS data stream, the app registry, the safety-gate client, approval surfaces, theming and layout classes) hosts features as apps declared by a JSON manifest: id, version, shell API range, source repo, entry, requirements (VSS signals, capability-manifest devices and node variants, product tier), slot contributions, actions used with category and tier, a driving rule per view (moving views only as shell templates), hosts, permissions, i18n and icons. Core apps (Diagnose, Logs, Security, Network, and Decode lab shown only in service mode) stay in the platform repo and fill the five destinations; optional apps (Cameras, Social, add-on module apps) live in their own repos now (ADR-0034 amendment) and ship as pinned npm packages bundled at build time, or as declarative-only apps that a device's capability manifest can suggest. Community code may later run only in sandboxed iframes on web hosts (brain, cloud, browser), never in the native phone app; signed runtime modules stay a later option behind an ADR. v0.2 adds the phone build: the Capacitor app follows Home Assistant's Companion model with a server reachable and ships a bundled shell, core and declarative apps for Ostler Diagnostics alone and offline, with fixed native features and no runtime third-party code, plus a dated store-policy check and its risks. Not separate PWAs; apps never bypass the gate and never touch the car except through the shell's action API. Defines the U1 seams, a later phase UA, tests and open questions. v0.3 (owner answers, 2026-10-06): Network is a core app that absorbs More → Devices (the whole cluster page, device pages inside it, slots `more:network`, `sheet:link` and `network:device:<id>`); each device's firmware-served page stays outside the app model with a read-only peer view; pairing, revoking and uplink changes are owner-role API operations, not a new action category. v0.4 (owner answers, 2026-10-06; ADR-0039, ADR-0040): §13 is accepted (action fields `runs_on`, `needs_brain`, `queueable`, `expires_max_s`; `needs_brain` views with a "Needs the Brain" placeholder; `permissions.wake`; power records in the cluster model; SDK wake and expiry options and a read-only `power` service with leases; apps wake only through action requests and held views, with no `wake()` call; "Don't ask again" per user and device, local links only); the `product` value `lite` becomes `diagnostics`. v0.6–v0.7 (amendment §14, approved by the owner on 2026-10-07 ("approve all"); ADR-0042 accepted): small core (shell, Diagnose, Trips (was Logs), Network, Security once a node exists) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as a developer add-on); More → Add-ons catalogue (no remote catalogue yet, Q7) and an empty-state Home; phone add-ons bundled or declarative only; SDK `trips`, `faults`, `sharing` and the data-class registry; templates incl. the new `call` (UI spec §3.5, §12.1); new slots `more:social`, `more:vehicles` and `home:card`; exit guarantee; no driving score in core.
 ---
 
 # App model — design (draft)
 
-**Status:** draft v0.6 for owner review; §14 is a proposed amendment (2026-10-07) pending the owner (Q1, Q2, Q5, Q6 and Q9–Q14 answered 2026-10-06; §11).
-Q3, Q4, Q7 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
+**Status:** draft v0.7 for owner review; §14 is an amendment approved by the owner on
+2026-10-07 ("approve all") (Q1, Q2, Q6 and Q9–Q14 answered 2026-10-06; Q5 reopened and Q7
+answered 2026-10-07; §11). Q3, Q4 and Q8 are open. **Do not build before U1** (UI spec §10): U1 only
 leaves the seams in §9. Evidence: [app model research](../references/research/ui/app_model.md).
 It refines the [UI architecture spec](2026-10-06-ui-architecture-design.md) (approved), which
 stays the authority for layout classes, the strip, destinations, driving states, the
@@ -139,7 +140,10 @@ phase UA).
 - **Slot names** are `destination:<id>` (for example `destination:security`), `strip:device`,
   `pane:secondary`, `more:network` (the Network page under More), `sheet:link` (a row in the
   Link chip's sheet, UI spec §3.2) and `network:device:<id>` (a device's page inside Network,
-  where add-on module apps contribute). New slots are added only by a platform change.
+  where add-on module apps contribute), plus, by the approved §14.7 platform change,
+  `more:social` (the Social add-on's page under More), `more:vehicles` (the Vehicles & Map
+  add-on's page under More) and `home:card` (a card on Home). New slots are added only by a
+  platform change.
 
 ### 4.3 Hosts
 
@@ -350,10 +354,14 @@ kinds wait for a real third-party app and an ADR.
 4. **Licences.** Must bundled apps be AGPL-compatible (yes by ADR-0012), and may a closed app
    run as an iframe under the commercial licence?
 5. ~~**Decode lab.**~~ **Answered 2026-10-06:** a core app in `ostler`, enabled only in
-   service mode, the experimental/dev mode (§3; UI spec §8.4).
+   service mode, the experimental/dev mode (§3; UI spec §8.4). **Reopened and answered
+   2026-10-07:** a developer add-on (off by default, service mode only), code staying in
+   `ostler` (§14.1, ADR-0042).
 6. ~~**Network** as a core app under More, covering uplinks, remote access and pairing.~~
    **Answered 2026-10-06:** yes, widened to the whole cluster and absorbing Devices (Q10, §12).
-7. **Catalog.** A future app catalog is a new outbound path: wanted, and from where?
+7. ~~**Catalog.** A future app catalog is a new outbound path: wanted, and from where?~~
+   **Answered 2026-10-07:** not now; Available lists bundled and device-suggested add-ons
+   only, and a remote catalogue waits for its own ADR (§14.2, ADR-0042 §5).
 8. **Enablement scope.** Per install (recommended) or per vehicle?
 9. ~~**Phone app.**~~ **Answered 2026-10-06:** Companion model with a server; a bundled
    shell, core and declarative apps for Ostler Diagnostics alone and offline; fixed native features; no runtime
@@ -497,31 +505,32 @@ without `permissions.wake` cannot cause a wake; leases are released on unmount; 
 14. ~~**"Don't ask again"** for brain wakes: per user and device, local links only?~~
     **Answered:** yes (§13.3; UI spec §3.8).
 
-## 14. Proposed amendment (2026-10-07): ecosystem, add-ons, Trips and templates
+## 14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates
 
-*Proposed, pending the owner; §1–§13 stand until accepted. Decision:
-[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (proposed);
+*Approved by the owner on 2026-10-07 ("approve all"); where it differs, §14 overrides
+§1–§13. Decision:
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (accepted);
 map: [docs/ecosystem.md](../docs/ecosystem.md); evidence:
 [OBD and telematics apps](../references/research/obd_telematics_apps.md),
 [Speedometer/Odo teardown](../references/research/app_teardown_speedometer.md),
 [driver-distraction rules](../references/research/driver_distraction_rules.md).*
 
-**14.1 Core and add-ons (replaces §3's table when accepted).** Core (`trust: core`, repo
+**14.1 Core and add-ons (replaces §3's table).** Core (`trust: core`, repo
 `ostler`): the shell, **Diagnose**, **Trips** (Logs renamed; id `ostler.trips`, slot
 `destination:trips`), **Network**, and **Security** with `requires.devices: [{kind: "node"}]`.
 Add-ons (`trust: first_party`, off by default, own repos): **Social** (`ostler-app-social`),
 **Vehicles & Map** (`ostler-app-vehicles`), **Maintenance & Garage**
-(`ostler-app-maintenance`), **Cameras** (`ostler-app-cameras`), **Integrations** (RealDash
-CAN out, `ostler-app-lubelogger`, social integrations) and **Decode lab**, now a developer
+(`ostler-app-maintenance`), **Cameras** (`ostler-app-cameras`), **Integrations** (one
+add-on per integration: RealDash CAN out, `ostler-app-lubelogger`, social integrations) and **Decode lab**, now a developer
 add-on (`requires.mode: "service"`, label Developer; code stays in `ostler`), which reopens
 Q5. The manifest gains `"kind": "core" | "addon" | "developer"`, assigned by the registry
 like `trust`. No add-on contributes a `destination:*` slot of its own.
 
-**14.2 Add-ons catalogue and empty Home (replaces "More → Apps" in §7).** Settings → Add-ons,
-tabs **Installed** and **Available**, each card labelled Core, Add-on or Developer, with its
+**14.2 Add-ons catalogue and empty Home (replaces "More → Apps" in §7).** More → Add-ons
+(the top entry of More, UI spec §12.4), tabs **Installed** and **Available**, each card labelled Core, Add-on or Developer, with its
 `requires` in words and the data classes it reads; core cannot be removed; enabling is an
 owner-role operation. Available = bundled add-ons plus declarative add-ons a device suggests
-(§7); a remote catalogue stays Q7. With no add-on enabled, Home shows one dismissible card
+(§7); no remote catalogue yet (Q7, answered). With no add-on enabled, Home shows one dismissible card
 of suggestions ("Track maintenance", "Share drives with friends"); never on a head unit
 while Moving.
 
@@ -540,11 +549,11 @@ new read-only **`faults`** (per-system faults and new-fault events, for "fault c
 reminders); new read-only **`sharing`** (`audience(dataClass)` from the data-class registry;
 the app never sets precision or audience for another user); `notify` (push through the
 native feature, rate-limited, never message content on a head unit while Moving).
-`permissions.data` names classes from the **data-class registry** (accounts spec, proposed),
+`permissions.data` names classes from the **data-class registry** (accounts spec §14, approved),
 and an add-on may register new classes in `contributes.data_classes` (accounts spec §14.1); each
 starts in ghost. This also supersedes §4.2's "token data classes of ADR-0029" wording.
 
-**14.5 Templates and lockouts (summary; authority: UI spec §3.5, proposed amendment).** The
+**14.5 Templates and lockouts (summary; authority: UI spec §3.5 as amended by §12.1, approved).** The
 template set becomes `telltale_list`, `value`, `setpoint`, `camera_live`, `arm`, plus `map`,
 `media`, `tiles` (the Drive-layout grid: VSS paths with normal/warning/critical levels),
 `alert_card`, `short_list` and **`call`**, with limits per
@@ -561,7 +570,15 @@ every add-on that keeps user data exports it in an open format, and nothing in c
 on an Ostler-run server. **No driving score in core;** scores and leaderboards only in the
 Social add-on, opt-in, speed never ranked, never exportable to insurers.
 
-**Decisions for the owner (this amendment).**
+**14.7 New slots (platform change).** §4.2's slot names gain **`more:social`** (the Social
+add-on's page under More; [Social spec](2026-10-07-social-addon-design.md)),
+**`more:vehicles`** (the Vehicles & Map add-on's page under More) and **`home:card`** (a
+dismissible card on Home, never on a head unit while Moving;
+[Vehicles & Map spec](2026-10-07-vehicles-and-map-addon-design.md)). As with every slot, a
+contribution needs the add-on enabled and passes the registry's `requires` check.
+
+**Decisions for the owner (this amendment).** Answered 2026-10-07: approved as recommended.
+Each recommendation is the decision; each alternative was not chosen.
 
 1. **Accept §14?** Recommend: yes, with ADR-0042. Alternative: keep §3 and decide per feature.
 2. **Decode lab (reopens Q5): developer add-on?** Recommend: yes, code in `ostler`.
@@ -575,6 +592,12 @@ Social add-on, opt-in, speed never ranked, never exportable to insurers.
 
 ## Changelog
 
+- 2026-10-07: v0.7, **§14 approved by the owner on 2026-10-07 ("approve all")**, with
+  ADR-0042 accepted: §14 renamed "Amendment (2026-10-07), approved"; its decisions answered
+  as recommended; the catalogue at More → Add-ons; one add-on per integration; new slots
+  `more:social`, `more:vehicles` and `home:card` (§14.7, §4.2); Q5 reopened and answered
+  (developer add-on), Q7 answered (no remote catalogue yet). Stays draft: Q3, Q4 and Q8 are
+  open.
 - 2026-10-07: v0.6, **proposed amendment §14**, pending the owner (ADR-0042, proposed): core
   is the shell, Diagnose, Trips (Logs renamed), Network and Security once a node exists;
   add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab as
