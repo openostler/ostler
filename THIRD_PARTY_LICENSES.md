@@ -4,7 +4,7 @@ Vehicle-specific sources (the Td5 seed→key port of pajacobson/td5keygen, BSD-2
 the Ekaitza_Itzali and BinOwl_Td5Gauge protocol references; fault-code lists) moved with the
 Discovery 2 pack at the repo split (ADR-0015). Their notices live in that pack's
 `THIRD_PARTY_LICENSES.md`:
-<https://github.com/JamesWrightDavid/discovery2-diag>.
+<https://github.com/openostler/ostler-pack-lr-d2>.
 
 ## muki01/OBD2_K-line_Reader — K-line reference (MIT snapshot; upstream now GPL-3.0)
 

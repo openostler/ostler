@@ -19,7 +19,7 @@ FROM python:3.12-slim
 
 # The D2 pack's git ref (a branch, tag or commit), e.g. --build-arg PACK_REF=v0.1.0.
 ARG PACK_REF=main
-ARG PACK_REPO=https://github.com/JamesWrightDavid/discovery2-diag
+ARG PACK_REPO=https://github.com/openostler/ostler-pack-lr-d2
 
 WORKDIR /app
 

@@ -169,7 +169,7 @@ HEVAC is the owner's separate ESP32 project; Ostler only talks to it as an add-o
 
 | Step | Vehicles | How |
 |---|---|---|
-| 1 | **Land Rover Discovery 2 Td5** (reference pack) | K-line, KWP2000, seed-key, six modules; [discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag) |
+| 1 | **Land Rover Discovery 2 Td5** (reference pack) | K-line, KWP2000, seed-key, six modules; [ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2) |
 | 2 | **Other Land Rover and Rover** | e.g. P38, classic Range Rover / Rover V8 (14CUX, MEMS via libcomm14cux/librosco), Discovery 3/4 in collaboration with jlr-scanner |
 | 3 | **Any OBD-II car** | the `generic_obd2` pack (ELM327 / SocketCAN, OBDb SAEJ1979 data), selected when no pack matches; proves the platform is universal |
 | 4 | **Modern CAN / UDS** | ISO-TP, UDS `22`/`19`, passive CAN via DBC; systems grouped by domain when there are more than twelve |

@@ -24,7 +24,7 @@ broken are in [CONSTITUTION.md](../CONSTITUTION.md). This page is the working ma
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"          # only runtime dep is pyserial; dev adds pytest, jsonschema, vss-tools
 # the Discovery 2 reference pack (integration tests, the dashboard, e2e)
-pip install --no-deps "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag"
+pip install --no-deps "d2diag @ git+https://github.com/openostler/ostler-pack-lr-d2"
 
 pytest -q                        # whole suite, no hardware needed
 python tools/build_metrics.py    # regenerate metrics.json after editing vss/ (--check in CI)

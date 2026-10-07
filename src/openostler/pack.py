@@ -41,7 +41,7 @@ ENTRY_POINT_GROUP = "openostler.vehicle"
 LEGACY_ENTRY_POINT_GROUPS = ("ostler.vehicle",)
 ENV_VAR = "OSTLER_VEHICLE"
 # Shown when no pack is installed: the reference pack and how to install it.
-INSTALL_HINT = ('pip install "d2diag @ git+https://github.com/JamesWrightDavid/discovery2-diag" '
+INSTALL_HINT = ('pip install "d2diag @ git+https://github.com/openostler/ostler-pack-lr-d2" '
                 '(the Land Rover Discovery 2 pack), or any package registering an '
                 f'"{ENTRY_POINT_GROUP}" entry point')
 

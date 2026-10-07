@@ -142,6 +142,6 @@ summary: >
   [ADR-0015](decisions/adr-0015-repo-split-executed.md) and the
   [Phase 0 spec](specs/2026-10-06-phase0-vehiclepack-decoupling-design.md) (the contract).
 - **Going to the car?** The car-test backlog lives in the vehicle pack's repo (for the
-  Discovery 2: the test plan in the discovery2-diag repo).
+  Discovery 2: the test plan in the openostler/ostler-pack-lr-d2 repo).
 - **Unfamiliar term?** Read [GLOSSARY.md](GLOSSARY.md).
 - **Want the why behind a choice?** Read [decisions/](decisions/CLAUDE.md).

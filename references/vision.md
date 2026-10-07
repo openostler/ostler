@@ -231,7 +231,7 @@ the alarm path and the in-car app never depend on the internet.
 | Repo / product | Visibility, licence | Role |
 |---|---|---|
 | [`openostler/ostler`](https://github.com/openostler/ostler) | public; AGPL + commercial | Platform: comms core, `VehiclePack` contract, logbook/replay, integrations, web server, **the main UI** |
-| [`discovery2-diag`](https://github.com/JamesWrightDavid/discovery2-diag) (`d2diag`) | public; AGPL code + CC BY-SA data | Ostler pack for Land Rover Discovery 2: the reference pack and conformance fixture |
+| [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (`d2diag`) | public; AGPL code + CC BY-SA data | Ostler pack for Land Rover Discovery 2: the reference pack and conformance fixture |
 | `openostler/ostler-firmware` | public; AGPL | First-class now: the C decoder, the link layer, every node variant (diagnostic node, guardian), keygen plugins, add-on module firmware, shared HAL ([ADR-0034](../decisions/adr-0034-repo-boundaries.md)) |
 | Module contract repo | public | The module contract and conformance kit, split out at contract v1 |
 | `openostler/ostler-cloud` | **private, closed** | Ostler Cloud; speaks only a documented MQTT/HTTPS protocol and never imports platform code |

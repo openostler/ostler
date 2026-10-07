@@ -19,7 +19,7 @@ reporting responsibly.
 [Security → Report a vulnerability](https://github.com/openostler/ostler/security/advisories/new)
 on this repository. For a bug that is only in a vehicle pack you may report it on that
 pack's repository instead (the Discovery 2 pack:
-[discovery2-diag](https://github.com/JamesWrightDavid/discovery2-diag/security/advisories/new));
+[ostler-pack-lr-d2](https://github.com/openostler/ostler-pack-lr-d2/security/advisories/new));
 either way reaches the maintainer.
 
 **Do not** open a public issue, pull request or discussion for a vulnerability.

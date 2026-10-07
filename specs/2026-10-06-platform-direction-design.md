@@ -162,7 +162,7 @@ Split only when the toolchain, licence, release cadence or contributors differ
 |---|---|---|
 | `openostler/ostler` | public, AGPL + commercial | The one platform repo: server, the Python lab and reference link layer, high-level features, **the main UI** (not split out), contracts and `generic_obd2` |
 | `openostler/ostler-firmware` | public, AGPL | First-class now: the portable C decoder, the link layer and gate, every node variant, keygen plugins. The D2 pack's `esp32/kline_node` moves here when the repo is created |
-| `ostler-pack-<x>` (the D2 pack is `discovery2-diag`) | public, AGPL code + CC BY-SA data | Vehicle packs |
+| `ostler-pack-<x>` (the D2 pack is `ostler-pack-lr-d2`) | public, AGPL code + CC BY-SA data | Vehicle packs |
 | `openostler/ostler-cloud` | **private, closed** | Ostler Cloud |
 | Later | — | `ostler-hardware` (CERN-OHL-S) when PCB work starts; the module contract and conformance kit at contract v1; `ostler-android` |
 | HEVAC | owner's separate project | Not part of this platform |
