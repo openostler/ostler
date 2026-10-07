@@ -1,0 +1,2981 @@
+[
+ {
+  "id": "app-list",
+  "name": "Apps",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+    "section": "Home Assistant direction",
+    "heading": "Home Assistant direction (decision list items 97–101), accepted direction",
+    "anchor": "home-assistant-direction-decision-list-items-97101-accepted-direction",
+    "label": "ADR-0042"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§4.2",
+    "heading": "4.2 Integrations versus add-ons",
+    "anchor": "42-integrations-versus-add-ons",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§5",
+    "heading": "5. Copy / Avoid / Decide for Ostler",
+    "anchor": "5-copy--avoid--decide-for-ostler",
+    "label": "HA integrations"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Chip (kind, status)",
+   "Segmented",
+   "Switch (new)",
+   "search field (new)",
+   "TabBar (variant B)",
+   "Button"
+  ],
+  "variants": [
+   "variant A: one list with kind Chips (ADR-0042 item 98)",
+   "variant B: Apps · Integrations tabs (HA split)"
+  ],
+  "notes": "every installed app, integration and vehicle pack, each row opening App info.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-a.md#app-list--apps--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info",
+  "name": "App info",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§5",
+    "heading": "5. Lifecycle and isolation",
+    "anchor": "5-lifecycle-and-isolation",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Button (with icon)",
+   "Chip (kind, version, status)",
+   "Card (tone)"
+  ],
+  "variants": [
+   "app",
+   "integration (no Open)",
+   "vehicle pack",
+   "system app"
+  ],
+  "notes": "one page per installed app: actions, access, notifications, storage, power, version, logs, links, widgets.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info--app-info--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-actions",
+  "name": "Force stop and Disable sheets",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§5",
+    "heading": "5. Lifecycle and isolation",
+    "anchor": "5-lifecycle-and-isolation",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Button (danger)",
+   "toast (`ia-toast`)"
+  ],
+  "variants": [
+   "Force stop",
+   "Disable",
+   "Enable toast"
+  ],
+  "notes": "confirm Force stop, Disable and Enable.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info-actions--force-stop-and-disable-sheets--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-permissions",
+  "name": "Permissions and data",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "Decision",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Action categories, the second axis (ADR-0033)",
+    "anchor": "71-action-categories-the-second-axis-adr-0033",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Switch (new)",
+   "Chip",
+   "Card (group)",
+   "Badge \"Experimental\""
+  ],
+  "variants": [],
+  "notes": "what this app reads, what it may ask the OS for, and which car actions it may request.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-permissions--permissions-and-data--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-notifications",
+  "name": "Notifications",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§8",
+    "heading": "8. Reminder delivery",
+    "anchor": "8-reminder-delivery",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Switch (new)",
+   "ListRow",
+   "Chip",
+   "Card (tone)"
+  ],
+  "variants": [],
+  "notes": "switch an app's notification channels on or off, per place.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-notifications--notifications--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-storage",
+  "name": "Storage and cache",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§6",
+    "heading": "6. The shell ↔ app API",
+    "anchor": "6-the-shell--app-api",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "progress bar (new)",
+   "ListRow",
+   "Button (danger)",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "how much the app keeps, and clearing its cache or data safely.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-storage--storage-and-cache--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-power",
+  "name": "Power use on the Brain",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§13",
+    "heading": "13. Power states, wake and queued actions (accepted 2026-10-06)",
+    "anchor": "13-power-states-wake-and-queued-actions-accepted-2026-10-06",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.8",
+    "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+    "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0040-power-states-and-wake.md",
+    "section": "",
+    "heading": "ADR-0040 — Power states and wake",
+    "anchor": "",
+    "label": "ADR-0040"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "StatTile",
+   "ListRow",
+   "Switch (new)"
+  ],
+  "variants": [],
+  "notes": "show the app's wakes, holds and load, and the switch for its wake permission.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-power--power-use-on-the-brain--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-defaults",
+  "name": "Open by default",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§6",
+    "heading": "6. The shell ↔ app API",
+    "anchor": "6-the-shell--app-api",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Import and export",
+    "anchor": "84-import-and-export",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Switch (new)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "the links and files this app opens, and whether it is the default.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-defaults--open-by-default--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-provides",
+  "name": "Widgets and shortcuts",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (preview)",
+   "Chip",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "list every widget and shortcut the app offers, with where each is placed.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-provides--widgets-and-shortcuts--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-version",
+  "name": "Version and source",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7",
+    "heading": "7. Optional apps from their own repos",
+    "anchor": "7-optional-apps-from-their-own-repos",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "references/research/ha_architecture_addons.md",
+    "section": "§3.3",
+    "heading": "3.3 Backups, updates, channels",
+    "anchor": "33-backups-updates-channels",
+    "label": "HA architecture"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Card",
+   "Button",
+   "Segmented",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "version, update, changelog, licence, source and publisher.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-version--version-and-source--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-info-logs",
+  "name": "App log",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§5",
+    "heading": "5. Lifecycle and isolation",
+    "anchor": "5-lifecycle-and-isolation",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§6",
+    "heading": "6. The shell ↔ app API",
+    "anchor": "6-the-shell--app-api",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow (mono time)",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "the app's errors, stops and the car actions it asked for.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-logs--app-log--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-frame",
+  "name": "Setup flow frame",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§8",
+    "heading": "8. Explicit non-goals and hard lines",
+    "anchor": "8-explicit-non-goals-and-hard-lines",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§1",
+    "heading": "1. HA integrations, as of October 2026",
+    "anchor": "1-ha-integrations-as-of-october-2026",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "SetupStepper (new)",
+   "Button",
+   "Sheet",
+   "Card (tone)"
+  ],
+  "variants": [],
+  "notes": "the shell around every step: who is setting up, where you are, how to leave.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-frame--setup-flow-frame--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-form",
+  "name": "Schema form step",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Text field",
+   "Switch (new)",
+   "Segmented",
+   "ListRow",
+   "Card (tone)",
+   "SchemaForm (new component: the OS renderer of the JSON Schema subset above)"
+  ],
+  "variants": [],
+  "notes": "draw fields from the step's schema, check them, explain errors.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-form--schema-form-step--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-discovered",
+  "name": "Discovered confirm step",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§5",
+    "heading": "5. Copy / Avoid / Decide for Ostler",
+    "anchor": "5-copy--avoid--decide-for-ostler",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7",
+    "heading": "7. Optional apps from their own repos",
+    "anchor": "7-optional-apps-from-their-own-repos",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card",
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "show what was found and why it matches, and ask before adding.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-discovered--discovered-confirm-step--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-auth",
+  "name": "Sign-in step",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§1",
+    "heading": "1. HA integrations, as of October 2026",
+    "anchor": "1-ha-integrations-as-of-october-2026",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "Decision",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0033"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Button",
+   "Card",
+   "QR (new component: a token-coloured QR on `surface-1`)",
+   "Text field (secret)"
+  ],
+  "variants": [
+   "browser hand-off",
+   "device code on a head unit",
+   "API key"
+  ],
+  "notes": "sign in through a browser (OAuth) or with a code shown here and entered on a phone.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-auth--sign-in-step--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-hardware",
+  "name": "Hardware detect step",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§5",
+    "heading": "5. Detection and clone checks",
+    "anchor": "5-detection-and-clone-checks",
+    "label": "Adapters"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7",
+    "heading": "7. Optional apps from their own repos",
+    "anchor": "7-optional-apps-from-their-own-repos",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Chip (status)",
+   "Button",
+   "Checklist (new)"
+  ],
+  "variants": [],
+  "notes": "find the device, say what was found, and help when nothing is.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-hardware--hardware-detect-step--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-flow-success",
+  "name": "Success summary",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§1",
+    "heading": "1. HA integrations, as of October 2026",
+    "anchor": "1-ha-integrations-as-of-october-2026",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "say what is now set up, what is not, and where to go next.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-success--success-summary--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-options-flow",
+  "name": "Options flow",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§1",
+    "heading": "1. HA integrations, as of October 2026",
+    "anchor": "1-ha-integrations-as-of-october-2026",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "as `app-flow-form`",
+   "plus toast"
+  ],
+  "variants": [
+   "Options",
+   "Sign in again",
+   "Reconfigure"
+  ],
+  "notes": "change an app's or integration's setup without removing it.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-c.md#app-options-flow--options-flow--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-d2-found",
+  "name": "Discovery 2 found",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§4.1",
+    "heading": "4.1 Entities, devices and areas",
+    "anchor": "41-entities-devices-and-areas",
+    "label": "HA integrations"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card",
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "confirm that the car on the node is a Discovery 2 Td5.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-found--discovery-2-found--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-d2-modules",
+  "name": "Which systems this car has",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Shape",
+    "anchor": "51-shape",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow (tick)",
+   "Chip",
+   "SchemaForm (new)"
+  ],
+  "variants": [],
+  "notes": "pick the fitted systems from the pack's list.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-modules--which-systems-this-car-has--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-d2-contact",
+  "name": "First contact on K-line",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§7",
+    "heading": "7. Safety with no hardware gate",
+    "anchor": "7-safety-with-no-hardware-gate",
+    "label": "Adapters"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Checklist (new)",
+   "ListRow",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "prove the source reaches each system, honestly.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-contact--first-contact-on-k-line--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-d2-done",
+  "name": "Discovery 2 set up",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§5",
+    "heading": "5. Copy / Avoid / Decide for Ostler",
+    "anchor": "5-copy--avoid--decide-for-ostler",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.9",
+    "heading": "5.9 Defaults and rotation per class",
+    "anchor": "59-defaults-and-rotation-per-class",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "summarise the car, its source and its systems.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-done--discovery-2-set-up--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-lube-server",
+  "name": "LubeLogger server",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§11",
+    "heading": "11. Later",
+    "anchor": "11-later",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "references/research/code_review_lubelogger.md",
+    "section": "§5",
+    "heading": "5. HTTP API",
+    "anchor": "5-http-api",
+    "label": "LubeLogger review"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Text field (secret)",
+   "Card (tone)",
+   "Button",
+   "SchemaForm (new)"
+  ],
+  "variants": [],
+  "notes": "connect to the owner's own LubeLogger with a key that can edit.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-server--lubelogger-server--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-lube-sync",
+  "name": "Car and what syncs",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§11",
+    "heading": "11. Later",
+    "anchor": "11-later",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Switch (new)",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "map each car and choose the directions.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-sync--car-and-what-syncs--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-radio-detect",
+  "name": "Find the radio receiver",
+  "area": "app:radio",
+  "group": "App framework",
+  "owner": "app:radio",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§13",
+    "heading": "13. Power states, wake and queued actions (accepted 2026-10-06)",
+    "anchor": "13-power-states-wake-and-queued-actions-accepted-2026-10-06",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "as `app-flow-hardware`"
+  ],
+  "variants": [],
+  "notes": "find a DAB+ receiver on the Brain.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-detect--find-the-radio-receiver--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-setup-radio-scan",
+  "name": "Region and scan",
+  "area": "app:radio",
+  "group": "App framework",
+  "owner": "app:radio",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Segmented or list (region)",
+   "Switch (new)",
+   "progress bar (new)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "choose region, scan Band III, show progress.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-scan--region-and-scan--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-integrations",
+  "name": "Integrations",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+    "section": "Home Assistant direction",
+    "heading": "Home Assistant direction (decision list items 97–101), accepted direction",
+    "anchor": "home-assistant-direction-decision-list-items-97101-accepted-direction",
+    "label": "ADR-0042"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§1",
+    "heading": "1. HA integrations, as of October 2026",
+    "anchor": "1-ha-integrations-as-of-october-2026",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§4.1",
+    "heading": "4.1 Entities, devices and areas",
+    "anchor": "41-entities-devices-and-areas",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§5",
+    "heading": "5. Copy / Avoid / Decide for Ostler",
+    "anchor": "5-copy--avoid--decide-for-ostler",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (tone, tappable)",
+   "Chip",
+   "Button",
+   "search field (new)"
+  ],
+  "variants": [],
+  "notes": "list integration entries: discovered, needing attention, configured.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integrations--integrations--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-integration-entry",
+  "name": "Integration entry",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "§4.1",
+    "heading": "4.1 Entities, devices and areas",
+    "anchor": "41-entities-devices-and-areas",
+    "label": "HA integrations"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Shape",
+    "anchor": "51-shape",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Chip (status)",
+   "Card",
+   "Button"
+  ],
+  "variants": [
+   "vehicle pack (Discovery 2)",
+   "bridge (LubeLogger)"
+  ],
+  "notes": "one entry's devices, signals, source and controls.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integration-entry--integration-entry--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-discovered",
+  "name": "New device found",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "home card + phone notification",
+   "idling": "as Parked",
+   "moving": "not shown on head units; held until Parked",
+   "passenger": "not shown"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7",
+    "heading": "7. Optional apps from their own repos",
+    "anchor": "7-optional-apps-from-their-own-repos",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§5",
+    "heading": "5. Detection and clone checks",
+    "anchor": "5-detection-and-clone-checks",
+    "label": "Adapters"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (home card)",
+   "notification (phone)",
+   "Button"
+  ],
+  "variants": [
+   "car",
+   "node",
+   "adapter",
+   "camera",
+   "radio receiver",
+   "several finds"
+  ],
+  "notes": "tell the owner, quietly, that something new was found, and offer to add it.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-e.md#app-discovered--new-device-found--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-permission-request",
+  "name": "Permission request sheet",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "sheet at the moment of use",
+   "idling": "as Parked",
+   "moving": "never shown on a head unit; the request waits for Parked",
+   "passenger": "not shown"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   },
+   {
+    "doc": "decisions/adr-0009-session-logbook-and-location.md",
+    "section": "",
+    "heading": "ADR-0009 — Always-on session logbook; location stays on the device",
+    "anchor": "",
+    "label": "ADR-0009"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Sheet",
+   "Button",
+   "ListRow (choices)"
+  ],
+  "variants": [
+   "location",
+   "phone",
+   "microphone",
+   "camera"
+  ],
+  "notes": "ask once, at the moment of need, for one permission for one app.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-e.md#app-permission-request--permission-request-sheet--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-permission-car",
+  "name": "Allow an app to ask for car actions",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "sheet at the first request in a category",
+   "idling": "as Parked with Park evidence",
+   "moving": "not shown; request refused with 'Park to allow'",
+   "passenger": "not shown"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "Decision",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Action categories, the second axis (ADR-0033)",
+    "anchor": "71-action-categories-the-second-axis-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Chip (tier)",
+   "Button"
+  ],
+  "variants": [
+   "Maintenance",
+   "Actuator tests",
+   "Procedures",
+   "Comfort"
+  ],
+  "notes": "let the owner allow an app to ask for one category of car action.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-e.md#app-permission-car--allow-an-app-to-ask-for-car-actions--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-widgets",
+  "name": "Widget pack",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (preview)",
+   "Chip",
+   "Button",
+   "Gauge",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "show every widget in the pack and add one to a home page.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-widgets--widget-pack--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-theme",
+  "name": "Theme pack",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Segmented",
+   "Card (preview)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "preview a theme pack and apply it.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-theme--theme-pack--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-icons",
+  "name": "Icon pack",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§6",
+    "heading": "6. Icons and fonts",
+    "anchor": "6-icons-and-fonts",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "preview and apply an icon pack: a mapping of apps and pages to Material Symbols names and styles.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-icons--icon-pack--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-wallpaper",
+  "name": "Wallpaper pack",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "pick a wallpaper from the pack for each screen.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-wallpaper--wallpaper-pack--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-preset",
+  "name": "Dashboard preset",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.9",
+    "heading": "5.9 Defaults and rotation per class",
+    "anchor": "59-defaults-and-rotation-per-class",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Import and export",
+    "anchor": "84-import-and-export",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "preview a dashboard preset Parked and Moving, then apply it with the builder.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-preset--dashboard-preset--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-pack-sound",
+  "name": "Sound or EQ preset",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Area line",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "show the preset's curve and send it to Audio.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-sound--sound-or-eq-preset--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-error-stopped",
+  "name": "App stopped",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "page or widget card with Reopen and App info",
+   "idling": "as Parked",
+   "moving": "widget placeholder 'Widget stopped', no buttons; after 3 stops in a drive it stays until Parked",
+   "passenger": "as Moving"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§5",
+    "heading": "5. Lifecycle and isolation",
+    "anchor": "5-lifecycle-and-isolation",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (tone)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "say an app or widget stopped, keep the rest working, offer a way back.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-error-stopped--app-stopped--new"
+ },
+ {
+  "id": "app-error-needs-update",
+  "name": "Needs an update",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "card with Update and Turn off",
+   "idling": "as Parked",
+   "moving": "card shows; buttons wait for Parked",
+   "passenger": "as Moving"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7",
+    "heading": "7. Optional apps from their own repos",
+    "anchor": "7-optional-apps-from-their-own-repos",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Card (tone)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "explain that the app and this OS version do not match, and fix it.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-error-needs-update--needs-an-update--new"
+ },
+ {
+  "id": "app-error-incompatible",
+  "name": "Not available on this car",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "explain why an app cannot run with this car or setup.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-f.md#app-error-incompatible--not-available-on-this-car--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-uninstall",
+  "name": "Uninstall",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "not offered; Open on phone"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§5",
+    "heading": "5. Lifecycle and isolation",
+    "anchor": "5-lifecycle-and-isolation",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.7",
+    "heading": "7.7 Hide, replace and reachability (v0.2)",
+    "anchor": "77-hide-replace-and-reachability-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Card",
+   "Switch (new)",
+   "Button (danger)"
+  ],
+  "variants": [
+   "app",
+   "vehicle pack",
+   "integration",
+   "blocked by a running action"
+  ],
+  "notes": "confirm removal, after showing what is deleted and kept and offering export.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-g.md#app-uninstall--uninstall--proposed",
+  "proposed": true
+ },
+ {
+  "id": "app-dev-view",
+  "name": "Developer view of an app",
+  "area": "os",
+  "group": "App framework",
+  "owner": "os",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "phone",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full (service mode only)",
+   "idling": "as Parked with Park evidence",
+   "moving": "service mode exits; the page closes to the locked view",
+   "passenger": "not offered"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.1",
+    "heading": "4.1 Shape",
+    "anchor": "41-shape",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§10",
+    "heading": "10. Tests",
+    "anchor": "10-tests",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§13",
+    "heading": "13. Power states, wake and queued actions (accepted 2026-10-06)",
+    "anchor": "13-power-states-wake-and-queued-actions-accepted-2026-10-06",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "Material Symbols (outlined) only",
+   "focus-ring-width/-color/-gap (shell input §9)"
+  ],
+  "components": [
+   "TabBar",
+   "CodeBlock (new component: read-only mono JSON on `surface-2` with line numbers and folding)",
+   "ListRow",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "inspect an app's manifest and contributions, reload it, watch its log.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/90-appframe-g.md#app-dev-view--developer-view-of-an-app--proposed",
+  "proposed": true
+ }
+]

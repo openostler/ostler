@@ -1,0 +1,3568 @@
+[
+ {
+  "id": "radio-now-playing",
+  "name": "Radio: now playing",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "the `media-moving` frame; presets as a `short_list`"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§4",
+    "heading": "4. Type",
+    "anchor": "4-type",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "HeroStat (station name variant)",
+   "Chip (status)",
+   "Button",
+   "PresetButton",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-now-playing--radio-now-playing--proposed"
+ },
+ {
+  "id": "radio-stations",
+  "name": "Station list and DAB service list",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "only Favourites (≤ 6 rows, ≤ 30 characters) in a `short_list`, one level, no search, no filters"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "TabBar",
+   "Chip (filter)",
+   "TextField",
+   "ListRow",
+   "Button",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--proposed"
+ },
+ {
+  "id": "radio-tune",
+  "name": "Tune, seek and scan",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "this page is locked; seek stays in the `media` template's skip buttons"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "HeroStat",
+   "FrequencyScale",
+   "Button",
+   "locked view"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-tune--tune-seek-and-scan--proposed"
+ },
+ {
+  "id": "radio-presets",
+  "name": "Presets",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "P1–P6 as a `short_list` (≤ 6 rows); recall only"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "PresetButton",
+   "ListRow",
+   "Button",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-presets--presets--proposed"
+ },
+ {
+  "id": "radio-dab-slideshow",
+  "name": "DAB slideshow and DLS",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "tablet",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view \"Available when parked\", with Open on phone; the `media` template shows the static logo only"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/driver_distraction_rules.md",
+    "section": "§4.2",
+    "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
+    "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
+    "label": "Research: distraction"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Button",
+   "locked view"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--proposed"
+ },
+ {
+  "id": "radio-ta-alert",
+  "name": "Traffic announcement interrupt",
+  "area": "os",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "one card, two buttons, ≤ 2 lines of ≤ 30 characters; never covers a red telltale, the reverse camera, a call or a navigation manoeuvre prompt (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`alert_card` template",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-ta-alert--traffic-announcement-interrupt--proposed"
+ },
+ {
+  "id": "radio-setup-tuner",
+  "name": "Setup 1: pick the tuner",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/hardware.md",
+    "section": "",
+    "heading": "Development kit: recommended parts (~£250 plus the Pi)",
+    "anchor": "development-kit-recommended-parts-250-plus-the-pi",
+    "label": "Research: hardware"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Chip",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--proposed"
+ },
+ {
+  "id": "radio-setup-antenna",
+  "name": "Setup 2: antenna check",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "references/research/hardware.md",
+    "section": "",
+    "heading": "Development kit: recommended parts (~£250 plus the Pi)",
+    "anchor": "development-kit-recommended-parts-250-plus-the-pi",
+    "label": "Research: hardware"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "StatTile",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--proposed"
+ },
+ {
+  "id": "radio-setup-scan",
+  "name": "Setup 3: region and first scan",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view (scan can finish in the background)"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Chip",
+   "Toggle",
+   "ProgressRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--proposed"
+ },
+ {
+  "id": "radio-settings",
+  "name": "Radio settings",
+  "area": "app: Radio",
+  "group": "Radio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:radio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-settings--radio-settings--proposed"
+ },
+ {
+  "id": "audio-sources",
+  "name": "Sources",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `short_list` of available sources (≤ 6 rows, ≤ 30 characters), tap switches"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sources--sources--proposed"
+ },
+ {
+  "id": "audio-sound",
+  "name": "Sound (loudness, bass, tone)",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view with only a Volume control and the active preset chip (switchable in a `short_list`)"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip",
+   "Slider",
+   "Toggle",
+   "Segmented",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sound--sound-loudness-bass-tone--proposed"
+ },
+ {
+  "id": "audio-eq-graphic",
+  "name": "Graphic equaliser",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view, \"Available when parked\""
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "EqBands",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-graphic--graphic-equaliser--proposed"
+ },
+ {
+  "id": "audio-eq-parametric",
+  "name": "Parametric equaliser",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide",
+   "hu7"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "CurveEditor",
+   "ListRow",
+   "Segmented",
+   "TextField",
+   "Toggle",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-parametric--parametric-equaliser--proposed"
+ },
+ {
+  "id": "audio-eq-presets",
+  "name": "EQ presets",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `short_list` of ≤ 6 presets; tap applies"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Sheet",
+   "Button",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-presets--eq-presets--proposed"
+ },
+ {
+  "id": "audio-balance-fade",
+  "name": "Balance and fade",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SeatMap",
+   "Button",
+   "Chip",
+   "Toggle"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-balance-fade--balance-and-fade--proposed"
+ },
+ {
+  "id": "audio-crossover",
+  "name": "Crossover",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "CurveEditor",
+   "Slider",
+   "Segmented",
+   "Toggle",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-crossover--crossover--proposed"
+ },
+ {
+  "id": "audio-time-alignment",
+  "name": "Time alignment",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view; the position may be switched only through a saved preset"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "SeatMap",
+   "ListRow",
+   "TextField",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-time-alignment--time-alignment--proposed"
+ },
+ {
+  "id": "audio-subwoofer",
+  "name": "Subwoofer",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view; sub level is not a Moving control"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Toggle",
+   "Slider",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-subwoofer--subwoofer--proposed"
+ },
+ {
+  "id": "audio-volume-rules",
+  "name": "Volume rules",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3",
+    "heading": "3. Architecture",
+    "anchor": "3-architecture",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "Slider",
+   "Toggle",
+   "area line chart (visual §8)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-volume-rules--volume-rules--proposed"
+ },
+ {
+  "id": "audio-system-sounds",
+  "name": "System sounds",
+  "area": "os",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Slider",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-system-sounds--system-sounds--proposed"
+ },
+ {
+  "id": "audio-setup-shape",
+  "name": "Setup 1: install shape",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3",
+    "heading": "3. Architecture",
+    "anchor": "3-architecture",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§1",
+    "heading": "1. Context and goals",
+    "anchor": "1-context-and-goals",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "Card (choice)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-shape--setup-1-install-shape--proposed"
+ },
+ {
+  "id": "audio-setup-output",
+  "name": "Setup 2: output device (DAC or DSP)",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "references/research/hardware.md",
+    "section": "",
+    "heading": "Development kit: recommended parts (~£250 plus the Pi)",
+    "anchor": "development-kit-recommended-parts-250-plus-the-pi",
+    "label": "Research: hardware"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B4",
+    "heading": "B4. Steering wheel, reverse, cameras, amplifier",
+    "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
+    "label": "Research: head units"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-output--setup-2-output-device-dac-or-dsp--proposed"
+ },
+ {
+  "id": "audio-setup-channels",
+  "name": "Setup 3: channel map",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "Segmented",
+   "SeatMap",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-channels--setup-3-channel-map--proposed"
+ },
+ {
+  "id": "audio-setup-test",
+  "name": "Setup 4: speaker test and levels",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "SeatMap",
+   "Button",
+   "Slider"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-test--setup-4-speaker-test-and-levels--proposed"
+ },
+ {
+  "id": "audio-settings",
+  "name": "Audio settings",
+  "area": "app: Audio",
+  "group": "Audio",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:audio",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip (status)",
+   "Toggle",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-settings--audio-settings--proposed"
+ },
+ {
+  "id": "media-moving",
+  "name": "Media template while Moving (Radio, Media, Bluetooth, streaming)",
+  "area": "os",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "title and artist ≤ 30 characters each, static artwork, play or pause, skip, volume; no lyrics, no video, no browsing beyond one `short_list`; no animation, glow or gradient (UI §12.1, App model §4.4)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.6",
+    "heading": "5.6 Split / Media",
+    "anchor": "56-split--media",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "references/research/driver_distraction_rules.md",
+    "section": "§7.2",
+    "heading": "7.2 Template limits (recommended)",
+    "anchor": "72-template-limits-recommended",
+    "label": "Research: distraction"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`media` template",
+   "`short_list` template",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-moving--media-template-while-moving-radio-media-bluetooth-streaming--new"
+ },
+ {
+  "id": "media-now-playing",
+  "name": "Media: now playing",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "`media-moving`"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip",
+   "Scrubber",
+   "Button",
+   "ListRow",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-now-playing--media-now-playing--proposed"
+ },
+ {
+  "id": "media-browse",
+  "name": "Browse (local, USB, network shares)",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `short_list` (≤ 6 rows, ≤ 30 characters, one level) of Recent and Playlists; no tabs, no search, no A–Z"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip (filter)",
+   "TabBar",
+   "TextField",
+   "Card",
+   "ListRow",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-browse--browse-local-usb-network-shares--proposed"
+ },
+ {
+  "id": "media-queue",
+  "name": "Queue",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked; the template's skip is the only queue control"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-queue--queue--proposed"
+ },
+ {
+  "id": "media-bluetooth",
+  "name": "Bluetooth audio",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "`media-moving`"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3",
+    "heading": "3. Architecture",
+    "anchor": "3-architecture",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§13",
+    "heading": "13. Security",
+    "anchor": "13-security",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip (status)",
+   "Button",
+   "ListRow",
+   "Scrubber"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-bluetooth--bluetooth-audio--proposed"
+ },
+ {
+  "id": "media-video",
+  "name": "Video player (Parked only)",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "no video on any driver-facing display while Idling without Park evidence or Moving, Passenger view included (UI §12.1, reg 109); the OS, not the app, stops it"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/driver_distraction_rules.md",
+    "section": "§4.2",
+    "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
+    "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
+    "label": "Research: distraction"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Scrubber",
+   "Button",
+   "locked view"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-video--video-player-parked-only--proposed"
+ },
+ {
+  "id": "media-setup",
+  "name": "Media: choose sources",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Toggle",
+   "ProgressRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-setup--media-choose-sources--proposed"
+ },
+ {
+  "id": "media-share-add",
+  "name": "Add a network share",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "TextField",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-share-add--add-a-network-share--proposed"
+ },
+ {
+  "id": "media-integrations",
+  "name": "Streaming integrations",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.6",
+    "heading": "5.6 Split / Media",
+    "anchor": "56-split--media",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip (status)",
+   "Button",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integrations--streaming-integrations--proposed"
+ },
+ {
+  "id": "media-integration-setup",
+  "name": "Streaming integration setup",
+  "area": "os",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip",
+   "ListRow",
+   "QR code",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integration-setup--streaming-integration-setup--proposed"
+ },
+ {
+  "id": "media-settings",
+  "name": "Media settings",
+  "area": "app: Media",
+  "group": "Media",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:media",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-settings--media-settings--proposed"
+ },
+ {
+  "id": "camera-home",
+  "name": "Cameras",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `short_list` of driving cameras only (Reverse, Front, Underbody), each opening `camera_live` within its speed rule; Cabin and Dash are absent"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chip (status)",
+   "Button",
+   "`short_list` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-home--cameras--proposed"
+ },
+ {
+  "id": "camera-reverse",
+  "name": "Reverse camera with guidelines",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "`camera_live`, one stream, no playback; pre-emption only once a fast reverse path exists, until then it opens when placed on a home page or by the button (UI §6); a reverse camera is a driving camera under reg 109 (c) (research §4.2); message cards wait until reverse ends (UI §12.1)"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B4",
+    "heading": "B4. Steering wheel, reverse, cameras, amplifier",
+    "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
+    "label": "Research: head units"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`camera_live` template",
+   "GuidelineOverlay",
+   "SensorArcs",
+   "Chip (status)",
+   "Button (Back)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-reverse--reverse-camera-with-guidelines--new"
+ },
+ {
+  "id": "camera-offroad",
+  "name": "Front and underbody views",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "`camera_live` below 10 km/h only; one stream; no recording playback (UI §6, App model §4.4)"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Off-road (D2)",
+    "anchor": "55-off-road-d2",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`camera_live` template",
+   "Segmented",
+   "StatTile",
+   "Chip (status)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-offroad--front-and-underbody-views--new"
+ },
+ {
+  "id": "camera-multi",
+  "name": "All cameras (multi-view)",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "closes to the Drive home page; only the `camera_live` driving cameras remain"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "CameraGrid",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-multi--all-cameras-multi-view--proposed"
+ },
+ {
+  "id": "camera-dashcam",
+  "name": "Dashcam and recording",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a single Save clip button (like Mark) and the REC state; no playback, no list"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-platform-direction-design.md",
+    "section": "",
+    "heading": "Displays are thin clients; cameras live on our infrastructure",
+    "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
+    "label": "Platform direction"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip (status)",
+   "Button",
+   "ListRow",
+   "ProgressRow",
+   "Toast"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-dashcam--dashcam-and-recording--proposed"
+ },
+ {
+  "id": "camera-setup",
+  "name": "Setup 1: cameras and roles",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Chip",
+   "Button",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup--setup-1-cameras-and-roles--proposed"
+ },
+ {
+  "id": "camera-setup-trigger",
+  "name": "Setup 2: reverse trigger",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B4",
+    "heading": "B4. Steering wheel, reverse, cameras, amplifier",
+    "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
+    "label": "Research: head units"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Segmented",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-trigger--setup-2-reverse-trigger--proposed"
+ },
+ {
+  "id": "camera-setup-guidelines",
+  "name": "Setup 3: static guidelines",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "tablet",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "GuidelineOverlay",
+   "Slider",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-guidelines--setup-3-static-guidelines--proposed"
+ },
+ {
+  "id": "camera-settings",
+  "name": "Camera settings",
+  "area": "app: Camera",
+  "group": "Camera",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:camera",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-settings--camera-settings--proposed"
+ },
+ {
+  "id": "clock-page",
+  "name": "Clock, alarms and timers",
+  "area": "app: Clock",
+  "group": "Clock",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `value` template with the time and the next timer (\"Parking · 47 min\"); setting alarms is Parked only; preset timer Chips stay as a `short_list`"
+  },
+  "owner": "app:clock",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "HeroStat",
+   "TabBar",
+   "ListRow",
+   "Toggle",
+   "Chip",
+   "Button",
+   "`value` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-page--clock-alarms-and-timers--proposed"
+ },
+ {
+  "id": "clock-alarm-ring",
+  "name": "Alarm or timer ringing",
+  "area": "os",
+  "group": "Clock",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "one card, ≤ 2 lines of ≤ 30 characters, ≤ 2 buttons; never over a red telltale, the reverse camera, a call or a manoeuvre prompt (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`alert_card` template",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-alarm-ring--alarm-or-timer-ringing--proposed"
+ },
+ {
+  "id": "clock-settings",
+  "name": "Clock setup and settings",
+  "area": "app: Clock",
+  "group": "Clock",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:clock",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Slider"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--proposed"
+ },
+ {
+  "id": "weather-page",
+  "name": "Weather",
+  "area": "app: Weather",
+  "group": "Weather",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "a `value` template \"7 °C · Rain\"; forecasts and lists are Parked only"
+  },
+  "owner": "app:weather",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "HeroStat",
+   "Card",
+   "ListRow",
+   "Chip (status)",
+   "`value` template"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-page--weather--proposed"
+ },
+ {
+  "id": "weather-setup",
+  "name": "Weather: first-run setup",
+  "area": "app: Weather",
+  "group": "Weather",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:weather",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "TextField",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--proposed"
+ },
+ {
+  "id": "weather-settings",
+  "name": "Weather settings",
+  "area": "app: Weather",
+  "group": "Weather",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:weather",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Toggle",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-settings--weather-settings--proposed"
+ },
+ {
+  "id": "voice-assistant",
+  "name": "Voice assistant (listening)",
+  "area": "app: Voice",
+  "group": "Voice",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "no transcript while Moving (as AAOS `NO_VOICE_TRANSCRIPTION`, UI §12.1); voice never runs a car action, a Tier 1–3 test or a disarm; reading faults aloud only reads (count and worst fault, \"SLABS: right front wheel speed sensor, logged\")"
+  },
+  "owner": "app:voice",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§1",
+    "heading": "1. Goals and non-goals",
+    "anchor": "1-goals-and-non-goals",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "`alert_card` template (voice variant",
+   "new component)",
+   "Button",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--proposed"
+ },
+ {
+  "id": "voice-setup",
+  "name": "Voice: first-run setup",
+  "area": "app: Voice",
+  "group": "Voice",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:voice",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3",
+    "heading": "3. Architecture",
+    "anchor": "3-architecture",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§8",
+    "heading": "8. Bindings and the key test",
+    "anchor": "8-bindings-and-the-key-test",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "Toggle",
+   "ProgressRow",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--proposed"
+ },
+ {
+  "id": "voice-settings",
+  "name": "Voice settings",
+  "area": "app: Voice",
+  "group": "Voice",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:voice",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-settings--voice-settings--proposed"
+ },
+ {
+  "id": "swc-adapter",
+  "name": "Wheel controls 1: adapter",
+  "area": "os",
+  "group": "Steering-wheel controls",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Input events from packs and keypads",
+    "anchor": "31-input-events-from-packs-and-keypads",
+    "label": "Shell input"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B4",
+    "heading": "B4. Steering wheel, reverse, cameras, amplifier",
+    "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
+    "label": "Research: head units"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Card",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-adapter--wheel-controls-1-adapter--proposed"
+ },
+ {
+  "id": "swc-learn",
+  "name": "Wheel controls 2: learn buttons",
+  "area": "os",
+  "group": "Steering-wheel controls",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§5",
+    "heading": "5. Repeat and long press",
+    "anchor": "5-repeat-and-long-press",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§8",
+    "heading": "8. Bindings and the key test",
+    "anchor": "8-bindings-and-the-key-test",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "HeroStat",
+   "ListRow",
+   "TextField",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-learn--wheel-controls-2-learn-buttons--proposed"
+ },
+ {
+  "id": "swc-assign",
+  "name": "Wheel controls 3: assign actions",
+  "area": "os",
+  "group": "Steering-wheel controls",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§2",
+    "heading": "2. Intents",
+    "anchor": "2-intents",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§8",
+    "heading": "8. Bindings and the key test",
+    "anchor": "8-bindings-and-the-key-test",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "ListRow",
+   "Sheet",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-assign--wheel-controls-3-assign-actions--proposed"
+ },
+ {
+  "id": "projection-setup",
+  "name": "Projection: setup",
+  "area": "app: Projection",
+  "group": "Projection",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:projection",
+  "spec_refs": [
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B5",
+    "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
+    "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
+    "label": "Research: head units"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B7",
+    "heading": "B7. Open head-unit projects",
+    "anchor": "b7-open-head-unit-projects",
+    "label": "Research: head units"
+   },
+   {
+    "doc": "specs/2026-10-06-platform-direction-design.md",
+    "section": "",
+    "heading": "Displays are thin clients; cameras live on our infrastructure",
+    "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
+    "label": "Platform direction"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress",
+   "Card",
+   "ListRow",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-setup--projection-setup--proposed"
+ },
+ {
+  "id": "projection-session",
+  "name": "Projection: running session",
+  "area": "app: Projection",
+  "group": "Projection",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "the projected picture is a video stream Ostler cannot inspect; under Ostler's rules that is video on a driver-facing display"
+  },
+  "owner": "app:projection",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/canbus_headunit.md",
+    "section": "§B5",
+    "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
+    "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
+    "label": "Research: head units"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip (status)",
+   "Button",
+   "locked view"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-session--projection-running-session--proposed"
+ },
+ {
+  "id": "projection-settings",
+  "name": "Projection settings",
+  "area": "app: Projection",
+  "group": "Projection",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "locked view"
+  },
+  "owner": "app:projection",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3",
+    "heading": "3. Architecture",
+    "anchor": "3-architecture",
+    "label": "Phone & Comms"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-settings--projection-settings--proposed"
+ },
+ {
+  "id": "climate-panel",
+  "name": "Climate (device page; \"not available\" on the D2)",
+  "area": "os",
+  "group": "Climate",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "one `setpoint` (temperature ± and one toggle), allowed while Moving as an add-on device action on our own device"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "`setpoint` template",
+   "Button",
+   "Toggle",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#climate-panel--climate-device-page-not-available-on-the-d2--new"
+ },
+ {
+  "id": "vehicle-settings-pack",
+  "name": "Vehicle settings from packs",
+  "area": "os",
+  "group": "Vehicle settings",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full page",
+   "moving": "read only heights as a `value`; every control is locked"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "StatTile",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#vehicle-settings-pack--vehicle-settings-from-packs--proposed"
+ }
+]

@@ -1,0 +1,2231 @@
+[
+  {
+    "id": "settings-root",
+    "name": "Settings app",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.4",
+        "heading": "3.4 Five destinations",
+        "anchor": "34-five-destinations",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§13.4",
+        "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
+        "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§8",
+        "heading": "8. Alerts and rate limits (shared)",
+        "anchor": "8-alerts-and-rate-limits-shared",
+        "label": "Phone & Comms"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§8",
+        "heading": "8. Audit log",
+        "anchor": "8-audit-log",
+        "label": "MCP"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.9",
+        "heading": "14.9 Basic Auth migration (replaces the overlap line in §2.1)",
+        "anchor": "149-basic-auth-migration-replaces-the-overlap-line-in-21",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Card (group)",
+      "search field (new component: a `surface-3` input with a `search` icon)",
+      "TabBar"
+    ],
+    "variants": [],
+    "notes": "Approved in principle (owner, Android-style OS direction, 2026-10-07): the Settings app in the app drawer.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-a.md#settings-root--settings-app--new"
+  },
+  {
+    "id": "settings-units-region",
+    "name": "Units, language and region",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§4",
+        "heading": "4. Type",
+        "anchor": "4-type",
+        "label": "Visual"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Segmented",
+      "ListRow",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "Moves Units off Preferences into one page with language and region (proposed).",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-a.md#settings-units-region--units-language-and-region--proposed"
+  },
+  {
+    "id": "settings-notifications",
+    "name": "Notifications, quiet hours and critical alerts",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§8",
+        "heading": "8. Alerts and rate limits (shared)",
+        "anchor": "8-alerts-and-rate-limits-shared",
+        "label": "Phone & Comms"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.5",
+        "heading": "14.5 Precision, and who can raise it",
+        "anchor": "145-precision-and-who-can-raise-it",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card (tone)",
+      "ListRow",
+      "Switch (new)",
+      "Chip (days)",
+      "time picker (new component: two Segmented wheels, Parked only)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--proposed"
+  },
+  {
+    "id": "settings-driving",
+    "name": "Driving rules",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.5",
+        "heading": "3.5 Drive mode, driving states and service mode",
+        "anchor": "35-drive-mode-driving-states-and-service-mode",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§6.1",
+        "heading": "6.1 Incoming",
+        "anchor": "61-incoming",
+        "label": "Phone & Comms"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "ListRow",
+      "Switch (new)",
+      "a log list (ListRow with meta)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-b.md#settings-driving--driving-rules--new"
+  },
+  {
+    "id": "settings-privacy",
+    "name": "Privacy and data",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view + Open on phone (UI §12.1); going ghost stays one tap on the strip chip (Accounts §14.7 S9)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.4",
+        "heading": "3.4 Five destinations",
+        "anchor": "34-five-destinations",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.1",
+        "heading": "14.1 The data-class registry",
+        "anchor": "141-the-data-class-registry",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.3",
+        "heading": "14.3 Ghost mode",
+        "anchor": "143-ghost-mode",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§5.3",
+        "heading": "5.3 Share levels and privacy",
+        "anchor": "53-share-levels-and-privacy",
+        "label": "Accounts"
+      },
+      {
+        "doc": "decisions/adr-0009-session-logbook-and-location.md",
+        "section": "",
+        "heading": "ADR-0009 — Always-on session logbook; location stays on the device",
+        "anchor": "",
+        "label": "ADR-0009"
+      },
+      {
+        "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+        "section": "",
+        "heading": "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device",
+        "anchor": "",
+        "label": "ADR-0036"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§9",
+        "heading": "9. Data and privacy",
+        "anchor": "9-data-and-privacy",
+        "label": "Phone & Comms"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "ListRow",
+      "Chip (status, for the visibility state)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-privacy--privacy-and-data--new"
+  },
+  {
+    "id": "settings-data-classes",
+    "name": "What can be shared",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.1",
+        "heading": "14.1 The data-class registry",
+        "anchor": "141-the-data-class-registry",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.5",
+        "heading": "14.5 Precision, and who can raise it",
+        "anchor": "145-precision-and-who-can-raise-it",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§15.1",
+        "heading": "15.1 A `route` detail on the `location` ladder (changes §14.1 and §14.5)",
+        "anchor": "151-a-route-detail-on-the-location-ladder-changes-141-and-145",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§15.2",
+        "heading": "15.2 Audiences: `link` added, `public` brought forward (changes §14.2)",
+        "anchor": "152-audiences-link-added-public-brought-forward-changes-142",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Chip",
+      "Sheet",
+      "a ladder row (new component: 2–6 stepped segments, read-only, the current maximum in `accent-soft`)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-data-classes--what-can-be-shared--proposed"
+  },
+  {
+    "id": "settings-location",
+    "name": "Location",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0009-session-logbook-and-location.md",
+        "section": "",
+        "heading": "ADR-0009 — Always-on session logbook; location stays on the device",
+        "anchor": "",
+        "label": "ADR-0009"
+      },
+      {
+        "doc": "specs/2026-10-06-logs-at-scale-design.md",
+        "section": "§2",
+        "heading": "Online enrichment",
+        "anchor": "online-enrichment",
+        "label": "Logs at scale"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.5",
+        "heading": "14.5 Precision, and who can raise it",
+        "anchor": "145-precision-and-who-can-raise-it",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§13.4",
+        "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
+        "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Segmented",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-location--location--proposed"
+  },
+  {
+    "id": "settings-usage-reports",
+    "name": "Usage and crash reports",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+        "section": "",
+        "heading": "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device",
+        "anchor": "",
+        "label": "ADR-0036"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§9",
+        "heading": "9. Data and privacy",
+        "anchor": "9-data-and-privacy",
+        "label": "Phone & Comms"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§6",
+        "heading": "6. Social (long-term, all opt-in)",
+        "anchor": "6-social-long-term-all-opt-in",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Switch (new)",
+      "ListRow",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-usage-reports--usage-and-crash-reports--proposed"
+  },
+  {
+    "id": "settings-export-data",
+    "name": "Export my data",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.2",
+        "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+        "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.4",
+        "heading": "8.4 Import and export",
+        "anchor": "84-import-and-export",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+        "section": "",
+        "heading": "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device",
+        "anchor": "",
+        "label": "ADR-0036"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow (checkbox)",
+      "Segmented",
+      "Button",
+      "progress bar (new component)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-export-data--export-my-data--proposed"
+  },
+  {
+    "id": "settings-delete-data",
+    "name": "Delete my data",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§3.1",
+        "heading": "3.1 Roles",
+        "anchor": "31-roles",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow (checkbox)",
+      "Card (warning tone)",
+      "Button (danger)",
+      "Sheet"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-c.md#settings-delete-data--delete-my-data--proposed"
+  },
+  {
+    "id": "settings-sharing-defaults",
+    "name": "Sharing defaults",
+    "area": "app:trips",
+    "group": "Settings",
+    "owner": "app:trips",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§3",
+        "heading": "3. The five levels",
+        "anchor": "3-the-five-levels",
+        "label": "Trip sharing"
+      },
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§10",
+        "heading": "10. Delivery paths and link controls",
+        "anchor": "10-delivery-paths-and-link-controls",
+        "label": "Trip sharing"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§13.1",
+        "heading": "13.1 The Trips share sheet (changes §12.2's trip detail \"share and export\")",
+        "anchor": "131-the-trips-share-sheet-changes-122s-trip-detail-share-and-export",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§15.2",
+        "heading": "15.2 Audiences: `link` added, `public` brought forward (changes §14.2)",
+        "anchor": "152-audiences-link-added-public-brought-forward-changes-142",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§15.4",
+        "heading": "15.4 Link controls (changes §14.2 and §14.12)",
+        "anchor": "154-link-controls-changes-142-and-1412",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Segmented",
+      "Switch (new)",
+      "a matrix table (new component: rows × columns of icon cells, a greyed cell explains itself on tap)",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-sharing-defaults--sharing-defaults--proposed"
+  },
+  {
+    "id": "settings-storage",
+    "name": "Storage",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-05-session-logbook-design.md",
+        "section": "",
+        "heading": "Recording rules (`SessionRecorder`)",
+        "anchor": "recording-rules-sessionrecorder",
+        "label": "Session logbook"
+      },
+      {
+        "doc": "decisions/adr-0009-session-logbook-and-location.md",
+        "section": "",
+        "heading": "ADR-0009 — Always-on session logbook; location stays on the device",
+        "anchor": "",
+        "label": "ADR-0009"
+      },
+      {
+        "doc": "decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md",
+        "section": "",
+        "heading": "ADR-0011 — No demo mode; record only while connected; offline place names with OSM enrichment",
+        "anchor": "",
+        "label": "ADR-0011"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.2",
+        "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+        "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "HeroStat",
+      "stacked bar (new component)",
+      "ListRow",
+      "Button",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-storage--storage--proposed"
+  },
+  {
+    "id": "settings-recording",
+    "name": "Recording sources",
+    "area": "app:trips",
+    "group": "Settings",
+    "owner": "app:trips",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0010-replay-notes-audio-motion.md",
+        "section": "",
+        "heading": "ADR-0010 — Read-only whole-app replay; notes, audio and motion capture",
+        "anchor": "",
+        "label": "ADR-0010"
+      },
+      {
+        "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+        "section": "",
+        "heading": "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device",
+        "anchor": "",
+        "label": "ADR-0036"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Switch (new)",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-recording--recording-sources--new"
+  },
+  {
+    "id": "settings-backups",
+    "name": "Backups",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+        "section": "",
+        "heading": "ADR-0042 — Ecosystem: small core, add-ons are the product",
+        "anchor": "",
+        "label": "ADR-0042"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.10",
+        "heading": "14.10 Where `auth.db` lives, and recovery",
+        "anchor": "1410-where-authdb-lives-and-recovery",
+        "label": "Accounts"
+      },
+      {
+        "doc": "decisions/adr-0041-brain-ed25519-signing.md",
+        "section": "",
+        "heading": "ADR-0041 — The Brain signs transmit grants with Ed25519 through the optional `openostler[signing]` extra",
+        "anchor": "",
+        "label": "ADR-0041"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "Segmented",
+      "Switch (new)",
+      "ListRow",
+      "Button",
+      "progress bar (new)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-backups--backups--proposed"
+  },
+  {
+    "id": "settings-restore",
+    "name": "Restore from a backup",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+        "section": "",
+        "heading": "ADR-0042 — Ecosystem: small core, add-ons are the product",
+        "anchor": "",
+        "label": "ADR-0042"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.10",
+        "heading": "14.10 Where `auth.db` lives, and recovery",
+        "anchor": "1410-where-authdb-lives-and-recovery",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "password field (new component)",
+      "Card",
+      "Button",
+      "Sheet"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-restore--restore-from-a-backup--proposed"
+  },
+  {
+    "id": "settings-updates",
+    "name": "Updates",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+        "section": "",
+        "heading": "ADR-0042 — Ecosystem: small core, add-ons are the product",
+        "anchor": "",
+        "label": "ADR-0042"
+      },
+      {
+        "doc": "decisions/adr-0028-base-hardware-connectivity-and-remote-access.md",
+        "section": "",
+        "heading": "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)",
+        "anchor": "",
+        "label": "ADR-0028"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "Segmented",
+      "ListRow",
+      "Button",
+      "progress bar (new, part C)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-updates--updates--proposed"
+  },
+  {
+    "id": "settings-profiles",
+    "name": "Profiles and users",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§2.3",
+        "heading": "2.3 Sessions",
+        "anchor": "23-sessions",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§3.1",
+        "heading": "3.1 Roles",
+        "anchor": "31-roles",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.11",
+        "heading": "14.11 \"Role\" means two things",
+        "anchor": "1411-role-means-two-things",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.3",
+        "heading": "8.3 Storage",
+        "anchor": "83-storage",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "decisions/adr-0037-role-holders-and-handover.md",
+        "section": "",
+        "heading": "ADR-0037 — Role holders and handover (transmit gate, parked broker, time source, PLCA coordinator, uplink manager)",
+        "anchor": "",
+        "label": "ADR-0037"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "ListRow",
+      "Chip (role)",
+      "Switch (new)",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-profiles--profiles-and-users--new"
+  },
+  {
+    "id": "settings-hu-pin",
+    "name": "Head-unit PIN",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.12",
+        "heading": "14.12 Data model, API and tests (deltas)",
+        "anchor": "1412-data-model-api-and-tests-deltas",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "keypad (new)",
+      "Switch (new)",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-hu-pin--head-unit-pin--new"
+  },
+  {
+    "id": "settings-account",
+    "name": "My account",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§2.2",
+        "heading": "2.2 Passkeys first, passwords always",
+        "anchor": "22-passkeys-first-passwords-always",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§15.5a",
+        "heading": "15.5a Hub identity is hub-owned; one Ostler account later (approved; changes §14.8 later)",
+        "anchor": "155a-hub-identity-is-hub-owned-one-ostler-account-later-approved-changes-148-later",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Chip",
+      "Switch (new)",
+      "Button",
+      "password field (new, part D)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-account--my-account--new"
+  },
+  {
+    "id": "settings-ostler-link",
+    "name": "Ostler Link (cloud subscription)",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0028-base-hardware-connectivity-and-remote-access.md",
+        "section": "",
+        "heading": "ADR-0028 — Base hardware, connectivity and remote access (Pi + ESP32 buddy, guardian add-on, uplinks, parked broker, remote tiers)",
+        "anchor": "",
+        "label": "ADR-0028"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§5.4",
+        "heading": "5.4 Transports",
+        "anchor": "54-transports",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.10",
+        "heading": "14.10 Where `auth.db` lives, and recovery",
+        "anchor": "1410-where-authdb-lives-and-recovery",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card",
+      "Switch (new)",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Name (Ostler Cloud or Ostler Link) is an owner decision.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-ostler-link--ostler-link-cloud-subscription--proposed"
+  },
+  {
+    "id": "settings-developer",
+    "name": "Developer",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view + Open on phone; service mode refused and exits (UI §3.5)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.4",
+        "heading": "3.4 Five destinations",
+        "anchor": "34-five-destinations",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.5",
+        "heading": "3.5 Drive mode, driving states and service mode",
+        "anchor": "35-drive-mode-driving-states-and-service-mode",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§8.4",
+        "heading": "8.4 Decode mode in the UI",
+        "anchor": "84-decode-mode-in-the-ui",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "RadioOpt (existing pattern; maps to ListRow with a radio)",
+      "ListRow",
+      "Chip",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-g.md#settings-developer--developer--new"
+  },
+  {
+    "id": "settings-api-tokens",
+    "name": "API tokens and scripts",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§2.4",
+        "heading": "2.4 Tokens",
+        "anchor": "24-tokens",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.9",
+        "heading": "14.9 Basic Auth migration (replaces the overlap line in §2.1)",
+        "anchor": "149-basic-auth-migration-replaces-the-overlap-line-in-21",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§6",
+        "heading": "6. Tokens, scopes and transports",
+        "anchor": "6-tokens-scopes-and-transports",
+        "label": "MCP"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Button",
+      "ListRow",
+      "Chip",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-g.md#settings-api-tokens--api-tokens-and-scripts--new"
+  },
+  {
+    "id": "settings-token-create",
+    "name": "New token",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§2.4",
+        "heading": "2.4 Tokens",
+        "anchor": "24-tokens",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§6",
+        "heading": "6. Tokens, scopes and transports",
+        "anchor": "6-tokens-scopes-and-transports",
+        "label": "MCP"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Sheet",
+      "text field",
+      "Segmented",
+      "Chip (choice)",
+      "Card (warn)",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-g.md#settings-token-create--new-token--new"
+  },
+  {
+    "id": "settings-connected-apps",
+    "name": "Connected apps and MCP server",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view + Open on phone; pending MCP actions cancelled (MCP §5)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§5",
+        "heading": "5. Confirmation: pending actions on a trusted screen",
+        "anchor": "5-confirmation-pending-actions-on-a-trusted-screen",
+        "label": "MCP"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§6",
+        "heading": "6. Tokens, scopes and transports",
+        "anchor": "6-tokens-scopes-and-transports",
+        "label": "MCP"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§7",
+        "heading": "7. Privacy",
+        "anchor": "7-privacy",
+        "label": "MCP"
+      },
+      {
+        "doc": "specs/2026-10-06-mcp-server-design.md",
+        "section": "§8",
+        "heading": "8. Audit log",
+        "anchor": "8-audit-log",
+        "label": "MCP"
+      },
+      {
+        "doc": "decisions/adr-0030-ai-native-mcp-server-and-authoring-skill.md",
+        "section": "",
+        "heading": "ADR-0030 — AI-native access: an MCP server over the API and a pack-author skill",
+        "anchor": "",
+        "label": "ADR-0030"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Switch (new)",
+      "ListRow",
+      "Chip",
+      "Segmented",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-g.md#settings-connected-apps--connected-apps-and-mcp-server--new"
+  },
+  {
+    "id": "settings-platform-logs",
+    "name": "Platform log",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§3",
+        "heading": "3. The five levels",
+        "anchor": "3-the-five-levels",
+        "label": "Trip sharing"
+      },
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§13",
+        "heading": "13. Help me decode or diagnose",
+        "anchor": "13-help-me-decode-or-diagnose",
+        "label": "Trip sharing"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Chip",
+      "Segmented",
+      "ListRow (mono)",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-g.md#settings-platform-logs--platform-log--proposed"
+  },
+  {
+    "id": "settings-about",
+    "name": "About",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.4",
+        "heading": "3.4 Five destinations",
+        "anchor": "34-five-destinations",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.5",
+        "heading": "3.5 Drive mode, driving states and service mode",
+        "anchor": "35-drive-mode-driving-states-and-service-mode",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-about--about--new"
+  },
+  {
+    "id": "settings-licences",
+    "name": "Licences and credits",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md",
+        "section": "",
+        "heading": "ADR-0012 — AGPL-3.0-or-later code with a commercial licence; CC BY-SA 4.0 vehicle data; CLA",
+        "anchor": "",
+        "label": "ADR-0012"
+      },
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§12",
+        "heading": "12. Licences",
+        "anchor": "12-licences",
+        "label": "Visual"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "search field",
+      "a long-text page (new component: `type-body`, mono for licence text, Parked only)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-licences--licences-and-credits--proposed"
+  },
+  {
+    "id": "settings-legal",
+    "name": "Legal and privacy policy",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      },
+      {
+        "doc": "decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md",
+        "section": "",
+        "heading": "ADR-0012 — AGPL-3.0-or-later code with a commercial licence; CC BY-SA 4.0 vehicle data; CLA",
+        "anchor": "",
+        "label": "ADR-0012"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "long-text page (new)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-legal--legal-and-privacy-policy--proposed"
+  },
+  {
+    "id": "settings-report-problem",
+    "name": "Report a problem",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§3",
+        "heading": "3. The five levels",
+        "anchor": "3-the-five-levels",
+        "label": "Trip sharing"
+      },
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§10",
+        "heading": "10. Delivery paths and link controls",
+        "anchor": "10-delivery-paths-and-link-controls",
+        "label": "Trip sharing"
+      },
+      {
+        "doc": "specs/2026-10-07-trip-sharing-design.md",
+        "section": "§13",
+        "heading": "13. Help me decode or diagnose",
+        "anchor": "13-help-me-decode-or-diagnose",
+        "label": "Trip sharing"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "text field",
+      "ListRow (checkbox)",
+      "Chip",
+      "Card (warn)",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-report-problem--report-a-problem--proposed"
+  },
+  {
+    "id": "settings-reset",
+    "name": "Reset",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "as Parked with Park evidence",
+      "moving": "'Park to edit' for layout and settings rows (Drive modes §7.8, R1); factory reset locked",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.8",
+        "heading": "7.8 Reset layout, always reachable (v0.2)",
+        "anchor": "78-reset-layout-always-reachable-v02",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§15.2",
+        "heading": "15.2 Editing (changes §3.4 and §5.3)",
+        "anchor": "152-editing-changes-34-and-53",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "ListRow",
+      "Sheet",
+      "Button (danger)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-reset--reset--new"
+  },
+  {
+    "id": "settings-factory-reset",
+    "name": "Factory reset",
+    "area": "os",
+    "group": "Settings",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+      "passenger": "not offered (settings are not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+        "section": "",
+        "heading": "ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub (raw tap, USB-IP link, setup mode, uplinks, hub-only wake, u-blox placement)",
+        "anchor": "",
+        "label": "ADR-0039"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§12",
+        "heading": "12. Threat notes (feed `references/threat_model.md`)",
+        "anchor": "12-threat-notes-feed-referencesthreat_modelmd",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§13",
+        "heading": "13. Security",
+        "anchor": "13-security",
+        "label": "Phone & Comms"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft"
+    ],
+    "components": [
+      "Card (alarm tone)",
+      "ListRow",
+      "text field",
+      "Button (danger)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/30-settings-h.md#settings-factory-reset--factory-reset--proposed"
+  }
+]
