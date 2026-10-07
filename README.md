@@ -156,7 +156,8 @@ The stack above is this repo's Python code, which runs on the **brain** (and in 
 In production the car side lives on the **node** ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)):
 it owns the K-line/CAN I/O, decodes to VSS with the portable C decoder from pack JSON,
 and holds the **transmit gate, the only path to the car**. The brain never touches the
-car; like the phone, the cloud and Home Assistant, it consumes the node's VSS messages
+car (one exception: with no node fitted, it may host a third-party adapter behind a
+stricter software gate, [ADR-0044](decisions/adr-0044-adapters-on-the-brain-without-a-node.md)); like the phone, the cloud and Home Assistant, it consumes the node's VSS messages
 over IP and may mint grants that the node verifies.
 
 [docs/architecture.md](docs/architecture.md) has the code map, and [SCOPE.md](SCOPE.md)
