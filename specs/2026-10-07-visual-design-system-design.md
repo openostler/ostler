@@ -364,6 +364,10 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 
 ### 13.1 What a theme is
 
+> The full engine design is the [theme engine spec](2026-10-07-theme-engine-design.md)
+> (draft): skin packs with tokens, free-form CSS, XML screen layouts and component templates,
+> SVG gauges and assets. It supersedes this subsection's three-layer pack once approved.
+
 A **theme pack** (`ostler.theme/1`) is a data object (app UI model §5, launcher spec §11)
 with three layers. Each layer is optional, and a pack may use any mix of them.
 
