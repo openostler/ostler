@@ -2,11 +2,11 @@
 title: "The Ostler ecosystem — core, add-ons, how add-ons get car data, and the safety boundaries"
 area: docs
 status: stable
-version: 1.1
+version: 1.3
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, references/research/addons_catalogue.md]
 summary: >
-  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds rows for Ostler Community (`ostler-app-hub` + `ostler-hub`), Navigation, Alerts and Phone, and core ShellInput, per-trip sharing and later Crash SOS.
+  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds rows for Ostler Community (the open `ostler-app-hub` add-on and the closed, Ostler-run `ostler-hub` service: publishing, forum, vehicle development, wiki), Navigation, Alerts and Phone, and core ShellInput, per-trip sharing and later Crash SOS.
 ---
 
 # The Ostler ecosystem
@@ -40,10 +40,10 @@ Developer; no remote catalogue yet). Hardware add-ons share the same catalogue. 
 | **Cameras** | add-on | `ostler-app-cameras` | Security → Clips, live chip, `camera_live` | speed, events | clips, live view |
 | **Integrations** | add-on, one per integration | own repos (e.g. `ostler-app-lubelogger`) | More → Integrations | signals, trips, maintenance | RealDash CAN out (read-only), LubeLogger bridge, social integrations |
 | **Decode lab** | developer add-on | `ostler` | More → Developer, service mode only | raw frames, signals | decode evidence for packs |
-| **Ostler Community** *(proposed, DMD round)* | add-on + server | `ostler-app-hub`, `ostler-hub` | More → Community (`more:hub`), hub audiences in the Trips share sheet, Diagnose → Get help, Home card (never while Moving) | trips and faults only as granted or handed over | publish L0–L2, help threads with L3/L4 hand-overs, clubs, events, Discover, Following |
+| **Ostler Community** *(proposed, DMD round)* | add-on + closed service | `ostler-app-hub` (open, AGPL), `ostler-hub` (private, closed, run only by Ostler; not self-hostable) | More → Community (`more:hub`), hub audiences in the Trips share sheet, Diagnose → Get help, Decode lab → Ask for help, Home card (never while Moving) | trips and faults only as granted or handed over | publish L0–L2, help threads with L3/L4 hand-overs, the project forum, vehicle development (decode cards, pack PRs through a GitHub bridge), the wiki (vehicle pages from pack releases), clubs, events, Discover, Following |
 | **Navigation** *(proposed, DMD round)* | add-on | `ostler-app-navigation` | Drive `map` template's next manoeuvre, Drive-menu rows, More → Navigation (`more:navigation`), Home card | own position, speed, installed map regions | routing on the Brain, turn-by-turn, voice, GPX library and follow, planner, roadbook |
 | **Alerts** *(proposed, later)* | add-on | `ostler-app-alerts` | `alert_card`, Drive tile | own coarse position, route | UK official weather, flood and closure alerts, free, opt-in |
-| **Phone** *(proposed, later)* | add-on | `ostler-app-phone` | Parked-only views, `call` template | — | phone notifications and calls mirrored, Parked only |
+| **Phone** (Phone & Comms) *(proposed, later)* | add-on; needs a Brain for calls | `ostler-app-phone` (not created) | More → Phone (`more:phone`), the `call` template via the shell's call session, the message `alert_card`, the favourites `short_list` widget and Drive-menu rows while Moving; keypad and lists Parked only | the user's own paired phone over the Brain's Bluetooth (HFP, PBAP, MAP) and the companion bridge; phone contacts and call history audience `me` only, in memory | phone mirroring (notifications), dialer, contacts (Ostler and phone, badged), recents, messages ([spec](../specs/2026-10-07-phone-comms-addon-design.md), draft) |
 
 Rows marked *proposed* come from the DMD round and wait for the owner; see
 [Proposed amendment (2026-10-07, DMD round)](#proposed-amendment-2026-10-07-dmd-round).
@@ -102,9 +102,13 @@ Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
 
 - **Four add-on rows** in §1, marked *proposed*: Ostler Community
   ([spec](../specs/2026-10-07-community-hub-design.md), draft), Navigation
-  ([spec](../specs/2026-10-07-navigation-addon-design.md), draft), Alerts and Phone (later, no
-  spec yet). The community hub is open and self-hostable, not part of `ostler-cloud`; a device
-  may link to several hubs.
+  ([spec](../specs/2026-10-07-navigation-addon-design.md), draft), Alerts (later, no spec yet)
+  and Phone (Phone & Comms: mirroring, dialer, contacts, recents, messages; needs a Brain for
+  calls; [spec](../specs/2026-10-07-phone-comms-addon-design.md), draft; later). The community hub is a closed service run by Ostler (one instance, not
+  self-hostable, its own private repo separate from `ostler-cloud`), reached through the open
+  `ostler-app-hub`; it is also the forum, the vehicle-development workspace and the wiki. It sits
+  outside core: nothing in core needs it, and everything on it can be exported (ADR-0042
+  decision 7).
 - **Core gains, no new destination:** `ShellInput` in the shell (D-pad input, focus zones, the
   Drive menu as a `short_list` of ≤ 6 driver-safe actions while Moving, ships with U2;
   [spec](../specs/2026-10-07-shell-input-design.md), draft); per-trip sharing (scrubber,
@@ -117,7 +121,9 @@ Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
   Full logs (L3) and diagnostics bundles (L4) are hand-overs, never grants.
 - **§3 is unchanged and applies to all four:** none declares a car action; guidance renders only
   through the `map` template while Moving; the speed-limit tint is off by default and never
-  logged or scored; Phone content is Parked-only; every class starts in ghost.
+  logged or scored; Phone shows only shell templates while Moving (`call`, the message
+  `alert_card`, a favourites `short_list` of ≤ 6), its keypad, contacts and recents Parked
+  only; every class starts in ghost.
 
 ## Changelog
 
@@ -128,6 +134,13 @@ Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
 - 2026-10-07: v1.1, Proposed amendment (2026-10-07, DMD round) for owner approval: proposed rows
   for Ostler Community, Navigation, Alerts and Phone; core ShellInput, per-trip sharing and later
   Crash SOS; link to the DMD feature map. The approved text is unchanged.
+- 2026-10-07: v1.2, the Ostler Community row and bullet revised in place for the owner's
+  direction: a closed, Ostler-run hub (not self-hostable) that is also the forum, the
+  vehicle-development workspace and the wiki, with the open `ostler-app-hub`. The approved text
+  is unchanged.
+- 2026-10-07: v1.3, the Phone row and bullets revised in place (cross-spec reconcile): Phone
+  & Comms (mirroring, dialer, contacts, recents, messages; needs a Brain for calls), linked to
+  its draft spec, still not created. The approved text is unchanged.
 
 ## Decisions for the owner
 
@@ -142,6 +155,7 @@ the decision; each alternative was not chosen.
 3. **Integrations: one add-on or one per integration?** Recommend: one per integration
    (separate enable, separate data classes). Alternative: one Integrations add-on with toggles.
 4. **(DMD round, proposed) Add the four proposed rows and the core gains?** Recommend: yes, as
-   the ADR-0042 proposed amendment says; the rows lose "proposed" when it is approved.
+   the ADR-0042 proposed amendment says (Ostler Community as a closed, Ostler-run service with
+   an open add-on); the rows lose "proposed" when it is approved.
    Alternative: keep only Ostler Community and Navigation in the map until Alerts and Phone have
-   specs.
+   approved specs. (Reconcile note: Phone now has a draft spec, Phone & Comms; Alerts has none.)

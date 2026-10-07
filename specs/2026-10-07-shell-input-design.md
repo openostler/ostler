@@ -2,7 +2,7 @@
 title: "ShellInput — a D-pad input model for the shell: intents, focus zones, spatial navigation, Drive menu, bindings and key test — design"
 area: specs
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
@@ -16,12 +16,16 @@ summary: >
   scrolls. Confirm sheets for gate actions open with Cancel focused and never auto-confirm. A 3 px focus-ring
   token with no glow and no resize. Bindings belong to the display's install configuration, edited Parked only,
   with a key-test screen. Accessibility and keyboard-only Playwright tests; ships in U2; names the UI spec,
-  visual spec, app-model and module-bus sections it would amend.
+  visual spec, app-model and module-bus sections it would amend. v0.2 (proposed amendment §14, DMD round): a long
+  `ok` (600 ms) on a focused strip chip, rail item or widget enters edit mode when Parked ("Park to edit" while
+  Moving); while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip wherever it sits;
+  the switcher is found by id (drive-modes spec v0.2 decision 15).
 ---
 
 # ShellInput — design (draft)
 
-**Status:** draft for the owner's approval (DMD round, 2026-10-07). It proposes amendments to
+**Status:** draft for the owner's approval (DMD round, 2026-10-07), v0.2 with the proposed
+amendment §14 (editing and the movable switcher). It proposes amendments to
 approved specs (§11) but edits none of them; the UI spec's owner in this round folds them in or
 not. Evidence: [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §5 (the
 remote-control model and the proposal this spec decides), §11 Copy 1–3 and Decide 2, 6, 7;
@@ -253,10 +257,65 @@ desktop) and each theme:
   refused by the server.
 - Unit tests for the spatial scorer on fixture layouts.
 
+## 14. Proposed amendment (2026-10-07, DMD round): editing and the movable switcher
+
+*Proposed on 2026-10-07 (v0.2), pending the owner; §1–§13 stand until it is approved. It adopts
+[drive-modes spec](2026-10-07-drive-modes-and-editing-design.md) v0.2 decision 15 (its §6 and
+§7.1 rely on it), written for the owner's "the entire UI is editable, with no fixed icons":
+the strip is user-ordered, the Drive-mode chip may sit anywhere in it, and a D-pad user must
+reach both edit mode and the switcher without touch. Where approved, §14 changes §4.3, §5, §6
+and §13 as noted and nothing else.*
+
+**14.1 Long `ok` enters edit mode (changes §5).** `ok` gains one long-press meaning: a long
+`ok` (600 ms held, §5's timing) on a focused **strip chip**, **rail item** or **widget** (Home
+or a Drive face) opens edit mode for that surface with that item selected, as a long touch
+press does (drive-modes spec §7.1).
+- **Parked only on a driver-facing display.** While Moving (UI spec §12.1) a long `ok` there
+  shows the **"Park to edit"** toast for 3 s and does nothing else; the server refuses layout
+  writes from a Moving display anyway (drive-modes rule R1). Phones, desktops and passenger-only displays may
+  edit at any time.
+- **Exceptions**, so the binding never steals a control's own meaning: an **engaged** control
+  (§4.4) and a text field keep their own `ok`; on the **`drive_mode` chip** a long `ok` opens
+  the mode list (drive-modes §6), whose **Edit modes…** row (Parked only) is the way in from
+  there; inside an open sheet, including the Drive menu, a long `ok` is a plain `ok`.
+- A short `ok` keeps every meaning it had (activate; in Drive mode, open the Drive menu from
+  `main`, cycle modes on the `drive_mode` chip). The long press fires at 600 ms while held, so
+  the release does not also activate. Bindings (§8) may not remove the long `ok`; **Edit
+  layout** in More (drive-modes §7.8) stays the always-present D-pad path.
+
+**14.2 `back` finds the switcher while Moving (changes §6's `back` row).** In Drive mode while
+Moving, with **nothing open** (no Drive menu, sheet or `alert_card`), `back` moves focus to the
+**`drive_mode` chip wherever it sits** in the strip; then a short `ok` cycles modes and a long
+`ok` lists them. A second `back` returns focus to `main` (the current face). §6's table row
+becomes: "`back` — close the Drive menu or an `alert_card`; otherwise focus the Drive-mode
+chip; on the chip, return to the face". `back` still never leaves Drive mode while Moving.
+Parked, §4.3 applies unchanged.
+
+**14.3 The switcher is found by id (adds to §4.2).** The strip zone's focus order is its
+rendered order, so a reordered strip needs no new arrow rule; the shell locates the switcher
+by its id, `drive_mode` (`data-chip="drive_mode"`), never by position. Entering the strip zone
+in Drive mode lands on `drive_mode` the first time, then on the chip last focused there (§4.2).
+Because the chip is an anchor item (drive-modes §8.1 R9) it can be moved and re-iconed but not
+hidden, so the 14.2 target always exists in Drive mode. `left`/`right` inside the strip move
+between chips and never switch faces.
+
+**14.4 Tests (adds to §13).** At every head-unit class and with the strip in a shuffled order
+(`drive_mode` first, middle, last): while Moving, one `back` from any face focuses the
+`drive_mode` chip and one `ok` changes mode; a long `ok` on a strip chip, rail item or widget
+opens edit mode Parked and shows "Park to edit" Moving with no layout write; a long `ok` on an
+engaged map or slider and in a text field does not open edit mode; a long `ok` on `drive_mode`
+opens the mode list; the long press never also fires a short `ok`; Playwright locates the
+switcher only by `data-chip="drive_mode"`.
+
 ## Changelog
 
 - 2026-10-07: v0.1, draft (DMD round): intents, sources, zones, Drive menu, confirm rules,
   focus-ring token, display-owned bindings and key test, amendments listed, U2 phasing.
+- 2026-10-07: v0.2, proposed amendment §14 (DMD round, cross-spec reconcile), pending the
+  owner: adopts drive-modes spec v0.2 decision 15: a long `ok` (600 ms) on a focused strip
+  chip, rail item or widget enters edit mode when Parked ("Park to edit" toast while Moving);
+  while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip
+  wherever it sits; the switcher is found by id; tests; decisions 10–12.
 
 ## Decisions for the owner
 
@@ -277,3 +336,15 @@ desktop) and each theme:
    still works. Alternative: always navigate, as on head units.
 9. **Touch lock for wet or gloved displays?** Recommend: a strip chip that disables touch with the
    D-pad still live, on head units only, as a follow-up (teardown Copy 7). Alternative: none.
+10. **Long `ok` for editing (§14.1)?** Recommend: yes, a long `ok` (600 ms) on a focused strip
+    chip, rail item or widget enters edit mode when Parked, "Park to edit" for 3 s while
+    Moving; engaged controls, text fields and the `drive_mode` chip keep their own long `ok`;
+    bindings cannot remove it. Alternative: no new binding; the D-pad reaches edit mode only
+    through More → Edit layout.
+11. **`back` focuses the switcher while Moving (§14.2)?** Recommend: yes, in Drive mode with
+    nothing open, `back` moves focus to the `drive_mode` chip wherever it sits and a second
+    `back` returns to the face. Alternative: keep §6's "otherwise nothing" and reach the chip
+    by arrows into the strip zone (more presses, depends on strip order).
+12. **Find the switcher by id (§14.3)?** Recommend: yes, `drive_mode` by id for focus rules and
+    tests, the strip's focus order following its rendered order. Alternative: pin the chip to a
+    fixed strip position (contradicts the movable strip of drive-modes v0.2).

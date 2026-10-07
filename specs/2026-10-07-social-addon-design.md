@@ -2,16 +2,16 @@
 title: "Social add-on — messaging, push-to-talk, calls and camera sharing over the internet and meshes — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
-depends_on: [references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
+depends_on: [references/research/phone_comms.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 adds a proposed amendment (2026-10-07, DMD round), not yet approved: message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the approved "Message from name" with Play / Later.
+  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 adds a proposed amendment (2026-10-07, DMD round), not yet approved: message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the approved "Message from name" with Play / Later. v0.4 adds a second proposed amendment (§13, DMD round), not yet approved: the comms overlap with the draft Phone & Comms add-on — one shell-owned call session and comms chip (phone calls pause PTT, call waiting instead of stacked cards), one alert pipeline whose message rate limits count across Social, SMS and bridged messengers, one favourites list, one local call log, and auto-reply only for Ostler messages.
 ---
 
 # Social add-on — design
 
-**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; v0.3 adds a proposed amendment (§12) awaiting the owner.** Nothing here is built before the app model's UA phase
+**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; v0.3 and v0.4 add proposed amendments (§12, §13) awaiting the owner.** Nothing here is built before the app model's UA phase
 and the accounts phases it depends on (§11). It is a design for the optional add-on
 `ostler-app-social` (ADR-0034, ADR-0042 "Ecosystem: small core, add-ons are the product",
 accepted). The research is linked, not repeated:
@@ -327,6 +327,83 @@ only for messages that arrive while parked, and the rate limits above? *Recommen
 *Alternative:* the approved Decision 5 for calls, with the approved §8 message alert
 ("Message from *name*", Play / Later, no canned list).
 
+## 13. Proposed amendment (2026-10-07, DMD round): comms overlap
+
+*Proposed, not approved. Settles where Social and the proposed
+[Phone & Comms add-on](2026-10-07-phone-comms-addon-design.md) (`ostler-app-phone`, draft)
+meet: the `call` session, the strip chip, one alert pipeline and one rate limit, favourites,
+the call log and auto-reply; and (C6, reconcile revision) where Social meets
+[Ostler Community](2026-10-07-community-hub-design.md) (draft v0.2). It changes §2's strip-chip row, §5's "Incoming calls while
+Moving" sentence and §8's audit list only where noted; everything else stands. Until the owner
+answers Decisions C1–C6 at the end, §1–§12 stand as approved or proposed. Evidence:
+[phone and comms research](../references/research/phone_comms.md),
+[message alerts](../references/research/message_alerts_android_auto.md).*
+
+**C1 — One call session, owned by the shell.** The `call` template shows one call or PTT
+channel (UI §12.1, app-model §14.5), so the shell, not an add-on, owns a single **call
+session** that Social and Phone request through the SDK (a platform proposal with the Phone
+spec: `calls.request({source, label, kind: "phone"|"ostler"|"ptt"})`, `calls.state`,
+`calls.end`). Rules:
+- At most one active `call` template; a second ringing call takes the template as **call
+  waiting** (Hold & answer / Decline), never a stacked card.
+- **Priority:** an incoming or active phone call (HFP) or Social voice call **pauses PTT**: the
+  ride room is muted both ways for this member and the chip reads "Ride: on hold"; PTT bursts
+  queue as voice notes (§6) and play after the call. A PTT press during a call does nothing.
+- A Social call and a phone call are equal: whichever is active stays; the other is offered as
+  call waiting (Social: hold the WebRTC track; phone: HFP hold).
+- **Audio:** one audio focus; media and navigation voice duck for any call; the Brain's AEC
+  (Phone §3.2) serves Social calls on head units too.
+- **Strip chip:** §2's ride/call chip becomes the shell's **comms chip**, shown while a ride,
+  a call or a connected phone is active: "Ride: Peak · PTT", "Call · 04:12", or the phone's
+  battery and signal. Still one chip, still opens the `call` template while Moving.
+
+**C2 — One alert pipeline, one rate limit.** Message alerts from Social, from Phone's MAP
+(SMS/iMessage) and from Phone's Android notification bridge all enter the shell's one alert
+queue under the UI spec §14 rules, and the §12 limits are counted **across every source**: one
+message card on screen, one per conversation per 2 minutes (conversation key = source app +
+conversation), **three message cards per 10 minutes in total**, then counts only; group rules
+per source ("Alert for group messages" applies to Social groups and bridged group chats
+alike). Calls are not message cards and are not rate-limited. Line 2 of a card names the real
+app ("Social", "Messages", "WhatsApp"). Social's own messages never pass through Phone's
+bridge (the bridge ignores the Ostler app's notifications), so nothing is shown twice.
+
+**C3 — Favourites, one list.** "Favourites" in §5 (who rings while Moving) and in Phone's
+dialer are **one per-user list** mixing Ostler contacts (a flag on the core contact, accounts
+§14.6) and phone contacts (Phone's local favourites), ordered by the user; the Moving
+`short_list` shows the first six. §5's rule "only ride members and favourites ring" keeps
+applying to **Social calls**; phone calls follow Phone Decision 11 (all shown by default),
+because the handset rings in-band whatever the car shows.
+
+**C4 — One local call log.** The shell's call session writes one local log entry per call it
+hosts (direction, source, label, contact ref or number, start, duration, link), per user,
+90 days, never uploaded, exportable. §2's **Calls** tab is the Ostler-source view of it and
+Phone's Recents the merged view; §8's audit "the call log" now means this log. Audio is never
+recorded (ADR-0010).
+
+**C5 — Auto-reply stays inside Ostler.** §4's "I'm driving" auto-reply (and §12's scoped
+version) answers **Ostler messages only**. Canned replies (UI §14) are one shared list used by
+Social and by Phone for MAP and bridged replies, but each reply is a single user tap or a
+spoken reply; nothing is ever sent automatically into WhatsApp, Signal, Telegram, Messenger or
+SMS (Telegram's API terms forbid acting without the user's knowledge; the phone's own driving
+mode can auto-reply there).
+
+**C6 — Social is the only messenger; links out to the forum (reconcile revision).** Ostler
+Community has **no direct messages** (community hub spec v0.2 §9 and its test "no route exists
+for user-to-user messages"), so Social is the one place Ostler users message each other; the
+hub's notifications (replies, solved, events) are not chat and arrive through the hub add-on's
+Home card, never as Social messages. Social **may link out** to hub content: a message may
+carry a forum thread, help thread, wiki page or route link, shown as a plain link card (title
+≤ 30 characters, "Ostler Community", no preview fetched until tapped, Parked only to open);
+opening it goes to More → Community when `ostler-app-hub` is enabled, else the browser. A link
+grants nothing: a help thread's attachment still needs the owner to name the helper (hub §8).
+Social never posts into the hub, and the hub never reads Social conversations.
+
+**§10 test additions:** a phone call pauses PTT and resumes it after; two calls never render
+two `call` templates; four messages from Social and WhatsApp in 10 minutes give three cards
+and one count; no Ostler message appears twice when the bridge is on; auto-reply never targets
+a non-Ostler source; a hub link in a message fetches nothing until tapped and opens no
+attachment for a recipient who is not a named helper.
+
 ## Changelog
 
 - 2026-10-07: v0.1, first draft (Social add-on; reconciles the mesh transports and calls notes).
@@ -338,6 +415,12 @@ only for messages that arrive while parked, and the rate limits above? *Recommen
   opt-in first-line preview only for messages that arrive while parked, rate limits, a scoped
   auto-reply and a widened Decision 5; Decisions A1–A4 at the end. §8 and Decision 5 stand
   until answered.
+- 2026-10-07: v0.4, proposed amendment (DMD round) §13, not approved: comms overlap with the
+  draft Phone & Comms add-on (one shell-owned call session and comms chip, one alert pipeline
+  with rate limits counted across sources, one favourites list, one local call log, auto-reply
+  only for Ostler messages); Decisions C1–C5 at the end. Revised in place the same day
+  (cross-spec reconcile): C6, Ostler Community has no direct messages, so Social is the only
+  messenger and may link out to forum threads; Decision C6 added.
 
 ## Decisions for the owner
 
@@ -378,3 +461,30 @@ where one exists.
    2 minutes, three per 10 minutes, non-ride groups as a count only; auto-reply to favourites
    and ride members by default? *Recommend:* yes. *Alternative:* a card for every message, and
    auto-reply to all contacts.
+
+## Decisions for the owner (proposed amendment §13, 2026-10-07, DMD round: comms overlap)
+
+Open. Each has a recommendation and the alternative.
+
+1. **C1 — Call session** — one shell-owned call session for Social and Phone (one `call`
+   template, call waiting, phone and Social calls pause PTT, one comms chip)? *Recommend:* yes,
+   as a platform proposal with the Phone spec. *Alternative:* each add-on raises its own `call`
+   template and the shell shows the newest.
+2. **C2 — One alert pipeline and shared rate limits** — message cards from every source count
+   against one budget (one per conversation per 2 min, three per 10 min in total)?
+   *Recommend:* yes. *Alternative:* the §12 limits per add-on (up to three cards per add-on
+   per 10 minutes).
+3. **C3 — Favourites** — one per-user favourites list across Ostler and phone contacts, first
+   six in the Moving `short_list`; §5's favourites-only ringing stays for Social calls?
+   *Recommend:* yes. *Alternative:* separate Social and Phone favourites.
+4. **C4 — Call log** — one local log written by the shell's call session, with Social's Calls
+   tab and Phone's Recents as views? *Recommend:* yes. *Alternative:* each add-on keeps its own
+   log; no merged recents.
+5. **C5 — Auto-reply scope** — "I'm driving" auto-reply for Ostler messages only; canned
+   replies shared but always one tap; never automatic into third-party apps or SMS?
+   *Recommend:* yes. *Alternative:* allow auto-reply to SMS via MAP for favourites.
+6. **C6 — Social and Ostler Community** — Social is the only Ostler messenger (the hub has no
+   direct messages) and may link out to forum threads, help threads, wiki pages and routes as
+   plain link cards that open More → Community or the browser; neither reads or posts into the
+   other? *Recommend:* yes. *Alternative:* the hub adds its own direct messages between members
+   (two messengers, and a closed operator holding private messages).

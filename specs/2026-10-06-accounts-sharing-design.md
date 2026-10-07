@@ -746,13 +746,38 @@ in the fragment, or an end-to-end encrypted hub help thread to named helpers (7 
 30 at most, at most 3 downloads). The registry refuses any class that carries raw captures, as
 §14.1 says. The audit in S8 lists hand-overs beside grants.
 
+### 15.5a Hub identity is hub-owned; one Ostler account later (proposal; changes nothing in §14.8 yet)
+
+*Added in the cross-spec reconcile (DMD round, 2026-10-07), with the
+[community hub spec](2026-10-07-community-hub-design.md) v0.2 §4 and its decision 10.*
+
+- **Hub accounts are the hub's, not core's.** Ostler Community (`ostler-hub`, the closed,
+  Ostler-run service) keeps its own identity: email plus passkey first (or password, optional
+  TOTP), optional Google or Apple sign-in **on the hub site only**, optional GitHub link for
+  contributors. A hub account **never signs anyone into a device**, and `auth.db` stays the
+  only source of local users, roles and grants (§14.10). A local user links a hub account by
+  RFC 8628 or PKCE; the Brain stores one refresh token per device per local user, scopes
+  `publish`, `read`, `help`, revocable from either side and listed in Settings → Sharing
+  (S8); the hub sees a pairwise id, never a peer-key fingerprint or an `ostler-cloud` id.
+- **Later (P5 at the earliest), proposed:** the §14.8 **link-only OIDC broker** may be the
+  **hub's identity service**, trusted by `ostler-cloud` as its identity provider, so one Ostler
+  account serves the hub and the cloud. §14.8's rules hold unchanged: link-only to an existing
+  local user, pairwise subject per device, the local passkey or password always works offline,
+  never the only credential, never friend discovery; the generic OIDC client for self-hosters
+  stays.
+- **Alternative:** keep §14.8 as written, the broker in `ostler-cloud`, and make the hub a
+  client of `ostler-cloud`'s identity (decision 7 below).
+
 ### 15.6 Tests (deltas)
 
 A `route` grant on a trip still recording refused; a `public` route before trip end + 24 h or
 without the publish act refused; a `link` grant for `trips` `full`, `live`, `audio`, `video`
 or `presence` refused; a `link` grant without expiry refused; `delay` above 6 h refused;
 `show_speed` off removes speed from every `/peer/v1` response for that grant; a `locked` grant
-past `access_until` returns nothing; `max_collections` reached gives Full.
+past `access_until` returns nothing; `max_collections` reached gives Full. Hub link (15.5a):
+a hub refresh token never authenticates a local API call; the pairwise id sent to the hub
+differs from every peer fingerprint and cloud id; revoking the link on either side ends hub
+uploads.
 
 ### 15.7 Decisions for the owner (DMD round)
 
@@ -771,6 +796,11 @@ past `access_until` returns nothing; `max_collections` reached gives Full.
 6. **L3 and L4 as hand-overs, keeping raw captures out of the registry?** Recommend: yes.
    Alternative: a `sensitive` `captures` class (one person or the decode project only, ≤ 30
    days, never `link` or `public`).
+7. **Hub identity, and the one Ostler account later (15.5a, reconcile)?** Recommend: hub
+   accounts are hub-owned (community hub spec decision 10) and never sign into a device; later
+   (P5 at the earliest) the §14.8 link-only broker becomes the hub's identity service, trusted
+   by `ostler-cloud`. Alternative: the broker stays in `ostler-cloud` as §14.8 says, and the hub
+   is a client of `ostler-cloud`'s identity.
 
 ## Changelog
 
@@ -789,4 +819,7 @@ past `access_until` returns nothing; `max_collections` reached gives Full.
 - 2026-10-07 — v0.7 (proposed amendment, DMD round, awaiting the owner): §15 adds the `route`
   detail on the `location` ladder, the `link` audience, `public` brought forward for Ostler
   Community by explicit publish only, live-trip grant options and link controls, and confirms
-  L3–L4 as hand-overs. §1–§14 unchanged.
+  L3–L4 as hand-overs. §1–§14 unchanged. Revised in place the same day (cross-spec
+  reconcile): §15.5a, hub identity is hub-owned (community hub spec decision 10), and the
+  §14.8 link-only broker may later be the hub's identity trusted by `ostler-cloud`, with the
+  alternative; test deltas; decision 7.

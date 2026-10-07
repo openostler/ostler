@@ -1049,8 +1049,8 @@ sheet is `surface-glass`, full height on phone; **Parked only on a driver-facing
 (§12.1); a phone may share at any time.
 
 1. **Audience first.** Me · a contact · a group (a hub club is a group) · household · anyone
-   with the link · publish to Ostler Community · get help (named helpers, on a hub help thread
-   or directly, or a pack's maintainers). Levels the audience cannot take are greyed with the
+   with the link · publish to Ostler Community · get help (named helpers, on an Ostler
+   Community help thread or directly, or a pack's maintainers). Levels the audience cannot take are greyed with the
    reason ("Full logs go to named people only", "Telemetry is never public").
 2. **Level ladder.** Five stacked rows, L0 at the top, the entry point's default
    pre-selected (Trips: L0; Diagnose: L4; Decode lab: L3). Each row has chips for what it adds
@@ -1084,7 +1084,10 @@ sheet is `surface-glass`, full height on phone; **Parked only on a driver-facing
    warning token, as text, not small print.
 6. **Privacy zones.** A line under the preview: "Hidden: first and last 500 m, 2 private
    places · Edit in Places", linking to More → Places (§13.4).
-7. **Send** names the path: Share · Copy link · Save file · Send to helper. Afterwards the
+7. **Send** names the path: Share · Copy link · Save file · Send to helper · **Ask on Ostler
+   Community** (a Help thread on the one official, Ostler-run hub; the open client encrypts
+   any L3/L4 attachment end to end and the hub stores ciphertext only; community hub spec
+   v0.2 §8; shown only when `ostler-app-hub` is enabled and linked). Afterwards the
    trip row's "…" shows "Shared 2× · 1 active", which opens the trip's share history; the
    audit also sits in Settings → Sharing (S8).
 
@@ -1092,13 +1095,20 @@ sheet is `surface-glass`, full height on phone; **Parked only on a driver-facing
 
 On a fault's detail and on a module page, a secondary action **Get help with this fault**
 opens the help flow (sharing spec §13) with L4 pre-selected, the fault code, module, freeze
-frame and vehicle fields filled in, and a symptoms box. It never clears or changes anything
-on the car; Parked only on a driver-facing display.
+frame and vehicle fields filled in, and a symptoms box. Its send paths are Send to helper and
+**Ask on Ostler Community** (a Help thread on the official hub with vehicle chips and fault
+codes filled, attachment encrypted end to end; community hub spec v0.2 §8, §15.2); without
+`ostler-app-hub` only the direct paths show. It never clears or changes anything on the car;
+Parked only on a driver-facing display.
 
 ### 13.3 "Ask for help decoding" (Decode lab; changes §8.4)
 
 In Sniff and Label, on a signal or a frame, **Ask for help decoding** opens the help flow with
-L3 pre-selected and the time range set to the marked window. **Run a recipe** imports a
+L3 pre-selected and the time range set to the marked window, and sends by creating a **Help
+thread on Ostler Community** (the closed, Ostler-run hub; the L3 attachment is encrypted end
+to end by the open client, so the hub stores ciphertext only), linked to the vehicle project
+if one exists (community hub spec v0.2 §8, §10); without the hub add-on it falls back to Send
+to helper or Save file. **Run a recipe** imports a
 helper's recipe (signals, modules, steps; never actions) and walks the owner through the
 recording with ⚑ marks. The contribution consent (CC BY-SA 4.0 for derived data only, off by
 default) sits in the sheet beside Contribute's JSON preview.
@@ -1208,15 +1218,17 @@ first-line preview, off by default. **Old rule, the alternative:** "Message from
 ## 15. Proposed amendment (2026-10-07, DMD round): Drive modes and editing
 
 *Proposed on 2026-10-07, pending the owner; §1–§13 stand until it is approved. Where approved,
-it changes §3.2 (a new strip chip), §3.4 (rail slots), §5.3 (user-arranged dashboards) and
-§12.3 (one Drive layout becomes several modes); tiers, the gate, the templates and their limits
-(§12.1) and the five-slot cap are unchanged. Design:
+it changes §3.2 (a new strip chip; a user-ordered strip), §3.4 (rail slots, labels and
+icons), §5.3 (user-arranged dashboards) and §12.3 (one Drive layout becomes several modes);
+tiers, the gate, the templates and their limits (§12.1) and the five-slot cap are unchanged. Design:
 [Drive modes and editing](2026-10-07-drive-modes-and-editing-design.md) (draft); widget
 contract: [app-model §15](2026-10-06-app-model-design.md) (proposed); input:
 [shell input](2026-10-07-shell-input-design.md) (draft). Evidence:
 [OBD and telematics apps](../references/research/obd_telematics_apps.md) (RealDash, AutoZen),
 [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §2–§5. Owner's ask: "the
-current Drive mode is too diagnostic", and an Android-style editable UI.*
+current Drive mode is too diagnostic", and an Android-style editable UI; revised the same day
+for the owner's "the entire UI is editable, with no fixed icons" (the locked Home and More rail
+slots and the locked core strip chips are gone; guardrails below).*
 
 ### 15.1 Drive modes (changes §12.3)
 
@@ -1232,8 +1244,8 @@ current Drive mode is too diagnostic", and an Android-style editable UI.*
   **Map**, **Convoy / Ride** (needs Social), **Off-road** (D2 hint; tilt needs the node IMU
   derivation, low range and diff lock need a SLABS session), **Split / Media** (needs a media
   source add-on; three columns on HU-wide) and **Minimal / Night**.
-- **Switcher (changes §3.2).** A new core chip **Drive mode**, shown only in Drive mode after
-  Back, on every class (phone and HU-5 included): a tap cycles a rotation of ≤ 4 modes, a long
+- **Switcher (changes §3.2).** A new core chip **Drive mode**, shown only in Drive mode (by
+  default after Back; the user may move or re-icon it, never remove it), on every class (phone and HU-5 included): a tap cycles a rotation of ≤ 4 modes, a long
   press lists ≤ 6 as a `short_list`. Switching is allowed while Moving; the mode is remembered
   per display, profile and vehicle; nothing switches by itself while Moving.
 - §12.3's "a user edits a per-vehicle diff in a grid editor, Parked only" reads: **a user edits
@@ -1246,26 +1258,56 @@ current Drive mode is too diagnostic", and an Android-style editable UI.*
 - **Park to edit.** On any driver-facing display, editing Home, the rail and Drive modes needs
   Parked (or Idling with Park evidence); the server refuses the write otherwise and the UI says
   "Park to edit". Changes made elsewhere for a display that is Moving apply at its next Parked.
-- **Home** gains an edit mode (long press; drag with swap, small/medium/wide, remove, a widget
+- **Everything is editable.** Rail items (Home included), the strip's chip order and
+  visibility, Home widgets, Drive tiles and add-on pages can be moved, resized (where they have
+  sizes), **re-iconed** from a curated **Material Symbols** catalogue (§2 principle 7's one
+  icon set; no emoji or images), **renamed** (plain text, ≤ 12 graphemes on the rail and strip,
+  ≤ 30 elsewhere, refused rather than clipped if too wide for any class), **hidden** or
+  **replaced** in place. Defaults are i18n keys; a custom name is literal text that keeps its
+  language, with **Use default name** to return to the translated default; the accessible name
+  is the custom name with the default as its description.
+- **Edit mode is always one gesture away:** a long press on the strip or on any empty area
+  opens edit mode on every page and class (on a head unit while Moving: "Park to edit"); no
+  layout can turn this off.
+- **Home** gains an edit mode (drag with swap, small/medium/wide, remove, replace, a widget
   picker of core and add-on widgets, undo, **Reset to default**). §5.3's "user-arranged
   dashboards … later" becomes this, over the generated or pack default.
-- **Rail (changes §3.4).** Still five slots: **Home first and More last are locked**; the three
-  middle slots hold core destinations or **pinned add-on pages** (any `more:*` page), in the
-  user's order; the rest appear under More → Pages. A pinned page keeps its driving rule.
-- **Safety items are not removable:** the fault telltale, alarm and Security alerts, the
-  core strip chips (§3.2, including Drive mode), Mark, and the Passenger-view and service-mode
-  frames are shell-drawn outside any layout; Home's warnings and Security alert cards may move,
-  never go.
-- **Files.** Modes, Home and rail layouts export and import as `.ostler-layout.json` (file,
-  link, QR, Web Share), scrubbed of vehicle and user identity.
+- **Rail (changes §3.4).** Still five slots and no locked slot: any core destination (**Home
+  included**) or **pinned add-on page** (any `more:*` page) in any slot and order; **More is
+  always one of the five**, movable, renamable and re-iconable, never removed. Whatever is not
+  in the rail is under More → Pages (hidden add-on pages under More → Hidden pages), so nothing
+  is unreachable; landing rules and deep links do not depend on the rail, and Home stays the
+  default landing page and the root of `back`. A pinned page keeps its driving rule. The
+  head-unit Drive button stays outside the cap and may move, be re-iconed, renamed or hidden.
+- **Strip (changes §3.2).** The order is the user's (default: today's), per class and for the
+  normal and Drive strips; ordinary chips may be hidden, renamed and re-iconed within a
+  per-class chip budget so the strip never scrolls; add-ons add no chips. Shell input lands on
+  the Drive-mode chip **by id**, so the switcher and focus zones work in any order.
+- **Safety items move, never go:** the **fault telltale** (strip chip and Home warnings card),
+  **alarm alerts** (the Security chip while a node is present, the Security alert card,
+  `alert_card`) and **the Moving templates and their limits**; their icons, words and colours
+  stay fixed. **Anchors** are never removed: More, and in Drive mode Back and the Drive-mode
+  chip. `alert_card`, the fault sheet, the Passenger-view and service-mode frames and badges
+  stay shell-drawn outside any layout. One validator on the client and the server refuses any
+  write or import that removes or hides a safety item or More.
+- **Reset layout is always reachable:** a non-hideable row in More, a row in the Connection
+  sheet (which also opens by itself when the link drops) and the edit bar; scopes this surface,
+  this screen, all screen sizes; Cancel focused; a 7-day "Undo reset" snapshot.
+- **Files.** Modes, Home, rail and strip layouts export and import as `.ostler-layout.json`
+  (file, link, QR, Web Share), scrubbed of vehicle and user identity; custom names and icons
+  travel with them.
 
 ### 15.3 Tests (adds to §10 U2)
 
 Playwright at 800×480, 1024×600, 1280×720, 1280×480, 1920×720 and 393×852: the Drive-mode
 chip cycles and lists modes and is remembered; with the Moving fixture no edit bar appears and
 the edit routes are refused; for every face of every preset `main` does not scroll, ≤ 6 tiles
-render, digits ≥ 56 px and nothing glows or animates; the safety items survive any edit or
-import.
+render, digits ≥ 56 px and nothing glows or animates; the safety items and More survive any
+edit or import (writes that remove them are refused by the server); after a randomised edit
+sequence, a long press on the strip and on an empty area still opens edit mode, Reset layout is
+in More and the Connection sheet, every page opens from More, and `back` reaches Home in ≤ 3
+presses; with shuffled strip orders the strip does not overflow and the D-pad lands on the
+Drive-mode chip wherever it sits; names over their limit or too wide for a class are refused.
 
 ### 15.4 Decisions for the owner (this amendment)
 
@@ -1273,11 +1315,20 @@ import.
    on head units. Alternative: one Drive layout as §12.3 has it, with Diagnostic as the default.
 2. **Modes and faces as two levels?** Recommend: yes (chip for modes, `left`/`right` for
    faces). Alternative: one level, `left`/`right` cycling modes.
-3. **Rail pins for add-on pages?** Recommend: yes, within the five slots, Home and More locked.
-   Alternative: core destinations fixed; pins only in a slot left empty.
+3. **How editable are the rail and strip? (revised)** Recommend: everything editable (move,
+   re-icon, rename, hide, replace), with More always in the five-slot rail, safety items
+   movable but never removed, Back and the Drive-mode chip always in the Drive strip, long
+   press on the strip or an empty area always opening edit mode, and Reset layout in More and
+   the Connection sheet. Alternative: the first draft's Home and More locked, three free middle
+   rail slots and fixed core strip chips.
 4. **Edits stored as a full copy with a `base` reference?** Recommend: yes, with Reset and
    "Update from preset". Alternative: a JSON Merge Patch over the base, as §12.3's "diff"
    literally says.
+5. **Safety items: move only, or also re-icon and rename?** Recommend: move (and resize the
+   cards) only; icons, words and colours fixed for recognition at a glance. Alternative: allow
+   re-icon and rename, colour and status word fixed.
+6. **Keep the five-slot cap?** Recommend: yes, More plus four free slots, the rest one tap
+   away under More → Pages. Alternative: up to six on HU-9/10 and HU-wide only.
 
 ## Notes on sources
 
@@ -1416,6 +1467,8 @@ import.
   Reply, canned replies, opt-in stopped-only first-line preview, rate limits, legal-check
   items (Decisions M1–M4); the approved §12.1 rule stands until answered.
 - 2026-10-07: v0.14, **proposed amendment §15 (DMD round), Drive modes and editing**, pending the owner: several Drive modes as layouts with faces and a strict Moving section, seven presets, a Drive-mode strip chip (tap cycles, long press lists), Park to edit enforced by the server, Home edit mode with a widget picker, rail pins for add-on pages within the five slots, non-removable safety items, layout files; decisions 1–4 (drive-modes spec; app-model §15).
+- 2026-10-07: proposed amendment §13 revised in place (DMD round, cross-spec reconcile with community hub spec v0.2): the share sheet's and Diagnose → Get help's hub send path reads "Ask on Ostler Community"; Decode lab → Ask for help decoding creates a Help thread on the closed, Ostler-run hub with end-to-end encrypted attachments; DMD decision 4 revised.
+- 2026-10-07: proposed amendment §15 revised (DMD round) for the owner's "the entire UI is editable, with no fixed icons": no locked rail slots (More anchored but movable), a user-ordered strip with safety chips that move but never go, re-icon from Material Symbols and rename with limits and i18n, hide and replace with More → Pages, edit mode by long press on the strip or any empty area, Reset layout in More and the Connection sheet; §15.3 tests extended; §15.4 decision 3 revised, decisions 5–6 added.
 
 ## Decisions for the owner (amendment of 2026-10-07)
 
@@ -1477,9 +1530,11 @@ Proposed; awaiting the owner. Each item is a question, a recommendation and an a
 3. **Preview rendered from the real output, with hidden ends as a dashed fade (never a
    circle) and a redaction report?** Recommend: yes. Alternative: a list of what is removed
    and no rendered preview (cheaper, but not proof).
-4. **"Get help with this fault" in Diagnose and "Ask for help decoding" in Decode lab?**
-   Recommend: yes, Parked only, never changing anything on the car. Alternative: one help
-   entry in Trips only.
+4. **"Get help with this fault" in Diagnose and "Ask for help decoding" in Decode lab?
+   (revised, reconcile)** Recommend: yes, Parked only, never changing anything on the car;
+   their hub send path reads "Ask on Ostler Community" and creates a Help thread on the one
+   official hub with end-to-end encrypted attachments (Decode lab's always does when the hub
+   add-on is on). Alternative: one help entry in Trips only.
 5. **Privacy zones at More → Places, after Network?** Recommend: yes, one definition read by
    every app. Alternative: inside More → Privacy (one entry fewer, harder to find).
 6. **A map theme independent of the app theme (Follow app, Day, Night, High contrast)?**
@@ -1502,4 +1557,5 @@ M4. **Rate limits?** Recommend: one card at a time, one per conversation per 2 m
     per 10 minutes, groups other than the ride as a count only, never over safety surfaces.
     Alternative: one card per message with no cap.
 
-Drive modes and editing (§15): see §15.4, decisions 1–4.
+Drive modes and editing (§15): see §15.4, decisions 1–6 (decision 3 revised for "the entire
+UI is editable, with no fixed icons"; decisions 5–6 added).

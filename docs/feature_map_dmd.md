@@ -2,7 +2,7 @@
 title: "DMD2 and DMD Hub feature map — every feature, its Ostler home, phase and spec status"
 area: docs
 status: draft
-version: 0.1
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/dmd2_features.md, references/research/dmd2_ui_teardown.md, references/research/dmd_hub_features.md, references/research/dmd_hub_ui_teardown.md, references/research/trip_and_log_sharing.md, references/research/community_hub_architecture.md, docs/ecosystem.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -38,7 +38,11 @@ Approved add-ons: **Social** (`ostler-app-social`), **V&M** (Vehicles & Map,
 **Integrations** (one repo per integration). **New add-ons proposed in this round** (no repo
 created): **Nav** (`ostler-app-navigation`), **Hub** (Ostler Community: the shell add-on
 `ostler-app-hub` plus the server and web app `ostler-hub`), **Alerts** (`ostler-app-alerts`),
-**Phone** (`ostler-app-phone`). **HW** is a hardware add-on from the
+**Phone** (`ostler-app-phone`, widened to Phone & Comms: mirroring, dialer, contacts,
+recents and messages; calls need a Brain; [Phone & Comms spec](../specs/2026-10-07-phone-comms-addon-design.md), draft). Ostler Community is a **closed service run by Ostler** (one instance, not
+self-hostable, private repo `ostler-hub`, separate from `ostler-cloud`) reached through the open
+add-on `ostler-app-hub`; it is also the project forum, the vehicle-development workspace and the
+wiki. **HW** is a hardware add-on from the
 [catalogue](../references/research/addons_catalogue.md) that only supplies data or key events.
 **—** means not needed, with the reason.
 
@@ -47,8 +51,8 @@ created): **Nav** (`ostler-app-navigation`), **Hub** (Ostler Community: the shel
 catalogue ([app model §14](../specs/2026-10-06-app-model-design.md)); accounts P1–P5
 ([accounts §10](../specs/2026-10-06-accounts-sharing-design.md#10-phases)); Social S1–S4, V&M
 V0–V5, M&G M0–M5 (their specs); sharing TS1–TS5
-([trip sharing §15](../specs/2026-10-07-trip-sharing-design.md#15-phases)); Hub H0–H5
-([community hub §13](../specs/2026-10-07-community-hub-design.md#13-phases)); Nav N0–N4
+([trip sharing §15](../specs/2026-10-07-trip-sharing-design.md#15-phases)); Hub H0–H4
+([community hub §16](../specs/2026-10-07-community-hub-design.md#16-storage-costs-and-phases)); Nav N0–N4
 ([navigation §10](../specs/2026-10-07-navigation-addon-design.md#10-phases)); ShellInput I1–I3
 ([ShellInput §12](../specs/2026-10-07-shell-input-design.md#12-where-it-lives-and-phases)); Drive modes DM1–DM5
 ([drive modes §11](../specs/2026-10-07-drive-modes-and-editing-design.md#11-phases)). **Alerts A1–A2 are
@@ -87,7 +91,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Background keep-alive, PiP | Per-feature keep-alive on Android | — | — | Out: the Brain serves the UI; power states own wake ([ADR-0040](../decisions/adr-0040-power-states-and-wake.md)) |
 | Display scale, font, orientation lock | Size and typeface of the whole UI | Shell Preferences (scale only) | U2 | Needs spec: a scale token in the visual spec; no font picker |
 | Sections on/off | Hide Home/Devices/Roadbook | Shell: an empty area disappears; add-ons never add destinations | U1 | Specced: [UI §3.4](../specs/2026-10-06-ui-architecture-design.md#34-five-destinations) |
-| Notification filter | Per-app allow list | Phone | later | Needs spec: phone add-on |
+| Notification filter | Per-app allow list | Phone: opt-in Android notification bridge with a per-app allow list | PH3 | Specced (draft): [Phone & Comms §7.2](../specs/2026-10-07-phone-comms-addon-design.md#72-android-notification-bridge-opt-in) |
 | Report issue with logs | Description plus logs | Shell support bundle, scrubbed by Platform | TS1 | Needs spec: support bundle on `ostler.share/1` ([trip sharing §9](../specs/2026-10-07-trip-sharing-design.md#9-the-bundle-ostlershare1-and-the-verifier) covers the format) |
 | First-run tour | Units, tour, map download, sign-in | Shell onboarding | U2 | Needs spec: onboarding (UI spec) |
 | OSM credit | ODbL credit and link | Core basemap | done | Specced: [ADR-0009](../decisions/adr-0009-session-logbook-and-location.md) |
@@ -114,10 +118,10 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Row: Power Box | Six aux switches | HW relay add-on, actions only through the gate | U5 | Specced: gate [ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md); the device needs a spec |
 | Row: Fuel level | Range from tank settings | M&G fuel + Drive tile; a real fuel signal first | M1 | Specced: [M&G §5](../specs/2026-10-07-maintenance-garage-addon-design.md#5-fuel-economy) |
 | Row: Action cameras | Record start/stop, battery | Cameras | Cameras phase | Needs spec: Cameras add-on |
-| Row: Last notifications | Three latest phone notifications | Phone, Parked only | later | Needs spec: phone add-on |
+| Row: Last notifications | Three latest phone notifications | Phone: More → Phone → Messages and the message `alert_card`, Parked only; Home widgets Favourites and Recent calls ("Available when parked" while Moving) | PH3 | Specced (draft): [Phone & Comms §7, §12](../specs/2026-10-07-phone-comms-addon-design.md#12-widgets-and-drive-menu-app-model-15-contract) |
 | Row: Weather | Conditions, high/low | Alerts | A1 | Needs spec: alerts add-on |
 | Row: Speedometer with limit | Digits, limit roundel, camera countdown | Drive (speed) + Nav (limit sign, off by default) | U2 / N2 | Specced (draft): [navigation §5.5](../specs/2026-10-07-navigation-addon-design.md#55-speed-limit-off-by-default); cameras out |
-| Overlays: notifications, weather, all apps | Pop over Home | Phone / Alerts / — | later | Needs spec in each; all-apps out |
+| Overlays: notifications, weather, all apps | Pop over Home | Phone (the shell's one alert pipeline, `alert_card`) / Alerts / — | PH3 / A1 | Phone specced (draft): [Phone & Comms §8](../specs/2026-10-07-phone-comms-addon-design.md#8-alerts-and-rate-limits-shared); Alerts needs spec; all-apps out |
 | Remote cycle on Home | One button walks Home views | ShellInput: `left`/`right` switch faces | I1 | Specced (draft): [ShellInput §6](../specs/2026-10-07-shell-input-design.md#6-drive-mode) |
 
 ## 3. Map, layers and offline maps (DMD2)
@@ -177,13 +181,13 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Route repair, route points editor | Fix failures, drag stops | Nav, Parked | N2 | Specced (draft): [navigation §6.5](../specs/2026-10-07-navigation-addon-design.md#65-planner-parked) |
 | Planner (device and web) | Sections, snap, draw, cut, merge, convert | Nav in the shell; a hub web planner later | N2 / after H2 | Specced (draft): [navigation §6.5](../specs/2026-10-07-navigation-addon-design.md#65-planner-parked); web planner needs spec |
 | Ridden progress, verified completion ≥ 80 % | % ridden, personal best, badge | Nav computes on device; only the fact goes to the Hub, by choice | N3 / H2 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports); badge out (no gamification) |
-| File details and ride tags | Description, vehicle, difficulty, off-road % | Nav curated routes; Hub publish checklist | N3 / H1 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports), [community hub §5](../specs/2026-10-07-community-hub-design.md#5-what-can-be-published) |
+| File details and ride tags | Description, vehicle, difficulty, off-road % | Nav curated routes; Hub publish checklist | N3 / H1 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports), [community hub §6](../specs/2026-10-07-community-hub-design.md#6-what-can-be-published) |
 | Share file | Send the .gpx through any app | Trips export (exists); Nav export for plans | done / N1 | Specced: Export [UI §12.2](../specs/2026-10-06-ui-architecture-design.md); (draft) [navigation §6.2](../specs/2026-10-07-navigation-addon-design.md#62-import-and-export) |
 | Import formats | GPX, KML, KMZ, GeoJSON, TCX, FIT, ITN, CSV | Nav (plans); FIT later | N1 | Specced (draft): [navigation §6.2](../specs/2026-10-07-navigation-addon-design.md#62-import-and-export) |
 | Shared places | Map links, Plus Codes, MGRS, EXIF | Nav search | N1 | Specced (draft): [navigation §3](../specs/2026-10-07-navigation-addon-design.md#3-offline-map-regions) |
 | Open With out | Send a point to another map app | Nav | N1 | Needs spec: a line in navigation §6.2 |
 | DMD GPX extension | Namespaced GPX with integrity hash | Nav reads it; writes plain GPX 1.1 | N1 | Specced (draft): [navigation §6.2](../specs/2026-10-07-navigation-addon-design.md#62-import-and-export) |
-| Signature Tracks (curated, maintained) | Named maintainer, issue inbox, completions | Nav curated routes + Hub route pages and owner issue inbox | N3 / H1–H2 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports), [community hub §10](../specs/2026-10-07-community-hub-design.md#10-moderation-and-abuse) |
+| Signature Tracks (curated, maintained) | Named maintainer, issue inbox, completions | Nav curated routes + Hub route pages and owner issue inbox | N3 / H1–H2 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports), [community hub §14](../specs/2026-10-07-community-hub-design.md#14-moderation-and-abuse) |
 | Help the planner learn | Anonymous ways, k ≥ 3, ends cut | Hub aggregate, off by default | after H4 | Needs spec: later |
 | Send to device | "Navigate to" on the web sets the unit's destination | Nav: the add-on's own data between the user's own devices, no car action | N1; hub button after H1 | Specced (draft): [navigation §1](../specs/2026-10-07-navigation-addon-design.md#1-scope-and-boundaries) |
 | Group active GPX, map drawings | One route on every member's map | Nav ride routes + V&M convoy layer; drawings later | N3, V2 | Specced (draft): [navigation §7](../specs/2026-10-07-navigation-addon-design.md#7-curated-routes-sharing-and-reports) |
@@ -198,9 +202,9 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Auto-record and minimum distance | Starts on movement, drops drift | Trips: trigger exists; add a minimum-distance rule | U2 | Needs spec: a UI §12.2 line |
 | New track, add waypoint | Split days, quick waypoint types | Trips: End trip now, Mark | done | Specced: [ADR-0010](../decisions/adr-0010-replay-notes-audio-motion.md), [UI §12.2](../specs/2026-10-06-ui-architecture-design.md) |
 | Crash recovery | Resume or ask | Trips | done | Specced: [session logbook](../specs/2026-10-05-session-logbook-design.md) |
-| Recordings sync | Local/Remote states, monthly folders | Trips stays local; the Hub gets a trip only by a publish grant | TS5 / H1 | Specced (draft): [community hub §5](../specs/2026-10-07-community-hub-design.md#5-what-can-be-published) |
-| Save questions | Vehicle, difficulty, off-road % | Trips free note; tags only in the Hub publish flow | H1 | Specced (draft): [community hub §5](../specs/2026-10-07-community-hub-design.md#5-what-can-be-published) |
-| Trip journal and Relive replay | Map, timeline, fly-through with chat | Trips playback (exists); Hub shared trip page | done / H1 | Specced: [UI §12.2](../specs/2026-10-06-ui-architecture-design.md); (draft) [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
+| Recordings sync | Local/Remote states, monthly folders | Trips stays local; the Hub gets a trip only by a publish grant | TS5 / H1 | Specced (draft): [community hub §6](../specs/2026-10-07-community-hub-design.md#6-what-can-be-published) |
+| Save questions | Vehicle, difficulty, off-road % | Trips free note; tags only in the Hub publish flow | H1 | Specced (draft): [community hub §6](../specs/2026-10-07-community-hub-design.md#6-what-can-be-published) |
+| Trip journal and Relive replay | Map, timeline, fly-through with chat | Trips playback (exists); Hub shared trip page | done / H1 | Specced: [UI §12.2](../specs/2026-10-06-ui-architecture-design.md); (draft) [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
 | Lean angle | Roadmap item | Trips (IMU exists) | later | Needs spec: Trips, with a motorcycle pack |
 | Separate share recorder | Trip sharing apart from the GPX recorder | — | — | Out: one logbook (ADR-0009); sharing is a view of it |
 
@@ -213,7 +217,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Tulip strip, CAP, trip-meter nudge, notes | Distances, heading, cap to follow | Nav | N4 | Specced (draft): [navigation §6.6](../specs/2026-10-07-navigation-addon-design.md#66-roadbook-view-n4) |
 | Waypoint validation, penalties, chrono, speed zones | Rally scoring tools | Nav, if events ask for them | after N4 | Needs spec: later (rally niche) |
 | Locked maps, own remote mapping | Map hidden if rules forbid; roadbook keys | Nav + ShellInput bindings | N4 | Needs spec: navigation §6.6 line |
-| DMD Events (time-locked files) | Files fetched ahead, unlocked at start | Hub events + Nav | H2 / N3 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| DMD Events (time-locked files) | Files fetched ahead, unlocked at start | Hub events + Nav | H2 / N3 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 | Live Event | States, SOS to crew, board, roles, public live page | Social (board, threads) + V&M convoy + Hub live page; SOS stays core | S1, V2, H3 | Needs spec: later (Social and hub open questions) |
 
 ## 8. Devices, sensors and remotes (DMD2)
@@ -230,7 +234,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | BMW Sync Box (wheel drives the app) | CAN wheel and bike data | Vehicle packs + ShellInput (read-only button events) | I3 | Specced: [packs §3.5](../specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md); (draft) [ShellInput §3.1](../specs/2026-10-07-shell-input-design.md#31-input-events-from-packs-and-keypads) |
 | Action cameras | DJI, Insta360, GoPro control | Cameras | Cameras phase | Needs spec: Cameras add-on |
 | Fuel level simulator | Virtual tank by GPS distance | M&G fuel + Drive tile | M1 | Specced: [M&G §5](../specs/2026-10-07-maintenance-garage-addon-design.md#5-fuel-economy) |
-| iPhone notifications (ANCS) | Mirrors calls and notifications | Phone, Parked only, no message content while Moving | later | Needs spec: phone add-on |
+| iPhone notifications (ANCS) | Mirrors calls and notifications | Phone: calls, contacts, recents and Messages over HFP/PBAP/MAP on the Brain in v1; ANCS sender + app alerts later; no message content while Moving | PH1–PH3 / PH4 | Specced (draft): [Phone & Comms §7.3](../specs/2026-10-07-phone-comms-addon-design.md#73-ios) |
 | DMD remotes 1–4, generic HID remote | Joystick, A/B, zoom rocker | HW "dash buttons and keypads" add-on that only supplies key events to ShellInput | I1 (HID) / I3 (keypad) | Specced (draft): [ShellInput §3](../specs/2026-10-07-shell-input-design.md#3-sources) |
 | Default mapping, menu focus, dialog focus | Joystick pans, long-press to menu | ShellInput: intents, focus zones, spatial navigation, long-press to rail, confirm sheets open with Cancel focused | I1 | Specced (draft): [ShellInput §4, §7](../specs/2026-10-07-shell-input-design.md#4-focus-zones-and-spatial-navigation) |
 | Remote Controller Menu (8 families) | Colour families, first tap selects | Drive menu = `short_list` ≤ 6 driver-safe actions while Moving; families Parked only | I1 | Specced (draft): [ShellInput §6](../specs/2026-10-07-shell-input-design.md#6-drive-mode) |
@@ -255,7 +259,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Theft / unplug alarm | Siren, SMS, report stolen | Core Security | U5 | Specced: [GPS tracker and alarm](../specs/2026-10-02-gps-tracker-alarm-design.md); the unplug trigger needs a line |
 | Auto Off | Shutdown by dock, ignition, inactivity | Core power states | done | Specced: [ADR-0040](../decisions/adr-0040-power-states-and-wake.md) |
 | Manage app, walkie-talkie | Remote setup, push-to-talk | Network + Social PTT | S1 | Specced: [Social §5](../specs/2026-10-07-social-addon-design.md#5-push-to-talk-voice-calls-and-video-calls) |
-| Phone Link (calls, messages, hotspot) | Pocket phone bridged to the unit | Phone, Parked only | later | Needs spec: phone add-on |
+| Phone Link (calls, messages, hotspot) | Pocket phone bridged to the unit | Phone (`ostler-app-phone`, Phone & Comms): the Brain as Bluetooth hands-free (needs a Brain for calls) plus the companion bridge; dialer with keypad **Parked only**; while Moving voice dial, a favourites `short_list` (≤ 6) and the audio-only `call` template via the shell's one call session; contacts (Ostler + phone, badged), recents, SMS/iMessage via MAP; hotspot stays Network's | PH0–PH3 | Specced (draft): [Phone & Comms §2–§6, §10](../specs/2026-10-07-phone-comms-addon-design.md#2-repo-recommendation-widen-ostler-app-phone) |
 | Mini Launcher, eSIM, firmware OTA, own tablets | Android unit vendor features | — | — | Out: Ostler is a web UI on any screen |
 
 ## 10. Groups, live sharing and community (DMD2 app side)
@@ -266,63 +270,66 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Invites: email, link with expiry and limit, nearby code | Two-tap revoke | Core invites | P2 | Specced: [accounts §14.6](../specs/2026-10-06-accounts-sharing-design.md#146-contacts-groups-and-invites); join limit and nearby code need a line |
 | One device shares at a time | Handover prompt | Core sharing: one position source per user | P2 | Needs spec: an accounts §15 line |
 | Live buddy tracking over LoRa and internet | Freshest wins, badges | V&M + LoRa HW add-on | V3 | Specced: [V&M §6.2](../specs/2026-10-07-vehicles-and-map-addon-design.md#62-routes-and-precision), [ADR-0038](../decisions/adr-0038-mesh-car-to-car-and-off-grid.md) |
-| Group tabs (members, chat, files, events, places) | One group home | Social + Hub clubs | S1 / H2 | Specced: Social; (draft) [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| Group tabs (members, chat, files, events, places) | One group home | Social + Hub clubs | S1 / H2 | Specced: Social; (draft) [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 | Help Me / I'm OK | Group beacon, not an emergency service | Social (safety exception) | S1 | Specced: [Social §6](../specs/2026-10-07-social-addon-design.md#6-the-link-router-and-per-class-rules) |
-| Live trip link, no account to watch | Red button with watcher count | V&M §8 relay link + Hub live ride page | V5 / H3 | Specced: [V&M §8](../specs/2026-10-07-vehicles-and-map-addon-design.md#8-viewers-without-ostler-later); (draft) [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| Live trip link, no account to watch | Red button with watcher count | V&M §8 relay link + Hub live ride page | V5 / H3 | Specced: [V&M §8](../specs/2026-10-07-vehicles-and-map-addon-design.md#8-viewers-without-ostler-later); (draft) [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 | Trip privacy knobs | Trail window, delay 1–6 h, show speed, show values | Grant options `trail_window`, `delay` (0–6 h), `show_speed`, `show_values` | P2 / V5 | Specced (draft): [accounts §15.3](../specs/2026-10-06-accounts-sharing-design.md#153-live-trip-grant-options-changes-142-used-by-vehicles--map), [trip sharing §12](../specs/2026-10-07-trip-sharing-design.md#12-live-trips) |
-| Listing on Live | Opt-in per trip, one-time warning, drops after 2 h | Hub "Live now", opt-in, 18+ | H3 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| Listing on Live | Opt-in per trip, one-time warning, drops after 2 h | Hub "Live now", opt-in, 18+ | H3 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 | Viewer chat | 200-char messages from followers | — v1; members talk in the Social ride channel | — | Out v1: no viewer chat until moderation tools exist |
 | Moments | Quick messages, photos, places pinned on the trip | Social ride channel + Trips Mark and notes; photos at H4 | S1 / H4 | Needs spec: a Social line; Hub photos at H4 |
 | Phone adds posts to the unit's trip | Companion posting | Social | S1 | Specced: [Social §4](../specs/2026-10-07-social-addon-design.md#4-messaging) |
 | Location Manager | Places with ground, vehicle, crowding | Nav (private); Hub community places | N2 / after H2 | Specced (draft): [navigation §6.4](../specs/2026-10-07-navigation-addon-design.md#64-waypoints-places-and-pois); hub places need spec |
-| Discover | Community GPX, curated, places, events, live | Hub Discover | H1 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| Discover | Community GPX, curated, places, events, live | Hub Discover | H1 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 
 ## 11. DMD Hub: accounts, profiles and content
 
 | Feature | DMD behaviour | Ostler home | Phase / dependency | Spec status |
 |---|---|---|---|---|
-| Email + password account, all devices | No passkeys or 2FA | Core accounts (passkeys first) + a Hub account linked by device flow; a device may link several hubs | P1 / H1 | Specced: [accounts §2.2](../specs/2026-10-06-accounts-sharing-design.md#22-passkeys-first-passwords-always); (draft) [community hub §4](../specs/2026-10-07-community-hub-design.md#4-hub-accounts-and-device-linking) |
+| Email + password account, all devices | No passkeys or 2FA | Core accounts (passkeys first) + a Hub account linked by device flow to the one official hub; the same account signs into the forum and wiki | P1 / H1 | Specced: [accounts §2.2](../specs/2026-10-06-accounts-sharing-design.md#22-passkeys-first-passwords-always); (draft) [community hub §4](../specs/2026-10-07-community-hub-design.md#4-hub-accounts-and-device-linking) |
 | Password change signs out everywhere | Sign out all devices | Core accounts | P1 | Specced: [accounts §2.3](../specs/2026-10-06-accounts-sharing-design.md#23-sessions) |
-| One person, one account; age 16 | Parental consent under 18 | Hub: minimum 16; public profiles and live follow 18 | H1 | Specced (draft): [community hub §11](../specs/2026-10-07-community-hub-design.md#11-law-age-and-licences) |
-| Public/private profile, rider page | Points, awards, map of places | Hub profile: garage cards, public items, counts; no map of places, no points | H2 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
-| Deletion and GDPR export | Posts hard-deleted | Hub: export all, delete everywhere, tombstones in threads | H1 | Specced (draft): [community hub §11](../specs/2026-10-07-community-hub-design.md#11-law-age-and-licences) |
+| One person, one account; age 16 | Parental consent under 18 | Hub: minimum 16; public profiles and live follow 18 | H1 | Specced (draft): [community hub §13](../specs/2026-10-07-community-hub-design.md#13-privacy-law-age-and-licences) |
+| Public/private profile, rider page | Points, awards, map of places | Hub profile: garage cards, public items, counts; no map of places, no points | H2 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
+| Deletion and GDPR export | Posts hard-deleted | Hub: export all, delete everywhere, tombstones in threads | H1 | Specced (draft): [community hub §13](../specs/2026-10-07-community-hub-design.md#13-privacy-law-age-and-licences) |
 | Item visibility Private → Pending → Public | Checklist then staff review | Hub item states; `public` only by an explicit publish act | H1 | Specced (draft): [community hub §7](../specs/2026-10-07-community-hub-design.md#7-item-states-links-and-their-controls) |
 | Locked vs Download share links | Dates, limits, states, revoke | Core link controls on grants and relay links; Hub shows them | TS4 / H1 | Specced (draft): [accounts §15.4](../specs/2026-10-06-accounts-sharing-design.md#154-link-controls-changes-142-and-1412), [trip sharing §10](../specs/2026-10-07-trip-sharing-design.md#10-delivery-paths-and-link-controls) |
 | Save to collection (live reference) | Follows the owner's edits | Hub: a Locked read that follows edits | H1 | Specced (draft): [community hub §7](../specs/2026-10-07-community-hub-design.md#7-item-states-links-and-their-controls) |
 | Community locations, favourites | Public POIs with exact coordinates | Hub places with a precision choice; V&M shows them | after H2 | Needs spec: hub places (later) |
 | Services directory, ratings | Workshops, rentals, shops | M&G workshops + Hub reviews | M4 / H2 | Needs spec: an M&G "later" item |
-| Feed: posts, likes, comments, bell | All / Following | Hub: an opt-in chronological Following feed in `ostler-app-hub` only; no public feed for strangers | H2 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
-| Comments, ratings, owner replies | On tracks, places, events | Hub comments, off by default on new public items, tombstones | H2 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
-| Points, badges, leaderboard, trust auto-publish | > 20 points ends pre-moderation | Hub trust threshold for moderation only; no points or ranks | H1 | Specced (draft): [community hub §10](../specs/2026-10-07-community-hub-design.md#10-moderation-and-abuse) |
-| Events: registration, Going, ICS, capacity | The Hub never touches money | Hub events | H2 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
+| Feed: posts, likes, comments, bell | All / Following | Hub: an opt-in chronological Following feed in `ostler-app-hub` only; no public feed for strangers | H2 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
+| Comments, ratings, owner replies | On tracks, places, events | Hub comments, off by default on new public items, tombstones | H2 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
+| Points, badges, leaderboard, trust auto-publish | > 20 points ends pre-moderation | Hub trust threshold for moderation only; no points or ranks | H1 | Specced (draft): [community hub §14](../specs/2026-10-07-community-hub-design.md#14-moderation-and-abuse) |
+| Events: registration, Going, ICS, capacity | The Hub never touches money | Hub events | H2 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
 | Videos, News | YouTube links, articles | — | — | Out: link out from posts; no media portal |
-| Communities (≥ 1,000 members) | Clubs need a large base | Hub clubs of any size, linkable to core groups | H2 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
-| Moderation: report, block, review, code of conduct | Staff review, bans | Hub moderation, appeals, audit | H1 | Specced (draft): [community hub §10](../specs/2026-10-07-community-hub-design.md#10-moderation-and-abuse) |
+| Communities (≥ 1,000 members) | Clubs need a large base | Hub clubs of any size, linkable to core groups | H2 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
+| Moderation: report, block, review, code of conduct | Staff review, bans | Hub moderation, appeals, audit | H1 | Specced (draft): [community hub §14](../specs/2026-10-07-community-hub-design.md#14-moderation-and-abuse) |
 | Licence gates sync and sharing | Paid tier | — | — | Out: never charge for safety, sharing or decode help; only hosted storage or relay |
-| No public API, anti-scraping | Internal endpoints | Hub documented OpenAPI with scoped tokens | H1 | Specced (draft): [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-and-stack) |
-| Self-hosting | Not offered | `ostler-hub` self-hostable, one official instance, not in `ostler-cloud` | H1 | Specced (draft): [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-and-stack) |
-| Federation | None | Outbound-only, allowlist, not before H5 | H5 | Specced (draft): [community hub §13](../specs/2026-10-07-community-hub-design.md#13-phases) |
-| Vehicle data on the Hub | Labels only; OBD data never shared | Ostler's edge: garage cards, telemetry and faults at chosen levels | H1–H2 | Specced (draft): [community hub §5](../specs/2026-10-07-community-hub-design.md#5-what-can-be-published) |
+| No public API, anti-scraping | Internal endpoints | Hub documented OpenAPI with scoped tokens, published in the open `ostler-app-hub` | H1 | Specced (draft): [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack) |
+| Self-hosting | Not offered | Not offered either: `ostler-hub` is closed and run only by Ostler (one instance, private repo, separate from `ostler-cloud`); the exit guarantee is export everything, a public CC BY-SA dump and nothing in core depending on it | H0 | Specced (draft): [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack) |
+| Federation | None | None either; RSS/Atom, ICS and embeds as open read paths | — | Specced (draft): [community hub §16](../specs/2026-10-07-community-hub-design.md#16-storage-costs-and-phases); revised decision B 18 |
+| Vehicle data on the Hub | Labels only; OBD data never shared | Ostler's edge: garage cards, telemetry and faults at chosen levels | H1–H2 | Specced (draft): [community hub §6](../specs/2026-10-07-community-hub-design.md#6-what-can-be-published) |
+| Forum | (none; a feed of posts) | Hub forum: categories per make and model, Q&A with "solved", search with exact fault-code and hex matching, watch levels and notifications; no direct messages | H1 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-the-forum) |
+| Vehicle development | (none) | Hub: help thread → decode cards → vehicle project → data-only pack PR through a GitHub App bridge, state mirrored back; never required to contribute | H1 cards / H2 bridge | Specced (draft): [community hub §10](../specs/2026-10-07-community-hub-design.md#10-vehicle-development-from-a-help-thread-to-a-pack-pr) |
+| Wiki | (none) | Hub wiki: vehicle pages generated from pack releases (read-only), community pages under CC BY-SA; no Ostler wiki exists today | H1 generated / H2 community | Specced (draft): [community hub §11](../specs/2026-10-07-community-hub-design.md#11-the-wiki) |
 
 ## 12. DMD Hub web screens
 
 | Screen or element | DMD behaviour | Ostler home | Phase / dependency | Spec status |
 |---|---|---|---|---|
-| Landing portal with counters and feed | Busy portal, volume counters | Hub Discover: one search, chips, make/model/engine filter | H1 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
-| Track detail (3D satellite map, stat strip, elevation) | Pitched 3D by default | Hub route and trip page on flat Ostler Night, smoothed elevation | H1 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub); 3D out in v1 |
-| Shared trip page with level tabs | (DMD has none for vehicle data) | Hub `/t/<id>`; tabs only for the level granted | H1 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
-| Follower page (hero number, Moments sheet, trail badge) | Map-first, quiet stat stack | Hub live ride page; V&M relay link | H3 / V5 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
-| Event live page | Full-screen map, one LIVE pill | Hub live ride page | H3 | Specced (draft): [community hub §9](../specs/2026-10-07-community-hub-design.md#9-discover-following-clubs-events-live-rides-comments) |
-| Help thread | (none) | Hub help thread with an L3/L4 hand-over to named helpers, "solved" credit | H1 / TS5 | Specced (draft): [community hub §6](../specs/2026-10-07-community-hub-design.md#6-help-threads-and-l3l4-hand-overs) |
+| Landing portal with counters and feed | Busy portal, volume counters | Hub Discover: one search, chips, make/model/engine filter | H1 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
+| Track detail (3D satellite map, stat strip, elevation) | Pitched 3D by default | Hub route and trip page on flat Ostler Night, smoothed elevation | H1 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub); 3D out in v1 |
+| Shared trip page with level tabs | (DMD has none for vehicle data) | Hub `/t/<id>`; tabs only for the level granted | H1 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
+| Follower page (hero number, Moments sheet, trail badge) | Map-first, quiet stat stack | Hub live ride page; V&M relay link | H3 / V5 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
+| Event live page | Full-screen map, one LIVE pill | Hub live ride page | H3 | Specced (draft): [community hub §12](../specs/2026-10-07-community-hub-design.md#12-discover-following-clubs-events-live-rides-comments) |
+| Help thread | (none) | Hub help thread with an L3/L4 hand-over to named helpers, "solved" credit | H1 / TS5 | Specced (draft): [community hub §8](../specs/2026-10-07-community-hub-design.md#8-help-threads-and-l3l4-hand-overs) |
 | Publish flow (choose, level, audience, preview) | Checklist only | Core Trips share sheet; the Hub uses the same steps | TS2 / H1 | Specced (draft): [trip sharing §11](../specs/2026-10-07-trip-sharing-design.md#11-preview-expiry-revoke-and-audit) |
 | My shares list | Per-link states | Core Settings → Sharing + Hub rows | TS2 / H1 | Specced: [accounts §14.7](../specs/2026-10-06-accounts-sharing-design.md#147-shell-screens-gap-list-and-short-specs); (draft) [trip sharing §11](../specs/2026-10-07-trip-sharing-design.md#11-preview-expiry-revoke-and-audit) |
-| Visibility chip on every object | (none) | Core chip extended with `link` and `public` | TS2 / H1 | Specced (draft): [accounts §15.2](../specs/2026-10-06-accounts-sharing-design.md#152-audiences-link-added-public-brought-forward-changes-142), [community hub §8](../specs/2026-10-07-community-hub-design.md#8-screens) |
-| In-shell More → Community (Discover, Following, Help, Mine) | iPhone app | `ostler-app-hub`, Parked or passenger only | H1 | Specced (draft): [community hub §8.2](../specs/2026-10-07-community-hub-design.md#82-in-shell-add-on-ostler-app-hub) |
+| Visibility chip on every object | (none) | Core chip extended with `link` and `public` | TS2 / H1 | Specced (draft): [accounts §15.2](../specs/2026-10-06-accounts-sharing-design.md#152-audiences-link-added-public-brought-forward-changes-142), [community hub §15](../specs/2026-10-07-community-hub-design.md#15-screens) |
+| In-shell More → Community (Discover, Forum, Help, Mine) | iPhone app | `ostler-app-hub`, Parked or passenger only | H1 | Specced (draft): [community hub §15.2](../specs/2026-10-07-community-hub-design.md#152-in-shell-add-on-ostler-app-hub) |
 | Share row (Facebook, X, LinkedIn, Instagram) | Brand buttons and scripts | Web Share, copy link, QR, embed card | H1 | Out: no social-network buttons or scripts |
-| Embed card, report with pin, Add to calendar, copy coordinates | Small useful tools | Hub | H1–H2 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
-| Units by viewer locale | Miles from the browser | Hub: viewer locale with a km/mi switch | H1 | Specced (draft): [community hub §8.1](../specs/2026-10-07-community-hub-design.md#81-web-app-ostler-hub) |
+| Embed card, report with pin, Add to calendar, copy coordinates | Small useful tools | Hub | H1–H2 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
+| Units by viewer locale | Miles from the browser | Hub: viewer locale with a km/mi switch | H1 | Specced (draft): [community hub §15.1](../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub) |
 | Sign-in walls | Inconsistent | One rule: `public` readable signed out, `link` needs the link, members-only needs sign-in | H1 | Specced (draft): [community hub §7](../specs/2026-10-07-community-hub-design.md#7-item-states-links-and-their-controls) |
-| Photos in posts and items | One photo per post | Hub photos at H4, with on-device face/plate blur and hash matching; H1 takes track, trip and log files only | H4 | Specced (draft): [community hub §13](../specs/2026-10-07-community-hub-design.md#13-phases) |
+| Photos in posts and items | One photo per post | Hub photos at H4, with on-device face/plate blur and hash matching; H1 takes track, trip and log files only | H4 | Specced (draft): [community hub §16](../specs/2026-10-07-community-hub-design.md#16-storage-costs-and-phases) |
 
 ## 13. Per-trip sharing levels (the owner's ask)
 
@@ -367,7 +374,7 @@ DMD shares GPX files and live trips; it never shares vehicle data. Ostler's five
 | Licence gating sync, sharing, groups, remotes | Yes | Never charge for safety, sharing or decode help; only hosted storage or relay |
 | Viewer chat on live pages (v1) | Yes | Needs moderation tools first; members use the Social ride channel |
 | Pause recording, separate share recorder | Yes | One always-on logbook (ADR-0009, ADR-0011) |
-| Notification and message mirroring while Moving | Yes | No message content on driver displays while Moving ([UI §12.1](../specs/2026-10-06-ui-architecture-design.md)); Phone is Parked-only |
+| Notification and message mirroring while Moving | Yes | No message content on driver displays while Moving ([UI §12.1](../specs/2026-10-06-ui-architecture-design.md)); Phone shows only the `call` template, the message `alert_card` and the favourites `short_list` while Moving, keypad and lists Parked only ([Phone & Comms §10](../specs/2026-10-07-phone-comms-addon-design.md#10-ui-per-layout-class-and-driving-state)) |
 | Free pixel drag of overlays | Yes | Per-class grids travel between screens; drag does not |
 | Images on the hub before H4 | Yes | Online Safety Act hash-matching duty; photos only with on-device blur |
 | Video portal, news | Yes | Link out; not core to a vehicle-data hub |
@@ -387,19 +394,32 @@ The order follows dependencies, not size. Core comes first, because every add-on
 3. **Approved add-ons as already phased:** Social S1, V&M V1–V2, M&G M1–M2.
 4. **Navigation N0–N2:** routing on the Brain and guidance through the `map` template, then the
    library, follow track and planner; speed limit off by default.
-5. **Ostler Community H1 with TS5:** `ostler-hub` + `ostler-app-hub`: device linking, Discover,
-   publish L0/L1, L2 to clubs, help threads with L3/L4 hand-overs, moderation, export and
-   delete; no images. Then **Nav N3** shares curated routes to it.
-6. **Hub H2:** clubs, events, comments, the Following feed; TS4 relay links when Ostler Cloud's
+5. **Ostler Community H1 with TS5:** the closed `ostler-hub` service + the open `ostler-app-hub`:
+   device linking, the forum, help threads with L3/L4 hand-overs, decode cards, generated wiki
+   vehicle pages, Discover, publish L0/L1, L2 to clubs, moderation, export and delete; no
+   images. Then **Nav N3** shares curated routes to it.
+6. **Hub H2:** vehicle projects and the GitHub bridge, wiki community pages, clubs, events,
+   comments, the Following chip, the public dump; TS4 relay links when Ostler Cloud's
    relay exists.
-7. **Later, each with its own spec:** Alerts A1–A2, Hub H3 live rides (after V&M V5), Phone,
+7. **Later, each with its own spec:** Alerts A1–A2, Hub H3 live rides (after V&M V5), Phone
+   PH0–PH4 (after U2 and Social S1; Phone & Comms spec, draft),
    Crash SOS and the unplug alarm in core Security, Hub H4 photos, Nav N4 roadbook and rider
-   reports, Hub H5 federation only on measured demand.
+   reports. (No hub federation phase.)
 
 ## Changelog
 
 - 2026-10-07: v0.1, draft for the owner (DMD round): every DMD2 and DMD Hub feature mapped to
   an Ostler home, phase and spec status; leave-outs; build order.
+- 2026-10-07: v0.2, hub rows follow the community hub spec v0.2 (owner's direction: a closed,
+  Ostler-run hub, not self-hostable, also the forum, vehicle-development workspace and wiki):
+  accounts, API, self-hosting and federation rows revised; Forum, Vehicle development and Wiki
+  rows added; hub section links renumbered; build order updated; Phone rows marked pending the
+  Phone & Comms spec (not decided here).
+- 2026-10-07: v0.3 (cross-spec reconcile): Phone rows link the draft
+  [Phone & Comms spec](../specs/2026-10-07-phone-comms-addon-design.md) and reflect the widened
+  `ostler-app-phone` (mirroring, dialer, contacts, recents, messages; calls need a Brain), the
+  `call` template and the favourites `short_list` while Moving, the keypad Parked only; build
+  order and decision 6 updated.
 
 ## Decisions for the owner
 
@@ -418,8 +438,15 @@ The order follows dependencies, not size. Core comes first, because every add-on
 5. **Crash SOS and the unplug alarm in core Security, later?** Recommend: yes, after U5 with
    their own spec, free, as the one ghost exception (accounts §14.5). Alternative: a separate
    `ostler-app-sos` add-on.
-6. **Alerts and Phone as separate add-ons, both later?** Recommend: yes; Alerts UK-first, free
-   and opt-in; Phone Parked-only. Alternative: fold Alerts into Navigation and leave phone
-   mirroring out entirely.
+6. **Alerts and Phone as separate add-ons, both later? (revised, reconcile)** Recommend: yes;
+   Alerts UK-first, free and opt-in; Phone is one widened `ostler-app-phone` (Phone & Comms:
+   mirroring, dialer, contacts, recents, messages; calls need a Brain) as the
+   [Phone & Comms spec](../specs/2026-10-07-phone-comms-addon-design.md) proposes, with its scope and phases decided there (its decisions
+   1–14), not here. Alternative: fold Alerts into Navigation and leave phone mirroring out
+   entirely (or the Phone spec's alternative, a separate `ostler-app-dialer`).
 7. **The leave-out list (§15)?** Recommend: accept it as the "not in v1" record, revisited only
    by an owner decision. Alternative: plan speed cameras and viewer chat as later add-ons now.
+8. **Hub rows as revised (closed, Ostler-run hub that is also forum, vehicle development and
+   wiki)?** Recommend: accept them with the community hub spec's revised items B 7–19 and new
+   items B 19a–19f. Alternative: the v0.1 rows (open, self-hostable hub, several hubs per device,
+   federation at H5).

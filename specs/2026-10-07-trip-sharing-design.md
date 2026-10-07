@@ -2,7 +2,7 @@
 title: "Per-trip sharing — five share levels, redaction, the ostler.share/1 bundle, the verifier and help me decode or diagnose — design"
 area: specs
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/trip_and_log_sharing.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md]
 summary: >
@@ -445,7 +445,7 @@ owner may then share the finished trip at L0–L1 as usual (no auto-conversion).
 | Relay link storage | **Ostler Cloud** (ADR-0028), optional | no core feature may need it |
 | Trip cards in groups | **Social** add-on | its share-out of trip cards |
 | Friends' shared trips on a map, live trip options | **Vehicles & Map** add-on | its `trips` and live grants |
-| Publish to Ostler Community, help threads, link and public audiences on the hub | **`ostler-app-hub`** (client add-on) and **`ostler-hub`** (server) | the community hub; self-hostable |
+| Publish to Ostler Community, help threads, link and public audiences on the hub | **`ostler-app-hub`** (open client add-on, which encrypts L3/L4 on the device) and **`ostler-hub`** (server) | the community hub: a closed service run by Ostler, one instance, not self-hostable ([community hub §3](2026-10-07-community-hub-design.md#3-repos-licences-and-stack)) |
 
 ## 15. Phases
 
@@ -496,6 +496,9 @@ owner may then share the finished trip at L0–L1 as usual (no auto-conversion).
 
 - 2026-10-07 — v0.1: first draft (DMD round) from the trip and log sharing and DMD Hub
   research, for the owner's approval.
+- 2026-10-07 — v0.2: §14 follows the owner's direction that the community hub is a closed,
+  Ostler-run service, not self-hostable; the client add-on stays open and does the encryption.
+  No level, rule or decision changes.
 
 ## Decisions for the owner
 

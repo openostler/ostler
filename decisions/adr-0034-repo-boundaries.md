@@ -2,11 +2,11 @@
 title: "ADR-0034 — Repo boundaries: one platform repo, first-class firmware, packs as data, later hardware and contract repos"
 area: decisions
 status: locked
-version: 1.4
+version: 1.6
 updated: 2026-10-07
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, specs/2026-10-06-app-model-design.md, SCOPE.md]
 summary: >
-  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build. Amended 2026-10-07 (ADR-0042, approved by the owner, "approve all"): the add-on repos `ostler-app-social`, `ostler-app-vehicles` and `ostler-app-maintenance`, and later `ostler-app-lubelogger` (none created yet); Trips replaces Logs among the core apps, and Decode lab is a developer add-on whose code stays in `ostler`. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, names five more repos, none created: `ostler-hub` (the Ostler Community server and web app, AGPL plus commercial, outside the closed `ostler-cloud`), `ostler-app-hub`, `ostler-app-navigation`, and later `ostler-app-alerts` and `ostler-app-phone`.
+  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build. Amended 2026-10-07 (ADR-0042, approved by the owner, "approve all"): the add-on repos `ostler-app-social`, `ostler-app-vehicles` and `ostler-app-maintenance`, and later `ostler-app-lubelogger` (none created yet); Trips replaces Logs among the core apps, and Decode lab is a developer add-on whose code stays in `ostler`. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, names five more repos, none created: `ostler-hub` (the Ostler Community service: server, web, forum, vehicle-development workspace and wiki; private and closed, run only by Ostler, separate from the closed `ostler-cloud`), `ostler-app-hub` (its open AGPL shell add-on, holding the public API contract), `ostler-app-navigation`, and later `ostler-app-alerts` and `ostler-app-phone`.
 ---
 
 # ADR-0034 — Repo boundaries
@@ -17,8 +17,8 @@ summary: >
 > **Amended 2026-10-07 (approved by the owner, "approve all"; ADR-0042):** the add-on repos
 > `ostler-app-social`, `ostler-app-vehicles`, `ostler-app-maintenance` and later
 > `ostler-app-lubelogger`. See [Amendment (2026-10-07)](#amendment-2026-10-07).
-> **Proposed amendment (2026-10-07, DMD round), awaiting the owner:** `ostler-hub`,
-> `ostler-app-hub`, `ostler-app-navigation`, later `ostler-app-alerts` and `ostler-app-phone`.
+> **Proposed amendment (2026-10-07, DMD round), awaiting the owner:** `ostler-hub` (private,
+> closed), `ostler-app-hub`, `ostler-app-navigation`, later `ostler-app-alerts` and `ostler-app-phone`.
 > See [Proposed amendment](#proposed-amendment-2026-10-07-dmd-round). The accepted text is unchanged.
 
 - **Date:** 2026-10-06
@@ -184,16 +184,24 @@ requires:
 
 | Repo | Visibility, licence | Contents | Grounds | When |
 |---|---|---|---|---|
-| `ostler-hub` | public; AGPL-3.0-or-later + commercial (CLA, ADR-0012) | Ostler Community's server and web app: Python ASGI API, PostgreSQL + PostGIS, S3-compatible storage, PMTiles, TS/React web importing the shell's kit and tokens, migrations, the OpenAPI contract, moderation tools, a compose file for self-hosting clubs, policy templates ([community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-and-stack), draft) | **toolchain** (a deployed web service with Postgres), **release cadence**, **contributors** (web developers, club hosts) | When hub H1 starts |
-| `ostler-app-hub` | public; AGPL-3.0-or-later | The shell add-on (npm `@ostler/app-hub`): link one or more hubs, publish from Trips, help threads, Discover, Following | cadence, contributors (the 2026-10-06 app-repo amendment) | With `ostler-hub`, at H1 |
+| `ostler-hub` | **private, closed**; proprietary, all rights reserved (Ostler); not self-hostable | Ostler Community, run only by Ostler as one official instance: the API server and web app (publishing, the project forum, the vehicle-development workspace with its GitHub App bridge to the pack repos, the wiki with vehicle pages generated from pack releases), Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles, TS/React web on the shell's kit and tokens, migrations, moderation and staff tools, deployment, server-internal specs and policy drafts ([community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack), draft) | **licence** (closed, like `ostler-cloud`), **toolchain** (a deployed web service with Postgres), **release cadence**, **contributors** (Ostler staff and moderators; no outside contributions) | Proposed: **now**, empty and private, so H0's policy drafts and server internals have a home (hub decision B 19e); the owner is asked first. Alternative: at H1 |
+| `ostler-app-hub` | public; AGPL-3.0-or-later (CLA) | The shell add-on (npm `@ostler/app-hub`): link the account to the official hub, publish from Trips, help threads with on-device encryption, the forum and Discover in the shell, inbox; **and the public hub API contract** (`api/hub.openapi.yaml`) with generated TS types | cadence, contributors (the 2026-10-06 app-repo amendment); it must stay open so the encryption and what leaves the device can be checked | With `ostler-hub`'s H1 work |
 | `ostler-app-navigation` | public; AGPL-3.0-or-later (MIT routing engines used under ADR-0025 with notices) | The Navigation add-on: a Python service on the Brain plus a React UI bundled into the shell; routing, guidance, voice, GPX library and follow, planner, roadbook ([navigation](../specs/2026-10-07-navigation-addon-design.md), draft). It replaces the `ostler-app-routes` and `ostler-app-roadbook` ideas of the research | **toolchain** (a routing engine and its data builds on the Brain), cadence | When Navigation N0 starts |
 | `ostler-app-alerts` | public; AGPL-3.0-or-later; feed data under each feed's own licence | UK official weather, flood and closure alerts, free and opt-in | cadence (feed changes), contributors (per-country feeds) | Later, after its spec |
-| `ostler-app-phone` | public; AGPL-3.0-or-later | Phone mirroring (notifications, calls), Parked-only content | cadence, contributors (per-platform phone links) | Later, after its spec |
+| `ostler-app-phone` | public; AGPL-3.0-or-later | **Phone & Comms** ([spec](../specs/2026-10-07-phone-comms-addon-design.md), draft): phone mirroring (notifications, the opt-in Android bridge), the dialer (keypad Parked only), contacts (Ostler and phone, badged by source), recents and messages (SMS/iMessage via MAP); the shell add-on, the `ostler-hfp` Brain service (HFP HF, PBAP, MAP) and the companion-bridge plugin source; **needs a Brain for calls** | cadence, contributors (Bluetooth on the Brain, native code per phone platform) | Later, after its spec is approved (PH0 bench first) |
 
-**`ostler-hub` is not `ostler-cloud`.** The community hub is open and self-hostable; Ostler runs
-one official instance of the same code. The closed `ostler-cloud` row is unchanged and may host
-optional relay and storage services, never the only copy of the hub. Its OpenAPI contract lives
-in `ostler-hub` and is pinned by `ostler-app-hub`; both generate TS types (ADR-0035).
+**`ostler-hub` is closed, and separate from `ostler-cloud`** (owner's direction, 2026-10-07:
+"our own thing, closed not self hostable … we'll need to create a new repo for it"). It is
+Ostler's second closed service and takes ADR-0013's **cloud boundary**: it talks to devices only
+through a documented HTTPS API whose OpenAPI document is public in `ostler-app-hub`; it never
+imports platform or pack code and reads pack releases only as CC BY-SA data; its dependency tree
+holds no third-party copyleft code (separate programs such as PostgreSQL with PostGIS are fine);
+it uses the shell's kit and tokens only under the maintainer's rights through the CLA, behind a
+licence gate (ADR-0012). It is kept apart from `ostler-cloud` because its purpose, contributors,
+cadence and data-protection footprint differ (public user content and moderation records, not
+device relay and storage); the two may share infrastructure and, later, one identity service.
+The exit guarantee of ADR-0042 still holds: nothing in core needs the hub, everything on it can
+be exported, and pack contributions never need it.
 
 **Stays in `ostler`:** `ShellInput` (the shell's D-pad input model), the per-trip sharing
 pieces (scrubber, `ostler.share/1` bundle writer, `ostler share verify`, the Trips share sheet,
@@ -201,18 +209,23 @@ More → Places) and, later, Crash SOS in Security: they change in lockstep with
 the contracts, so the rule finds no difference.
 
 **Confirmation (delta).** `ostler`'s CI validates each pinned add-on's manifest and `shell`
-range as before; `ostler-hub`'s CI runs its API tests against PostGIS and its web build against
-the pinned kit package.
+range as before; `ostler-hub`'s CI (private) runs its API tests against PostGIS, its contract tests
+against `ostler-app-hub`'s OpenAPI document, its web build against the pinned kit package, and a
+licence gate that fails on copyleft dependencies or any `openostler` import.
 
 ### Decisions for the owner (DMD round)
 
-1. **Create these five repos when their phases start?** Recommend: yes, `ostler-hub` and
-   `ostler-app-hub` at H1 and `ostler-app-navigation` at N0; Alerts and Phone only after their
-   specs. Alternative: start Navigation and the hub add-on inside `ostler` and split later.
-2. **`ostler-hub` licence: AGPL plus commercial, as `ostler`?** Recommend: yes, under the CLA
-   (ADR-0012). Alternative: AGPL only, with no commercial licence for the hub.
-3. **Keep the hub out of `ostler-cloud`?** Recommend: yes; the official instance runs the public
-   code. Alternative: a closed hub in `ostler-cloud` (rejected by the exit guarantee).
+1. **Create these five repos when their phases start?** Recommend: `ostler-hub` **now**, empty
+   and private (asked first), `ostler-app-hub` with the hub's H1 work, `ostler-app-navigation` at
+   N0; Alerts after its spec, Phone after the Phone & Comms spec is approved. Alternative: `ostler-hub` at H1 as well; or start
+   Navigation and the hub add-on inside `ostler` and split later.
+2. **`ostler-hub` licence and visibility?** Recommend: private and closed, proprietary, run only
+   by Ostler, not self-hostable (owner's direction), with `ostler-app-hub` open under AGPL.
+   Alternative: the previous draft, a public AGPL-plus-commercial `ostler-hub` that clubs could
+   self-host.
+3. **The hub separate from `ostler-cloud`?** Recommend: yes, its own private repo and deployment
+   under the same cloud boundary (owner's direction). Alternative: put the hub inside the closed
+   `ostler-cloud` repo (one closed codebase, one deployment, mixed data-protection footprint).
 
 ## Changelog
 
@@ -225,3 +238,12 @@ the pinned kit package.
   `ostler-hub`, `ostler-app-hub`, `ostler-app-navigation`, later `ostler-app-alerts` and
   `ostler-app-phone` (none created); the hub stays outside `ostler-cloud`. The accepted text
   is unchanged.
+- 2026-10-07: v1.5, the Proposed amendment (DMD round) revised in place for the owner's
+  direction that the hub is closed and not self-hostable: `ostler-hub` becomes a private, closed
+  repo separate from `ostler-cloud` under ADR-0013's cloud boundary, also holding the forum, the
+  vehicle-development bridge and the wiki; `ostler-app-hub` stays AGPL and holds the public API
+  contract; the decisions are revised. The accepted text is unchanged.
+- 2026-10-07: v1.6, the Proposed amendment (DMD round) revised in place (cross-spec
+  reconcile): the `ostler-app-phone` row is Phone & Comms (mirroring, dialer, contacts,
+  recents, messages; needs a Brain for calls), linked to its draft spec, still not created;
+  decision 1 wording follows. The accepted text is unchanged.
