@@ -2,14 +2,19 @@
 title: "ADR-0042 — Ecosystem: small core, add-ons are the product"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-07
-depends_on: [GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
+depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, references/research/dmd2_features.md, references/research/dmd_hub_features.md, GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core.
+  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds four add-ons from the DMD2 and DMD Hub research: `ostler-app-hub` with its `ostler-hub` server (Ostler Community), `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone`; puts the `ShellInput` D-pad model and per-trip sharing in core, and Crash SOS in core Security later.
 ---
 
 # ADR-0042 — Ecosystem: small core, add-ons are the product
+
+> **Proposed amendment (2026-10-07, DMD round), awaiting the owner:** four new add-ons
+> (Ostler Community, Navigation, Alerts, Phone), `ShellInput` and per-trip sharing in core,
+> Crash SOS in core Security later. See
+> [Proposed amendment](#proposed-amendment-2026-10-07-dmd-round). The accepted text is unchanged.
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all"), drafted from
@@ -158,9 +163,89 @@ each alternative was not chosen.
 6. **Remote catalogue?** Recommend: not now; Available lists bundled and device-suggested
    add-ons only. Alternative: a signed catalogue repo, with its own outbound-path ADR.
 
+## Proposed amendment (2026-10-07, DMD round)
+
+**Status: proposed, for the owner's approval.** The accepted decision above is unchanged until
+the owner approves this section. Source: the owner's direction of 2026-10-07 to "pull all the
+features over" from DMD2 and DMD Hub, "many as add-ons, and separate repos", with the Hub as the
+social side and per-trip sharing at chosen data levels. The feature-by-feature mapping is
+[docs/feature_map_dmd.md](../docs/feature_map_dmd.md) (draft); the research is
+[DMD2 features](../references/research/dmd2_features.md),
+[DMD2 UI teardown](../references/research/dmd2_ui_teardown.md),
+[DMD Hub features](../references/research/dmd_hub_features.md),
+[DMD Hub UI teardown](../references/research/dmd_hub_ui_teardown.md),
+[trip and log sharing](../references/research/trip_and_log_sharing.md) and
+[community hub architecture](../references/research/community_hub_architecture.md).
+
+1. **Four new add-ons** join decision 4's right-hand column, each off by default, each in its
+   own repo under ADR-0034's rule (proposed amendment there), none created yet:
+
+   | Add-on | Repo(s) | What it is | Spec |
+   |---|---|---|---|
+   | **Ostler Community** | `ostler-app-hub` (shell add-on) and `ostler-hub` (AGPL server and web app: Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles; web in TS/React on the shell's kit and tokens) | Publish trips and routes, help threads for decoding and diagnosis, clubs, events, Discover; self-hostable with one official instance; a device may link to several hubs; no federation before H5, then outbound-only with an allowlist | [community hub](../specs/2026-10-07-community-hub-design.md) (draft) |
+   | **Navigation** | `ostler-app-navigation` | Routing on the Brain with an open engine (licence to verify), turn-by-turn and voice, GPX library, import/export and follow, planner, roadbook, curated routes, route sharing to the hub. It absorbs the "routes" and "roadbook" ideas. Guidance renders through the `map` template's next manoeuvre while Moving; the speed-limit tint is off by default, never logged or scored; no speed cameras in v1 | [navigation](../specs/2026-10-07-navigation-addon-design.md) (draft) |
+   | **Alerts** | `ostler-app-alerts` | UK official weather, flood and closure alerts, free and opt-in; later | needs spec |
+   | **Phone** | `ostler-app-phone` | Phone mirroring (notifications, calls), Parked-only content; later | needs spec |
+
+   **Ostler Community is not in `ostler-cloud`.** Decision 7 holds: nothing in core needs the
+   hub; the official instance is one optional host, and safety, sharing and decode help are
+   never charged for (only hosted storage or relay). The hub has no points or ranks, no public
+   feed for strangers (Discover instead; an opt-in Following feed in `ostler-app-hub` only), and
+   shares out through Web Share, copy link, QR and embed, never social-network buttons. Its H1
+   accepts track, trip and log files only (no images; photos at H4 with on-device blur).
+   Minimum age 16; live follow and public profiles 18.
+2. **Core gains, it does not grow a destination.** These stay in `ostler`:
+   - **`ShellInput`** in the shell: a D-pad input model (keyboard arrows, Enter and Escape, HID
+     remotes, the Gamepad API, and read-only steering-wheel button events from packs) with focus
+     zones, spatial navigation, long-press to the rail, a **Drive menu** that is a `short_list`
+     of ≤ 6 driver-safe actions while Moving, confirm sheets that open with Cancel focused, a
+     3 px focus-ring token, bindings owned by the display, a key test screen, and a map theme
+     independent of the app theme. It ships with U2 ([ShellInput](../specs/2026-10-07-shell-input-design.md),
+     draft). Hardware remotes are hardware add-ons that only supply key events; input is never
+     paywalled.
+   - **Per-trip sharing**: the scrubber, the `ostler.share/1` bundle writer and
+     `ostler share verify` in the platform; the share sheet in Trips; "get help with this fault"
+     in Diagnose; the help-decode flow in Decode lab; privacy zones in the shell (More → Places)
+     ([trip sharing](../specs/2026-10-07-trip-sharing-design.md), draft;
+     [ADR-0043](adr-0043-gps-and-logs-in-shared-trips.md), proposed).
+   - **Crash SOS and the unplug/theft alarm** in core **Security**, later, each with its own
+     spec; Crash SOS is the existing ghost exception (accounts spec §14.5).
+3. **The Add-ons catalogue** (decision 5) lists the four when bundled: Ostler Community card
+   "Needs a hub account", Navigation "Needs the Brain", Alerts "Needs internet", Phone "Needs a
+   paired phone". No remote catalogue is added.
+4. **Unchanged hard lines** (decision 9) apply to all four: none declares a car action (send to
+   device is the add-on's own data between the user's devices); nothing from them renders on a
+   driver-facing display while Moving except through shell templates; every class they read
+   starts in ghost.
+
+**Confirmation (deltas).** The import test of the Confirmation section also passes with
+`ostler-app-hub`, `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone` absent; the
+network test also passes with every hub unreachable; a ShellInput test drives every destination
+and Drive mode by keyboard only and asserts that gated confirms open with Cancel focused.
+
+### Decisions for the owner (DMD round)
+
+1. **Add the four add-ons?** Recommend: yes, Ostler Community (`ostler-app-hub` + `ostler-hub`)
+   and Navigation now as specs, Alerts and Phone named for later. Alternative: Community and
+   Navigation only; decide Alerts and Phone when they are specced.
+2. **Community hub outside `ostler-cloud`?** Recommend: yes, an open, self-hostable AGPL repo
+   with one official instance, so the exit guarantee holds. Alternative: the official instance
+   only, inside the closed `ostler-cloud`.
+3. **One navigation add-on that absorbs routes and roadbook?** Recommend: yes. Alternative:
+   separate `ostler-app-routes` and `ostler-app-roadbook` repos.
+4. **ShellInput in core with U2?** Recommend: yes. Alternative: a later phase, or an
+   input add-on.
+5. **Crash SOS in core Security (later) rather than an add-on?** Recommend: core, because it is
+   the one safety exception to ghost and must never be optional or paid. Alternative: a separate
+   `ostler-app-sos` add-on.
+
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed: drafted from the owner's ecosystem direction.
 - 2026-10-07 — v1.0, accepted: approved by the owner ("approve all"). The catalogue sits at
   More → Add-ons (UI spec §12.4); Integrations is one add-on per integration; every
   "Decisions for the owner" item answered as recommended.
+- 2026-10-07 — v1.1, adds the Proposed amendment (2026-10-07, DMD round) for owner approval:
+  `ostler-app-hub` + `ostler-hub`, `ostler-app-navigation`, `ostler-app-alerts`,
+  `ostler-app-phone`; ShellInput and per-trip sharing in core; Crash SOS in core Security later.
+  The accepted text above is unchanged.

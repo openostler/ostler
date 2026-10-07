@@ -2,16 +2,16 @@
 title: "Social add-on — messaging, push-to-talk, calls and camera sharing over the internet and meshes — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
-depends_on: [references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
+depends_on: [references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions.
+  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 adds a proposed amendment (2026-10-07, DMD round), not yet approved: message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the approved "Message from name" with Play / Later.
 ---
 
 # Social add-on — design
 
-**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2.** Nothing here is built before the app model's UA phase
+**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; v0.3 adds a proposed amendment (§12) awaiting the owner.** Nothing here is built before the app model's UA phase
 and the accounts phases it depends on (§11). It is a design for the optional add-on
 `ostler-app-social` (ADR-0034, ADR-0042 "Ecosystem: small core, add-ons are the product",
 accepted). The research is linked, not repeated:
@@ -259,12 +259,85 @@ the broker; no VIN, `<vid>` or plate in any envelope.
    requests checked by the relay?).
 4. Peer identity binding of mesh node ids: QR at the meet-up, or over IP before the ride.
 
+## 12. Proposed amendment (2026-10-07, DMD round): message alerts while Moving
+
+*Proposed, not approved. Changes the §8 "Driver screens" bullet and one §10 test, extends §4's
+auto-reply and widens Decision 5 from calls to calls and message alerts. Until the owner
+answers Decisions A1–A4 at the end, §8 and Decision 5 stand as approved. Evidence:
+[message alerts research](../references/research/message_alerts_android_auto.md) (Android Auto,
+Android for Cars, CarPlay, AAOS, the legal reading) and
+[driver-distraction rules](../references/research/driver_distraction_rules.md) §4.2, §7.1 #10.
+The shell-wide rule (every add-on's message alerts, the `alert_card` row, the U2 legal check
+and tests) is a matching proposed amendment to the
+[UI architecture spec](2026-10-06-ui-architecture-design.md) §12.1; where they differ, the UI
+spec wins.*
+
+**Owner's ask (2026-10-07):** "Message alerts: copy Android Auto. On the driver's head unit
+while Moving, the `alert_card` shows the sender and app, with Play (read aloud) and Reply
+(voice, or a canned reply). Add an owner opt-in to show a one-line first-line preview. Default
+stays off."
+
+**Old rule, the alternative:** while Moving a message alert reads "Message from Sam" with
+**Play** and **Later**; never content; reply by PTT voice note or the "I'm driving" auto-reply;
+no keyboard and **no canned list** (§8, approved 2026-10-07).
+
+**Proposed §8 "Driver screens" bullet** (replaces the approved one):
+
+> - **Driver screens** (driver-distraction §7.1 #10; UI spec §12.1 as amended). While Moving a
+>   message alert is an `alert_card` with **the sender** ("Sam", or "Sam · Peak ride"; ≤ 30
+>   characters) and **the app** ("Social", or "Social · 3 new"), and two buttons:
+>   - **Play** reads it aloud (a message over 280 characters is announced first as "Sam sent
+>     a long message"); attachments are named, never shown.
+>   - **Reply** opens a `short_list`: **Speak a reply** (a voice note ≤ 30 s, or on-device
+>     dictation read back with Send / Cancel and never shown as text while Moving), then up to
+>     **five canned replies** (default "Driving, will reply later", "On my way", "Running
+>     late", "OK, thanks", "Call you when I stop"; each ≤ 30 characters, plain text, edited
+>     Parked only; one tap sends a normal signed, sealed message).
+>   - No Later button: the card leaves after 8 s or on Back, and the message stays unread.
+>   - **First-line preview**, an owner opt-in per user, **off by default** ("Show first line
+>     of messages when parked"): for a message that arrives while Parked, or Idling with Park
+>     evidence, line 2 shows its first line (plain text, ≤ 30 characters, "…" on overflow,
+>     "Photo", "Voice note", "Location" or "Link" for non-text); it reverts to the app name as
+>     soon as the vehicle moves. Never while Moving, never on a passenger-only display, never
+>     images, avatars or stickers.
+>   - **Rate limits:** one card at a time; one per conversation per 2 minutes; three message
+>     cards per 10 minutes, then only the strip chip and Home unread count; groups other than
+>     the active ride channel raise the count only ("Alert for group messages", default off);
+>     never over a red telltale, the reverse camera, the `call` template or a navigation
+>     manoeuvre prompt.
+>   - Task depth ≤ 3, ending back in Drive mode. Unknown speed counts as Moving. If the U2
+>     legal opinion objects to names, line 1 reads "New message".
+
+**§4 addition:** the "I'm driving" auto-reply gains Driving Focus's scope setting (research
+§1): reply to **no one, ride members, favourites or all contacts** (default favourites and ride
+members), its text editable Parked only (≤ 60 characters), at most once per conversation per
+trip.
+
+**§10 test change:** "never renders video or message text on a driver-facing head unit while
+Idling or Moving" reads "… while Moving, or Idling without Park evidence (and, until the U2
+legal opinion, while Idling at all)". Add: with the preview on, a message that arrives while
+Moving renders no text on a driver-facing display; a message that arrived while Parked loses
+its preview when the vehicle moves; canned replies cannot be edited while Moving; the rate
+limits hold; a canned reply is a message, never an action.
+
+**Proposed Decision 5** (replaces the approved one): **Calls and message alerts while
+Moving** — audio only via the `call` template, only ride members and favourites ring; message
+alerts show sender and app with Play and Reply (voice or canned), an opt-in first-line preview
+only for messages that arrive while parked, and the rate limits above? *Recommend:* yes.
+*Alternative:* the approved Decision 5 for calls, with the approved §8 message alert
+("Message from *name*", Play / Later, no canned list).
+
 ## Changelog
 
 - 2026-10-07: v0.1, first draft (Social add-on; reconciles the mesh transports and calls notes).
 - 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all"): every decision
   answered as recommended (alternatives not chosen); the `more:social` slot is added to
   app-model §4.2 (§14.7); ADR-0038's mesh amendment approved with it.
+- 2026-10-07: v0.3, proposed amendment (DMD round) §12, not approved: message alerts while
+  Moving show sender and app with Play and Reply (voice or up to five canned replies), an
+  opt-in first-line preview only for messages that arrive while parked, rate limits, a scoped
+  auto-reply and a widened Decision 5; Decisions A1–A4 at the end. §8 and Decision 5 stand
+  until answered.
 
 ## Decisions for the owner
 
@@ -281,3 +354,27 @@ the decision; each alternative was not chosen.
 8. **Waking a parked car for calls** — off by default, opt-in per group within the ADR-0040 quota? *Recommend:* yes. *Alternative:* never wake for calls.
 9. **LoRa voice notes** — Codec2 voice notes over LoRa? *Recommend:* defer until the Meshtastic bridge ships and the bench shows the airtime. *Alternative:* build them in S3.
 10. **Phases** — S1 messaging + PTT (internet/LAN), S2 calls, S3 mesh bridges, S4 cameras? *Recommend:* yes. *Alternative:* bring the mesh (S3) before calls for off-road groups.
+
+## Decisions for the owner (proposed amendment, 2026-10-07, DMD round)
+
+Open. Each has a recommendation and the alternative; the approved rule is the alternative
+where one exists.
+
+1. **A1 — Message card while Moving** — sender and app with **Play** and **Reply**, as Android
+   Auto and CarPlay do, names covered by the U2 legal check with "New message" as the
+   fallback? *Recommend:* yes. *Alternative:* the approved rule, "Message from *name*" with
+   Play / Later, never content.
+2. **A2 — Canned replies** — Reply opens a `short_list` with Speak a reply plus up to five
+   owner-editable canned replies (≤ 30 characters, edited Parked only, one tap sends)?
+   *Recommend:* yes. *Alternative:* the approved rule, voice note and the "I'm driving"
+   auto-reply only, no canned list.
+3. **A3 — First-line preview** — owner opt-in, default off, one line ≤ 30 characters, only for
+   messages that arrive while Parked or Idling with Park evidence (Parked only until the U2
+   legal opinion), reverting when the vehicle moves, never on a passenger-only display, never
+   images? *Recommend:* yes (Android Auto's documented "stopped when they arrive" rule,
+   tightened). *Alternative:* the owner's literal ask, a preview while Moving, released only if
+   the U2 reg 109 opinion explicitly clears it (every other rule we track forbids it).
+4. **A4 — Rate limits and auto-reply scope** — one card at a time, one per conversation per
+   2 minutes, three per 10 minutes, non-ride groups as a count only; auto-reply to favourites
+   and ride members by default? *Recommend:* yes. *Alternative:* a card for every message, and
+   auto-reply to all contacts.

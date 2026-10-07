@@ -15,6 +15,7 @@ vehicle pack. For the Land Rover Discovery 2 that is the
 | [tester_quickstart.md](tester_quickstart.md) | A non-programmer on a Mac: cable check, one-paste install, desktop launchers |
 | [https_on_the_pi.md](https_on_the_pi.md) | Local HTTPS on the Pi so the phone mic and motion sensors work |
 | [ecosystem.md](ecosystem.md) | Everyone (proposed, ADR-0042): what is core, what is an add-on, how add-ons get car data, the safety boundaries |
+| [feature_map_dmd.md](feature_map_dmd.md) | The owner and spec authors (draft, DMD round): every DMD2 and DMD Hub feature, its Ostler home, phase and spec status, the leave-outs and the build order |
 
 Start with the root [README](../README.md), then [SCOPE.md](../SCOPE.md) and
 [CONSTITUTION.md](../CONSTITUTION.md). Decisions are in [decisions/](../decisions/CLAUDE.md);

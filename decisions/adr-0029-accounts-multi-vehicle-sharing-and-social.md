@@ -2,11 +2,11 @@
 title: "ADR-0029 — Accounts, multi-vehicle garage, sharing and social"
 area: decisions
 status: locked
-version: 1.5
+version: 1.6
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics". Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): §8's levels give way to one data-class registry with ghost mode on by default and precise location capped at 24 h; §7 gains contacts, groups and an 8-character invite code; §9 allows a later link-only social login through an Ostler Cloud OIDC broker; Basic Auth ends one release after P1 with no re-enable; `auth.db` lives on the Brain with a signed roster on the node; "user role" and "device role".
+  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics". Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): §8's levels give way to one data-class registry with ghost mode on by default and precise location capped at 24 h; §7 gains contacts, groups and an 8-character invite code; §9 allows a later link-only social login through an Ostler Cloud OIDC broker; Basic Auth ends one release after P1 with no re-enable; `auth.db` lives on the Brain with a signed roster on the node; "user role" and "device role". Proposed amendment (2026-10-07, DMD round), for the owner's approval: Ostler Community, the opt-in community hub, holds the directory (Discover) and an opt-in Following feed in place of §9's minimal in-house feed, brings the `public` audience forward for explicit publishing, adds hub accounts linked to devices, and moves federation to an outbound-only H5.
 ---
 
 # ADR-0029 — Accounts, multi-vehicle garage, sharing and social
@@ -15,6 +15,7 @@ summary: >
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 > **Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"):** one permission model (§4, §8), contacts and invite codes (§7), a later link-only social login (§9), the Basic Auth end and `auth.db` placement (§1, Consequences). See [Amendment (2026-10-07), approved](#amendment-2026-10-07-approved).
+> **Proposed amendment (2026-10-07, DMD round), not yet approved:** §9's feed and directory move to the opt-in community hub, Ostler Community; `public` comes forward for explicit publishing; hub accounts link to devices; federation becomes an outbound-only H5. See [Proposed amendment (2026-10-07, DMD round)](#proposed-amendment-2026-10-07-dmd-round).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It approves
@@ -234,9 +235,70 @@ that changes is listed.
   code, head-unit profiles, public name, social login, Basic Auth end, `auth.db` placement,
   "user role").
 
+## Proposed amendment (2026-10-07, DMD round)
+
+**Proposed for the owner's approval; not in force.** The decision text and the approved
+amendments above are unchanged until the owner approves this. Detail:
+[Ostler Community spec](../specs/2026-10-07-community-hub-design.md) (draft), from the
+[community hub architecture](../references/research/community_hub_architecture.md),
+[DMD Hub features](../references/research/dmd_hub_features.md) and
+[DMD Hub UI teardown](../references/research/dmd_hub_ui_teardown.md) research; per-trip levels
+are the sibling trip-sharing spec's (`specs/2026-10-07-trip-sharing-design.md`, being drafted).
+Only the text that would change is listed.
+
+- **§9 Social and integrations: the feed and the directory.** "A minimal in-house feed" is
+  replaced: neither core nor Social has a feed or a directory (Social spec §1 stays true). The
+  opt-in community hub, **Ostler Community** (`ostler-hub` server and web, `ostler-app-hub`
+  shell add-on, both AGPL, self-hostable, one official instance, not in `ostler-cloud`), holds
+  **Discover** (public items and clubs that chose to be listed, filtered by make, model and
+  engine; no feed for strangers) and an opt-in, chronological **Following** feed in
+  `ostler-app-hub` only. No points, ranks or leaderboards. Hub pages share out by Web Share,
+  copy link, QR and embed, never social-network buttons or scripts; §9's share sheet,
+  click-to-chat and webhook integrations are unchanged.
+- **§9 "No third-party login as the way in"** stays for devices. A hub account is the hub's own
+  identity (passkey first, password, optionally Google or Apple **on the hub site only**) and
+  never signs anyone into a device. A device user links to a hub by RFC 8628 device flow or
+  PKCE, with a per-device, per-user token (`publish`, `read`, `help`) in `auth.db` and a
+  pairwise id per hub. The official hub may later serve as the link-only OIDC broker of
+  accounts §14.8.
+- **§8 and accounts §14.2: the `public` audience.** "Public (reserved; not before club pages,
+  after P4)" is brought forward **for the hub only**, at hub phase H1: reachable only by an
+  explicit publish act, with a checklist and review until the account is trusted, for trip
+  cards and routes (L0–L1), routes, garage cards and events; never for live location, L2,
+  raw logs, audio or video. The `link` audience (anyone with the link) is added with it; both
+  are defined in the trip-sharing spec.
+- **§8 "No share ever carries … a raw capture".** Unchanged: full logs (L3) and diagnostics
+  bundles (L4) reach a hub only as **hand-overs** into a help thread, encrypted for named
+  helpers, time-boxed, never as grants and never public.
+- **§9 rides on the web.** A live ride may have a hub page: ride-scoped, at most 24 h,
+  positions held in memory only and not stored after the session; listing it publicly is
+  opt-in per ride, off by default, 18+, with a one-time warning.
+- **§11 Phases.** Hub phases H0–H5 follow the P-phases: H1 needs P3. Groups and rides (P4)
+  stay core; clubs, events and help threads are the hub's H1–H2.
+- **Alternatives: "ActivityPub federation now. Deferred."** Becomes: no federation before H5;
+  then outbound-only (public routes, events, club Groups), allowlist mode; nothing private,
+  no full log and no help attachment ever federates.
+- **Age.** Hub accounts 16+; live follow and public profiles 18+.
+
 ## Changelog
 
 - 2026-10-07: v1.4, adds the proposed amendment (2026-10-07) for owner approval.
 - 2026-10-07: v1.5, the amendment is approved by the owner on 2026-10-07 ("approve all") and
   renamed "Amendment (2026-10-07), approved"; its decisions (accounts spec §14.15) answered
   as recommended.
+- 2026-10-07: v1.6, adds the proposed amendment (2026-10-07, DMD round) for Ostler Community,
+  for owner approval.
+
+## Decisions for the owner (proposed amendment, 2026-10-07, DMD round)
+
+1. **Feed and directory** — move §9's "minimal in-house feed" to the hub as Discover plus an
+   opt-in Following feed in `ostler-app-hub` only? *Recommend:* yes. *Alternative:* keep a
+   minimal ride-summary feed in Social for groups.
+2. **`public` audience timing** — bring `public` (with `link`) forward to hub H1, explicit publish
+   and review only? *Recommend:* yes. *Alternative:* keep `public` until after P4 club pages and
+   use `link` only at H1.
+3. **Hub identity** — hub-owned accounts linked to devices by RFC 8628 or PKCE with pairwise ids,
+   optional Google or Apple sign-in on the hub site only? *Recommend:* yes. *Alternative:* no hub
+   accounts; the hub trusts device signatures.
+4. **Federation** — none before H5, then outbound-only with an allowlist? *Recommend:* yes.
+   *Alternative:* keep ActivityPub deferred with no planned phase.
