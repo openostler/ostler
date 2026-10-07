@@ -432,6 +432,11 @@ their own changelogs.
   `PackDemo.sniff_log` is test-only: `tests/e2e_server.py --replay` still loops it.
 
 ### Fixed
+- Drive mode fits one screen at every head-unit class and on the phone (UI spec §12.3, UI
+  audit P1/D6): no page heading, Back is the strip's first chip, the fault banner folds into
+  the telltale chip and the tile rows are sized by the remaining height. A new layout class,
+  HU-5 (800×480: rail 80, strip 48), and a Playwright assert that `main` never scrolls in
+  Drive mode at 800×480, 1024×600, 1280×720, 1280×480, 1920×720 and 393×852.
 - A query string no longer turns an exact route into a 404 (`/snapshot?x`, `/events?x`,
   `POST /command?x` …): every route matches the path without its query.
 - An unknown route, a missing `/doc` or static file and a method the server lacks

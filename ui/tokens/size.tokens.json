@@ -1,5 +1,5 @@
 {
-  "$description": "Shell sizes per layout class (UI spec §3.1), shared radii and the minimum chip height. Layout tokens become CSS custom properties on .app[data-layout=<class>].",
+  "$description": "Shell sizes per layout class (UI spec §3.1; HU-5 from §12.3), shared radii and the minimum chip height. Layout tokens become CSS custom properties on .app[data-layout=<class>].",
   "radius": {
     "md": {
       "$type": "dimension",
@@ -27,6 +27,61 @@
     }
   },
   "layout": {
+    "hu5": {
+      "rail-w": {
+        "$type": "dimension",
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        },
+        "$description": "driver-side rail (UI spec §12.3)"
+      },
+      "strip-h": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "nav-item": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        },
+        "$description": "rail item height: the 76 px head-unit target"
+      },
+      "target": {
+        "$type": "dimension",
+        "$value": {
+          "value": 76,
+          "unit": "px"
+        },
+        "$description": "primary touch target"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$description": "tighter than HU-7: the content area is 720×432"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      }
+    },
     "hu7": {
       "rail-w": {
         "$type": "dimension",

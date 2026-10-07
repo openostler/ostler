@@ -11,7 +11,6 @@ import { FaultSheet } from "../components/FaultSheet";
 import { GlobalTransport } from "../components/GlobalTransport";
 import { Preferences } from "../components/Preferences";
 import { ReplayAudio } from "../components/replay/ReplayAudio";
-import { Icon } from "../icons/Icon";
 import { moduleName } from "../layout";
 import { formatClock, formatQuantity } from "../lib/units";
 import { usePack } from "../pack/store";
@@ -101,23 +100,22 @@ export function Shell(p: ShellProps) {
 
   const chips = stripChips({
     layout: p.layout, snap, linkUp, replaying: replay.active, admin, systemName: moduleName(module),
-    unacked: p.unacked, clock: time, quantity,
+    unacked: p.unacked, clock: time, quantity, driveMode: p.driveMode,
   });
   const onChip = (o: ChipOpen) => {
     if (o === "faults") p.openFaults();
     else if (o === "connection") app.openConnection();
     else if (o === "exit-replay") replay.exit();
+    else if (o === "back") p.setDriveMode(false);
     else p.goTo("logs");
   };
 
   const Destination = entry.component;
   let content: ReactNode;
   if (p.driveMode) {
+    // one screen, no page chrome (§12.3): Back is the strip's first chip, faults its telltale
     content = (
       <section className="drivemode stack" aria-label="Drive mode">
-        <button className="btn drivemode-back" onClick={() => p.setDriveMode(false)}>
-          <Icon name="arrow_back" /><span>Back</span>
-        </button>
         <Boundary key="drive" name="Drive mode"><Drive /></Boundary>
       </section>
     );

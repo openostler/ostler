@@ -4,7 +4,6 @@
 
 import { createElement } from "react";
 import { HealthStrip } from "../components/HealthStrip";
-import { ScreenHead } from "../components/ScreenHead";
 import { StatTile } from "../components/StatTile";
 import { StatusGate } from "../components/StatusGate";
 import { driveView, moduleName, tileConv } from "../layout";
@@ -16,14 +15,15 @@ import { getView } from "../vehicles/registry";
  * (layout.drive). "tiles" is generic — hero gauges and stat tiles; any other kind is a view
  * the pack registered (vehicles/registry.ts). Modules without one show a placeholder. Calm
  * when healthy; neutral/"awaiting" when undecoded. Home's vehicle card and Drive mode both
- * show it (UI spec §3.4–3.5); the roles of §5.4 replace it with the manifest in U3. */
-export function DriveBody() {
+ * show it (UI spec §3.4–3.5); the roles of §5.4 replace it with the manifest in U3. Drive mode
+ * drops the health line (`banner={false}`): the strip's telltale chip carries it (§12.3). */
+export function DriveBody({ banner = true }: { banner?: boolean } = {}) {
   const { snap, module, fields } = useApp();
   const pack = usePack();
   if (snap?.status !== "connected") return <StatusGate />;
 
   const view = driveView(module);
-  const health = view?.health ? <HealthStrip /> : null;
+  const health = banner && view?.health ? <HealthStrip /> : null;
   if (view?.kind === "tiles") {
     return (
       <>
@@ -57,12 +57,8 @@ export function VehicleCard() {
   );
 }
 
-/** Drive mode's screen: the title, then the driver's view. */
+/** Drive mode's screen: the driver's view alone, with no heading or fault banner (§12.3);
+ * the shell's strip holds Back and the worst telltale. */
 export function Drive() {
-  return (
-    <>
-      <ScreenHead title="Drive" />
-      <DriveBody />
-    </>
-  );
+  return <DriveBody banner={false} />;
 }

@@ -14,10 +14,12 @@ const vp = (width: number, height: number, finePointer = false): Viewport => ({ 
 
 describe("layout classes (UI spec §3.1)", () => {
   it("picks the class by aspect and height, not width alone", () => {
+    expect(layoutClassFor(vp(800, 480))).toBe("hu5"); // §12.3: cheap Android head units
     expect(layoutClassFor(vp(1024, 600))).toBe("hu7");
     expect(layoutClassFor(vp(1280, 720))).toBe("hu9");
     expect(layoutClassFor(vp(1280, 800))).toBe("hu9");
     expect(layoutClassFor(vp(1920, 720))).toBe("huwide"); // aspect 2.67
+    expect(layoutClassFor(vp(1280, 480))).toBe("huwide"); // aspect 2.67: wide wins over HU-5
     expect(layoutClassFor(vp(393, 852))).toBe("phone");
     expect(layoutClassFor(vp(360, 780))).toBe("phone");
     expect(layoutClassFor(vp(820, 1180))).toBe("tablet");
@@ -29,10 +31,12 @@ describe("layout classes (UI spec §3.1)", () => {
     const hu = parseKiosk("?display=headunit&side=right");
     expect(hu).toEqual({ display: "headunit", side: "right" });
     // head-unit browsers report odd sizes: the flag still yields a head-unit class
-    expect(layoutClassFor(vp(800, 480), hu)).toBe("hu7");
+    expect(layoutClassFor(vp(800, 480), hu)).toBe("hu5");
+    expect(layoutClassFor(vp(1024, 600), hu)).toBe("hu7");
     expect(layoutClassFor(vp(1280, 760), hu)).toBe("hu9");
     expect(layoutClassFor(vp(1600, 600), hu)).toBe("huwide");
     expect(layoutClassFor(vp(393, 852), parseKiosk("?display=huwide"))).toBe("huwide");
+    expect(layoutClassFor(vp(1024, 600), parseKiosk("?display=hu5"))).toBe("hu5");
     expect(parseKiosk("?display=tv&side=up")).toEqual({ display: null, side: null });
   });
 
@@ -51,10 +55,10 @@ describe("layout classes (UI spec §3.1)", () => {
     expect(railSide({ display: null, side: null }, odd.driver_side)).toBe("left");
   });
 
-  it("has a rail on every class but the phone, and three head-unit classes", () => {
-    expect(["hu7", "hu9", "huwide", "tablet", "desktop"].every((c) => hasRail(c as never))).toBe(true);
+  it("has a rail on every class but the phone, and four head-unit classes", () => {
+    expect(["hu5", "hu7", "hu9", "huwide", "tablet", "desktop"].every((c) => hasRail(c as never))).toBe(true);
     expect(hasRail("phone")).toBe(false);
-    expect(["hu7", "hu9", "huwide"].every((c) => isHeadUnit(c as never))).toBe(true);
+    expect(["hu5", "hu7", "hu9", "huwide"].every((c) => isHeadUnit(c as never))).toBe(true);
     expect(isHeadUnit("desktop")).toBe(false);
   });
 });
@@ -107,7 +111,16 @@ describe("the status strip as data (§3.2)", () => {
     });
     expect(ids(busy)).toEqual(["admin", "telltale", "link", "rec", "battery", "clock", "mark"]);
     expect(ids({ ...busy, layout: "phone" })).toEqual(["admin", "telltale", "link", "rec", "mark"]);
+    expect(ids({ ...busy, layout: "hu5" })).toEqual(["admin", "telltale", "link", "rec", "clock", "mark"]); // §12.3
     expect(ids(input())).toEqual(["link", "clock", "mark"]); // calm when healthy: no telltale, no 12 V unknown
+  });
+
+  it("leads with Back in Drive mode, on every class (§12.3)", () => {
+    for (const layout of ["hu5", "hu7", "huwide", "phone"] as const) {
+      const [back] = stripChips(input({ layout, driveMode: true }));
+      expect(back).toMatchObject({ id: "back", kind: "button", icon: "arrow_back", word: "Back", label: "Back", open: "back" });
+    }
+    expect(ids(input())).not.toContain("back");
   });
 
   it("makes the worst telltale red for a current fault, amber for logged ones, with a count", () => {

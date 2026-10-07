@@ -9,11 +9,11 @@ import { useEffect, useState } from "react";
  * flag `?display=headunit&side=left|right` overrides detection, because head-unit browsers
  * report odd DPIs; `?display=<class>` names one class outright (tests, odd screens).
  */
-export type LayoutClass = "hu7" | "hu9" | "huwide" | "phone" | "tablet" | "desktop";
-export const LAYOUT_CLASSES: readonly LayoutClass[] = ["hu7", "hu9", "huwide", "phone", "tablet", "desktop"];
+export type LayoutClass = "hu5" | "hu7" | "hu9" | "huwide" | "phone" | "tablet" | "desktop";
+export const LAYOUT_CLASSES: readonly LayoutClass[] = ["hu5", "hu7", "hu9", "huwide", "phone", "tablet", "desktop"];
 export type Side = "left" | "right";
 
-export const HEAD_UNIT: readonly LayoutClass[] = ["hu7", "hu9", "huwide"];
+export const HEAD_UNIT: readonly LayoutClass[] = ["hu5", "hu7", "hu9", "huwide"];
 export const isHeadUnit = (c: LayoutClass): boolean => HEAD_UNIT.includes(c);
 /** Every class but the phone has a rail; the phone has the bottom bar (§3.3). */
 export const hasRail = (c: LayoutClass): boolean => c !== "phone";
@@ -21,13 +21,15 @@ export const hasRail = (c: LayoutClass): boolean => c !== "phone";
 export type Viewport = { width: number; height: number; finePointer: boolean };
 export type Kiosk = { display: "headunit" | LayoutClass | null; side: Side | null };
 
-/** The head-unit class for a landscape screen: by aspect, then height. */
+/** The head-unit class for a landscape screen: by aspect, then height (HU-5 is §12.3's
+ * 800×480 class: cheap Android head units). */
 function headUnitClass(width: number, height: number): LayoutClass {
   if (width / Math.max(1, height) >= 2.4) return "huwide";
+  if (height <= 520) return "hu5";
   return height <= 640 ? "hu7" : "hu9";
 }
 
-/** The layout class for a viewport (spec §3.1 table, top to bottom). */
+/** The layout class for a viewport (spec §3.1 table, top to bottom, with §12.3's HU-5). */
 export function layoutClassFor(v: Viewport, kiosk: Kiosk = { display: null, side: null }): LayoutClass {
   const { width, height } = v;
   if (kiosk.display === "headunit") return headUnitClass(width, height);
@@ -35,6 +37,7 @@ export function layoutClassFor(v: Viewport, kiosk: Kiosk = { display: null, side
   const landscape = width > height;
   if (landscape && width / Math.max(1, height) >= 2.4) return "huwide";
   if (!landscape && width < 600) return "phone";
+  if (landscape && height <= 520) return "hu5";
   if (landscape && height <= 640) return "hu7";
   if (landscape && height <= 800) return "hu9";
   if (width >= 1200 && v.finePointer) return "desktop";
