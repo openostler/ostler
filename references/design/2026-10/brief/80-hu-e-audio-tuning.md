@@ -2,7 +2,7 @@
 title: "Designer brief 80-e — Audio app: crossover, time alignment, subwoofer, volume rules and system sounds"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-phone-comms-addon-design.md]
 summary: >
@@ -17,12 +17,11 @@ summary: >
 
 # 80-e — Audio tuning, volume rules and system sounds
 
-Same reason as [80-d](80-hu-d-audio.md): no approved spec covers the Audio app, so these
-pages are Proposed. All tuning pages are **Parked only** on driver-facing displays.
+The approved head-unit apps spec covers these pages ([head-unit apps §4][hu-4]), so they
+are New, except System sounds. Crossover and time alignment come later, with multichannel
+hardware (decided, item 37); v1 is a software DSP on the Brain. All tuning pages are **Parked only** on driver-facing displays.
 
-### audio-crossover — Crossover  [Proposed]
-- **Why the app needs it:** protects small door speakers and hands bass to the subwoofer;
-  every DSP unit has it.
+### audio-crossover — Crossover  [New]
 - **Purpose:** set high-pass and low-pass filters per output channel.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Crossover; `audio-setup-channels`. Back.
@@ -44,11 +43,10 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
   back, so a wrong filter cannot blast a speaker.
 - **Components:** CurveEditor (new component), Slider (new component), Segmented, Toggle
   (new component), ListRow.
-- **Spec refs:** [visual §8][vds-8] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [visual §8][vds-8] · [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-time-alignment — Time alignment  [Proposed]
-- **Why the app needs it:** in a car the near speaker arrives first; delay fixes the image.
+### audio-time-alignment — Time alignment  [New]
 - **Purpose:** delay each speaker so sound arrives together at one listening position.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Time alignment; `audio-balance-fade` → Tune
@@ -71,12 +69,11 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
 - **Safety and driving rules:** Parked only; test sounds at a capped level (−20 dBFS).
 - **Components:** Segmented, SeatMap (new component), ListRow, TextField (new component),
   Button.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** should Ostler hold measured speaker distances per vehicle in the
   pack's profile (D2 doors) as a starting point? Only with real measurements.
 
-### audio-subwoofer — Subwoofer  [Proposed]
-- **Why the app needs it:** the sub has its own level, phase and filter on every DSP unit.
+### audio-subwoofer — Subwoofer  [New]
 - **Purpose:** blend the subwoofer with the main speakers.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Subwoofer. Back.
@@ -90,12 +87,10 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
   sub level is not a Moving control.
 - **Safety and driving rules:** Parked only.
 - **Components:** Toggle (new component), Slider (new component), Segmented.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-volume-rules — Volume rules  [Proposed]
-- **Why the app needs it:** speed volume, ducking and safe start-up volume are expected and
-  matter for safety (navigation voice must be heard).
+### audio-volume-rules — Volume rules  [New]
 - **Purpose:** set how volume behaves on its own.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Volume rules; `radio-settings` → TA volume.
@@ -108,7 +103,7 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
      speed when proven).
   2. **Start-up volume:** Toggle "Limit volume at start-up" with a Slider (level 12 of 40).
   3. **Maximum volume** Slider.
-  4. **Per-source levels:** Radio, Media, Bluetooth, Projection, AUX, each ±6 dB, so a
+  4. **Per-source levels:** Radio, Media, Bluetooth, AUX, each ±6 dB, so a
      switch does not jump.
   5. **Ducking:** "Navigation voice lowers media by" Segmented 6 · 12 · 20 dB · Pause;
      "Calls" Segmented Pause · Lower 20 dB; "Message read-out" Segmented Pause · Lower.
@@ -122,7 +117,7 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
   below an audible floor.
 - **Components:** Segmented, Slider (new component), Toggle (new component), area line chart
   (visual §8), Button.
-- **Spec refs:** [visual §8][vds-8] · [Phone §3][pc-3] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [visual §8][vds-8] · [Phone §3][pc-3] · [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
 ### audio-system-sounds — System sounds  [Proposed]
@@ -157,3 +152,4 @@ pages are Proposed. All tuning pages are **Parked only** on driver-facing displa
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
 [pc-3]: ../../../../specs/2026-10-07-phone-comms-addon-design.md#3-architecture
+[hu-4]: ../../../../specs/2026-10-07-head-unit-apps-design.md#4-audio

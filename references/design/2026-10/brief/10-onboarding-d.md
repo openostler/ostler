@@ -2,12 +2,12 @@
 title: "Designer brief 10-d — onboarding: choose your apps, this display, people and the Car profile, app access, phone, the summary and the checklist"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-phone-comms-addon-design.md]
 summary: >
   Fourth onboarding brief file. Choose your apps (a product flavour: Diagnostics, Guardian,
-  Head unit or Custom, installed from the bundled Store catalogue), the access sheet each
+  Ostler Brain or Custom, installed from the bundled Store catalogue), the access sheet each
   app shows before install (needs, data classes, permissions), registering a head unit or
   other display (name, layout class, driver side, whether the driver can see it, buttons),
   the people who use the car and the Car kiosk profile, the Phone app's pairing as its own
@@ -17,11 +17,8 @@ summary: >
 
 # 10-d — Apps, display, people, Car profile, phone, summary and checklist
 
-### setup-display — This screen  [Proposed]
+### setup-display — This screen  [New]
 - **Owner:** os
-- **Why the app needs it:** the specs give each display an entry in the install
-  configuration (its id, bindings, driver-facing or passenger-only, its home pages),
-  but no screen creates that entry; a new head unit must get one before its first drive.
 - **Purpose:** register this display once: name, size class, driver side, who can see it.
 - **Opens from → goes to:** F1 step 9; a new display opening the Brain for the first time
   (shown once, Parked); Settings → Network → the display's page → **Display settings**. →
@@ -53,7 +50,7 @@ summary: >
   ([Drive modes §8.1 R7][dm-8.1]).
 - **Components:** SetupStepper (new), text field, Segmented, ListRow, Sheet, Button.
 - **Spec refs:** [UI §3.1][ui-3.1] · [UI §12.1][ui-12.1] · [Shell input §8][si-8] ·
-  [Drive modes §8.3][dm-8.3] · [Drive modes §5.9][dm-5.9].
+  [Drive modes §8.3][dm-8.3] · [Drive modes §5.9][dm-5.9] · [launcher §10.2][lw-10.2].
 - **Open questions:** (1) The Car kiosk session is bound to `localhost`, never an IP range
   ([Accounts §14.7 S4][acc-14.7]). A head unit that browses the Brain over Wi-Fi (an Android
   head unit) is not `localhost`: how does it get the Car session? (2) Is "Passengers only"
@@ -113,10 +110,8 @@ summary: >
   · [Drive modes §8.3][dm-8.3].
 - **Open questions:** none.
 
-### setup-apps — Choose your apps  [Proposed]
+### setup-apps — Choose your apps  [New]
 - **Owner:** os
-- **Why the app needs it:** Ostler is an OS with no apps; on a bare install nothing reads
-  the car or shows a gauge until apps are installed, so first run must install a set.
 - **Purpose:** pick a product flavour, which preinstalls its apps from the Store catalogue
   bundled with the OS (no internet needed); Custom picks app by app.
 - **Opens from → goes to:** F1 step 4 (after owner creation); → `setup-app-access` for each
@@ -128,11 +123,14 @@ summary: >
   2. Four flavour Cards (one selected, `accent-soft`), each with an icon, name, one line and
      its app list in Chips:
      - `build` **Diagnostics** "Read and clear faults, live data, trips." Apps: Diagnostics,
-       Trips, Starter widgets, Default theme.
-     - `shield` **Guardian** "Alarm and tracking only." Apps: Security.
-     - `dashboard` **Head unit** "The car's screen: gauges, map, media, phone." Apps:
-       Diagnostics, Trips, Map, Navigation, Media, Radio, Audio, Phone, Camera, Starter
-       widgets, Default theme.
+       Trips, Security, Starter widgets, Default theme.
+     - `shield` **Guardian** "Alarm and tracking only." Apps: Security (with its widgets),
+       Default theme.
+     - `dashboard` **Ostler Brain** "The car's screen: gauges, map, media." Apps:
+       Diagnostics, Trips, Security, Map, Media, Audio, Starter widgets, Default theme;
+       Camera when a camera is found, Radio when a tuner is found. One unticked option under
+       it: "Ostler is the head unit (Radio, Audio and Media drive the speakers)"; offered,
+       never the default (item 55).
      - `tune` **Custom** "Pick each app."
   3. Custom only: the bundled catalogue as ListRows with a check each (name, one line,
      size), grouped "Car", "Drive and travel", "Media and calls", "Look and feel".
@@ -148,10 +146,13 @@ summary: >
   head units ([UI §12.4][ui-12.4]); safety items stay with the OS whatever is installed
   (the fault telltale and alarm alerts appear even with no app).
 - **Components:** SetupStepper (new), Card (selectable), Chip, ListRow, progress rows, Button.
-- **Spec refs:** [App model §14][am-14] · [UI §12.4][ui-12.4] · owner direction of
-  2026-10-07 (Ostler as an OS; flavours as preinstalled app sets).
-- **Open questions:** the exact app list of each flavour (the brief's lists are a proposal,
-  except Guardian = Security only, which the owner set).
+- **Spec refs:** [App model §14][am-14] · [UI §12.4][ui-12.4] · [ADR-0046 §5][adr-46-5] ·
+  [Store §7][st-7].
+- **Open questions:** **Decided (items 11, 41, 43):** Diagnostics = Diagnostics, Trips,
+  Security, starter widgets, default theme; Guardian = Security and its widgets, default
+  theme; Ostler Brain = those plus Map, Media and Audio, with Camera and Radio when their
+  hardware is found. **Decided (item 55):** "Ostler is the head unit" is offered, not the
+  default.
 
 ### setup-app-access — Review an app's access  [New]
 - **Owner:** os
@@ -250,3 +251,6 @@ summary: >
 [ui-4.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#45-the-connection-ladder
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
+[lw-10.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#102-the-wizard
+[adr-46-5]: ../../../../decisions/adr-0046-empty-os-every-app-an-add-on.md#5-product-flavours-are-preinstalled-sets-amends-adr-0039
+[st-7]: ../../../../specs/2026-10-07-store-design.md#7-the-bundled-offline-catalogue

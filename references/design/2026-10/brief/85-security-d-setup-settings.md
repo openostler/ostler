@@ -2,7 +2,7 @@
 title: "Designer brief 85-d — Security app: setup flow, notification channels and settings"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-02-gps-tracker-alarm-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md]
 summary: >
@@ -34,10 +34,8 @@ Main page: [85-a](85-security-a-main.md). Every step is drawn in the OS's setup 
 Parked only on driver-facing displays; it runs best on the phone, at the car. Cancel at any
 step leaves the app with a "Set-up not finished" Card on `security`.
 
-### security-setup-welcome — Set up Security  [Proposed]
+### security-setup-welcome — Set up Security  [New]
 - **Owner:** app:security
-- **Why the app needs it:** every app brings its own setup (owner direction of 2026-10-07);
-  the owner must learn early that Ostler's alarm has no siren and no locks.
 - **Purpose:** say what Security will and won't do, then start.
 - **Opens from → goes to:** first open of Security; first run of the Guardian flavour
   (`setup-apps` in 10-onboarding-d); App info → Run setup again. Goes to `hw-alarm-setup`.
@@ -57,13 +55,11 @@ step leaves the app with a "Set-up not finished" Card on `security`.
 - **States:** no device (Start disabled, reason shown); loading; Moving: locked view.
 - **Safety and driving rules:** setup is an owner operation, Parked ([UI §12.1][ui-121]).
 - **Components:** Wizard frame, ListRow, Card, Button.
-- **Spec refs:** [ADR-0033 §7][a33-7] · [ADR-0039 §1][a39] (Guardian) · [UI §6][ui-6].
+- **Spec refs:** [ADR-0033 §7][a33-7] · [ADR-0039 §1][a39] (Guardian) · [UI §6][ui-6] · [app UI model §4][ua-4].
 - **Open questions:** none.
 
-### security-setup-done — Security is ready  [Proposed]
+### security-setup-done — Security is ready  [New]
 - **Owner:** app:security
-- **Why the app needs it:** the owner should leave setup knowing what is guarded and what is
-  not, and be offered the first arm.
 - **Purpose:** summary and first arm.
 - **Opens from → goes to:** step 5 → here. Goes to `security` or `security-arm-sheet`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -79,7 +75,7 @@ step leaves the app with a "Set-up not finished" Card on `security`.
 - **States:** a step skipped shows `warn` rows ("Walk test skipped"); Moving: locked.
 - **Safety and driving rules:** as the arm sheet when **Arm now** is chosen.
 - **Components:** Wizard frame, ListRow, Chip (status), Button.
-- **Spec refs:** [Drive modes §8.1][dm-81] (the alarm status widget is a safety item).
+- **Spec refs:** [Drive modes §8.1][dm-81] (the alarm status widget is a safety item) · [app UI model §4][ua-4].
 - **Open questions:** none.
 
 ### security-channels — Where alerts go  [New]
@@ -119,10 +115,8 @@ step leaves the app with a "Set-up not finished" Card on `security`.
 - **Open questions:** must at least one channel pass a test before arming is allowed, or is
   the banner enough?
 
-### security-settings — Security settings  [Proposed]
+### security-settings — Security settings  [New]
 - **Owner:** app:security
-- **Why the app needs it:** each app brings its own options pages (owner direction of
-  2026-10-07); arming defaults, retention and modes need one home.
 - **Purpose:** the app's own options.
 - **Opens from → goes to:** `security` overflow → Settings; App info → Options (90-appframe
   files). Goes to `hw-alarm-setup`, `hw-tracker`, `security-channels`, `security-geofences`,
@@ -138,8 +132,10 @@ step leaves the app with a "Set-up not finished" Card on `security`.
   4. **Tracker** → `hw-tracker`; **Geofences** → `security-geofences`; **Tow and theft mode**
      → `security-tow-mode`.
   5. **Who can arm and disarm**: read-only list from roles ("Owner, Driver: arm and disarm ·
-     Viewer: see state"), link "Change in Users" (system Settings).
-  6. **Remote**: line "Remote arm and disarm: allowed for people with Security · logged";
+     Viewer: see state"), link "Change in Users" (system Settings); a fixed line "Disarm
+     works only when parked" (item 59).
+  6. **Remote**: line "Remote arm and disarm: allowed for people with Security · logged ·
+     disarm asks for a fresh passkey" (item 60);
      "Remote control override: off · set only in the install configuration" (read-only).
   7. **Keep events**: 30 days · 90 days · 1 year; **Clear event history** (danger, typed
      confirm, Parked).
@@ -149,7 +145,7 @@ step leaves the app with a "Set-up not finished" Card on `security`.
 - **Safety and driving rules:** Park to change; the override is never settable here
   ([ADR-0033 §6][a33-6]); clearing history is an owner operation with undo for 7 days.
 - **Components:** ListRow, Segmented, Toggle, Button (danger), Text field (typed confirm).
-- **Spec refs:** [ADR-0033 §2][a33-2] · [ADR-0033 §6][a33-6] · [UI §3.4][ui-34].
+- **Spec refs:** [ADR-0033 §2][a33-2] · [ADR-0033 §6][a33-6] · [UI §3.4][ui-34] · [app UI model §5][ua-5].
 - **Open questions:** "Remind me to arm" needs a decoded lock signal; on the D2 the fob tap is
   not identified yet, so the row may be absent at first.
 
@@ -163,3 +159,5 @@ step leaves the app with a "Set-up not finished" Card on `security`.
 [ui-34]: ../../../../specs/2026-10-06-ui-architecture-design.md#34-five-destinations
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [ui-121]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

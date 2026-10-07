@@ -2,18 +2,19 @@
 title: "Designer brief 80-a — head-unit apps: the feature map and the shared rules"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-06-platform-direction-design.md, references/research/driver_distraction_rules.md, references/research/canbus_headunit.md, references/research/hardware.md]
 summary: >
   First of the head-unit apps brief (80-a to 80-m). The owner's direction of 2026-10-07 says
   Ostler must do everything a modern aftermarket head unit does. This file maps every standard
   head-unit page and feature (Android units, Pioneer, Kenwood, Alpine) to the Ostler app that
-  owns it: Radio, Audio, Media, Camera, Clock, Weather, Voice, Projection, steering-wheel
-  controls, climate, pack vehicle settings and system sounds. It sets the rules every head-unit
+  owns it: Radio, Audio, Media, Camera, Clock and Weather (starter widget pack), Voice,
+  projection (not built), steering-wheel controls, climate, pack vehicle settings and system
+  sounds. It sets the rules every head-unit
   app shares: the `media` Moving template, Parked-only long lists and video, the audio path
-  from the Brain, who owns what (app or OS), and why nearly every screen is Proposed. It lists
-  the files that follow.
+  from the Brain, who owns what (app or OS), and which screens the approved head-unit apps
+  spec covers (New) and which stay Proposed. It lists the files that follow.
 ---
 
 # 80-a — Head-unit apps: feature map and shared rules
@@ -29,24 +30,26 @@ settings · [80-k](80-hu-k-clock-weather.md) Clock and Weather ·
 [80-l](80-hu-l-voice-swc.md) Voice and steering-wheel controls ·
 [80-m](80-hu-m-projection-vehicle.md) Projection, climate, pack vehicle settings.
 
-## Why almost every screen here is Proposed
+## Why most screens here are New
 
-The approved UI spec lists media, CarPlay and Android Auto, radio and wheel controls as
+The approved UI spec listed media, CarPlay and Android Auto, radio and wheel controls as
 **non-goals** that "stay on a media head unit" ([UI §1][ui-1]); the platform direction says
-"keep a head unit for media" ([platform direction][pd]). The owner's direction of
-2026-10-07 reverses that: Ostler is an Android-style OS, and it must replicate a modern
-head unit. No approved spec covers these apps yet, so their screens are **Proposed**. Only
-a few things are already approved and are tagged **New**: the `media` Moving template
-([UI §12.1][ui-12.1]), the now-playing widget from a media source app
-([Drive modes §5.6][dm-5.6], [Drive modes §9][dm-9]; listed in 80-h) and the `camera_live` template for
-reverse and low-speed cameras ([App model §4.4][am-4.4]), and the climate device page ([UI §6][ui-6]). Each app needs a platform spec
-before build work; this brief is the UX for those specs.
+"keep a head unit for media" ([platform direction][pd]). The owner reversed that on
+2026-10-07 (ADR-0046) and approved the **head-unit apps spec**, which maps every standard
+head-unit page to an app ([head-unit apps §2][hu-2]). Screens that spec covers are **New**.
+Still **Proposed**: projection, which is **not built** (decided, item 38): owners keep a
+projection-capable head unit beside Ostler ([head-unit apps §11][hu-11]); and the pages
+the spec leaves out, each block says why. Already approved before: the `media` Moving
+template ([UI §12.1][ui-12.1]), the now-playing widget ([Drive modes §5.6][dm-5.6],
+[Drive modes §9][dm-9]), the `camera_live` template ([App model §4.4][am-4.4]) and the
+climate device page ([UI §6][ui-6]).
 
 **Two install shapes.** Every head-unit app asks once, in its setup flow, which shape the car
 has: **"Ostler is the head unit"** (the Brain makes the sound, tunes the radio and draws the
 cameras) or **"Ostler sits beside my head unit"** (the old unit keeps media; Ostler shows
-now playing where it can and hides the rest). This mirrors Phone's "Ostler is the
-hands-free" choice ([Phone §3][pc-3]).
+now playing where it can and hides the rest). "Ostler is the head unit" is offered, never
+the default (decided, item 55). This mirrors Phone's "Ostler is the hands-free" choice
+([Phone §3][pc-3]).
 
 ## Feature map: every standard head-unit page, mapped to an app
 
@@ -85,17 +88,17 @@ hands-free" choice ([Phone §3][pc-3]).
 | Front and underbody cameras (off-road) | app:camera | `camera-offroad` |
 | Multi-camera view (360-style grid) | app:camera | `camera-multi` (Parked) |
 | Dashcam and recording | app:camera | `camera-dashcam` |
-| Clock, alarm, timer | app:clock | `clock-page`, `clock-alarm-ring` |
-| Weather | app:weather | `weather-page` |
-| Voice assistant, push-to-talk | app:voice | `voice-assistant` |
+| Clock, alarm, timer | app:widgets-starter (item 53) | `clock-page`, `clock-alarm-ring` |
+| Weather | app:widgets-starter (item 53) | `weather-page` |
+| Voice assistant, push-to-talk | app:voice (local-first, item 54) | `voice-assistant` |
 | Steering-wheel control learning | os (input) | `swc-adapter`, `swc-learn`, `swc-assign` |
-| Android Auto and CarPlay | app:projection | `projection-setup`, `projection-session` |
+| Android Auto and CarPlay | not built (item 38): keep a projection head unit | `projection-setup` (information only) |
 | Climate screen | os template, pack or device data | `climate-panel` |
-| Car settings (doors, lights, suspension) | os page, pack data | `vehicle-settings-pack` |
+| Car settings (doors, lights, suspension) | a Car app, later (item 40); pack data | `vehicle-settings-pack` |
 | Phone (hands-free, contacts) | app:phone | Phone pages exist (`phone-page` and siblings) |
 | Navigation | app:navigation | Navigation pages exist (`nav-page` and siblings) |
 | Launcher, wallpaper, widgets, themes | os | the launcher brief (45-launcher files) |
-| App store | app:store | the Store brief (70-store files) |
+| App store | os (the Store, a system app) | the Store brief (70-store files) |
 | Factory settings, CAN-box car model | os | outside these apps; CAN-box emulator is a device |
 
 Every app also has an **App info** page in system Settings (the app framework brief,
@@ -145,13 +148,12 @@ power board, with a DAC ([hardware research][hw]).
 
 ## Open questions (whole set)
 
-1. App names for the owner line: this brief uses `app:clock`, `app:weather`, `app:voice` and
-   `app:projection`, which are not in the agreed list. Fold Clock and Weather into the starter
-   widget pack instead?
-2. Voice control is a non-goal in the approved shell input spec ([shell input §1][si-1]).
-   The Voice app needs that non-goal lifted by the owner.
-3. Should "Ostler is the head unit" become the default for new installs, or stay opt-in
-   while the platform direction still says "keep a head unit for media"?
+1. **Decided (item 53):** Clock and Weather are part of the starter widget pack; their
+   pages have the owner `app:widgets-starter`. `app:voice` stays an app (item 54);
+   `app:projection` does not exist, since projection is not built (item 38).
+2. **Decided (item 54):** voice control is allowed; the input spec's non-goal is lifted,
+   and the assistant is local-first, later.
+3. **Decided (item 55):** "Ostler is the head unit" is offered, not the default.
 
 [ui-1]: ../../../../specs/2026-10-06-ui-architecture-design.md#1-context-and-goals
 [ui-3.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#35-drive-mode-driving-states-and-service-mode
@@ -169,3 +171,5 @@ power board, with a DAC ([hardware research][hw]).
 [dd-3.2]: ../../../research/driver_distraction_rules.md#32-numbers-and-lockouts
 [hw]: ../../../research/hardware.md#development-kit-recommended-parts-250-plus-the-pi
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
+[hu-2]: ../../../../specs/2026-10-07-head-unit-apps-design.md#2-every-standard-page-mapped
+[hu-11]: ../../../../specs/2026-10-07-head-unit-apps-design.md#11-projection-android-auto-carplay-open

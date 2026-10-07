@@ -2,7 +2,7 @@
 title: "Designer brief: hardware (b) — node install guides per bus (OBD port, D2 K-line, CAN, Brain link)"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-02-hardware-platform-design.md, specs/2026-10-06-kline-profiles-detection-design.md, specs/2026-10-02-canbus-and-fast-signals-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0023-passive-can-bitrate-detection.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, references/research/hardware.md, references/research/node_sensors.md]
 summary: >
@@ -103,8 +103,8 @@ Variants (same six screens, different cards and checks):
 - **Components:** WiringDiagramCard (new component), Stepper (new component), Button.
 - **Spec refs:** [Hardware platform: K-line front end][hp-k] (draft), [Node sensors §7][nsr7],
   [ADR-0039][a39].
-- **Open questions:** the D2 socket location and its fuse number are not recorded; the
-  owner should confirm them on the car before the cards ship.
+- **Open questions:** **Decided (item 65):** the D2's diagnostic socket location and its
+  fuse are first car checks; the cards ship only after the owner confirms them on the car.
 
 ### hw-install-power — Fuse and power check  [Proposed]
 - **Owner:** os

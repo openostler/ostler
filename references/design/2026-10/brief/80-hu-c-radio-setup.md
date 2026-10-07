@@ -2,7 +2,7 @@
 title: "Designer brief 80-c — Radio app: first-run setup (tuner, antenna, scan), settings and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, references/research/hardware.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -17,8 +17,9 @@ summary: >
 
 # 80-c — Radio setup, settings and widgets
 
-**Why these pages are Proposed:** the Radio app has no approved spec (see
-[80-a](80-hu-a-overview.md)); a tuner is new hardware on the Brain and needs a guided setup.
+**Spec:** the approved head-unit apps spec covers the Radio app and its tuner
+([head-unit apps §3][hu-3]); its setup is an OS-drawn setup flow ([app UI model §4][ua-4]).
+A tuner is new hardware on the Brain and needs a guided setup.
 The App info page and "Run setup again" belong to the app framework (90-appframe files).
 
 ## Setup flow (first run)
@@ -33,8 +34,7 @@ The App info page and "Run setup again" belong to the app framework (90-appframe
 The flow is Parked only on driver-facing displays; it can run on a phone linked to the car.
 Each step has **Back**, **Next** and **Set up later** (the app opens with a setup Card).
 
-### radio-setup-tuner — Setup 1: pick the tuner  [Proposed]
-- **Why the app needs it:** the radio needs real tuner hardware on the Brain; units differ.
+### radio-setup-tuner — Setup 1: pick the tuner  [New]
 - **Purpose:** find the tuner and confirm which bands it can receive.
 - **Owner:** app:radio
 - **Opens from → goes to:** first open of Radio; `radio-settings` → Tuner → Change;
@@ -44,8 +44,9 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
 - **Content (top to bottom):**
   1. StepProgress "1 of 3 · Tuner".
   2. "Found on the Brain" ListRows, each with the bands as Chips:
+     - "Si468x tuner HAT · I²C" — FM, DAB (AM only on chips that have it); listed first,
+       the first tuner path (item 36).
      - "USB DAB stick · software decoding" — DAB, FM ("AM needs extra hardware").
-     - "Si468x tuner HAT · I²C" — FM, DAB (AM only on chips that have it).
   3. Help Card "No tuner? Ostler needs a USB DAB stick or a tuner HAT on the Brain. The car's
      old radio stays separate." with **Show options** (opens the Store, 70-store files).
   4. **Install shape** reminder: "Ostler is the head unit" (set in Audio setup) with
@@ -56,12 +57,11 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
   Moving: locked view.
 - **Safety and driving rules:** Parked only; touches no vehicle bus.
 - **Components:** StepProgress (new component), ListRow, Chip, Card, Button.
-- **Spec refs:** [UI §6][ui-6] · [hardware research][hw].
-- **Open questions:** which tuner HAT to list first; the hardware research names none yet.
+- **Spec refs:** [UI §6][ui-6] · [hardware research][hw] · [head-unit apps §3][hu-3] · [app UI model §4][ua-4].
+- **Open questions:** **Decided (item 36):** an Si468x-based HAT or module comes first (DAB+
+  decoded in hardware); a USB SDR dongle is the second option.
 
-### radio-setup-antenna — Setup 2: antenna check  [Proposed]
-- **Why the app needs it:** bad reception is the top radio complaint; a check at setup
-  separates antenna faults from tuner faults.
+### radio-setup-antenna — Setup 2: antenna check  [New]
 - **Purpose:** prove the antenna works with a live signal reading.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-setup-tuner`; `radio-settings` → Antenna check;
@@ -83,12 +83,12 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
   at all: "No signal on any band"; Moving: locked view.
 - **Safety and driving rules:** Parked only; read only.
 - **Components:** StepProgress (new component), StatTile, Card, Button.
-- **Spec refs:** [hardware research][hw].
-- **Open questions:** the D2's original aerial and its amplifier feed: confirm on the car
-  before writing the checklist's D2 line.
+- **Spec refs:** [hardware research][hw] · [head-unit apps §3][hu-3] · [app UI model §4][ua-4].
+- **Open questions:** **Decided (item 65):** the D2's original aerial and its amplifier feed
+  are first car checks; the checklist's D2 line is written only after the owner confirms
+  them on the car.
 
-### radio-setup-scan — Setup 3: region and first scan  [Proposed]
-- **Why the app needs it:** band plans and DAB blocks differ by country.
+### radio-setup-scan — Setup 3: region and first scan  [New]
 - **Purpose:** set the region and fill the station list.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-setup-antenna`; `radio-stations` → Scan again. Goes to
@@ -109,11 +109,10 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
   briefly and never runs while a call or navigation prompt is playing.
 - **Components:** StepProgress (new component), ListRow, Chip, Toggle (new component),
   ProgressRow (new component), Button.
-- **Spec refs:** [UI §3.5][ui-3.5].
+- **Spec refs:** [UI §3.5][ui-3.5] · [head-unit apps §3][hu-3] · [app UI model §4][ua-4].
 - **Open questions:** none.
 
-### radio-settings — Radio settings  [Proposed]
-- **Why the app needs it:** RDS and DAB options need one home outside system Settings.
+### radio-settings — Radio settings  [New]
 - **Purpose:** the Radio app's own options.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-now-playing` → Settings; App info → Settings. Goes to the
@@ -121,7 +120,8 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night; phone Day.
 - **Content (top to bottom):**
-  1. **Traffic** section: Toggle "Traffic announcements (TA)" (on); "TA volume" link to
+  1. **Traffic** section: Toggle "Traffic announcements (TA)" (off by default,
+     [head-unit apps §3][hu-3]); "TA volume" link to
      `audio-volume-rules`; Toggle "Also news bulletins" (off).
   2. **Following:** Toggle "Follow the station on other frequencies (AF)" (on); Toggle
      "Stay on regional variant (REG)" (on); Toggle "Switch DAB to FM when DAB drops" (on).
@@ -138,7 +138,7 @@ Each step has **Back**, **Next** and **Set up later** (the app opens with a setu
 - **Safety and driving rules:** Park to edit ([Drive modes §8.1][dm-8.1]); no option can
   make RadioText scroll or show while Moving.
 - **Components:** ListRow, Toggle (new component), Segmented, Button.
-- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1] · [head-unit apps §3][hu-3] · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 ## Radio widgets (in the widget picker gallery)
@@ -162,3 +162,6 @@ for widget setup are in `drive-widget-settings-addon`.
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [hw]: ../../../research/hardware.md#development-kit-recommended-parts-250-plus-the-pi
+[hu-3]: ../../../../specs/2026-10-07-head-unit-apps-design.md#3-radio
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

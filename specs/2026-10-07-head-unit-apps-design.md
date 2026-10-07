@@ -44,12 +44,12 @@ setups stay supported:
 | Streaming | Media app | `ostler-app-media` | later; services an open legal point |
 | Phone | Phone app (Phone & Comms) | `ostler-app-phone` | per [its spec](2026-10-07-phone-comms-addon-design.md) |
 | Navigation | Navigation app | `ostler-app-navigation` | per [its spec](2026-10-07-navigation-addon-design.md) |
-| Reverse camera | OS reverse view + Camera app | `ostler`, `ostler-app-cameras` | v1 |
-| Other cameras, dashcam | Camera app | `ostler-app-cameras` | later |
+| Reverse camera | OS reverse view + Camera app | `ostler`, `ostler-app-camera` | v1 |
+| Other cameras, dashcam | Camera app | `ostler-app-camera` | later |
 | Car settings | Car app | `ostler-app-car` | later (needs packs that declare settings) |
 | Climate | Climate app | `ostler-app-climate` | later |
 | Steering-wheel controls | OS input | `ostler` | v1 for pack and HID sources; resistor ladders later |
-| Clock | starter widget + OS time | `ostler-starter` | v1 |
+| Clock | starter widget + OS time | `ostler-widgets-starter` | v1 |
 | Weather | Weather app | `ostler-app-weather` | later |
 | Voice assistant | Voice app | `ostler-app-voice` | later |
 | Projection (Android Auto, CarPlay) | open (§11) | — | not planned |

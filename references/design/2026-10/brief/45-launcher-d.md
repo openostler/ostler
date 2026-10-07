@@ -2,7 +2,7 @@
 title: "Designer brief 45-d — launcher: the widget picker gallery and the widget setup frame, style picker and data-source picker"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -35,12 +35,12 @@ the locked view with **Open on phone** (40-drive-b; [Drive modes §8.1][dm-8.1] 
 - **Content (top to bottom):**
   1. **Search** "Search widgets" (by name, app or signal: "boost" finds Analogue gauge and
      Bar gauge preset to Turbo pressure).
-  2. **Tabs:** **By app** · **By signal** (the By signal tab is proposed in 40-drive-d).
+  2. **Tabs:** **By app** · **By signal** (the By signal tab is approved, item 47; 40-drive-d).
   3. **Groups by app**, A to Z, each a collapsible row with the app icon, name and count:
      **System** first (2, drawn by the OS: Warning lights, Alarm status), then **Camera**
      (1), **Map** (1), **Maintenance** (1: Service due), **Media** (1: Now playing),
      **Navigation** (1: Next turn), **Phone** (2: Favourites, Recent calls), **Radio** (1),
-     **Social** (2: Push to talk, Ride status), **Starter widgets** (16), **Trips** (2: Trip
+     **Social** (2: Push to talk, Ride status), **Starter widgets** (16, with Clock and Weather, item 53), **Trips** (2: Trip
      computer, Last trip).
   4. **Expanded group:** one card per widget: a **live preview at its default size** on the
      page's real grid scale, the name, a one-line description ≤ 60 characters, the sizes
@@ -59,7 +59,7 @@ the locked view with **Open on phone** (40-drive-b; [Drive modes §8.1][dm-8.1] 
 - **Components:** Sheet, text field, Segmented, ListRow (app group), Widget preview card
   (new component), Chip (sizes, badge).
 - **Spec refs:** [Drive modes §7.2][dm-7.2] · [app model §15][am-15] ·
-  [Drive modes §9][dm-9].
+  [Drive modes §9][dm-9] · [launcher §7.1][lw-7.1].
 - **Open questions:** should the gallery show widgets of apps not yet installed (with
   **Get**), as a Store teaser? This brief says no; only the footer links to the Store.
 
@@ -103,9 +103,11 @@ the locked view with **Open on phone** (40-drive-b; [Drive modes §8.1][dm-8.1] 
 - **Components:** Sheet (HU passenger side) or full page (phone), Segmented, ListRow,
   switch, stepper (new component), Gauge, StatTile, Button.
 - **Spec refs:** [Drive modes §7.4][dm-7.4] · [app model §15][am-15] ·
-  [Drive modes §4.3][dm-4.3] · [visual §8][vds-8].
-- **Open questions:** the custom setup page per app extends app-model §15 ("apps draw no
-  settings UI for widgets"); it needs an owner decision.
+  [Drive modes §4.3][dm-4.3] · [visual §8][vds-8] · [launcher §7.2][lw-7.2] ·
+  [launcher §7.3][lw-7.3].
+- **Open questions:** **Decided (item 51):** the OS draws every widget setup page from the
+  widget's schema; an app may add one custom Parked page behind "More settings", validated
+  against the schema.
 
 ### widget-style-picker — Look (style picker)  [New]
 - **Purpose:** choose how a widget draws its value: the Android "look" step.
@@ -175,3 +177,6 @@ the locked view with **Open on phone** (40-drive-b; [Drive modes §8.1][dm-8.1] 
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [dm-9]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#9-the-widget-and-slot-contract-summary
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-7.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#71-the-picker-gallery
+[lw-7.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#72-the-widget-setup-page
+[lw-7.3]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#73-a-custom-setup-page

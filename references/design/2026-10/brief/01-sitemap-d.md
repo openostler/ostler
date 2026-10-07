@@ -2,7 +2,7 @@
 title: "Designer brief — sitemap (d): phone, desktop, companion app, Community web and the driving-state matrix"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -96,7 +96,7 @@ unlocks only vehicle state, own location and route, and driving cameras.
 | Home page 1 (OS) | full | full | not shown; Drive mode opens | not offered | banner |
 | Dashboard pages (OS) | full grid | full grid | Moving section only, ≤ 6 tiles | full grid if every widget qualifies | banner |
 | Page chip, Drive menu (OS) | full, "Edit dashboards…" | full | switch and ≤ 6 rows | as Moving | full |
-| Dock, app drawer (OS) | full | full | hidden in Drive mode; drawer locked | never | full |
+| Dock, app drawer (OS) | full | full | hidden in Drive mode; the drawer opens as a `short_list` of ≤ 6 driving apps | never | full |
 | Edit mode, widget picker and setup, wizards (OS) | full | with Park evidence | "Park to edit" only | never | allowed; held for a moving display |
 | System Settings, Store | full | text entry with Park evidence | locked | never | "I'm a passenger" |
 | Alerts, calls, turn cards (OS templates) | full | full | templates only | templates only | OS notifications |

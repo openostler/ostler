@@ -2,7 +2,7 @@
 title: "Designer brief 80-h — Media app: first-run setup, network shares, streaming integrations, settings and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-phone-comms-addon-design.md]
 summary: >
@@ -17,7 +17,8 @@ summary: >
 
 # 80-h — Media setup, integrations, settings and widgets
 
-Proposed for the reason in [80-g](80-hu-g-media.md). All pages are Parked only on
+The approved head-unit apps spec covers these pages ([head-unit apps §5][hu-5]), so they
+are New, except network shares and the streaming sign-in frame (see their blocks). All pages are Parked only on
 driver-facing displays and can run from a phone linked to the car.
 
 ## Setup flow (first run)
@@ -30,8 +31,7 @@ driver-facing displays and can run from a phone linked to the car.
 | 4 | `media-setup` (indexing) | Waits for the first scan or skips | Slow USB: indexing continues in the background |
 | 5 | `media-now-playing` | Lands on now playing, nothing playing | — |
 
-### media-setup — Media: choose sources  [Proposed]
-- **Why the app needs it:** the player is empty until the owner says where music lives.
+### media-setup — Media: choose sources  [New]
 - **Purpose:** choose and check every music source in one page.
 - **Owner:** app:media
 - **Opens from → goes to:** first open of Media; `media-settings` → Sources; the empty
@@ -46,7 +46,8 @@ driver-facing displays and can run from a phone linked to the car.
      - **USB sticks and SD cards** — "Play when plugged in" option.
      - **Network shares** — "None yet" with **Add a share**.
      - **Bluetooth phones** — "Pixel 8 · media audio on" or **Pair a phone** (Phone app).
-     - **Streaming services** — "Add from the Store" → `media-integrations`.
+     - **Streaming** (later) — internet radio, podcasts, AirPlay and UPnP (item 39) →
+       `media-integrations`.
   3. **Index now** with a ProgressRow "Indexing · 640 of 1,204 tracks"; **Skip**.
   4. **Done** (primary).
 - **States:** Brain asleep: "Needs the Brain" Card with **Wake**. No storage free: `warn`.
@@ -54,12 +55,14 @@ driver-facing displays and can run from a phone linked to the car.
 - **Safety and driving rules:** Parked only; no typing while Moving.
 - **Components:** StepProgress (new component), ListRow, Toggle (new component),
   ProgressRow (new component), Button.
-- **Spec refs:** [UI §3.5][ui-3.5] · [App model §14][am-14].
+- **Spec refs:** [UI §3.5][ui-3.5] · [App model §14][am-14] · [head-unit apps §5][hu-5] · [app UI model §4][ua-4].
 - **Open questions:** none.
 
 ### media-share-add — Add a network share  [Proposed]
 - **Why the app needs it:** many owners keep music on a home server; the car is on home
-  Wi-Fi when parked at home.
+  Wi-Fi when parked at home. **Why still Proposed:** the head-unit apps spec covers local
+  and USB storage and UPnP only ([head-unit apps §5][hu-5]); SMB and NFS shares need the
+  owner's yes.
 - **Purpose:** add an SMB or NFS share, or a DLNA server.
 - **Owner:** app:media
 - **Opens from → goes to:** `media-setup` → Add a share; `media-settings` → Sources. Back to
@@ -78,10 +81,9 @@ driver-facing displays and can run from a phone linked to the car.
 - **Open questions:** copying over the uplink costs data; limit it to home Wi-Fi by
   default? Recommend yes.
 
-### media-integrations — Streaming integrations  [Proposed]
-- **Why the app needs it:** streaming services are separate integrations (one repo each);
-  Media must show which are installed and how to add one.
-- **Purpose:** list streaming integrations that feed Media, and add more from the Store.
+### media-integrations — Streaming integrations  [New]
+- **Purpose:** list the streaming sources that feed Media (later: internet radio, podcasts,
+  AirPlay and UPnP, item 39), and add more from the Store.
 - **Owner:** app:media
 - **Opens from → goes to:** `media-setup` → Streaming; `media-settings`. Goes to
   `media-integration-setup`, the Store (70-store files) filtered to "Media integrations".
@@ -89,20 +91,23 @@ driver-facing displays and can run from a phone linked to the car.
   hu7 Night with two installed; phone Day empty.
 - **Content (top to bottom):** 1. Installed: ListRows with the integration's icon, name,
   account state ("Signed in on the phone", "Needs setup"), and a status chip. 2. **Add a
-  streaming service** (Store, filtered). 3. A note: "Each service is its own app with its own
-  terms. Some need the internet; offline playback depends on the service."
+  streaming service** (Store, filtered). 3. A note: "Internet radio and podcasts use the
+  internet; each host is an outbound path you turn on."
 - **States:** none installed: empty Card with **Browse the Store**. Offline: chips read
   "Offline · downloaded only". Moving: locked view.
 - **Safety and driving rules:** Parked only. Integrations fill the `media` template; they
   cannot draw their own Moving UI ([App model §4.4][am-4.4]).
 - **Components:** ListRow, Chip (status), Button, Card.
-- **Spec refs:** [App model §4.4][am-4.4] · [App model §14][am-14] · [Drive modes §5.6][dm-5.6].
-- **Open questions:** which bridges come first: a Spotify Connect receiver and an MPRIS
-  bridge are named in [Drive modes §5.6][dm-5.6]; others need each service's terms checked.
+- **Spec refs:** [App model §4.4][am-4.4] · [App model §14][am-14] · [Drive modes §5.6][dm-5.6] · [head-unit apps §5][hu-5].
+- **Open questions:** **Decided (item 39):** streaming is internet radio, podcasts, AirPlay
+  and UPnP only; no unofficial clients for commercial services, so no Spotify Connect
+  receiver or similar bridge.
 
 ### media-integration-setup — Streaming integration setup  [Proposed]
 - **Why the app needs it:** each integration needs a sign-in or link step; this is the
-  shape they all follow.
+  shape they all follow. **Why still Proposed:** the approved sources (internet radio,
+  podcasts, AirPlay and UPnP, item 39) need no account sign-in; the frame is kept only for a
+  future official integration.
 - **Purpose:** link one streaming integration to Media.
 - **Owner:** os (integration setup frame, 90-appframe files); the integration fills it
 - **Opens from → goes to:** `media-integrations` → a row; the Store after install. Back to
@@ -121,8 +126,7 @@ driver-facing displays and can run from a phone linked to the car.
 - **Spec refs:** [App model §14][am-14].
 - **Open questions:** none.
 
-### media-settings — Media settings  [Proposed]
-- **Why the app needs it:** the app's own choices need one home outside system Settings.
+### media-settings — Media settings  [New]
 - **Purpose:** the Media app's options.
 - **Owner:** app:media
 - **Opens from → goes to:** `media-now-playing` → Settings; App info → Settings.
@@ -138,7 +142,7 @@ driver-facing displays and can run from a phone linked to the car.
 - **States:** not owner: Sources read only. Moving: locked view.
 - **Safety and driving rules:** Park to edit; no setting can allow video while Moving.
 - **Components:** ListRow, Toggle (new component), Segmented, Button.
-- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1] · [head-unit apps §5][hu-5] · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 ## Media widgets (in the widget picker gallery)
@@ -164,3 +168,6 @@ driver-facing displays and can run from a phone linked to the car.
 [dm-5.6]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#56-split--media
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [dm-9]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#9-the-widget-and-slot-contract-summary
+[hu-5]: ../../../../specs/2026-10-07-head-unit-apps-design.md#5-media
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

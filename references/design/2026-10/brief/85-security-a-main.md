@@ -2,7 +2,7 @@
 title: "Designer brief 85-a — Security app: main page, arming and disarming"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-02-gps-tracker-alarm-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0009-session-logbook-and-location.md]
 summary: >
@@ -26,7 +26,10 @@ alarm**, shows events, and tracks the parked car. It has **no outputs**: no sire
 locks and no immobiliser ([ADR-0033 §7][a33-7]). The OS keeps the safety parts: the Security
 strip chip, the alarm status widget and every alarm `alert_card` are drawn by the OS and
 cannot be removed while a node is fitted, even if this app is uninstalled
-([Drive modes §8.1 R3][dm-81]).
+([Drive modes §8.1 R3][dm-81]). Uninstalling Security is refused while the car is armed
+(decided, item 62); disarm is Parked only (item 59) and a remote disarm needs a fresh
+passkey (item 60). It is also preinstalled in Ostler Diagnostics and Ostler Brain (item
+11).
 
 ## Page map (where each page is drawn)
 
@@ -37,7 +40,7 @@ cannot be removed while a node is fitted, even if this app is uninstalled
 | [85-c](85-security-c-tracker.md) | `security-tracker`, `security-trail`, `security-geofences`, `security-geofence-edit`, `security-tow-mode` |
 | [85-d](85-security-d-setup-settings.md) | setup flow, `security-setup-welcome`, `security-setup-done`, `security-channels`, `security-settings` |
 | [85-e](85-security-e-widgets.md) | widgets: alarm status (drawn in 45-launcher-f), `security-widget-arm`, `security-widget-last-event`, `security-widget-tracker-map`; shortcuts and Drive menu row |
-| [85-f](85-security-f-companion-guardian.md) | `security-companion-remote`, `security-guardian-home`, `security-crash-sos` (later) |
+| [85-f](85-security-f-companion-guardian.md) | `security-companion-remote`, `security-guardian-home`, `security-crash-sos` (later; an OS system service, item 6) |
 
 Hardware setup pages belong to this app but are drawn in
 [20-hardware-f](20-hardware-f-security-mesh-service.md): `hw-alarm-setup`,
@@ -96,7 +99,7 @@ alone. "Arm" means Ostler's software alarm watches the sensors; it does not lock
   - **Error:** "Can't reach the node · last state Armed, 14 min ago" banner; nothing pretends
     to be current.
   - **Parked:** full. **Idling:** full except Disarm, which is Parked only: the button is
-    disabled with "Switch the engine off to disarm" (see Open questions).
+    disabled with "Switch the engine off to disarm" (Parked only, decided item 59).
   - **Moving:** the page is replaced by the shell's `arm` template: state word and an **Arm**
     button only; never Disarm, events, map or sensors ([app model §4.4][am-44]). Alarm events
     reach the driver only as `alert_card`s (85-b).
@@ -115,9 +118,9 @@ alone. "Arm" means Ostler's software alarm watches the sensors; it does not lock
   Empty state, Skeleton, Strip chip (Security).
 - **Spec refs:** [UI §3.4][ui-34] · [UI §6][ui-6] · [UI §3.8][ui-38] · [ADR-0033][a33-1] ·
   [tracker and alarm spec][ga-taps] (draft).
-- **Open questions:** (1) May disarm run while Idling with Park evidence, or Parked only as
-  ADR-0033 says? This brief keeps Parked only. (2) Does "I've checked it" exist, or is
-  Disarm the only way to quiet an alert?
+- **Open questions:** (1) **Decided (item 59):** disarm is Parked only, never while Idling,
+  even with Park evidence. (2) Does "I've checked it" exist, or is Disarm the only way to
+  quiet an alert?
 
 ## Arm flow
 
@@ -196,8 +199,10 @@ Arming is ≤ 2 s on the node ([ADR-0040 §6][a40-6]); it needs no Brain (`needs
   2. Notice Card: "This disarms Ostler's alarm only. It can't unlock or start the car. The
      owner is told and it is logged."
   3. Re-check line: "The Guardian checks again that the car is parked."
-  4. Buttons **Cancel** (focused) and **Disarm**.
-- **States:** role lacks Security: "You can see the alarm but can't disarm it" (no button);
+  4. Buttons **Cancel** (focused) and **Disarm**. **Disarm** asks for a fresh passkey (the
+     phone's own unlock) every time; a signed-in session alone is not enough (item 60).
+- **States:** passkey check cancelled or failed: nothing is sent, "Not disarmed". Role lacks
+  Security: "You can see the alarm but can't disarm it" (no button);
   over a mesh: never offered ("Not over a mesh radio", [ADR-0038][a38]); check-in target:
   queued with expiry and **Cancel**; Brain not needed (no wake sheet); a Viewer or a share
   without Security sees state only; done: "Disarmed · the owner has been told".
@@ -209,8 +214,8 @@ Arming is ≤ 2 s on the node ([ADR-0040 §6][a40-6]); it needs no Brain (`needs
   "accept" never counts.
 - **Components:** Sheet, Card (notice), Button, Strip badge ("Remote control enabled").
 - **Spec refs:** [ADR-0033 §6][a33-6] · [UI §7.2][ui-72] · [tracker spec: threat model][ga-tm].
-- **Open questions:** the tracker spec asks for "ideally a second factor"; should remote
-  disarm need a fresh passkey or device unlock on the phone?
+- **Open questions:** **Decided (item 60):** remote disarm needs a fresh passkey each time;
+  the session is not enough.
 
 [a09]: ../../../../decisions/adr-0009-session-logbook-and-location.md#decision
 [a33-1]: ../../../../decisions/adr-0033-action-categories-and-approvals.md#1-categories-beside-tiers

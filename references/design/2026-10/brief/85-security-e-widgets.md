@@ -2,7 +2,7 @@
 title: "Designer brief 85-e — Security app: widgets, shortcuts and Drive menu row"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0009-session-logbook-and-location.md]
 summary: >
@@ -19,7 +19,10 @@ summary: >
 
 Main page: [85-a](85-security-a-main.md). The widget picker, edit mode and the shared setup
 frame are the launcher's (45-launcher-d and 45-launcher-e). Widgets declare `moving` in the
-manifest; the OS draws the Moving form ([Drive modes §9][dm-9]).
+manifest; the OS draws the Moving form ([Drive modes §9][dm-9]). Each app ships its own data
+widgets (decided, item 52), so Security ships the ones below. The arm, last event and
+tracker widgets stay Proposed: no approved spec lists them beyond the starter catalogue's
+Alarm status ([launcher §9][lw-9]).
 
 ## What Security contributes
 
@@ -126,3 +129,4 @@ OS widget in place, fed by the node directly ([Drive modes §8.1 R3][dm-81]).
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [ui-121]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [vds-7]: ../../../../specs/2026-10-07-visual-design-system-design.md#7-maps
+[lw-9]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#9-the-starter-catalogue

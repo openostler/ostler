@@ -2,7 +2,7 @@
 title: "Designer brief 10-a — onboarding: the setup flows on every surface, welcome and first-run preferences"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-02-hardware-platform-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0044-adapters-on-the-brain-without-a-node.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md]
 summary: >
@@ -52,7 +52,7 @@ two steps. Every head-unit step is Parked only (see "The unknown-speed problem" 
 | 1 | `setup-welcome` | reads the 8-digit setup code; picks **Set up on this screen** or **Set up from my phone** (QR) | code expires (15 min) → **New code**; speed unknown → only the code and QR show (below) |
 | 2 | `setup-prefs` | picks language, units and clock | — (defaults kept) |
 | 3 | `accounts-s1` | enters the code, a name, a passkey or password | wrong code → "That code doesn't match" (ask for **New code**); weak password → inline reason |
-| 4 | `setup-apps` | picks a flavour (Diagnostics, Guardian, Head unit or Custom); its apps install from the bundled Store catalogue | an app fails to install → row "Not installed · Retry"; setup goes on |
+| 4 | `setup-apps` | picks a flavour (Diagnostics, Guardian, Ostler Brain or Custom); its apps install from the bundled Store catalogue | an app fails to install → row "Not installed · Retry"; setup goes on |
 | 5 | `setup-vehicle-add` | picks **Land Rover Discovery 2 · Td5**, or **Detect from the car** | pack not installed → "My car isn't listed" |
 | 6 | `setup-vehicle-name` | names the car, confirms right-hand drive | — |
 | 7 | `setup-source` | picks **Ostler Diagnostics node**, **An adapter I already have** or **Not now** | a node is already on the car → adapter row disabled (ADR-0044) |
@@ -203,9 +203,9 @@ more than 5 s, the head unit offers **Set up on this screen**. Draw both frames.
 - **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] ·
   [UI §10.1 (Intl units)][ui-10.1] · [App model §4.2 (i18n)][am-4.2].
 - **Open questions:** (1) Which languages ship first? Until decided, draw English (United
-  Kingdom) selected and two greyed rows "More languages later". (2) Units: device default
-  plus per-user override, or per user only? The garage also holds units per vehicle
-  ([UI §4.1][ui-4.1]); which wins?
+  Kingdom) selected and two greyed rows "More languages later". (2) **Decided (item 63):**
+  units are a device default set here, with a per-user override in `preferences`; the
+  garage's per-vehicle units do not override them.
 
 [acc-2.1]: ../../../../specs/2026-10-06-accounts-sharing-design.md#21-bootstrap
 [acc-14.7]: ../../../../specs/2026-10-06-accounts-sharing-design.md#147-shell-screens-gap-list-and-short-specs

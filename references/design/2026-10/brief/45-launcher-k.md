@@ -2,7 +2,7 @@
 title: "Designer brief 45-k — launcher: gauge styles, text size, the theme preview and Home settings"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -20,9 +20,7 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 [45-j](45-launcher-j.md). Park to edit applies on a driver-facing display
 ([Drive modes §8.1][dm-8.1] R1).
 
-### launcher-theme-gauges — Gauge style  [Proposed]
-- **Why the app needs it:** the owner asked for gauge style packs; the visual spec defines
-  one gauge.
+### launcher-theme-gauges — Gauge style  [New]
 - **Purpose:** restyle every gauge at once.
 - **Owner:** os
 - **Opens from → goes to:** the theme hub or step 4; the line in the style picker (45-d).
@@ -37,7 +35,7 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 - **Safety and driving rules:** calm gauges: status colour and word only out of range; no
   glow; ≤ 4 Hz stepped while Moving ([visual §8][vds-8], [Drive modes §4.3][dm-4.3]).
 - **Components:** Card, Gauge.
-- **Spec refs:** [visual §8][vds-8] · [visual §1][vds-1].
+- **Spec refs:** [visual §8][vds-8] · [visual §1][vds-1] · [launcher §11][lw-11].
 - **Open questions:** none.
 
 ### launcher-theme-text — Text size  [Proposed]
@@ -60,9 +58,7 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 - **Spec refs:** [visual §4][vds-4] · [shell input §10][si-10].
 - **Open questions:** does Larger apply inside the Moving templates too, or only Parked?
 
-### launcher-theme-preview — Theme preview and apply  [Proposed]
-- **Why the app needs it:** a theme must be seen on Home and on the Drive page before it
-  applies, so night readability is checked first.
+### launcher-theme-preview — Theme preview and apply  [New]
 - **Purpose:** compare before and after, then apply.
 - **Owner:** os
 - **Opens from → goes to:** step 6 of the wizard. **Apply** → the home page; **Back** → the
@@ -77,12 +73,10 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 - **Safety and driving rules:** the Drive page preview shows no wallpaper, no glow and the
   fixed status colours ([visual §1][vds-1]).
 - **Components:** Card (preview), Segmented, ListRow, Button.
-- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1].
+- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [launcher §11][lw-11].
 - **Open questions:** none.
 
-### launcher-home-settings — Home settings  [Proposed]
-- **Why the app needs it:** Android's Home settings hold grid, dock and rotation choices;
-  the specs fix the grid per class and have no such page.
+### launcher-home-settings — Home settings  [New]
 - **Purpose:** the launcher's own settings for this screen.
 - **Owner:** os
 - **Opens from → goes to:** **Home settings** in the launcher menu; Settings → Display →
@@ -93,23 +87,26 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
   1. **Grid size:** HU-7 "6 × 4 (default) · 4 × 3 (larger)"; phone "4 × 6 · 4 × 5";
      tablet "8 × 6 · 6 × 4". Never denser than the spec grid on a head unit.
   2. **Dock:** Size Standard · Large (HU 96 → 112 px on HU-7); Position Side · Bottom
-     (tablet, desktop and HU-wide only; side is the default on head units); **Edit dock** →
-     `shell-rail-editor`.
+     (tablet and desktop only; every head unit, HU-wide included, keeps the dock on the
+     driver's side, item 44); **Edit dock** → `shell-rail-editor`.
   3. **Labels:** Show app names on home pages (on) · in the dock (on).
   4. **Screen rotation:** Allow rotation (phone and tablet only).
   5. **Default page:** "Home" → the home pages list.
-  6. **Drive rotation:** the In Drive pages in tap order → the home pages list.
-  7. **Add new apps' icons to home** (off; they always go to the app drawer).
-  8. **Lock car layouts** (owner only; read-only for others) (30-settings files).
+  6. **Drive rotation:** the In Drive pages in tap order (one-tap cycle ≤ 4, page list ≤ 6,
+     item 45) → the home pages list.
+  7. **Driving apps:** the ≤ 6 apps the drawer lists while Moving, in order
+     ([launcher §5.2][lw-5.2]).
+  8. **Add new apps' icons to home** (off; they always go to the app drawer).
+  9. **Lock car layouts** (owner only; read-only for others) (30-settings files).
 - **States:** a grid change that would push widgets off a page: "Some widgets will move to a
   new page" with Cancel focused. Moving: locked view.
 - **Safety and driving rules:** grid and dock sizes keep 76 px targets and the Moving tile
   minimums ([Drive modes §4.4][dm-4.4]).
 - **Components:** ListRow, Segmented, switch, Sheet.
 - **Spec refs:** [Drive modes §4.4][dm-4.4] · [Drive modes §7.3][dm-7.3] ·
-  [Drive modes §8.3][dm-8.3].
-- **Open questions:** should a bottom dock be offered on HU-7 and smaller head units? This
-  brief offers it only on HU-wide.
+  [Drive modes §8.3][dm-8.3] · [app UI model §8][ua-8] · [launcher §5.1][lw-5.1] · [launcher §5.2][lw-5.2].
+- **Open questions:** **Decided (item 44):** no bottom dock on any head unit; on HU-wide too
+  the dock sits on the driver's side.
 
 <!-- links -->
 [dm-4.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#43-the-moving-section-and-the-template-mapping
@@ -122,3 +119,7 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 [vds-3.1]: ../../../../specs/2026-10-07-visual-design-system-design.md#31-surfaces-text-accent-and-status-per-theme
 [vds-4]: ../../../../specs/2026-10-07-visual-design-system-design.md#4-type
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-11]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#11-the-theme-wizard
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock
+[lw-5.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#52-the-drawer

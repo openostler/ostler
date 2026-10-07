@@ -2,7 +2,7 @@
 title: "Designer brief — sitemap (b): the OS tree and the product flavours"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, references/design/2026-10/screens.json]
 summary: >
@@ -12,12 +12,12 @@ summary: >
   the Connection sheet, the shell-drawn overlays (alerts, calls, locked view, Passenger view,
   service mode), system Settings with every page, the Store, and first-run setup on the head
   unit, browser and companion app. It ends with the product flavours as preinstalled app
-  sets: Ostler Diagnostics and Ostler Guardian, plus the full Brain install.
+  sets: Ostler Diagnostics, Ostler Guardian and Ostler Brain.
 ---
 
 # Sitemap (b): the OS tree and the product flavours
 
-Every item below has **Owner: os** except the Store (**app:store**). IDs are the blocks in each area's file; a file pattern
+Every item below has **Owner: os**; the Store is a system app (decided, item 28). IDs are the blocks in each area's file; a file pattern
 without an ID (`45-launcher-*`, `70-store-*`, `90-appframe-*`) means the next wave draws it.
 Legend: **(L)** locked while Moving on a driver-facing display, **(T)** drawn as a Moving
 template, **(S)** service mode only.
@@ -63,9 +63,9 @@ template, **(S)** service mode only.
   - Users and accounts: `settings-profiles`, `settings-hu-pin`, `settings-account`,
     `accounts-s3`, `accounts-s5`, `accounts-s6`, `accounts-s7`, `accounts-s10`,
     `settings-ostler-link`.
-  - Apps: App info per app `settings-addon-detail`, `settings-addon-logs`; app setup and
-    options flows (`90-appframe-*`).
-  - Integrations and vehicle packs: `settings-integrations`.
+  - Apps (one list, integrations labelled, decided item 56): App info per app
+    `settings-addon-detail`, `settings-addon-logs`; integrations and vehicle packs
+    `settings-integrations`; app setup and options flows (`90-appframe-*`).
   - Vehicles: `garage`, `setup-vehicle-add`, `setup-vehicle-name`.
   - Network and devices: `network`, `network-device`, `hw-add-device`, `hw-device-logs`,
     `hw-device-restart`, `device-local-page`, `hw-brain`, `hw-gps`, `hw-imu`,
@@ -83,7 +83,7 @@ template, **(S)** service mode only.
   - About: `settings-about`, `settings-licences`, `settings-legal`,
     `settings-report-problem`.
   - Reset: `settings-reset`, `settings-factory-reset`.
-- **Store** (Owner: app:store, preinstalled in every flavour and never removed; L): `addons-catalogue` becomes the Store's Installed tab; apps,
+- **Store** (a system app, Owner: os, in every flavour and never removed; L): `addons-catalogue` becomes the Store's Installed tab; apps,
   integrations, vehicle packs, widget packs, themes, icon packs, wallpapers and dashboard
   presets (`70-store-*`).
 - **First run** (`10-onboarding-*`):
@@ -117,13 +117,19 @@ products). Any flavour can add apps from the Store later.
 
 | Flavour | Hardware | Preinstalled apps | Default dock | Home page 1 |
 |---|---|---|---|---|
-| **Ostler Diagnostics** | the OBD-port node plus the companion phone app (no Brain) | Diagnostics, Trips, starter widgets | Home · Diagnostics · Trips · Settings · App drawer | vehicle widget, warnings widget, Battery and Coolant tiles, last trip |
-| **Ostler Guardian** | the guardian node (GPS, alarm, IMU), phone app | Security, starter widgets | Home · Security · Settings · Store · App drawer | Security alert widget (armed state, last fix), warnings widget |
-| **Ostler Brain** (full install) | node and Brain, head unit | Diagnostics, Trips, Security, Map, starter widgets, default theme | Home · Diagnostics · Trips · Security · App drawer | vehicle widget, warnings, last trip; dashboards Dashboard and Diagnostic |
+| **Ostler Diagnostics** | the OBD-port node plus the companion phone app (no Brain) | Diagnostics, Trips, Security, starter widgets, default theme | Home · Diagnostics · Trips · Settings · App drawer | vehicle widget, warnings widget, Battery and Coolant tiles, last trip |
+| **Ostler Guardian** | the guardian node (GPS, alarm, IMU), phone app | Security and its widgets, default theme | Security · Settings · App drawer | Security alert widget (armed state, last fix), warnings widget |
+| **Ostler Brain** | node and Brain, head unit | Diagnostics, Trips, Security, Map, Media, Audio, starter widgets, default theme; Camera when a camera is found; Radio when a tuner is found | Home · Diagnostics · Trips · Security · App drawer | vehicle widget, warnings, last trip; dashboards Dashboard and Diagnostic |
+
+The sets are decided (items 11 and 41), and so are the Guardian dock (item 42) and Ostler
+Brain as a third named flavour (item 43). On the phone, "Uninstall" disables a bundled app
+and deletes its data (item 11). "Ostler is the head unit" (Radio, Audio, Media as the audio
+path) is offered at first run, not the default (item 55).
 
 - **Diagnostics flavour notes:** with the node alone there is no Brain, so Brain-only views
   are absent (no "Needs the Brain" cards); the node in deep sleep shows "Node asleep (deep)"
-  ([UI §3.8][ui-3.8]). The Security strip chip is absent (no Security app).
+  ([UI §3.8][ui-3.8]). The Security app is preinstalled; its strip chip shows only once a
+  node with alarm inputs is paired.
 - **Guardian flavour notes:** no Diagnostics app, so the Link chip's ladder stops at the
   node; Home's vehicle widget shows 12 V and the last fix only. Adding Diagnostics from the
   Store turns it into a full diagnostic install.
@@ -132,10 +138,9 @@ products). Any flavour can add apps from the Store later.
 
 ## Open questions
 
-1. Is the Ostler Brain full install a third flavour, or "Diagnostics plus a Brain"?
-   Recommend a named flavour, since its dock and dashboards differ.
-2. Should Guardian's dock hold Settings, or should Settings live only in the app drawer?
-   Recommend the dock, since Guardian has so few apps.
+1. **Decided (item 43):** Ostler Brain is a third named flavour, with the app set of item 11.
+2. **Decided (item 42):** Guardian's dock is Security · Settings · App drawer; Settings is
+   in the dock and also in the drawer (item 57).
 
 [adr-39]: ../../../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules

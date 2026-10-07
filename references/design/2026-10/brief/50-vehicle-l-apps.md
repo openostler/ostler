@@ -2,7 +2,7 @@
 title: "Designer brief: vehicle and diagnostics (L) — the four apps: setup flows, settings pages and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-05-replay-notes-capture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -12,14 +12,16 @@ summary: >
   first-run setup flow, the app's own settings page and the widgets it contributes to the
   launcher's home pages (name, what it shows, setup options). Examples: fault count, live
   gauge from a signal, last trip, service due. Vehicle packs are integrations set up in the
-  app framework pages. All pages here are Proposed: no approved spec covers them yet.
+  app framework pages. The setup and settings pages are New: the approved app UI model
+  spec covers setup flows and options flows.
 ---
 
 # Vehicle and diagnostics brief (L): apps, setup, settings and widgets
 
-**Why these pages are Proposed:** the owner's direction of 2026-10-07 makes every feature an
-app with its own setup flow and settings page; the approved specs describe the features but
-not these pages. The system "App info" page per app, the widget picker and the widget setup
+**Spec:** the owner's direction of 2026-10-07 makes every feature an app with its own setup
+flow and settings page; the approved app UI model spec covers both: a setup flow drawn by
+the OS from the app's schemas ([app UI model §4][ua-4]) and an options flow or the app's
+own settings page ([app UI model §5][ua-5]). The system "App info" page per app, the widget picker and the widget setup
 page belong to the app framework and launcher areas (`90-appframe-*`, `45-launcher-*`); this
 file only lists what each app puts into them. **Vehicle packs are integrations**: the D2 pack
 (`lr_d2`) is installed and set up on its integration setup page in the app framework area;
@@ -27,8 +29,7 @@ these apps read it and link there by name. Safety stays with the OS: confirm she
 fault telltale, Moving templates and Park to edit are never an app's to change
 ([Drive modes §8.1][dm-8.1]).
 
-### diagnose-app-setup — Diagnostics: first-run setup  [Proposed]
-- **Why the app needs it:** Diagnostics needs a vehicle, a link and a first scan before its pages mean anything.
+### diagnose-app-setup — Diagnostics: first-run setup  [New]
 - **Purpose:** get from "installed" to a first honest module list.
 - **Owner:** app:diagnostics
 - **Opens from → goes to:** first open from the app drawer; App info → "Run setup again" → diagnose-systems.
@@ -37,10 +38,9 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** no pack match: "Unknown vehicle — help decode it" path. Not connected: setup can finish with "Scan later". Moving: locked (Parked only).
 - **Safety and driving rules:** the scan is read only; nothing writes to the car.
 - **Components:** StepProgress (new component), Card, Button.
-- **Spec refs:** [UI §4.4][ui-4.4] · [UI §4.5][ui-4.5] · [App model §14][am-14].
+- **Spec refs:** [UI §4.4][ui-4.4] · [UI §4.5][ui-4.5] · [App model §14][am-14] · [app UI model §4][ua-4].
 
-### diagnose-app-settings — Diagnostics: settings  [Proposed]
-- **Why the app needs it:** the app's own choices need one home outside system Settings.
+### diagnose-app-settings — Diagnostics: settings  [New]
 - **Purpose:** the Diagnostics app's options.
 - **Owner:** app:diagnostics
 - **Opens from → goes to:** Diagnostics overflow menu; App info → Settings.
@@ -49,7 +49,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** not owner: owner-only rows hidden. Moving: locked.
 - **Safety and driving rules:** no setting can skip a confirm, the clear-codes snapshot or a Parked rule.
 - **Components:** ListRow, Toggle (new component), Segmented.
-- **Spec refs:** [UI §3.4][ui-3.4] · [UI §4.3][ui-4.3].
+- **Spec refs:** [UI §3.4][ui-3.4] · [UI §4.3][ui-4.3] · [app UI model §5][ua-5].
 
 **Diagnostics widgets** (read only; each has a widget setup page in the launcher's style):
 - **Fault count** — worst status and count for the vehicle or one module ("2 faults · SLABS"); options: all modules or one, show Logged or Current only. Its tap opens diagnose-faults. (The OS fault telltale is separate and cannot be removed.)
@@ -58,8 +58,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **Vehicle view** (Proposed with D) — the SLABS silhouette with ride heights; options: module.
 - **Scan all** shortcut — one button that runs a read-only scan (Parked).
 
-### trips-app-setup — Trips: first-run setup  [Proposed]
-- **Why the app needs it:** recording sources and privacy need choices before the first trip.
+### trips-app-setup — Trips: first-run setup  [New]
 - **Purpose:** set up recording and privacy once.
 - **Owner:** app:trips
 - **Opens from → goes to:** first open; App info → Run setup again → trips-list.
@@ -68,10 +67,9 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** no GPS: "Trips will have no maps until a GPS is connected". Moving: locked.
 - **Safety and driving rules:** location stays on the device unless shared (ADR-0009).
 - **Components:** StepProgress (new component), ListRow, Toggle (new component), Button.
-- **Spec refs:** [Replay §3][rn-3] · [UI §13.4][ui-13.4].
+- **Spec refs:** [Replay §3][rn-3] · [UI §13.4][ui-13.4] · [app UI model §4][ua-4].
 
-### trips-app-settings — Trips: settings  [Proposed]
-- **Why the app needs it:** recording, flags and sharing defaults need one place.
+### trips-app-settings — Trips: settings  [New]
 - **Purpose:** the Trips app's options.
 - **Owner:** app:trips
 - **Opens from → goes to:** Trips overflow menu; App info → Settings → trips-recording-options, Places, trips-export-all.
@@ -80,7 +78,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** Brain asleep: "Needs the Brain" for storage figures. Moving: locked.
 - **Safety and driving rules:** no setting pauses recording (recording is always on while connected).
 - **Components:** ListRow, Toggle (new component), Segmented.
-- **Spec refs:** [UI §12.2][ui-12.2] · [Logs at scale §1][ls-1].
+- **Spec refs:** [UI §12.2][ui-12.2] · [Logs at scale §1][ls-1] · [app UI model §5][ua-5].
 
 **Trips widgets:**
 - **Last trip** — mini dark map, place, distance, duration; options: vehicle, show max speed (off by default). Hidden while Moving on head units.
@@ -88,8 +86,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **This month** — distance and trips this month (neutral facts, no score); options: period.
 - **Rewind** shortcut — opens the newest trip at its end.
 
-### maint-app-setup — Maintenance: first-run setup  [Proposed]
-- **Why the app needs it:** reminders need an odometer anchor, units and currency first.
+### maint-app-setup — Maintenance: first-run setup  [New]
 - **Purpose:** set up per-vehicle tracking.
 - **Owner:** app:maintenance
 - **Opens from → goes to:** first open; App info → Run setup again → maint-home.
@@ -98,10 +95,9 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** skipped odometer: distances read "—" until a reading exists. Moving: locked.
 - **Safety and driving rules:** typing Parked only.
 - **Components:** StepProgress (new component), TextField (new component), Button.
-- **Spec refs:** [Maintenance §4][mg-4] · [Maintenance §6][mg-6] · [Maintenance §9][mg-9].
+- **Spec refs:** [Maintenance §4][mg-4] · [Maintenance §6][mg-6] · [Maintenance §9][mg-9] · [app UI model §4][ua-4].
 
-### maint-app-settings — Maintenance: settings  [Proposed]
-- **Why the app needs it:** leads, reminders and sharing are per vehicle choices.
+### maint-app-settings — Maintenance: settings  [New]
 - **Purpose:** the Maintenance app's options.
 - **Owner:** app:maintenance
 - **Opens from → goes to:** Maintenance overflow; App info → Settings → maint-import-upload, maint-export, maint-buyer-share, maint-templates.
@@ -110,7 +106,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** Moving: locked.
 - **Safety and driving rules:** no setting allows a mid-drive alert ([Maintenance §8][mg-8]).
 - **Components:** ListRow, TextField (new component), Toggle (new component).
-- **Spec refs:** [Maintenance §3][mg-3] · [Maintenance §8][mg-8].
+- **Spec refs:** [Maintenance §3][mg-3] · [Maintenance §8][mg-8] · [app UI model §5][ua-5].
 
 **Maintenance widgets:**
 - **Service due** — next due task with band pill and remainder ("Oil and filter · in 300 km est."); options: vehicle, how many tasks (1–3).
@@ -118,8 +114,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **Documents expiring** — next document expiry; options: kinds.
 - **Add fill-up** shortcut — opens maint-add-record on Fuel (Parked).
 
-### decode-app-setup — Decode lab: first-run setup  [Proposed]
-- **Why the app needs it:** the lab needs service mode, a sniff source and a consent choice.
+### decode-app-setup — Decode lab: first-run setup  [New]
 - **Purpose:** prepare the lab for a first capture.
 - **Owner:** app:decode-lab
 - **Opens from → goes to:** first open (service mode on) → decode-lab.
@@ -128,10 +123,9 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** service mode off: the app is hidden. Moving: refused.
 - **Safety and driving rules:** service mode only; refused while Moving ([UI §8.4][ui-8.4]).
 - **Components:** StepProgress (new component), ListRow, Checkbox (new component), Button.
-- **Spec refs:** [UI §8.4][ui-8.4] · [UI §13.3][ui-13.3].
+- **Spec refs:** [UI §8.4][ui-8.4] · [UI §13.3][ui-13.3] · [app UI model §4][ua-4].
 
-### decode-app-settings — Decode lab: settings  [Proposed]
-- **Why the app needs it:** sweep limits, scrub and credit need a home.
+### decode-app-settings — Decode lab: settings  [New]
 - **Purpose:** the Decode lab app's options.
 - **Owner:** app:decode-lab
 - **Opens from → goes to:** Decode lab overflow; App info → Settings.
@@ -140,7 +134,7 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 - **States:** Moving: refused.
 - **Safety and driving rules:** no option enables a write service.
 - **Components:** ListRow, Toggle (new component), TextField (new component).
-- **Spec refs:** [UI §8.1][ui-8.1] · [UI §8.3][ui-8.3].
+- **Spec refs:** [UI §8.1][ui-8.1] · [UI §8.3][ui-8.3] · [app UI model §5][ua-5].
 
 **Decode lab widgets:** none on Drive home pages; one **Decode progress** widget for Parked home pages (coverage per module, e.g. "TD5 · 31 of 45 proven"), options: module.
 
@@ -163,3 +157,5 @@ fault telltale, Moving templates and Park to edit are never an app's to change
 [mg-9]: ../../../../specs/2026-10-07-maintenance-garage-addon-design.md#9-import-and-export
 [rn-3]: ../../../../specs/2026-10-05-replay-notes-capture-design.md#3-audio-and-accelerometer-capture
 [ls-1]: ../../../../specs/2026-10-06-logs-at-scale-design.md#1-record-only-while-connected
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

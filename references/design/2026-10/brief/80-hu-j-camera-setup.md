@@ -2,7 +2,7 @@
 title: "Designer brief 80-j — Camera app: first-run setup (cameras, reverse trigger, guidelines), settings and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, references/research/canbus_headunit.md]
 summary: >
@@ -17,7 +17,9 @@ summary: >
 
 # 80-j — Camera setup, settings and widgets
 
-Proposed for the reason in [80-i](80-hu-i-camera.md). Setup is Parked only. The ground marks
+The approved head-unit apps spec covers this setup flow ([head-unit apps §6][hu-6]): find
+cameras, pick the reverse camera, calibrate guidelines, test the trigger. These pages are
+New. Setup is Parked only. The ground marks
 step needs the car parked with space behind it and a tape measure.
 
 ## Setup flow (first run)
@@ -29,8 +31,7 @@ step needs the car parked with space behind it and a tape measure.
 | 3 | `camera-setup-guidelines` | Lines up guidelines with marks on the ground | Image too dark: "Try in daylight", skip |
 | 4 | `camera-home` | Lands on Cameras | — |
 
-### camera-setup — Setup 1: cameras and roles  [Proposed]
-- **Why the app needs it:** the app's rules depend on each camera's role.
+### camera-setup — Setup 1: cameras and roles  [New]
 - **Purpose:** confirm which cameras the app will use and for what.
 - **Owner:** app:camera
 - **Opens from → goes to:** first open of Camera; `camera-settings` → Cameras. Goes to
@@ -46,12 +47,10 @@ step needs the car parked with space behind it and a tape measure.
   with a note. Brain asleep: "Needs the Brain". Moving: locked view.
 - **Safety and driving rules:** Parked only.
 - **Components:** StepProgress (new component), ListRow, Chip, Button, Card.
-- **Spec refs:** [UI §6][ui-6].
+- **Spec refs:** [UI §6][ui-6] · [head-unit apps §6][hu-6] · [app UI model §4][ua-4].
 - **Open questions:** none.
 
-### camera-setup-trigger — Setup 2: reverse trigger  [Proposed]
-- **Why the app needs it:** the camera must open on reverse; the D2 has no fast reverse
-  signal on the K-line, so the owner must pick a wired source.
+### camera-setup-trigger — Setup 2: reverse trigger  [New]
 - **Purpose:** choose and test what opens the reverse camera.
 - **Owner:** app:camera
 - **Opens from → goes to:** `camera-setup`; `camera-settings` → Reverse trigger. Goes to
@@ -77,13 +76,12 @@ step needs the car parked with space behind it and a tape measure.
 - **Safety and driving rules:** Parked only; read only; the test never moves the car and
   says so. Pre-emption still waits for the fast path approval ([UI §6][ui-6]).
 - **Components:** StepProgress (new component), ListRow, Segmented, Chip (status), Button.
-- **Spec refs:** [UI §6][ui-6] · [head-unit research B4][ch-b4].
-- **Open questions:** does the node's opto input count as the "fast path" that lets reverse
-  pre-empt the screen? Needs the owner's call and a latency test.
+- **Spec refs:** [UI §6][ui-6] · [head-unit research B4][ch-b4] · [head-unit apps §6][hu-6] · [app UI model §4][ua-4].
+- **Open questions:** **Decided ([head-unit apps §6][hu-6]):** the node's input on the
+  reverse lamp wire is a reverse trigger; its latency is measured on the bench, and the wire
+  is a first car check (item 65).
 
-### camera-setup-guidelines — Setup 3: static guidelines  [Proposed]
-- **Why the app needs it:** guidelines are only useful if they match this car and this
-  camera's mounting.
+### camera-setup-guidelines — Setup 3: static guidelines  [New]
 - **Purpose:** line up the distance bands and width lines with real marks on the ground.
 - **Owner:** app:camera
 - **Opens from → goes to:** `camera-setup-trigger`; `camera-settings` → Guidelines. Goes to
@@ -104,11 +102,10 @@ step needs the car parked with space behind it and a tape measure.
 - **Safety and driving rules:** Parked only; the "Assist only" chip cannot be turned off.
 - **Components:** StepProgress (new component), GuidelineOverlay (new component), Slider
   (new component), Toggle (new component), Segmented, Button.
-- **Spec refs:** [UI §6][ui-6].
+- **Spec refs:** [UI §6][ui-6] · [head-unit apps §6][hu-6] · [app UI model §4][ua-4].
 - **Open questions:** none.
 
-### camera-settings — Camera settings  [Proposed]
-- **Why the app needs it:** the app's own choices need one home outside system Settings.
+### camera-settings — Camera settings  [New]
 - **Purpose:** the Camera app's options.
 - **Owner:** app:camera
 - **Opens from → goes to:** `camera-home` → Settings; App info → Settings. Goes to the setup
@@ -124,7 +121,7 @@ step needs the car parked with space behind it and a tape measure.
 - **Safety and driving rules:** Park to edit; no setting raises the 10 km/h limit, adds a
   second live stream while Moving or allows playback while Moving.
 - **Components:** ListRow, Toggle (new component), Segmented, Button.
-- **Spec refs:** [UI §6][ui-6] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [UI §6][ui-6] · [Drive modes §8.1][dm-8.1] · [head-unit apps §6][hu-6] · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 ## Camera widgets (in the widget picker gallery)
@@ -144,3 +141,6 @@ step needs the car parked with space behind it and a tape measure.
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [dm-9]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#9-the-widget-and-slot-contract-summary
 [ch-b4]: ../../../research/canbus_headunit.md#b4-steering-wheel-reverse-cameras-amplifier
+[hu-6]: ../../../../specs/2026-10-07-head-unit-apps-design.md#6-camera
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

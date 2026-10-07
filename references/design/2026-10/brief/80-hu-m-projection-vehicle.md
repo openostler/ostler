@@ -2,14 +2,14 @@
 title: "Designer brief 80-m — Projection (Android Auto, CarPlay), climate and pack vehicle settings"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-platform-direction-design.md, references/research/canbus_headunit.md, references/research/driver_distraction_rules.md]
 summary: >
-  The last head-unit features. Projection (app:projection) covers Android Auto and CarPlay:
-  setup, the projected session inside the OS frame, and settings. It says plainly that both
-  need certification and licences Ostler does not hold, so every projection screen is
-  Proposed with open legal questions. The climate page is the approved climate device page;
+  The last head-unit features. Projection (Android Auto, CarPlay) is not built (owner
+  decision item 38): owners keep a projection-capable head unit beside Ostler, so the
+  projection blocks are one information page plus two "do not draw" records, all Proposed.
+  The climate page is the approved climate device page;
   on the Discovery 2 it shows a "not available on this car" state, because the climate panel
   is not on the diagnostic line. Vehicle settings from packs is one OS page where a vehicle
   pack offers car settings; for the D2 it shows the SLABS rear ride heights read only and
@@ -20,99 +20,54 @@ summary: >
 
 Shared rules are in [80-a](80-hu-a-overview.md).
 
-## Projection: the honest position
+## Projection: not built (decided, item 38)
 
 Android Auto and CarPlay are the phone makers' own systems. A head unit that shows them must
 be **certified**: Android Auto receivers go through Google's partner programme and CarPlay
 receivers need Apple's licence, an authentication chip and certification
-([head-unit research B5][ch-b5]). Ostler has neither. Open receivers exist (a Pi Android Auto
-receiver built on openauto and aasdk) but are not certified and break when the protocol
-changes ([head-unit research B7][ch-b7]). Plug-in adapters carry their own licensed chip and
-turn the session into a stream another app can draw. The platform direction says CarPlay and
-Android Auto come "via a wireless dongle" on a head unit, and that the head unit keeps them
-([platform direction][pd]). So every projection screen is **Proposed** and must not ship
-until the owner answers the legal questions below.
+([head-unit research B5][ch-b5]). Open receivers are not certified and break when the
+protocol changes ([head-unit research B7][ch-b7]). The owner decided on 2026-10-07 that
+**Ostler does not build projection**: owners who want it keep a projection-capable head unit
+beside Ostler (setup B), and the Store lists no uncertified receivers
+([head-unit apps §11][hu-11]). So no projection session or settings screen exists; the only
+page is an information page, and the blocks below stay **Proposed** for that reason.
 
-### projection-setup — Projection: setup  [Proposed]
-- **Why the app needs it:** the owner asks for parity with aftermarket units, which all
-  offer Android Auto and CarPlay.
-- **Purpose:** choose how projection reaches the screen and connect a phone.
-- **Owner:** app:projection
-- **Opens from → goes to:** first open of Projection; `projection-settings`. Goes to
-  `projection-session`.
-- **Layout classes:** hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night step 1; hu7 Night
-  connected.
-- **Content (steps):**
-  1. A plain Card first: "Android Auto and CarPlay need certified hardware. Ostler is not
-     certified. Projection works only through an adapter you buy, or through your existing
-     head unit." **I understand** to continue.
-  2. **How:** choice list: **Keep my head unit for projection** (recommended; Ostler steps
-     aside, no projection screen in Ostler) · **USB projection adapter on the Brain** ("The
-     adapter does the licensed part; Ostler shows its picture").
-  3. **Adapter check:** "Adapter found · supports CarPlay and Android Auto" or "Not found".
-  4. **Connect a phone:** plug in or pair the phone as the adapter asks; status "Connected ·
-     Pixel 8 · Android Auto".
-  5. **Done**.
-- **States:** no adapter; adapter firmware unknown ("This adapter isn't tested"); phone
-  refused. Moving: locked view.
-- **Safety and driving rules:** Parked only.
-- **Components:** StepProgress (new component), Card, ListRow, Chip (status), Button.
-- **Spec refs:** [head-unit research B5][ch-b5] · [head-unit research B7][ch-b7] ·
-  [platform direction][pd].
-- **Open questions:** see "Legal questions" below.
+### projection-setup — Projection: not built (information page)  [Proposed]
+- **Why it exists:** owners will search for Android Auto and CarPlay; the OS answers
+  plainly instead of showing nothing. **Why Proposed:** projection is not built (item 38),
+  and no approved spec draws this page.
+- **Purpose:** say that Ostler does not do projection, and how to keep it.
+- **Owner:** os
+- **Opens from → goes to:** the app drawer's search ("Android Auto", "CarPlay",
+  "projection"); the Store's search. Back.
+- **Layout classes:** phone · hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night.
+- **Content:** one Card: icon `phone_android`, title "Android Auto and CarPlay", text
+  "Ostler doesn't include phone projection. It needs certified hardware. Keep a head unit
+  that has it, and run Ostler beside it." A link **How Ostler sits beside a head unit**
+  (the "beside my head unit" install shape, `audio-setup-shape`). No adapter path, no
+  setup steps, no controls.
+- **States:** none special. Moving: locked view (a Parked page).
+- **Safety and driving rules:** nothing here connects a phone or shows a projected picture.
+- **Components:** Card, ListRow (link).
+- **Spec refs:** [head-unit apps §11][hu-11] · [head-unit research B5][ch-b5] ·
+  [head-unit research B7][ch-b7].
+- **Open questions:** **Decided (item 38):** projection is not built; no uncertified
+  receiver, not even as a sideload-only developer item.
 
 ### projection-session — Projection: running session  [Proposed]
-- **Why the app needs it:** the projected screen must sit inside Ostler's frame so the
-  safety items stay visible.
-- **Purpose:** show the projected Android Auto or CarPlay screen.
-- **Owner:** app:projection (session); os (frame, strip, alerts)
-- **Opens from → goes to:** `audio-sources` → Projection; the projection app shortcut;
-  phone connected (if "open on connect" is on). The dock's Home or Back leaves to the
-  Ostler home page; the session keeps running for audio.
-- **Layout classes:** hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night Parked; huwide
-  Night with the projection in two thirds and the Drive tiles in one third.
-- **Content (top to bottom):** 1. OS strip on top (telltale, Security, Link, clock). 2. The
-  projected picture, scaled to the main area at the adapter's resolution (800×480 or
-  1280×720), letterboxed on `bg`. 3. A small OS **Ostler** button in the dock to return.
-  4. HU-wide: one third keeps an Ostler Drive home page (≤ 6 tiles while Moving).
-- **States:** connecting: "Connecting to Pixel 8…"; adapter lost: "Projection stopped" and
-  audio falls back to the last source; reverse: the camera pre-empts (when the fast path
-  exists); a red telltale: the OS `alert_card` draws over the projection.
-- **Safety and driving rules:** the projected picture is a video stream Ostler cannot
-  inspect; under Ostler's rules that is video on a driver-facing display. **Until the legal
-  and safety review clears it, projection is Parked only** and pauses to its audio while
-  Moving ([UI §12.1][ui-12.1], [research reg 109][dd-4.2]). The OS strip, telltale and
-  alerts can never be covered.
-- **Components:** Chip (status), Button, locked view.
-- **Spec refs:** [UI §12.1][ui-12.1] · [head-unit research B5][ch-b5].
-- **Open questions:** may a certified phone UI, shown through a licensed adapter, count as a
-  driver-safe template while Moving?
+- **Not built (item 38): do not draw.** Ostler shows no projected picture; the projection
+  head unit keeps the session. The record stays only so the screen ID resolves.
+- **Owner:** os
+- **Spec refs:** [head-unit apps §11][hu-11].
+- **Open questions:** **Decided (item 38):** no projected picture in Ostler, Parked or
+  Moving.
 
 ### projection-settings — Projection settings  [Proposed]
-- **Why the app needs it:** adapter, auto-start and audio choices need one home.
-- **Purpose:** the Projection app's options.
-- **Owner:** app:projection
-- **Opens from → goes to:** App info → Settings; `projection-session` (Parked) → Settings.
-- **Layout classes:** hu5 · hu7 · hu9 · huwide · phone. **Draw first:** hu7 Night.
-- **Content (top to bottom):** 1. Adapter row and firmware. 2. **Open when a phone connects**
-  Toggle (off). 3. **Calls through** Segmented: Projection · Ostler Phone app (one hands-free
-  owner, as the Phone app requires). 4. **Resolution** Segmented. 5. Known phones with
-  **Forget**.
-- **States:** Moving: locked view.
-- **Safety and driving rules:** Park to edit.
-- **Components:** ListRow, Toggle (new component), Segmented, Button.
-- **Spec refs:** [Phone §3][pc-3].
-- **Open questions:** none beyond the legal list.
-
-**Projection widgets:** **Projection shortcut** (size small; options: icon and name; opens
-the session, Parked only until cleared).
-
-**Legal questions for the owner (projection):** (1) Is shipping an open, uncertified Android
-Auto receiver allowed under Google's terms, and is it wise given protocol breaks? (2) May a
-third-party display show a licensed adapter's CarPlay or Android Auto picture? (3) Can the
-UI use the names "Android Auto" and "CarPlay", or must it say "phone projection"? (4) Does
-showing it while Moving fit UK reg 109 on a screen Ostler does not control? (5) Product
-liability under the EU directive once hardware is sold ([UI §12.1][ui-12.1] legal check).
+- **Not built (item 38): do not draw.** There is no projection app to set up.
+- **Owner:** os
+- **Spec refs:** [head-unit apps §11][hu-11].
+- **Open questions:** **Decided (item 38):** none left; the legal questions of the earlier
+  draft fall away with the decision.
 
 ### climate-panel — Climate (device page; "not available" on the D2)  [New]
 - **Purpose:** show and set the cabin climate where a climate device or pack supports it.
@@ -141,7 +96,9 @@ liability under the EU directive once hardware is sold ([UI §12.1][ui-12.1] leg
 
 ### vehicle-settings-pack — Vehicle settings from packs  [Proposed]
 - **Why the app needs it:** aftermarket units have a "car settings" page; in Ostler those
-  settings come from the vehicle pack (an integration).
+  settings come from the vehicle pack (an integration). **Why still Proposed:** the
+  head-unit apps spec puts these in a **Car** app, later, once two packs declare settings
+  (decided, item 40; [head-unit apps §8][hu-8]).
 - **Purpose:** show the settings and car functions a vehicle pack offers, in one place.
 - **Owner:** os (page frame from the integration loader); content from the `lr_d2` pack
 - **Opens from → goes to:** system Settings → Vehicle; the vehicle's App info. Goes to the
@@ -165,14 +122,15 @@ liability under the EU directive once hardware is sold ([UI §12.1][ui-12.1] leg
   tiers, confirms and the Parked rule in the Diagnostics app ([UI §7][ui-7]).
 - **Components:** Card, StatTile, ListRow, Button.
 - **Spec refs:** [UI §7][ui-7] · [UI §6][ui-6].
-- **Open questions:** should this page live in system Settings or in the Diagnostics app?
+- **Open questions:** **Decided (item 40, [head-unit apps §8][hu-8]):** a Car app
+  (`ostler-app-car`), later, shows the owner-facing subset; Diagnostics keeps the full
+  technical settings list.
 
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [ui-7]: ../../../../specs/2026-10-06-ui-architecture-design.md#7-safety-gating-tiers
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [am-4.4]: ../../../../specs/2026-10-06-app-model-design.md#44-driver-safe-templates
-[pc-3]: ../../../../specs/2026-10-07-phone-comms-addon-design.md#3-architecture
-[pd]: ../../../../specs/2026-10-06-platform-direction-design.md#displays-are-thin-clients-cameras-live-on-our-infrastructure
-[dd-4.2]: ../../../research/driver_distraction_rules.md#42-uk-regulation-109-screens-visible-to-the-driver
 [ch-b5]: ../../../research/canbus_headunit.md#b5-android-auto-and-carplay-what-a-third-party-app-may-do
 [ch-b7]: ../../../research/canbus_headunit.md#b7-open-head-unit-projects
+[hu-11]: ../../../../specs/2026-10-07-head-unit-apps-design.md#11-projection-android-auto-carplay-open
+[hu-8]: ../../../../specs/2026-10-07-head-unit-apps-design.md#8-car-settings-from-packs

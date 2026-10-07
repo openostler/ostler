@@ -2,7 +2,7 @@
 title: "Designer brief: Settings (part F): the Apps section and offline maps"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
@@ -20,8 +20,9 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
 
 ## Apps (pointers only)
 
-- **Owner:** os. Settings → Apps lists every installed app, integrations included (labelled
-  "Integration": a backend-only app with just a setup page, as in Home Assistant).
+- **Owner:** os. Settings → Apps is one list of every installed app, integrations included
+  and labelled "Integration" (a backend-only app with just a setup page, as in Home
+  Assistant); decided, item 56.
 - **Each row** opens the app's **App info** page (the app-framework area, `90-appframe-*`):
   version and publisher, permissions and data classes it reads ([Accounts §14.1][acc-14.1]),
   the car actions it may request with category and tier ([app model §4.2][am-4.2]),

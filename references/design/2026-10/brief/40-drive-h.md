@@ -2,7 +2,7 @@
 title: "Designer brief 40-h — OS rules for widget setup pages, the signal picker, the Moving preview, layout import and export, import errors and Update from preset"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -85,15 +85,19 @@ with Park evidence), `shell-locked-view` while Moving ([Drive modes §8.1][dm-8.
   hu7 Night.
 - **Content the OS requires:** header "Convoy distance · Map"; schema fields (enum as
   Segmented "To: Leader · Sweep", bounded number, switch, string ≤ 30, signal row); "Shown
-  while moving as: tiles" (or map, media, call, short list) or "Parked only".
+  while moving as: tiles" (or map, media, call, short list) or "Parked only"; a **More
+  settings** row only when the widget names its own setup view (Parked only, item 51).
 - **States:** app disabled: "Needs Map · open App info". "Widget stopped". Moving: locked.
-- **Safety and driving rules:** apps draw no setup UI of their own for widgets; the OS caps
-  text and refresh ([app model §15.2][am-15.2]).
+- **Safety and driving rules:** the OS draws the setup page from the widget's schema; an app
+  may add one custom Parked page behind **More settings**, whose result the OS validates
+  against the schema ([launcher §7.3][lw-7.3]); the OS caps text and refresh
+  ([app model §15.2][am-15.2]).
 - **Components:** Sheet, Segmented, ListRow, switch.
-- **Spec refs:** [app model §15.1][am-15.1] · [app model §15.2][am-15.2].
-- **Open questions:** the new direction lets "every app bring its own setup flow"; confirm
-  widget setup stays OS-drawn from the schema (as approved), with app setup flows only for
-  the app itself.
+- **Spec refs:** [app model §15.1][am-15.1] · [app model §15.2][am-15.2] ·
+  [launcher §7.2][lw-7.2] · [launcher §7.3][lw-7.3].
+- **Open questions:** **Decided (item 51):** widget setup pages are drawn by the OS from the
+  widget's schema; an app may add one custom page behind "More settings". App setup flows
+  stay for the app itself.
 
 ### drive-mode-preview — Preview: Parked and Moving side by side  [Existing]
 - **Purpose:** see exactly what the driver will see, and why anything fails.
@@ -185,3 +189,5 @@ with Park evidence), `shell-locked-view` while Moving ([Drive modes §8.1][dm-8.
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-13.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence
 [ui-15.2]: ../../../../specs/2026-10-06-ui-architecture-design.md#152-editing-changes-34-and-53
+[lw-7.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#72-the-widget-setup-page
+[lw-7.3]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#73-a-custom-setup-page

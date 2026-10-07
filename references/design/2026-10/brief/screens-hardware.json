@@ -885,6 +885,13 @@
     "heading": "4.4 Driver-safe templates",
     "anchor": "44-driver-safe-templates",
     "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [
@@ -908,8 +915,7 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--proposed"
+  "brief": "references/design/2026-10/brief/20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--new"
  },
  {
   "id": "hw-camera",

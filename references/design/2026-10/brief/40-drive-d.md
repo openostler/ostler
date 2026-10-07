@@ -2,7 +2,7 @@
 title: "Designer brief 40-d — edit-mode safety for the widget picker, icon picker, name editor, dock editor and strip editor, and the Reset confirm"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -11,7 +11,7 @@ summary: >
   each widget's setup page and the wizards; this file keeps only what the OS enforces on
   those screens: Park to edit, safety items that cannot be removed, the dock's app-drawer
   anchor, text-entry limits and the per-class chip budget. It covers the widget picker and a
-  proposed "By signal" tab, the icon picker, the name editor, the dock editor (was the rail
+  approved "By signal" tab, the icon picker, the name editor, the dock editor (was the rail
   editor), the strip editor in full (the strip stays in this area) and the Reset to default
   and Discard changes confirms with the 7-day "Undo reset".
 ---
@@ -43,14 +43,13 @@ displays may edit at any time.
   the slot ([Drive modes §7.7][dm-7.7], [app model §15.2][am-15.2]).
 - **Components:** Sheet, ListRow, Chip (sizes).
 - **Spec refs:** [Drive modes §7.2][dm-7.2] · [app model §15.1][am-15.1].
-- **Open questions:** whether the gallery has tabs depends on the next block.
+- **Open questions:** **Decided (item 47):** the gallery has two tabs, By app and By signal
+  ([launcher §7.1][lw-7.1]).
 
-### shell-widget-picker-by-signal — Widget picker "By signal" tab  [Proposed]
-- **Why the app needs it:** a D2 owner thinks "I want boost", not "I want a gauge"
-  ([HA research, Decide 8][r-ha]).
+### shell-widget-picker-by-signal — Widget picker "By signal" tab  [New]
 - **Purpose:** pick a signal first, then a suggested widget.
 - **Owner:** os
-- **Opens from → goes to:** the picker's tab bar **By widget · By signal**; layout in 45-launcher.
+- **Opens from → goes to:** the picker's tab bar **By app · By signal**; layout in 45-launcher.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Night.
 - **Content:** signals grouped by system with confidence words, as `drive-signal-picker`
@@ -58,8 +57,8 @@ displays may edit at any time.
   left and right (raw), Transfer box low range; GPS Speed, Heading, Altitude.
 - **States:** as the picker. **Safety and driving rules:** as the picker.
 - **Components:** Segmented (tabs), ListRow.
-- **Spec refs:** [Drive modes §7.4][dm-7.4] · [HA research][r-ha].
-- **Open questions:** approve the "By signal" tab, or keep By widget only.
+- **Spec refs:** [Drive modes §7.4][dm-7.4] · [HA research][r-ha] · [launcher §7.1][lw-7.1].
+- **Open questions:** **Decided (item 47):** the "By signal" tab is approved, beside By app.
 
 ### shell-icon-picker — Icon picker (OS rules)  [New]
 - **Purpose:** re-icon an ordinary item or anchor from the one icon set.
@@ -75,8 +74,8 @@ displays may edit at any time.
   it ([Drive modes §7.6][dm-7.6]).
 - **Components:** Sheet, icon grid (new component), Button.
 - **Spec refs:** [Drive modes §7.6][dm-7.6] · [visual §6][vds-6].
-- **Open questions:** an "icon pack" in the new direction must still map to Material
-  Symbols names, or the one-icon-set rule needs an owner amendment.
+- **Open questions:** **Decided (item 49):** an icon pack is a glyph set mapped to Material
+  Symbols names; safety icons never change ([launcher §11][lw-11]).
 
 ### shell-name-edit — Name editor (OS rules)  [New]
 - **Purpose:** rename an item, safely for every screen size it shows on.
@@ -94,24 +93,25 @@ displays may edit at any time.
 - **Open questions:** none.
 
 ### shell-rail-editor — Dock editor (was the rail editor)  [Existing]
-- **Purpose:** choose and order the dock's five slots and the head-unit Drive button.
+- **Purpose:** choose and order the dock's slots (phone 5, HU-5 and HU-7 5, HU-9/10 6,
+  HU-wide 7, tablet and desktop 7; decided, item 17).
 - **Owner:** os
 - **Opens from → goes to:** long-press on the dock; the Dock tab of edit mode; app drawer →
   Edit layout → Dock. Drag and drop look: 45-launcher.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night (dock at the side, right on the D2); phone Night (dock at the bottom).
-- **Content the OS requires:** 1. Five slots; the **app drawer** slot marked "Always in the
-  dock". 2. Any app or Home in the other four (pinned apps: Diagnostics, Trips, Security,
-  Social, Map …). 3. **Drive** button (HU only): Start · End, icon, name, Hide. 4. Pinning
-  with five full asks "The dock is full. Which one moves to the app drawer?" (the drawer is
-  not offered).
+- **Content the OS requires:** 1. The class's slots; the **Home** and **app drawer** slots
+  marked "Always in the dock" (anchors, item 16). 2. Any app, shortcut or folder in the
+  others (pinned apps: Diagnostics, Trips, Security, Social, Map …). 3. No Drive button: it
+  is retired (item 16). 4. Pinning with every slot full asks "The dock is full. Which one
+  moves to the app drawer?" (the anchors are not offered).
 - **States:** Parked: full. Moving: "Park to edit" 3 s. Error: "The app drawer must stay in
   the dock".
-- **Safety and driving rules:** five-slot cap; the drawer exactly once; whatever leaves the
+- **Safety and driving rules:** the class's slot cap; Home and the drawer exactly once; whatever leaves the
   dock stays in the app drawer; Home stays the landing page and root of Back; a pinned app
   keeps its driving rule ([Drive modes §7.3][dm-7.3]).
 - **Components:** ListRow (drag handle), Button, Sheet.
-- **Spec refs:** [Drive modes §7.3][dm-7.3] · [UI §15.2][ui-15.2].
+- **Spec refs:** [Drive modes §7.3][dm-7.3] · [UI §15.2][ui-15.2] · [launcher §5.1][lw-5.1].
 - **Open questions:** none.
 
 ### shell-strip-editor — Strip editor  [New]
@@ -177,3 +177,6 @@ displays may edit at any time.
 [si-7]: ../../../../specs/2026-10-07-shell-input-design.md#7-confirms-and-countdowns
 [ui-15.2]: ../../../../specs/2026-10-06-ui-architecture-design.md#152-editing-changes-34-and-53
 [vds-6]: ../../../../specs/2026-10-07-visual-design-system-design.md#6-icons-and-fonts
+[lw-7.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#71-the-picker-gallery
+[lw-11]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#11-the-theme-wizard
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock

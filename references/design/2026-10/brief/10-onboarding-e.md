@@ -2,7 +2,7 @@
 title: "Designer brief 10-e — onboarding: backup, restore, adding a Brain to a node, and moving to a new Brain"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0041-brain-ed25519-signing.md]
 summary: >
@@ -12,13 +12,16 @@ summary: >
   roster), and the owner-led move from an old Brain to a new one as a step table. It is
   honest about what cannot move: the Brain's signing key and certificate authority stay
   behind, so every node is re-adopted with a press, phones trust the new Brain again, and
-  passkeys may need adding again. Backup, restore and move are Proposed.
+  passkeys may need adding again. Backup and restore are New (encrypted, item 64); the move
+  is Proposed.
 ---
 
 # 10-e — Backup, restore, add a Brain, move to a new Brain
 
-**What can and cannot move.** No approved spec covers backup or a Brain move yet; these
-screens follow the hard lines that do exist:
+**What can and cannot move.** Backups are an OS service (ADR-0046) with a Backups page in
+system Settings ([app UI model §8][ua-8]); the owner decided that every backup is encrypted
+with a passphrase, includes app data and never holds the VIN or the Brain's keys (item 64).
+No approved spec covers a Brain move yet. These screens follow the hard lines that exist:
 - The Brain's signing key **never leaves it**, not even in a backup ([ADR-0041][adr-41]
   item 5). A new Brain makes its own key, so each node must take the new key by **pairing
   or adoption**, which needs a press on the node ([ADR-0039 §7][adr-39]).
@@ -44,10 +47,8 @@ screens follow the hard lines that do exist:
 | 6 | `setup-first-contact` | runs the check; the car is recognised | not recognised → "Is this *Discovery 2 Td5*?" **Yes** links it |
 | 7 | `setup-move-brain` (new Brain) | finishes: retires the old Brain | old Brain unreachable → it is listed as removed |
 
-### setup-backup — Make a backup  [Proposed]
+### setup-backup — Make a backup  [New]
 - **Owner:** os
-- **Why the app needs it:** a Brain holds users, the garage, layouts, settings and trips;
-  without a backup a dead SD card loses all of it, and the exit guarantee needs one file.
 - **Purpose:** write one encrypted file the owner keeps somewhere else.
 - **Opens from → goes to:** Settings → System → **Backup**; `setup-move-brain` step 2. → a
   download (phone, desktop) or a USB stick on the Brain; back.
@@ -69,15 +70,14 @@ screens follow the hard lines that do exist:
 - **Safety and driving rules:** owner only, local links only; Parked on head units.
 - **Components:** ListRow, Segmented, text field, Button, progress rows, Card.
 - **Spec refs:** [ADR-0041][adr-41] · [ADR-0036][adr-36] · [App model §14][am-14] ·
-  [Drive modes §8.3 (layouts storage)][dm-8.3].
-- **Open questions:** (1) Encrypted with a passphrase, or plain with a warning? (2) Are
-  passkeys worth backing up, given each works only on the name it was made on?
-  (3) Scheduled automatic backups to a USB stick?
+  [Drive modes §8.3 (layouts storage)][dm-8.3] · [app UI model §8][ua-8] · [ADR-0046 §1][adr-46-1].
+- **Open questions:** (1) **Decided (item 64):** backups are always encrypted with a
+  passphrase, include app data, and never hold the VIN or the Brain's keys. (2) Are passkeys
+  worth backing up, given each works only on the name it was made on? (3) Scheduled
+  automatic backups to a USB stick?
 
-### setup-restore — Restore from a backup  [Proposed]
+### setup-restore — Restore from a backup  [New]
 - **Owner:** os
-- **Why the app needs it:** a replaced or reset Brain must come back with its people,
-  vehicles and trips, not start from nothing.
 - **Purpose:** read a backup onto a Brain that has no owner yet.
 - **Opens from → goes to:** `setup-welcome` → **Restore from a backup**. → the re-pair
   checklist (§5) → `setup-summary`.
@@ -99,7 +99,7 @@ screens follow the hard lines that do exist:
   restores pairings or grants to nodes: each node is re-adopted with a press.
 - **Components:** CodeInput (new), ListRow, text field, Card, progress rows, Button.
 - **Spec refs:** [Accounts §2.1][acc-2.1] · [Accounts §14.10][acc-14.10] ·
-  [ADR-0037][adr-37] · [ADR-0041][adr-41].
+  [ADR-0037][adr-37] · [ADR-0041][adr-41] · [app UI model §8][ua-8] · [ADR-0046 §1][adr-46-1].
 - **Open questions:** do restored users keep their roles and expiries as they were, or
   does a Mechanic's time box restart?
 
@@ -170,3 +170,5 @@ screens follow the hard lines that do exist:
 [adr-37]: ../../../../decisions/adr-0037-role-holders-and-handover.md#decision
 [adr-39]: ../../../../decisions/adr-0039-product-family-diagnostics-guardian-hub.md#decision
 [adr-41]: ../../../../decisions/adr-0041-brain-ed25519-signing.md#decision
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[adr-46-1]: ../../../../decisions/adr-0046-empty-os-every-app-an-add-on.md#1-the-os-boundary

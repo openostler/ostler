@@ -2,7 +2,7 @@
 title: "Designer brief — components (a): the OS frame and launcher components"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
@@ -53,8 +53,8 @@ summary: >
 |---|---|---|---|---|---|---|
 | **Home page grid** (new) | the cell grid a home page holds | Home page 1, dashboard page; Parked grid and Moving section | cells: P 4×6, H7 HU-5 6×4 and HU-7 6×4, H9 8×4, HU-wide 12×4 ([Drive modes §4.4][dm-4.4]) | viewing; editing (cell outlines in `line`, empty cells show **+**); drop target highlighted `accent-soft` | `--gap`, `bg` over wallpaper | `drive/DriveFace.tsx`, `destinations/Home.tsx` |
 | **Page indicator dots** (new) | where you are in the carousel | dots; edit mode adds a "+" dot for a new page | dot 8 (P) / 12 (H), gap 8 / 12, hit 48 / 76 for the row | current dot `text-1`, others `text-3`; hidden in Drive mode (the page chip says it) | `text-1`, `text-3` | — |
-| **Dock** (was the rail and bottom bar) | five slots one tap away | bottom (phone, tablet), driver side (head units, desktop optional); with labels on desktop | P 72 + safe area; T 88; H7 80 / 96; H9 112 | active slot `accent-soft` pill; edit mode drag handles; hidden in Drive mode | `surface-2`, `accent`, `accent-soft` | `shell/Nav.tsx` |
-| **Dock item** | one app, shortcut or the App drawer button | app, shortcut, App drawer (anchor, never removed), Drive button (head units, outside the cap) | icon P 24 / H 40, word ≤ 12 characters below | default, active, focused, badge dot | `type-label`, `text-2`, `accent` | `Nav.tsx` items |
+| **Dock** (was the rail and bottom bar) | 5 to 7 slots one tap away (phone, HU-5, HU-7 5; HU-9/10 6; HU-wide, tablet, desktop 7; item 17) | bottom (phone, tablet), driver side (head units, desktop optional); with labels on desktop | P 72 + safe area; T 88; H7 80 / 96; H9 112 | active slot `accent-soft` pill; edit mode drag handles; hidden in Drive mode | `surface-2`, `accent`, `accent-soft` | `shell/Nav.tsx` |
+| **Dock item** | one app, shortcut or the App drawer button | app, shortcut, Home and App drawer (anchors, never removed; the Drive button is retired, item 16) | icon P 24 / H 40, word ≤ 12 characters below | default, active, focused, badge dot | `type-label`, `text-2`, `accent` | `Nav.tsx` items |
 | **App drawer grid** (new; was More) | every installed app | grid, search on top, Settings and Store first, Hidden apps last | columns: P 4, T 6, H7 5, H9 7; rows scroll Parked | locked apps show a lock badge; search empty "No apps match" | `surface-1`, `text-1` | `destinations/More.tsx` |
 | **App icon** (new) | one app in the drawer, dock or a page | plain, with badge dot (update or unread count), disabled | P 56 tile with 24 icon; H 96 tile with 40 icon; name below ≤ 12 characters | long press opens App info, Add to home, Add to dock, Hide | `surface-3` tile, `radius-md`, icon in `text-1` | — |
 | **Folder** (new) | a group of shortcuts on a home page or in the dock | closed (2×2 mini icons), open (sheet with a grid and an editable name) | one cell; open sheet as Sheet | empty folder disappears; name ≤ 30 characters | `surface-3`, `radius-md` | — |

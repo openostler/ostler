@@ -2,14 +2,14 @@
 title: "Designer brief 40-a — shell chrome: status strip, dock, focus states, telltale sheet, connection sheet, vehicle switcher"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md]
 summary: >
   First of the shell, Home, Drive and alerts brief files (40-a to 40-i). It covers the
   shell's always-present chrome: the status strip with every chip and badge in the normal and
   Drive contexts and its per-class chip budget, the dock (was the rail: bottom on
-  phones, driver side on head units; five slots, the app drawer anchored, the Drive button), the D-pad focus states across the
+  phones, driver side on head units; slots per class, Home and the app drawer anchored), the D-pad focus states across the
   component kit, the worst-telltale fault sheet (full list Parked, `telltale_list` while
   Moving), the connection sheet (connection ladder, Brain power, queued actions, adapter
   verdicts and the always-present Reset layout row) and the active-vehicle switcher. Examples
@@ -85,40 +85,40 @@ Conventions for every block: the D2 is right-hand drive, so the dock is drawn on
 - **Spec refs:** [UI §3.2][ui-3.2] · [UI §15.1][ui-15.1] · [UI §15.2][ui-15.2] ·
   [Drive modes §6][dm-6] · [Drive modes §7.5][dm-7.5] · [visual §8][vds-8] ·
   [Maintenance §8][mg-8].
-- **Open questions:** Maintenance §8 gives the Maintenance app a strip chip at `very_urgent` or
-  `past_due`, but Drive modes Decision 14 says apps add no chips. Draw it as a Home card
-  only until the owner decides.
+- **Open questions:** **Decided (item 58):** no Maintenance strip chip; apps add no strip
+  chips. Service due shows as a Home card or the Service due widget only.
 
 ### shell-rail — Dock (was the rail and the phone bottom bar)  [Existing]
-- **Purpose:** the five pinned slots: at the bottom on the phone, on the driver's side on
-  head units (a bottom dock on a head unit only if the launcher brief proposes it).
+- **Purpose:** the pinned slots (phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7, tablet and
+  desktop 7; decided, item 17): at the bottom on the phone, on the driver's side on every
+  head unit, HU-wide included (item 44).
 - **Owner:** os
 - **Opens from → goes to:** always present outside full-screen Drive on the phone; each slot
-  opens its app or Home; the app-drawer slot opens the drawer; the HU **Drive** button opens
-  the Drive home pages; long-press on an item or the gap opens `shell-rail-editor` (Parked).
+  opens its app or Home; the app-drawer slot opens the drawer; long-press on an item or the gap opens `shell-rail-editor` (Parked).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night (right side), phone Night and Day, hu5 Night, desktop Night with labels.
 - **Content (default for a full install):** 1. **Home** `home`. 2. **Diagnostics** app
   `stethoscope`. 3. **Trips** app `history` (the live code still says "Logs"). 4. **Security**
   app `shield` (only with a node). 5. **App drawer** (was More; `apps` or the user's icon),
-  always present. 6. HU only, outside the five: **Drive** button `speed` at the end (may move
-  to the start, be renamed, re-iconed or hidden). A flavour with fewer apps (Guardian = the OS
-  plus Security) shows fewer pinned apps; the drawer is always there. Variant: Social pinned
+  always present. Home and the App drawer are anchors: they move, never go (item 16). The
+  head-unit **Drive** button is retired (item 16). Guardian's dock is Security · Settings ·
+  App drawer (item 42); the drawer is always there. Variant: Social pinned
   as "Ride" in slot 4.
 - **Sizes:** side dock 80 (HU-5), 96 (HU-7), 112 (HU-9/10, HU-wide), 88 (tablet), 88 with
   labels (desktop); phone dock 72 + safe area, floating pill. 76 px targets on HU, 72–86 px
   items on phone. Labels ≤ 12 graphemes.
 - **States:** active item: `accent-soft` pill and accent icon. Parked, Idling: full. Moving:
-  HU shows the Drive home page full screen with the dock still on the driver's side; the
-  drawer and pinned apps open `shell-locked-view` unless they have a Moving template.
+  HU shows the driving page full screen; a dock item whose target has no Moving view is not
+  drawn and its slot stays empty; the drawer opens a `short_list` of ≤ 6 driving apps
+  ([launcher §5.1][lw-5.1], [§5.2][lw-5.2]).
   Left-hand drive: dock on the left.
 - **Safety and driving rules:** the app drawer is in the dock exactly once and never hidden;
   a pinned app keeps its own driving rule; pinning unlocks nothing ([Drive modes §7.3][dm-7.3]).
 - **Components:** TabBar (floating pill on phone, side dock on HU). Focus-ring tokens.
 - **Spec refs:** [UI §3.3][ui-3.3] · [UI §3.4][ui-3.4] · [UI §15.2][ui-15.2] ·
   [Drive modes §7.3][dm-7.3] · [visual §8][vds-8].
-- **Open questions:** the approved specs call it the rail and More; the specs need the
-  owner's wording amendment for dock and app drawer.
+- **Open questions:** **Decided (item 16, [launcher §5][lw-5.1]):** the approved launcher
+  spec names them the dock and the app drawer.
 
 ### shell-focus-states — D-pad focus states across the kit  [Existing]
 - **Purpose:** one sheet of every kit component in its focused and engaged states, so a
@@ -261,3 +261,5 @@ Conventions for every block: the D2 is right-hand drive, so the dock is drawn on
 [ui-4.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#41-garage-and-active-vehicle-switcher
 [ui-4.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#45-the-connection-ladder
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock
+[lw-5.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#52-the-drawer

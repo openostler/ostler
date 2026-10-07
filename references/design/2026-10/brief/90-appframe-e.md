@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part E): Integrations, discovery and permission sheets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -21,14 +21,11 @@ summary: >
 Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
 [part C](90-appframe-c.md), [part D](90-appframe-d.md).
 
-### app-integrations — Integrations  [Proposed]
+### app-integrations — Integrations  [New]
 - **Owner:** os
-- **Why the app needs it:** vehicle packs and bridges are integrations (ADR-0042 item 98);
-  they need one place showing what is connected, what was found and what is failing, as
-  Home Assistant's Devices and services page.
 - **Purpose:** list integration entries: discovered, needing attention, configured.
-- **Opens from → goes to:** `app-list` variant A's Integrations row, or variant B's
-  Integrations tab; the discovery notice; Settings search. Rows → `app-integration-entry`;
+- **Opens from → goes to:** `app-list`'s Integrations row (one list, item 56); the
+  discovery notice; Settings search. Rows → `app-integration-entry`;
   **Add** → the integration's flow (`app-flow-discovered`); **Add integration** → the
   Store's integrations shelf (`70-store-*`) or an installed, unset integration's flow.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -56,13 +53,12 @@ Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
 - **Components:** Card (tone, tappable), Chip, Button, search field (new).
 - **Spec refs:** [ADR-0042][adr-42] HA direction item 98 · [HA integrations §1][ha-1] ·
   [HA integrations §4.1][ha-4.1] · [HA integrations §5][ha-5] (C1, C2, C14) ·
-  [UI §6][ui-6].
-- **Open questions:** as `app-list`: its own page or a tab beside Apps.
+  [UI §6][ui-6] · [app UI model §6][ua-6].
+- **Open questions:** **Decided (item 56):** one Apps list with integrations labelled; this
+  page opens from that list's Integrations row, not from a separate tab.
 
-### app-integration-entry — Integration entry  [Proposed]
+### app-integration-entry — Integration entry  [New]
 - **Owner:** os
-- **Why the app needs it:** HA's entry page (devices, entities, reload) maps to a pack
-  bound to a car through a source; owners need to see what it brings and restart it.
 - **Purpose:** one entry's devices, signals, source and controls.
 - **Opens from → goes to:** `app-integrations` rows; App info of a vehicle pack
   (**Integration entry**). Devices → Diagnose's system page (`diagnose-system`) or the
@@ -92,13 +88,11 @@ Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
   (that has its own Stop); remove asks first.
 - **Components:** ListRow, Chip (status), Card, Button.
 - **Spec refs:** [HA integrations §4.1][ha-4.1] · [UI §4.3][ui-4.3] · [UI §4.5][ui-4.5] ·
-  [UI §5.1][ui-5.1].
+  [UI §5.1][ui-5.1] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-discovered — New device found  [Proposed]
+### app-discovered — New device found  [New]
 - **Owner:** os
-- **Why the app needs it:** discovery is approved in pieces (device suggestions, adapter
-  detection, pack identification) but nothing says how a find is announced.
 - **Purpose:** tell the owner, quietly, that something new was found, and offer to add it.
 - **Opens from → goes to:** the OS raises it → **Add** → `app-flow-discovered`; **Later** →
   stays in Integrations → Discovered; **Ignore** → the ignored list.
@@ -116,7 +110,7 @@ Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
   itself ([App model §7][am-7]: nothing auto-installs); never covers a warning card.
 - **Components:** Card (home card), notification (phone), Button.
 - **Spec refs:** [App model §7][am-7] · [App model §14][am-14] (14.7 `home:card`) ·
-  [Adapters §5][sa-5] · [UI §4.4][ui-4.4].
+  [Adapters §5][sa-5] · [UI §4.4][ui-4.4] · [app UI model §4.4][ua-4.4].
 - **Open questions:** should the OS also show a strip chip for finds? The brief says no
   (apps add no chips; finds are not urgent).
 
@@ -197,3 +191,5 @@ Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
 [ui-5.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#51-shape
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [ui-7.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#71-action-categories-the-second-axis-adr-0033
+[ua-6]: ../../../../specs/2026-10-07-app-ui-model-design.md#6-backend-only-apps-integrations
+[ua-4.4]: ../../../../specs/2026-10-07-app-ui-model-design.md#44-rules

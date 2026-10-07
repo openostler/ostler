@@ -2,7 +2,7 @@
 title: "Designer brief — components (c): new components and the kit sheets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -75,17 +75,18 @@ checks the kit once before pages use it ([visual §11][vds-11]: V2 kit before V3
 - **Components:** Status strip, Strip chip, Strip badge, Page chip, Frame, Locked view card.
 - **Spec refs:** [UI §3.2][ui-3.2], [Drive modes §7.5][dm-7.5].
 
-### ia-kit-launcher — Kit sheet: launcher  [Proposed]
-- **Purpose:** the Android-style launcher parts. *Why:* the owner's direction of 2026-10-07 makes home pages, the dock and the app drawer the navigation; no approved spec draws them yet.
+### ia-kit-launcher — Kit sheet: launcher  [New]
+- **Purpose:** the Android-style launcher parts.
 - **Owner:** os
 - **Opens from → goes to:** a design frame; the pages are drawn in `45-launcher-*`.
 - **Layout classes:** phone · tablet · hu5 · hu7 · hu9 · huwide. **Draw first:** Night on phone and HU-7; Night dim on HU-7; Day on phone.
-- **Content:** Home page grid (viewing, editing with cell outlines and **+**) · page indicator dots (with the "+" new-page dot) · Dock at the bottom (phone) and driver side (HU-7, right-hand drive) with the App drawer button · Dock item states · App drawer grid with search, Settings and Store first, Hidden apps · App icon with badge and lock · Folder closed and open · Shortcut · Widget frame (viewing, editing with resize handles, picked up, safety without ×, Widget stopped) · Widget picker gallery card (available, needs an app, Parked only) · Wallpaper layer (solid, theme image, Night dim, Drive mode) · Edit bar · Item sheet.
+- **Content:** the dock holds 5 slots on phone, HU-5 and HU-7, 6 on HU-9/10 and 7 on HU-wide, tablet and desktop (item 17) · Home page grid (viewing, editing with cell outlines and **+**) · page indicator dots (with the "+" new-page dot) · Dock at the bottom (phone) and driver side (HU-7, right-hand drive) with the App drawer button · Dock item states · App drawer grid with search, Settings and Store first, Hidden apps · App icon with badge and lock · Folder closed and open · Shortcut · Widget frame (viewing, editing with resize handles, picked up, safety without ×, Widget stopped) · Widget picker gallery card (available, needs an app, Parked only) · Wallpaper layer (solid, theme image, Night dim, Drive mode) · Edit bar · Item sheet.
 - **States:** drag over an edge shows "New page"; a full dock asks which app to move to the drawer.
 - **Safety and driving rules:** editing is Park to edit; in Drive mode the dock and dots hide and the page chip takes over; safety widgets have no remove control.
 - **Components:** as in [03-components-a §2](03-components-a.md#2-launcher).
-- **Spec refs:** [Drive modes §7.1–§7.3][dm-7.1], [Drive modes §8.1][dm-8.1].
-- **Open questions:** dock on the side or bottom on HU-wide? Recommend the driver side, as the rail today.
+- **Spec refs:** [Drive modes §7.1–§7.3][dm-7.1], [Drive modes §8.1][dm-8.1] · [launcher §5.1][lw-5.1] · [launcher §6.2][lw-6.2].
+- **Open questions:** **Decided (item 44):** on HU-wide the dock sits on the driver side, as
+  the rail today.
 
 ### ia-kit-moving-templates — Kit sheet: Moving templates  [New]
 - **Purpose:** the eleven templates the OS draws while Moving, at their limits.
@@ -144,3 +145,5 @@ checks the kit once before pages use it ([visual §11][vds-11]: V2 kit before V3
 [vds-5]: ../../../../specs/2026-10-07-visual-design-system-design.md#5-space-radius-elevation-glow-motion
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
 [vds-11]: ../../../../specs/2026-10-07-visual-design-system-design.md#11-migration-small-prs-approved-2026-10-07-all-before-u2-build-work
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock
+[lw-6.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#62-edit-mode

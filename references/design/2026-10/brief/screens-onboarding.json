@@ -1005,6 +1005,13 @@
     "heading": "5.9 Defaults and rotation per class",
     "anchor": "59-defaults-and-rotation-per-class",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+    "section": "§10.2",
+    "heading": "10.2 The wizard",
+    "anchor": "102-the-wizard",
+    "label": "Launcher"
    }
   ],
   "tokens": [
@@ -1029,8 +1036,7 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-display--this-screen--proposed"
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-display--this-screen--new"
  },
  {
   "id": "setup-people",
@@ -1212,6 +1218,20 @@
     "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
     "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
     "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+    "section": "§5",
+    "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+    "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+    "label": "ADR-0046"
+   },
+   {
+    "doc": "specs/2026-10-07-store-design.md",
+    "section": "§7",
+    "heading": "7. The bundled offline catalogue",
+    "anchor": "7-the-bundled-offline-catalogue",
+    "label": "Store"
    }
   ],
   "tokens": [
@@ -1240,8 +1260,7 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-apps--choose-your-apps--proposed"
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-apps--choose-your-apps--new"
  },
  {
   "id": "setup-app-access",
@@ -1498,6 +1517,20 @@
     "heading": "8.3 Storage",
     "anchor": "83-storage",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§8",
+    "heading": "8. System Settings and the App info page",
+    "anchor": "8-system-settings-and-the-app-info-page",
+    "label": "App UI model"
+   },
+   {
+    "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+    "section": "§1",
+    "heading": "1. The OS boundary",
+    "anchor": "1-the-os-boundary",
+    "label": "ADR-0046"
    }
   ],
   "tokens": [
@@ -1520,8 +1553,7 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-backup--make-a-backup--proposed"
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-backup--make-a-backup--new"
  },
  {
   "id": "setup-restore",
@@ -1574,6 +1606,20 @@
     "heading": "Decision drivers",
     "anchor": "decision-drivers",
     "label": "ADR-0041"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§8",
+    "heading": "8. System Settings and the App info page",
+    "anchor": "8-system-settings-and-the-app-info-page",
+    "label": "App UI model"
+   },
+   {
+    "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+    "section": "§1",
+    "heading": "1. The OS boundary",
+    "anchor": "1-the-os-boundary",
+    "label": "ADR-0046"
    }
   ],
   "tokens": [
@@ -1596,8 +1642,7 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-restore--restore-from-a-backup--proposed"
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-restore--restore-from-a-backup--new"
  },
  {
   "id": "setup-add-brain",

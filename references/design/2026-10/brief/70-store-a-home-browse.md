@@ -2,7 +2,7 @@
 title: "Designer brief: Store (part A): rules, item kinds, Store home, categories and search"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, references/research/ha_architecture_addons.md, references/research/ha_integrations_dashboards.md, references/research/ha_companion_community.md]
 summary: >
@@ -11,8 +11,7 @@ summary: >
   (vehicle packs, data sources, bridges), widget packs, themes, icon packs, wallpapers,
   dashboard presets, gauge styles and sound and EQ presets. This part gives the shared rules
   (Parked-only browsing on head units, no installs while Moving, owner-only installs on local
-  links, what the native phone app may install, the bundled catalogue, no ratings pending the
-  owner), the item kinds table, the main install flow as a step list, and the blocks for the
+  links, what the native phone app may install, the bundled catalogue, no ratings), the item kinds table, the main install flow as a step list, and the blocks for the
   Store home, a category page and search with filters (vehicle, kind, works offline, open source).
 ---
 
@@ -35,8 +34,10 @@ Process and the constraints checklist: [design hand-off README][readme].
 - **What exists today.** The approved catalogue is More → Add-ons with tabs Installed and
   Available, listing bundled add-ons and add-ons a device suggests, with no remote catalogue
   ([app model §14.2][am-14], [ADR-0042 §5][adr-42]). That screen, `addons-catalogue`, becomes
-  **My library** (part C). Everything online here is **Proposed**: a remote catalogue is a
-  new outbound path and needs its own ADR first ([app model §11 Q7][am-11]).
+  **My library** (part C). The **online catalogue** is opt-in and off by default, with one
+  switch at first run, and comes only after its own ADR (decided, item 32;
+  [app model §11 Q7][am-11]). The Store is a system app: never uninstalled, Parked only on
+  driver-facing displays (decided, item 28; [Store §3][st-3]).
 
 ## 2. Item kinds
 
@@ -46,7 +47,7 @@ Process and the constraints checklist: [design hand-off README][readme].
 | **Integration** | connects Ostler to a car or a service; backend only, setup page only | data, or a service | node and Brain (pack data); Brain (bridges) | Ostler pack for Land Rover Discovery 2, Generic OBD-II, RealDash CAN out, LubeLogger bridge, MQTT out | one setup page |
 | **Widget pack** | widgets for the picker | declarative, or sandboxed | where the widget is placed | Starter widgets | none, or per-widget setup |
 | **Theme** | a token set (colours for Night, Night dim, Deep night, Day) | no | every display | Default theme | the theme wizard (`45-launcher-*`) |
-| **Icon pack** | a style over the one icon set | no | every display | (none in the specs yet) | the theme wizard |
+| **Icon pack** | a glyph set mapped to Material Symbols names (item 49) | no | every display | (none in the specs yet) | the theme wizard |
 | **Wallpaper** | still images for home pages | no | every display | (none in the specs yet) | the theme wizard |
 | **Dashboard** | a preset home page as layout data | no | every display | Diagnostic, Dashboard, Map, Convoy / Ride, Off-road (D2), Split / Media, Minimal / Night | the dashboard builder wizard |
 | **Gauge style** | how gauge widgets draw | no | every display | (styles of the one gauge spec) | the theme wizard |
@@ -82,13 +83,14 @@ Process and the constraints checklist: [design hand-off README][readme].
 6. **Safety stays with the OS.** No item can remove the fault telltale, alarm alerts, the
    Moving templates or Park to edit ([Drive modes §8.1][dm-8.1]). Themes must pass the
    contrast checks and have no glow on head units at night ([visual §3][vds-3]); wallpapers
-   are still images only (no video or animation on driver-facing displays); icon packs work
-   inside the Material Symbols set ([visual §6][vds-6]).
+   are still images only (no video or animation on driver-facing displays); icon packs map
+   to Material Symbols names and never change safety icons (item 49; [visual §6][vds-6]).
 7. **Honest data.** Every item lists its data classes in words from the registry
    ([Accounts §14.1][acc-14.1]); a new class it adds starts "only me" and in ghost.
-8. **No votes.** No star ratings, reviews or download leaderboards, pending the owner
-   (part D, question 1); the Community hub has a no-votes rule ([hub §1][hub-1]). Items show
-   facts instead: publisher, verified key, vehicles tested, last update, open source.
+8. **No votes.** No star ratings, reviews or download leaderboards (decided, items 33 and
+   62; [Store §11][st-11]); the Community hub has a no-votes rule ([hub §1][hub-1]). Items
+   show facts instead: review level, badges, publisher, verified key, vehicles tested, last
+   update, known issues, the issue tracker, open source.
 9. **Updates never on a metered link over quota** and never while Moving
    ([ADR-0028][adr-28], [HA research §8][ha-arch-8]).
 10. **Exit guarantee.** Everything works with the bundled catalogue and from files; nothing
@@ -105,10 +107,8 @@ Process and the constraints checklist: [design hand-off README][readme].
 | 5 | `store-installing` | waits; sees progress | download or check fails → **Retry**; car moves → paused |
 | 6 | `store-installing` (done) | presses **Set up now** | the app's own setup flow (`90-appframe-*`); **Later** leaves a "Finish setup" row in My library |
 
-### store-home — Store home  [Proposed]
+### store-home — Store home  [New]
 - **Owner:** os
-- **Why the app needs it:** the OS ships with almost no apps, so owners need one place to
-  find apps, integrations and looks that fit their car.
 - **Purpose:** the landing page of the Store: featured items, what fits your car, what is
   new and updated, and every kind.
 - **Opens from → goes to:** the app drawer (Store icon `storefront`); Settings → Apps →
@@ -123,7 +123,7 @@ Process and the constraints checklist: [design hand-off README][readme].
      (`apps`), **Updates** icon button with a count badge (`update`, "3").
   2. **Queue** card (only when something waits): "1 install waits until you park ·
      Maintenance & Garage" with **Cancel**.
-  3. **Featured**: one wide Card per item, swipeable (phone) or two side by side (tablet,
+  3. **Picks** (curated by the project, each with a written reason): one wide Card per item, swipeable (phone) or two side by side (tablet,
      hu9, huwide): image from the item's screenshots, name, one line, kind Chip. Example:
      "Maintenance & Garage · Service reminders, fuel and costs · App".
   4. **For your car** (header shows the active vehicle: "For your Discovery 2 Td5"): items
@@ -151,15 +151,13 @@ Process and the constraints checklist: [design hand-off README][readme].
 - **Components:** search field, Card (featured), new component **StoreItemCard** (rows),
   Chip (kind, status), ListRow, Button.
 - **Spec refs:** [UI §12.4][ui-12.4], [app model §14.2][am-14], [ADR-0042][adr-42],
-  [HA integrations research §5][ha-int-5] (Discovered on top, C2).
-- **Open questions:** who picks Featured (Ostler staff, or a rule such as "first party and
-  updated in the last 30 days")? Should a **Discovered** row (a device on the bus that has
-  an integration) sit above Featured, as in Home Assistant (C2)?
+  [HA integrations research §5][ha-int-5] (Discovered on top, C2) · [Store §3][st-3].
+- **Open questions:** **Decided ([Store §3][st-3]):** the project curates **Picks**, each
+  with a written reason; a "Set up your car" row (items that match the vehicle, its
+  integrations and devices found) leads the page, as Home Assistant's Discovered row does.
 
-### store-category — Category page  [Proposed]
+### store-category — Category page  [New]
 - **Owner:** os
-- **Why the app needs it:** nine kinds of items need one listing page each, with sorting
-  and the subgroups a car owner expects (vehicle packs apart from bridges).
 - **Purpose:** list every item of one kind, with subgroups and sorting.
 - **Opens from → goes to:** `store-home` → Browse by kind; the widget picker, theme wizard
   and dashboard wizard (`45-launcher-*`) open the matching kind. Goes to `store-item`.
@@ -189,14 +187,13 @@ Process and the constraints checklist: [design hand-off README][readme].
 - **Components:** Chip (filter), Segmented, ListRow, StoreItemCard (new), preview tile (new
   component **PreviewTile**).
 - **Spec refs:** [UI §12.4][ui-12.4], [Drive modes §5][dm-5] (the seven presets),
-  [HA integrations research §4.2][ha-int-42] (integrations versus add-ons).
-- **Open questions:** keep "Integrations" as a kind inside the Store, or give vehicle packs
-  their own top-level entry, since a car needs one before anything else works?
+  [HA integrations research §4.2][ha-int-42] (integrations versus add-ons) · [Store §3][st-3].
+- **Open questions:** **Decided ([Store §3][st-3]):** Integrations stay one category, with
+  vehicles, data sources, bridges and devices as its sub-categories; "Set up your car" on
+  the Store home puts the vehicle pack first.
 
-### store-search — Search and filters  [Proposed]
+### store-search — Search and filters  [New]
 - **Owner:** os
-- **Why the app needs it:** with many packs and looks, owners need to find what works with
-  their car, offline, and as open source.
 - **Purpose:** text search over the catalogue with filters for vehicle, kind, works offline
   and open source.
 - **Opens from → goes to:** the search field on `store-home` and `store-category`. Goes to
@@ -225,7 +222,7 @@ Process and the constraints checklist: [design hand-off README][readme].
 - **Components:** search field, Chip (filter), Sheet (filter), toggle (as Segmented "On ·
   Off"), ListRow, StoreItemCard (new).
 - **Spec refs:** [UI §12.1][ui-12.1], [app model §4.2][am-4.2] (`requires`, hosts),
-  [HA companion research §9][ha-comm-9].
+  [HA companion research §9][ha-comm-9] · [Store §3][st-3].
 - **Open questions:** does "Works offline" come from a manifest field (new) or from the
   catalogue's own check?
 
@@ -251,3 +248,5 @@ Process and the constraints checklist: [design hand-off README][readme].
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
 [vds-3]: ../../../../specs/2026-10-07-visual-design-system-design.md#3-colour
 [vds-6]: ../../../../specs/2026-10-07-visual-design-system-design.md#6-icons-and-fonts
+[st-3]: ../../../../specs/2026-10-07-store-design.md#3-the-store-app
+[st-11]: ../../../../specs/2026-10-07-store-design.md#11-ratings-and-paid-items-owner-decisions

@@ -2,7 +2,7 @@
 title: "Designer brief: Settings (part D): sharing defaults, storage, recording and backups"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-trip-sharing-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   Locked or Download), a Proposed Storage page (disk use by recordings, captures, trips,
   audio, maps and apps, and the automatic rotation at low space), a New Recording sources
   page (audio and acceleration opt-in per device, the identity-recording install option shown
-  read-only), a Proposed Backups page (schedule and destination) and a Proposed four-step
+  read-only), a New Backups page (schedule and destination, always encrypted) and a New four-step
   Restore flow.
 ---
 
@@ -113,11 +113,9 @@ sees what", S8) is the Existing `accounts-s8`; the share sheet is `trips-share-s
 - **Spec refs:** [ADR-0010][adr-0010], [ADR-0036][adr-0036].
 - **Open questions:** none.
 
-### settings-backups — Backups  [Proposed]
+### settings-backups — Backups  [New]
 - **Owner:** os
 - **Purpose:** keep a copy of settings, users and trips somewhere else, on a schedule.
-- **Why proposed:** a lost or failed SD card loses everything; Home Assistant's backup model
-  is in the research round ([ADR-0042][adr-0042]) with no spec yet.
 - **Opens from → goes to:** Settings → Backups. Goes to Restore (`settings-restore`) and
   Ostler Link.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -125,26 +123,27 @@ sees what", S8) is the Existing `accounts-s8`; the share sheet is `trips-share-s
 - **Content (top to bottom):**
   1. Status Card: "Last backup ‹date› · ‹size› · ‹destination›", or `warn` "No backup yet".
   2. **Schedule**: Segmented "Off · Daily · Weekly"; "Keep the last ‹3›".
-  3. **What**: rows Settings and layouts (always), Users and sign-ins (encrypted), Trips
-     (Switch, sizes), App data.
+  3. **What**: rows Settings and layouts (always), Users and sign-ins, Trips (Switch,
+     sizes), App data (always; decided, item 64). Read-only line: "Never in a backup: your
+     car's VIN and the Brain's keys".
   4. **Where**: Segmented "USB drive · Network folder · Ostler Link"; Ostler Link shows
      "Encrypted on this car before it leaves" and needs the subscription.
-  5. **Backup password** (shown once at set-up; "Without it the backup can't be opened").
+  5. **Backup passphrase** (shown once at set-up; "Every backup is encrypted with it. Without
+     it the backup can't be opened"). There is no unencrypted backup (item 64).
   6. Buttons "Back up now" (primary), "Restore from a backup".
 - **States:** empty; running (progress); error ("USB drive not found"); offline (Ostler Link
   waits); Brain absent ("Needs the Brain"); Parked full; Moving: the lock.
-- **Safety and driving rules:** owner only; the Brain's signing key and the VIN are never in
-  a backup ([ADR-0041][adr-0041], [ADR-0036][adr-0036]); Ostler Cloud never holds `auth.db`
+- **Safety and driving rules:** owner only; every backup is encrypted; the Brain's keys and
+  the VIN are never in a backup ([ADR-0041][adr-0041], [ADR-0036][adr-0036]); Ostler Cloud never holds `auth.db`
   readable ([Accounts §14.10][acc-14.10]).
 - **Components:** Card, Segmented, Switch (new), ListRow, Button, progress bar (new).
-- **Spec refs:** [ADR-0042][adr-0042], [Accounts §14.10][acc-14.10], [ADR-0041][adr-0041].
+- **Spec refs:** [ADR-0042][adr-0042], [Accounts §14.10][acc-14.10], [ADR-0041][adr-0041] · [app UI model §8][ua-8] · [ADR-0046 §1][adr-46-1].
 - **Open questions:** may an encrypted copy of `auth.db` go to Ostler Link at all, given
   §14.10 says the cloud never holds it?
 
-### settings-restore — Restore from a backup  [Proposed]
+### settings-restore — Restore from a backup  [New]
 - **Owner:** os
 - **Purpose:** bring a backup back onto this Brain, or onto a new one.
-- **Why proposed:** the other half of Backups; also the first-run path after a lost card.
 
 | Step | Screen | The user | Can fail · recovery |
 |---|---|---|---|
@@ -163,7 +162,7 @@ sees what", S8) is the Existing `accounts-s8`; the share sheet is `trips-share-s
 - **Safety and driving rules:** Parked only; owner only; nothing reaches the car; paired
   phones re-confirm after a restore onto new hardware.
 - **Components:** ListRow, password field (new component), Card, Button, Sheet.
-- **Spec refs:** [ADR-0042][adr-0042], [Accounts §14.10][acc-14.10].
+- **Spec refs:** [ADR-0042][adr-0042], [Accounts §14.10][acc-14.10] · [app UI model §8][ua-8] · [ADR-0046 §1][adr-46-1].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -181,3 +180,5 @@ sees what", S8) is the Existing `accounts-s8`; the share sheet is `trips-share-s
 [ts-3]: ../../../../specs/2026-10-07-trip-sharing-design.md#3-the-five-levels
 [ui-12.2]: ../../../../specs/2026-10-06-ui-architecture-design.md#122-logs--trips-changes-32-34-35-36-38-41-43-6-10
 [ui-13.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#131-the-trips-share-sheet-changes-122s-trip-detail-share-and-export
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[adr-46-1]: ../../../../decisions/adr-0046-empty-os-every-app-an-add-on.md#1-the-os-boundary

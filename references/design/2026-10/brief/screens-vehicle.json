@@ -2659,6 +2659,13 @@
     "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
     "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
     "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2675,8 +2682,7 @@
    "differences": []
   },
   "owner": "app:diagnostics",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-setup--diagnostics-first-run-setup--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-setup--diagnostics-first-run-setup--new"
  },
  {
   "id": "diagnose-app-settings",
@@ -2715,6 +2721,13 @@
     "heading": "4.3 Scan all and its honest states",
     "anchor": "43-scan-all-and-its-honest-states",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2731,8 +2744,7 @@
    "differences": []
   },
   "owner": "app:diagnostics",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-settings--diagnostics-settings--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-settings--diagnostics-settings--new"
  },
  {
   "id": "trips-app-setup",
@@ -2771,6 +2783,13 @@
     "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
     "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2788,8 +2807,7 @@
    "differences": []
   },
   "owner": "app:trips",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--new"
  },
  {
   "id": "trips-app-settings",
@@ -2828,6 +2846,13 @@
     "heading": "1. Record only while connected",
     "anchor": "1-record-only-while-connected",
     "label": "Logs at scale"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2844,8 +2869,7 @@
    "differences": []
   },
   "owner": "app:trips",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-settings--trips-settings--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-settings--trips-settings--new"
  },
  {
   "id": "maint-app-setup",
@@ -2889,6 +2913,13 @@
     "heading": "9. Import and export",
     "anchor": "9-import-and-export",
     "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2905,8 +2936,7 @@
    "differences": []
   },
   "owner": "app:maintenance",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--new"
  },
  {
   "id": "maint-app-settings",
@@ -2943,6 +2973,13 @@
     "heading": "8. Reminder delivery",
     "anchor": "8-reminder-delivery",
     "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2959,8 +2996,7 @@
    "differences": []
   },
   "owner": "app:maintenance",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--new"
  },
  {
   "id": "decode-app-setup",
@@ -2997,6 +3033,13 @@
     "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
     "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -3014,8 +3057,7 @@
    "differences": []
   },
   "owner": "app:decode-lab",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-setup--decode-lab-first-run-setup--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-setup--decode-lab-first-run-setup--new"
  },
  {
   "id": "decode-app-settings",
@@ -3052,6 +3094,13 @@
     "heading": "8.3 Data, evidence, fixtures and scrub",
     "anchor": "83-data-evidence-fixtures-and-scrub",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -3068,7 +3117,6 @@
    "differences": []
   },
   "owner": "app:decode-lab",
-  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-settings--decode-lab-settings--proposed",
-  "proposed": true
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-settings--decode-lab-settings--new"
  }
 ]

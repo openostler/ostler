@@ -2,7 +2,7 @@
 title: "Designer brief 40-c — Home, the app drawer, Hidden apps, edit-mode safety rules and the item sheet"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md]
 summary: >
@@ -24,8 +24,7 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
   into the Drive home pages. In the new direction it is the first home page of the launcher.
 - **Owner:** os
 - **Opens from → goes to:** app start when Parked and not armed; Back from anywhere. Widgets
-  open their apps (Diagnostics, Trips, Security, Maintenance …); the Drive widget opens the
-  Drive home pages.
+  open their apps (Diagnostics, Trips, Security, Maintenance …).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night (with `bg-glow`) and Day; hu7 Night Parked; huwide Night; hu5 Night.
 - **Content (default widgets for a full install; a bare OS shows only the OS widgets):**
@@ -40,13 +39,12 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
   3. **Security alert card** (OS safety widget, only with a node and the Security app).
   4. **Last trip** (Trips app widget): static dark map thumbnail, title, date, duration and
      distance (`type-num-l`).
-  5. **Drive** widget: a secondary button `speed` "Drive", not a slab.
-  6. **Car battery** card on the phone only (the phone strip has no 12 V chip).
-  7. **App cards** when installed: Maintenance "Oil service due in 300 km", a Social ride
+  5. **Car battery** card on the phone only (the phone strip has no 12 V chip).
+  6. **App cards** when installed: Maintenance "Oil service due in 300 km", a Social ride
      card, Community replies, Navigation "Navigate home".
-  8. **Empty-state card** (no optional app installed): "Track maintenance", "Share drives
+  7. **Empty-state card** (no optional app installed): "Track maintenance", "Share drives
      with friends", **Open the Store**; dismissible, not a widget.
-  9. Unknown-vehicle banner: "Help decode it".
+  8. Unknown-vehicle banner: "Help decode it".
 - **Grid per class:** HU-5 and HU-7 4 × 4 cells; HU-9/10 vehicle card 40 % plus 2 × 2;
   HU-wide the vehicle pane (520 px) is always on, so Home omits the vehicle card; phone 4
   columns. Drag, resize and adding pages: 45-launcher.
@@ -57,11 +55,12 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
 - **Safety and driving rules:** the warnings card and the Security alert card may move and
   resize but never be removed, renamed or re-iconed ([Drive modes §7.2][dm-7.2]); the
   empty-state card never shows on a head unit while Moving ([UI §12.4][ui-12.4]).
-- **Components:** Card, Card (tone), HeroStat, StatTile, Button (Drive, secondary).
+- **Components:** Card, Card (tone), HeroStat, StatTile.
 - **Spec refs:** [UI §3.4][ui-3.4] · [UI §5.4][ui-5.4] · [UI §12.4][ui-12.4] ·
   [Drive modes §7.2][dm-7.2] · [visual §10][vds-10] · [app model §15.4][am-15.4].
-- **Open questions:** the live Home still has a "Home" title and a full-width Drive button;
-  visual §10 removes both. Confirm.
+- **Open questions:** **Decided (item 16):** the Drive button is retired, so Home has no
+  Drive widget; the launcher migration drops it ([launcher §13][lw-13]). The "Home" title
+  goes as visual §10 says.
 
 ### more — App drawer (was More)  [Existing]
 - **Purpose:** every installed app not in the dock, plus Settings, in one place.
@@ -74,13 +73,14 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
   1. **Apps:** every installed app not in the dock, each with its (or the user's) icon and
      name: for example Security (if not pinned), Maintenance, Social, Map, Navigation,
      Phone, Media, Community, Store; then **Hidden apps** (count) → `shell-hidden-pages`.
-  2. **Settings** (system Settings: Garage, Network, Places, Integrations, Privacy, App info
+  2. **Settings**, the Settings app, always in the drawer (decided, item 57) (system Settings: Garage, Network, Places, Integrations, Privacy, App info
      per app, About with the version line; the 90-appframe files draw App info).
   3. **Edit layout** (cannot be hidden; the D-pad way into edit mode).
   4. **Reset layout** (cannot be hidden, moved out or renamed) → `shell-reset-confirm`;
      "Undo reset" here for 7 days after a reset.
 - **States:** bare OS: only Settings, Store, Edit layout and Reset layout. Parked: full.
-  Moving on a head unit: `shell-locked-view` (Edit and Reset say "Park to edit").
+  Moving on a head unit: a `short_list` of ≤ 6 driving apps ([launcher §5.2][lw-5.2]);
+  Edit and Reset say "Park to edit".
 - **Safety and driving rules:** the drawer is an anchor: it can be moved, renamed and
   re-iconed, never removed ([Drive modes §8.1][dm-8.1] R9–R11).
 - **Components:** ListRow or app-icon grid (45-launcher decides). Material Symbols.
@@ -167,3 +167,5 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
 [ui-3.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#34-five-destinations
 [ui-5.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#54-home-built-from-roles
 [vds-10]: ../../../../specs/2026-10-07-visual-design-system-design.md#10-before-and-after
+[lw-13]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#13-the-format-ostlerlayout2-and-migration
+[lw-5.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#52-the-drawer

@@ -2,7 +2,7 @@
 title: "Designer brief 45-b — launcher: the app drawer, the app menu, folders and app shortcuts"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -30,7 +30,7 @@ look and the gestures.
   opens system Settings; **Store** opens the Store app (70-store files).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night (full sheet); phone Day; hu7 Night (passenger-side panel, 4 columns); hu7
-  Night-dim Moving (locked); huwide Night.
+  Night-dim Moving (driving-apps list); huwide Night.
 - **Content (top to bottom):**
   1. **Search** field "Search apps" (Parked only on HU; on phone always). Results show apps,
      then app shortcuts ("Read faults · Diagnostics"), then settings rows ("Units ·
@@ -47,23 +47,21 @@ look and the gestures.
 - **States:** bare OS: Settings and Store only, and a card "Your car has no apps yet ·
   Open Store". Loading: icon skeletons. App updating: a ring on its icon, "Updating".
   App stopped: icon greyed, "Stopped · App info". Offline: Store row says "Offline".
-  Parked: full. Moving (HU): `shell-locked-view` with Open on phone; Settings and Store
-  locked too. Passenger: phone shows the Moving banner over the drawer.
+  Parked: full. Moving (HU): a `short_list` of up to six driving apps (default Media, Radio,
+  Phone, Navigation, Map, Diagnostics), each opening its Moving view; nothing else, no greyed
+  rows ([launcher §5.2][lw-5.2]). Passenger: phone shows the Moving banner over the drawer.
 - **Safety and driving rules:** the drawer is an anchor: movable, renamable, re-iconable,
   never removed ([Drive modes §8.1][dm-8.1] R9–R11). An app locked by the driving state
-  still shows and opens its locked view. Settings and Store are system apps and never
-  hidden. No text entry while Moving.
+  still shows and opens its locked view. Settings and Store are system apps, always in the drawer
+  and never hidden (item 57). No text entry while Moving.
 - **Components:** Sheet (phone full height), App icon (new), Segmented (tabs), text field
   (search), ListRow (footer).
 - **Spec refs:** [UI §3.4][ui-3.4] · [UI §12.4][ui-12.4] · [Drive modes §7.7][dm-7.7] ·
-  [Drive modes §7.8][dm-7.8].
-- **Open questions:** (1) Categories need a manifest field (`category`) the app model does
-  not have yet. (2) Suggested row: keep or drop?
+  [Drive modes §7.8][dm-7.8] · [launcher §5.2][lw-5.2] · [app UI model §10][ua-10].
+- **Open questions:** (1) **Decided ([app UI model §10][ua-10]):** categories come from the
+  manifest's `contributes.drawer.category`. (2) Suggested row: keep or drop?
 
-### launcher-app-menu — App menu (long-press an app icon)  [Proposed]
-- **Why the app needs it:** Android's long-press menu is how users reach App info,
-  shortcuts and pinning; no approved spec has an app-icon menu because apps lived in More
-  rows.
+### launcher-app-menu — App menu (long-press an app icon)  [New]
 - **Purpose:** quick actions for one app, from the drawer, a home page or the dock.
 - **Owner:** os
 - **Opens from → goes to:** long-press 600 ms (or a long `ok`) on an app icon. Rows go to
@@ -77,21 +75,21 @@ look and the gestures.
      "Live data", "Scan all"; Trips "Last trip", "Start a mark"; Map "Where I parked". Each
      row has a drag handle: drag it to a home page to place it (`launcher-shortcut-picker`).
   3. **Add to home**, **Add to dock**, **Hide**, **App info** (`info`), **Uninstall**
-     (absent for system apps and for apps a flavour requires; a confirm Sheet with Cancel
-     focused: "Uninstall Social? Its widgets and shortcuts leave your home pages.").
+     (absent for system apps such as Settings and the Store; on the phone it disables a
+     bundled app and deletes its data, item 11; a confirm Sheet with Cancel focused:
+     "Uninstall Social? Its widgets and shortcuts leave your home pages.").
 - **States:** Parked: full. Moving (HU): the long-press shows "Park to edit"; no menu.
   Offline: Uninstall still works locally; "Updates when back online". App stopped: only
   App info and Uninstall.
 - **Safety and driving rules:** an edit, so Park to edit on HU ([Drive modes §8.1][dm-8.1]
-  R1). Uninstalling the Security app never removes the alarm chip while a node is fitted
-  (40-drive-a). Shortcuts never start a car action without the action's own confirm.
+  R1). Uninstalling the Security app is refused while the car is armed (item 62), and never
+  removes the alarm chip while a node is fitted (40-drive-a). Shortcuts never start a car action without the action's own confirm.
 - **Components:** Card (popup), Sheet, ListRow (drag handle), Button (danger for Uninstall).
-- **Spec refs:** [Drive modes §7.7][dm-7.7] · [app model §15][am-15] · [UI §7][ui-7].
-- **Open questions:** app shortcuts need a manifest field (`contributes.shortcuts`).
+- **Spec refs:** [Drive modes §7.7][dm-7.7] · [app model §15][am-15] · [UI §7][ui-7] · [launcher §5.2][lw-5.2] · [launcher §5.3][lw-5.3] · [app UI model §2][ua-2].
+- **Open questions:** **Decided ([app UI model §2][ua-2]):** apps declare static shortcuts
+  in `contributes.shortcuts` and may publish up to four dynamic ones.
 
-### launcher-folder — Folder  [Proposed]
-- **Why the app needs it:** a full install has 16 apps and five dock slots; folders keep
-  pages and the dock tidy, as on Android. No spec covers them.
+### launcher-folder — Folder  [New]
 - **Purpose:** group app icons and shortcuts under one icon on a home page or in the dock.
 - **Owner:** os
 - **Opens from → goes to:** drop one app icon onto another in edit mode creates "Folder";
@@ -100,20 +98,20 @@ look and the gestures.
   phone Night open folder; hu7 Night open folder; hu7 Night folder in the dock.
 - **Content:**
   1. Closed: a 2×2 cluster of the first four icons on `surface-2`, label below.
-  2. Open: a Card on `surface-2`, `radius-lg`; title field (≤ 12 graphemes, default from the
-     apps' category, for example "Car"); a grid of up to 9 items per page with dots.
+  2. Open: a Card on `surface-2`, `radius-lg`; title field (≤ 30 characters, default from the
+     apps' category, for example "Car"); a grid of up to 12 items.
   3. In edit mode: drag items in and out; drag the last item out removes the folder.
 - **States:** empty is impossible (the folder goes with its last item). Moving (HU): a
-  folder in the dock opens; its items keep their driving rule. Rename: Parked only.
+  folder in the dock opens as a `short_list` of its driving items, or is hidden if it has
+  none; folders are never in a Moving section. Rename: Parked only.
 - **Safety and driving rules:** a folder can never hold the App drawer slot or a safety
   widget; renaming is text entry, Parked only ([UI §12.1][ui-12.1]).
 - **Components:** Folder icon (new), Card, text field.
-- **Spec refs:** [Drive modes §7.6][dm-7.6] · [Drive modes §8.1][dm-8.1].
-- **Open questions:** folders need a `folder` item kind in `ostler.layout/1`.
+- **Spec refs:** [Drive modes §7.6][dm-7.6] · [Drive modes §8.1][dm-8.1] · [launcher §5.4][lw-5.4].
+- **Open questions:** **Decided ([launcher §13][lw-13]):** `ostler.layout/2` has a `folder`
+  item.
 
-### launcher-shortcut-picker — App shortcuts on a home page  [Proposed]
-- **Why the app needs it:** the owner asked that app shortcuts can go on a dashboard; the
-  layout format has no shortcut item yet.
+### launcher-shortcut-picker — App shortcuts on a home page  [New]
 - **Purpose:** place one app shortcut, like Android's long-press shortcuts, as an icon on a
   home page or in the dock.
 - **Owner:** os
@@ -129,15 +127,15 @@ look and the gestures.
      Sam" (a favourite).
   2. Placed: the app icon with a small shortcut glyph badge and the shortcut name.
 - **States:** app uninstalled: the shortcut is removed with it. Route needs a node: a tap
-  opens the page with "Needs the node". Moving (HU): a placed shortcut opens only if its
-  route is driver-safe, else the locked view.
+  opens the page with "Needs the node". Moving (HU): a placed shortcut opens its target's
+  Moving view; one whose target has none is not drawn.
 - **Safety and driving rules:** a shortcut is navigation only: it opens a page and never
   starts an action (a "Clear faults" shortcut opens Diagnostics, where the confirm sheet
   still applies; [UI §7][ui-7], [Drive modes §8.1][dm-8.1] R6).
 - **Components:** ListRow, App icon with shortcut badge (new variant), Sheet.
-- **Spec refs:** [Drive modes §8.1][dm-8.1] · [app model §15][am-15].
-- **Open questions:** should shortcuts be allowed in the Moving section of a Drive page? This
-  brief says no.
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [app model §15][am-15] · [launcher §5.3][lw-5.3].
+- **Open questions:** **Decided ([launcher §5.3][lw-5.3]):** a shortcut may sit in a Moving
+  section as one tile only when its target has a Moving view; otherwise it is refused there.
 
 <!-- links -->
 [am-15]: ../../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
@@ -149,3 +147,9 @@ look and the gestures.
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
 [ui-3.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#34-five-destinations
 [ui-7]: ../../../../specs/2026-10-06-ui-architecture-design.md#7-safety-gating-tiers
+[lw-5.2]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#52-the-drawer
+[ua-10]: ../../../../specs/2026-10-07-app-ui-model-design.md#10-manifest-schema-2
+[lw-5.3]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#53-app-shortcuts
+[ua-2]: ../../../../specs/2026-10-07-app-ui-model-design.md#2-what-an-app-contributes
+[lw-5.4]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#54-folders
+[lw-13]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#13-the-format-ostlerlayout2-and-migration

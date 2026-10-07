@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part A): rules, the Apps list and App info"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md]
 summary: >
@@ -10,9 +10,8 @@ summary: >
   Android's App info and Home Assistant's config flows. It sets the terms (app, integration,
   pack, system app), the rules every app-framework page shares (the Settings lock while
   Moving, owner-only operations on local links, the OS keeps safety), and the file map for
-  parts A to G. It briefs the Apps list in system Settings, drawn in two variants because
-  the owner has not settled whether integrations sit with apps or on their own tab; the App
-  info page per app (open, disable, uninstall, force stop, and rows into every sub-page);
+  parts A to G. It briefs the Apps list in system Settings, one list with integrations
+  labelled (owner decision item 56); the App info page per app (open, disable, uninstall, force stop, and rows into every sub-page);
   and the force stop and disable sheets.
 ---
 
@@ -76,21 +75,18 @@ dashboard and sound presets). An app's own settings pages live in that app's are
 
 | Screen id | Name | Tag | Owner |
 |---|---|---|---|
-| `app-list` | Apps (Settings → Apps), two variants | Proposed | os |
-| `app-info` | App info | Proposed | os |
-| `app-info-actions` | Force stop and Disable sheets | Proposed | os |
+| `app-list` | Apps (Settings → Apps), one list | New | os |
+| `app-info` | App info | New | os |
+| `app-info-actions` | Force stop and Disable sheets | New | os |
 
-### app-list — Apps  [Proposed]
+### app-list — Apps  [New]
 - **Owner:** os
-- **Why the app needs it:** Ostler is now an OS whose features are all apps, so system
-  Settings needs one list of what is installed, as Android's Settings → Apps; the approved
-  catalogue (More → Add-ons) becomes the Store's Installed tab.
 - **Purpose:** every installed app, integration and vehicle pack, each row opening App info.
 - **Opens from → goes to:** Settings → Apps; the app drawer's long-press **App info** goes
   past it. Rows → `app-info`; **Get more apps** → the Store (`70-store-*`); the
-  Integrations row (variant A) → `app-integrations`. Back → Settings.
+  Integrations row → `app-integrations`. Back → Settings.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
-  phone Night and Day for both variants; hu7 Night (variant A); hu7 Night dim Moving (the
+  phone Night and Day; hu7 Night; hu7 Night dim Moving (the
   Settings lock); tablet Night (list 360 px left, App info right).
 - **Content (top to bottom):**
   1. Title "Apps"; search field "Search apps" (Parked only on head units).
@@ -100,17 +96,14 @@ dashboard and sound presets). An app's own settings pages live in that app's are
   3. **Needs attention** group, only when non-empty: one ListRow per app with a status
      Chip: "Needs update" (`warn`), "Stopped" (`alarm`), "Set-up not finished" (`warn`),
      "Not available on this car" (`text-2`).
-  4. **Variant A, one list (ADR-0042 item 98):** one group "Installed", A to Z. Each row:
+  4. **One list (decided, item 56):** one group "Installed", A to Z. Each row:
      the app's icon (Material Symbols), name, one meta line ("‹version› · ‹size› on the
      Brain"), a kind Chip **App**, **Integration** or **Vehicle pack**, and a chevron.
      Example rows: Diagnostics (App), Trips (App), Security (App), Maintenance (App),
      Land Rover Discovery 2 (Td5) (Vehicle pack, meta "1 car · TD5, SLABS, BCU, ACE, EAT,
      SRS"), LubeLogger bridge (Integration, meta "Set-up not finished"). A last row
      **Integrations** "Discovered, errors and devices" → `app-integrations`.
-  5. **Variant B, two tabs (Home Assistant's split):** a TabBar **Apps · Integrations**.
-     Apps holds feature apps only; Integrations holds vehicle packs and bridges and is the
-     `app-integrations` page itself, with its Discovered row on top.
-  6. Footer: Button **Get more apps** (secondary) → the Store.
+  5. Footer: Button **Get more apps** (secondary) → the Store.
 - **States:** loading (row skeletons); empty, flavour with no apps: "No apps yet. The OS
   still shows faults and alarms." with **Open the Store**; offline: rows read from the
   Brain show "Needs the Brain"; no vehicle: vehicle packs show "No car uses this pack";
@@ -119,17 +112,15 @@ dashboard and sound presets). An app's own settings pages live in that app's are
 - **Safety and driving rules:** the Settings lock ([UI §12.1][ui-12.1]); search is text
   entry, Parked only.
 - **Components:** ListRow, Chip (kind, status), Segmented, Switch (new), search field (new),
-  TabBar (variant B), Button.
+  Button.
 - **Spec refs:** [App model §14][am-14] (14.1–14.2) · [UI §12.4][ui-12.4] ·
   [ADR-0042][adr-42] HA direction item 98 · [HA integrations §4.2][ha-4.2] ·
-  [HA integrations §5][ha-5] (C1, Decide 2).
-- **Open questions:** one list with a kind label (variant A, as ADR-0042 item 98 reads) or
-  separate Apps and Integrations tabs (variant B, as the HA research recommends)? Draw both.
+  [HA integrations §5][ha-5] (C1, Decide 2) · [app UI model §8][ua-8].
+- **Open questions:** **Decided (item 56):** one Apps list with integrations labelled
+  (variant A); variant B is dropped.
 
-### app-info — App info  [Proposed]
+### app-info — App info  [New]
 - **Owner:** os
-- **Why the app needs it:** each app needs one OS page that says what it is, what it may
-  touch and how to stop or remove it, the same for every app (Android's App info).
 - **Purpose:** one page per installed app: actions, access, notifications, storage, power,
   version, logs, links, widgets.
 - **Opens from → goes to:** `app-list` rows; long-press an app icon in the app drawer or a
@@ -144,7 +135,8 @@ dashboard and sound presets). An app's own settings pages live in that app's are
      "openostler · First party", Chips **App** and "‹version›".
   2. **Action row** of four Buttons with icon and word: **Open** (`open_in_new`),
      **Disable** (`block`), **Uninstall** (`delete`), **Force stop** (`dangerous`).
-     System apps show **Disable** and **Uninstall** disabled with "Part of the OS".
+     System apps show **Disable** and **Uninstall** disabled with "Part of the OS". On the
+     phone, **Uninstall** of a bundled app disables it and deletes its data (item 11).
   3. **Status line** when needed (Card in a tone): "Stopped · ‹time›" (`alarm-bg`),
      "Update available" (`warn-bg`), "Set-up not finished · Continue set-up" (`warn-bg`).
   4. **App settings** ListRow (`tune`) "Settings inside the app" → the app's own page.
@@ -178,15 +170,13 @@ dashboard and sound presets). An app's own settings pages live in that app's are
   place, drawn by the OS ([Drive modes §8.1][dm-8.1] R3).
 - **Components:** ListRow, Button (with icon), Chip (kind, version, status), Card (tone).
 - **Spec refs:** [App model §5][am-5] (lifecycle) · [App model §4.2][am-4.2] ·
-  [App model §14][am-14] · [App model §15][am-15] 15.8 · [UI §12.4][ui-12.4].
+  [App model §14][am-14] · [App model §15][am-15] 15.8 · [UI §12.4][ui-12.4] · [app UI model §8][ua-8].
 - **Open questions:** should **Force stop** exist at all for bundled apps, which run in the
   shell's realm (it would reload the app's views, not kill a process)? The brief draws it
   as "Stop and reload".
 
-### app-info-actions — Force stop and Disable sheets  [Proposed]
+### app-info-actions — Force stop and Disable sheets  [New]
 - **Owner:** os
-- **Why the app needs it:** stopping or turning off an app changes what the home pages and
-  dock show, so the owner sees the effect before it happens.
 - **Purpose:** confirm Force stop, Disable and Enable.
 - **Opens from → goes to:** `app-info` action row → the sheet → back to `app-info` with a
   toast. Uninstall has its own sheet (`app-uninstall`).
@@ -207,7 +197,7 @@ dashboard and sound presets). An app's own settings pages live in that app's are
   its own Stop (ActiveTestBanner), never by disabling the app.
 - **Components:** Sheet, ListRow, Button (danger), toast (`ia-toast`).
 - **Spec refs:** [App model §5][am-5] · [App model §15][am-15] 15.6 and 15.8 ·
-  [UI §7][ui-7].
+  [UI §7][ui-7] · [app UI model §8][ua-8].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -226,3 +216,4 @@ dashboard and sound presets). An app's own settings pages live in that app's are
 [ui-7]: ../../../../specs/2026-10-06-ui-architecture-design.md#7-safety-gating-tiers
 [vds-1]: ../../../../specs/2026-10-07-visual-design-system-design.md#1-principles
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page

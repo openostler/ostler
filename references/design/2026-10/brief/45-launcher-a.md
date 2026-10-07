@@ -2,7 +2,7 @@
 title: "Designer brief 45-a — launcher: the model, home pages, the Drive carousel, the dock and the dock editor"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
@@ -45,7 +45,7 @@ owner's direction of 2026-10-07 renames them dock, app drawer, Drive carousel an
 | Android launcher | Ostler launcher | Was (approved specs) |
 |---|---|---|
 | Home screen pages | **Home pages**: one flat carousel of grid pages; page 1 is Home | Home, Drive modes, faces |
-| Hotseat | **Dock**: five slots, bottom on phone, driver side on HU | Rail, phone bottom bar |
+| Hotseat | **Dock**: 5 to 7 slots by class (item 17), bottom on phone, driver side on HU | Rail, phone bottom bar |
 | All apps | **App drawer** (always in the dock) | More |
 | Widgets and widget picker | Widgets from apps, placed by the user | Home and Drive widgets |
 | Widget configure activity | **Widget setup page**: drawn by the OS from the widget's settings schema, plus an optional custom page from the widget's app | Widget settings sheet |
@@ -106,7 +106,8 @@ two-level chip (sets, then pages); the manager reconciles 40-drive-g with this f
   component: 48 px glyph tile on phone, 76 px target on HU, label below), Folder icon (new
   component).
 - **Spec refs:** [Drive modes §4.4][dm-4.4] · [Drive modes §7.2][dm-7.2] ·
-  [UI §15.2][ui-15.2] · [UI §5.4][ui-5.4] · [visual §8][vds-8].
+  [UI §15.2][ui-15.2] · [UI §5.4][ui-5.4] · [visual §8][vds-8] · [launcher §4.1][lw-4.1] ·
+  [launcher §6.1][lw-6.1].
 - **Open questions:** (1) Should Home (page 1) be removable when another page is the
   default? Recommend no: it is the root of Back. (2) Wrap-around paging, or stop at the ends?
 
@@ -137,39 +138,42 @@ two-level chip (sets, then pages); the manager reconciles 40-drive-g with this f
   hidden). Nothing switches by itself while Moving.
 - **Components:** Chip, `short_list` (ListRow ≤ 30 characters, tick).
 - **Spec refs:** [Drive modes §6][dm-6] · [UI §15.1][ui-15.1] · [shell input §6][si-6] ·
-  [shell input §14][si-14].
-- **Open questions:** the spec's two levels (modes, then faces) become one flat row; this
-  changes Drive modes §6 and 40-drive-g. Confirm the rotation cap of 4 for one-tap cycling.
+  [shell input §14][si-14] · [launcher §4.3][lw-4.3].
+- **Open questions:** **Decided (item 45):** one flat row of home pages; the one-tap cycle
+  is capped at 4 and the page list at 6 while Moving.
 
 ### shell-rail — Dock  [Existing]
-- **Purpose:** five pinned slots that are always on screen: the Android hotseat.
+- **Purpose:** the pinned slots that are always on screen: the Android hotseat.
 - **Owner:** os
 - **Opens from → goes to:** always present outside full-screen Drive on a phone; a slot
-  opens its app or Home; the app-drawer slot opens `more` (45-b); the HU **Drive** button
-  opens the Drive carousel; long-press opens the dock editor.
+  opens its app or Home; the app-drawer slot opens `more` (45-b); long-press opens the dock
+  editor.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night (right side); hu7 Night-dim Moving; phone Night and Day; huwide Night;
   desktop Night (side, with labels); hu7 Night left-hand drive.
 - **Content:**
-  1. Five slots, default **Home** `home` · **Diagnostics** `stethoscope` · **Trips**
-     `history` · **Security** `shield` · **App drawer** `apps`. A flavour with fewer apps
-     shows fewer (Guardian: Home · Security · App drawer).
+  1. Slots per class (decided, item 17): phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7,
+     tablet and desktop 7, anchors included. Default on five slots: **Home** `home` ·
+     **Diagnostics** `stethoscope` · **Trips** `history` · **Security** `shield` · **App
+     drawer** `apps`. Guardian: **Security** `shield` · **Settings** `settings` · **App
+     drawer** `apps` (item 42).
   2. Each slot: icon, label ≤ 12 graphemes; active slot wears the `accent-soft` pill.
   3. A slot may hold a folder (for example "Car" with Diagnostics and Trips) or an app
      shortcut ("Read faults").
-  4. HU only, outside the five: **Drive** button `speed`, at the end by default.
+  4. No Drive button: it is retired (item 16). **Home** and **App drawer** are anchors.
 - **Position:** phone bottom, a floating pill, 72 px + safe area. Head units on the
-  driver's side (80 HU-5, 96 HU-7, 112 HU-9/10 and HU-wide). Tablet and desktop: bottom or
+  driver's side, HU-wide included (item 44) (80 HU-5, 96 HU-7, 112 HU-9/10 and HU-wide). Tablet and desktop: bottom or
   side, set in Home settings (45-k).
-- **States:** Parked: full. Moving (HU): the dock stays on the driver's side; slots that
-  open a page with no Moving template open the locked view (40-drive-b). Bare OS: Home and
+- **States:** Parked: full. Moving (HU): a slot whose target has no Moving view is not drawn
+  and its place stays empty, so nothing shifts; the drawer opens its driving-apps list. Bare OS: Home and
   App drawer only.
-- **Safety and driving rules:** the app drawer is in the dock exactly once, never removed
-  ([Drive modes §7.3][dm-7.3], §8.1 R9); a pinned app keeps its own driving rule.
+- **Safety and driving rules:** Home and the app drawer are each in the dock exactly once,
+  never removed ([launcher §5.1][lw-5.1]; [Drive modes §8.1][dm-8.1] R9); a pinned app keeps its own driving rule.
 - **Components:** TabBar (dock), App icon (new component), Folder icon (new component).
 - **Spec refs:** [UI §3.3][ui-3.3] · [UI §3.4][ui-3.4] · [Drive modes §7.3][dm-7.3] ·
-  [visual §8][vds-8].
-- **Open questions:** should the HU Drive button become a sixth dock item or stay outside?
+  [visual §8][vds-8] · [launcher §5.1][lw-5.1].
+- **Open questions:** **Decided (item 16):** the HU Drive button is retired; Moving shows
+  Drive mode by itself. **Decided (item 44):** the HU-wide dock sits on the driver side.
 
 ### shell-rail-editor — Dock editor  [Existing]
 - **Purpose:** choose and order the dock's slots, Android style: drag icons in and out.
@@ -179,21 +183,21 @@ two-level chip (sets, then pages); the manager reconciles 40-drive-g with this f
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night with an icon being dragged; phone Night; desktop Night.
 - **Content:**
-  1. The dock with five outlined slots and drag handles; the App drawer slot carries the
-     line "Always in the dock" in its item sheet.
+  1. The dock with the class's outlined slots (5, 6 or 7, item 17) and drag handles; the
+     Home and App drawer slots carry the line "Always in the dock" in their item sheets.
   2. A tray below (phone) or on the passenger side (HU): **Apps you can pin**, A to Z.
   3. Drag an app onto a slot to pin; onto an occupied slot to swap; drag a slot off the
      dock to unpin (it stays in the app drawer).
   4. Drop one app onto another in the dock to make a folder (45-b).
-  5. HU: **Drive button** row: Start · End, Hide.
-  6. D-pad: `ok` picks, `up`/`down` moves, `ok` drops, `back` cancels.
+  5. D-pad: `ok` picks, `up`/`down` moves, `ok` drops, `back` cancels.
 - **States:** dock full: "The dock is full. Which one moves to the app drawer?" (the
-  drawer is not offered). Error: "The app drawer must stay in the dock". Moving: "Park to
+  anchors are not offered). Error: "The app drawer must stay in the dock". Moving: "Park to
   edit" (40-drive-b).
-- **Safety and driving rules:** five-slot cap; the drawer exactly once; unpinning never
+- **Safety and driving rules:** the class's slot cap; Home and the drawer exactly once; unpinning never
   uninstalls ([Drive modes §7.3][dm-7.3], §8.1 R1, R11).
 - **Components:** App icon, ListRow (drag handle), Sheet, Button.
-- **Spec refs:** [Drive modes §7.3][dm-7.3] · [UI §15.2][ui-15.2] · [Drive modes §7.6][dm-7.6].
+- **Spec refs:** [Drive modes §7.3][dm-7.3] · [UI §15.2][ui-15.2] · [Drive modes §7.6][dm-7.6] ·
+  [launcher §5.1][lw-5.1].
 - **Open questions:** none.
 
 <!-- links -->
@@ -215,3 +219,7 @@ two-level chip (sets, then pages); the manager reconciles 40-drive-g with this f
 [ui-5.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#54-home-built-from-roles
 [vds-5]: ../../../../specs/2026-10-07-visual-design-system-design.md#5-space-radius-elevation-glow-motion
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-4.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#41-pages
+[lw-6.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#61-grids-per-class
+[lw-4.3]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#43-drive-mode-is-the-carousel-while-moving
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock

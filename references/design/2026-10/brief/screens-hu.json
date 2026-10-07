@@ -44,6 +44,13 @@
     "heading": "4. Type",
     "anchor": "4-type",
     "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -62,8 +69,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-now-playing--radio-now-playing--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-now-playing--radio-now-playing--new"
  },
  {
   "id": "radio-stations",
@@ -110,6 +116,13 @@
     "heading": "8. Charts, gauges and the component kit",
     "anchor": "8-charts-gauges-and-the-component-kit",
     "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -128,8 +141,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--new"
  },
  {
   "id": "radio-tune",
@@ -169,6 +181,13 @@
     "heading": "3.5 Drive mode, driving states and service mode",
     "anchor": "35-drive-mode-driving-states-and-service-mode",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -185,8 +204,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-tune--tune-seek-and-scan--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-tune--tune-seek-and-scan--new"
  },
  {
   "id": "radio-presets",
@@ -226,6 +244,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -242,8 +267,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-presets--presets--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-presets--presets--new"
  },
  {
   "id": "radio-dab-slideshow",
@@ -282,6 +306,13 @@
     "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
     "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
     "label": "Research: distraction"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -297,8 +328,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--new"
  },
  {
   "id": "radio-ta-alert",
@@ -394,6 +424,20 @@
     "heading": "Development kit: recommended parts (~£250 plus the Pi)",
     "anchor": "development-kit-recommended-parts-250-plus-the-pi",
     "label": "Research: hardware"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -411,8 +455,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--new"
  },
  {
   "id": "radio-setup-antenna",
@@ -446,6 +489,20 @@
     "heading": "Development kit: recommended parts (~£250 plus the Pi)",
     "anchor": "development-kit-recommended-parts-250-plus-the-pi",
     "label": "Research: hardware"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -462,8 +519,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--new"
  },
  {
   "id": "radio-setup-scan",
@@ -497,6 +553,20 @@
     "heading": "3.5 Drive mode, driving states and service mode",
     "anchor": "35-drive-mode-driving-states-and-service-mode",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -515,8 +585,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--new"
  },
  {
   "id": "radio-settings",
@@ -557,6 +626,20 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§3",
+    "heading": "3. Radio",
+    "anchor": "3-radio",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -573,8 +656,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-settings--radio-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-settings--radio-settings--new"
  },
  {
   "id": "audio-sources",
@@ -607,6 +689,13 @@
     "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
     "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -621,8 +710,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sources--sources--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sources--sources--new"
  },
  {
   "id": "audio-sound",
@@ -663,6 +751,13 @@
     "heading": "8. Charts, gauges and the component kit",
     "anchor": "8-charts-gauges-and-the-component-kit",
     "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -680,8 +775,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sound--sound-loudness-bass-tone--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sound--sound-loudness-bass-tone--new"
  },
  {
   "id": "audio-eq-graphic",
@@ -721,6 +815,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -737,8 +838,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-graphic--graphic-equaliser--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-graphic--graphic-equaliser--new"
  },
  {
   "id": "audio-eq-parametric",
@@ -770,6 +870,13 @@
     "heading": "8. Charts, gauges and the component kit",
     "anchor": "8-charts-gauges-and-the-component-kit",
     "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -788,8 +895,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-parametric--parametric-equaliser--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-parametric--parametric-equaliser--new"
  },
  {
   "id": "audio-eq-presets",
@@ -830,6 +936,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -846,8 +959,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-presets--eq-presets--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-presets--eq-presets--new"
  },
  {
   "id": "audio-balance-fade",
@@ -881,6 +993,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -897,8 +1016,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-balance-fade--balance-and-fade--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-balance-fade--balance-and-fade--new"
  },
  {
   "id": "audio-crossover",
@@ -938,6 +1056,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -955,8 +1080,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-crossover--crossover--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-crossover--crossover--new"
  },
  {
   "id": "audio-time-alignment",
@@ -989,6 +1113,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1006,8 +1137,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-time-alignment--time-alignment--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-time-alignment--time-alignment--new"
  },
  {
   "id": "audio-subwoofer",
@@ -1041,6 +1171,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1056,8 +1193,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-subwoofer--subwoofer--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-subwoofer--subwoofer--new"
  },
  {
   "id": "audio-volume-rules",
@@ -1105,6 +1241,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1122,8 +1265,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-volume-rules--volume-rules--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-volume-rules--volume-rules--new"
  },
  {
   "id": "audio-system-sounds",
@@ -1223,6 +1365,13 @@
     "heading": "1. Context and goals",
     "anchor": "1-context-and-goals",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§1",
+    "heading": "1. Context and the two setups",
+    "anchor": "1-context-and-the-two-setups",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1238,8 +1387,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-shape--setup-1-install-shape--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-shape--setup-1-install-shape--new"
  },
  {
   "id": "audio-setup-output",
@@ -1280,6 +1428,13 @@
     "heading": "B4. Steering wheel, reverse, cameras, amplifier",
     "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
     "label": "Research: head units"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1296,8 +1451,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-output--setup-2-output-device-dac-or-dsp--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-output--setup-2-output-device-dac-or-dsp--new"
  },
  {
   "id": "audio-setup-channels",
@@ -1330,6 +1484,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1347,8 +1508,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-channels--setup-3-channel-map--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-channels--setup-3-channel-map--new"
  },
  {
   "id": "audio-setup-test",
@@ -1382,6 +1542,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1398,8 +1565,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-test--setup-4-speaker-test-and-levels--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-test--setup-4-speaker-test-and-levels--new"
  },
  {
   "id": "audio-settings",
@@ -1433,6 +1599,20 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§4",
+    "heading": "4. Audio",
+    "anchor": "4-audio",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -1449,8 +1629,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-settings--audio-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-settings--audio-settings--new"
  },
  {
   "id": "media-moving",
@@ -1559,6 +1738,13 @@
     "heading": "8. Charts, gauges and the component kit",
     "anchor": "8-charts-gauges-and-the-component-kit",
     "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1576,8 +1762,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-now-playing--media-now-playing--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-now-playing--media-now-playing--new"
  },
  {
   "id": "media-browse",
@@ -1618,6 +1803,13 @@
     "heading": "3.5 Drive mode, driving states and service mode",
     "anchor": "35-drive-mode-driving-states-and-service-mode",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1636,8 +1828,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-browse--browse-local-usb-network-shares--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-browse--browse-local-usb-network-shares--new"
  },
  {
   "id": "media-queue",
@@ -1670,6 +1861,13 @@
     "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
     "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1685,8 +1883,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-queue--queue--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-queue--queue--new"
  },
  {
   "id": "media-bluetooth",
@@ -1733,6 +1930,13 @@
     "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
     "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1749,8 +1953,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-bluetooth--bluetooth-audio--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-bluetooth--bluetooth-audio--new"
  },
  {
   "id": "media-video",
@@ -1797,6 +2000,13 @@
     "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
     "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
     "label": "Research: distraction"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1812,8 +2022,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-video--video-player-parked-only--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-video--video-player-parked-only--new"
  },
  {
   "id": "media-setup",
@@ -1854,6 +2063,20 @@
     "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
     "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
     "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -1871,8 +2094,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-setup--media-choose-sources--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-setup--media-choose-sources--new"
  },
  {
   "id": "media-share-add",
@@ -1970,6 +2192,13 @@
     "heading": "5.6 Split / Media",
     "anchor": "56-split--media",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -1986,8 +2215,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integrations--streaming-integrations--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integrations--streaming-integrations--new"
  },
  {
   "id": "media-integration-setup",
@@ -2078,6 +2306,20 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§5",
+    "heading": "5. Media",
+    "anchor": "5-media",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2094,8 +2336,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-settings--media-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-settings--media-settings--new"
  },
  {
   "id": "camera-home",
@@ -2136,6 +2377,13 @@
     "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
     "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2152,8 +2400,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-home--cameras--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-home--cameras--new"
  },
  {
   "id": "camera-reverse",
@@ -2325,6 +2572,13 @@
     "heading": "4.4 Driver-safe templates",
     "anchor": "44-driver-safe-templates",
     "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2339,8 +2593,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-multi--all-cameras-multi-view--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-multi--all-cameras-multi-view--new"
  },
  {
   "id": "camera-dashcam",
@@ -2381,6 +2634,13 @@
     "heading": "Displays are thin clients; cameras live on our infrastructure",
     "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
     "label": "Platform direction"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2398,8 +2658,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-dashcam--dashcam-and-recording--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-dashcam--dashcam-and-recording--new"
  },
  {
   "id": "camera-setup",
@@ -2433,6 +2692,20 @@
     "heading": "6. Add-on devices",
     "anchor": "6-add-on-devices",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2450,8 +2723,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup--setup-1-cameras-and-roles--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup--setup-1-cameras-and-roles--new"
  },
  {
   "id": "camera-setup-trigger",
@@ -2492,6 +2764,20 @@
     "heading": "B4. Steering wheel, reverse, cameras, amplifier",
     "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
     "label": "Research: head units"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2509,8 +2795,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-trigger--setup-2-reverse-trigger--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-trigger--setup-2-reverse-trigger--new"
  },
  {
   "id": "camera-setup-guidelines",
@@ -2542,6 +2827,20 @@
     "heading": "6. Add-on devices",
     "anchor": "6-add-on-devices",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2560,8 +2859,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-guidelines--setup-3-static-guidelines--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-guidelines--setup-3-static-guidelines--new"
  },
  {
   "id": "camera-settings",
@@ -2602,6 +2900,20 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§6",
+    "heading": "6. Camera",
+    "anchor": "6-camera",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -2618,13 +2930,12 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-settings--camera-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-settings--camera-settings--new"
  },
  {
   "id": "clock-page",
   "name": "Clock, alarms and timers",
-  "area": "app: Clock",
+  "area": "app: Starter widgets",
   "group": "Clock",
   "layout_classes": [
    "phone",
@@ -2645,7 +2956,7 @@
    "parked": "full page",
    "moving": "a `value` template with the time and the next timer (\"Parking · 47 min\"); setting alarms is Parked only; preset timer Chips stay as a `short_list`"
   },
-  "owner": "app:clock",
+  "owner": "app:widgets-starter",
   "spec_refs": [
    {
     "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -2721,7 +3032,7 @@
    "Button"
   ],
   "variants": [],
-  "notes": "",
+  "notes": "Raised by the starter widget pack's Clock (app:widgets-starter, item 53); drawn by the OS alert pipeline.",
   "deliveries": [],
   "review": {
    "status": "awaiting",
@@ -2733,7 +3044,7 @@
  {
   "id": "clock-settings",
   "name": "Clock setup and settings",
-  "area": "app: Clock",
+  "area": "app: Starter widgets",
   "group": "Clock",
   "layout_classes": [
    "phone",
@@ -2754,7 +3065,7 @@
    "parked": "full page",
    "moving": "locked view"
   },
-  "owner": "app:clock",
+  "owner": "app:widgets-starter",
   "spec_refs": [
    {
     "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
@@ -2762,6 +3073,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2777,13 +3095,12 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--new"
  },
  {
   "id": "weather-page",
   "name": "Weather",
-  "area": "app: Weather",
+  "area": "app: Starter widgets",
   "group": "Weather",
   "layout_classes": [
    "phone",
@@ -2804,7 +3121,7 @@
    "parked": "full page",
    "moving": "a `value` template \"7 °C · Rain\"; forecasts and lists are Parked only"
   },
-  "owner": "app:weather",
+  "owner": "app:widgets-starter",
   "spec_refs": [
    {
     "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -2819,6 +3136,13 @@
     "heading": "4.4 Driver-safe templates",
     "anchor": "44-driver-safe-templates",
     "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2836,13 +3160,12 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-page--weather--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-page--weather--new"
  },
  {
   "id": "weather-setup",
   "name": "Weather: first-run setup",
-  "area": "app: Weather",
+  "area": "app: Starter widgets",
   "group": "Weather",
   "layout_classes": [
    "phone",
@@ -2863,7 +3186,7 @@
    "parked": "full page",
    "moving": "locked view"
   },
-  "owner": "app:weather",
+  "owner": "app:widgets-starter",
   "spec_refs": [
    {
     "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -2871,6 +3194,13 @@
     "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
     "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2887,13 +3217,12 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--new"
  },
  {
   "id": "weather-settings",
   "name": "Weather settings",
-  "area": "app: Weather",
+  "area": "app: Starter widgets",
   "group": "Weather",
   "layout_classes": [
    "phone",
@@ -2914,7 +3243,7 @@
    "parked": "full page",
    "moving": "locked view"
   },
-  "owner": "app:weather",
+  "owner": "app:widgets-starter",
   "spec_refs": [
    {
     "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
@@ -2922,6 +3251,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2938,8 +3274,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-settings--weather-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-settings--weather-settings--new"
  },
  {
   "id": "voice-assistant",
@@ -2979,6 +3314,13 @@
     "heading": "1. Goals and non-goals",
     "anchor": "1-goals-and-non-goals",
     "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -2995,8 +3337,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--new"
  },
  {
   "id": "voice-setup",
@@ -3037,6 +3378,13 @@
     "heading": "8. Bindings and the key test",
     "anchor": "8-bindings-and-the-key-test",
     "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -3054,8 +3402,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--new"
  },
  {
   "id": "voice-settings",
@@ -3089,6 +3436,20 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§10",
+    "heading": "10. Clock, weather and voice",
+    "anchor": "10-clock-weather-and-voice",
+    "label": "Head-unit apps"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [],
@@ -3105,8 +3466,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-settings--voice-settings--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-settings--voice-settings--new"
  },
  {
   "id": "swc-adapter",
@@ -3147,6 +3507,13 @@
     "heading": "B4. Steering wheel, reverse, cameras, amplifier",
     "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
     "label": "Research: head units"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§9",
+    "heading": "9. Steering-wheel control learning (OS)",
+    "anchor": "9-steering-wheel-control-learning-os",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -3164,8 +3531,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-adapter--wheel-controls-1-adapter--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-adapter--wheel-controls-1-adapter--new"
  },
  {
   "id": "swc-learn",
@@ -3206,6 +3572,13 @@
     "heading": "8. Bindings and the key test",
     "anchor": "8-bindings-and-the-key-test",
     "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§9",
+    "heading": "9. Steering-wheel control learning (OS)",
+    "anchor": "9-steering-wheel-control-learning-os",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -3223,8 +3596,7 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-learn--wheel-controls-2-learn-buttons--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-learn--wheel-controls-2-learn-buttons--new"
  },
  {
   "id": "swc-assign",
@@ -3265,6 +3637,13 @@
     "heading": "8. Bindings and the key test",
     "anchor": "8-bindings-and-the-key-test",
     "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§9",
+    "heading": "9. Steering-wheel control learning (OS)",
+    "anchor": "9-steering-wheel-control-learning-os",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
@@ -3281,15 +3660,15 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-assign--wheel-controls-3-assign-actions--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-assign--wheel-controls-3-assign-actions--new"
  },
  {
   "id": "projection-setup",
-  "name": "Projection: setup",
-  "area": "app: Projection",
+  "name": "Projection: not built (information page)",
+  "area": "os",
   "group": "Projection",
   "layout_classes": [
+   "phone",
    "hu5",
    "hu7",
    "hu9",
@@ -3305,52 +3684,35 @@
    "parked": "full page",
    "moving": "locked view"
   },
-  "owner": "app:projection",
+  "owner": "os",
   "spec_refs": [
    {
-    "doc": "references/research/canbus_headunit.md",
-    "section": "§B5",
-    "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
-    "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
-    "label": "Research: head units"
-   },
-   {
-    "doc": "references/research/canbus_headunit.md",
-    "section": "§B7",
-    "heading": "B7. Open head-unit projects",
-    "anchor": "b7-open-head-unit-projects",
-    "label": "Research: head units"
-   },
-   {
-    "doc": "specs/2026-10-06-platform-direction-design.md",
-    "section": "",
-    "heading": "Displays are thin clients; cameras live on our infrastructure",
-    "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
-    "label": "Platform direction"
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§11",
+    "heading": "11. Projection (Android Auto, CarPlay): open",
+    "anchor": "11-projection-android-auto-carplay-open",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
   "components": [
-   "StepProgress",
    "Card",
-   "ListRow",
-   "Chip (status)",
-   "Button"
+   "ListRow (link)"
   ],
   "variants": [],
-  "notes": "",
+  "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler.",
   "deliveries": [],
   "review": {
    "status": "awaiting",
    "differences": []
   },
   "proposed": true,
-  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-setup--projection-setup--proposed"
+  "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-setup--projection-not-built-information-page--proposed"
  },
  {
   "id": "projection-session",
   "name": "Projection: running session",
-  "area": "app: Projection",
+  "area": "os",
   "group": "Projection",
   "layout_classes": [
    "hu5",
@@ -3365,34 +3727,23 @@
    "deep-night"
   ],
   "driving_states": {
-   "parked": "full page",
-   "moving": "the projected picture is a video stream Ostler cannot inspect; under Ostler's rules that is video on a driver-facing display"
+   "parked": "not built (item 38)",
+   "moving": "not built (item 38)"
   },
-  "owner": "app:projection",
+  "owner": "os",
   "spec_refs": [
    {
-    "doc": "specs/2026-10-06-ui-architecture-design.md",
-    "section": "§12.1",
-    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
-    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
-    "label": "UI"
-   },
-   {
-    "doc": "references/research/canbus_headunit.md",
-    "section": "§B5",
-    "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
-    "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
-    "label": "Research: head units"
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§11",
+    "heading": "11. Projection (Android Auto, CarPlay): open",
+    "anchor": "11-projection-android-auto-carplay-open",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
-  "components": [
-   "Chip (status)",
-   "Button",
-   "locked view"
-  ],
+  "components": [],
   "variants": [],
-  "notes": "",
+  "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler. Do not draw; the record keeps the ID resolving.",
   "deliveries": [],
   "review": {
    "status": "awaiting",
@@ -3404,7 +3755,7 @@
  {
   "id": "projection-settings",
   "name": "Projection settings",
-  "area": "app: Projection",
+  "area": "os",
   "group": "Projection",
   "layout_classes": [
    "hu5",
@@ -3420,28 +3771,23 @@
    "deep-night"
   ],
   "driving_states": {
-   "parked": "full page",
-   "moving": "locked view"
+   "parked": "not built (item 38)",
+   "moving": "not built (item 38)"
   },
-  "owner": "app:projection",
+  "owner": "os",
   "spec_refs": [
    {
-    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
-    "section": "§3",
-    "heading": "3. Architecture",
-    "anchor": "3-architecture",
-    "label": "Phone & Comms"
+    "doc": "specs/2026-10-07-head-unit-apps-design.md",
+    "section": "§11",
+    "heading": "11. Projection (Android Auto, CarPlay): open",
+    "anchor": "11-projection-android-auto-carplay-open",
+    "label": "Head-unit apps"
    }
   ],
   "tokens": [],
-  "components": [
-   "ListRow",
-   "Toggle",
-   "Segmented",
-   "Button"
-  ],
+  "components": [],
   "variants": [],
-  "notes": "",
+  "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler. Do not draw; the record keeps the ID resolving.",
   "deliveries": [],
   "review": {
    "status": "awaiting",

@@ -2,7 +2,7 @@
 title: "Designer brief 40-g — Drive page chip and flat page list, Drive menu, Exit to Home while Moving, dusk suggestion, and OS rules for the page list and page editor"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
@@ -11,8 +11,8 @@ summary: >
   45-launcher-a). It keeps the safety and D-pad rules of the Drive page chip and its flat page
   list (tap cycles a rotation of up to four pages, long-press lists up to six, "Edit pages…"
   only when Parked), the Drive menu (up to six driver-safe rows, as built today and as the
-  spec grows it, with app rows), a proposed screen for the live "Exit to Home" row while
-  Moving (an open owner question), the one-time dusk suggestion for the Minimal page, and the
+  spec grows it, with app rows), the "Exit to Home" row, hidden while Moving (owner
+  decision item 46), the one-time dusk suggestion for the Minimal page, and the
   OS rules for the Drive page list and page editor.
 ---
 
@@ -27,14 +27,14 @@ Back to [40-a](40-drive-a.md) for the terms and the file list. The carousel mode
   page dots are drawn in [45-launcher-a](45-launcher-a.md); this block keeps the OS rules.
 - **Owner:** os
 - **Opens from → goes to:** the `drive_mode` chip in the Drive strip. Tap (or short `ok`) →
-  next page in the rotation; long-press 600 ms (or long `ok`) → the flat page list; a row
+  next page in the one-tap cycle (at most 4 pages, item 45); long-press 600 ms (or long `ok`) → the flat page list; a row
   picks; **Edit pages…** → `drive-modes-list` (Parked only). A swipe or `left`/`right` moves
   to the neighbouring page in the one row.
 - **Layout classes:** phone · tablet · hu5 · hu7 · hu9 · huwide. **Draw first:** hu7
   Night-dim Moving with the chip focused after `back`.
 - **Content the OS requires:** 1. Chip word = the current page's name ("Cluster"), ≥ 48 px
   tall, 76 px target on HU; an anchor, never hidden, may sit anywhere in the strip. 2. Flat
-  list as a `short_list`: ≤ 6 rows, one level, names ≤ 30 characters, current page ticked,
+  list (one flat row of pages, item 45) as a `short_list`: ≤ 6 rows, one level, names ≤ 30 characters, current page ticked,
   the rotation first (default HU: Cluster, Map, Tiles, Minimal). 3. **Edit pages…** only when
   Parked.
 - **States:** Moving: tap cycles with no toast and no animation; the list has no Edit row
@@ -59,7 +59,7 @@ Back to [40-a](40-drive-a.md) for the terms and the file list. The carousel mode
   Night-dim Moving (as built today); hu7 Night-dim Moving (spec rows with Navigation).
 - **Content (as built today):** 1. **Mark** (`flag`; only while a recording can take one).
   2. **Drive page** with the current page on the right ("Cluster") → the flat page list. 3. **Exit
-  to Home** (`home`; see `drive-exit-home-moving`). 4. **Back to Drive** (`close`).
+  to Home** (`home`; Parked only, hidden while Moving, see `drive-exit-home-moving`). 4. **Back to Drive** (`close`).
 - **Content (spec default, as features arrive):** **Mark**, **Mute alerts** (state "On"),
   media **Play/Pause** and **Skip** (with a media source), **Climate** setpoint (Comfort;
   opens the `setpoint` template), **Arm** (Security; never disarm; state "Armed"), **Back to
@@ -74,29 +74,23 @@ Back to [40-a](40-drive-a.md) for the terms and the file list. The carousel mode
   ending in Drive mode.
 - **Components:** `short_list`, ListRow (state text ≤ 12 characters).
 - **Spec refs:** [shell input §6][si-6] · [app model §15.3][am-15.3] · [Navigation §5.6][nav-5.6].
-- **Open questions:** see `drive-exit-home-moving`.
+- **Open questions:** **Decided (item 46):** the Exit to Home row is hidden while Moving.
 
-### drive-exit-home-moving — "Exit to Home" while Moving  [Proposed]
-- **Why the app needs it:** the live Drive menu offers "Exit to Home" in every state, but the
-  spec's Drive menu has no such row and `back` never leaves Drive mode while Moving
-  ([shell input §4.3][si-4.3]); the owner must decide what a head unit shows.
-- **Purpose:** define what happens when the driver leaves Drive mode at speed.
+### drive-exit-home-moving — "Exit to Home" while Moving  [New]
+- **Purpose:** define what happens when the driver tries to leave Drive mode at speed.
 - **Owner:** os
-- **Opens from → goes to:** Drive menu **Exit to Home**, or the strip's Back chip while
-  Moving → Home; Home's driver-safe content, or a locked card, with **Back to Drive**.
-- **Layout classes:** hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night-dim Moving, both
-  options below.
-- **Content (two options to draw):** **A. Row hidden while Moving** (the Back chip then only
-  focuses the Drive page chip). **B. Home while Moving:** only the warnings card, the vehicle
-  card's values as `tiles` (≤ 6) and **Back to Drive**; everything else as a locked card
-  "Available when parked".
-- **States:** Parked: the row exists and opens Home. Moving: per the decision.
-- **Safety and driving rules:** whichever is chosen must stay within the templates and the
-  3-screen task depth ([UI §12.1][ui-12.1]).
-- **Components:** short_list row, Card, Button.
-- **Spec refs:** [shell input §6][si-6] · [shell input §4.3][si-4.3] · [UI §3.4][ui-3.4].
-- **Open questions (open, for the owner):** keep "Exit to Home" while Moving (option B), hide
-  it while Moving (option A), or keep it as today with Home locked except its warnings card?
+- **Opens from → goes to:** Drive menu **Exit to Home** (Parked only) → Home. While Moving
+  there is no way to Home: the strip's Back chip only focuses the Drive page chip.
+- **Layout classes:** hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night-dim Moving (the
+  Drive menu without the row); hu7 Night Parked (the menu with the row).
+- **Content:** **Row hidden while Moving.** The Drive menu lists its other rows only; the
+  row is absent, not greyed. Parked, the row opens Home.
+- **States:** Parked: the row exists and opens Home. Moving: the row is absent.
+- **Safety and driving rules:** stays within the templates and the 3-screen task depth
+  ([UI §12.1][ui-12.1]); `back` never leaves Drive mode while Moving ([shell input §4.3][si-4.3]).
+- **Components:** `short_list` row.
+- **Spec refs:** [shell input §6][si-6] · [shell input §4.3][si-4.3] · [UI §3.4][ui-3.4] · [launcher §4.3][lw-4.3].
+- **Open questions:** **Decided (item 46):** hide the row while Moving (option A).
 
 ### drive-dusk-suggest — Minimal / Night suggested at dusk  [New]
 - **Purpose:** offer the calm night page once at dusk, never switching by itself.
@@ -167,3 +161,4 @@ Back to [40-a](40-drive-a.md) for the terms and the file list. The carousel mode
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-15.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#151-drive-modes-changes-123
 [ui-3.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#34-five-destinations
+[lw-4.3]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#43-drive-mode-is-the-carousel-while-moving

@@ -2,12 +2,12 @@
 title: "Designer brief 80-d — Audio app: sources, sound, graphic and parametric EQ, presets, balance and fade"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-phone-comms-addon-design.md]
 summary: >
   The Audio app's everyday pages (app:audio). Sources lists every sound source (Radio, Media
-  files, Bluetooth, Projection, AUX) and switches between them. Sound is the hub with
+  files, Bluetooth, AUX, streaming) and switches between them. Sound is the hub with
   loudness, bass boost and tone, and links to the tuning pages. The graphic EQ has 10, 15 or
   31 bands; the parametric EQ has bands with frequency, gain and Q on a curve; EQ presets save,
   load and share curves. Balance and fade use a top-down seat diagram of the right-hand-drive
@@ -17,19 +17,18 @@ summary: >
 
 # 80-d — Audio app: sources, sound, EQ, balance
 
-**Why the Audio app needs these pages (all Proposed):** the owner's direction of 2026-10-07
-makes Ostler the head unit, so it owns the sound: source switching, EQ and DSP. No approved
-spec covers it. Processing runs on the Brain (PipeWire filter chains) or on an external DSP
+**Spec:** when Ostler is the head unit it owns the sound: source switching, EQ and DSP. The
+approved head-unit apps spec covers the Audio app ([head-unit apps §4][hu-4]), so these
+pages are New; v1 is a software DSP on the Brain (decided, item 37). Processing runs on the Brain (PipeWire filter chains) or on an external DSP
 the app controls; the pages are the same either way. The car is a right-hand-drive
 Discovery 2, so the driver's seat is drawn on the **right**.
 
-### audio-sources — Sources  [Proposed]
-- **Why the app needs it:** the head unit's "Source" button; one place to switch what plays.
+### audio-sources — Sources  [New]
 - **Purpose:** choose the active sound source.
 - **Owner:** app:audio
 - **Opens from → goes to:** app drawer → Audio → Sources; the Source button on the media
   widget; a steering-wheel "Source" key (cycles, no page). Goes to the source's app
-  (`radio-now-playing`, `media-now-playing`, `media-bluetooth`, `projection-session`).
+  (`radio-now-playing`, `media-now-playing`, `media-bluetooth`).
 - **Layout classes:** phone · tablet · hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night
   Parked; hu7 Night-dim Moving (`short_list`).
 - **Content (top to bottom):** a grid of source Cards (icon + word + one meta line), the
@@ -37,20 +36,19 @@ Discovery 2, so the driver's seat is drawn on the **right**.
   1. `radio` **Radio** — "BBC Radio 2 · 89.1 FM".
   2. `library_music` **Media** — "USB stick · 1,204 tracks".
   3. `bluetooth_audio` **Bluetooth** — the phone's name, "Connected".
-  4. `cast` **Projection** — "Android Auto" or "CarPlay" (only if set up).
-  5. `settings_input_component` **AUX in** (only if the output device has an input).
-  6. `podcasts` streaming integrations as their own Cards (one per integration).
+  4. `settings_input_component` **AUX in** (only if the output device has an input).
+  5. `podcasts` streaming sources as their own Cards (later: internet radio, podcasts,
+     AirPlay, UPnP; item 39). No projection source: projection is not built (item 38).
 - **States:** a source with no device: Card greyed with the reason ("No tuner", "No phone
   connected"). Only one source: the page shows it and a "Add a source" link to the Store.
   Moving: a `short_list` of available sources (≤ 6 rows, ≤ 30 characters), tap switches.
 - **Safety and driving rules:** switching sources is allowed while Moving (equipment state);
   the page grid is Parked only ([UI §12.1][ui-12.1]).
 - **Components:** Card, `short_list` template.
-- **Spec refs:** [UI §12.1][ui-12.1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-sound — Sound (loudness, bass, tone)  [Proposed]
-- **Why the app needs it:** the quick sound page every unit has, above the expert pages.
+### audio-sound — Sound (loudness, bass, tone)  [New]
 - **Purpose:** the simple sound controls and the way into tuning.
 - **Owner:** app:audio
 - **Opens from → goes to:** app drawer → Audio (its home page). Goes to `audio-eq-graphic`,
@@ -76,11 +74,10 @@ Discovery 2, so the driver's seat is drawn on the **right**.
 - **Safety and driving rules:** Park to edit for every slider ([Drive modes §8.1][dm-8.1]);
   choosing an existing preset is allowed while Moving.
 - **Components:** Chip, Slider (new component), Toggle (new component), Segmented, ListRow.
-- **Spec refs:** [Drive modes §8.1][dm-8.1] · [visual §8][vds-8].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [visual §8][vds-8] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-eq-graphic — Graphic equaliser  [Proposed]
-- **Why the app needs it:** a graphic EQ is standard on every aftermarket unit.
+### audio-eq-graphic — Graphic equaliser  [New]
 - **Purpose:** shape the sound with fixed bands.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Equaliser. Goes to `audio-eq-parametric`
@@ -100,11 +97,10 @@ Discovery 2, so the driver's seat is drawn on the **right**.
   counts are offered. Moving: locked view, "Available when parked".
 - **Safety and driving rules:** Parked only on driver-facing displays.
 - **Components:** Segmented, EqBands (new component), Chip, Button.
-- **Spec refs:** [visual §8][vds-8] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [visual §8][vds-8] · [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-eq-parametric — Parametric equaliser  [Proposed]
-- **Why the app needs it:** for tuning a cabin properly (room modes, harsh peaks).
+### audio-eq-parametric — Parametric equaliser  [New]
 - **Purpose:** set each filter's frequency, gain, Q and type on a response curve.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-eq-graphic` (Segmented); `audio-setup-test` (measured
@@ -125,11 +121,10 @@ Discovery 2, so the driver's seat is drawn on the **right**.
 - **Safety and driving rules:** Parked only; number fields are text entry.
 - **Components:** CurveEditor (new component), ListRow, Segmented, TextField (new
   component), Toggle (new component), Button.
-- **Spec refs:** [visual §8][vds-8].
+- **Spec refs:** [visual §8][vds-8] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-eq-presets — EQ presets  [Proposed]
-- **Why the app needs it:** drivers switch sound for speech, music or a loud gravel road.
+### audio-eq-presets — EQ presets  [New]
 - **Purpose:** pick, save, rename, share and delete sound profiles.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` profile chip; `audio-eq-graphic` → Preset. Back.
@@ -144,11 +139,11 @@ Discovery 2, so the driver's seat is drawn on the **right**.
 - **Safety and driving rules:** applying a preset is allowed while Moving; editing, rename
   and delete are Park to edit.
 - **Components:** ListRow, Sheet, Button, `short_list` template.
-- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1].
-- **Open questions:** should sound profiles be a Store item type? Recommend yes, later.
+- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
+- **Open questions:** **Decided ([app UI model §9][ua-9], [Store §4][st-4]):** sound or EQ
+  presets are an object kind the Store hosts; they carry no code.
 
-### audio-balance-fade — Balance and fade  [Proposed]
-- **Why the app needs it:** centre the sound on the driver or the whole cabin.
+### audio-balance-fade — Balance and fade  [New]
 - **Purpose:** move the sound left, right, front and rear on a seat diagram.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Balance and fade. Goes to
@@ -167,9 +162,12 @@ Discovery 2, so the driver's seat is drawn on the **right**.
   connected". Moving: locked view.
 - **Safety and driving rules:** Park to edit; the quick Chips are not offered while Moving.
 - **Components:** SeatMap (new component), Button, Chip, Toggle (new component).
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** draw a left-hand-drive variant now, or only when a LHD pack exists?
 
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[hu-4]: ../../../../specs/2026-10-07-head-unit-apps-design.md#4-audio
+[ua-9]: ../../../../specs/2026-10-07-app-ui-model-design.md#9-object-kinds
+[st-4]: ../../../../specs/2026-10-07-store-design.md#4-what-the-store-hosts

@@ -877,6 +877,13 @@
         "heading": "7.1 Amendment (2026-10-06): the phone build",
         "anchor": "71-amendment-2026-10-06-the-phone-build",
         "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-07-store-design.md",
+        "section": "§9",
+        "heading": "9. Updates",
+        "anchor": "9-updates",
+        "label": "Store"
       }
     ],
     "tokens": [],
@@ -893,8 +900,7 @@
       "differences": []
     },
     "owner": "os",
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-update-available--update-available--proposed"
+    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-update-available--update-available--new"
   },
   {
     "id": "ia-kit-controls",
@@ -1150,6 +1156,20 @@
         "heading": "8.1 Safety rules",
         "anchor": "81-safety-rules",
         "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+        "section": "§5.1",
+        "heading": "5.1 The dock",
+        "anchor": "51-the-dock",
+        "label": "Launcher"
+      },
+      {
+        "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+        "section": "§6.2",
+        "heading": "6.2 Edit mode",
+        "anchor": "62-edit-mode",
+        "label": "Launcher"
       }
     ],
     "tokens": [],
@@ -1164,8 +1184,7 @@
       "differences": []
     },
     "owner": "os",
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-launcher--kit-sheet-launcher--proposed"
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-launcher--kit-sheet-launcher--new"
   },
   {
     "id": "ia-kit-moving-templates",

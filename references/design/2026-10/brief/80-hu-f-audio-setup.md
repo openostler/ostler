@@ -2,7 +2,7 @@
 title: "Designer brief 80-f — Audio app: first-run setup (install shape, output device, channels, speaker test), settings and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/hardware.md, references/research/canbus_headunit.md]
 summary: >
@@ -17,7 +17,8 @@ summary: >
 
 # 80-f — Audio setup, settings and widgets
 
-Proposed for the reason in [80-d](80-hu-d-audio.md). Setup is Parked only on driver-facing
+The approved head-unit apps spec covers the two setups and the output hardware
+([head-unit apps §1][hu-1], [§4][hu-4]), so these pages are New. Setup is Parked only on driver-facing
 displays and can run from a phone linked to the car. Each step has **Back**, **Next** and
 **Set up later**.
 
@@ -34,9 +35,7 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
 "Beside my head unit" skips steps 2–4: the old unit keeps sound; Audio shows only
 `audio-system-sounds` routing and a note that EQ lives on the old unit.
 
-### audio-setup-shape — Setup 1: install shape  [Proposed]
-- **Why the app needs it:** the owner's two install shapes change what every head-unit app
-  shows ([80-a](80-hu-a-overview.md)).
+### audio-setup-shape — Setup 1: install shape  [New]
 - **Purpose:** decide who makes the sound in this car.
 - **Owner:** app:audio
 - **Opens from → goes to:** first open of Audio, Radio or Media; `audio-settings` → Install
@@ -44,19 +43,19 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night; phone Day.
 - **Content (top to bottom):** 1. StepProgress "1 of 4 · Install". 2. Two large choice
-  Cards: **"Ostler is the head unit"** ("Ostler plays radio, media and calls through your
-  amplifier") and **"Ostler sits beside my head unit"** ("Your head unit keeps radio and
-  music; Ostler shows car data and cameras"). 3. A small line: "Calls follow the Phone app's
+  Cards: **"Ostler sits beside my head unit"** (preselected: "Your head unit keeps radio
+  and music; Ostler shows car data and cameras") and **"Ostler is the head unit"**
+  (offered, never the default, item 55: "Ostler plays radio, media and calls through your
+  amplifier"). 3. A small line: "Calls follow the Phone app's
   hands-free choice" linking to Phone settings by name. 4. **Next**.
 - **States:** a phone set as hands-free elsewhere: the note names it. Moving: locked view.
 - **Safety and driving rules:** Parked only.
 - **Components:** StepProgress (new component), Card (choice), Button.
-- **Spec refs:** [Phone §3][pc-3] · [UI §1][ui-1].
-- **Open questions:** the default choice; see [80-a](80-hu-a-overview.md) question 3.
+- **Spec refs:** [Phone §3][pc-3] · [UI §1][ui-1] · [head-unit apps §1][hu-1].
+- **Open questions:** **Decided (item 55):** "Ostler is the head unit" is offered, not the
+  default; "Ostler sits beside my head unit" is preselected.
 
-### audio-setup-output — Setup 2: output device (DAC or DSP)  [Proposed]
-- **Why the app needs it:** the Brain has no amplifier; the sound must leave through a DAC
-  or a DSP the owner fitted.
+### audio-setup-output — Setup 2: output device (DAC or DSP)  [New]
 - **Purpose:** choose and check the device that carries sound to the amplifier.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-setup-shape`; `audio-settings` → Output → Change. Goes to
@@ -71,24 +70,21 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
      - "CarPiHAT PRO 5 DAC · 2 channels · EQ on the Brain".
      - "I²S DAC HAT · 2 or 8 channels · EQ on the Brain".
      - "USB audio device · 2–8 channels · EQ on the Brain".
-     - "External DSP · USB" or "· Bluetooth" · "EQ, crossover and delays on the DSP".
-  4. **Pair a Bluetooth DSP** (secondary; opens system Bluetooth pairing by name).
-  5. **Play a test sound** (secondary): 2 s at a safe level.
-  6. **Next** (primary).
+     - An external DSP is not supported in v1 (item 37): a found one shows "External DSP ·
+       not supported yet · sound passes through flat".
+  4. **Play a test sound** (secondary): 2 s at a safe level.
+  5. **Next** (primary).
 - **States:** none found: "No audio output found. Fit a DAC HAT or plug in a USB DAC." with
   **Show options** (the Store). DSP found but unsupported: "Ostler can't control this DSP;
   sound will pass through flat". DSP over Bluetooth drops: "DSP disconnected · reconnecting".
   Brain asleep: "Needs the Brain" with **Wake**. Moving: locked view.
 - **Safety and driving rules:** Parked only; test sound capped (−20 dBFS).
 - **Components:** StepProgress (new component), Card, ListRow, Button.
-- **Spec refs:** [hardware research][hw] · [head-unit research B4][ch-b4].
-- **Open questions:** which external DSPs to support first (each needs its own control
-  protocol). The head-unit research notes the CAN-box amplifier codes; a Raise-protocol amp
-  could be a later device.
+- **Spec refs:** [hardware research][hw] · [head-unit research B4][ch-b4] · [head-unit apps §4][hu-4].
+- **Open questions:** **Decided (item 37):** v1 is a software DSP on the Brain; an external
+  DSP board comes later as a `device` integration, so no external DSP is supported first.
 
-### audio-setup-channels — Setup 3: channel map  [Proposed]
-- **Why the app needs it:** EQ, crossover and delays are per speaker; the app must know
-  which output feeds which speaker.
+### audio-setup-channels — Setup 3: channel map  [New]
 - **Purpose:** map outputs to speakers and speaker types.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-setup-output`; `audio-settings` → Channels. Goes to
@@ -110,11 +106,10 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
   owner must turn off on purpose.
 - **Components:** StepProgress (new component), Segmented, SeatMap (new component),
   ListRow, Button.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-setup-test — Setup 4: speaker test and levels  [Proposed]
-- **Why the app needs it:** proves the wiring and sets a sane starting level per speaker.
+### audio-setup-test — Setup 4: speaker test and levels  [New]
 - **Purpose:** hear each speaker in turn and match levels.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-setup-channels`; `audio-settings` → Speaker test. Goes to
@@ -130,11 +125,10 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
 - **Safety and driving rules:** Parked only; pink noise at a capped level.
 - **Components:** StepProgress (new component), SeatMap (new component), Button, Slider
   (new component).
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
-### audio-settings — Audio settings  [Proposed]
-- **Why the app needs it:** the app's device and per-profile choices need one home.
+### audio-settings — Audio settings  [New]
 - **Purpose:** the Audio app's own options.
 - **Owner:** app:audio
 - **Opens from → goes to:** `audio-sound` → Settings; App info → Settings. Goes to the setup
@@ -150,7 +144,7 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
   only. Moving: locked view.
 - **Safety and driving rules:** Park to edit.
 - **Components:** ListRow, Chip (status), Toggle (new component), Button.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §4][hu-4] · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 ## Audio widgets (in the widget picker gallery)
@@ -170,3 +164,6 @@ displays and can run from a phone linked to the car. Each step has **Back**, **N
 [pc-3]: ../../../../specs/2026-10-07-phone-comms-addon-design.md#3-architecture
 [hw]: ../../../research/hardware.md#development-kit-recommended-parts-250-plus-the-pi
 [ch-b4]: ../../../research/canbus_headunit.md#b4-steering-wheel-reverse-cameras-amplifier
+[hu-1]: ../../../../specs/2026-10-07-head-unit-apps-design.md#1-context-and-the-two-setups
+[hu-4]: ../../../../specs/2026-10-07-head-unit-apps-design.md#4-audio
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

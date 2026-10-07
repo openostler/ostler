@@ -2,7 +2,7 @@
 title: "Designer brief 80-i — Camera app: cameras home, reverse camera, front and underbody, multi-camera, dashcam"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-platform-direction-design.md, references/research/canbus_headunit.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -12,7 +12,8 @@ summary: >
   Discovery 2 dynamic guidelines are not available (no steering-angle signal). Front and
   underbody views are for off-road use below 10 km/h. The multi-camera grid is Parked only.
   Dashcam shows recording state and clips, which live in Security → Clips. The `camera_live`
-  template and its speed rules are approved; the app pages around them are Proposed.
+  template and its speed rules are approved; the app pages around them are New (the
+  head-unit apps spec).
 ---
 
 # 80-i — Camera app pages
@@ -22,12 +23,11 @@ Camera devices are added and given a role in the hardware brief (`hw-camera-add`
 through go2rtc on the Brain ([platform direction][pd]). **Approved rules** ([UI §6][ui-6],
 [App model §4.4][am-4.4]): `camera_live` shows one stream; reverse pre-empts the screen only
 once a fast path exists and is assist-only until then; front and underbody show live below
-10 km/h; no playback unless Parked. **Why the other pages are Proposed:** the owner's
-direction of 2026-10-07 asks for the full head-unit camera set (multi-view, dashcam,
-guidelines); no approved spec draws them.
+10 km/h; no playback unless Parked. The approved head-unit apps spec covers the
+Camera app ([head-unit apps §6][hu-6]): the reverse view, its trigger, guidelines and other
+views Parked only (multi-view and dashcam later), so these pages are New.
 
-### camera-home — Cameras  [Proposed]
-- **Why the app needs it:** the app's home; one place to see what each camera sees.
+### camera-home — Cameras  [New]
 - **Purpose:** list cameras and open one.
 - **Owner:** app:camera
 - **Opens from → goes to:** app drawer → Camera. Goes to `camera-reverse`,
@@ -46,7 +46,7 @@ guidelines); no approved spec draws them.
 - **Safety and driving rules:** non-driving cameras are Parked only on driver-facing
   displays and never in Passenger view ([UI §12.1][ui-12.1]).
 - **Components:** Card, Chip (status), Button, `short_list` template.
-- **Spec refs:** [UI §6][ui-6] · [UI §12.1][ui-12.1].
+- **Spec refs:** [UI §6][ui-6] · [UI §12.1][ui-12.1] · [head-unit apps §6][hu-6].
 - **Open questions:** none.
 
 ### camera-reverse — Reverse camera with guidelines  [New]
@@ -81,10 +81,12 @@ guidelines); no approved spec draws them.
   component), Chip (status), Button (Back).
 - **Spec refs:** [UI §6][ui-6] · [App model §4.4][am-4.4] · [UI §12.1][ui-12.1] ·
   [head-unit research B4][ch-b4].
-- **Open questions:** (1) Fast path: a node opto input on the reverse lamp wire, or the
-  head unit's own REV wire and camera input ([B4][ch-b4]); the SLABS reverse switch is only
-  read during a K-line session and is too slow. (2) Many D2s have a rear parking aid; its
-  module is not on the pack today, so the overlay needs an add-on sensor device.
+- **Open questions:** (1) **Decided ([head-unit apps §6][hu-6]):** the trigger is a pack
+  signal or a 12 V reverse wire into a node or I/O-module input; on the D2 that is the
+  reverse lamp wire, a first car check (item 65); where the head unit has its own camera
+  input (setup B) that stays the fast path. Latency is measured on the bench. (2) Many D2s
+  have a rear parking aid; its module is not on the pack today, so the overlay needs an
+  add-on sensor device.
 
 ### camera-offroad — Front and underbody views  [New]
 - **Purpose:** see the ground ahead and under the car on rough tracks.
@@ -106,9 +108,7 @@ guidelines); no approved spec draws them.
 - **Spec refs:** [UI §6][ui-6] · [App model §4.4][am-4.4] · [Drive modes §5.5][dm-5.5].
 - **Open questions:** the hysteresis numbers (10 off, 8 on) are a proposal.
 
-### camera-multi — All cameras (multi-view)  [Proposed]
-- **Why the app needs it:** checking all sides at once when parked or camping; head units
-  sell this as "360 view".
+### camera-multi — All cameras (multi-view)  [New]
 - **Purpose:** see up to four cameras at once.
 - **Owner:** app:camera
 - **Opens from → goes to:** `camera-home` → All cameras. A tile opens that camera full
@@ -123,12 +123,10 @@ guidelines); no approved spec draws them.
   Moving, [App model §4.4][am-4.4]); a true stitched 360° view is a future camera kind with
   its own spec ([UI §6][ui-6]).
 - **Components:** CameraGrid (new component), Button.
-- **Spec refs:** [UI §6][ui-6] · [App model §4.4][am-4.4].
+- **Spec refs:** [UI §6][ui-6] · [App model §4.4][am-4.4] · [head-unit apps §6][hu-6].
 - **Open questions:** none.
 
-### camera-dashcam — Dashcam and recording  [Proposed]
-- **Why the app needs it:** loop recording and an "incident save" are standard; the clips
-  belong in the trip timeline.
+### camera-dashcam — Dashcam and recording  [New]
 - **Purpose:** see recording state, save a clip, and open clips.
 - **Owner:** app:camera; clips are shown in Security → Clips (app:security)
 - **Opens from → goes to:** `camera-home` → Dashcam; the REC strip chip. Goes to
@@ -145,7 +143,7 @@ guidelines); no approved spec draws them.
 - **Safety and driving rules:** no playback unless Parked ([UI §6][ui-6]); **Save clip** is
   safe at any speed, like Mark; Cabin recording follows Security's consent rules.
 - **Components:** Chip (status), Button, ListRow, ProgressRow (new component), Toast.
-- **Spec refs:** [UI §6][ui-6] · [platform direction][pd].
+- **Spec refs:** [UI §6][ui-6] · [platform direction][pd] · [head-unit apps §6][hu-6].
 - **Open questions:** whether Save clip also drops a Mark flag in the trip. Recommend yes.
 
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
@@ -155,3 +153,4 @@ guidelines); no approved spec draws them.
 [pd]: ../../../../specs/2026-10-06-platform-direction-design.md#displays-are-thin-clients-cameras-live-on-our-infrastructure
 [dd-4.2]: ../../../research/driver_distraction_rules.md#42-uk-regulation-109-screens-visible-to-the-driver
 [ch-b4]: ../../../research/canbus_headunit.md#b4-steering-wheel-reverse-cameras-amplifier
+[hu-6]: ../../../../specs/2026-10-07-head-unit-apps-design.md#6-camera

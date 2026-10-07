@@ -2,7 +2,7 @@
 title: "Designer brief — sitemap (c): the Apps tree"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, references/design/2026-10/screens.json]
 summary: >
@@ -108,6 +108,11 @@ shortcuts it adds to home pages) and **Moving** (what the OS draws for it while 
 
 - Tuner and presets (radio), equaliser and sources (audio), library and now playing
   (media): drawn in `80-hu-*`. **Moving:** the `media` template only.
+- Each app ships its own data widgets: Now playing from Media, Radio from Radio (decided,
+  item 52). "Ostler is the head unit" is offered at first run, not the default (item 55).
+- Clock and Weather are part of the starter widget pack (§14, item 53). Voice is an app,
+  allowed and local-first (item 54). Projection is not built: owners keep a projection head
+  unit beside Ostler (item 38).
 
 ## 10. Camera (Owner: app:camera)
 
@@ -129,19 +134,24 @@ shortcuts it adds to home pages) and **Moving** (what the OS draws for it while 
   `p8` Publish · `p9` My shares · `p10` Forum · `p11` Thread · `p12` Vehicle project ·
   `p13` Decode card · `p14` Wiki page ([hub §15.1][hub-15.1]).
 
-## 13. Store (Owner: app:store)
+## 13. Store (Owner: os, a system app)
 
-- Home, categories (apps, integrations and vehicle packs, widget packs, themes, icon packs,
+- The Store is a system app: never uninstalled, Parked only on driver-facing displays
+  (decided, item 28). No ratings (item 33). Home, categories (apps, integrations and vehicle packs, widget packs, themes, icon packs,
   wallpapers, dashboard presets), item page, installing, Installed (`addons-catalogue`),
   updates: drawn in `70-store-*`. Installing is an owner operation on local links, Parked.
 
 ## 14. Starter widgets (Owner: app:widgets-starter)
 
-- No pages. Widgets: signal tile, gauge, hero number, binary chip, enum text, sparkline
-  (Parked only), inclinometer, compass, altitude, clock, vehicle card; the seven preset
-  dashboards ([Drive modes §9][dm-9]). Widget setup pages are the OS's
+- Widgets: signal tile, gauge, hero number, binary chip, enum text, sparkline (Parked only),
+  inclinometer, compass, altitude, vehicle card; the seven preset dashboards
+  ([Drive modes §9][dm-9], [launcher §9][lw-9]).
+- **Clock and Weather** are part of the pack (decided, item 53), with their pages
+  `clock-page`, `clock-alarm-ring`, `clock-settings`, `weather-page`, `weather-setup` and
+  `weather-settings` (80-hu-k). Data widgets of other apps stay with their apps (item 52). Widget setup pages are the OS's
   (`drive-widget-settings`).
 
 [dm-9]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#9-the-widget-and-slot-contract-summary
+[lw-9]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#9-the-starter-catalogue
 [hub-15.1]: ../../../../specs/2026-10-07-community-hub-design.md#151-web-app-ostler-hub
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44

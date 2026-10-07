@@ -2,7 +2,7 @@
 title: "Designer brief 45-j — launcher: the theme wizard (Wallpaper & style), wallpaper, colours and icon packs"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -32,9 +32,7 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 | 5 | `launcher-theme-text` | picks a text size (45-k) | a size would clip on this screen → not offered |
 | 6 | `launcher-theme-preview` | checks Home and the Drive page, then applies (45-k) | save fails → nothing changes; **Try again** |
 
-### launcher-theme — Wallpaper & style  [Proposed]
-- **Why the app needs it:** the owner asked for a theme wizard; the visual spec fixes one
-  look and has no user-facing style page beyond Night, Day and Auto.
+### launcher-theme — Wallpaper & style  [New]
 - **Purpose:** the hub for every look setting, also run as a wizard in first setup.
 - **Owner:** os
 - **Opens from → goes to:** **Wallpaper & style** in the launcher menu; Settings → Display →
@@ -51,13 +49,11 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 - **Safety and driving rules:** nothing here changes a Moving template's floors, a status
   colour or a safety icon ([visual §1][vds-1]).
 - **Components:** ListRow, Card (preview), Button.
-- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [UI §12.5][ui-12.5].
+- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [UI §12.5][ui-12.5] · [launcher §11][lw-11].
 - **Open questions:** should a theme be per display, per profile, or both? This brief says
   per profile and display, like layouts ([Drive modes §8.3][dm-8.3]).
 
-### launcher-theme-wallpaper — Wallpaper and background  [Proposed]
-- **Why the app needs it:** wallpapers are new in the owner's direction; no spec covers
-  images behind the home pages.
+### launcher-theme-wallpaper — Wallpaper and background  [New]
 - **Purpose:** choose what sits behind the home pages.
 - **Owner:** os
 - **Opens from → goes to:** the hub or wizard step 1. **Set** returns or goes to step 2.
@@ -68,8 +64,9 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
      `line`), **Grid** (fine `line` grid), **Dusk** (a flat `surface-1` to `bg` split; no
      gradient on head units).
   2. **From the Store:** wallpaper packs, each with a thumbnail and **Get**.
-  3. **Your own image:** **Choose image** (Parked; stored on the Brain or the device, never
-     uploaded), then **Crop** for this screen's size.
+  3. **Your own image:** **Choose image** (Parked; stored on the device only, EXIF stripped,
+     never uploaded and never exported in layouts, item 50), then **Crop** for this screen's
+     size.
   4. **Dim at night** (on, and locked on for head units): in Night dim and Deep night the
      wallpaper sits under the `overlay` scrim at 80 %.
   5. **Apply to:** This screen · All my screens.
@@ -79,13 +76,11 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   draw on plain `bg`, never on a wallpaper; widgets keep their cards, so text contrast never
   depends on the wallpaper ([visual §1][vds-1], [visual §5][vds-5]).
 - **Components:** Card (thumbnail grid), crop tool (new component), switch, Segmented.
-- **Spec refs:** [visual §1][vds-1] · [visual §5][vds-5] · [UI §12.5][ui-12.5].
-- **Open questions:** wallpaper images are user files; confirm they stay out of exported
-  layouts (as images are refused in `ostler.layout/1`).
+- **Spec refs:** [visual §1][vds-1] · [visual §5][vds-5] · [UI §12.5][ui-12.5] · [launcher §11][lw-11].
+- **Open questions:** **Decided (item 50):** wallpaper images are stored on the device only
+  and never exported in layouts.
 
-### launcher-theme-colours — Colours and light or dark  [Proposed]
-- **Why the app needs it:** the visual spec has one cyan accent; a colour choice needs an
-  owner decision and token-set rules.
+### launcher-theme-colours — Colours and light or dark  [New]
 - **Purpose:** choose the accent and the theme mode.
 - **Owner:** os
 - **Opens from → goes to:** the hub or step 2.
@@ -94,9 +89,10 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 - **Content:**
   1. **Theme:** Segmented **Night · Day · Auto**; **Deep night (OLED)** switch; on head
      units a line "After dusk the screen uses Night dim".
-  2. **Accent:** swatches as named token sets: **Cyan** (default), plus those from installed
-     theme packs (for example an amber accent). Each swatch has a name and passed every
-     contrast pair; failing ones are not shown.
+  2. **Accent:** swatches as named, validated accent sets (item 48): **Cyan** (default),
+     the OS's other built-in sets and those from installed theme packs (for example an amber
+     accent). Each swatch has a name and passed every contrast pair in every theme; failing
+     ones are not shown.
   3. **Map style follows theme** switch (map theme stays independent, [UI §13.5][ui-13.5]).
   4. A small preview card: a button, a selected chip and a gauge in and out of range.
 - **States:** a pack accent too close to a status colour is refused ("Too close to the
@@ -104,13 +100,11 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 - **Safety and driving rules:** `ok`, `warn`, `alarm` never change; data ramps never use the
   accent; no glow on head units at night ([visual §3.3][vds-3.3], [visual §5][vds-5]).
 - **Components:** Segmented, switch, colour swatch (new component), Card.
-- **Spec refs:** [visual §3.1][vds-3.1] · [visual §3.3][vds-3.3] · [UI §13.5][ui-13.5].
-- **Open questions:** owner decision: allow accents other than cyan, as validated token
-  sets?
+- **Spec refs:** [visual §3.1][vds-3.1] · [visual §3.3][vds-3.3] · [UI §13.5][ui-13.5] · [launcher §11][lw-11].
+- **Open questions:** **Decided (item 48):** accents other than cyan are allowed as
+  validated colour sets; status colours never change.
 
-### launcher-theme-icons — Icon packs  [Proposed]
-- **Why the app needs it:** the owner asked for icon packs; the visual spec allows one icon
-  set, so this needs an owner decision.
+### launcher-theme-icons — Icon packs  [New]
 - **Purpose:** choose the look of app and dock icons.
 - **Owner:** os
 - **Opens from → goes to:** the hub or step 3.
@@ -129,9 +123,10 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   never replaced; no emoji or images as icons ([visual §6][vds-6], [Drive modes §8.1][dm-8.1]
   R3).
 - **Components:** Card, App icon (new).
-- **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6].
-- **Open questions:** owner decision: change the one-icon-set rule to "Material Symbols
-  names, any mapped glyph set, safety glyphs fixed".
+- **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6] · [launcher §11][lw-11] ·
+  [app UI model §9][ua-9].
+- **Open questions:** **Decided (item 49):** icon packs are glyph sets mapped to Material
+  Symbols names; safety icons never change.
 
 <!-- links -->
 [dm-7.6]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#76-icons-and-names-v02
@@ -144,3 +139,5 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 [vds-3.3]: ../../../../specs/2026-10-07-visual-design-system-design.md#33-data-ramps-and-chart-colours-datatokensjson
 [vds-5]: ../../../../specs/2026-10-07-visual-design-system-design.md#5-space-radius-elevation-glow-motion
 [vds-6]: ../../../../specs/2026-10-07-visual-design-system-design.md#6-icons-and-fonts
+[lw-11]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#11-the-theme-wizard
+[ua-9]: ../../../../specs/2026-10-07-app-ui-model-design.md#9-object-kinds

@@ -2,7 +2,7 @@
 title: "Designer brief: hardware (f) — alarm sensors and arming, tracker, remote start, mesh radios and service mode"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-02-gps-tracker-alarm-design.md, specs/2026-10-02-remote-start-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-kline-profiles-detection-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0040-power-states-and-wake.md, references/research/platform.md, references/research/hardware.md]
 summary: >
@@ -41,8 +41,9 @@ map; these screens are its setup pages.
      parked".
   4. **Alerts reach you** card: "Paired phone (local)", "SMS from Ostler Guardian", "Your
      notify address"; line "Works with the Brain off and no internet".
-  5. **Remote** card: "Disarm remotely: allowed for people with Security; every remote disarm
-     is logged and you are told"; "Never over a mesh".
+  5. **Remote** card: "Disarm remotely: allowed for people with Security, with a fresh
+     passkey each time; every remote disarm is logged and you are told" (item 60); "Never
+     over a mesh".
   6. **Outputs** text: "Ostler Diagnostics and Guardian have no siren or immobiliser outputs.
      Those need a future I/O module and their own decision."
   7. **Walk test** (secondary).
@@ -56,8 +57,9 @@ map; these screens are its setup pages.
 - **Components:** ListRow, Card, Chip (status), Segmented, Button.
 - **Spec refs:** [UI §6][ui6] (Alarm row), [ADR-0032][a32], [ADR-0033 §7][a33-7],
   [Tracker and alarm spec: signal taps][ga-taps] (draft), [platform research §4][pr4].
-- **Open questions:** the D2's door, bonnet and siren wires at the BCU are not yet
-  identified; until they are, those rows are absent on the D2.
+- **Open questions:** **Decided (item 65):** the BCU wires for door, bonnet and siren are
+  first car checks; until the owner confirms them on the car, those rows are absent on the
+  D2.
 
 ### hw-alarm-walk-test — Alarm walk test  [Proposed]
 - **Owner:** app:security

@@ -1,11 +1,11 @@
 ---
-title: "Screen index, part C — app:maintenance, app:map, app:media, app:navigation, app:phone, app:projection, app:radio, app:security, app:social, app:trips, app:voice, app:weather"
+title: "Screen index, part C — app:maintenance, app:map, app:media, app:navigation, app:phone, app:radio, app:security, app:social, app:trips, app:voice, app:widgets-starter"
 area: references
 status: draft
 version: 0.1
 updated: 2026-10-07
 summary: >
-  Generated list of every screen in the October 2026 designer brief owned by app:maintenance, app:map, app:media, app:navigation, app:phone, app:projection, app:radio, app:security, app:social, app:trips, app:voice, app:weather: screen ID, name, group, tag (Existing, New or Proposed), layout classes and a link to its brief block. Generated from screens.json; do not edit by hand.
+  Generated list of every screen in the October 2026 designer brief owned by app:maintenance, app:map, app:media, app:navigation, app:phone, app:radio, app:security, app:social, app:trips, app:voice, app:widgets-starter: screen ID, name, group, tag (Existing, New or Proposed), layout classes and a link to its brief block. Generated from screens.json; do not edit by hand.
 ---
 
 # Screen index, part C
@@ -19,8 +19,8 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
 | `maint-add-record` | Add record (service, fuel, expense, document) | Maintenance & Garage | Existing | PT579WD | [50-vehicle-k-maint](50-vehicle-k-maint.md#maint-add-record--add-record-service-fuel-expense-document--existing) |
-| `maint-app-settings` | Maintenance: settings | Maintenance & Garage | Proposed | PTD9W | [50-vehicle-l-apps](50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--proposed) |
-| `maint-app-setup` | Maintenance: first-run setup | Maintenance & Garage | Proposed | PTD9W | [50-vehicle-l-apps](50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--proposed) |
+| `maint-app-settings` | Maintenance: settings | Maintenance & Garage | New | PTD9W | [50-vehicle-l-apps](50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--new) |
+| `maint-app-setup` | Maintenance: first-run setup | Maintenance & Garage | New | PTD9W | [50-vehicle-l-apps](50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--new) |
 | `maint-buyer-share` | Share history with a buyer | Maintenance & Garage | New | PTD | [50-vehicle-k-maint](50-vehicle-k-maint.md#maint-buyer-share--share-history-with-a-buyer--new) |
 | `maint-costs` | Maintenance: Costs tab | Maintenance & Garage | Existing | PT579WD | [50-vehicle-j-maint](50-vehicle-j-maint.md#maint-costs--maintenance-costs-tab--existing) |
 | `maint-documents` | Maintenance: Documents tab | Maintenance & Garage | Existing | PT579WD | [50-vehicle-j-maint](50-vehicle-j-maint.md#maint-documents--maintenance-documents-tab--existing) |
@@ -64,15 +64,15 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
 | `drive-split-split` | Drive mode: Split / Media · Split | Drive modes | Existing | PT579W | [40-drive-f](40-drive-f.md#drive-split-split--split--media--split--existing) |
-| `media-bluetooth` | Bluetooth audio | Media | Proposed | PT579W | [80-hu-g-media](80-hu-g-media.md#media-bluetooth--bluetooth-audio--proposed) |
-| `media-browse` | Browse (local, USB, network shares) | Media | Proposed | PTD579W | [80-hu-g-media](80-hu-g-media.md#media-browse--browse-local-usb-network-shares--proposed) |
-| `media-integrations` | Streaming integrations | Media | Proposed | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-integrations--streaming-integrations--proposed) |
-| `media-now-playing` | Media: now playing | Media | Proposed | PTD579W | [80-hu-g-media](80-hu-g-media.md#media-now-playing--media-now-playing--proposed) |
-| `media-queue` | Queue | Media | Proposed | PTD79W | [80-hu-g-media](80-hu-g-media.md#media-queue--queue--proposed) |
-| `media-settings` | Media settings | Media | Proposed | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-settings--media-settings--proposed) |
-| `media-setup` | Media: choose sources | Media | Proposed | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-setup--media-choose-sources--proposed) |
+| `media-bluetooth` | Bluetooth audio | Media | New | PT579W | [80-hu-g-media](80-hu-g-media.md#media-bluetooth--bluetooth-audio--new) |
+| `media-browse` | Browse (local, USB, network shares) | Media | New | PTD579W | [80-hu-g-media](80-hu-g-media.md#media-browse--browse-local-usb-network-shares--new) |
+| `media-integrations` | Streaming integrations | Media | New | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-integrations--streaming-integrations--new) |
+| `media-now-playing` | Media: now playing | Media | New | PTD579W | [80-hu-g-media](80-hu-g-media.md#media-now-playing--media-now-playing--new) |
+| `media-queue` | Queue | Media | New | PTD79W | [80-hu-g-media](80-hu-g-media.md#media-queue--queue--new) |
+| `media-settings` | Media settings | Media | New | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-settings--media-settings--new) |
+| `media-setup` | Media: choose sources | Media | New | PTD579W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-setup--media-choose-sources--new) |
 | `media-share-add` | Add a network share | Media | Proposed | PTD79W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-share-add--add-a-network-share--proposed) |
-| `media-video` | Video player (Parked only) | Media | Proposed | TD79WP | [80-hu-g-media](80-hu-g-media.md#media-video--video-player-parked-only--proposed) |
+| `media-video` | Video player (Parked only) | Media | New | TD79WP | [80-hu-g-media](80-hu-g-media.md#media-video--video-player-parked-only--new) |
 
 ## app:navigation
 
@@ -113,37 +113,27 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `phone-settings` | Phone: Settings tab | Phone & Comms | New | PTD579W | [60-apps-phone-b](60-apps-phone-b.md#phone-settings--phone-settings-tab--new) |
 | `phone-widgets` | Phone & Comms widgets (Favourites tile, Phone pane, Recent calls) | Phone & Comms | Existing | PT579W | [60-apps-phone-b](60-apps-phone-b.md#phone-widgets--phone-widgets--existing) |
 
-## app:projection
-
-3 screens.
-
-| Screen ID | Name | Group | Tag | Layout classes | Brief |
-|---|---|---|---|---|---|
-| `projection-session` | Projection: running session | Projection | Proposed | 579W | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-session--projection-running-session--proposed) |
-| `projection-settings` | Projection settings | Projection | Proposed | 579WP | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-settings--projection-settings--proposed) |
-| `projection-setup` | Projection: setup | Projection | Proposed | 579W | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-setup--projection-setup--proposed) |
-
 ## app:radio
 
 11 screens.
 
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
-| `app-setup-radio-detect` | Find the radio receiver | App framework | Proposed | 579WP | [90-appframe-d](90-appframe-d.md#app-setup-radio-detect--find-the-radio-receiver--proposed) |
-| `app-setup-radio-scan` | Region and scan | App framework | Proposed | 579WP | [90-appframe-d](90-appframe-d.md#app-setup-radio-scan--region-and-scan--proposed) |
-| `radio-dab-slideshow` | DAB slideshow and DLS | Radio | Proposed | T79WP | [80-hu-b-radio](80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--proposed) |
-| `radio-now-playing` | Radio: now playing | Radio | Proposed | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-now-playing--radio-now-playing--proposed) |
-| `radio-presets` | Presets | Radio | Proposed | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-presets--presets--proposed) |
-| `radio-settings` | Radio settings | Radio | Proposed | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-settings--radio-settings--proposed) |
-| `radio-setup-antenna` | Setup 2: antenna check | Radio | Proposed | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--proposed) |
-| `radio-setup-scan` | Setup 3: region and first scan | Radio | Proposed | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--proposed) |
-| `radio-setup-tuner` | Setup 1: pick the tuner | Radio | Proposed | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--proposed) |
-| `radio-stations` | Station list and DAB service list | Radio | Proposed | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--proposed) |
-| `radio-tune` | Tune, seek and scan | Radio | Proposed | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-tune--tune-seek-and-scan--proposed) |
+| `app-setup-radio-detect` | Find the radio receiver | App framework | New | 579WP | [90-appframe-d](90-appframe-d.md#app-setup-radio-detect--find-the-radio-receiver--new) |
+| `app-setup-radio-scan` | Region and scan | App framework | New | 579WP | [90-appframe-d](90-appframe-d.md#app-setup-radio-scan--region-and-scan--new) |
+| `radio-dab-slideshow` | DAB slideshow and DLS | Radio | New | T79WP | [80-hu-b-radio](80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--new) |
+| `radio-now-playing` | Radio: now playing | Radio | New | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-now-playing--radio-now-playing--new) |
+| `radio-presets` | Presets | Radio | New | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-presets--presets--new) |
+| `radio-settings` | Radio settings | Radio | New | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-settings--radio-settings--new) |
+| `radio-setup-antenna` | Setup 2: antenna check | Radio | New | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--new) |
+| `radio-setup-scan` | Setup 3: region and first scan | Radio | New | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--new) |
+| `radio-setup-tuner` | Setup 1: pick the tuner | Radio | New | PTD579W | [80-hu-c-radio-setup](80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--new) |
+| `radio-stations` | Station list and DAB service list | Radio | New | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--new) |
+| `radio-tune` | Tune, seek and scan | Radio | New | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-tune--tune-seek-and-scan--new) |
 
 ## app:security
 
-21 screens.
+20 screens.
 
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
@@ -154,14 +144,13 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `security-channels` | Where alerts go | Security | New | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-channels--where-alerts-go--new) |
 | `security-clip` | Event clip | Security | New | PTD79W | [85-security-b-events](85-security-b-events.md#security-clip--event-clip--new) |
 | `security-companion-remote` | Security on the phone, away from the car | Security | New | P | [85-security-f-companion-guardian](85-security-f-companion-guardian.md#security-companion-remote--security-on-the-phone-away-from-the-car--new) |
-| `security-crash-sos` | Crash SOS (later) | Security | Proposed | P579W | [85-security-f-companion-guardian](85-security-f-companion-guardian.md#security-crash-sos--crash-sos-later--proposed) |
 | `security-event-detail` | Event | Security | New | PTD579W | [85-security-b-events](85-security-b-events.md#security-event-detail--event--new) |
 | `security-events` | Events | Security | New | PTD579W | [85-security-b-events](85-security-b-events.md#security-events--events--new) |
 | `security-geofence-edit` | Add or edit a geofence | Security | New | PTD79W | [85-security-c-tracker](85-security-c-tracker.md#security-geofence-edit--add-or-edit-a-geofence--new) |
 | `security-geofences` | Geofences | Security | New | PTD79W | [85-security-c-tracker](85-security-c-tracker.md#security-geofences--geofences--new) |
-| `security-settings` | Security settings | Security | Proposed | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-settings--security-settings--proposed) |
-| `security-setup-done` | Security is ready | Security | Proposed | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-setup-done--security-is-ready--proposed) |
-| `security-setup-welcome` | Set up Security | Security | Proposed | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-setup-welcome--set-up-security--proposed) |
+| `security-settings` | Security settings | Security | New | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-settings--security-settings--new) |
+| `security-setup-done` | Security is ready | Security | New | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-setup-done--security-is-ready--new) |
+| `security-setup-welcome` | Set up Security | Security | New | PTD579W | [85-security-d-setup-settings](85-security-d-setup-settings.md#security-setup-welcome--set-up-security--new) |
 | `security-tow-mode` | Tow and theft mode | Security | Proposed | PTD79W | [85-security-c-tracker](85-security-c-tracker.md#security-tow-mode--tow-and-theft-mode--proposed) |
 | `security-tracker` | Where's my car | Security | New | PTD79W | [85-security-c-tracker](85-security-c-tracker.md#security-tracker--wheres-my-car--new) |
 | `security-trail` | Movement trail | Security | Proposed | PTD79W | [85-security-c-tracker](85-security-c-tracker.md#security-trail--movement-trail--proposed) |
@@ -202,8 +191,8 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `settings-recording` | Recording sources | Settings | New | PTD579W | [30-settings-d](30-settings-d.md#settings-recording--recording-sources--new) |
 | `settings-sharing-defaults` | Sharing defaults | Settings | Proposed | PTD579W | [30-settings-d](30-settings-d.md#settings-sharing-defaults--sharing-defaults--proposed) |
 | `share-recipient-view` | A trip shared with me | Trips | New | PTD579W | [60-apps-share-b](60-apps-share-b.md#share-recipient-view--a-trip-shared-with-me--new) |
-| `trips-app-settings` | Trips: settings | Trips | Proposed | PTD579W | [50-vehicle-l-apps](50-vehicle-l-apps.md#trips-app-settings--trips-settings--proposed) |
-| `trips-app-setup` | Trips: first-run setup | Trips | Proposed | PTD579W | [50-vehicle-l-apps](50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--proposed) |
+| `trips-app-settings` | Trips: settings | Trips | New | PTD579W | [50-vehicle-l-apps](50-vehicle-l-apps.md#trips-app-settings--trips-settings--new) |
+| `trips-app-setup` | Trips: first-run setup | Trips | New | PTD579W | [50-vehicle-l-apps](50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--new) |
 | `trips-delete` | Delete trip (typed confirm) | Trips | New | PTD579W | [50-vehicle-h-recordings](50-vehicle-h-recordings.md#trips-delete--delete-trip-typed-confirm--new) |
 | `trips-detail` | Trip detail (map + sheet) | Trips | Existing | PT579WD | [50-vehicle-f-trips](50-vehicle-f-trips.md#trips-detail--trip-detail-map--sheet--existing) |
 | `trips-export-all` | Export all | Trips | Existing | PT579WD | [50-vehicle-f-trips](50-vehicle-f-trips.md#trips-export-all--export-all--existing) |
@@ -227,16 +216,18 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
-| `voice-assistant` | Voice assistant (listening) | Voice | Proposed | PT579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--proposed) |
-| `voice-settings` | Voice settings | Voice | Proposed | PTD579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-settings--voice-settings--proposed) |
-| `voice-setup` | Voice: first-run setup | Voice | Proposed | PTD579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--proposed) |
+| `voice-assistant` | Voice assistant (listening) | Voice | New | PT579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--new) |
+| `voice-settings` | Voice settings | Voice | New | PTD579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-settings--voice-settings--new) |
+| `voice-setup` | Voice: first-run setup | Voice | New | PTD579W | [80-hu-l-voice-swc](80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--new) |
 
-## app:weather
+## app:widgets-starter
 
-3 screens.
+5 screens.
 
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
-| `weather-page` | Weather | Weather | Proposed | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-page--weather--proposed) |
-| `weather-settings` | Weather settings | Weather | Proposed | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-settings--weather-settings--proposed) |
-| `weather-setup` | Weather: first-run setup | Weather | Proposed | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--proposed) |
+| `clock-page` | Clock, alarms and timers | Clock | Proposed | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#clock-page--clock-alarms-and-timers--proposed) |
+| `clock-settings` | Clock setup and settings | Clock | New | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--new) |
+| `weather-page` | Weather | Weather | New | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-page--weather--new) |
+| `weather-settings` | Weather settings | Weather | New | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-settings--weather-settings--new) |
+| `weather-setup` | Weather: first-run setup | Weather | New | PTD579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--new) |

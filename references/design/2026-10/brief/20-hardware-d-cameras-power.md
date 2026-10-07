@@ -2,7 +2,7 @@
 title: "Designer brief: hardware (d) — cameras (add, preview, home pages) and power (sleep, wake, battery guard, schedules)"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, references/research/power_states.md, references/research/hardware.md]
 summary: >
@@ -22,10 +22,8 @@ Shared rules are in [file (a)](20-hardware-a-devices.md#rules-every-hardware-pag
 Cameras need the Brain (its recorder runs there); on Ostler Diagnostics alone camera pages
 are absent.
 
-### hw-camera-add — Add a camera  [Proposed]
+### hw-camera-add — Add a camera  [New]
 - **Owner:** os (device setup); viewing is app:camera
-- **Why the app needs it:** the UI spec lists cameras as an add-on device with driving
-  rules, but no screen says how one joins the car or gets the role those rules depend on.
 - **Purpose:** add a camera and give it a role.
 - **Opens from → goes to:** `hw-add-device` → Camera. Goes to `hw-camera`.
 - **Layout classes:** phone · tablet · desktop · hu7 · hu9 · huwide. **Draw first:** phone
@@ -39,7 +37,7 @@ are absent.
   the car network"); stream fails ("Camera found but no video"); Moving locked view.
 - **Safety and driving rules:** Parked only for text entry and preview; local links only.
 - **Components:** ListRow, Segmented, Card, Button, camera preview (`camera_live` drawn Parked).
-- **Spec refs:** [UI §6][ui6] (Cameras row), [App model §4.4][am44].
+- **Spec refs:** [UI §6][ui6] (Cameras row), [App model §4.4][am44] · [head-unit apps §6][hu-6].
 
 ### hw-camera — Camera page: preview, role and home pages  [New]
 - **Owner:** os (device setup); viewing is app:camera, drawn in the 80-hu-* files
@@ -140,3 +138,4 @@ are absent.
 [ui6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [ui38]: ../../../../specs/2026-10-06-ui-architecture-design.md#38-asleep-waking-and-queued-actions-accepted-2026-10-06
 [ui121]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
+[hu-6]: ../../../../specs/2026-10-07-head-unit-apps-design.md#6-camera

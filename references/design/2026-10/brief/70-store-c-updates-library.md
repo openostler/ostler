@@ -2,7 +2,7 @@
 title: "Designer brief: Store (part C): updates, auto-update, rollback, My library and uninstall"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, references/research/ha_architecture_addons.md]
 summary: >
@@ -23,10 +23,8 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 OS, firmware and Brain updates are Settings → Updates (`settings-updates`, settings brief
 part E); this file covers Store items only, and `settings-updates` links here for apps.
 
-### store-updates — Updates  [Proposed]
+### store-updates — Updates  [New]
 - **Owner:** os
-- **Why the app needs it:** packs and apps change often (a pack's proven signals grow with
-  each capture); owners need one list to review and apply updates.
 - **Purpose:** list every installed item with an update, with what changed, and apply them.
 - **Opens from → goes to:** `store-home` **Updates** button (count badge); Settings →
   Updates → Apps row; the "Updates ready" notification. Goes to `store-item-versions`,
@@ -54,20 +52,18 @@ part E); this file covers Store items only, and `settings-updates` links here fo
   action or a host asks again through `store-install-sheet` and is never auto-applied.
 - **Components:** ListRow, Button, Chip (status), Card (summary).
 - **Spec refs:** [app model §7][am-7] (SemVer, "Needs Ostler x.y"), [HA research §3.3][ha-arch-3.3]
-  (channels, `breaking_versions`, rollback), [UI §12.4][ui-12.4].
+  (channels, `breaking_versions`, rollback), [UI §12.4][ui-12.4] · [Store §3][st-3] · [Store §9][st-9].
 - **Open questions:** none.
 
-### store-update-settings — Auto-update  [Proposed]
+### store-update-settings — Auto-update  [New]
 - **Owner:** os
-- **Why the app needs it:** a car Brain sleeps, roams on mobile data and must never update
-  while driving; owners need to choose what updates by itself and when.
 - **Purpose:** choose when items update themselves, per kind and per item.
 - **Opens from → goes to:** `store-updates` gear; Settings → Updates → "App updates". Back.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night.
 - **Content (top to bottom):**
-  1. **Update automatically** Segmented: "Off · Security fixes only · All" (default
-     "Security fixes only").
+  1. **Update automatically**: per item, on by default for First party items and off for
+     the others ([Store §9][st-9]).
   2. **Per kind** toggles: Apps · Integrations and vehicle packs · Widgets · Looks (themes,
      icon packs, wallpapers, gauge styles) · Dashboards · Sound and EQ.
   3. **When**: "Only on Wi-Fi or Ethernet" (on; can be turned off only for items under
@@ -84,9 +80,9 @@ part E); this file covers Store items only, and `settings-updates` links here fo
   Parked only on head units.
 - **Components:** Segmented, toggle (as Segmented "On · Off"), ListRow, Card (caption).
 - **Spec refs:** [ADR-0028][adr-28] (metered uplinks), [HA research §8][ha-arch-8] (Copy 4,
-  Avoid 6).
-- **Open questions:** should "Security fixes only" be the default, and who labels a release
-  as a security fix?
+  Avoid 6) · [Store §9][st-9].
+- **Open questions:** **Decided ([Store §9][st-9]):** auto-update is set per item, on by
+  default for First party and off for others; there is no "Security fixes only" mode.
 
 ### store-rollback — Roll back  [Proposed]
 - **Owner:** os
@@ -145,13 +141,12 @@ part E); this file covers Store items only, and `settings-updates` links here fo
   removes a safety item.
 - **Components:** Segmented (tabs), Chip, ListRow, Card (labels), Button.
 - **Spec refs:** [UI §12.4][ui-12.4], [app model §14.2][am-14], [ADR-0042 §5][adr-42].
-- **Open questions:** the approved spec's "Core cannot be removed" now means System only;
-  may preinstalled apps such as Diagnostics be removed (the new direction says yes)?
+- **Open questions:** **Decided (item 11, [ADR-0046 §5][adr-46-5]):** any non-system app can
+  be uninstalled, preinstalled ones such as Diagnostics included; on the phone "Uninstall"
+  disables a bundled app and deletes its data. Only System items (Settings, the Store) stay.
 
-### store-uninstall — Uninstall  [Proposed]
+### store-uninstall — Uninstall  [New]
 - **Owner:** os
-- **Why the app needs it:** removing an app or a vehicle pack has effects on data and on
-  reading the car; the exit guarantee says data can leave in an open format first.
 - **Purpose:** confirm removal and choose what happens to the item's data.
 - **Opens from → goes to:** `store-item` and `addons-catalogue` **Uninstall**; App info
   (`90-appframe-*`). Confirm → `addons-catalogue` with an undo toast for the removal of
@@ -167,14 +162,18 @@ part E); this file covers Store items only, and `settings-updates` links here fo
   4. Warnings in a `warn` Card when they apply: for a vehicle pack in use: "Your Discovery
      2 Td5 will not be read until a pack is installed. Generic OBD-II stays available."
      For an app that holds Security alerts: "Alarm alerts stay on; only this app's pages go."
+     Security while the car is armed: no Uninstall button; a `warn` Card "Disarm first.
+     Security can't be uninstalled while the car is armed." (item 62).
   5. Buttons **Uninstall** (danger) and **Cancel** (focused on head units).
-- **States:** System item: never offered. Moving: locked. Not owner: never reached.
+- **States:** System item (Settings, the Store): never offered. Security while armed:
+  refused until disarmed. Moving: locked. Not owner: never reached.
   Offline: works.
 - **Safety and driving rules:** owner only, Parked only; safety items stay with the OS
   ([Drive modes §8.1][dm-8.1]); the fault telltale stays even with no Diagnostics app.
 - **Components:** Sheet, RadioOpt (ListRow with a radio), Card (`warn`), Button (danger).
-- **Spec refs:** [ADR-0042 §7][adr-42] (exit guarantee), [Drive modes §8.1][dm-8.1].
-- **Open questions:** may Security be uninstalled while the car is armed?
+- **Spec refs:** [ADR-0042 §7][adr-42] (exit guarantee), [Drive modes §8.1][dm-8.1] · [app UI model §8][ua-8] · [ADR-0046 §5][adr-46-5].
+- **Open questions:** **Decided (item 62):** uninstalling Security is refused while the car
+  is armed, until it is disarmed.
 
 <!-- refs -->
 [adr-28]: ../../../../decisions/adr-0028-base-hardware-connectivity-and-remote-access.md
@@ -187,3 +186,7 @@ part E); this file covers Store items only, and `settings-updates` links here fo
 [ha-arch-8]: ../../../research/ha_architecture_addons.md#8-copy--avoid--decide-for-ostler
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
+[st-3]: ../../../../specs/2026-10-07-store-design.md#3-the-store-app
+[st-9]: ../../../../specs/2026-10-07-store-design.md#9-updates
+[adr-46-5]: ../../../../decisions/adr-0046-empty-os-every-app-an-add-on.md#5-product-flavours-are-preinstalled-sets-amends-adr-0039
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page

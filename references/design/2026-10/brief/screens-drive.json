@@ -233,6 +233,13 @@
     "heading": "Decide (recommendations for the owner)",
     "anchor": "decide-recommendations-for-the-owner",
     "label": "HA research"
+   },
+   {
+    "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+    "section": "§7.1",
+    "heading": "7.1 The picker (gallery)",
+    "anchor": "71-the-picker-gallery",
+    "label": "Launcher"
    }
   ],
   "tokens": [],
@@ -247,9 +254,8 @@
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
   "owner": "os",
-  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker-by-signal--widget-picker-by-signal-tab--proposed"
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker-by-signal--widget-picker-by-signal-tab--new"
  },
  {
   "id": "shell-icon-picker",
@@ -479,7 +485,7 @@
  },
  {
   "id": "drive-exit-home-moving",
-  "name": "'Exit to Home' while Moving (open owner question)",
+  "name": "'Exit to Home' while Moving (decided: row hidden)",
   "area": "core",
   "group": "Drive modes",
   "layout_classes": [
@@ -496,7 +502,7 @@
   ],
   "driving_states": {
    "parked": "row opens Home",
-   "moving": "option A: row hidden; option B: Home as tiles + locked cards"
+   "moving": "row hidden (decided, item 46)"
   },
   "spec_refs": [
    {
@@ -519,27 +525,28 @@
     "heading": "3.4 Five destinations",
     "anchor": "34-five-destinations",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Drive mode is the carousel while Moving",
+    "anchor": "43-drive-mode-is-the-carousel-while-moving",
+    "label": "Launcher"
    }
   ],
   "tokens": [],
   "components": [
-   "short_list row",
-   "Card",
-   "Button"
+   "short_list row"
   ],
-  "variants": [
-   "option A",
-   "option B"
-  ],
-  "notes": "",
+  "variants": [],
+  "notes": "Owner decision item 46 (2026-10-07): the row is hidden while Moving.",
   "deliveries": [],
   "review": {
    "status": "awaiting",
    "differences": []
   },
-  "proposed": true,
   "owner": "os",
-  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--proposed"
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--new"
  },
  {
   "id": "drive-dusk-suggest",

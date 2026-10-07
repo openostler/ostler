@@ -2,7 +2,7 @@
 title: "Designer brief: Settings (part A): tree, rules, Settings app, Display, Units and region"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/design/2026-10/README.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md]
 summary: >
@@ -41,7 +41,7 @@ column: **L** = the Settings lock (§2).
 | │ └ Wallpaper & style | theme wizard (`45-launcher-*`, by name) | link | os | "Park to edit" |
 | ├ Units, language and region | `settings-units-region` | P | os | L |
 | ├ Alerts: message alerts | `alert-settings` | E | os | L |
-| ├ Notifications, quiet hours, critical alerts | `settings-notifications` | P | os | L |
+| ├ Notifications, quiet hours, critical alerts | `settings-notifications` | N | os | L |
 | ├ Driving rules | `settings-driving` | N | os | L |
 | ├ Privacy and data | `settings-privacy` | N | os | L |
 | │ ├ What can be shared (data classes) | `settings-data-classes` | P | os | L |
@@ -54,16 +54,16 @@ column: **L** = the Settings lock (§2).
 | │ └ Trip sharing defaults | `settings-sharing-defaults` | P | app:trips | L |
 | ├ Storage | `settings-storage` | P | os | L |
 | │ └ Recording sources | `settings-recording` | N | app:trips | L |
-| ├ Backups | `settings-backups` | P | os | L |
-| │ └ Restore from a backup (flow) | `settings-restore` | P | os | L |
-| ├ Updates | `settings-updates` | P | os | L |
+| ├ Backups | `settings-backups` | N | os | L |
+| │ └ Restore from a backup (flow) | `settings-restore` | N | os | L |
+| ├ Updates | `settings-updates` | N | os | L |
 | ├ Profiles and users | `settings-profiles` | N | os | L |
 | │ ├ Users and roles | `accounts-s5` | E, link | os | L |
 | │ └ Head-unit PIN | `settings-hu-pin` | N | os | L |
 | ├ My account | `settings-account` | N | os | L |
 | │ └ Ostler Link (cloud) | `settings-ostler-link` | P | os | L |
 | ├ **Apps** (installed apps; each row → App info) | App info (`90-appframe-*`, by name) | link | os | L |
-| │ ├ Store (get apps, integrations, packs, themes) | Store (`70-store-*`, by name) | link | app:store | L |
+| │ ├ Store (get apps, integrations, packs, themes) | Store (`70-store-*`, by name) | link | os (system app) | L |
 | │ ├ Security and locks | `security` | E, link | app:security | arming only |
 | │ ├ Maps: offline regions | `maps-regions` | E | app:map | L |
 | │ └ Phone | `phone-page` | E, link | app:phone | L |
@@ -91,7 +91,7 @@ opens that app's **App info** (`90-appframe-*`): permissions and data classes, n
 storage, enable or disable, update, uninstall, and "Open app settings", which lands in the
 app's own settings in its own area. **Get more apps** opens the Store (`70-store-*`). The
 former app detail and Integrations pages are folded into App info and the Store; the
-Integrations versus Apps split is settled by this (one Apps list, integrations labelled).
+Integrations versus Apps split is decided: one Apps list, integrations labelled (item 56).
 
 Pages owned by other briefs, by name only: the **device pages and firmware update** (the
 hardware brief, `20-hardware-*`), **Places** (`places`, app:trips), **Passkeys**
@@ -158,8 +158,10 @@ wizard** (`45-launcher-*`), and **Trips → Export all** (`trips-export-all`).
 - **Components:** ListRow, Card (group), search field (new component: a `surface-3` input
   with a `search` icon), TabBar.
 - **Spec refs:** [UI §3.4][ui-3.4], [UI §12.4][ui-12.4], [UI §13.4][ui-13.4],
-  [Phone & Comms §8][pc-8], [MCP §8][mcp-8], [Accounts §14.9][acc-14.9].
-- **Open questions:** may the Settings app be pinned to the dock like any app (recommend yes)?
+  [Phone & Comms §8][pc-8], [MCP §8][mcp-8], [Accounts §14.9][acc-14.9],
+  [app UI model §8][ua-8].
+- **Open questions:** **Decided (item 57):** the Settings app is in the app drawer and can
+  be pinned to the dock like any app; Guardian's default dock holds it (item 42).
 
 ### preferences — Display  [Existing]
 - **Owner:** os
@@ -223,14 +225,16 @@ wizard** (`45-launcher-*`), and **Trips → Export all** (`trips-export-all`).
      translations" caption.
   3. **Region**: Date format (sample "‹date›"), Clock "12-hour · 24-hour", First day of week.
   4. Caption: "Units change how values look. Recordings keep the car's own units."
+  5. **Applies to**: Segmented "Everyone on this device · Just me". The owner sets the device
+     default; any user may override it for themselves (item 63).
 - **States:** loading; error; Parked full; Moving: the Settings lock; locked (Car profile):
   read-only with "Sign in to change".
 - **Safety and driving rules:** the Settings lock; a units change never alters a Drive tile's
   thresholds, only their labels (Drive modes widget settings own thresholds).
 - **Components:** Segmented, ListRow, Card.
 - **Spec refs:** [app model §4.2][am-4.2], [visual §4][vds-4], [Drive modes §8.1][dm-8.1].
-- **Open questions:** per user or per display? (Recommend per user, with the Car profile's
-  as the default.)
+- **Open questions:** **Decided (item 63):** a device default with a per-user override; the
+  Car profile uses the device default.
 
 <!-- refs -->
 [acc-14.9]: ../../../../specs/2026-10-06-accounts-sharing-design.md#149-basic-auth-migration-replaces-the-overlap-line-in-21
@@ -252,3 +256,4 @@ wizard** (`45-launcher-*`), and **Trips → Export all** (`trips-export-all`).
 [vds-4]: ../../../../specs/2026-10-07-visual-design-system-design.md#4-type
 [vds-5]: ../../../../specs/2026-10-07-visual-design-system-design.md#5-space-radius-elevation-glow-motion
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page

@@ -2,7 +2,7 @@
 title: "Designer brief — global patterns (b): toasts, confirms, permissions and the driving-state frames"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-phone-comms-addon-design.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
@@ -24,10 +24,10 @@ summary: >
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:** Night on phone and HU-7 for each variant; Night dim + Moving on HU-7 ("Park to edit", "Sent"); Day on phone.
 - **Content:** one bar on `surface-2`, `radius-sm`: icon + one line ≤ 60 characters (≤ 30 on head units) + at most one text button. Variants: "Layout saved" · "Widget removed · **Undo**" · "Saved, will send later" (queued) · "Export ready · **Open**" · "Park to edit" (3 s) · "Sent" (2 s, after a canned reply).
 - **States:** one at a time; a new one replaces the old; 4 s, or 8 s with a button · phone: above the bottom bar · head unit: bottom of main, passenger side · reduced motion: appears without a slide.
-- **Safety and driving rules:** while Moving on a head unit only "Park to edit" and "Sent" show; never a toast when a Drive mode switches ([Drive modes §6][dm-6]); errors that need action are not toasts.
+- **Safety and driving rules:** while Moving on a head unit only "Park to edit" and "Sent" show; any other toast raised while Moving is dropped, never held for Parked; never a toast when a Drive mode switches ([Drive modes §6][dm-6]); errors that need action are not toasts.
 - **Components:** Toast (new), Button (ghost).
 - **Spec refs:** [app model §6][am-6] (`ui.toast`), [shell input §14][si-14], [UI §12.1][ui-12.1].
-- **Open questions:** drop other toasts raised while Moving, or hold them until Parked? Recommend drop.
+- **Open questions:** **Decided (item 61):** other toasts raised while Moving are dropped, not held until Parked.
 
 ### Pattern: confirm sheets and the ADR-0033 tiers
 - **Screen block:** `diagnose-confirm` in [50-vehicle-b-faults](50-vehicle-b-faults.md#diagnose-confirm--action-confirm-sheets-tier-13-clear-codes--existing); phone approval is `diagnose-phone-approve` in [50-vehicle-c-actions](50-vehicle-c-actions.md#diagnose-phone-approve--approve-on-phone--new). This section is the rule every page follows; draw the frames from the screen block.
