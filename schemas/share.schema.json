@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostler.tech/schemas/share.schema.json",
+  "title": "Share bundle manifest (ostler.share/1)",
+  "description": "share.json at the root of an ostler-share-<8 random>.zip (trip-sharing spec §9.2; ADR-0043), written by openostler.logbook.share and checked by `ostler share verify` (check 8). It never carries a VIN (masked or hashed), an HMAC, a device, boot, session, user or vehicle id, or a signature by a device key (ADR-0036, ADR-0041): integrity comes from the per-file SHA-256. Dates are days only (no time of day).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "level", "created_day", "pack", "platform_version",
+               "firmware_versions", "vehicle", "time_basis", "location", "trim", "signals",
+               "files", "redactions", "verifier", "licence", "contribution_consent"],
+  "properties": {
+    "format": { "const": "ostler.share/1", "description": "Readers refuse other majors." },
+    "id": { "type": "string", "pattern": "^[0-9a-f]{32}$",
+            "description": "128-bit CSPRNG id, never derived from any other id." },
+    "level": { "enum": ["L0", "L1", "L2", "L3", "L4"] },
+    "created_day": { "$ref": "#/$defs/day" },
+    "expires": { "type": ["string", "null"], "format": "date-time",
+                 "description": "The delivery path's expiry; null for a file." },
+    "pack": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version"],
+      "properties": { "id": { "type": ["string", "null"] }, "version": { "type": ["string", "null"] } }
+    },
+    "platform_version": { "type": "string" },
+    "firmware_versions": { "type": "array", "items": { "type": "string" },
+                           "description": "Every device's firmware at L4; empty below." },
+    "vehicle": {
+      "type": "object", "additionalProperties": false,
+      "description": "The card fields. No VIN, no masked VIN, no HMAC; nickname and plate only when the owner ticked them.",
+      "properties": {
+        "make": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] },
+        "year": { "type": ["string", "integer", "null"] },
+        "engine": { "type": ["string", "null"] },
+        "market": { "type": ["string", "null"] },
+        "kind": { "enum": ["car", "motorcycle"] },
+        "nickname": { "type": "string" },
+        "plate": { "type": "string" }
+      }
+    },
+    "time_basis": { "enum": ["day", "relative", "real"] },
+    "location": { "enum": ["none", "coarse", "route"] },
+    "trim": {
+      "type": "object", "additionalProperties": false, "required": ["ends_m", "zones"],
+      "description": "Never the zone positions or radii.",
+      "properties": {
+        "ends_m": { "type": "integer", "minimum": 200, "maximum": 1500 },
+        "zones": { "type": "integer", "minimum": 0, "description": "Zones that hid at least one fix." }
+      }
+    },
+    "signals": { "type": "array", "items": { "type": "string" },
+                 "description": "VSS paths (or a pack's channel names where no path is known), L2 and above." },
+    "files": {
+      "type": "array",
+      "description": "Every file of the bundle but share.json.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "sha256", "bytes", "kind"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^(README\\.txt|trip\\.json|card\\.png|track\\.(geojson|gpx)|data\\.csv|faults\\.json|events\\.jsonl|notes\\.jsonl|tap/bus(0|[1-9][0-9]{0,2})\\.(pcapng|candump)|diag/(versions|modules|manifests|link_stats|config)\\.json|diag/log_tail\\.txt)$" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "kind": { "enum": ["readme", "summary", "image", "route", "data", "faults", "events", "notes", "tap", "diag"] }
+        }
+      }
+    },
+    "redactions": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["rule", "count", "detail"],
+        "properties": {
+          "rule": { "type": "string", "pattern": "^R([1-9]|1[0-6])$" },
+          "count": { "type": "integer", "minimum": 0 },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "verifier": {
+      "type": "object", "additionalProperties": false, "required": ["version", "passed", "ran_day"],
+      "properties": {
+        "version": { "type": "string" },
+        "passed": { "type": "boolean" },
+        "ran_day": { "$ref": "#/$defs/day" }
+      }
+    },
+    "request": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object", "additionalProperties": false, "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["decode", "diagnose", "show"] },
+            "question": { "type": ["string", "null"] },
+            "symptoms": { "type": ["string", "array", "null"] },
+            "module": { "type": ["string", "null"] },
+            "fault_codes": { "type": ["array", "null"], "items": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "licence": {
+      "type": "object", "additionalProperties": false, "required": ["derived_data"],
+      "properties": { "derived_data": { "enum": ["CC-BY-SA-4.0", null] } }
+    },
+    "contribution_consent": { "type": "boolean", "description": "Off by default; without it licence.derived_data is null." },
+    "credit": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "contribution_consent": { "const": false } } },
+      "then": { "properties": { "licence": { "properties": { "derived_data": { "const": null } } } } }
+    }
+  ],
+  "$defs": {
+    "day": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+  }
+}

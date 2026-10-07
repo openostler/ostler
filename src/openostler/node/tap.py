@@ -9,13 +9,17 @@ spec §2 and its ``components/poll/src/tap.c``).
 - :func:`parse_records` / :func:`encode_record` read and write the binary records of a
   batch (``tap/<session>/data``): little-endian, a 20-byte header then the payload.
 - :class:`IdentityScrub` is the identity scrub, the node's rule applied again on the Brain
-  (ADR-0036): a framed K-line reply whose service is ``5A`` (ReadEcuIdentification) or
-  ``49`` (OBD Mode 09) keeps its service and option bytes and the rest becomes the fixed
-  8-byte placeholder ``SCRUBBED``; an unframed run holding a ``5A`` or ``49`` byte is
-  replaced whole; a CAN ISO-TP message starting ``49`` / ``5A`` / ``62 F1 90`` /
-  ``62 F1 8C`` has its frames' data replaced. Per-byte K-line records and unknown
-  protocols cannot be checked on their own and are dropped when a scrub is due. A record
-  the node already flagged ``scrubbed`` is kept as it is: the flag is never cleared.
+  (ADR-0036), over the one identity table (``node/identity.py``; trip-sharing spec §8:
+  the platform list plus the active pack's declarations when given): a framed K-line
+  identity reply (``5A`` ReadEcuIdentification, ``49`` OBD Mode 09, ``62 F1 90`` /
+  ``62 F1 8C``, a seed or key with data, a declared service or local id) keeps its service
+  and option or DID bytes and the rest becomes the fixed 8-byte placeholder ``SCRUBBED``;
+  an unframed run holding an identity service byte is replaced whole; a CAN ISO-TP message
+  that is identity data has its frames' data replaced, and so does a declared broadcast
+  frame. Per-byte K-line records and unknown protocols cannot be checked on their own and
+  are dropped when a scrub is due. A record the node already flagged ``scrubbed`` is kept
+  as it is: the flag is never cleared. Shares go further (ISO-TP reassembly before
+  deciding, PCI bytes kept: ``logbook/share/scrub.py``).
 - :func:`batch_properties` reads a batch's MQTT 5 properties (module-bus spec §8, raw-tap
   §3 and its amendment of 2026-10-06): the content type
   ``application/vnd.ostler.tap.v1`` and the user property ``first_seq``, the decimal
@@ -36,6 +40,8 @@ import struct
 from dataclasses import dataclass, replace
 from typing import Iterable, Optional
 
+from .identity import PLACEHOLDER, IdentityTable, kline_data_offset, kline_frame_ok
+
 HEADER_LEN = 20
 _HDR = struct.Struct("<QIBBBBHH")   # t_us, seq, type, bus, dir/event, proto, flags, len
 
@@ -47,13 +53,9 @@ FLAG_SCRUBBED, FLAG_UNFRAMED, FLAG_UNSYNCED = 0x0008, 0x0010, 0x0020
 # raw-tap §2.3 event codes
 EV_INIT, EV_KEEPALIVE, EV_GATE, EV_SESSION, EV_OVERFLOW, EV_TIME, EV_LINK, EV_BUS = range(1, 9)
 
-PLACEHOLDER = b"SCRUBBED"
 SID_ECU_ID_REPLY = 0x5A    # positive reply to ReadEcuIdentification (1A)
 SID_OBD_INFO_REPLY = 0x49  # positive reply to OBD Mode 09 (VIN, calibration ids)
-_IDENTITY_SIDS = (SID_ECU_ID_REPLY, SID_OBD_INFO_REPLY)
-# CAN (ISO-TP) messages that are identity data: the services above plus the UDS VIN and
-# ECU serial reads (the platform's CAN scrub, ``obd/vin.py``).
-_CAN_IDENTITY = (b"\x49", b"\x5A", b"\x62\xF1\x90", b"\x62\xF1\x8C")
+_PLATFORM = IdentityTable.platform()
 
 CONTENT_TYPE = "application/vnd.ostler.tap.v1"
 _ULID = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
@@ -161,32 +163,26 @@ def parse_records(buf: bytes) -> "tuple[list[TapRecord], int]":
 
 
 def _kline_data_offset(msg: bytes) -> int:
-    """Offset of a KWP2000 frame's data field (format byte, optional target and source,
-    optional length byte), or -1 (``tap.c`` ``data_offset``)."""
-    if len(msg) < 3:
-        return -1
-    mode = (msg[0] >> 6) & 3
-    if mode in (2, 3):
-        idx = 3
-    elif mode == 0:
-        idx = 1
-    else:
-        return -1
-    if (msg[0] & 0x3F) == 0:
-        idx += 1
-    return idx if idx < len(msg) else -1
+    """Offset of a K-line frame's data field, or -1 (``node/identity.py``)."""
+    return kline_data_offset(msg)
 
 
-def scrub_kline(msg: bytes, unframed: bool) -> "tuple[bytes, bool]":
-    """The node's ``tap_scrub``: ``(payload, scrubbed)``."""
+def scrub_kline(msg: bytes, unframed: bool,
+                table: "IdentityTable | None" = None) -> "tuple[bytes, bool]":
+    """The node's ``tap_scrub`` over the identity table: ``(payload, scrubbed)``."""
     msg = bytes(msg)
+    table = table or _PLATFORM
     if unframed:
-        if any(b in _IDENTITY_SIDS for b in msg):
+        sids = table.service_bytes()
+        if any(b in sids for b in msg):
             return PLACEHOLDER, True
         return msg, False
-    d = _kline_data_offset(msg)
-    if d >= 0 and msg[d] in _IDENTITY_SIDS:
-        keep = 2 if d + 2 <= len(msg) else 1
+    d = kline_data_offset(msg)
+    if d < 0:
+        return msg, False
+    data = msg[d:-1] if kline_frame_ok(msg) else msg[d:]
+    keep = table.match(data)
+    if keep:
         return msg[d:d + keep] + PLACEHOLDER, True
     return msg, False
 
@@ -197,7 +193,10 @@ class IdentityScrub:
     ``check(record)`` returns the record to keep (possibly scrubbed) or None to drop it.
     ``scrubbed`` counts records the Brain had to scrub, ``dropped`` those it dropped."""
 
-    def __init__(self) -> None:
+    def __init__(self, table: "IdentityTable | None" = None,
+                 bus_ids: "dict[int, str] | None" = None) -> None:
+        self.table = table or _PLATFORM
+        self.bus_ids = dict(bus_ids or {})
         self._left: "dict[tuple[int, int], int]" = {}
         self.scrubbed = 0
         self.dropped = 0
@@ -206,7 +205,7 @@ class IdentityScrub:
         if r.is_event or r.flags & FLAG_SCRUBBED:
             return r
         if r.proto == PROTO_KLINE_MSG:
-            payload, hit = scrub_kline(r.payload, bool(r.flags & FLAG_UNFRAMED))
+            payload, hit = scrub_kline(r.payload, bool(r.flags & FLAG_UNFRAMED), self.table)
             if hit:
                 self.scrubbed += 1
                 return replace(r, payload=payload, flags=r.flags | FLAG_SCRUBBED)
@@ -221,18 +220,29 @@ class IdentityScrub:
         if len(r.payload) < 5:
             self.dropped += 1
             return None
-        can_id = int.from_bytes(r.payload[0:4], "little")
+        raw_id = int.from_bytes(r.payload[0:4], "little")
+        ext = bool(raw_id & 0x80000000)
+        can_id = raw_id & (0x1FFFFFFF if ext else 0x7FF)
         data = r.payload[5:]
-        key = (r.bus, can_id)
+        key = (r.bus, raw_id)
         hit = False
+        bc = None if self.table.is_diagnostic_id(can_id, ext) else \
+            self.table.broadcast_frame(self.bus_ids.get(r.bus), can_id, data)
+        if bc is not None:
+            if len(data) > len(bc.prefix):
+                self.scrubbed += 1
+                body = data[:len(bc.prefix)] + PLACEHOLDER * (len(data) // len(PLACEHOLDER) + 1)
+                return replace(r, payload=r.payload[:5] + body[:len(data)],
+                               flags=r.flags | FLAG_SCRUBBED)
+            return r
         if data:
             pci = data[0] >> 4
             if pci == 0:                                   # single frame
                 n = data[0] & 0x0F
-                hit = _can_identity(data[1:1 + n])
+                hit = bool(self.table.match(data[1:1 + n]))
             elif pci == 1 and len(data) >= 2:              # first frame
                 total = ((data[0] & 0x0F) << 8) | data[1]
-                hit = _can_identity(data[2:5])
+                hit = bool(self.table.match(data[2:]))
                 if hit:
                     self._left[key] = total - (len(data) - 2)
                 else:
@@ -247,10 +257,6 @@ class IdentityScrub:
         self.scrubbed += 1
         blank = (PLACEHOLDER * (len(data) // len(PLACEHOLDER) + 1))[:len(data)]
         return replace(r, payload=r.payload[:5] + blank, flags=r.flags | FLAG_SCRUBBED)
-
-
-def _can_identity(msg: bytes) -> bool:
-    return any(bytes(msg[:len(p)]) == p for p in _CAN_IDENTITY)
 
 
 def _cbor_head(buf: bytes, off: int) -> "tuple[int, int, int]":
@@ -360,10 +366,11 @@ class TimeMap:
         return u0 + (t_us - t0) * (u1 - u0) // (t1 - t0)
 
 
-def export_records(records: "Iterable[TapRecord]") -> "list[TapRecord]":
+def export_records(records: "Iterable[TapRecord]",
+                   table: "IdentityTable | None" = None) -> "list[TapRecord]":
     """What may leave the device (ADR-0036 §3, ADR-0039 owner answer 3): unframed records
     dropped and every identity reply scrubbed, whatever the install setting."""
-    scrub = IdentityScrub()
+    scrub = IdentityScrub(table)
     out = []
     for r in records:
         if not r.is_event and r.flags & FLAG_UNFRAMED:
@@ -374,7 +381,7 @@ def export_records(records: "Iterable[TapRecord]") -> "list[TapRecord]":
     return out
 
 
-__all__ = ["CONTENT_TYPE", "batch_properties", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED",
+__all__ = ["CONTENT_TYPE", "IdentityTable", "batch_properties", "EV_OVERFLOW", "EV_TIME", "FLAG_GATE", "FLAG_SCRUBBED", "FLAG_UNFRAMED",
            "FLAG_UNSYNCED", "HEADER_LEN", "IdentityScrub", "PLACEHOLDER", "PROTO_CAN",
            "PROTO_CAN_FD", "PROTO_KLINE_BYTE", "PROTO_KLINE_MSG", "TYPE_DATA", "TYPE_EVENT",
            "TapRecord", "TimeMap", "encode_record", "export_records", "is_time_event",

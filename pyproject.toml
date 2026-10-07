@@ -12,6 +12,11 @@ license = "AGPL-3.0-or-later"
 license-files = ["LICENSE", "LICENSE-DATA", "LICENSES/*"]
 dependencies = ["pyserial>=3.5"]
 
+# The ``ostler`` command: ``ostler share verify`` and ``ostler share build`` (trip-sharing
+# spec §9.3, TS1). Stdlib only.
+[project.scripts]
+ostler = "openostler.cli:main"
+
 [project.urls]
 Homepage = "https://ostler.tech"
 Source = "https://github.com/openostler/ostler"

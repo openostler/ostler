@@ -156,6 +156,12 @@ class VehiclePack:
     docs: Tuple[DocSource, ...]
     layout: Mapping[str, Any]                   # the UI manifest (``layout.json``)
     root: Path                                  # repo/data root for relative paths
+    # Identity declarations (ADR-0036 §2, trip-sharing spec §8.1): which services, DIDs,
+    # local ids and broadcast frames are identity data, as plain data
+    # ``{services, dids, local_ids, broadcast_frames, diag_ids, seed_key}`` (hex strings).
+    # The platform list applies on top (``node/identity.py``); a pack can only add to it.
+    identity: Mapping[str, Any] = field(default_factory=lambda: MappingProxyType({}),
+                                        hash=False, compare=False)
 
     def module(self, mid: "str | None") -> "ModuleSpec | None":
         """The module for an id or alias (case-insensitive), or None."""
@@ -184,6 +190,12 @@ class VehiclePack:
         if alias is not None:
             return alias
         return mid
+
+    def identity_table(self):
+        """The identity table: the platform list plus this pack's declarations."""
+        from .node.identity import IdentityTable
+
+        return IdentityTable.platform().with_declaration(self.identity)
 
     def manifest(self) -> dict:
         """The ``GET /pack`` body."""
@@ -307,6 +319,19 @@ def use_pack(pack: VehiclePack) -> Iterator[VehiclePack]:
         _override, _cached = prev_override, prev_cached
 
 
+def active_identity_table():
+    """The identity table every recording, export and share path applies (ADR-0036,
+    trip-sharing spec §8): the platform list plus the active pack's declarations. With no
+    pack installed (or one that fails to load) it is the platform list alone: a missing
+    pack never weakens the scrub, it only adds nothing."""
+    try:
+        return active_pack().identity_table()
+    except Exception:  # noqa: BLE001 — no pack must never stop a scrub
+        from .node.identity import IdentityTable
+
+        return IdentityTable.platform()
+
+
 def canonical_module(mid: "str | None") -> "str | None":
     """``active_pack().canonical(mid)``: a legacy alias → its canonical module id."""
     return active_pack().canonical(mid)
@@ -316,5 +341,5 @@ __all__ = [
     "PACK_API_VERSION", "ENTRY_POINT_GROUP", "LEGACY_ENTRY_POINT_GROUPS", "ENV_VAR",
     "NoVehiclePackError", "ModuleSpec", "FaultReader", "Detector",
     "SniffSpec", "DemoSpec", "DocSource", "VehiclePack", "active_pack", "set_active_pack",
-    "use_pack", "canonical_module",
+    "use_pack", "canonical_module", "active_identity_table",
 ]

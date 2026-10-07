@@ -18,6 +18,10 @@ The hardware-free pytest suite. Run it with `pytest -q` from the repo root.
   (`python3 tests/e2e_server.py --port 8765`). Needs the D2 pack. Never deployed.
 - `test_layering.py` — AST guards: the core never imports `web`; the platform never imports a
   vehicle pack or names a module id (ADR-0013, ADR-0015).
+- `share_fixtures.py` — sessions for the trip-sharing tests (`test_share_*.py`): a node
+  session recorded through `SessionRecorder` from the firmware tap fixture with injected
+  identity records (the VIN built at run time), and a **synthetic** GPS grid drive marked
+  `synthetic: true` (no recorded drive over 1 km is committed).
 - `obd_fakes.py` — scripted J1979 cars (two-ECU CAN, petrol K-line) on
   `openostler.testing.FakeObdLink`, and `make_vin()`: no VIN literal sits in the tree.
 - `vectors/j1979/` — shared J1979 test vectors (bytes in → decoded out, plus Mode 04 gate
