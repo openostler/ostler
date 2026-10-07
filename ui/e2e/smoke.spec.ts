@@ -229,9 +229,9 @@ test("admin requires the password", async ({ page }) => {
 });
 
 /** Returning user without the auto-dismiss handler (screenshots dismiss explicitly). */
-async function consentOnly(page: Page) {
-  await page.addInitScript(() =>
-    localStorage.setItem("d2diag.v2", JSON.stringify({ consentDone: true, share: false })),
+async function consentOnly(page: Page, theme: "dark" | "light" = "dark") {
+  await page.addInitScript((t) =>
+    localStorage.setItem("d2diag.v2", JSON.stringify({ consentDone: true, share: false, theme: t })), theme,
   );
 }
 const dismissIfShown = (page: Page) =>
@@ -242,7 +242,7 @@ for (const scheme of ["dark", "light"] as const) {
   test(`screenshots in ${scheme} mode`, async ({ browser }) => {
     const context = await browser.newContext({ colorScheme: scheme, viewport: { width: 412, height: 915 }, deviceScaleFactor: 2 });
     const page = await context.newPage();
-    await consentOnly(page);
+    await consentOnly(page, scheme);
     await page.goto("/");
     await expect(page.getByRole("button", { name: /Vehicle status/ })).toBeVisible();
     await page.waitForTimeout(2500); // let the sparklines fill

@@ -288,11 +288,11 @@ describe("calm instrument", () => {
     expect(rows()).toEqual(["air_temp"]);
   });
 
-  it("follows the phone's day/night setting by default", async () => {
+  it("opens in Night by default (visual spec §1)", async () => {
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await screen.findByText("Connected");
-    expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });
 

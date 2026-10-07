@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { api, command } from "../api/client";
 import { useApp } from "../state/app";
+import { THEME_PREFS } from "../state/theme";
 import { confirmAction } from "./confirm";
 import { RadioOpt } from "./RadioOpt";
 import { RecordingOptions } from "./RecordingOptions";
@@ -60,11 +61,14 @@ export function Preferences({ onClose }: { onClose: () => void }) {
       </section>
       <section>
         <div className="kicker" style={{ marginBottom: 8 }}>Display</div>
-        <div className="btn-row">
-          {(["auto", "light", "dark"] as const).map((t) => (
-            <button key={t} className={`btn ${prefs.theme === t ? "accent" : ""}`} aria-pressed={prefs.theme === t}
-              onClick={() => setPrefs({ theme: t })}>{{ auto: "Auto (day/night)", light: "Day", dark: "Night" }[t]}</button>
+        <div className="theme-opts">
+          {THEME_PREFS.map((t) => (
+            <button key={t.id} className={`btn ${prefs.theme === t.id ? "accent" : ""}`} aria-pressed={prefs.theme === t.id}
+              onClick={() => setPrefs({ theme: t.id })}>{t.label}</button>
           ))}
+        </div>
+        <div className="small muted pretty" style={{ marginTop: 6 }}>
+          Auto follows this device&apos;s day/night setting. Night dim is darker for head units after dusk; Deep night is pure black for OLED screens.
         </div>
       </section>
       <section>

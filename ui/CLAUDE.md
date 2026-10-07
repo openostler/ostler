@@ -21,8 +21,13 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   vehicle card and Drive mode).
 - `src/icons/` — the Material Symbols subset (`material-symbols/*.svg`, Apache-2.0, copied
   verbatim) and `Icon`; list a new symbol in `symbols.ts` (a test keeps both in step).
-- `tokens/*.tokens.json` (in `ui/`) — W3C design tokens: colours (light, dark), radii and the
-  shell sizes per layout class; `tokens/tokens.ts` turns them into `virtual:design-tokens.css`.
+- `tokens/*.tokens.json` (in `ui/`) — W3C design tokens (visual design system spec §2–§5): colours per
+  theme (`color.dark` = Night, the default at `:root`; `color.dim`, `color.oled`, `color.tokens` = Day
+  under `data-theme`; same names in every file), `data.tokens.json` (speed ramp, series, chart
+  neutrals, plasma/mako), and `size.tokens.json` (space, radius, motion, font, and per layout class
+  the shell sizes and type scale); `tokens/tokens.ts` turns them into `virtual:design-tokens.css`.
+- `src/state/theme.ts` — theme preference → concrete `data-theme` (Auto resolved; `useTheme()`);
+  `src/lib/token.ts` — `token(name)` for Canvas and MapLibre, which cannot use `var(--…)`.
 - `src/lib/units.ts` — quantities and the clock through `Intl` (CLDR units where they exist).
 - `src/components/` — shared pieces (Value, Gauge, Readout, Sheet, Preferences, ConnectionSheet,
   StatusTag, CoverageBar, PlaceholderReadout, ActionButton, ProcedureSheet, …).
@@ -76,7 +81,11 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 ## Design rules (calm instrument — ISA-101 + automotive HMI)
 
 - Neutral when healthy. Colour (warn/alarm) only for abnormal values, always with an icon
-  and a word (`StatusChip` for value ranges); OK values show no badge at all.
+  and a word (`StatusChip` for value ranges); OK values show no badge at all. Gauge arcs are
+  `text-2` in range, never the accent; the accent (cyan) marks only interactive and live things.
+- Night is the default theme. Colours, sizes, radii, motion and type come from tokens
+  (`var(--…)`; `token()` in Canvas/MapLibre); never `text-3` on `surface-3`, and warn-coloured
+  words use `warn-ink`. A new colour pair gets a row in the contrast test (`shell/tokens.test.ts`).
 - Every number in context: `RangeBar` (span + `normal` band from the signal store) and a
   60 s `Sparkline`. Bands live in `signals/*.json` (`span`, `normal`), never in components.
 - `HealthStrip` leads Home and Inputs with the one-line answer and links to the cause. Drive mode
@@ -85,5 +94,5 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - Shell targets: 76 px on head units (`--target`), strip chips ≥ 48 px with an icon and a word,
   nothing interactive under 24 × 24 px (WCAG 2.2). Size with the layout tokens, not media queries.
 - Status hues are validated with the dataviz `validate_palette.js` in both modes — re-run it
-  if you change `--ok/--warn/--alarm/--accent`.
+  if you change `--ok/--warn/--alarm/--accent` or the data ramps.
 - Screens scroll: never let flex shrink a block (`main > *` is `flex-shrink: 0`).

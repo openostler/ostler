@@ -1,0 +1,571 @@
+{
+  "$description": "Visual design system spec §3.3: the violet speed ramp, the categorical set, chart neutrals (night = every dark theme at :root; day = :root[data-theme=\"light\"]) and the continuous plasma/mako stops (ramp, shared) for non-speed channels.",
+  "ramp": {
+    "plasma-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2941,
+          0.0118,
+          0.6314
+        ],
+        "hex": "#4b03a1"
+      }
+    },
+    "plasma-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.4314,
+          0.0,
+          0.6588
+        ],
+        "hex": "#6e00a8"
+      }
+    },
+    "plasma-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.5569,
+          0.0471,
+          0.6431
+        ],
+        "hex": "#8e0ca4"
+      }
+    },
+    "plasma-4": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6745,
+          0.149,
+          0.5804
+        ],
+        "hex": "#ac2694"
+      }
+    },
+    "plasma-5": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7686,
+          0.2431,
+          0.498
+        ],
+        "hex": "#c43e7f"
+      }
+    },
+    "plasma-6": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.851,
+          0.3451,
+          0.4157
+        ],
+        "hex": "#d9586a"
+      }
+    },
+    "plasma-7": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9137,
+          0.4471,
+          0.3412
+        ],
+        "hex": "#e97257"
+      }
+    },
+    "plasma-8": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9686,
+          0.5647,
+          0.2667
+        ],
+        "hex": "#f79044"
+      }
+    },
+    "plasma-9": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9922,
+          0.6863,
+          0.1922
+        ],
+        "hex": "#fdaf31"
+      }
+    },
+    "plasma-10": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9843,
+          0.8275,
+          0.1412
+        ],
+        "hex": "#fbd324"
+      }
+    },
+    "plasma-11": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9412,
+          0.9765,
+          0.1294
+        ],
+        "hex": "#f0f921"
+      }
+    },
+    "mako-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2314,
+          0.1804,
+          0.3647
+        ],
+        "hex": "#3b2e5d"
+      }
+    },
+    "mako-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2549,
+          0.2431,
+          0.498
+        ],
+        "hex": "#413e7f"
+      }
+    },
+    "mako-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2353,
+          0.3255,
+          0.5922
+        ],
+        "hex": "#3c5397"
+      }
+    },
+    "mako-4": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2118,
+          0.4157,
+          0.6235
+        ],
+        "hex": "#366a9f"
+      }
+    },
+    "mako-5": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2039,
+          0.502,
+          0.6431
+        ],
+        "hex": "#3480a4"
+      }
+    },
+    "mako-6": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2039,
+          0.5882,
+          0.6627
+        ],
+        "hex": "#3496a9"
+      }
+    },
+    "mako-7": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2235,
+          0.6706,
+          0.6745
+        ],
+        "hex": "#39abac"
+      }
+    },
+    "mako-8": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2824,
+          0.7529,
+          0.6784
+        ],
+        "hex": "#48c0ad"
+      }
+    },
+    "mako-9": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.4275,
+          0.8275,
+          0.6784
+        ],
+        "hex": "#6dd3ad"
+      }
+    },
+    "mako-10": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6431,
+          0.8784,
+          0.7333
+        ],
+        "hex": "#a4e0bb"
+      }
+    },
+    "mako-11": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8078,
+          0.9333,
+          0.8431
+        ],
+        "hex": "#ceeed7"
+      }
+    }
+  },
+  "night": {
+    "speed-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3647,
+          0.2471,
+          0.6588
+        ],
+        "hex": "#5d3fa8"
+      },
+      "$description": "speed band (km/h 0-30, 30-50, 50-80, 80-100, 100-120, 120+; mph 0-20 … 60+)"
+    },
+    "speed-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.4941,
+          0.3529,
+          0.8
+        ],
+        "hex": "#7e5acc"
+      }
+    },
+    "speed-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6196,
+          0.4824,
+          0.8824
+        ],
+        "hex": "#9e7be1"
+      }
+    },
+    "speed-4": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.749,
+          0.6196,
+          0.9451
+        ],
+        "hex": "#bf9ef1"
+      }
+    },
+    "speed-5": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8706,
+          0.7686,
+          0.9843
+        ],
+        "hex": "#dec4fb"
+      }
+    },
+    "speed-6": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.9608,
+          0.9137,
+          0.9961
+        ],
+        "hex": "#f5e9fe"
+      }
+    },
+    "trace-casing": {
+      "$type": "color",
+      "$value": "{color.bg}",
+      "$description": "2 px casing under every map trace"
+    },
+    "series-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.4157,
+          0.4902,
+          0.902
+        ],
+        "hex": "#6a7de6"
+      },
+      "$description": "categorical: indigo, teal, orange; three is the cap"
+    },
+    "series-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1647,
+          0.6157,
+          0.549
+        ],
+        "hex": "#2a9d8c"
+      }
+    },
+    "series-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8157,
+          0.4157,
+          0.1882
+        ],
+        "hex": "#d06a30"
+      }
+    },
+    "series-mono": {
+      "$type": "color",
+      "$value": "{night.series-1}",
+      "$description": "a single recorded non-speed channel"
+    },
+    "series-live": {
+      "$type": "color",
+      "$value": "{color.accent}",
+      "$description": "the drive in progress only"
+    },
+    "chart-grid": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 0.059,
+        "hex": "#ffffff"
+      }
+    },
+    "chart-axis": {
+      "$type": "color",
+      "$value": "{color.text-3}"
+    },
+    "chart-crosshair": {
+      "$type": "color",
+      "$value": "{color.text-3}"
+    }
+  },
+  "day": {
+    "speed-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7451,
+          0.6275,
+          0.9216
+        ],
+        "hex": "#bea0eb"
+      }
+    },
+    "speed-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.6314,
+          0.4941,
+          0.8941
+        ],
+        "hex": "#a17ee4"
+      }
+    },
+    "speed-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.5176,
+          0.3765,
+          0.8235
+        ],
+        "hex": "#8460d2"
+      }
+    },
+    "speed-4": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.4,
+          0.2745,
+          0.7176
+        ],
+        "hex": "#6646b7"
+      }
+    },
+    "speed-5": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2941,
+          0.1804,
+          0.5882
+        ],
+        "hex": "#4b2e96"
+      }
+    },
+    "speed-6": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1922,
+          0.1137,
+          0.4235
+        ],
+        "hex": "#311d6c"
+      }
+    },
+    "trace-casing": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "hex": "#ffffff"
+      },
+      "$description": "2 px casing under every map trace"
+    },
+    "series-1": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2902,
+          0.3725,
+          0.8157
+        ],
+        "hex": "#4a5fd0"
+      }
+    },
+    "series-2": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0,
+          0.5608,
+          0.4784
+        ],
+        "hex": "#008f7a"
+      }
+    },
+    "series-3": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.7529,
+          0.3451,
+          0.1216
+        ],
+        "hex": "#c0581f"
+      }
+    },
+    "series-mono": {
+      "$type": "color",
+      "$value": "{day.series-1}",
+      "$description": "a single recorded non-speed channel"
+    },
+    "series-live": {
+      "$type": "color",
+      "$value": "{color.accent}",
+      "$description": "the drive in progress only"
+    },
+    "chart-grid": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0588,
+          0.0784,
+          0.098
+        ],
+        "alpha": 0.071,
+        "hex": "#0f1419"
+      }
+    },
+    "chart-axis": {
+      "$type": "color",
+      "$value": "{color.text-3}"
+    },
+    "chart-crosshair": {
+      "$type": "color",
+      "$value": "{color.text-3}"
+    }
+  }
+}

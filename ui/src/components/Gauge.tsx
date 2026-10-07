@@ -14,8 +14,11 @@ function arc(r: number, f0: number, f1: number) {
   return { dash: `${(len * (f1 - f0)).toFixed(2)} ${C.toFixed(2)}`, offset: (-len * f0).toFixed(2) };
 }
 
-/** Analog gauge: 240° track, the normal band shaded, the value as a filled arc from the
- * low end, five ticks and the span's end labels. Alarm colour only when flagged. */
+/** Analog gauge (visual design system spec §8, calm): 240° track, the normal band shaded, the
+ * value as an arc from the low end in a neutral grey while in range, five ticks and the span's
+ * end labels. Only an out-of-range value (flagged) turns the arc and the number alarm-coloured;
+ * the tile adds the word. The number and unit are HTML over the SVG so they take type tokens in
+ * CSS px (the head-unit sizes) instead of scaling with the drawing. */
 export function Gauge({ value, span, normal, unit = "", dec, alarm, label }: {
   value: number | null; span: Span; normal?: Span | null; unit?: string; dec?: number; alarm?: boolean; label: string;
 }) {
@@ -35,19 +38,23 @@ export function Gauge({ value, span, normal, unit = "", dec, alarm, label }: {
   };
   const full = arc(r, 0, 1);
   return (
-    <svg viewBox="0 0 100 92" className="g2" role="img"
-      aria-label={`${label}: ${shown ? `${fmt(shown.v, dec)} ${shown.unit}` : "no value"}` +
-        (normal ? `, normal ${short(normal[0])}–${short(normal[1])} ${unit}` : "")}>
-      <g transform={`rotate(${rot} 50 50)`}>
-        <circle cx="50" cy="50" r={r} className="track" strokeDasharray={full.dash} />
-        {band ? (() => { const b = arc(r, band[0], band[1]); return <circle cx="50" cy="50" r={r} className="band" strokeDasharray={b.dash} strokeDashoffset={b.offset} />; })() : null}
-        {value != null ? (() => { const v = arc(r, 0, f); return <circle cx="50" cy="50" r={r} className={`val${alarm ? " alarm" : ""}`} strokeDasharray={v.dash} />; })() : null}
-      </g>
-      {ticks.map((t, i) => <line key={i} className="tick" {...t} />)}
-      <text x="50" y="55" className="num">{shown ? fmt(shown.v, dec) : "–"}</text>
-      <text x="50" y="68" className="unit">{shown ? shown.unit : unit}</text>
-      <text {...end(0)} className="lim">{short(span[0])}</text>
-      <text {...end(1)} className="lim">{short(span[1])}</text>
-    </svg>
+    <div className={`gauge${alarm ? " alarm" : ""}`}>
+      <svg viewBox="0 0 100 92" className="g2" role="img"
+        aria-label={`${label}: ${shown ? `${fmt(shown.v, dec)} ${shown.unit}` : "no value"}` +
+          (normal ? `, normal ${short(normal[0])}–${short(normal[1])} ${unit}` : "")}>
+        <g transform={`rotate(${rot} 50 50)`}>
+          <circle cx="50" cy="50" r={r} className="track" strokeDasharray={full.dash} />
+          {band ? (() => { const b = arc(r, band[0], band[1]); return <circle cx="50" cy="50" r={r} className="band" strokeDasharray={b.dash} strokeDashoffset={b.offset} />; })() : null}
+          {value != null ? (() => { const v = arc(r, 0, f); return <circle cx="50" cy="50" r={r} className={`val${alarm ? " alarm" : ""}`} strokeDasharray={v.dash} />; })() : null}
+        </g>
+        {ticks.map((t, i) => <line key={i} className="tick" {...t} />)}
+        <text {...end(0)} className="lim">{short(span[0])}</text>
+        <text {...end(1)} className="lim">{short(span[1])}</text>
+      </svg>
+      <div className="g2-read" aria-hidden="true">
+        <span className="g2-num">{shown ? fmt(shown.v, dec) : "–"}</span>
+        <span className="g2-unit">{shown ? shown.unit : unit}</span>
+      </div>
+    </div>
   );
 }

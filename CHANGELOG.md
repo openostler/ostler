@@ -357,6 +357,22 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **Visual design system V1a: tokens** ([visual spec](specs/2026-10-07-visual-design-system-design.md)
+  §2–§5, §11). Night (dark) is now the default theme at `:root` on every layout class; Day,
+  Night dim and Deep night (OLED) are `data-theme` overrides, and Preferences → Display offers
+  Auto, Day, Night, Night dim and Deep night (Auto follows the OS and is resolved in JS before
+  the first render, `ui/src/state/theme.ts`). New token files `color.dim`, `color.oled` and
+  `data.tokens.json` (violet speed ramp, three categorical series, chart neutrals, plasma/mako
+  stops); `size.tokens.json` gains space, radius (`sm` 10, `md` 16), motion, font, weight and a
+  type scale per layout class. The accent is cyan (`#22a6e0` / Day `#0070b8`). `tokens.ts` writes
+  the DTCG `shadow`, `duration`, `cubicBezier`, `fontFamily`, `fontWeight`, `number` and
+  `gradient` types and `{alias}` references; old names (`surface`, `raised`, `sunken`,
+  `type-primary`, `type-secondary` and the `styles.css` legacy aliases) keep working until V3.5.
+  `token()` (`ui/src/lib/token.ts`) gives Canvas and MapLibre the current value. Gauges are calm:
+  the in-range arc is neutral grey and only an out-of-range value turns arc and number alarm;
+  the gauge number is HTML sized by the class's `type-num-xl` and the gauge box. A contrast test
+  covers every text/surface pair the spec allows in all four themes, and axe runs in Night dim,
+  Deep night and Day too.
 - **The D2 pack repo moved** from `JamesWrightDavid/discovery2-diag` to
   [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (the old
   URL redirects). CI and the Dockerfile `PACK_REPO`, `mac/install.sh`, the no-pack install
