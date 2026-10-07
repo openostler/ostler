@@ -268,6 +268,56 @@ test.describe("Drive modes on a desktop", () => {
   });
 });
 
+// DM2 (§8.3, §10 "the choice survives a reload per display and profile"): the selected mode
+// lives on the server per display; localStorage is only the first paint and the offline fallback.
+test.describe("Drive modes on the server", () => {
+  test.use({ viewport: { width: 1024, height: 600 }, isMobile: false, hasTouch: true });
+  const display = `e2e-${Date.now().toString(36)}`;
+  const selection = `/ui/drive-mode/current/car/${display}/hu7`;
+
+  test("the selected mode and face survive a reload with the browser's storage cleared", async ({ page, browser }) => {
+    await returningUser(page);
+    expect((await (await page.request.get(selection)).json()).selection).toBeNull();
+    await openDrive(page, `?display_id=${display}`);
+    await expect(chip(page)).toHaveText("Dashboard");
+    await pickMode(page, "Off-road");
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".dm-face")).toHaveAttribute("data-face", "trail");
+    await expect.poll(async () => (await (await page.request.get(selection)).json()).selection)
+      .toMatchObject({ mode: "ostler.offroad", faces: { "ostler.offroad": 1 } });
+
+    // nothing left in this browser but the consent: only the server remembers
+    await page.evaluate(() => {
+      localStorage.removeItem("ostler.drive.v1");
+      localStorage.removeItem("ostler.display.v1");
+    });
+    await page.reload();
+    await page.locator(".home").getByRole("button", { name: "Drive", exact: true }).click();
+    await expect(chip(page)).toHaveText("Off-road");
+    await expect(page.locator(".dm-face")).toHaveAttribute("data-face", "trail");
+    // another display (another browser) keeps its own default; the same display id elsewhere
+    // (a kiosk's configured id) opens where this one was left
+    const other = await browser.newContext({ viewport: { width: 1024, height: 600 }, hasTouch: true });
+    const p2 = await other.newPage();
+    await returningUser(p2);
+    await openDrive(p2, `?display_id=${display}-other`);
+    await expect(chip(p2)).toHaveText("Dashboard");
+    await openDrive(p2, `?display_id=${display}`);
+    await expect(chip(p2)).toHaveText("Off-road");
+    await other.close();
+  });
+
+  test("Park to edit: a head unit's layout write is refused while the driving state is unknown", async ({ page }) => {
+    const res = await page.request.put("/ui/layouts/current/car/hu7/drive_mode/user.e2e", {
+      headers: { "Ostler-Layout-Class": "hu7", "Content-Type": "application/json" },
+      data: { format: "ostler.layout/1", kind: "drive_mode", id: "user.e2e", name: "x", classes: {} },
+    });
+    expect(res.status()).toBe(409);
+    expect(await res.json()).toMatchObject({ ok: false, code: "park_to_edit", driving_state: "unknown" });
+  });
+});
+
 // Screenshots for the owner (Night, the default theme): Dashboard and Map at HU-5, HU-7 and the phone.
 for (const s of [{ w: 800, h: 480 }, { w: 1024, h: 600 }, { w: 393, h: 852 }] as const) {
   test(`screenshots: Dashboard and Map at ${s.w}×${s.h}`, async ({ browser }) => {

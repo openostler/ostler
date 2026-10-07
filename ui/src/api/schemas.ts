@@ -678,3 +678,54 @@ export const VersionInfo = z.object({
   started: z.string(),
 });
 export type VersionInfo = z.infer<typeof VersionInfo>;
+
+/* ---- stored UI layouts (drive-modes spec §8.3, DM2: /ui/layouts, /ui/drive-mode) ---- */
+
+/** Where a layout came from: this user's copy, the car profile's, the pack's, or the shell's
+ * own preset or generated default (`layout: null`). */
+export const LayoutSource = z.enum(["user", "car", "pack", "generated"]);
+export type LayoutSource = z.infer<typeof LayoutSource>;
+
+/** One resolved layout. The document itself is checked by the shell's validator
+ * (`drive/validate.ts`), not here: an `ostler.layout/1` object or null. */
+export const LayoutEntry = z.looseObject({
+  kind: z.string().optional(),
+  id: z.string().optional(),
+  source: LayoutSource,
+  profile: z.string().nullable().optional(),
+  layout: z.looseObject({ format: z.string(), kind: z.string(), id: z.string() }).nullable(),
+  rev: z.number().nullable().optional(),
+  updated_utc: z.string().nullable().optional(),
+  etag: z.string(),
+});
+export type LayoutEntry = z.infer<typeof LayoutEntry>;
+
+export const LayoutList = z.looseObject({
+  vid: z.string(),
+  profile: z.string(),
+  class: z.string(),
+  driving_state: z.string().optional(),
+  layouts: z.array(LayoutEntry),
+  held: z.array(z.looseObject({ seq: z.number(), op: z.string() })),
+  snapshot: z.looseObject({ taken_utc: z.string(), expires_utc: z.string() }).nullable(),
+});
+export type LayoutList = z.infer<typeof LayoutList>;
+
+/** The selected Drive mode of one display (§8.3): the mode, its face per mode, the rotation. */
+export const DriveSelection = z.looseObject({
+  mode: z.string(),
+  faces: z.record(z.string(), z.number()).optional(),
+  rotation: z.array(z.string()).optional(),
+  updated_utc: z.string().optional(),
+});
+export type DriveSelection = z.infer<typeof DriveSelection>;
+
+export const DriveSelectionReply = z.looseObject({
+  ok: z.literal(true).optional(),
+  vid: z.string(),
+  profile: z.string(),
+  display: z.string(),
+  class: z.string(),
+  selection: DriveSelection.nullable(),
+});
+export type DriveSelectionReply = z.infer<typeof DriveSelectionReply>;

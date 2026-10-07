@@ -39,7 +39,7 @@ OPENAPI = ROOT / "api" / "openapi.yaml"
 ASYNCAPI = ROOT / "api" / "asyncapi.yaml"
 FIXTURES = ROOT / "ui" / "src" / "api" / "fixtures"
 
-METHODS = ("get", "post", "patch", "delete")
+METHODS = ("get", "post", "put", "patch", "delete")
 ACCESS = {"public", "admin"}
 PUBLIC_MODE = {"open", "filtered", "refused", "hidden", "partial"}
 
@@ -265,6 +265,36 @@ def test_every_session_subroute_is_documented_and_real(openapi):
         doc = {_segment(p, prefix) for p, m in documented if m == method and p.startswith(prefix)}
         assert doc == code, (
             f"{method.upper()} {prefix}…: server {sorted(code)} vs api/openapi.yaml {sorted(doc)}")
+
+
+# The ``/ui/…`` routes (stored UI layouts, web/layout_api.py) are parsed by
+# ``LayoutApiMixin.ui_route``: the literal path parts it compares with, and how many parts
+# follow ``/ui/layouts/{vid}/{profile}/{class}`` (none: the list, ``reset``/``undo-reset``,
+# or ``{kind}/{id}``).
+UI_ROUTES = {
+    ("get", "/ui/layouts/{vid}/{profile}/{class}"),
+    ("get", "/ui/layouts/{vid}/{profile}/{class}/{kind}/{id}"),
+    ("put", "/ui/layouts/{vid}/{profile}/{class}/{kind}/{id}"),
+    ("delete", "/ui/layouts/{vid}/{profile}/{class}/{kind}/{id}"),
+    ("post", "/ui/layouts/{vid}/{profile}/{class}/reset"),
+    ("post", "/ui/layouts/{vid}/{profile}/{class}/undo-reset"),
+    ("get", "/ui/drive-mode/{vid}/{profile}/{display}/{class}"),
+    ("put", "/ui/drive-mode/{vid}/{profile}/{display}/{class}"),
+}
+
+
+def test_the_ui_routes_are_documented_and_real(openapi):
+    from openostler.web import layout_api
+
+    documented = {(m, p) for p, m, _ in _operations(openapi) if p.startswith("/ui/")}
+    assert documented == UI_ROUTES
+    tree = ast.parse(Path(layout_api.__file__).read_text(encoding="utf-8"))
+    literals = {n.value for n in ast.walk(tree) if isinstance(n, ast.Constant)
+                and isinstance(n.value, str)}
+    for _, path in UI_ROUTES:
+        for part in path.strip("/").split("/")[1:]:
+            if not part.startswith("{"):
+                assert part in literals, f"{path}: {part!r} is not a literal of layout_api.py"
 
 
 def test_every_documented_route_exists(openapi):
@@ -610,7 +640,8 @@ def test_a_query_string_never_404s(openapi, fake_server):
 @pytest.mark.parametrize("method,path,auth", [
     ("GET", "/no/such/route", True), ("POST", "/no/such/route", True),
     ("PATCH", "/no/such/route", True), ("DELETE", "/no/such/route", True),
-    ("PUT", "/snapshot", True), ("GET", "/doc?id=nope", True), ("GET", "/nope.js", True),
+    ("PUT", "/snapshot", True), ("OPTIONS", "/snapshot", True), ("GET", "/doc?id=nope", True),
+    ("GET", "/nope.js", True),
     ("GET", "/docs", False), ("POST", "/signal", False), ("GET", "/sessions/nope/data", True),
 ])
 def test_errors_are_the_envelope(openapi, fake_server, method, path, auth):
@@ -621,7 +652,7 @@ def test_errors_are_the_envelope(openapi, fake_server, method, path, auth):
     if not auth:
         assert status == 401 and reply["code"] == "auth_required"
         assert headers["WWW-Authenticate"] == 'Basic realm="Ostler admin"'
-    elif method == "PUT":
+    elif method == "OPTIONS":  # a method the server lacks: the stdlib's 501, as the envelope
         assert status == 501
     else:
         assert status == 404 and reply["code"] == "not_found"

@@ -2,7 +2,7 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.8
+version: 2.9
 updated: 2026-10-07
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
@@ -10,8 +10,8 @@ summary: >
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
   contracts in api/, NodeSource, the MQTT client, node recording with the raw tap, the
-  cluster view, faults, events and Remove device, grant signing, trip sharing TS1 and the
-  U1 UI shell) and the dev commands.
+  cluster view, faults, events and Remove device, grant signing, trip sharing TS1, the
+  U1 UI shell and the stored UI layouts with Park to edit) and the dev commands.
 ---
 
 # Architecture and key seams
@@ -254,6 +254,18 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   W3C design tokens (`ui/tokens/*.tokens.json`), served as `virtual:design-tokens.css`.
   The UI enforces no driving lockout yet: the state is "unknown" until U2, and the
   server gate decides every action.
+- **Stored UI layouts (DM2, [drive-modes spec](../specs/2026-10-07-drive-modes-and-editing-design.md)
+  §8.3).** `layout_store.py` (core, stdlib `sqlite3`) is the `ui_layouts` store in
+  `<state dir>/settings.sqlite`: vid × profile (`car` or a user id) × layout class × kind ×
+  id, full `ostler.layout/1` copies with a `base`, resolved user → car → pack (the pack's
+  `layout.layouts`) → generated (the shell's presets, `layout: null` on the wire), one
+  Before reset snapshot per key for 7 days, held writes (R7) and the selected Drive mode per
+  display. `web/layout_api.py` (a `DiagServer` mixin) serves `/ui/layouts/…` and
+  `/ui/drive-mode/…`; every write goes through `_layout_gate`: Parked or Idling
+  (`DiagServer(driving_state=…)`, unknown until U2) or 409 `park_to_edit` for a
+  driver-facing requester (the `Ostler-Layout-Class` header; missing counts as one); a
+  tablet or desktop write for a driver-facing class is held until Parked. The shell's
+  `ui/src/drive/remote.ts` reads and writes them; localStorage is only its first paint.
 - **Admin and public mode.** Admin routes sit behind HTTP Basic auth when an admin password
   is set (`_Handler._require_admin`); with none they are open, which is for local dev only.
   `--public` therefore refuses to start without a password, and public mode refuses
@@ -390,3 +402,5 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
   state; only `tests/e2e_server.py --replay` loops the pack's test-only `demo.sniff_log`.
 - 2026-10-07 — v2.8, trip sharing TS1: `logbook/share/` (bundle writer, scrub, verifier),
   `node/identity.py` (the one identity table), `VehiclePack.identity`, the `ostler` command.
+- 2026-10-07 — v2.9, Drive modes DM2: `layout_store.py` (the `ui_layouts` store),
+  `web/layout_api.py` (`/ui/layouts`, `/ui/drive-mode`, Park to edit), `do_PUT`.

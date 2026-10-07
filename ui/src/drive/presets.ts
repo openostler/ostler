@@ -22,7 +22,17 @@ export const PRESETS: readonly Layout[] = ORDER.map((n) => {
   return doc;
 });
 
-export const presetById = (id: string): Layout | undefined => PRESETS.find((p) => p.id === id);
+export const presetById = (id: string, modes: readonly Layout[] = PRESETS): Layout | undefined =>
+  modes.find((p) => p.id === id);
+
+/** The presets with the stored modes (drive-modes spec §8.3, DM2): a stored copy of a preset
+ * (the same id) takes its place in the list; any other stored mode follows the presets. */
+export function withStored(stored: readonly Layout[]): readonly Layout[] {
+  if (!stored.length) return PRESETS;
+  const byId = new Map(stored.map((m) => [m.id, m]));
+  const merged = PRESETS.map((p) => byId.get(p.id) ?? p);
+  return [...merged, ...stored.filter((m) => !PRESETS.some((p) => p.id === m.id))];
+}
 
 /** The mode list holds at most six modes (a `short_list`, §6); the rotation at most four. */
 export const MAX_LIST = 6;
@@ -45,7 +55,8 @@ export const isAvailable = (m: Layout, caps: DriveCaps): boolean =>
   (m.requires?.capabilities ?? []).every((c) => caps.has(c));
 
 /** The modes this display may offer, in list order (§6: hidden ones are absent). */
-export const availableModes = (caps: DriveCaps): Layout[] => PRESETS.filter((m) => isAvailable(m, caps));
+export const availableModes = (caps: DriveCaps, modes: readonly Layout[] = PRESETS): Layout[] =>
+  modes.filter((m) => isAvailable(m, caps));
 
 /** §5.9: the default mode per class. */
 export function defaultMode(cls: LayoutClass, caps: DriveCaps): string {
@@ -55,7 +66,7 @@ export function defaultMode(cls: LayoutClass, caps: DriveCaps): string {
 }
 
 /** §5.9: the default one-tap rotation per class, keeping only available modes. */
-export function defaultRotation(cls: LayoutClass, caps: DriveCaps): string[] {
+export function defaultRotation(cls: LayoutClass, caps: DriveCaps, modes: readonly Layout[] = PRESETS): string[] {
   const ids: Record<LayoutClass, string[]> = {
     hu5: ["dashboard", "map", "diagnostic", "minimal"],
     hu7: ["dashboard", "map", "diagnostic", "minimal"],
@@ -66,7 +77,7 @@ export function defaultRotation(cls: LayoutClass, caps: DriveCaps): string[] {
     desktop: ["diagnostic"],
   };
   return ids[cls].map((n) => `ostler.${n}`).filter((id) => {
-    const m = presetById(id);
+    const m = presetById(id, modes);
     return m !== undefined && isAvailable(m, caps);
   });
 }

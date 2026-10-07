@@ -29,10 +29,15 @@ The platform package (`openostler`): comms core → interpretation → web consu
   (`tools/make_demo_session.py`). Location never leaves the device.
   Also per-session `events.jsonl` (whole-app replay), `notes.jsonl`, audio tracks and acceleration
   channels (`motion.py`, `audio.py`, `notes.py`; ADR-0010).
+- `layouts.py` + `layout_limits.json` — the `ostler.layout/1` validator (drive-modes spec
+  §8.2); `layout_store.py` — the `ui_layouts` store (`<state dir>/settings.sqlite`: vid ×
+  profile × class × kind × id, resolution user → car → pack → generated, the 7-day Before
+  reset snapshot, held writes, the selected Drive mode per display; §8.3).
 - `imu/` — Pi IMU (LSM6DS family over `/dev/i2c-1`, stdlib ioctl) and a mock IMU.
 - `faultscan.py`, `modscan.py`, `menus.py`, `community/` — cross-module helpers
   (`modscan.py` = the read-only address scan) and opt-in upload.
-- `web/` — consumer: stdlib HTTP + SSE server, data sources. `web/static/` is the built
+- `web/` — consumer: stdlib HTTP + SSE server, data sources; `web/layout_api.py` serves
+  `/ui/layouts` and `/ui/drive-mode` with Park to edit (R1/R7, the `Ostler-Layout-Class` header). `web/static/` is the built
   UI from `ui/` (generated — rebuild, never edit); `dashboard*.html` are legacy references.
 
 ## Editing rules

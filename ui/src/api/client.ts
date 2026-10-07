@@ -24,6 +24,9 @@ import {
   PackSchema,
   VersionInfo,
   CaptureList,
+  DriveSelectionReply,
+  ErrorReply,
+  LayoutList,
   NoteList,
   NoteReply,
   SessionData,
@@ -158,4 +161,25 @@ export const api = {
   }) => postJson("/automap", req, AutomapReply),
   upsertSignal: (module: string, record: Record<string, unknown>) =>
     postJson("/signal", { module, record }, OkReply),
+  /** Stored UI layouts of this vehicle for a profile (`car` until accounts) and layout class,
+   * resolved user → car → pack (drive-modes spec §8.3). */
+  layouts: (cls: string, kind?: string, profile = "car") =>
+    getJson(`/ui/layouts/current/${encodeURIComponent(profile)}/${encodeURIComponent(cls)}${kind ? `?kind=${encodeURIComponent(kind)}` : ""}`, LayoutList),
+  /** The selected Drive mode of one display (null when the server has none yet). */
+  driveSelection: (display: string, cls: string, profile = "car") =>
+    getJson(driveSelectionPath(display, cls, profile), DriveSelectionReply),
+  /** Remember the selected Drive mode on the server. `Ostler-Layout-Class` names this display's
+   * class for Park to edit (a reordered rotation is an edit); a refusal is returned, not thrown. */
+  setDriveSelection: async (display: string, cls: string, sel: { mode: string; faces?: Record<string, number>; rotation?: string[] }, profile = "car") => {
+    const path = driveSelectionPath(display, cls, profile);
+    return parse(await request(path, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Ostler-Layout-Class": cls },
+      body: JSON.stringify(sel),
+    }), DriveSelectionReply.or(ErrorReply), path);
+  },
 };
+
+function driveSelectionPath(display: string, cls: string, profile: string): string {
+  return `/ui/drive-mode/current/${encodeURIComponent(profile)}/${encodeURIComponent(display)}/${encodeURIComponent(cls)}`;
+}

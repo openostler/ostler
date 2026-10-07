@@ -1,4 +1,4 @@
-# Ostler HTTP API: the routes of src/openostler/web/server.py (_Handler.do_GET/POST/PATCH/DELETE).
+# Ostler HTTP API: the routes of src/openostler/web/server.py (_Handler.do_GET/POST/PUT/PATCH/DELETE).
 # OpenAPI 3.1.1; schemas are JSON Schema 2020-12 (ADR-0017). Shapes follow the UI's Zod
 # schemas (ui/src/api/schemas.ts) and the real responses in ui/src/api/fixtures/.
 # tests/test_api_contracts.py fails when a server route is missing here (or vice versa) and
@@ -32,9 +32,11 @@ info:
     (`ErrorReply`): `error` is an English sentence for people, `code` a stable token for
     programs (`bad_request`, `auth_required`, `public_mode`, `not_local`, `read_only`,
     `not_found`, `not_recording`, `disconnected`, `community_off`, `conflict`, `too_large`,
-    `internal`, `car_refused`, `car_timeout`, `unavailable`, `no_match`). A 2xx body never carries
+    `internal`, `car_refused`, `car_timeout`, `unavailable`, `no_match`, and for stored
+    layouts `park_to_edit`, `etag_mismatch`, `kind_not_writable`, `layout_invalid`,
+    `layout_key`, `layout_class`, `base_missing`). A 2xx body never carries
     `ok: false`. The statuses: 202 accepted but not yet done (a queued community
-    contribution), 400 bad input, 401 admin auth missing, 403 refused by policy (public
+    contribution, a layout write held until the car is Parked), 400 bad input, 401 admin auth missing, 403 refused by policy (public
     mode, a synthetic session, an owner action over a remote path), 404 unknown, 409 conflict with server state, 413 body too
     large, 416 bad range, 500 unexpected failure, 502 the car refused (an ECU negative
     response), 503 temporarily unavailable, 504 the car did not answer in time. Only the
@@ -79,6 +81,8 @@ tags:
     description: The opt-in community contribution client.
   - name: docs
     description: The markdown Documents tab (admin).
+  - name: layouts
+    description: Stored UI layouts and the selected Drive mode per display (drive-modes spec §8.3; Park to edit).
 
 paths:
   # ---------------------------------------------------------------- app (HTML) ---------
@@ -1372,6 +1376,273 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/ErrorReply"}
 
+  # ---------------------------------------------------------------- stored UI layouts --
+  # drive-modes spec §8.1 R1/R7, §8.3 (DM2): src/openostler/web/layout_api.py over the
+  # ui_layouts store (<state dir>/settings.sqlite). Writes need Parked on a driver-facing
+  # display (Park to edit); see the LayoutClassHeader parameter.
+  /ui/layouts/{vid}/{profile}/{class}:
+    parameters:
+      - $ref: "#/components/parameters/LayoutVid"
+      - $ref: "#/components/parameters/LayoutProfile"
+      - $ref: "#/components/parameters/LayoutClass"
+    get:
+      tags: [layouts]
+      operationId: listLayouts
+      summary: Every stored or pack layout at this key, resolved (user → car → pack), with held changes and the Before reset snapshot.
+      description: >
+        The shell's own presets and generated defaults (tier 1) are not listed: the shell
+        knows them. Held changes made from a tablet or desktop for a driver-facing class
+        are applied here once the car is Parked (R7).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      parameters:
+        - name: kind
+          in: query
+          required: false
+          schema: {$ref: "#/components/schemas/LayoutKind"}
+      responses:
+        "200":
+          description: The layouts.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutList"}
+        "400":
+          $ref: "#/components/responses/Error"
+  /ui/layouts/{vid}/{profile}/{class}/{kind}/{id}:
+    parameters:
+      - $ref: "#/components/parameters/LayoutVid"
+      - $ref: "#/components/parameters/LayoutProfile"
+      - $ref: "#/components/parameters/LayoutClass"
+      - name: kind
+        in: path
+        required: true
+        schema: {$ref: "#/components/schemas/LayoutKind"}
+      - name: id
+        in: path
+        required: true
+        description: The layout id (preset ids are `ostler.<name>`; user ids are minted by the shell).
+        schema: {type: string, pattern: "^[a-z0-9][a-z0-9_.-]{0,63}$"}
+    get:
+      tags: [layouts]
+      operationId: getLayout
+      summary: The layout this profile sees and its source (`user`, `car`, `pack` or `generated`).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      responses:
+        "200":
+          description: The resolved layout; `layout` is null for `generated` (the shell's own preset or generated default).
+          headers:
+            ETag:
+              description: A hash of the layout (`"generated"` for the shell's own); send it back as `If-Match` on `PUT`.
+              schema: {type: string}
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutResolved"}
+        "400":
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [layouts]
+      operationId: putLayout
+      summary: Store this profile's copy (validated by openostler.layouts; Park to edit).
+      description: >
+        The body is a whole `ostler.layout/1` document (≤ 256 KB) whose `kind` and `id` are
+        the route's, that holds the route's class and carries `base` (what it was made
+        from, the Reset target). Refusals carry the validator's `errors` (each with `rule`,
+        `message` and where: `class`, `face`, `slot`) and `warnings`. Only `drive_mode`
+        layouts are stored until the rail, strip and Home guardrails land (DM3: 403
+        `kind_not_writable`).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - $ref: "#/components/parameters/LayoutClassHeader"
+        - name: If-Match
+          in: header
+          required: false
+          description: The ETag last read; a stale one answers 409 `etag_mismatch`.
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/vnd.ostler.layout+json:
+            schema: {$ref: "#/components/schemas/OstlerLayout"}
+          application/json:
+            schema: {$ref: "#/components/schemas/OstlerLayout"}
+      responses:
+        "200":
+          description: Stored.
+          headers:
+            ETag:
+              schema: {type: string}
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutPutReply"}
+        "202":
+          description: Held until the car is Parked (a tablet or desktop editing a driver-facing class, R7).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutHeld"}
+        "400":
+          description: "Refused (`layout_invalid` with `errors`, `layout_key`, `layout_class`, `base_missing`, `bad_request`)."
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - {$ref: "#/components/schemas/ErrorReply"}
+                  - {$ref: "#/components/schemas/LayoutRefusal"}
+        "403":
+          $ref: "#/components/responses/LayoutForbidden"
+        "409":
+          $ref: "#/components/responses/ParkToEdit"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+    delete:
+      tags: [layouts]
+      operationId: deleteLayout
+      summary: Revert to what lies beneath (the car's, the pack's or the generated default); the removed copy becomes the Before reset snapshot.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - $ref: "#/components/parameters/LayoutClassHeader"
+      responses:
+        "200":
+          description: Reverted (`deleted` is false when this profile had no copy).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutDeleteReply"}
+        "202":
+          description: Held until the car is Parked (R7).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutHeld"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/ParkToEdit"
+  /ui/layouts/{vid}/{profile}/{class}/reset:
+    parameters:
+      - $ref: "#/components/parameters/LayoutVid"
+      - $ref: "#/components/parameters/LayoutProfile"
+      - $ref: "#/components/parameters/LayoutClass"
+    post:
+      tags: [layouts]
+      operationId: resetLayouts
+      summary: Reset layout (§7.8) for this profile, vehicle and class; one kind (this surface) or everything. Keeps a Before reset snapshot for 7 days.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - $ref: "#/components/parameters/LayoutClassHeader"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind: {$ref: "#/components/schemas/LayoutKind"}
+      responses:
+        "200":
+          description: Reset (`reset` layouts removed).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutResetReply"}
+        "202":
+          description: Held until the car is Parked (R7).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutHeld"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/ParkToEdit"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+  /ui/layouts/{vid}/{profile}/{class}/undo-reset:
+    parameters:
+      - $ref: "#/components/parameters/LayoutVid"
+      - $ref: "#/components/parameters/LayoutProfile"
+      - $ref: "#/components/parameters/LayoutClass"
+    post:
+      tags: [layouts]
+      operationId: undoResetLayouts
+      summary: Undo reset - restore the Before reset snapshot (within 7 days).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - $ref: "#/components/parameters/LayoutClassHeader"
+      responses:
+        "200":
+          description: Restored.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutUndoReply"}
+        "202":
+          description: Held until the car is Parked (R7).
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/LayoutHeld"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/ParkToEdit"
+  /ui/drive-mode/{vid}/{profile}/{display}/{class}:
+    parameters:
+      - $ref: "#/components/parameters/LayoutVid"
+      - $ref: "#/components/parameters/LayoutProfile"
+      - name: display
+        in: path
+        required: true
+        description: The display's id (the shell mints one per browser, or `?display_id=` names it).
+        schema: {type: string, pattern: "^[a-z0-9][a-z0-9_-]{0,63}$"}
+      - $ref: "#/components/parameters/LayoutClass"
+    get:
+      tags: [layouts]
+      operationId: getDriveMode
+      summary: The selected Drive mode of one display (null when it has none yet).
+      x-ostler-access: public
+      x-ostler-public-mode: open
+      responses:
+        "200":
+          description: The selection.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DriveSelectionReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [layouts]
+      operationId: putDriveMode
+      summary: Select a Drive mode (allowed in every driving state, R1); reordering a stored rotation is an edit (Park to edit).
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - $ref: "#/components/parameters/LayoutClassHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/DriveSelection"}
+      responses:
+        "200":
+          description: Stored.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DriveSelectionReply"}
+        "400":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/ParkToEdit"
+        "413":
+          $ref: "#/components/responses/TooLarge"
 components:
   # Wire conventions for every Ostler API (HTTP here, SSE/MQTT in asyncapi.yaml). New
   # fields follow them; the existing deviations are listed so they can be migrated.
@@ -1502,6 +1773,36 @@ components:
       required: true
       schema: {type: string, pattern: "^[0-9a-f]{8}$"}
 
+    LayoutVid:
+      name: vid
+      in: path
+      required: true
+      description: The vehicle id, or `current` for this server's local vehicle.
+      schema: {type: string, pattern: "^[0-9A-Za-z][0-9A-Za-z_-]{0,63}$"}
+    LayoutProfile:
+      name: profile
+      in: path
+      required: true
+      description: "`car` (the head unit's kiosk session, the owner's default for this car) or a user id. Not authenticated until accounts land (accounts spec P1)."
+      schema: {type: string, pattern: "^[a-z0-9][a-z0-9_-]{0,63}$"}
+    LayoutClass:
+      name: class
+      in: path
+      required: true
+      description: The layout class the layouts are for.
+      schema: {$ref: "#/components/schemas/LayoutClassName"}
+    LayoutClassHeader:
+      name: Ostler-Layout-Class
+      in: header
+      required: false
+      description: >
+        The layout class of the display making the request (Park to edit, R1). While the
+        car is not Parked or Idling (and the driving state is `unknown` until U2), a write
+        from a driver-facing class (`hu5`, `hu7`, `hu9`, `huwide`, `phone`) answers 409
+        `park_to_edit`; a missing or unknown value counts as driver-facing. `tablet` and
+        `desktop` may write; a write of theirs for a driver-facing class is held until
+        Parked (202).
+      schema: {$ref: "#/components/schemas/LayoutClassName"}
   responses:
     Html:
       description: An HTML page.
@@ -1548,6 +1849,23 @@ components:
           schema: {$ref: "#/components/schemas/ErrorReply"}
     TooLarge:
       description: "The body is too large (`code: too_large`; 2 MiB per JSON body or audio chunk; 5000 accel samples)."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/ErrorReply"}
+    ParkToEdit:
+      description: "Park to edit (`code: park_to_edit`, with `driving_state` and the requesting `layout_class`), or a stale `If-Match` (`code: etag_mismatch`, with the current `etag`)."
+      content:
+        application/json:
+          schema:
+            allOf:
+              - {$ref: "#/components/schemas/ErrorReply"}
+              - type: object
+                properties:
+                  driving_state: {type: string, enum: [parked, idling, moving, unknown]}
+                  layout_class: {type: [string, "null"]}
+                  etag: {type: string}
+    LayoutForbidden:
+      description: "Refused in public mode (`code: public_mode`), or a `rail`, `strip` or `home` layout before its guardrail check (`code: kind_not_writable`)."
       content:
         application/json:
           schema: {$ref: "#/components/schemas/ErrorReply"}
@@ -1648,7 +1966,9 @@ components:
             A stable token for programs: `bad_request`, `no_match`, `auth_required`,
             `public_mode`, `not_local`, `read_only`, `not_found`, `not_recording`, `disconnected`,
             `community_off`, `conflict`, `too_large`, `internal`, `car_refused`,
-            `unavailable`, `car_timeout`. Open: a client treats an unknown code by its
+            `unavailable`, `car_timeout`; stored layouts add `park_to_edit`,
+            `etag_mismatch`, `kind_not_writable`, `layout_invalid`, `layout_key`,
+            `layout_class` and `base_missing`. Open: a client treats an unknown code by its
             HTTP status.
         nrc: {type: integer, description: "With `car_refused`: the ECU's negative response code (KWP2000 NRC)."}
       additionalProperties: true
@@ -3175,4 +3495,190 @@ components:
       properties:
         ok: {const: true}
         accel_cal: {$ref: "#/components/schemas/AccelCal"}
+      additionalProperties: true
+    # ---- stored UI layouts (drive-modes spec §8.3, DM2) ----
+    LayoutKind:
+      type: string
+      enum: [drive_mode, home, rail, strip]
+    LayoutClassName:
+      type: string
+      enum: [hu5, hu7, hu9, huwide, phone, tablet, desktop]
+    OstlerLayout:
+      type: object
+      description: An `ostler.layout/1` document (`schemas/ostler-layout.schema.json`; checked by `openostler.layouts`).
+      required: [format, kind, id, name, classes]
+      properties:
+        format: {const: ostler.layout/1}
+        kind: {$ref: "#/components/schemas/LayoutKind"}
+        id: {type: string}
+        name: {type: string}
+        base:
+          type: object
+          required: [preset, version]
+          properties:
+            preset: {type: string}
+            version: {type: integer, minimum: 1}
+        classes: {type: object}
+      additionalProperties: true
+    LayoutIssue:
+      type: object
+      required: [rule, message]
+      properties:
+        rule: {type: string, description: "A stable rule code (`moving.too_many_tiles`, `schema`, `text.too_long` …)."}
+        message: {type: string}
+        class: {$ref: "#/components/schemas/LayoutClassName"}
+        face: {type: string}
+        slot: {type: string}
+      additionalProperties: true
+    LayoutSource:
+      type: string
+      enum: [user, car, pack, generated]
+      description: "Where the layout came from: this user's copy, the car profile's, the pack's (tier 2), or the shell's own preset or generated default (tier 1, `layout: null`)."
+    LayoutResolved:
+      type: object
+      required: [source, layout, etag]
+      properties:
+        vid: {type: string}
+        class: {$ref: "#/components/schemas/LayoutClassName"}
+        kind: {$ref: "#/components/schemas/LayoutKind"}
+        id: {type: string}
+        source: {$ref: "#/components/schemas/LayoutSource"}
+        profile: {type: [string, "null"], description: The profile whose copy it is (null for pack and generated).}
+        requested_profile: {type: string}
+        layout:
+          oneOf:
+            - {$ref: "#/components/schemas/OstlerLayout"}
+            - {type: "null"}
+        rev: {type: [integer, "null"]}
+        updated_utc:
+          oneOf:
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+            - {type: "null"}
+        etag: {type: string}
+      additionalProperties: true
+    LayoutHeldEntry:
+      type: object
+      required: [seq, op]
+      properties:
+        seq: {type: integer}
+        op: {type: string, enum: [put, delete, reset, undo_reset]}
+        kind: {type: [string, "null"]}
+        id: {type: [string, "null"]}
+        requested_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+      additionalProperties: true
+    LayoutSnapshot:
+      type: [object, "null"]
+      description: The Before reset snapshot (§7.8), kept 7 days; null when there is none.
+      properties:
+        taken_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+        expires_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+        scope: {type: string, description: "`all`, a kind, or `<kind>/<id>` for one layout."}
+        layouts:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: {$ref: "#/components/schemas/LayoutKind"}
+              id: {type: string}
+      additionalProperties: true
+    LayoutList:
+      type: object
+      required: [vid, profile, class, layouts, held, snapshot]
+      properties:
+        vid: {type: string}
+        profile: {type: string}
+        class: {$ref: "#/components/schemas/LayoutClassName"}
+        driving_state: {type: string, enum: [parked, idling, moving, unknown]}
+        layouts:
+          type: array
+          items: {$ref: "#/components/schemas/LayoutResolved"}
+        held:
+          type: array
+          items: {$ref: "#/components/schemas/LayoutHeldEntry"}
+        snapshot: {$ref: "#/components/schemas/LayoutSnapshot"}
+      additionalProperties: true
+    LayoutPutReply:
+      allOf:
+        - {$ref: "#/components/schemas/LayoutResolved"}
+        - type: object
+          required: [ok]
+          properties:
+            ok: {const: true}
+            warnings:
+              type: array
+              items: {$ref: "#/components/schemas/LayoutIssue"}
+    LayoutHeld:
+      type: object
+      required: [ok, queued, held, seq]
+      properties:
+        ok: {const: true}
+        queued: {const: true}
+        held: {const: true}
+        seq: {type: integer}
+        message: {type: string}
+      additionalProperties: true
+    LayoutRefusal:
+      type: object
+      description: What a refused layout write adds to the error envelope.
+      properties:
+        errors:
+          type: array
+          items: {$ref: "#/components/schemas/LayoutIssue"}
+        warnings:
+          type: array
+          items: {$ref: "#/components/schemas/LayoutIssue"}
+    LayoutDeleteReply:
+      type: object
+      required: [ok, deleted, resolved]
+      properties:
+        ok: {const: true}
+        deleted: {type: boolean}
+        resolved: {$ref: "#/components/schemas/LayoutResolved"}
+        snapshot: {$ref: "#/components/schemas/LayoutSnapshot"}
+      additionalProperties: true
+    LayoutResetReply:
+      type: object
+      required: [ok, reset]
+      properties:
+        ok: {const: true}
+        reset: {type: integer}
+        kind: {type: [string, "null"]}
+        snapshot: {$ref: "#/components/schemas/LayoutSnapshot"}
+      additionalProperties: true
+    LayoutUndoReply:
+      type: object
+      required: [ok, restored]
+      properties:
+        ok: {const: true}
+        restored: {type: integer}
+      additionalProperties: true
+    DriveSelection:
+      type: object
+      required: [mode]
+      properties:
+        mode: {type: string, description: The active mode's layout id.}
+        faces:
+          type: object
+          description: The face shown per mode (0-2).
+          additionalProperties: {type: integer, minimum: 0, maximum: 2}
+        rotation:
+          type: array
+          maxItems: 4
+          items: {type: string}
+          description: The one-tap rotation; omitted keeps the stored one.
+        updated_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+      additionalProperties: true
+    DriveSelectionReply:
+      type: object
+      required: [vid, profile, display, class, selection]
+      properties:
+        ok: {const: true}
+        vid: {type: string}
+        profile: {type: string}
+        display: {type: string}
+        class: {$ref: "#/components/schemas/LayoutClassName"}
+        selection:
+          oneOf:
+            - {$ref: "#/components/schemas/DriveSelection"}
+            - {type: "null"}
       additionalProperties: true

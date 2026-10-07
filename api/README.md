@@ -24,6 +24,8 @@ and the tests keep the three in step.
   ([API consistency spec](../specs/2026-10-06-api-consistency-design.md) §1-§2). A query
   string is accepted on every route; an unknown browser page gets the app shell.
 - **`x-ostler-route: static`**: served from the built app's `static/` directory.
+- **`Ostler-Layout-Class`** (request header, the `layouts` tag): the requesting display's
+  layout class, which the stored-layout writes need for Park to edit (drive-modes spec R1).
 - **`components.x-ostler-wire-conventions`**: the wire rules for every Ostler API:
   - RFC 3339 UTC `Z` timestamps;
   - COVESA VSS units ([ADR-0016](../decisions/adr-0016-covesa-vss-canonical-signal-namespace.md));

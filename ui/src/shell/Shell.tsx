@@ -21,6 +21,7 @@ import { driveMenuRows, type DriveMenuRowId } from "../drive/driveMenu";
 import { ModeList } from "../drive/ModeList";
 import { parseCaps } from "../drive/presets";
 import { useDriveModes } from "../drive/useDriveModes";
+import { displayId, useStoredModes } from "../drive/remote";
 import { Drive, VehicleCard } from "../screens/Drive";
 import { useApp } from "../state/app";
 import type { useConnectionSheet } from "../state/connection";
@@ -106,10 +107,14 @@ export function Shell(p: ShellProps) {
     format: { quantity, clock },
   };
 
-  // Drive modes (drive-modes spec §6): remembered per display; `?caps=` stands in for the
-  // capability manifest (U3/U5) that will say whether a media source or a ride exists
+  // Drive modes (drive-modes spec §6, §8.3): the selected mode is remembered per display on the
+  // server (localStorage is the first paint and the offline fallback), and stored modes join
+  // the presets; `?caps=` stands in for the capability manifest (U3/U5) that will say whether
+  // a media source or a ride exists
   const caps = useMemo(() => parseCaps(window.location.search), []);
-  const modes = useDriveModes({ cls: p.layout, pack: pack?.id ?? "", caps });
+  const server = useMemo(() => ({ display: displayId() }), []);
+  const stored = useStoredModes(p.layout);
+  const modes = useDriveModes({ cls: p.layout, pack: pack?.id ?? "", caps, stored, server });
 
   const chips = stripChips({
     layout: p.layout, snap, linkUp, replaying: replay.active, admin, systemName: moduleName(module),

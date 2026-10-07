@@ -44,6 +44,27 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- Drive modes, DM2: stored layouts and server Park to edit (drive-modes spec v0.3 §7.8,
+  §8.1 R1/R7, §8.3; approved 2026-10-07). The Brain's `ui_layouts` store
+  (`openostler.layout_store`, `<state dir>/settings.sqlite`) keyed by vehicle × profile
+  (`car` or a user id) × layout class × kind × id holds full `ostler.layout/1` copies with
+  their `base`; resolution is user → car → pack (a `layouts` list in the pack's UI manifest)
+  → generated (the shell's presets); a single Before reset snapshot per key is kept 7 days
+  for Undo reset. New routes (`web/layout_api.py`): `GET /ui/layouts/{vid}/{profile}/{class}`,
+  `GET|PUT|DELETE /ui/layouts/{vid}/{profile}/{class}/{kind}/{id}` (ETag and `If-Match`; a
+  `PUT` is validated by `openostler.layouts` and refused with its `errors`; `DELETE` reverts
+  to the base), `POST …/{class}/reset` and `…/undo-reset`, and `GET|PUT
+  /ui/drive-mode/{vid}/{profile}/{display}/{class}` (the selected mode per display, allowed in
+  every driving state); `vid` may be `current`. Every layout write needs Parked or Idling
+  when the requesting class (the new `Ostler-Layout-Class` header) is a head unit or the
+  phone, else 409 `park_to_edit` with the `driving_state` (unknown until U2, so refused);
+  tablet and desktop may write, and their writes for a driver-facing class are held (202)
+  until Parked (R7). Only `drive_mode` layouts are stored until the rail, strip and Home
+  guardrails (DM3; 403 `kind_not_writable`). The server gains `do_PUT` and the
+  `driving_state` seam (`DiagServer(driving_state=…)`). The shell keeps the selected Drive
+  mode on the server per display (`?display_id=` or an id minted per browser), with
+  localStorage as the first paint and offline fallback, and stored Drive modes join (or
+  replace by id) the presets.
 - ShellInput, I1 (shell input spec v0.3 §2–§7, §9, §13, §14; approved 2026-10-07): the
   shell is driven without touch. A keyboard intent layer (`ui/src/shell/input.ts`): arrows
   move, Enter is `ok`, Escape is `back`; the arrows alone repeat (400 ms, then every 100 ms)

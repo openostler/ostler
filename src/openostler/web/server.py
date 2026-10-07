@@ -44,6 +44,7 @@ from ..ports import list_serial_ports, resolve_serial_port
 from ..timefmt import rfc3339_utc
 from .docs import DocLibrary
 from .kline_cmds import PROBE_COMMANDS, KLineCommandsMixin
+from .layout_api import LayoutApiMixin
 from .sources import DataSource
 
 
@@ -103,11 +104,18 @@ _STATUS_FOR_CODE = {
     "public_mode": 403,       # refused on the public server (_PUBLIC_REFUSAL)
     "not_local": 403,         # an owner action asked over a remote path (Remove device)
     "read_only": 403,         # a write to a synthetic (demo) session
+    "kind_not_writable": 403,  # a rail, strip or Home layout before its guardrails (DM3)
     "not_found": 404,
     "not_recording": 409,
     "disconnected": 409,
     "community_off": 409,     # community disabled on this server, or sharing not enabled
     "conflict": 409,          # another conflict with server state (shutdown not enabled …)
+    "park_to_edit": 409,      # a layout write while not Parked (drive-modes spec R1)
+    "etag_mismatch": 409,     # a layout PUT whose If-Match is stale
+    "layout_invalid": 400,    # the ostler.layout/1 validator refused it (errors listed)
+    "layout_key": 400,        # its kind/id differ from the route's
+    "layout_class": 400,      # it has no layout for the route's class
+    "base_missing": 400,      # a stored layout needs base {preset, version}
     "too_large": 413,
     "internal": 500,
     "car_refused": 502,       # the ECU answered with a negative response (0x7F + NRC)
@@ -651,6 +659,8 @@ class _Handler(BaseHTTPRequestHandler):
             self._json(body, code=code)
         elif path == "/sessions" or path.startswith("/sessions/"):
             self._sessions_get(path)
+        elif path.startswith("/ui/"):
+            self._ui("GET", path)
         elif path == "/captures":
             if not self._require_admin():
                 return
@@ -722,6 +732,8 @@ class _Handler(BaseHTTPRequestHandler):
             self._api(lambda: self.server.remove_device(self._json_body()))
         elif path.startswith("/sessions/"):
             self._sessions_post(path)
+        elif path.startswith("/ui/layouts/"):
+            self._ui("POST", path)
         elif path == "/signal":
             if not self._require_admin():
                 return
@@ -768,8 +780,18 @@ class _Handler(BaseHTTPRequestHandler):
             return
         self._api(lambda: self.server.edit_note(sid, rest[1], self._json_body()))
 
+    def do_PUT(self) -> None:  # noqa: N802
+        path = self._path()
+        if path.startswith("/ui/"):
+            self._ui("PUT", path)
+        else:
+            self._error(404, "not found", "not_found")
+
     def do_DELETE(self) -> None:  # noqa: N802
         path = self._path()
+        if path.startswith("/ui/layouts/"):
+            self._ui("DELETE", path)
+            return
         sid, rest = self._session_parts(path)
         if sid is None or len(rest) != 2 or rest[0] != "notes":
             self._error(404, "not found", "not_found")
@@ -844,6 +866,26 @@ class _Handler(BaseHTTPRequestHandler):
             self._json(body, 202)
         else:
             self._json(body)
+
+    def _ui(self, method: str, path: str) -> None:
+        """``/ui/layouts/…`` and ``/ui/drive-mode/…`` (stored UI layouts, layout_api.py):
+        the reply's ``code`` sets the status, a held write is 202."""
+        try:
+            body, headers = self.server.ui_route(
+                method, path, query=self._query(), header=self.headers.get,
+                body=self._read_capped)
+        except ApiError as exc:
+            self._api_error(exc)
+            return
+        except Exception as exc:  # noqa: BLE001
+            self._error(500, f"{type(exc).__name__}: {exc}", "internal")
+            return
+        if body.get("ok") is False:
+            self._json(body, _status_for(body))
+        elif body.get("queued") is True:
+            self._json(body, 202)
+        else:
+            self._json(body, headers=headers or None)
 
     def _api_error(self, exc: ApiError) -> None:
         self._error(exc.code, exc.error, exc.kind)
@@ -1204,7 +1246,7 @@ class ConnectAborted(Exception):
     """Establishment aborted because a command is waiting (e.g. module switch)."""
 
 
-class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
+class DiagServer(KLineCommandsMixin, LayoutApiMixin, ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
     # How long ``POST /command`` waits for the poll thread (seconds); past it the reply is
@@ -1248,6 +1290,7 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         state_dir: "str | None" = None,
         module_scan=None,
         device_revoker=None,
+        driving_state=None,
     ) -> None:
         if public and not admin_password:
             # Public mode is for a bind other people can reach; with no password every
@@ -1363,6 +1406,9 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         self._state_dir = state_dir
         self._device_revoker = device_revoker
         self.event_keepalive = 15.0
+        # The driving state (UI spec §3.5) for Park to edit (layout_api.py): a callable
+        # returning parked | idling | moving | unknown; None until U2 computes it.
+        self.driving_state_fn = driving_state
         self._load_removed()
 
     # ---- session logbook --------------------------------------------- #
@@ -3054,6 +3100,12 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
                 self._enricher.stop()
             except Exception:  # noqa: BLE001
                 pass
+        if self._layouts is not None:
+            try:
+                self._layouts.close()
+            except Exception:  # noqa: BLE001
+                pass
+            self._layouts = None
 
     def serve(self) -> None:
         self.start_polling()

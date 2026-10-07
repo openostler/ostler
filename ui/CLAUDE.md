@@ -34,8 +34,11 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   `presets/*.json` (the seven presets, CC BY-SA 4.0, authored per class, never
   scaled), `presets.ts` (availability by `requires.capabilities`, defaults and
   rotation per class; `?caps=` stands in for the capability manifest), `useDriveModes.ts`
-  (active mode and face, rotation ≤ 4, list ≤ 6, remembered per display in localStorage until
-  DM2's server storage), `bind.ts` (VSS path → node VSS, the session's field by `metric`, then
+  (active mode and face, rotation ≤ 4, list ≤ 6, remembered per display on the server, with
+  localStorage as the first paint and offline fallback; stored modes join the presets),
+  `remote.ts` (DM2: the display id, `?display_id=` or one minted per browser; the stored Drive
+  modes of this class, `/ui/layouts`; the selection, `/ui/drive-mode`, sent with
+  `Ostler-Layout-Class`), `bind.ts` (VSS path → node VSS, the session's field by `metric`, then
   GPS; otherwise an honest "Not in this session"/"Not available on this car"/"Needs the
   node's IMU", never a zero), `DriveFace.tsx` (the Moving section on head units and the phone
   unless the car is known Parked; the full grid on tablet/desktop; values step ≤ 4 Hz),
