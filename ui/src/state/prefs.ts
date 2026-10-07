@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Units } from "../lib/format";
+import { applyTheme, isThemePref, type ThemePref } from "./theme";
 
 /** Per-device preferences. Same localStorage key as the legacy v2 page, so a phone keeps
  * its trust/consent/units choices across the switch. Storage may be unavailable
@@ -12,8 +13,8 @@ export type Prefs = {
   trust: "trusted" | "experimental";
   consentDone: boolean;
   share: boolean | null;
-  /** "auto" follows the phone's day/night setting (prefers-color-scheme). */
-  theme: "auto" | "light" | "dark";
+  /** Night ("dark") by default; "auto" follows the OS (state/theme.ts, visual spec §1). */
+  theme: ThemePref;
   units: Units;
 };
 
@@ -22,14 +23,15 @@ export const DEFAULT_PREFS: Prefs = {
   trust: "trusted",
   consentDone: false,
   share: null,
-  theme: "auto",
+  theme: "dark",
   units: { temp: "C", dist: "km" },
 };
 
 export function loadPrefs(): Prefs {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<Prefs>;
-    return { ...DEFAULT_PREFS, ...raw, units: { ...DEFAULT_PREFS.units, ...(raw.units ?? {}) } };
+    const p = { ...DEFAULT_PREFS, ...raw, units: { ...DEFAULT_PREFS.units, ...(raw.units ?? {}) } };
+    return isThemePref(p.theme) ? p : { ...p, theme: DEFAULT_PREFS.theme };
   } catch {
     return DEFAULT_PREFS;
   }
@@ -45,11 +47,7 @@ function savePrefs(p: Prefs): void {
 
 export function usePrefs() {
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
-  useEffect(() => {
-    const root = document.documentElement;
-    if (prefs.theme === "auto") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", prefs.theme);
-  }, [prefs.theme]);
+  useEffect(() => applyTheme(prefs.theme), [prefs.theme]);
   const update = useCallback((patch: Partial<Prefs>) => {
     setPrefs((p) => {
       const next = { ...p, ...patch, units: { ...p.units, ...(patch.units ?? {}) } };

@@ -13,7 +13,10 @@ import { tokensCss, type TokenTree } from "./tokens/tokens";
 function designTokens(): Plugin {
   const ID = "virtual:design-tokens.css";
   const RESOLVED = `\0${ID}`;
-  const files = { light: "color.tokens.json", dark: "color.dark.tokens.json", size: "size.tokens.json" } as const;
+  const files = {
+    dark: "color.dark.tokens.json", dim: "color.dim.tokens.json", oled: "color.oled.tokens.json", light: "color.tokens.json",
+    data: "data.tokens.json", size: "size.tokens.json",
+  } as const;
   const path = (f: string) => fileURLToPath(new URL(`./tokens/${f}`, import.meta.url));
   const read = (f: string) => JSON.parse(readFileSync(path(f), "utf8")) as TokenTree;
   return {
@@ -22,7 +25,10 @@ function designTokens(): Plugin {
     load(id) {
       if (id !== RESOLVED) return undefined;
       for (const f of Object.values(files)) this.addWatchFile(path(f));
-      return tokensCss({ light: read(files.light), dark: read(files.dark), size: read(files.size) });
+      return tokensCss({
+        dark: read(files.dark), dim: read(files.dim), oled: read(files.oled), light: read(files.light),
+        data: read(files.data), size: read(files.size),
+      });
     },
   };
 }

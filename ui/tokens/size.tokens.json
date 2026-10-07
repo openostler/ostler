@@ -1,19 +1,126 @@
 {
-  "$description": "Shell sizes per layout class (UI spec §3.1; HU-5 from §12.3), shared radii and the minimum chip height. Layout tokens become CSS custom properties on .app[data-layout=<class>].",
-  "radius": {
-    "md": {
+  "$description": "Visual design system spec §4-§5 and UI spec §3.1/§12.3: shared space, radius, motion, font and weight tokens on :root; per layout class the shell sizes and the type scale on .app[data-layout=<class>].",
+  "space": {
+    "1": {
+      "$type": "dimension",
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$description": "4-pt scale; card padding space-4 on a phone, space-6 on a head unit"
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "3": {
       "$type": "dimension",
       "$value": {
         "value": 12,
         "unit": "px"
       }
     },
-    "sm": {
+    "4": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "5": {
+      "$type": "dimension",
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      }
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      }
+    },
+    "10": {
+      "$type": "dimension",
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      }
+    },
+    "12": {
+      "$type": "dimension",
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      }
+    },
+    "16": {
+      "$type": "dimension",
+      "$value": {
+        "value": 64,
+        "unit": "px"
+      }
+    }
+  },
+  "radius": {
+    "xs": {
       "$type": "dimension",
       "$value": {
         "value": 6,
         "unit": "px"
-      }
+      },
+      "$description": "tags"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$description": "chips, inputs, buttons"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$description": "cards"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$description": "map overlays, side sheet"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      },
+      "$description": "bottom-sheet top"
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": {
+        "value": 9999,
+        "unit": "px"
+      },
+      "$description": "tab pill, toggles"
     }
   },
   "chip": {
@@ -25,6 +132,112 @@
       },
       "$description": "every strip chip is at least 48 px tall (UI spec §3.2)"
     }
+  },
+  "dur": {
+    "fast": {
+      "$type": "duration",
+      "$value": {
+        "value": 120,
+        "unit": "ms"
+      }
+    },
+    "base": {
+      "$type": "duration",
+      "$value": {
+        "value": 200,
+        "unit": "ms"
+      }
+    },
+    "slow": {
+      "$type": "duration",
+      "$value": {
+        "value": 320,
+        "unit": "ms"
+      },
+      "$description": "motion only for sheets, tab change and the alarm pulse; 0 under prefers-reduced-motion"
+    }
+  },
+  "ease": {
+    "standard": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0,
+        0,
+        1
+      ]
+    },
+    "exit": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.3,
+        0,
+        1,
+        1
+      ]
+    }
+  },
+  "font": {
+    "base": {
+      "$type": "fontFamily",
+      "$value": [
+        "Figtree",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Helvetica",
+        "Arial",
+        "sans-serif"
+      ]
+    },
+    "mono": {
+      "$type": "fontFamily",
+      "$value": [
+        "ui-monospace",
+        "SF Mono",
+        "Menlo",
+        "monospace"
+      ]
+    }
+  },
+  "weight": {
+    "regular": {
+      "$type": "fontWeight",
+      "$value": 400
+    },
+    "medium": {
+      "$type": "fontWeight",
+      "$value": 500
+    },
+    "semibold": {
+      "$type": "fontWeight",
+      "$value": 600
+    },
+    "bold": {
+      "$type": "fontWeight",
+      "$value": 700
+    }
+  },
+  "tracking": {
+    "hero": {
+      "$type": "dimension",
+      "$value": {
+        "value": -0.02,
+        "unit": "em"
+      }
+    },
+    "kicker": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0.08,
+        "unit": "em"
+      }
+    }
+  },
+  "unit-ratio": {
+    "$type": "number",
+    "$value": 0.45,
+    "$description": "unit size = digits × ratio, never below the class minimum"
   },
   "layout": {
     "hu5": {
@@ -67,19 +280,135 @@
         },
         "$description": "tighter than HU-7: the content area is 720×432"
       },
-      "type-primary": {
+      "type-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      },
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "type-title": {
         "$type": "dimension",
         "$value": {
           "value": 32,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 38,
+          "unit": "px"
+        }
+      },
+      "type-body": {
         "$type": "dimension",
         "$value": {
           "value": 24,
           "unit": "px"
         }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 26,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.hu5.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.hu5.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "hu7": {
@@ -121,19 +450,135 @@
           "unit": "px"
         }
       },
-      "type-primary": {
+      "type-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      },
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "type-title": {
         "$type": "dimension",
         "$value": {
           "value": 32,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 38,
+          "unit": "px"
+        }
+      },
+      "type-body": {
         "$type": "dimension",
         "$value": {
           "value": 24,
           "unit": "px"
         }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 26,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.hu7.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.hu7.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "hu9": {
@@ -172,19 +617,135 @@
           "unit": "px"
         }
       },
-      "type-primary": {
+      "type-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        }
+      },
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "type-title": {
         "$type": "dimension",
         "$value": {
           "value": 32,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 38,
+          "unit": "px"
+        }
+      },
+      "type-body": {
         "$type": "dimension",
         "$value": {
           "value": 24,
           "unit": "px"
         }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.hu9.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.hu9.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "huwide": {
@@ -223,20 +784,6 @@
           "unit": "px"
         }
       },
-      "type-primary": {
-        "$type": "dimension",
-        "$value": {
-          "value": 32,
-          "unit": "px"
-        }
-      },
-      "type-secondary": {
-        "$type": "dimension",
-        "$value": {
-          "value": 24,
-          "unit": "px"
-        }
-      },
       "vehicle-pane": {
         "$type": "dimension",
         "$value": {
@@ -251,6 +798,136 @@
           "value": 520,
           "unit": "px"
         }
+      },
+      "type-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        }
+      },
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "type-title": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 38,
+          "unit": "px"
+        }
+      },
+      "type-body": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.huwide.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.huwide.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "phone": {
@@ -290,19 +967,135 @@
           "unit": "px"
         }
       },
-      "type-primary": {
+      "type-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
         "$type": "dimension",
         "$value": {
           "value": 24,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-title": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 26,
+          "unit": "px"
+        }
+      },
+      "type-body": {
+        "$type": "dimension",
+        "$value": {
+          "value": 15,
+          "unit": "px"
+        }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 13,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
         "$type": "dimension",
         "$value": {
           "value": 16,
           "unit": "px"
         }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.phone.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.phone.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "tablet": {
@@ -341,19 +1134,135 @@
           "unit": "px"
         }
       },
-      "type-primary": {
+      "type-hero": {
         "$type": "dimension",
         "$value": {
-          "value": 24,
+          "value": 72,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 52,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-title": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-body": {
+        "$type": "dimension",
+        "$value": {
+          "value": 15,
+          "unit": "px"
+        }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 13,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
         "$type": "dimension",
         "$value": {
           "value": 16,
           "unit": "px"
         }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.tablet.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.tablet.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     },
     "desktop": {
@@ -392,19 +1301,135 @@
           "unit": "px"
         }
       },
-      "type-primary": {
+      "type-hero": {
         "$type": "dimension",
         "$value": {
-          "value": 24,
+          "value": 72,
           "unit": "px"
         }
       },
-      "type-secondary": {
+      "type-hero-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        }
+      },
+      "type-num-xl": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "type-num-xl-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 52,
+          "unit": "px"
+        }
+      },
+      "type-num-l": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-num-l-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "type-title": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-title-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 28,
+          "unit": "px"
+        }
+      },
+      "type-body": {
+        "$type": "dimension",
+        "$value": {
+          "value": 15,
+          "unit": "px"
+        }
+      },
+      "type-body-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "type-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 13,
+          "unit": "px"
+        }
+      },
+      "type-label-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "type-kicker": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-kicker-lh": {
         "$type": "dimension",
         "$value": {
           "value": 16,
           "unit": "px"
         }
+      },
+      "type-caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "type-caption-lh": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "type-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$description": "smallest text in this class when Parked (24 px in a Moving template)"
+      },
+      "type-primary": {
+        "$type": "dimension",
+        "$value": "{layout.desktop.type-title}",
+        "$description": "alias of type-title; retired in V3.5"
+      },
+      "type-secondary": {
+        "$type": "dimension",
+        "$value": "{layout.desktop.type-body}",
+        "$description": "alias of type-body; retired in V3.5"
       }
     }
   }

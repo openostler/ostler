@@ -14,7 +14,9 @@
  */
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import type { Note } from "../../api/schemas";
+import { token } from "../../lib/token";
 import { formatClock } from "../../state/playback";
+import { useTheme } from "../../state/theme";
 import { lanePaths, msOf, niceTicks, noteSpans, viewFor, xOf, yRange, zoomAround, zoomTo, type View } from "./chartScale";
 
 export type Lane = { name: string; label: string; unit: string };
@@ -38,7 +40,8 @@ function prepare(canvas: HTMLCanvasElement | null, w: number, h: number): Canvas
   return ctx;
 }
 
-const cssVar = (el: Element, name: string, dflt: string) => getComputedStyle(el).getPropertyValue(name).trim() || dflt;
+/** A design token on the chart's element (token(), so the colours follow the theme). */
+const cssVar = (el: Element, name: string, dflt: string) => token(name.replace(/^--/, ""), dflt, el);
 
 /** A tap this close (px) to a note line opens the note instead of seeking. */
 const NOTE_HIT_PX = 8;
@@ -83,6 +86,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = 
     return () => ro.disconnect();
   }, []);
 
+  const theme = useTheme(); // the colours are tokens: redraw on a theme switch
   const ranges = useMemo(() => lanes.map((l) => yRange(t, ch[l.name], view)), [lanes, t, ch, view]);
 
   // Data layer.
@@ -117,7 +121,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = 
       }
       ctx.restore();
     });
-  }, [lanes, ranges, t, ch, view, width, height]);
+  }, [lanes, ranges, t, ch, view, width, height, theme]);
 
   // Cursor + selection layer.
   useEffect(() => {
@@ -138,7 +142,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = 
     ctx.moveTo(x, 0);
     ctx.lineTo(x, height);
     ctx.stroke();
-  }, [time, view, width, height, sel]);
+  }, [time, view, width, height, sel, theme]);
 
   const xIn = (e: RPointerEvent) => e.clientX - (over.current?.getBoundingClientRect().left ?? 0);
 

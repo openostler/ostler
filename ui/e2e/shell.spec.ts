@@ -227,18 +227,25 @@ test("faults are a telltale in the strip, not a pop-up; tapping it opens the she
   await expect(telltale).not.toHaveClass(/attention/);
 });
 
-// Night is dark automatically (§2.7): the night tokens must hold contrast too.
-test.describe("night (dark) tokens", () => {
-  test.use({ colorScheme: "dark", viewport: { width: 1024, height: 600 }, isMobile: false });
+// Night is the default (visual spec §1), so every axe scan above runs on it; the other themes
+// must hold contrast too (spec §9: axe in every theme).
+for (const theme of ["dim", "oled", "light"] as const) {
+  test.describe(`${theme} theme`, () => {
+    test.use({ viewport: { width: 1024, height: 600 }, isMobile: false });
 
-  test("axe finds no WCAG 2.2 AA violations on Home and Diagnose in the dark set", async ({ page }) => {
-    await returningUser(page);
-    await page.goto("/");
-    await expect(page.getByRole("banner", { name: "Status" }).getByRole("button", { name: /^Connected/ })).toBeVisible();
-    await page.waitForTimeout(500);
-    const home = await axe(page);
-    await openDest(page, "Diagnose");
-    await expect(page.getByRole("navigation", { name: "Areas" })).toBeVisible();
-    expect({ home, diagnose: await axe(page) }).toEqual({ home: [], diagnose: [] });
+    test(`axe finds no WCAG 2.2 AA violations on Home and Diagnose in the ${theme} theme`, async ({ page }) => {
+      await returningUser(page);
+      await page.addInitScript((t) => {
+        localStorage.setItem("d2diag.v2", JSON.stringify({ consentDone: true, share: false, theme: t }));
+      }, theme);
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(page.getByRole("banner", { name: "Status" }).getByRole("button", { name: /^Connected/ })).toBeVisible();
+      await page.waitForTimeout(500);
+      const home = await axe(page);
+      await openDest(page, "Diagnose");
+      await expect(page.getByRole("navigation", { name: "Areas" })).toBeVisible();
+      expect({ home, diagnose: await axe(page) }).toEqual({ home: [], diagnose: [] });
+    });
   });
-});
+}

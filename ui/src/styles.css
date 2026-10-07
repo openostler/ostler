@@ -19,11 +19,9 @@
    (imported before this file in main.tsx). Status hues are validated (dataviz
    validate_palette.js) for both modes: light passes every check; dark ok/warn sits in the
    CVD 6–8 band, legal because status never relies on colour alone.
-   Theme: follows the phone (prefers-color-scheme) unless <html data-theme> overrides. */
-:root {
-  --font-base: Figtree, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
-}
+   Theme (visual design system spec §2): Night at :root; <html data-theme="dim|oled|light"> picks
+   another; Auto is resolved to one of them in JS (state/theme.ts). Fonts: --font-base/--font-mono
+   are tokens too. */
 /* Legacy aliases used by older components — map onto the tokens above. */
 :root {
   --bg-body: var(--bg); --bg-surface: var(--raised); --bg-card: var(--surface); --bg-muted: var(--sunken);
@@ -96,6 +94,7 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-row { display: flex; gap: 8px; }
 .btn-row > .btn { flex: 1; }
+.theme-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
 .iconbtn {
   border: 1px solid var(--border-emph); background: var(--bg-surface); color: var(--fg2); border-radius: 9999px;
   height: 36px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; font-size: 12px;
@@ -290,16 +289,27 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
 .tile.hero { grid-column: span 1; display: flex; flex-direction: column; gap: 4px; }
 .tile .gwrap2 { position: relative; width: 100%; aspect-ratio: 1 / 0.82; }
 
-/* Gauge v2 */
-.g2 { width: 100%; height: 100%; display: block; }
-.g2 .track { fill: none; stroke: var(--sunken); stroke-width: 10; stroke-linecap: round; }
+/* Gauge v2, calm (visual spec §1.4, §8): the in-range arc is neutral text-2, never the accent;
+   only an out-of-range value turns arc and number alarm. The readout is HTML over the drawing,
+   sized from the gauge's own box (container units: the SVG is min(100cqh, 92cqw) tall, its arc
+   centre 4/92 of that below the middle) and capped at the class's --type-num-xl. */
+.gauge { position: relative; width: 100%; height: 100%; container-type: size; }
+.g2 { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.g2 .track { fill: none; stroke: var(--surface-3); stroke-width: 10; stroke-linecap: round; }
 .g2 .band { fill: none; stroke: var(--band); stroke-width: 10; }
-.g2 .val { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 0.3s ease; }
+.g2 .val { fill: none; stroke: var(--text-2); stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray var(--dur-slow) var(--ease-standard); }
 .g2 .val.alarm { stroke: var(--alarm); }
 .g2 .tick { stroke: var(--text-3); stroke-width: 1.5; }
-.g2 .num { fill: var(--text-1); font-size: 23px; font-weight: 700; text-anchor: middle; font-variant-numeric: tabular-nums; }
-.g2 .unit { fill: var(--text-2); font-size: 11px; font-weight: 600; text-anchor: middle; }
 .g2 .lim { fill: var(--text-3); font-size: 9px; font-weight: 600; text-anchor: middle; font-variant-numeric: tabular-nums; }
+.g2-read {
+  --g-num: min(var(--type-num-xl, 40px), 30cqh, 27.6cqw);
+  position: absolute; left: 50%; top: calc(50% + 0.0435 * min(100cqh, 92cqw)); transform: translate(-50%, -50%);
+  pointer-events: none; white-space: nowrap; text-align: center;
+}
+.g2-read > span { display: block; }
+.g2-num { font-size: var(--g-num); line-height: 1; font-weight: var(--weight-bold); color: var(--text-1); font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-hero); }
+.g2-unit { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: max(var(--type-min, 12px), calc(var(--g-num) * var(--unit-ratio))); line-height: 1.1; font-weight: var(--weight-semibold); color: var(--text-2); }
+.gauge.alarm .g2-num { color: var(--alarm); }
 
 /* Inputs: compact stat rows */
 .srow {

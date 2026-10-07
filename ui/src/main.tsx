@@ -12,6 +12,11 @@ import "./styles.css";
 import "./shell/shell.css";
 // Composition root: each vehicle pack registers its Drive views (vehicles/registry.ts).
 import "./vehicles/lr_d2";
+import { loadPrefs } from "./state/prefs";
+import { applyTheme } from "./state/theme";
+
+// The theme before the first render (Auto resolved; visual spec §2), so nothing flashes.
+applyTheme(loadPrefs().theme);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

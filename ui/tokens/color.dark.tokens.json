@@ -1,53 +1,99 @@
 {
-  "$description": "Calm-instrument colours, dark: the night set, applied by prefers-color-scheme or data-theme=dark. Same names as color.tokens.json.",
+  "$description": "Visual design system spec §3.1 and §5 (ui/tokens, W3C DTCG). Night (dark), the default theme: :root. Same names in every colour file (tokens.test.ts).",
   "color": {
     "bg": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0549,
-          0.0627,
-          0.0706
+          0.0431,
+          0.051,
+          0.0627
         ],
-        "hex": "#0e1012"
-      }
+        "hex": "#0b0d10"
+      },
+      "$description": "page, map fallback"
     },
-    "surface": {
+    "surface-1": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0863,
-          0.098,
-          0.1098
+          0.0784,
+          0.0941,
+          0.1137
         ],
-        "hex": "#16191c"
-      }
+        "hex": "#14181d"
+      },
+      "$description": "cards (no border)"
     },
-    "raised": {
+    "surface-2": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.1098,
+          0.1059,
           0.1255,
-          0.1412
+          0.149
         ],
-        "hex": "#1c2024"
-      }
+        "hex": "#1b2026"
+      },
+      "$description": "sheets, popovers, strip, tab bar"
     },
-    "sunken": {
+    "surface-3": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
           0.1373,
-          0.1569,
-          0.1765
+          0.1647,
+          0.1922
         ],
-        "hex": "#23282d"
-      }
+        "hex": "#232a31"
+      },
+      "$description": "inputs, segmented track, gauge track"
+    },
+    "surface-glass": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.0784,
+          0.0941,
+          0.1137
+        ],
+        "alpha": 0.859,
+        "hex": "#14181d"
+      },
+      "$description": "sheets over the map; blur 12 px on phone/desktop only"
+    },
+    "line": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 0.078,
+        "hex": "#ffffff"
+      },
+      "$description": "hairlines inside cards and lists"
+    },
+    "line-strong": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "alpha": 0.141,
+        "hex": "#ffffff"
+      },
+      "$description": "input outline, focus fallback"
     },
     "band": {
       "$type": "color",
@@ -59,91 +105,100 @@
           0.2902
         ],
         "hex": "#3a424a"
-      }
-    },
-    "line": {
-      "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.149,
-          0.1686,
-          0.1882
-        ],
-        "hex": "#262b30"
-      }
-    },
-    "line-strong": {
-      "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.2078,
-          0.2353,
-          0.2627
-        ],
-        "hex": "#353c43"
-      }
+      },
+      "$description": "normal band on a track"
     },
     "text-1": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.9451,
-          0.9529,
-          0.9608
+          0.9333,
+          0.949,
+          0.9647
         ],
-        "hex": "#f1f3f5"
-      }
+        "hex": "#eef2f6"
+      },
+      "$description": "values, titles"
     },
     "text-2": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
+          0.6627,
           0.702,
-          0.7294,
-          0.7569
+          0.7412
         ],
-        "hex": "#b3bac1"
-      }
+        "hex": "#a9b3bd"
+      },
+      "$description": "labels, units, in-range gauge arc"
     },
     "text-3": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.5412,
-          0.5765,
-          0.6118
+          0.4902,
+          0.5333,
+          0.5765
         ],
-        "hex": "#8a939c"
-      }
+        "hex": "#7d8893"
+      },
+      "$description": "captions; never on surface-3"
     },
     "accent": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.3098,
-          0.549,
-          0.9098
+          0.1333,
+          0.651,
+          0.8784
         ],
-        "hex": "#4f8ce8"
-      }
+        "hex": "#22a6e0"
+      },
+      "$description": "interactive and live only"
+    },
+    "accent-hi": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3608,
+          0.7686,
+          0.9412
+        ],
+        "hex": "#5cc4f0"
+      },
+      "$description": "pressed; glow colour"
+    },
+    "accent-soft": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1333,
+          0.651,
+          0.8784
+        ],
+        "alpha": 0.122,
+        "hex": "#22a6e0"
+      },
+      "$description": "selected chip, tab pill"
     },
     "on-accent": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0.0549,
-          0.0627,
-          0.0706
+          0.0431,
+          0.051,
+          0.0627
         ],
-        "hex": "#0e1012"
-      }
+        "hex": "#0b0d10"
+      },
+      "$description": "text on accent"
     },
     "ok": {
       "$type": "color",
@@ -155,7 +210,8 @@
           0.3882
         ],
         "hex": "#2f9e63"
-      }
+      },
+      "$description": "ISO 2575; icon, edge, fill"
     },
     "warn": {
       "$type": "color",
@@ -167,7 +223,8 @@
           0.102
         ],
         "hex": "#bf8a1a"
-      }
+      },
+      "$description": "ISO 2575; icon, edge, fill (Day: 3.5:1 on white, icons and edges only)"
     },
     "alarm": {
       "$type": "color",
@@ -179,31 +236,8 @@
           0.4902
         ],
         "hex": "#ef6a7d"
-      }
-    },
-    "warn-bg": {
-      "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.1804,
-          0.149,
-          0.0706
-        ],
-        "hex": "#2e2612"
-      }
-    },
-    "alarm-bg": {
-      "$type": "color",
-      "$value": {
-        "colorSpace": "srgb",
-        "components": [
-          0.2,
-          0.0902,
-          0.1098
-        ],
-        "hex": "#33171c"
-      }
+      },
+      "$description": "ISO 2575; icon, edge, fill"
     },
     "ok-bg": {
       "$type": "color",
@@ -215,21 +249,290 @@
           0.1137
         ],
         "hex": "#13281d"
-      }
+      },
+      "$description": "status tint; words on it use text-1"
+    },
+    "warn-bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.1804,
+          0.149,
+          0.0706
+        ],
+        "hex": "#2e2612"
+      },
+      "$description": "status tint; words on it use text-1"
+    },
+    "alarm-bg": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.2,
+          0.0902,
+          0.1098
+        ],
+        "hex": "#33171c"
+      },
+      "$description": "status tint; words on it use text-1"
+    },
+    "warn-ink": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.749,
+          0.5412,
+          0.102
+        ],
+        "hex": "#bf8a1a"
+      },
+      "$description": "warn-coloured text"
+    },
+    "info": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.5412,
+          0.6431,
+          0.749
+        ],
+        "hex": "#8aa4bf"
+      },
+      "$description": "neutral notices; never the accent"
     },
     "overlay": {
       "$type": "color",
       "$value": {
         "colorSpace": "srgb",
         "components": [
-          0,
-          0,
-          0
+          0.0,
+          0.0,
+          0.0
         ],
-        "hex": "#000000",
-        "alpha": 0.65
+        "alpha": 0.651,
+        "hex": "#000000"
       },
       "$description": "sheet scrim"
+    },
+    "bg-glow": {
+      "$type": "gradient",
+      "$value": "radial-gradient(120% 60% at 50% 0%, #12304a66, transparent)",
+      "$description": "top glow on phone, tablet and desktop; off on head units and in Drive mode (CSS gradient string)"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "{color.surface-1}",
+      "$description": "legacy alias, retired in V3.5"
+    },
+    "raised": {
+      "$type": "color",
+      "$value": "{color.surface-2}",
+      "$description": "legacy alias, retired in V3.5"
+    },
+    "sunken": {
+      "$type": "color",
+      "$value": "{color.surface-3}",
+      "$description": "legacy alias, retired in V3.5"
+    }
+  },
+  "shadow": {
+    "elev-1": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "alpha": 0.051,
+            "hex": "#ffffff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": true
+        }
+      ],
+      "$description": "dark themes: a surface step plus a 1 px top highlight, no drop shadow"
+    },
+    "elev-2": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "alpha": 0.051,
+            "hex": "#ffffff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": true
+        }
+      ]
+    },
+    "elev-3": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "alpha": 0.051,
+            "hex": "#ffffff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 1,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          },
+          "inset": true
+        },
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "alpha": 0.4,
+            "hex": "#000000"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": -8,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 24,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ],
+      "$description": "sheets over the map"
+    },
+    "glow-accent": {
+      "$type": "shadow",
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.1333,
+              0.651,
+              0.8784
+            ],
+            "alpha": 0.4,
+            "hex": "#22a6e0"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 1,
+            "unit": "px"
+          }
+        },
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.1333,
+              0.651,
+              0.8784
+            ],
+            "alpha": 0.251,
+            "hex": "#22a6e0"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 24,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ],
+      "$description": "the one glowing element (data-glow); Night only"
     }
   }
 }
