@@ -2,11 +2,11 @@
 title: "ADR-0042 — Ecosystem: small core, add-ons are the product"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, references/research/dmd2_features.md, references/research/dmd_hub_features.md, GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds four add-ons from the DMD2 and DMD Hub research: `ostler-app-hub` with its `ostler-hub` server (Ostler Community), `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone`; puts the `ShellInput` D-pad model and per-trip sharing in core, and Crash SOS in core Security later.
+  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. A Proposed amendment (2026-10-07, DMD round), awaiting the owner, adds four add-ons from the DMD2 and DMD Hub research: `ostler-app-hub` (open) with its closed, Ostler-run `ostler-hub` service (Ostler Community: publishing, forum, vehicle development, wiki), `ostler-app-navigation`, `ostler-app-alerts` and `ostler-app-phone`; puts the `ShellInput` D-pad model and per-trip sharing in core, and Crash SOS in core Security later.
 ---
 
 # ADR-0042 — Ecosystem: small core, add-ons are the product
@@ -182,18 +182,33 @@ social side and per-trip sharing at chosen data levels. The feature-by-feature m
 
    | Add-on | Repo(s) | What it is | Spec |
    |---|---|---|---|
-   | **Ostler Community** | `ostler-app-hub` (shell add-on) and `ostler-hub` (AGPL server and web app: Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles; web in TS/React on the shell's kit and tokens) | Publish trips and routes, help threads for decoding and diagnosis, clubs, events, Discover; self-hostable with one official instance; a device may link to several hubs; no federation before H5, then outbound-only with an allowlist | [community hub](../specs/2026-10-07-community-hub-design.md) (draft) |
+   | **Ostler Community** | `ostler-app-hub` (open AGPL shell add-on, holding the public API contract) and `ostler-hub` (a **closed service run by Ostler**, one official instance, not self-hostable, in its own private repo separate from `ostler-cloud`: Python ASGI, PostgreSQL + PostGIS, S3-compatible storage, PMTiles; web in TS/React on the shell's kit and tokens) | Publish trips and routes, help threads for decoding and diagnosis, the project **forum** (categories per make and model, Q&A, solved, search, notifications), the **vehicle-development workspace** (decode cards, vehicle projects, data-only PRs to pack repos through a GitHub App), the **wiki** (vehicle pages generated from pack releases plus community pages), clubs, events, Discover; no federation | [community hub](../specs/2026-10-07-community-hub-design.md) (draft) |
    | **Navigation** | `ostler-app-navigation` | Routing on the Brain with an open engine (licence to verify), turn-by-turn and voice, GPX library, import/export and follow, planner, roadbook, curated routes, route sharing to the hub. It absorbs the "routes" and "roadbook" ideas. Guidance renders through the `map` template's next manoeuvre while Moving; the speed-limit tint is off by default, never logged or scored; no speed cameras in v1 | [navigation](../specs/2026-10-07-navigation-addon-design.md) (draft) |
    | **Alerts** | `ostler-app-alerts` | UK official weather, flood and closure alerts, free and opt-in; later | needs spec |
    | **Phone** | `ostler-app-phone` | Phone mirroring (notifications, calls), Parked-only content; later | needs spec |
 
-   **Ostler Community is not in `ostler-cloud`.** Decision 7 holds: nothing in core needs the
-   hub; the official instance is one optional host, and safety, sharing and decode help are
-   never charged for (only hosted storage or relay). The hub has no points or ranks, no public
-   feed for strangers (Discover instead; an opt-in Following feed in `ostler-app-hub` only), and
-   shares out through Web Share, copy link, QR and embed, never social-network buttons. Its H1
-   accepts track, trip and log files only (no images; photos at H4 with on-device blur).
-   Minimum age 16; live follow and public profiles 18.
+   **Ostler Community is a closed add-on service, outside core.** It sits outside the small core
+   on the add-on side, like Ostler Cloud: an Ostler-run server reached only through its open
+   add-on, under ADR-0013's cloud boundary (ADR-0034 proposed amendment). Decision 7 holds as a
+   hard rule and, because the hub is closed and single-operator, gains these lines:
+   - **inside core, nothing:** no core app, contract or test needs `ostler-app-hub` or the hub;
+     the add-on degrades to local function (shares stay on the device; help falls back to file,
+     relay link or the pack repo's issue form);
+   - **outside, the hub only:** the forum, the wiki, vehicle projects and public pages;
+   - **export everything** from the hub in open formats (posts, wiki edits, decode cards, items,
+     club data for club owners), plus a monthly public CC BY-SA dump of public knowledge and a
+     90-day shutdown promise;
+   - **pack contributions never need the hub:** the pack repos on GitHub stay the source of
+     truth and accept issues and PRs directly;
+   - **the client stays open:** encryption of help attachments and what leaves the device are
+     checkable in `ostler-app-hub`.
+
+   Safety, sharing and decode help are never charged for (only extra hosted storage). The hub has
+   no points, ranks or votes, no direct messages, no public feed for strangers (Discover instead;
+   an opt-in Following chip in `ostler-app-hub` only), and shares out through Web Share, copy
+   link, QR and embed, never social-network buttons. Its H1 accepts track, trip and log files
+   only (no images; photos at H4 with on-device blur). Minimum age 16; live follow and public
+   profiles 18.
 2. **Core gains, it does not grow a destination.** These stay in `ostler`:
    - **`ShellInput`** in the shell: a D-pad input model (keyboard arrows, Enter and Escape, HID
      remotes, the Gamepad API, and read-only steering-wheel button events from packs) with focus
@@ -228,9 +243,12 @@ and Drive mode by keyboard only and asserts that gated confirms open with Cancel
 1. **Add the four add-ons?** Recommend: yes, Ostler Community (`ostler-app-hub` + `ostler-hub`)
    and Navigation now as specs, Alerts and Phone named for later. Alternative: Community and
    Navigation only; decide Alerts and Phone when they are specced.
-2. **Community hub outside `ostler-cloud`?** Recommend: yes, an open, self-hostable AGPL repo
-   with one official instance, so the exit guarantee holds. Alternative: the official instance
-   only, inside the closed `ostler-cloud`.
+2. **Community hub: closed, Ostler-run, outside core and separate from `ostler-cloud`?**
+   Recommend: yes (owner's direction): a closed service in its own private repo, one official
+   instance, not self-hostable, reached through the open `ostler-app-hub`; decision 7 holds with
+   the lines above (nothing in core needs it, export everything, pack contributions never need
+   it). Alternative: the previous draft, an open, self-hostable AGPL hub with one official
+   instance; or the hub inside the closed `ostler-cloud`.
 3. **One navigation add-on that absorbs routes and roadbook?** Recommend: yes. Alternative:
    separate `ostler-app-routes` and `ostler-app-roadbook` repos.
 4. **ShellInput in core with U2?** Recommend: yes. Alternative: a later phase, or an
@@ -249,3 +267,9 @@ and Drive mode by keyboard only and asserts that gated confirms open with Cancel
   `ostler-app-hub` + `ostler-hub`, `ostler-app-navigation`, `ostler-app-alerts`,
   `ostler-app-phone`; ShellInput and per-trip sharing in core; Crash SOS in core Security later.
   The accepted text above is unchanged.
+- 2026-10-07 — v1.2, the Proposed amendment (DMD round) revised in place for the owner's
+  direction: Ostler Community becomes a closed, Ostler-run service (not self-hostable, its own
+  private repo separate from `ostler-cloud`) that is also the forum, the vehicle-development
+  workspace and the wiki; the open `ostler-app-hub` stays; decision 7's exit guarantee gains
+  explicit inside/outside lines for the hub; DMD-round decision 2 revised. The accepted text
+  above is unchanged.

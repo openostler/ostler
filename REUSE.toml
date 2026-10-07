@@ -72,9 +72,11 @@ SPDX-FileCopyrightText = [
 ]
 SPDX-License-Identifier = "AGPL-3.0-or-later AND MIT"
 
-# The research inventory is part of the docs.
+# The research inventory and the design hand-off index are part of the docs. Design files
+# (PNG, HTML) added under references/design/ get their own annotation, naming their
+# copyright holder, in the commit that adds them (references/design/2026-10/README.md §1).
 [[annotations]]
-path = "references/research/*.json"
+path = ["references/research/*.json", "references/design/**/*.json"]
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
