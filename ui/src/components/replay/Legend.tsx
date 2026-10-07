@@ -6,7 +6,11 @@ import type { Units } from "../../lib/format";
 import { showValue } from "./labels";
 import { legendGradient, type Range, type TraceLane } from "./trace";
 
-export type LegendTrace = { lane: TraceLane; channel: string; label: string; range: Range | null; unit: string; colors: readonly string[] };
+export type LegendTrace = {
+  lane: TraceLane; channel: string; label: string; range: Range | null; unit: string; colors: readonly string[];
+  /** Speed: the six band labels under hard-edged steps (visual spec §3.3), in `bandUnit`. */
+  bands?: readonly string[]; bandUnit?: string;
+};
 
 /** The trace colour keys: per trace a channel button (opens the picker), the gradient and
  * min / max at its ends; "+ Add trace" for B; the Classic (two-colour gradient) option. */
@@ -34,7 +38,13 @@ export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic 
             </button>
             <div className="replay-legend-key" role="img"
               aria-label={t.range && lo && hi ? `Trace ${L}, ${t.label} from ${lo.text} to ${hi.text} ${hi.unit}` : `Trace ${L}, ${t.label}: no values`}>
-              <div className="replay-legend-bar" style={{ background: legendGradient(t.colors) }} />
+              <div className="replay-legend-bar" style={{ background: legendGradient(t.colors, !!t.bands) }} />
+              {t.bands ? (
+                <div className="replay-legend-bands small" data-testid={`legend${sfx}-bands`}>
+                  {t.bands.map((b) => <span key={b}>{b}</span>)}
+                  <span className="replay-legend-bandunit">{t.bandUnit}</span>
+                </div>
+              ) : null}
               <div className="replay-legend-ends small">
                 <span data-testid={`legend${sfx}-min`}>{lo ? `${lo.text} ${lo.unit}` : "–"}</span>
                 <span data-testid={`legend${sfx}-max`}>{hi ? `${hi.text} ${hi.unit}` : "–"}</span>
@@ -46,7 +56,7 @@ export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic 
       <div className="replay-legend-tools">
         {onAddB ? <button type="button" className="rchip" onClick={onAddB}>+ Add trace</button> : null}
         <button type="button" className="rchip" aria-pressed={classic} onClick={() => onClassic(!classic)}
-          title="Two-colour gradients: blue → red (trace A), green → purple (trace B)">Classic colours</button>
+          title="Two-colour gradients for channels other than speed: blue → red (trace A), green → purple (trace B)">Classic colours</button>
       </div>
     </div>
   );

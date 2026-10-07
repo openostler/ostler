@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type Layer = { id: string; type: string; source?: string; layout?: Record<string, unknown>; paint?: Record<string, unknown> };
 
-const fake = vi.hoisted(() => ({ map: null as null | FakeMapT, loaded: true }));
+const fake = vi.hoisted(() => ({ map: null as null | FakeMapT, loaded: true, opts: null as null | Record<string, unknown>, attrib: [] as unknown[] }));
 type FakeMapT = {
   layers: Layer[];
   sources: Record<string, Record<string, unknown> & { setData: ReturnType<typeof vi.fn> }>;
@@ -34,7 +34,7 @@ vi.mock("maplibre-gl", () => {
     handlers: FakeMapT["handlers"] = {};
     touchZoomRotate = { disableRotation: () => undefined };
     setStyle = vi.fn();
-    constructor() { fake.map = this as unknown as FakeMapT; }
+    constructor(opts: Record<string, unknown>) { fake.map = this as unknown as FakeMapT; fake.opts = opts; }
     addControl() { return this; }
     on(ev: string, fn: (e: unknown) => void) { (this.handlers[ev] ??= []).push(fn); return this; }
     isStyleLoaded() { return fake.loaded; }
@@ -58,11 +58,14 @@ vi.mock("maplibre-gl", () => {
     remove() { return this; }
   }
   class Control { }
-  return { Map: FakeMap, Marker, AttributionControl: Control, NavigationControl: Control, setWorkerUrl: () => undefined };
+  class Attribution { constructor(o: unknown) { fake.attrib.push(o); } }
+  return { Map: FakeMap, Marker, AttributionControl: Attribution, NavigationControl: Control, setWorkerUrl: () => undefined };
 });
 
+import type { Theme } from "../../state/theme";
 import { ESRI_IMAGERY } from "./basemap";
-import { createTraceMap } from "./maplibre";
+import { blankStyle, createTraceMap } from "./maplibre";
+import { OPENFREEMAP_ATTRIBUTION, OPENFREEMAP_STYLES, styleUrl } from "./mapStyle";
 import type { FeatureCollection } from "./trace";
 
 const fc = (b: number): FeatureCollection => ({
@@ -70,11 +73,11 @@ const fc = (b: number): FeatureCollection => ({
   features: [{ type: "Feature", properties: { b }, geometry: { type: "LineString", coordinates: [[0, 0], [0.001, 0]] } }],
 });
 
-function make(basemap: "streets" | "satellite" | "hybrid" = "streets") {
+function make(basemap: "streets" | "satellite" | "hybrid" = "streets", theme?: Theme) {
   const h = createTraceMap({
     container: document.createElement("div"), bbox: [0, 0, 1, 1],
     traces: { a: fc(3), b: null }, colors: { a: ["match", 1], b: ["match", 2] },
-    basemap, satellite: ESRI_IMAGERY,
+    basemap, satellite: ESRI_IMAGERY, theme,
   });
   return { h, map: fake.map! };
 }
@@ -82,7 +85,9 @@ const ids = (m: FakeMapT) => m.layers.map((l) => l.id);
 const vis = (m: FakeMapT, id: string) => m.layers.find((l) => l.id === id)!.layout?.visibility;
 
 describe("replay map handle", () => {
-  beforeEach(() => { fake.map = null; fake.loaded = true; });
+  beforeEach(() => { fake.map = null; fake.loaded = true; fake.opts = null; fake.attrib = []; });
+  // jsdom has no token CSS: token("trace-casing") and token("bg") fall back to Night's bg
+  const NIGHT_BG = "#0b0d10";
 
   it("adds both lanes with ±3 px line-offset, round joins, casings below their lines, imagery below the labels", () => {
     const { map } = make();
@@ -99,7 +104,8 @@ describe("replay map handle", () => {
     expect(map.sources.satellite!.tiles).toEqual([ESRI_IMAGERY.tiles]);
     expect(map.sources.satellite!.attribution).toBe(ESRI_IMAGERY.attribution);
     expect(vis(map, "satellite")).toBe("none");
-    expect(get("trace-a-casing").paint!["line-color"]).toBe("#ffffff");
+    expect(get("trace-a-casing").paint!["line-color"]).toBe(NIGHT_BG);
+    expect(get("trace-a-casing").paint!["line-width"]).toBe(8); // a 2 px casing round the 4 px line
   });
 
   it("switching basemap toggles visibility only: the trace layers and their data survive", () => {
@@ -119,7 +125,7 @@ describe("replay map handle", () => {
     expect(vis(map, "place_label")).toBe("visible");
     h.setBasemap("streets");
     expect(vis(map, "satellite")).toBe("none");
-    expect(map.layers.find((l) => l.id === "trace-a-casing")!.paint!["line-color"]).toBe("#ffffff");
+    expect(map.layers.find((l) => l.id === "trace-a-casing")!.paint!["line-color"]).toBe(NIGHT_BG);
     expect(ids(map)).toEqual(before);
     expect(map.setStyle).not.toHaveBeenCalled();
     expect(map.sources["trace-b"]!.setData).toHaveBeenCalledWith(fc(7));
@@ -160,7 +166,7 @@ describe("replay map handle", () => {
     expect(onBlank).toHaveBeenCalledTimes(1);
     expect(h.isBlank()).toBe(true);
     h.retry();
-    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/liberty", { diff: false });
+    expect(map.setStyle).toHaveBeenLastCalledWith("https://tiles.openfreemap.org/styles/dark", { diff: false });
     expect(h.isBlank()).toBe(false);
     h.destroy();
     warn.mockRestore();
@@ -180,5 +186,37 @@ describe("replay map handle", () => {
     expect(b().paint!["line-color"]).toEqual(["match", ["get", "b"], 5, "#123456", "#9aa1a9"]);
     h.setColor("b", []);
     expect(b().paint!["line-color"]).toBe("#9aa1a9");
+  });
+
+  it("follows the theme: OpenFreeMap dark in every night theme, positron in Day, from one place (visual spec §7)", () => {
+    expect(styleUrl("dark")).toBe(OPENFREEMAP_STYLES.night);
+    expect(styleUrl("dim")).toBe("https://tiles.openfreemap.org/styles/dark");
+    expect(styleUrl("oled")).toBe("https://tiles.openfreemap.org/styles/dark");
+    expect(styleUrl("light")).toBe("https://tiles.openfreemap.org/styles/positron");
+    make("streets", "light");
+    expect(fake.opts!.style).toBe(OPENFREEMAP_STYLES.day);
+    const { h, map } = make("streets", "dark");
+    expect(fake.opts!.style).toBe(OPENFREEMAP_STYLES.night);
+    h.setTheme("dim"); // same style: no reload
+    expect(map.setStyle).not.toHaveBeenCalled();
+    h.setTheme("light");
+    expect(map.setStyle).toHaveBeenLastCalledWith(OPENFREEMAP_STYLES.day, { diff: false });
+    expect(h.isReady()).toBe(false); // until the Day style loads and our layers are re-added
+  });
+
+  it("scrolls the page with one finger (cooperative gestures) and keeps the credits in a collapsed control", () => {
+    make();
+    expect(fake.opts!.cooperativeGestures).toBe(true);
+    expect(fake.opts!.attributionControl).toBe(false); // ours instead of the default
+    expect(fake.attrib).toEqual([{ compact: true, customAttribution: OPENFREEMAP_ATTRIBUTION }]);
+    expect(OPENFREEMAP_ATTRIBUTION).toMatch(/OpenFreeMap.*&copy; OpenMapTiles.*openstreetmap\.org\/copyright.*OpenStreetMap/);
+  });
+
+  it("draws the offline fallback on the bg token, never a fixed light grey", () => {
+    expect(blankStyle("#123456").layers[0]).toEqual({ id: "bg", type: "background", paint: { "background-color": "#123456" } });
+    expect(blankStyle().layers[0]!.paint).toEqual({ "background-color": NIGHT_BG });
+    document.documentElement.style.setProperty("--bg", "#f3f5f7");
+    expect(blankStyle().layers[0]!.paint).toEqual({ "background-color": "#f3f5f7" });
+    document.documentElement.style.removeProperty("--bg");
   });
 });

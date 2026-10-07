@@ -60,6 +60,8 @@ test("open the demo session, scrub, play and pause", async ({ page }) => {
 
   // the map (or its no-WebGL stand-in) and the attribution when tiles are shown
   await expect(page.locator("[data-map-status]")).not.toHaveAttribute("data-map-status", "loading");
+  // Night by default: no light slab behind the map, whatever the tiles do (visual spec §7)
+  await expect(page.locator(".replay-map")).toHaveCSS("background-color", "rgb(11, 13, 16)");
 
   const now = page.getByTestId("clock-now");
   const start = await now.textContent();

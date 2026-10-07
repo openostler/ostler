@@ -115,8 +115,9 @@ libraries; their licence notices travel inside the bundle and in `LICENSES/`:
   unicode ranges, every name record kept. Figtree declares no Reserved Font Name. The licence
   text is `LICENSES/OFL-1.1.txt`; the font is never sold on its own.
 
-Map tiles and styles (OpenFreeMap, Esri imagery) are fetched at runtime and are not
-shipped.
+Map tiles and styles (OpenFreeMap `dark` and `positron`, design CC-BY 4.0 by OpenMapTiles and
+CARTO, data © OpenStreetMap contributors under ODbL; Esri imagery) are fetched at runtime and
+are not shipped; their credits stay in the map's attribution control.
 
 ## UI test tooling (dev-only, never shipped)
 

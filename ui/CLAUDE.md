@@ -41,7 +41,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   (sensor outside its `normal` band, faults appearing); never stored. `FlagSheet` shows one;
   the flag manager is the Flags section of `RecordingOptions` ("Recording & flags").
 - `src/screens/Logs.tsx` + `src/components/replay/` — session browser and replay (MapLibre map,
-  Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/maplibre.ts` is the only
+  Canvas chart, transport bar) over `/sessions` (ADR-0009). `replay/mapStyle.ts` is the one place a
+  basemap style URL comes from (theme → OpenFreeMap dark/positron today, the Brain's styles
+  later); speed always wears the `speed-*` ramp in absolute bands (`trace.ts`). `replay/maplibre.ts` is the only
   module that imports `maplibre-gl`; it is reached through `import()` so the main chunk stays
   small (`maplibreChunk.test.ts` enforces it). `src/state/playback.ts` is the shared cursor.
 - `src/state/replay.tsx` + `replayState.ts` — whole-app replay (ADR-0010): while a session is open,

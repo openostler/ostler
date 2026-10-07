@@ -19,7 +19,8 @@ import { formatClock } from "../../state/playback";
 import { useTheme } from "../../state/theme";
 import { lanePaths, msOf, niceTicks, noteSpans, viewFor, xOf, yRange, zoomAround, zoomTo, type View } from "./chartScale";
 
-export type Lane = { name: string; label: string; unit: string };
+/** A chart lane; `tone` is the colour token (default `series-<n>`; speed uses `speed-4`). */
+export type Lane = { name: string; label: string; unit: string; tone?: string };
 
 const LANE_H = 84;
 /** Top band of each lane kept for its direct label, so the line never runs under it. */
@@ -108,7 +109,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = 
       ctx.lineTo(width, LANE_H - 0.5);
       ctx.stroke();
       if (r) {
-        ctx.strokeStyle = cssVar(el, `--series-${i + 1}`, "#2a78d6");
+        ctx.strokeStyle = cssVar(el, `--${l.tone ?? `series-${i + 1}`}`, "#6a7de6");
         ctx.lineWidth = 2;
         ctx.lineJoin = "round";
         ctx.translate(0, LABEL_H);
@@ -232,7 +233,7 @@ export function Chart({ t, ch, lanes, time, start, end, offset, onSeek, notes = 
           ))}
           {lanes.map((l, i) => (
             <div key={l.name} className="replay-lane-label small" style={{ top: i * (LANE_H + GAP) }}>
-              <span className="replay-swatch" style={{ background: `var(--series-${i + 1})` }} aria-hidden="true" />
+              <span className="replay-swatch" style={{ background: `var(--${l.tone ?? `series-${i + 1}`})` }} aria-hidden="true" />
               {l.label}{l.unit ? <span className="muted"> · {l.unit}</span> : null}
             </div>
           ))}

@@ -82,16 +82,16 @@
 
 /* ---- map ---- */
 .card.replay-mapcard { padding: 0; overflow: hidden; }
-.replay-map { position: relative; height: clamp(220px, 42vh, 420px); background: #eef0f2; }
+.replay-map { position: relative; height: clamp(220px, 42vh, 420px); background: var(--bg); }
 .replay-map-gl { width: 100%; height: 100%; }
 .replay-map-note {
   position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 6px; font-size: 11px;
-  background: rgba(255, 255, 255, 0.9); color: #444c55;
+  background: var(--surface-glass); color: var(--text-2);
 }
-.replay-map-empty { display: grid; place-items: center; height: 100%; color: #444c55; }
+.replay-map-empty { display: grid; place-items: center; height: 100%; color: var(--text-2); }
 .replay-svg { width: 100%; height: 100%; display: block; }
-/* white arrow, dark outline: distinct from every step of both trace ramps */
-.replay-svg-cursor path, .replay-arrow path { fill: #ffffff; stroke: #101317; stroke-width: 2; stroke-linejoin: round; }
+/* the live puck (visual spec §1.5, §7): accent with a bg outline, the one cyan thing on the map */
+.replay-svg-cursor path, .replay-arrow path { fill: var(--accent); stroke: var(--bg); stroke-width: 2; stroke-linejoin: round; }
 .replay-arrow { width: 26px; height: 26px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35)); }
 .replay-arrow.no-heading svg { transform: scale(0.8); }
 .replay-legend { display: flex; flex-direction: column; gap: 10px; padding: 10px 16px 12px; }
@@ -106,14 +106,22 @@
 /* basemap switch: over the map, top-left (the zoom buttons sit top-right) */
 .replay-basemap {
   position: absolute; left: 8px; top: 8px; z-index: 2; display: flex; border-radius: 10px; overflow: hidden;
-  border: 1px solid rgba(16, 19, 23, 0.25); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line-strong); box-shadow: var(--elev-2);
 }
 .replay-basemap-btn {
-  min-height: 36px; padding: 0 10px; border: 0; background: rgba(255, 255, 255, 0.94); color: #101317;
+  min-height: 36px; padding: 0 10px; border: 0; background: var(--surface-glass); color: var(--text-1);
   font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
 }
-.replay-basemap-btn + .replay-basemap-btn { border-left: 1px solid rgba(16, 19, 23, 0.15); }
-.replay-basemap-btn[aria-pressed="true"] { background: #101317; color: #ffffff; }
+.replay-basemap-btn + .replay-basemap-btn { border-left: 1px solid var(--line); }
+/* selected = accent-soft fill + accent text (visual spec §8, the one selected style) */
+.replay-basemap-btn[aria-pressed="true"] { background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface-2); color: var(--accent); }
+/* MapLibre's own controls (zoom, the collapsed attribution) on the theme's glass surface; their
+   icons are dark images, so the dark themes invert them */
+.replay-map .maplibregl-ctrl-group, .replay-map .maplibregl-ctrl-attrib.maplibregl-compact { background: var(--surface-glass); }
+.replay-map .maplibregl-ctrl-group:not(:empty) { box-shadow: var(--elev-2); }
+.replay-map .maplibregl-ctrl-group button + button { border-top-color: var(--line); }
+.replay-map .maplibregl-ctrl-attrib, .replay-map .maplibregl-ctrl-attrib a { color: var(--text-2); }
+:root:not([data-theme="light"]) .replay-map :is(.maplibregl-ctrl-icon, .maplibregl-ctrl-attrib-button) { filter: invert(1); }
 
 /* ---- G-G ---- */
 .replay-gg { padding: 10px 12px; }
@@ -152,6 +160,9 @@
 }
 .cpick-pin[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 .replay-legend-bar { height: 10px; border-radius: 4px; }
+.replay-legend-bands { display: grid; grid-template-columns: repeat(6, 1fr) auto; gap: 2px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.replay-legend-bands > span { text-align: center; white-space: nowrap; }
+.replay-legend-bandunit { padding-left: 4px; }
 .replay-legend-ends { display: flex; justify-content: space-between; margin-top: 3px; color: var(--fg2); font-variant-numeric: tabular-nums; }
 
 /* ---- readouts (replay styling: neutral, no live/stale cue) ---- */

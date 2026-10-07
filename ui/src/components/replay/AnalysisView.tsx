@@ -11,9 +11,11 @@
  */
 import { useMemo, useState } from "react";
 import type { SessionData, SessionMeta, SignalValue } from "../../api/schemas";
+import { convertUnit } from "../../lib/format";
 import { useApp } from "../../state/app";
 import { utcOffset, valueAt } from "../../state/playback";
 import { useReplay } from "../../state/replay";
+import { useTheme } from "../../state/theme";
 import { Chart, type Lane } from "./Chart";
 import { ChannelPicker } from "./ChannelPicker";
 import { pickerChannels } from "./channels";
@@ -22,8 +24,8 @@ import { channelLabel, channelUnits, showValue } from "./labels";
 import { TraceLegend, type LegendTrace } from "./Legend";
 import { NotesPanel, type NoteRequest } from "./NotesPanel";
 import {
-  bboxOf, cursorAt, defaultTraceChannel, laneRamp, lineColorExpression, plottable, rangeOf, simplifyTrack, trackOf, traceSegments,
-  type BBox, type Cursor, type TraceLane,
+  bboxOf, cursorAt, defaultTraceChannel, laneRamp, lineColorExpression, plottable, rangeOf, simplifyTrack, speedBand, speedBandLabels,
+  speedColors, trackOf, traceSegments, type BBox, type Cursor, type SpeedUnit, type TraceLane,
 } from "./trace";
 import { TraceMap, type MapTrace } from "./TraceMap";
 
@@ -78,10 +80,32 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
   const smooth = useMemo(() => ({ t: data.t, ch: data.ch, track: simplifyTrack(track) }), [data, track]);
   const rangeA = useMemo(() => (a ? rangeOf(data.ch[a]) : null), [data, a]);
   const rangeB = useMemo(() => (b ? rangeOf(data.ch[b]) : null), [data, b]);
-  const colorsA = laneRamp("a", classic);
-  const colorsB = laneRamp("b", classic);
-  const mapA = useMemo<MapTrace | null>(() => (a ? { fc: traceSegments(smooth, a, rangeA), colors: colorsA, color: lineColorExpression(colorsA) } : null), [smooth, a, rangeA, colorsA]);
-  const mapB = useMemo<MapTrace | null>(() => (b ? { fc: traceSegments(smooth, b, rangeB), colors: colorsB, color: lineColorExpression(colorsB) } : null), [smooth, b, rangeB, colorsB]);
+  // Speed always wears the violet speed ramp in absolute bands (visual spec §3.3); other
+  // channels the lane's plasma/mako (or classic) ramp over their own range.
+  const theme = useTheme();
+  const units = prefs.units;
+  const speedUnit = (ch: string | null): SpeedUnit | null => {
+    const u = ch ? convertUnit(0, channelUnits(meta, ch), units).unit : "";
+    return u === "km/h" || u === "mph" ? u : null;
+  };
+  const suA = speedUnit(a);
+  const suB = speedUnit(b);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- the tokens change with the theme
+  const speedRamp = useMemo(() => speedColors(), [theme]);
+  const colorsA = suA ? speedRamp : laneRamp("a", classic);
+  const colorsB = suB ? speedRamp : laneRamp("b", classic);
+  const mapA = useMemo<MapTrace | null>(() => {
+    if (!a) return null;
+    const unit = channelUnits(meta, a);
+    const bands = suA ? (v: number | null) => speedBand(v == null ? null : convertUnit(v, unit, units).v, suA) : undefined;
+    return { fc: traceSegments(smooth, a, rangeA, bands), colors: colorsA, color: lineColorExpression(colorsA) };
+  }, [smooth, a, rangeA, colorsA, suA, meta, units]);
+  const mapB = useMemo<MapTrace | null>(() => {
+    if (!b) return null;
+    const unit = channelUnits(meta, b);
+    const bands = suB ? (v: number | null) => speedBand(v == null ? null : convertUnit(v, unit, units).v, suB) : undefined;
+    return { fc: traceSegments(smooth, b, rangeB, bands), colors: colorsB, color: lineColorExpression(colorsB) };
+  }, [smooth, b, rangeB, colorsB, suB, meta, units]);
   const trackTimes = useMemo(() => track.map((p) => p[2]), [track]);
   const atCursor = useMemo(() => cursorAt({ t: data.t, ch: data.ch, track }, time, trackTimes), [data, track, time, trackTimes]);
   const cursor = live?.cursor ?? atCursor;
@@ -103,7 +127,9 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
 
   const [pickFor, setPickFor] = useState<PickFor>(null);
   const label = (n: string) => channelLabel(n, fields);
-  const lanes: Lane[] = lanesNames.map((n) => ({ name: n, label: label(n), unit: showValue(0, channelUnits(meta, n), prefs.units).unit }));
+  // a speed lane is drawn in speed-4, the speed ramp's line colour (visual spec §8, area line)
+  const toneOf = (n: string, i: number) => (speedUnit(n) ? "speed-4" : `series-${i + 1}`);
+  const lanes: Lane[] = lanesNames.map((n, i) => ({ name: n, label: label(n), unit: showValue(0, channelUnits(meta, n), prefs.units).unit, tone: toneOf(n, i) }));
   const readouts = [...lanesNames, ...(data.ch.GPS_Speed && !lanesNames.includes("GPS_Speed") ? ["GPS_Speed"] : [])];
   const start = data.t[0] ?? 0;
   const end = data.t[data.t.length - 1] ?? 0;
@@ -120,8 +146,10 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
   };
 
   const legend: LegendTrace[] = [
-    ...(a ? [{ lane: "a" as const, channel: a, label: label(a), range: rangeA, unit: channelUnits(meta, a), colors: colorsA }] : []),
-    ...(b ? [{ lane: "b" as const, channel: b, label: label(b), range: rangeB, unit: channelUnits(meta, b), colors: colorsB }] : []),
+    ...(a ? [{ lane: "a" as const, channel: a, label: label(a), range: rangeA, unit: channelUnits(meta, a), colors: colorsA,
+      bands: suA ? speedBandLabels(suA) : undefined, bandUnit: suA ?? undefined }] : []),
+    ...(b ? [{ lane: "b" as const, channel: b, label: label(b), range: rangeB, unit: channelUnits(meta, b), colors: colorsB,
+      bands: suB ? speedBandLabels(suB) : undefined, bandUnit: suB ?? undefined }] : []),
   ];
 
   // The chart hands note work to the notes panel: a tapped marker opens its editor, a drag
@@ -187,7 +215,7 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
         {lanesNames.map((n, i) => (
           <button key={n} type="button" className="rchip" data-channel={n} aria-label={`Chart lane ${i + 1}: ${label(n)} — change channel`}
             onClick={() => setPickFor({ kind: "lane", index: i })}>
-            <span className="replay-swatch" style={{ background: `var(--series-${i + 1})` }} aria-hidden="true" />{label(n)} <span aria-hidden="true">▾</span>
+            <span className="replay-swatch" style={{ background: `var(--${toneOf(n, i)})` }} aria-hidden="true" />{label(n)} <span aria-hidden="true">▾</span>
           </button>
         ))}
         {lanesNames.length < MAX_LANES && names.length > lanesNames.length ? (

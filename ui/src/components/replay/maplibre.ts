@@ -13,27 +13,31 @@ import type { ExpressionSpecification, StyleSpecification } from "@maplibre/mapl
 import { AttributionControl, Map as MlMap, Marker, NavigationControl, setWorkerUrl, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+import { token } from "../../lib/token";
+import type { Theme } from "../../state/theme";
 import { casingFor, layerVisible, type Basemap, type SatSource } from "./basemap";
+import { OPENFREEMAP_ATTRIBUTION, styleUrl } from "./mapStyle";
 import { LANE_OFFSET, NO_VALUE_COLOR, type BBox, type Cursor, type FeatureCollection, type TraceLane } from "./trace";
 
 setWorkerUrl(workerUrl);
 
-/** OpenFreeMap vector tiles (no key; attribution carried by the style). ADR-0009. */
-export const ONLINE_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 /** Before the online style answers, give up after this long and draw the trace alone. */
 const STYLE_TIMEOUT_MS = 15_000;
+/** Night's `bg` token, for a map made before the token CSS is there (unit tests). */
+const BG_FALLBACK = "#0b0d10";
 
 /** A lane colour MapLibre accepts: a non-empty expression, else the plain no-value grey.
  * (An empty `[]` is an invalid expression: MapLibre rejects the layer and raises an error.) */
 export const laneColor = (expr: unknown): ExpressionSpecification | string =>
   Array.isArray(expr) && expr.length > 0 ? (expr as ExpressionSpecification) : typeof expr === "string" && expr ? expr : NO_VALUE_COLOR;
 
-/** Offline / failed style: a plain background, so only the trace shows. */
-export const BLANK_STYLE: StyleSpecification = {
+/** Offline / failed style: the page's `bg` token as a plain background, so only the trace and
+ * the puck show (visual spec §7: never a fixed light grey). */
+export const blankStyle = (bg: string = token("bg", BG_FALLBACK)): StyleSpecification => ({
   version: 8,
   sources: {},
-  layers: [{ id: "bg", type: "background", paint: { "background-color": "#eef0f2" } }],
-};
+  layers: [{ id: "bg", type: "background", paint: { "background-color": bg } }],
+});
 
 export type TraceMapHandle = {
   /** A lane's segments; null hides that lane (trace B is optional). */
@@ -48,6 +52,9 @@ export type TraceMapHandle = {
   retry: () => void;
   /** True once the online style has loaded (the basemap switch is usable). */
   isReady: () => boolean;
+  /** The theme changed: the basemap follows it (Night or Day), and so do the casing and the
+   * offline background. */
+  setTheme: (t: Theme) => void;
   destroy: () => void;
 };
 
@@ -72,6 +79,8 @@ export function createTraceMap(opts: {
   colors: Record<TraceLane, unknown>;
   basemap: Basemap;
   satellite: SatSource;
+  /** The theme in force: picks the basemap style (mapStyle.ts). */
+  theme?: Theme;
   onBlank?: () => void;
   /** The online style has loaded (called once per successful load). */
   onReady?: () => void;
@@ -79,26 +88,42 @@ export function createTraceMap(opts: {
   const traces = { ...opts.traces };
   const colors = { ...opts.colors };
   let basemap = opts.basemap;
+  let theme: Theme = opts.theme ?? "dark";
   let blank = typeof navigator !== "undefined" && navigator.onLine === false;
   /** True once the base style has loaded: later errors (a tile, a glyph) never blank the map. */
   let styleLoaded = false;
 
   const map = new MlMap({
     container: opts.container,
-    style: blank ? BLANK_STYLE : ONLINE_STYLE,
+    style: blank ? blankStyle() : styleUrl(theme),
     attributionControl: false,
     ...(opts.bbox ? { bounds: opts.bbox, fitBoundsOptions: { padding: 32 } } : {}),
     dragRotate: false,
     pitchWithRotate: false,
+    // the map sits in a scrolling page: one finger (or a plain wheel) scrolls the page, two
+    // fingers (or Ctrl + wheel) move the map (UI audit P2, visual spec §7)
+    cooperativeGestures: true,
   });
-  map.addControl(new AttributionControl({ compact: false }), "bottom-right");
+  // the credits stay, collapsed behind the (i) toggle until tapped (OSMF guideline, spec §7)
+  map.addControl(new AttributionControl({ compact: true, customAttribution: OPENFREEMAP_ATTRIBUTION }), "bottom-right");
+  // MapLibre opens a compact attribution the first time it fills it; close it once, then it is
+  // the user's (the (i) button toggles it)
+  let collapsed = false;
+  const collapse = () => {
+    const el = collapsed ? null : opts.container.querySelector(".maplibregl-ctrl-attrib.maplibregl-compact-show");
+    if (!el) return;
+    collapsed = true;
+    el.classList.remove("maplibregl-compact-show");
+    el.removeAttribute("open");
+  };
+  for (const ev of ["styledata", "sourcedata", "idle"] as const) map.on(ev, collapse);
   map.addControl(new NavigationControl({ showCompass: false }), "top-right");
   map.touchZoomRotate.disableRotation();
 
   const toBlank = () => {
     if (blank) return;
     blank = true;
-    map.setStyle(BLANK_STYLE, { diff: false });
+    map.setStyle(blankStyle(), { diff: false });
     opts.onBlank?.();
   };
   let timer = window.setTimeout(() => { if (!styleLoaded) toBlank(); }, STYLE_TIMEOUT_MS);
@@ -120,7 +145,7 @@ export function createTraceMap(opts: {
       if (OWN(l.id)) continue;
       map.setLayoutProperty(l.id, "visibility", layerVisible(l, basemap) ? "visible" : "none");
     }
-    const casing = casingFor(basemap);
+    const casing = casingFor(basemap, token("trace-casing", BG_FALLBACK));
     for (const lane of LANES) {
       const id = `trace-${lane}-casing`;
       if (!map.getLayer(id)) continue;
@@ -140,7 +165,7 @@ export function createTraceMap(opts: {
       const firstSymbol = map.getStyle()?.layers?.find((l) => l.type === "symbol")?.id;
       map.addLayer({ id: "satellite", type: "raster", source: "satellite", layout: { visibility: "none" } }, firstSymbol);
     }
-    const casing = casingFor(basemap);
+    const casing = casingFor(basemap, token("trace-casing", BG_FALLBACK));
     for (const lane of LANES) {
       const src = `trace-${lane}`;
       if (map.getSource(src)) continue;
@@ -149,7 +174,7 @@ export function createTraceMap(opts: {
       map.addLayer({
         id: `trace-${lane}-casing`, type: "line", source: src,
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": casing.color, "line-width": 7, "line-opacity": casing.opacity, "line-offset": offset },
+        paint: { "line-color": casing.color, "line-width": 8, "line-opacity": casing.opacity, "line-offset": offset },
       });
       map.addLayer({
         id: `trace-${lane}`, type: "line", source: src,
@@ -205,7 +230,19 @@ export function createTraceMap(opts: {
       styleLoaded = false;
       window.clearTimeout(timer);
       timer = window.setTimeout(() => { if (!styleLoaded) toBlank(); }, STYLE_TIMEOUT_MS);
-      map.setStyle(ONLINE_STYLE, { diff: false });
+      map.setStyle(styleUrl(theme), { diff: false });
+    },
+    setTheme(t) {
+      if (t === theme) return;
+      const restyle = styleUrl(t) !== styleUrl(theme);
+      theme = t;
+      if (blank) map.setStyle(blankStyle(), { diff: false });
+      else if (restyle) {
+        styleLoaded = false; // the new style re-adds our layers on style.load
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => { if (!styleLoaded) toBlank(); }, STYLE_TIMEOUT_MS);
+        map.setStyle(styleUrl(t), { diff: false });
+      } else if (map.isStyleLoaded()) applyBasemap(); // same style: the casing token changed
     },
     destroy() {
       window.clearTimeout(timer);
