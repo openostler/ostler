@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">C</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Themes &amp; personalisation</span><span style="font-size:14px;color:#3b4556">More › Preferences · pick a theme and the phone retints live · accent and status colours locked for safety</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Preferences ({{ themeName }})</div>
+<div data-screen-label="Preferences" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:{{ T.bg }};color:{{ T.tx }};display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Preferences</span>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:{{ T.t3 }};padding:6px 4px 0">THEME</span>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"><sc-for list="{{ themes }}" as="t" hint-placeholder-count="5"><div onClick="{{ t.pick }}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:100%;height:96px;border-radius:14px;background:{{ t.bg }};box-shadow:{{ t.ring }};padding:6px;box-sizing:border-box;display:flex;flex-direction:column;gap:4px"><div style="height:10px;width:60%;border-radius:4px;background:{{ t.s2 }}"></div><div style="flex:1;border-radius:6px;background:{{ t.s1 }};display:flex;align-items:center;justify-content:center"><span style="font-size:16px;font-weight:700;color:{{ t.tx }}">72</span></div><div style="height:12px;border-radius:6px;background:{{ t.acc }};width:50%"></div></div><span style="font-size:12px;font-weight:700;text-align:center;line-height:1.2">{{ t.l }}</span></div></sc-for></div>
+<span style="font-size:13px;color:{{ T.t2 }};padding:0 4px">{{ themeNote }}</span>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:{{ T.t3 }};padding:8px 4px 0">MAP THEME</span>
+<div style="height:48px;border-radius:24px;background:{{ T.s1 }};padding:4px;display:grid;grid-template-columns:repeat(4,1fr)"><sc-for list="{{ mapThemes }}" as="m" hint-placeholder-count="4"><div onClick="{{ m.pick }}" style="cursor:pointer;border-radius:20px;background:{{ m.bg }};color:{{ m.c }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;text-align:center;line-height:1.1">{{ m.l }}</div></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:{{ T.t3 }};padding:8px 4px 0">UNITS</span>
+<div style="background:{{ T.s1 }};border-radius:20px;padding:4px 14px">
+<sc-for list="{{ units }}" as="u" hint-placeholder-count="3"><div style="min-height:56px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:15px;font-weight:600">{{ u.l }}</span><div style="height:40px;border-radius:20px;background:{{ T.bg }};padding:3px;display:flex"><sc-for list="{{ u.opts }}" as="o" hint-placeholder-count="2"><div onClick="{{ o.pick }}" style="cursor:pointer;min-width:52px;border-radius:17px;background:{{ o.bg }};color:{{ o.c }};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;padding:0 8px">{{ o.l }}</div></sc-for></div></div></sc-for>
+</div>
+<div style="min-height:60px;border-radius:18px;background:{{ T.s1 }};display:flex;align-items:center;gap:12px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:{{ T.t2 }}">download_for_offline</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Map regions</span><span style="font-size:13px;color:{{ T.t2 }}">3 downloaded · Settings › Maps</span></div><span class="material-symbols-rounded" style="font-size:22px;color:{{ T.t3 }}">chevron_right</span></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:{{ T.t3 }};padding:8px 4px 0">ACCENT</span>
+<div style="min-height:72px;border-radius:18px;background:{{ T.s1 }};display:flex;align-items:center;gap:12px;padding:10px 14px;opacity:.6"><div style="display:flex;gap:4px"><span style="width:20px;height:20px;border-radius:10px;background:{{ T.acc }}"></span><span style="width:20px;height:20px;border-radius:10px;background:{{ T.s2 }}"></span><span style="width:20px;height:20px;border-radius:10px;background:{{ T.s2 }}"></span></div><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Custom accent · coming later</span><span style="font-size:13px;color:{{ T.t2 }}">Accent, status colours and contrast are locked for safety</span></div><span class="material-symbols-rounded" style="font-size:20px;color:{{ T.t3 }}">lock</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Home · Day</div>
+<div data-screen-label="Home day" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#f3f5f9;color:#0e1626;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.2)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 0"><span style="font-size:28px;font-weight:700">Home</span><span style="height:36px;padding:0 12px;border-radius:18px;background:#e8ecf2;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#4b5568"><span class="material-symbols-rounded" style="font-size:18px">visibility_off</span>Ghost</span></div>
+<div style="border-radius:24px;background:#fff;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#4b5568">DISCOVERY 2 TD5</span><span style="font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.05">12.6<span style="font-size:20px;color:#4b5568"> V</span></span><span style="font-size:14px;display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span><b style="color:#1f7a4b">All OK</b> · Locked · Armed</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><sc-for list="{{ dayW }}" as="w" hint-placeholder-count="4"><div style="border-radius:20px;background:#fff;padding:14px;display:flex;flex-direction:column;gap:6px;min-height:96px"><div style="display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:18px;color:#4b5568">{{ w.icon }}</span><span style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#4b5568">{{ w.l }}</span></div><span style="font-size:16px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums">{{ w.v }}</span></div></sc-for></div>
+<div style="height:52px;border-radius:26px;background:#0070b8;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:800"><span class="material-symbols-rounded" style="font-size:22px">speed</span>Start Drive</div>
+</div>
+<div style="height:84px;flex:none;background:#fff;display:flex;padding:8px 8px 22px"><sc-for list="{{ dayTabs }}" as="t" hint-placeholder-count="5"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ t.c }}"><div style="width:56px;height:32px;border-radius:16px;background:{{ t.bg }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">{{ t.icon }}</span></div><span style="font-size:12px;font-weight:700">{{ t.n }}</span></div></sc-for></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · Dashboard in each theme (Night dim switches on after dusk)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<sc-for list="{{ huThemes }}" as="h" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#3b4556">{{ h.l }}</span>
+<div style="width:512px;height:300px;border-radius:10px;overflow:hidden;background:{{ h.bg }};color:{{ h.tx }};display:flex;flex-direction:column;box-shadow:0 0 0 7px #000">
+<div style="height:28px;flex:none;display:flex;align-items:center;gap:6px;padding:0 8px;background:{{ h.s0 }}"><span style="height:20px;padding:0 8px;border-radius:10px;background:{{ h.s2 }};font-size:12px;font-weight:700;display:flex;align-items:center">Dash</span><span style="height:20px;padding:0 8px;border-radius:10px;background:{{ h.s2 }};font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:3px;background:#2f9e63"></span>TD5</span><div style="flex:1"></div><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">21:14</span></div>
+<div style="flex:1;padding:6px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:5px">
+<div style="background:{{ h.s1 }};border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:{{ h.t2 }}">COOLANT</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">88<span style="font-size:12px;color:{{ h.t2 }}"> °C</span></span></div>
+<div style="grid-row:span 2;background:{{ h.s1 }};border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:76px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;color:{{ h.spd }}">72</span><span style="font-size:12px;font-weight:700;color:{{ h.t2 }}">km/h · D</span></div>
+<div style="background:{{ h.s1 }};border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:{{ h.t2 }}">BATTERY</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">14.1<span style="font-size:12px;color:{{ h.t2 }}"> V</span></span></div>
+<div style="background:{{ h.s1 }};border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:{{ h.t2 }}">INTAKE</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;color:#ef6a7d">120<span style="font-size:12px"> HIGH</span></span></div>
+<div style="background:{{ h.s1 }};border-radius:12px;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:{{ h.t2 }}">RANGE</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">412<span style="font-size:12px;color:{{ h.t2 }}"> km</span></span></div>
+</div>
+</div></div>
+</sc-for>
+</div>
+<span style="font-size:12px;color:#3b4556">Half-scale previews. Status colours keep their words in every theme; no glow in any.</span>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TH={Night:{bg:'#0a1020',s0:'#0d1424',s1:'#121a2c',s2:'#1a2439',tx:'#eef2f9',t2:'#b0bacb',t3:'#8e9ab0',acc:'#22a6e0',spd:'#c9b0f7'},'Night dim':{bg:'#060a14',s0:'#080d19',s1:'#0d1322',s2:'#141c2e',tx:'#b9c2d2',t2:'#7f8aa0',t3:'#6a7489',acc:'#1c86b5',spd:'#9d86c9'},'Deep night':{bg:'#000000',s0:'#000000',s1:'#0b0f18',s2:'#131926',tx:'#d9dfe9',t2:'#8e9ab0',t3:'#76819a',acc:'#22a6e0',spd:'#b49be6'},Day:{bg:'#f3f5f9',s0:'#ffffff',s1:'#ffffff',s2:'#e8ecf2',tx:'#0e1626',t2:'#4b5568',t3:'#5d6879',acc:'#0070b8',spd:'#5b3fb0'}};
+class Component extends DCLogic {
+ state={theme:'Auto',map:'Follow app',u:{dist:'km',temp:'°C',press:'bar'}};
+ renderVals(){
+  const S=this.state,eff=S.theme==='Auto'?'Night':S.theme,T=TH[eff];
+  const themes=['Auto','Day','Night','Night dim','Deep night'].map(l=>{const t=TH[l==='Auto'?'Night':l];return {l,...t,bg:l==='Auto'?'linear-gradient(135deg,#f3f5f9 50%,#0a1020 50%)':t.bg,ring:S.theme===l?'0 0 0 2px '+T.bg+',0 0 0 5px '+T.acc:'none',pick:()=>this.setState({theme:l})}});
+  const mapThemes=['Follow app','Day','Night','High contrast'].map(l=>({l,bg:S.map===l?T.s2:'transparent',c:S.map===l?T.tx:T.t2,pick:()=>this.setState({map:l})}));
+  const U=[['Distance','dist',['km','mi']],['Temperature','temp',['°C','°F']],['Pressure','press',['bar','psi']]];
+  const units=U.map(([l,k,o])=>({l,opts:o.map(v=>({l:v,bg:S.u[k]===v?T.s2:'transparent',c:S.u[k]===v?T.tx:T.t2,pick:()=>this.setState(s=>({u:{...s.u,[k]:v}}))}))}));
+  const note={Auto:'Day in daylight, Night after sunset. Head units add Night dim after dusk.',Day:'Light. Accent switches to the darker #0070b8 for contrast.',Night:'Default. Navy-tinted dark.','Night dim':'Lower luminance for head units after dusk.','Deep night':'True black for OLED screens.'}[S.theme];
+  const dayW=[['route','LAST TRIP','37 km · 48 min'],['build','MAINTENANCE','Oil due in 800 km'],['forum','SOCIAL','2 unread · Ride active'],['map','VEHICLES','3 friends nearby']].map(([icon,l,v])=>({icon,l,v}));
+  const dayTabs=[['home','Home',1],['speed','Drive'],['route','Trips'],['stethoscope','Diagnose'],['more_horiz','More']].map(([icon,n,on])=>({icon,n,bg:on?'rgba(0,112,184,.12)':'transparent',c:on?'#0070b8':'#4b5568'}));
+  const huThemes=['Night','Night dim','Deep night','Day'].map(l=>({l,...TH[l]}));
+  return {T,themes,themeName:S.theme==='Auto'?'Auto → Night':S.theme,themeNote:note,mapThemes,units,dayW,dayTabs,huThemes};
+ }
+}
+</script>
+</body>
+</html>

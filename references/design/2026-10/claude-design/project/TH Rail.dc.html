@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ hu }}" hint-placeholder-val="{{ true }}">
+<div style="width:96px;height:100%;box-sizing:border-box;flex:none;padding:{{ oPad }};background-color:{{ oBg }};font-family:{{ c.ff }};position:relative;z-index:2">
+<div style="height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:{{ iPad }};background-color:{{ iBg }};border-radius:{{ iR }};box-shadow:{{ iSh }};backdrop-filter:{{ c.bf }}">
+<sc-for list="{{ items }}" as="r" hint-placeholder-count="5"><div style="flex:1;border-radius:{{ r.r }};background-color:{{ r.bg }};box-shadow:{{ r.sh }};color:{{ r.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="material-symbols-rounded" style="font-size:30px;font-variation-settings:'FILL' {{ r.fill }}">{{ r.icon }}</span><span style="font-size:18px;font-weight:700">{{ r.n }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ ph }}" hint-placeholder-val="{{ false }}">
+<div style="height:84px;box-sizing:border-box;flex:none;padding:{{ pPad }};background-color:{{ oBg }};font-family:{{ c.ff }};position:relative;z-index:2;display:flex">
+<div style="flex:1;display:flex;align-items:center;padding:{{ pIn }};background-color:{{ iBg }};border-radius:{{ iR }};box-shadow:{{ iSh }};backdrop-filter:{{ c.bf }}">
+<sc-for list="{{ items }}" as="r" hint-placeholder-count="5"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ r.c }}"><div style="width:56px;height:32px;border-radius:{{ r.pr }};background-color:{{ r.bg }};box-shadow:{{ r.psh }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' {{ r.fill }}">{{ r.icon }}</span></div><span style="font-size:12px;font-weight:700">{{ r.n }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerThemes||!window.OstlerThemes.sheetOf)return setTimeout(go,100);this.forceUpdate()};go()}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const T=window.OstlerThemes;if(!T||!T.sheetOf)return {ready:false};
+  const p=this.props,c=T.resolve(p.theme||'night'),a=p.active||'Home',m=c.rail,fl=m==='float',tab=m==='tab',ph=p.size==='phone';
+  const R=c.r2+'px';
+  const items=[['home','Home'],['route','Trips'],['stethoscope','Diagnose'],['speed','Drive'],['more_horiz','More']].map(([icon,n])=>{const on=n===a;
+   let bg='transparent',col=on?c.tx:c.t2,sh='none',r=R,psh='none';
+   if(on){if(m==='pill'||fl){bg=c.s3;if(c.light){sh='inset 0 0 0 3px #000';psh=sh}}
+    else if(m==='block'){bg=c.acc;col=c.on}
+    else if(m==='bar'){col=c.light?'#000':c.acc;sh='inset 4px 0 0 '+c.acc;psh='inset 0 3px 0 '+c.acc;r='0'}
+    else if(m==='tab'){bg=c.bg;r=c.r2+'px 0 0 '+c.r2+'px'}
+    else if(m==='tint'){col=c.acc}}
+   return {icon,n,fill:on?1:0,bg:ph&&tab&&on?c.s3:bg,c:col,sh,r,psh,pr:m==='bar'?'0':(c.rc>=999?'16px':Math.min(16,c.r2)+'px')}});
+  return {ready:true,c,hu:!ph,ph,items,
+   oPad:fl?'4px 8px 10px 0':'0',oBg:fl?'transparent':c.rail,iPad:tab?'8px 0 8px 8px':'8px',iBg:fl?c.s1:'transparent',iR:fl?c.rCard:'0',iSh:fl?c.bd:'none',
+   pPad:fl?'0 14px 18px':'0',pIn:fl?'0 4px':'8px 8px 22px'};
+ }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="drive-maps.js"></script>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">F</span><span style="font-size:22px;font-weight:800;color:#0e1626">Off-road (D2)</span><span style="font-size:14px;color:#3b4556">6 tiles · pitch/roll silhouettes tilt live · STEEP: amber at 20°, red at 30° roll (25°/35° pitch)</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · 1024×600</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Off-road HU-7" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="offroad" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ incl }}" as="t" hint-placeholder-count="2">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;min-height:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;height:28px"><span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb">{{ t.label }}</span><sc-if value="{{ t.steep }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;letter-spacing:.04em;color:{{ t.c }}">STEEP</span></sc-if></div>
+<div style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center"><div style="position:absolute;left:0;right:0;top:50%;height:2px;background:#3b4a6a;margin-top:44px"></div><span class="material-symbols-rounded" style="font-size:120px;line-height:1;color:{{ t.ic }};font-variation-settings:'FILL' 1;transform:rotate({{ t.rot }}deg) scaleX({{ t.flip }});transform-origin:50% 80%">{{ t.icon }}</span></div>
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vc }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.sub }}</span></div>
+</div>
+</sc-for>
+<div style="background:#121a2c;border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;height:28px"><span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb">TRAIL</span><span style="font-size:24px;color:#b0bacb;font-variant-numeric:tabular-nums">1.8 km</span></div>
+<div style="flex:1;min-height:0;border-radius:16px;overflow:hidden;position:relative;background:#0e1422"><sc-if value="{{ o7.url }}" hint-placeholder-val="{{ false }}"><img src="{{ o7.url }}" alt="" style="position:absolute;left:0;top:0;width:286px;height:150px;display:block"></sc-if><div style="position:absolute;left:{{ o7.car.x }}px;top:{{ o7.car.y }}px;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:20px;background:#22a6e0;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ o7.car.rot }}deg)">navigation</span></div></div>
+<span style="font-size:24px;color:#b0bacb;font-variant-numeric:tabular-nums">42 min · avg 9 km/h</span>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;min-height:0">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;height:28px">HEADING</span>
+<div style="flex:1;display:flex;align-items:center;gap:16px">
+<svg viewBox="0 0 150 150" style="width:150px;height:150px;flex:none"><circle cx="75" cy="75" r="66" fill="#1a2439"></circle><circle cx="75" cy="75" r="66" fill="none" stroke="#3b4a6a" stroke-width="2"></circle><text x="75" y="26" fill="#eef2f9" font-size="24" font-weight="800" text-anchor="middle" dominant-baseline="central" font-family="Figtree">N</text><text x="126" y="75" fill="#8e9ab0" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">E</text><text x="75" y="124" fill="#8e9ab0" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">S</text><text x="24" y="75" fill="#8e9ab0" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">W</text><g transform="rotate(284 75 75)"><path d="M75 34 L85 75 L75 70 L65 75 Z" fill="#eef2f9"></path><path d="M75 116 L85 75 L75 80 L65 75 Z" fill="#5d6879"></path></g></svg>
+<div style="display:flex;flex-direction:column"><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">284°</span><span style="font-size:28px;font-weight:700;color:#b0bacb">WNW</span></div>
+</div>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;min-height:0">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;height:28px">ALTITUDE</span>
+<div style="display:flex;align-items:baseline;gap:6px;margin-top:8px"><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">412</span><span style="font-size:26px;color:#b0bacb">m</span></div>
+<div style="flex:1;min-height:0;display:flex;align-items:flex-end"><svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%;height:72px;display:block"><path d="{{ altArea }}" fill="#1a2439"></path><path d="{{ altLine }}" fill="none" stroke="#b0bacb" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg></div>
+<span style="font-size:24px;color:#b0bacb">+186 m on this trail</span>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:0">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;height:28px">TRANSFER</span>
+<div style="flex:1;border-radius:18px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 16px"><span style="font-size:24px;font-weight:700">Low range</span><span style="font-size:24px;font-weight:800;letter-spacing:.06em;background:#eef2f9;color:#0a1020;padding:6px 14px;border-radius:12px">ON</span></div>
+<div style="flex:1;border-radius:18px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 16px"><span style="font-size:24px;font-weight:700">Centre diff</span><span style="font-size:24px;font-weight:800;letter-spacing:.06em;background:#eef2f9;color:#0a1020;padding:6px 14px;border-radius:12px">LOCKED</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · 800×480</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Off-road HU-5" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu5" mode="offroad" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,48px"></dc-import>
+<div style="flex:1;min-height:0;padding:6px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ incl }}" as="t" hint-placeholder-count="2">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;height:28px"><span style="font-size:24px;font-weight:700;color:#b0bacb">{{ t.label }}</span><sc-if value="{{ t.steep }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:{{ t.c }}">STEEP</span></sc-if></div>
+<div style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center"><div style="position:absolute;left:0;right:0;top:50%;height:2px;background:#3b4a6a;margin-top:28px"></div><span class="material-symbols-rounded" style="font-size:76px;line-height:1;color:{{ t.ic }};font-variation-settings:'FILL' 1;transform:rotate({{ t.rot }}deg) scaleX({{ t.flip }});transform-origin:50% 80%">{{ t.icon }}</span></div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vc }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.subS }}</span></div>
+</div>
+</sc-for>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;height:28px"><span style="font-size:24px;font-weight:700;color:#b0bacb">TRAIL</span><span style="font-size:24px;color:#b0bacb">1.8 km</span></div>
+<div style="flex:1;min-height:0;border-radius:14px;overflow:hidden;position:relative;background:#0e1422"><sc-if value="{{ o5.url }}" hint-placeholder-val="{{ false }}"><img src="{{ o5.url }}" alt="" style="position:absolute;left:0;top:0;width:220px;height:92px;display:block"></sc-if><div style="position:absolute;left:{{ o5.car.x }}px;top:{{ o5.car.y }}px;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:16px;background:#22a6e0;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ o5.car.rot }}deg)">navigation</span></div></div>
+<span style="font-size:24px;color:#b0bacb">42 min</span>
+</div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0">
+<span style="font-size:24px;font-weight:700;color:#b0bacb;height:28px">HEADING</span>
+<div style="flex:1;display:flex;align-items:center;gap:10px">
+<svg viewBox="0 0 150 150" style="width:104px;height:104px;flex:none"><circle cx="75" cy="75" r="66" fill="#1a2439"></circle><text x="75" y="28" fill="#eef2f9" font-size="34" font-weight="800" text-anchor="middle" dominant-baseline="central" font-family="Figtree">N</text><g transform="rotate(284 75 75)"><path d="M75 34 L87 75 L75 70 L63 75 Z" fill="#eef2f9"></path><path d="M75 116 L87 75 L75 80 L63 75 Z" fill="#5d6879"></path></g></svg>
+<div style="display:flex;flex-direction:column"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">284°</span><span style="font-size:24px;font-weight:700;color:#b0bacb">WNW</span></div>
+</div>
+</div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0">
+<span style="font-size:24px;font-weight:700;color:#b0bacb;height:28px">ALTITUDE</span>
+<div style="display:flex;align-items:baseline;gap:6px;margin-top:6px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">412</span><span style="font-size:24px;color:#b0bacb">m</span></div>
+<div style="flex:1;min-height:0;display:flex;align-items:flex-end"><svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%;height:56px;display:block"><path d="{{ altArea }}" fill="#1a2439"></path><path d="{{ altLine }}" fill="none" stroke="#b0bacb" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg></div>
+</div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;gap:8px;min-height:0">
+<span style="font-size:24px;font-weight:700;color:#b0bacb;height:28px">TRANSFER</span>
+<div style="flex:1;border-radius:16px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 12px"><span style="font-size:24px;font-weight:700">Low</span><span style="font-size:24px;font-weight:800;background:#eef2f9;color:#0a1020;padding:4px 10px;border-radius:10px">ON</span></div>
+<div style="flex:1;border-radius:16px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 12px"><span style="font-size:24px;font-weight:700">CDL</span><span style="font-size:24px;font-weight:800;background:#eef2f9;color:#0a1020;padding:4px 10px;border-radius:10px">LOCKED</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Moving · 393×852</div>
+<div data-screen-label="Off-road phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">08:58</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<dc-import name="Drive Strip" size="phone" mode="offroad" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,112px"></dc-import>
+<div style="flex:1;min-height:0;padding:0 12px 34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ incl }}" as="t" hint-placeholder-count="2">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;min-height:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;height:28px;gap:4px"><span style="font-size:24px;font-weight:700;color:#b0bacb">{{ t.label }}</span><sc-if value="{{ t.steep }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:{{ t.c }}">STEEP</span></sc-if></div>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:72px;line-height:1;color:{{ t.ic }};font-variation-settings:'FILL' 1;transform:rotate({{ t.rot }}deg) scaleX({{ t.flip }})">{{ t.icon }}</span></div>
+<span style="font-size:48px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vc }}">{{ t.val }}</span>
+</div>
+</sc-for>
+<div style="background:#121a2c;border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;min-height:0"><span style="font-size:24px;font-weight:700;color:#b0bacb">HEADING</span><div style="flex:1;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 150 150" style="width:84px;height:84px"><circle cx="75" cy="75" r="66" fill="#1a2439"></circle><text x="75" y="28" fill="#eef2f9" font-size="38" font-weight="800" text-anchor="middle" dominant-baseline="central" font-family="Figtree">N</text><g transform="rotate(284 75 75)"><path d="M75 34 L87 75 L75 70 L63 75 Z" fill="#eef2f9"></path><path d="M75 116 L87 75 L75 80 L63 75 Z" fill="#5d6879"></path></g></svg></div><span style="font-size:48px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">284°<span style="font-size:24px;color:#b0bacb"> WNW</span></span></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;min-height:0"><span style="font-size:24px;font-weight:700;color:#b0bacb">ALTITUDE</span><div style="flex:1;min-height:0;display:flex;align-items:flex-end"><svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%;height:60px;display:block"><path d="{{ altArea }}" fill="#1a2439"></path><path d="{{ altLine }}" fill="none" stroke="#b0bacb" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg></div><span style="font-size:48px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">412<span style="font-size:24px;color:#b0bacb"> m</span></span></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden"><span style="font-size:24px;font-weight:700;color:#b0bacb">TRAIL</span><div style="flex:1;min-height:0;border-radius:14px;overflow:hidden;position:relative;background:#0e1422"><sc-if value="{{ oP.url }}" hint-placeholder-val="{{ false }}"><img src="{{ oP.url }}" alt="" style="position:absolute;left:0;top:0;width:152px;height:104px;display:block"></sc-if><div style="position:absolute;left:{{ oP.car.x }}px;top:{{ oP.car.y }}px;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:14px;background:#22a6e0;box-shadow:0 0 0 3px #0a1020"></div></div></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:0"><span style="font-size:24px;font-weight:700;color:#b0bacb">TRANSFER</span><div style="flex:1;border-radius:14px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:24px;font-weight:700">Low</span><span style="font-size:24px;font-weight:800;background:#eef2f9;color:#0a1020;padding:2px 8px;border-radius:8px">ON</span></div><div style="flex:1;border-radius:14px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font-size:24px;font-weight:700">CDL</span><span class="material-symbols-rounded" style="font-size:28px;color:#eef2f9;font-variation-settings:'FILL' 1">lock</span></div></div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EMPTY={url:'',car:{x:-200,y:-200,rot:0}};
+class Component extends DCLogic {
+ state={mp:{},pitch:12,roll:24};
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerMaps)return setTimeout(go,150);['off7','off5','offP'].forEach(k=>window.OstlerMaps.get(k).then(r=>{if(r&&!this.dead)this.setState(s=>({mp:{...s.mp,[k]:r}}))}))};go();
+  this.t=setInterval(()=>this.setState(s=>({pitch:Math.max(6,Math.min(17,s.pitch+(Math.random()-.5)*2)),roll:Math.max(21,Math.min(27,s.roll+(Math.random()-.5)*1.6))})),1000);}
+ componentWillUnmount(){this.dead=true;clearInterval(this.t)}
+ mk(k){const r=this.state.mp[k];return r?{url:r.url,car:r.pts.car}:EMPTY}
+ renderVals(){
+  const S=this.state;
+  const lvl=(v,w,c)=>v>=c?'alarm':v>=w?'warn':'ok';
+  const sty=l=>l==='alarm'?{bg:'#2a1a2a',ring:'inset 0 0 0 2px #ef6a7d',c:'#ef6a7d',vc:'#ef6a7d',ic:'#ef6a7d',steep:true}:l==='warn'?{bg:'#2a2216',ring:'inset 0 0 0 2px #bf8a1a',c:'#bf8a1a',vc:'#e0a93a',ic:'#e0a93a',steep:true}:{bg:'#121a2c',ring:'none',c:'#eef2f9',vc:'#eef2f9',ic:'#dfe6f2',steep:false};
+  const p=Math.round(S.pitch),r=Math.round(S.roll);
+  const incl=[
+   {label:'PITCH',icon:'airport_shuttle',rot:-p,flip:1,val:p+'°',sub:'nose up',subS:'up',...sty(lvl(p,25,35))},
+   {label:'ROLL',icon:'directions_car',rot:-r,flip:1,val:r+'°',sub:'left side low',subS:'left low',...sty(lvl(r,20,30))}];
+  const alt=Array.from({length:40},(_,i)=>226+i*4.6+Math.sin(i/3)*9);const mn=Math.min(...alt),mx=Math.max(...alt);
+  const pts=alt.map((v,i)=>[(i/39*100).toFixed(1),(38-(v-mn)/(mx-mn)*32).toFixed(1)]);
+  const altLine=pts.map((q,i)=>(i?'L':'M')+q[0]+' '+q[1]).join(' ');
+  return {incl,altLine,altArea:altLine+' L100 40 L0 40 Z',o7:this.mk('off7'),o5:this.mk('off5'),oP:this.mk('offP'),faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

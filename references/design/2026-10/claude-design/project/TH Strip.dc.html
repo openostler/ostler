@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+<div style="height:{{ oh }}px;flex:none;box-sizing:border-box;padding:{{ oPad }};background-color:{{ oBg }};box-shadow:{{ oSh }};display:flex;font-family:{{ c.ff }};color:{{ c.tx }};font-size:{{ fs }}px;font-weight:700;position:relative;z-index:3">
+<div style="flex:1;display:flex;align-items:center;gap:8px;padding:0 {{ iPx }}px;background-color:{{ iBg }};border-radius:{{ iR }};box-shadow:{{ iSh }};backdrop-filter:{{ c.bf }}">
+<sc-if value="{{ drive }}" hint-placeholder-val="{{ false }}">
+<div style="height:{{ ch }}px;width:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">arrow_back</span></div>
+<div style="height:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;gap:6px;padding:0 14px;flex:none;font-family:{{ c.fh }}"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">speed</span>Dash</div>
+</sc-if>
+<div style="height:{{ ch }}px;border-radius:{{ ch }}px;background:#ef6a7d;color:#1a0a0e;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;font-family:Figtree,sans-serif;font-weight:800;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px;font-variation-settings:'FILL' 1">warning</span>1 FAULT</div>
+<div style="height:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;gap:6px;padding:0 12px;flex:none"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>TD5</div>
+<div style="height:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;padding:0 12px;flex:none;font-family:{{ c.fn }};font-variant-numeric:tabular-nums">14.1 V</div>
+<sc-if value="{{ showVis }}" hint-placeholder-val="{{ true }}"><div style="height:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;gap:6px;padding:0 12px;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">visibility_off</span>Ghost</div></sc-if>
+<div style="flex:1"></div>
+<span style="font-family:{{ c.fn }};font-variant-numeric:tabular-nums;padding:0 4px">08:52</span>
+<div style="height:{{ ch }}px;width:{{ ch }}px;border-radius:{{ c.rc }}px;background-color:{{ cBg }};box-shadow:{{ cSh }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">bookmark_add</span></div>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerThemes||!window.OstlerThemes.sheetOf)return setTimeout(go,100);this.forceUpdate()};go()}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const T=window.OstlerThemes;if(!T||!T.sheetOf)return {ready:false};
+  const p=this.props,mv=!!p.moving,hu5=p.size==='hu5',c=T.resolve(p.theme||'night',{moving:mv}),m=c.strip,sh=hu5?48:56;
+  const fl=m==='float',ln=m==='line';
+  return {ready:true,c,drive:!!p.drive,oh:fl?sh+8:sh,oPad:fl?'8px 10px 0':'0',oBg:fl||ln?'transparent':c.strip,oSh:ln?'inset 0 -2px 0 '+c.s2:'none',
+   iBg:fl?c.strip==='transparent'?c.s1:c.s1:'transparent',iR:fl?(c.rc>=999?'999px':c.rCard):'0',iSh:fl?c.bd:'none',iPx:fl?(hu5?4:5):10,
+   cBg:ln?'transparent':c.s2,cSh:ln?'none':c.bd,ch:fl?(hu5?38:44):(hu5?40:46),fs:mv?(hu5?22:24):18,ifs:mv?26:22,showVis:!(hu5&&mv)};
+ }
+}
+</script>
+</body>
+</html>

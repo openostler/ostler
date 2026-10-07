@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<sc-if value="{{ isHU }}" hint-placeholder-val="{{ true }}">
+<div style="height:{{ sh }}px;flex:none;display:flex;align-items:center;gap:{{ gap }}px;padding:0 {{ pad }}px;background:{{ bg }};color:{{ tx }};font-family:Figtree,system-ui,sans-serif;box-sizing:border-box;width:100%;overflow:hidden">
+<sc-if value="{{ showBack }}" hint-placeholder-val="{{ true }}"><div style="width:{{ bw }}px;height:{{ H }}px;border-radius:{{ R }}px;background:{{ chipBg }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">arrow_back</span></div></sc-if>
+<sc-if value="{{ showMode }}" hint-placeholder-val="{{ true }}"><div style="height:{{ H }}px;border-radius:{{ R }}px;background:{{ mBg }};color:{{ mColor }};display:flex;align-items:center;gap:6px;padding:0 8px 0 {{ cp }}px;font-size:{{ fs }}px;font-weight:700;white-space:nowrap;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">{{ mIcon }}</span>{{ mName }}<sc-if value="{{ open }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">expand_less</span></sc-if><sc-if value="{{ showDots }}" hint-placeholder-val="{{ true }}"><span style="display:flex;gap:4px;padding:0 4px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><span style="width:7px;height:7px;border-radius:4px;background:{{ d }}"></span></sc-for></span></sc-if></div></sc-if>
+<sc-for list="{{ chips }}" as="c" hint-placeholder-count="5"><div style="height:{{ H }}px;border-radius:{{ R }}px;background:{{ c.bg }};box-shadow:{{ c.ring }};color:{{ c.color }};display:flex;align-items:center;gap:6px;padding:0 {{ cp }}px;font-size:{{ fs }}px;font-weight:700;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums"><sc-if value="{{ c.dot }}" hint-placeholder-val="{{ false }}"><span style="width:10px;height:10px;border-radius:5px;background:{{ c.dot }}"></span></sc-if><sc-if value="{{ c.icon }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px;font-variation-settings:'FILL' {{ c.fill }}">{{ c.icon }}</span></sc-if><sc-if value="{{ c.text }}" hint-placeholder-val="{{ true }}"><span>{{ c.text }}</span></sc-if><sc-if value="{{ c.lock }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:18px;opacity:.75">lock</span></sc-if></div></sc-for>
+<div style="flex:1;min-width:0"></div>
+<sc-if value="{{ edit }}" hint-placeholder-val="{{ false }}"><div style="height:{{ H }}px;border-radius:{{ R }}px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;padding:0 22px;font-size:{{ fs }}px;font-weight:800;flex:none">Done</div></sc-if>
+<sc-if value="{{ touchlock }}" hint-placeholder-val="{{ false }}"><div style="height:{{ H }}px;border-radius:{{ R }}px;background:{{ tlBg }};color:{{ tlC }};display:flex;align-items:center;gap:6px;padding:0 {{ cp }}px;font-size:{{ fs }}px;font-weight:700;white-space:nowrap;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">{{ tlIcon }}</span>{{ tlText }}</div></sc-if><span style="font-size:{{ fs }}px;font-weight:700;font-variant-numeric:tabular-nums;padding:0 4px;flex:none">{{ clock }}</span>
+<sc-if value="{{ showMode }}" hint-placeholder-val="{{ true }}"><div style="width:{{ bw }}px;height:{{ H }}px;border-radius:{{ R }}px;background:{{ chipBg }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:{{ ifs }}px">bookmark_add</span></div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ isPhone }}" hint-placeholder-val="{{ false }}">
+<div style="flex:none;display:flex;flex-direction:column;gap:8px;padding:0 12px 8px;width:100%;box-sizing:border-box;color:{{ tx }};font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;gap:6px;align-items:center;height:48px">
+<div style="width:48px;height:48px;border-radius:24px;background:{{ chipBg }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:26px">arrow_back</span></div>
+<div style="height:48px;border-radius:24px;background:{{ mBg }};color:{{ mColor }};display:flex;align-items:center;gap:4px;padding:0 6px 0 10px;font-size:24px;font-weight:700;white-space:nowrap;flex:none"><span class="material-symbols-rounded" style="font-size:26px">{{ mIcon }}</span>{{ mName }}<sc-if value="{{ showDots }}" hint-placeholder-val="{{ true }}"><span style="display:flex;gap:3px;padding:0 4px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="3"><span style="width:6px;height:6px;border-radius:3px;background:{{ d }}"></span></sc-for></span></sc-if></div>
+<sc-for list="{{ chips1 }}" as="c" hint-placeholder-count="1"><div style="height:48px;border-radius:24px;background:{{ c.bg }};color:{{ c.color }};display:flex;align-items:center;gap:4px;padding:0 10px;font-size:24px;font-weight:700;white-space:nowrap;flex:none"><sc-if value="{{ c.icon }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:24px">{{ c.icon }}</span></sc-if><sc-if value="{{ c.text }}" hint-placeholder-val="{{ false }}"><span>{{ c.text }}</span></sc-if></div></sc-for>
+<div style="flex:1"></div>
+<div style="width:48px;height:48px;border-radius:24px;background:{{ chipBg }};display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:26px">bookmark_add</span></div>
+</div>
+<div style="display:flex;gap:6px;align-items:center;height:48px">
+<sc-for list="{{ chips2 }}" as="c" hint-placeholder-count="4"><div style="height:48px;border-radius:24px;background:{{ c.bg }};box-shadow:{{ c.ring }};color:{{ c.color }};display:flex;align-items:center;gap:6px;padding:0 10px;font-size:24px;font-weight:700;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums"><sc-if value="{{ c.dot }}" hint-placeholder-val="{{ false }}"><span style="width:10px;height:10px;border-radius:5px;background:{{ c.dot }}"></span></sc-if><sc-if value="{{ c.icon }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' {{ c.fill }}">{{ c.icon }}</span></sc-if><span>{{ c.text }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1024,&quot;height&quot;:56},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hu7&quot;,&quot;hu5&quot;,&quot;wide&quot;,&quot;phone&quot;],&quot;default&quot;:&quot;hu7&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;diag&quot;,&quot;dash&quot;,&quot;map&quot;,&quot;convoy&quot;,&quot;offroad&quot;,&quot;split&quot;,&quot;minimal&quot;],&quot;default&quot;:&quot;dash&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;moving&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;drive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;open&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;dim&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;ride&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;call&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;passenger&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;faults&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;visibility&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Ghost&quot;,&quot;Visible&quot;],&quot;default&quot;:&quot;Ghost&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;clock&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;08:58&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;volts&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;14.1&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const MODES={diag:['monitor_heart','Diagnostic','Diag',2],dash:['speed','Dashboard','Dash',3],map:['map','Map','Map',2],convoy:['groups','Convoy','Ride',1],offroad:['landslide','Off-road','Trail',2],split:['vertical_split','Split','Split',2],minimal:['dark_mode','Minimal','Night',1]};
+class Component extends DCLogic {
+ renderVals(){
+  const p=this.props,size=p.size||'hu7',moving=p.moving!==false,faults=p.faults!==false,visible=p.visibility==='Visible',dim=!!p.dim,drive=p.drive!==false;
+  const isPhone=size==='phone',hu5=size==='hu5',wide=size==='wide',compact=hu5||isPhone;
+  const fs=moving||compact?24:18,H=isPhone?48:hu5?40:wide?48:moving?44:40,sh=isPhone?112:hu5?48:wide?64:56;
+  const full=wide||(!moving&&!compact);
+  const C=dim?{bg:'#04070d',chip:'#0c1322',tx:'#9aa5ba',t2:'#7c879c'}:{bg:'#0a1020',chip:'#1a2439',tx:'#eef2f9',t2:'#b0bacb'};
+  const ch=o=>({dot:'',icon:'',fill:0,text:'',color:C.tx,bg:C.chip,ring:'none',...o});
+  const fault=ch(faults?{icon:'warning',fill:1,text:compact?'2':'2 faults',color:'#ef6a7d',bg:'rgba(239,106,125,.12)',ring:'inset 0 0 0 2px #ef6a7d'}:{icon:'check_circle',fill:1,text:compact?'OK':'No faults',color:'#2f9e63'});
+  const conn=ch({dot:'#2f9e63',text:wide?'Connected · TD5':(!moving&&!compact)?'TD5 (engine)':'TD5'});
+  const rec=ch({dot:'#ef6a7d',text:'REC'});
+  const busy=!!(p.call||p.ride||p.passenger||p.touchlock);const v12=ch({icon:compact||(moving&&busy)?'':'bolt',text:(p.volts||'14.1')+' V'});
+  const vis=ch(visible?{icon:'visibility',text:isPhone?'':wide?'Visible · 47 min':hu5?'47m':'47 min',color:'#bf8a1a',bg:'rgba(191,138,26,.16)'}:{icon:'visibility_off',text:(wide||!moving)&&!compact?'Ghost':'',color:C.t2});
+  const extra=[];const acc={color:'#22a6e0',bg:'rgba(34,166,224,.16)'};
+  if(p.call)extra.push(ch({icon:'call',text:wide?'Call · '+p.call:p.call,...acc}));
+  else if(p.ride)extra.push(ch({icon:'groups',text:wide?'Ride · '+p.ride:p.ride,...acc}));
+  if(p.passenger)extra.push(ch({icon:'person',text:wide?'Passenger':'',...acc}));
+  const m=MODES[p.mode]||MODES.dash;
+  const edit=!!p.edit;[fault,conn,rec,v12,vis].forEach(c=>c.lock=edit);extra.forEach(c=>c.lock=false);
+  return {isHU:!isPhone,isPhone,drive,edit,showBack:drive&&!edit,showMode:drive&&!edit,sh,H,R:H/2,fs,ifs:fs+2,gap:wide?10:hu5?4:6,pad:hu5?6:12,bw:hu5?H:H+8,chipBg:C.chip,bg:C.bg,tx:C.tx,cp:hu5?8:10,clock:p.clock||'08:58',
+   chips:[fault,conn,rec,v12,vis,...extra],chips1:[...extra,vis],chips2:[fault,conn,rec,v12],
+   open:!!p.open,showDots:!p.open&&m[3]>1,dots:Array.from({length:m[3]},(_,i)=>i===((p.face||1)-1)?(p.open?'#22a6e0':C.tx):'#3b4a6a'),touchlock:!!p.touchlock&&!isPhone,tlIcon:p.touchlock==='on'?'do_not_touch':'touch_app',tlText:p.touchlock==='on'?(compact||moving?'':'Locked'):'',tlBg:p.touchlock==='on'?'rgba(34,166,224,.16)':C.chip,tlC:p.touchlock==='on'?'#22a6e0':C.t2,mIcon:m[0],mName:compact||(moving&&busy&&!wide)?m[2]:m[1],mBg:p.open?'rgba(34,166,224,.16)':C.chip,mColor:p.open?'#22a6e0':C.tx,caret:p.open?'expand_less':'expand_more'};
+ }
+}
+</script>
+</body>
+</html>
