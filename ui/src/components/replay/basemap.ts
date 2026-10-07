@@ -71,9 +71,10 @@ export function saveBasemap(b: Basemap): void {
   }
 }
 
-/** Trace casing: white on the light streets map, near-black on imagery. */
-export const casingFor = (b: Basemap): { color: string; opacity: number } =>
-  b === "streets" ? { color: "#ffffff", opacity: 0.9 } : { color: "#101317", opacity: 0.7 };
+/** Trace casing (visual spec §3.3: 2 px, `trace-casing`): the theme's casing token on the
+ * streets map (`bg` in the dark themes, white in Day), near-black on imagery. */
+export const casingFor = (b: Basemap, streets = "#ffffff"): { color: string; opacity: number } =>
+  b === "streets" ? { color: streets, opacity: 0.9 } : { color: "#101317", opacity: 0.7 };
 
 /** Layout visibility for one of the style's own (non-trace) layers under a basemap.
  * The imagery layer shows on Satellite/Hybrid; labels (symbol layers) hide on Satellite. */

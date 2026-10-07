@@ -14,6 +14,7 @@
  * Approach informed by DovesDataviewer (GPL-3.0), independently implemented.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTheme } from "../../state/theme";
 import { loadBasemap, satelliteSource, saveBasemap, type Basemap } from "./basemap";
 import { BasemapSwitch } from "./BasemapSwitch";
 import type { TraceMapHandle } from "./maplibre";
@@ -29,8 +30,9 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
   const handle = useRef<TraceMapHandle | null>(null);
   const [status, setStatus] = useState<"loading" | "map" | "blank" | "failed">("loading");
   const [basemap, setBasemapState] = useState<Basemap>(loadBasemap);
-  const latest = useRef({ a, b, cursor, basemap });
-  useEffect(() => { latest.current = { a, b, cursor, basemap }; });
+  const theme = useTheme(); // the basemap follows the theme (visual spec §7)
+  const latest = useRef({ a, b, cursor, basemap, theme });
+  useEffect(() => { latest.current = { a, b, cursor, basemap, theme }; });
 
   const setBasemap = (m: Basemap) => {
     setBasemapState(m);
@@ -50,7 +52,7 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
           container: box.current, bbox: bounds,
           traces: { a: l.a?.fc ?? null, b: l.b?.fc ?? null },
           colors: { a: l.a?.color ?? NO_VALUE_COLOR, b: l.b?.color ?? NO_VALUE_COLOR },
-          basemap: l.basemap, satellite: satelliteSource(bounds),
+          basemap: l.basemap, satellite: satelliteSource(bounds), theme: l.theme,
           onBlank: () => alive && setStatus("blank"),
           onReady: () => alive && setStatus("map"),
         });
@@ -78,6 +80,7 @@ export function TraceMap({ a, b, bbox, cursor }: Props) {
   useEffect(() => { if (bColor) handle.current?.setColor("b", bColor); }, [bColor, status]);
   useEffect(() => { handle.current?.setBasemap(basemap); }, [basemap, status]);
   useEffect(() => { handle.current?.setCursor(cursor); }, [cursor, status]);
+  useEffect(() => { handle.current?.setTheme?.(theme); }, [theme, status]);
 
   return (
     <div className="replay-map" data-map-status={status} data-basemap={basemap}>

@@ -10,8 +10,19 @@
  * into runs of equal colour bucket, each a GeoJSON LineString whose `b` property drives a
  * data-driven `line-color` expression.
  */
+import dataTokens from "../../../tokens/data.tokens.json";
 import type { GeoJsonTrace, SessionData, SessionMeta } from "../../api/schemas";
+import { token } from "../../lib/token";
 import { indexAt, valueAt } from "../../state/playback";
+
+/** A colour from ui/tokens/data.tokens.json (the single source of the ramps' values). */
+const DATA = dataTokens as unknown as Record<string, Record<string, { $value: { hex: string } | string }>>;
+const dataHex = (group: string, name: string): string => {
+  const v = DATA[group]?.[name]?.$value;
+  if (!v || typeof v === "string") throw new Error(`no data token ${group}.${name}`);
+  return v.hex;
+};
+const stops = (name: string, n: number) => Array.from({ length: n }, (_, i) => dataHex("ramp", `${name}-${i + 1}`));
 
 export const BUCKETS = 20;
 
@@ -24,12 +35,37 @@ export const BUCKETS = 20;
  * B green → purple, so the two lanes stay distinguishable.
  */
 export const RAMP_STOPS = {
-  plasma: ["#4b03a1", "#6e00a8", "#8e0ca4", "#ac2694", "#c43e7f", "#d9586a", "#e97257", "#f79044", "#fdaf31", "#fbd324", "#f0f921"],
-  mako: ["#3b2e5d", "#413e7f", "#3c5397", "#366a9f", "#3480a4", "#3496a9", "#39abac", "#48c0ad", "#6dd3ad", "#a4e0bb", "#ceeed7"],
+  // the stops live in the data tokens (visual spec §3.3: plasma and mako, unchanged)
+  plasma: stops("plasma", 11),
+  mako: stops("mako", 11),
   classicA: ["#2166ac", "#b2182b"],
   classicB: ["#1b7837", "#762a83"],
 } as const;
 export type RampName = keyof typeof RAMP_STOPS;
+/**
+ * Speed (visual spec §3.3, decision 4): one violet ramp everywhere speed is drawn, in six
+ * absolute bands per unit preference (not converted: 30 km/h and 20 mph are each a first band
+ * edge), so one colour means one speed on every trip. The colours are the theme's `speed-1…6`
+ * tokens (lighter = faster in the dark themes, darker = faster in Day).
+ */
+export type SpeedUnit = "km/h" | "mph";
+export const SPEED_BANDS: Record<SpeedUnit, readonly number[]> = { "km/h": [30, 50, 80, 100, 120], mph: [20, 30, 40, 50, 60] };
+/** The band (0 … 5) of a speed in `unit`; null for a missing value. */
+export function speedBand(v: number | null, unit: SpeedUnit): number | null {
+  if (v == null || !Number.isFinite(v)) return null;
+  const edges = SPEED_BANDS[unit];
+  let i = 0;
+  while (i < edges.length && v >= edges[i]!) i++;
+  return i;
+}
+/** "0–30", "30–50", … "120+" for the legend: every band carries its label in text. */
+export const speedBandLabels = (unit: SpeedUnit): string[] => {
+  const e = SPEED_BANDS[unit];
+  return [0, ...e].map((lo, i) => (i < e.length ? `${lo}–${e[i]}` : `${lo}+`));
+};
+/** The speed ramp in the current theme (token() falls back to Night's values). */
+export const speedColors = (): string[] => [1, 2, 3, 4, 5, 6].map((i) => token(`speed-${i}`, dataHex("night", `speed-${i}`)));
+
 /** Track points with no value for the channel. */
 export const NO_VALUE_COLOR = "#9aa1a9";
 
@@ -109,8 +145,14 @@ export function lineColorExpression(colors: readonly string[] = RAMP): unknown[]
   return ["match", ["get", "b"], ...pairs, NO_VALUE_COLOR];
 }
 
-/** CSS gradient for the legend bar (the same ramp, low → high, left → right). */
-export const legendGradient = (colors: readonly string[] = RAMP) => `linear-gradient(to right, ${colors.join(", ")})`;
+/** CSS gradient for the legend bar (the same ramp, low → high, left → right); `discrete` draws
+ * hard-edged steps (the speed bands). */
+export const legendGradient = (colors: readonly string[] = RAMP, discrete = false) => {
+  if (!discrete) return `linear-gradient(to right, ${colors.join(", ")})`;
+  const w = 100 / colors.length;
+  const pct = (x: number) => `${Number(x.toFixed(2))}%`;
+  return `linear-gradient(to right, ${colors.map((c, i) => `${c} ${pct(i * w)} ${pct((i + 1) * w)}`).join(", ")})`;
+};
 
 /** One GPS point: [lon, lat, session ms]. */
 export type TrackPoint = [number, number, number];
@@ -141,14 +183,18 @@ export type FeatureCollection = { type: "FeatureCollection"; features: LineFeatu
  * Cut the track into runs of equal bucket. Each run is one LineString that starts at the
  * last point of the previous run, so the coloured line has no gaps between runs.
  */
-export function traceSegments(data: TrackData, channel: string, r: Range | null = rangeOf(data.ch[channel])): FeatureCollection {
+export function traceSegments(
+  data: TrackData, channel: string, r: Range | null = rangeOf(data.ch[channel]),
+  /** Overrides the min-max bucketing (the speed bands). */
+  bucket: (v: number | null) => number | null = (v) => bucketOf(v, r),
+): FeatureCollection {
   const values = data.ch[channel];
   const features: LineFeature[] = [];
   const track = data.track;
   let cur: LineFeature | null = null;
   for (let i = 0; i < track.length; i++) {
     const [lon, lat, ms] = track[i]!;
-    const b = bucketOf(valueAt(data.t, values, ms), r) ?? -1;
+    const b = bucket(valueAt(data.t, values, ms)) ?? -1;
     const pt: [number, number] = [lon, lat];
     const last = cur as LineFeature | null;
     if (last && last.properties.b === b) {

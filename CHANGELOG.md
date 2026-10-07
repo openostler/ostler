@@ -382,6 +382,19 @@ their own changelogs.
   `THIRD_PARTY_LICENSES.md` entry cover the font. The fallback stack is the spec's
   (`system-ui`, `-apple-system`, `Segoe UI`, `Roboto`). Unit tests now read stylesheets as
   text (`?raw`), so the "every custom property is defined" check sees real CSS.
+- **Visual design system V1c: maps follow the theme** (visual spec §3.3, §7, §11; UI spec §12.3;
+  ADR-0009 amendment). The replay map uses OpenFreeMap `dark` in Night, Night dim and Deep
+  night and `positron` in Day (was Liberty in every theme), switching with the theme; the
+  style URL comes from one module (`ui/src/components/replay/mapStyle.ts`), ready to point at
+  the Brain's Ostler Night/Day styles later. The offline fallback draws the `bg` token (was a
+  fixed light grey), `cooperativeGestures` is on (one finger scrolls the page), the
+  attribution is a collapsed (i) control carrying the OpenFreeMap, © OpenMapTiles and
+  OpenStreetMap credits, the trace casing is the `trace-casing` token (2 px), the position
+  puck is the accent, and the map's own controls sit on the theme's glass surface. Speed is
+  drawn in the violet speed ramp in six absolute bands per unit preference (km/h 0–30 … 120+,
+  mph 0–20 … 60+), labelled in the legend, on the map and as `speed-4` in the chart; other
+  channels keep plasma/mako (now read from `data.tokens.json`), and Classic colours no longer
+  applies to speed.
 - **The D2 pack repo moved** from `JamesWrightDavid/discovery2-diag` to
   [`openostler/ostler-pack-lr-d2`](https://github.com/openostler/ostler-pack-lr-d2) (the old
   URL redirects). CI and the Dockerfile `PACK_REPO`, `mac/install.sh`, the no-pack install

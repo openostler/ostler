@@ -9,7 +9,7 @@ import sessionDataFx from "../api/fixtures/session-data.json";
 import sessionsFx from "../api/fixtures/sessions.json";
 import type { GpsFix, Note, SessionMeta, Snapshot } from "../api/schemas";
 import { GlobalTransport } from "../components/GlobalTransport";
-import { lineColorExpression, RAMPS, rangeOf } from "../components/replay/trace";
+import { lineColorExpression, RAMPS, rangeOf, speedColors, type FeatureCollection } from "../components/replay/trace";
 import { fmt } from "../lib/format";
 import { ReplayProvider } from "../state/replay";
 import { AppCtx, type AppContext } from "../state/app";
@@ -164,13 +164,20 @@ describe("Analysis — replay", () => {
     expect([...lanes].map((l) => l.getAttribute("data-lane"))).toEqual(["a", "b"]);
   });
 
-  it("drives the MapLibre handle: plasma A, mako B as a second lane, basemap switch", async () => {
+  it("drives the MapLibre handle: speed A in the violet bands, mako B as a second lane, basemap switch", async () => {
     mapMock.fail = false;
     renderWithApp(ui(demo.id));
     await screen.findByRole("button", { name: "Play" });
     await waitFor(() => expect(mapMock.handle).not.toBeNull());
     const h = mapMock.handle!;
-    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("a", lineColorExpression(RAMPS.plasma)));
+    // GPS speed (km/h) wears the speed ramp in absolute bands, labelled in the legend (visual spec §3.3)
+    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("a", lineColorExpression(speedColors())));
+    expect(speedColors()).toEqual(["#5d3fa8", "#7e5acc", "#9e7be1", "#bf9ef1", "#dec4fb", "#f5e9fe"]);
+    const aTrace = h.setTrace!.mock.calls.filter((c) => c[0] === "a" && c[1]).at(-1)![1] as FeatureCollection;
+    const bands = new Set(aTrace.features.map((f) => f.properties.b));
+    expect([...bands].every((b) => b >= -1 && b <= 5)).toBe(true);
+    expect(bands.size).toBeGreaterThan(1);
+    expect(screen.getByTestId("legend-bands")).toHaveTextContent("0–3030–5050–8080–100100–120120+km/h");
     expect(h.setTrace).toHaveBeenCalledWith("b", null);
     expect(h.setCursor).toHaveBeenCalled();
 
@@ -192,10 +199,10 @@ describe("Analysis — replay", () => {
     expect(localStorage.getItem("d2diag.basemap")).toBe("satellite");
     expect(screen.getByRole("button", { name: "Satellite" })).toHaveAttribute("aria-pressed", "true");
 
-    // Classic: two-colour gradients (A blue → red, B green → purple)
+    // Classic: two-colour gradients for other channels (B green → purple); speed stays violet
     fireEvent.click(screen.getByRole("button", { name: "Classic colours" }));
-    await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("a", lineColorExpression(RAMPS.classicA)));
     await waitFor(() => expect(h.setColor).toHaveBeenCalledWith("b", lineColorExpression(RAMPS.classicB)));
+    expect(h.setColor).not.toHaveBeenCalledWith("a", lineColorExpression(RAMPS.classicA));
 
     // remove trace B from its picker
     fireEvent.click(screen.getByRole("button", { name: /^Trace B: rpm/ }));
