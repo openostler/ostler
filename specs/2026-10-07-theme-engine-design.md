@@ -2,7 +2,7 @@
 title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/design/2026-10/claude-design/README.md]
 summary: >
@@ -39,13 +39,110 @@ This spec replaces the token-only theme file of visual spec §13.1 with the skin
 5. **Authoring is fun.** Live preview on real or recorded data, an inspector, hot reload, and
    start from a copy of any built-in.
 
-## 2. The skin pack, `ostler.skin/1`
+## 2. Packs: mix and match
+
+Theming is split into **separate kinds of pack**, as on Android and in Samsung's Galaxy
+Themes store, where themes, wallpapers, icons and always-on-display styles are separate
+categories. A user can apply a curated set, or pick each piece on its own. These kinds are
+the object kinds of the [app UI model](2026-10-07-app-ui-model-design.md) §9:
+
+| Kind | What it changes | File |
+|---|---|---|
+| **OS skin** (theme pack) | the OS itself: strip, rail, dock, pages, sheets, the kit components, screen layouts, map style; §3 | `.ostskin` |
+| **Widget pack** | widgets, gauges included, each with its own options (§2.2) | `.ostwidgets` |
+| **Icon pack** | the glyphs used across the OS and app icons, mapped to Material Symbols names | `.osticons` |
+| **Wallpaper pack** | backgrounds: still or animated images, per screen size and mode | `.ostwalls` |
+| **Sound pack** | UI sounds and chimes | `.ostsounds` |
+
+Every kind is installed, updated and removed on its own, and each is chosen separately under
+More → Preferences → Theme:
+
+| Row | Picks |
+|---|---|
+| OS skin | which skin is applied, and its options |
+| Widgets | which widget packs are installed, and their global options |
+| Icons | which icon pack is used |
+| Background | the background (§2.3) |
+| Sounds | which sound pack is used |
+
+### 2.1 Bundles
+
+A **bundle** (`.ostheme`) is a curated set: one skin plus any widget packs, an icon pack,
+wallpapers and a sound pack, built to go together, for example "Heritage" with its dials
+and walnut walls. Applying a bundle opens a sheet listing each piece with a tick box: "Apply
+skin · Install widgets · Use icons · Use background · Use sounds". Every piece is ticked
+except the background (§2.3). Each piece can still be swapped later, and removing the
+bundle only removes the pieces nothing else uses. A bundle is a manifest that lists its
+pieces, so each piece is also published and updated as its own Store item.
+
+### 2.2 Widget packs: gauges are widgets
+
+Gauges, dials, tiles, clocks and trip cards are **widgets**, as on Android. They use the
+widget contract of the [launcher spec](2026-10-07-launcher-and-widgets-design.md) §7–§8: a
+manifest entry with sizes, bindings, a preview, the Moving template and a setup page. A
+widget pack is the Ostler equivalent of an Android app that ships widgets, or a KWGT widget
+pack.
+
+How Android widgets work, and what Ostler copies:
+
+| Android | Ostler |
+|---|---|
+| An app declares widget providers with sizes, resize limits and a preview (`AppWidgetProviderInfo`, `previewLayout`) | `contributes.widgets`: sizes in cells, `resize`, `preview` (launcher §8.1) |
+| The launcher hosts the widget; the app supplies a remote view description (`RemoteViews`, or Glance on top of it), so the app never draws inside the launcher | A **declarative widget is OSML** (the XML of §3.3–§3.5) rendered by the OS, so it runs everywhere, phones included; code widgets stay iframe or bundled (launcher §8.3) |
+| A configuration activity opens on placement and can reopen (`configure`, `reconfigurable`) | the setup page (launcher §7.2), extended below with **Look** options |
+| Material You dynamic colour: widgets pick up the system palette | widgets **follow the OS skin** by default through tokens and hooks |
+| KWGT: a pack exposes *globals* (pack-wide options) and *Komponents* (reusable parts with a few exposed options) | **pack options** apply to all of a pack's widgets; **widget options** apply to one placed widget; reusable gauge parts are includes |
+
+**Widget options.** Each widget declares its own options in the same schema as skin options
+(§3.8: choice cards with thumbnails, toggles, sliders, colours, fonts, images). They appear in
+the **Look** section of its setup page. For example, a Heritage gauge:
+
+| Option | Choices |
+|---|---|
+| Face (backing) | Walnut · White enamel · Black crackle · Brass · Follow theme |
+| Needle | Red · Cream · Brass |
+| Bezel | Chrome · Brass · None |
+| Numerals | Serif · Engraved · Plain |
+| Scale | 0–5 k rpm · 0–120 mph · auto from the signal |
+| Glass reflection | on / off |
+
+Options are set at three levels. The lower level wins:
+
+1. **Pack options** (globals): "all Heritage gauges: white enamel".
+2. **Widget options:** this one rev counter has a walnut face.
+3. **Follow theme:** any option can say "follow the OS skin". The widget then reads the
+   skin's tokens and options, so swapping the skin restyles it.
+
+**Skins can restyle any widget**, including other publishers' widgets. They do it through
+the widget frame and the widget's declared parts (§3.4, §6). A widget pack can also ship
+**per-skin styles**, for example a Heritage style for the starter pack's gauge, which apply
+when that skin is active.
+
+### 2.3 The background is independent
+
+The background belongs to the **user**, not the skin:
+
+- **Choosing a skin never changes the background**, unless the user ticks "Use this theme's
+  background" (unticked by default).
+- **Sources:** any installed wallpaper pack, the skin's suggested backgrounds, the user's
+  own photo (chosen Parked, stored on the device, EXIF stripped), a solid colour, a gradient,
+  or none.
+- **Scope:** set for all screens, or per screen (Home, Drive, each page), per screen size,
+  per mode (a day and a night background) and per vehicle and profile.
+- **Treatment:** dim, blur, scrim and position (fill, fit, tile, parallax) are the user's
+  sliders.
+- **The skin decides the frame, not the picture.** The skin styles how the background shows
+  through `[data-part="app-background"]` (§6), for example how cards sit over it, but it
+  never replaces the user's choice.
+
+### 2.4 The OS skin pack, `ostler.skin/1`
+
 
 A zip with the extension `.ostskin`, or a folder in developer mode.
 
 ```
 heritage.ostskin
-├── skin.json                 manifest (§2.1)
+├── skin.json                 manifest (§2.5)
 ├── tokens/                   layer 1: DTCG token files
 │   ├── base.tokens.json
 │   ├── night.tokens.json     per mode (day, night, dim, oled)
@@ -76,7 +173,7 @@ heritage.ostskin
 └── LICENSES/
 ```
 
-### 2.1 Manifest
+### 2.5 Manifest
 
 ```json
 {
@@ -230,18 +327,21 @@ Any kit component can be templated: StatTile, HeroStat, Gauge, Card, Chip, ListR
 Segmented, TabBar items, strip chips, alert card, call card, sheet header and widget frames.
 An add-on widget can be templated through its frame.
 
-### 3.5 SVG gauges and widgets
+### 3.5 SVG gauge definitions
 
-Gauges and widgets work like RealDash gizmos and KLWP elements. A gauge is a stack of SVG or
-image layers whose transforms and visibility are bound to values:
+Gauges are widgets (§2.2) and usually ship in widget packs, but the drawing format is shared.
+A skin can also use it in its own layouts and templates, for example the hero dial of a
+`drive-dashboard.xml`. A gauge is a stack of SVG or image layers whose transforms and
+visibility are bound to values. This works like RealDash gizmos and KLWP elements:
 
 ```xml
 <gauge id="needle-dial" min="0" max="{max}" sweep="240" start="-120">
-  <layer src="needle-dial/face.svg"/>
+  <layer src="faces/{options.face}.webp"/>
   <arc from="{band.normal.min}" to="{band.normal.max}" part="gauge-band"/>
   <arc from="{band.critical.min}" to="{max}" part="gauge-redline"/>
-  <layer src="needle-dial/needle.svg" rotate="value" pivot="50% 85%" step="25ms"/>
-  <layer src="needle-dial/glass.png" blend="screen"/>
+  <layer src="needles/{options.needle}.svg" rotate="value" pivot="50% 85%" step="25ms"/>
+  <layer src="bezels/{options.bezel}.png" if="options.bezel != 'none'"/>
+  <layer src="glass.png" blend="screen" if="options.glass"/>
   <ticks every="{max / 10}" major="5" part="gauge-ticks"/>
 </gauge>
 ```
@@ -249,8 +349,8 @@ image layers whose transforms and visibility are bound to values:
 - **Bindable attributes:** `rotate`, `translate`, `scale`, `opacity`, `fill`, `frame` (for
   sprite sheets), `visible`, `text`.
 - **Mapping helpers:** `step`, `smooth` and `clamp` shape how a value maps to the drawing.
-- **Sharing:** gauges are reusable across skins and can be published on their own, like
-  gizmos.
+- **Options:** `options.*` reads the widget's options (§2.2), so one gauge definition serves
+  every face, needle and bezel choice.
 
 ### 3.6 Assets
 
@@ -260,7 +360,7 @@ image layers whose transforms and visibility are bound to values:
     through `[data-part="app-background"]`.
   - A background can vary per screen, per mode, per screen size and per driving state.
 - **Fonts:** any font whose licence allows embedding and redistribution, declared with its
-  licence (§2.1).
+  licence (§2.5).
 - **Icon packs:** a mapping from Material Symbols names to SVG files, used across the UI.
 - **Map styles:** a MapLibre style JSON, plus sprites and glyphs from the pack. These are
   used instead of Ostler Night and Day.
@@ -448,8 +548,8 @@ in Studio and in More → Theme → Problems. **The UI never goes blank because 
 
 ## 8. Distribution
 
-Skins, variations, gauges, icon packs, wallpapers and sound packs are Store objects (Store
-spec). They can be shared through Ostler Community with previews, imported from a file, a
+OS skins, widget packs, icon packs, wallpaper packs, sound packs and bundles (§2) are
+separate Store objects (Store spec). A bundle's pieces are listed and updated individually. They can be shared through Ostler Community with previews, imported from a file, a
 link, a QR code or a git repository URL, and exported from Studio. Licences come from the
 manifest. A Community listing shows "custom CSS" and "custom layouts" labels so users know
 what a skin changes.
@@ -463,7 +563,7 @@ Each one demonstrates a different layer:
 | Skin | Layers it shows off |
 |---|---|
 | Night | tokens only; the reference |
-| Heritage | theme options (walnut, white enamel, black crackle or brass gauge faces; walnut, burr elm, brushed steel or leather backgrounds; twin or single dial layout), textures, needle-dial gauges, small-caps templates |
+| Heritage | a bundle: the skin, the Heritage gauge widget pack (walnut, white enamel, black crackle or brass faces; needles; bezels), walnut and steel wallpapers, relay-click sounds; skin options (walnut, white enamel, black crackle or brass gauge faces; walnut, burr elm, brushed steel or leather backgrounds; twin or single dial layout), textures, needle-dial gauges, small-caps templates |
 | Race | a twin-dial shell, shift-light CSS, live `--sig-rpm-ratio` |
 | Expedition | a map-first `shell.xml` |
 | Glass, Air and Prism | backdrop CSS over backgrounds |
@@ -514,3 +614,9 @@ Each is a starting point for Duplicate.
   sounds, per screen, screen size, mode and profile, with presets. It also adds the options the
   shell gives every skin: background (including the user's photo), accent, size scale,
   density, icon and sound packs.
+- 0.3 (2026-10-07): §2 splits theming into separate packs, as on Android and in Galaxy
+  Themes: OS skin, widget pack, icon pack, wallpaper pack and sound pack, mixed freely, with
+  bundles as curated sets. Gauges are widgets with their own options at pack, widget and
+  follow-theme levels (Android widget and KWGT model). The background is independent of the
+  skin and belongs to the user. §3.5 becomes the shared gauge drawing format. Draft: awaiting
+  the owner's review.
