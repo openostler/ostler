@@ -1,0 +1,3074 @@
+[
+ {
+  "id": "diagnose-overview",
+  "name": "Module Overview area",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.3",
+    "heading": "5.3 Three rendering tiers",
+    "anchor": "53-three-rendering-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Home built from roles",
+    "anchor": "54-home-built-from-roles",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (tone)",
+   "StatTile",
+   "Chip",
+   "ListRow",
+   "CoverageBar (service mode only)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-a-diagnose.md#diagnose-overview--module-overview-area--new"
+ },
+ {
+  "id": "diagnose-settings",
+  "name": "Module Settings area",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip",
+   "Button (secondary)",
+   "Toggle (new component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-a-diagnose.md#diagnose-settings--module-settings-area--new"
+ },
+ {
+  "id": "diagnose-scan-report",
+  "name": "Scan report",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chip",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-a-diagnose.md#diagnose-scan-report--scan-report--new"
+ },
+ {
+  "id": "diagnose-faults",
+  "name": "Module Faults area",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "Clear allowed with Park evidence; otherwise Clear shows \"Park to clear\"",
+   "moving": "the page is locked; the strip's worst-telltale chip carries the faults (UI §3.2)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§5",
+    "heading": "5. Clearing fault codes, made safe",
+    "anchor": "5-clearing-fault-codes-made-safe",
+    "label": "ADR-0033"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow (status edge)",
+   "Chip (P-code, candidate, toggle)",
+   "Card (tone)",
+   "Button (danger)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-b-faults.md#diagnose-faults--module-faults-area--new"
+ },
+ {
+  "id": "diagnose-clear-result",
+  "name": "Clear codes result",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "the gate refuses; the sheet shows the refusal",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§5",
+    "heading": "5. Clearing fault codes, made safe",
+    "anchor": "5-clearing-fault-codes-made-safe",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "progress rows (as adapter-connect)",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-b-faults.md#diagnose-clear-result--clear-codes-result--new"
+ },
+ {
+  "id": "diagnose-fault-history",
+  "name": "Fault history",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§5",
+    "heading": "5. Clearing fault codes, made safe",
+    "anchor": "5-clearing-fault-codes-made-safe",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§6",
+    "heading": "6. Faults and manufacturer schedules",
+    "anchor": "6-faults-and-manufacturer-schedules",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip (state)",
+   "Segmented",
+   "timeline rows (as maint-timeline)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-b-faults.md#diagnose-fault-history--fault-history--new"
+ },
+ {
+  "id": "diagnose-tests",
+  "name": "Module Tests area (Outputs)",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "idling": "Run disabled \"Switch the engine off\"",
+   "moving": "locked view",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Action categories, the second axis (ADR-0033)",
+    "anchor": "71-action-categories-the-second-axis-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip (status, tier)",
+   "Button (secondary)",
+   "ActiveTestBanner (kit component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-tests--module-tests-area-outputs--new"
+ },
+ {
+  "id": "diagnose-active-test",
+  "name": "Running test banner and Stop",
+  "area": "os",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "the node stops the test and the banner reads \"Stopped: vehicle moving\"",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ActiveTestBanner (kit component)",
+   "Button (danger)",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-active-test--running-test-banner-and-stop--new"
+ },
+ {
+  "id": "diagnose-phone-approve",
+  "name": "Approve on phone",
+  "area": "os",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+    "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "Checklist (new component)",
+   "Button (Cancel focused)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-phone-approve--approve-on-phone--new"
+ },
+ {
+  "id": "diagnose-procedures",
+  "name": "Module Procedures area (Utilities)",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "idling": "\"Switch the engine off\"; Moving: locked view",
+   "moving": "locked view",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip (status, tier, \"never sent\")",
+   "disclosure row"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-procedures--module-procedures-area-utilities--new"
+ },
+ {
+  "id": "diagnose-procedure-start",
+  "name": "Procedure start",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Checklist (new component)",
+   "StatTile",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-procedure-start--procedure-start--new"
+ },
+ {
+  "id": "diagnose-procedure-step",
+  "name": "Procedure step",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "the gate stops it (\"Stopped: vehicle moving\")",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "Button (danger, primary)",
+   "Chip",
+   "StatTile",
+   "Card (alarm tone)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-procedure-step--procedure-step--new"
+ },
+ {
+  "id": "diagnose-procedure-end",
+  "name": "Procedure finished or aborted",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§5",
+    "heading": "5. Clearing fault codes, made safe",
+    "anchor": "5-clearing-fault-codes-made-safe",
+    "label": "ADR-0033"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-c-actions.md#diagnose-procedure-end--procedure-finished-or-aborted--new"
+ },
+ {
+  "id": "live-browser",
+  "name": "Signal browser (Live or Inputs area)",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked view (the Drive home pages are the live surface while Moving)",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Shape",
+    "anchor": "51-shape",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.3",
+    "heading": "5.3 Three rendering tiers",
+    "anchor": "53-three-rendering-tiers",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "TextField (new component)",
+   "Segmented",
+   "SignalRow (new component)",
+   "RangeBar (kit)",
+   "Chip",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-browser--signal-browser-live-or-inputs-area--new"
+ },
+ {
+  "id": "live-signal",
+  "name": "Signal detail",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Shape",
+    "anchor": "51-shape",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Data, evidence, fixtures and scrub",
+    "anchor": "83-data-evidence-fixtures-and-scrub",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "HeroStat",
+   "Gauge",
+   "Area line",
+   "Segmented",
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "the browser shows one line per signal; owners need one place for a signal's live graph, range, confidence and evidence.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-signal--signal-detail--proposed",
+  "proposed": true
+ },
+ {
+  "id": "live-chart",
+  "name": "Live multi-signal chart",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§7",
+    "heading": "7. Analysis tab and Rewind (v1.1)",
+    "anchor": "7-analysis-tab-and-rewind-v11",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-session-logbook-design.md",
+    "section": "",
+    "heading": "UI",
+    "anchor": "ui",
+    "label": "Session logbook"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chart (Canvas lanes, existing)",
+   "Chip",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-chart--live-multi-signal-chart--new"
+ },
+ {
+  "id": "live-picker",
+  "name": "Channel picker sheet",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§5",
+    "heading": "5. Recording UI, notes UI and the replay map",
+    "anchor": "5-recording-ui-notes-ui-and-the-replay-map",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "TextField (new component)",
+   "Chip",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-picker--channel-picker-sheet--new"
+ },
+ {
+  "id": "live-vehicle-slabs",
+  "name": "SLABS vehicle view",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-03-vehicle-view-suite-design.md",
+    "section": "",
+    "heading": "Later slices (same base)",
+    "anchor": "later-slices-same-base",
+    "label": "Vehicle views"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Vehicle → systems → function areas",
+    "anchor": "42-vehicle--systems--function-areas",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "VehicleBase (new component)",
+   "Chip",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "the SLABS page in today's UI (`SlabsCar`) is loved but sits outside the kit; the suite moves it onto the shared base.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-vehicle-slabs--slabs-vehicle-view--proposed",
+  "proposed": true
+ },
+ {
+  "id": "live-vehicle-body",
+  "name": "Body (BCU) vehicle view",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-03-vehicle-view-suite-design.md",
+    "section": "",
+    "heading": "Body (BCU) page — the first slice",
+    "anchor": "body-bcu-page--the-first-slice",
+    "label": "Vehicle views"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "VehicleBase (new component)",
+   "Card (info)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "lamps, doors and windows read best on the car, and it is the first slice of the draft spec.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-vehicle-body--body-bcu-vehicle-view--proposed",
+  "proposed": true
+ },
+ {
+  "id": "live-vehicle-airbag",
+  "name": "SRS airbag vehicle view",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-03-vehicle-view-suite-design.md",
+    "section": "",
+    "heading": "Later slices (same base)",
+    "anchor": "later-slices-same-base",
+    "label": "Vehicle views"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "VehicleBase (new component)",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "airbag faults name places in the car; drawing them there is clearer than a code list.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-vehicle-airbag--srs-airbag-vehicle-view--proposed",
+  "proposed": true
+ },
+ {
+  "id": "live-vehicle-eat",
+  "name": "EAT gearbox vehicle view",
+  "area": "app: Diagnostics",
+  "group": "Live data",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-03-vehicle-view-suite-design.md",
+    "section": "",
+    "heading": "Later slices (same base)",
+    "anchor": "later-slices-same-base",
+    "label": "Vehicle views"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "VehicleBase (new component)",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "the gearbox has many pressures and switches that read best as a diagram.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-d-live.md#live-vehicle-eat--eat-gearbox-vehicle-view--proposed",
+  "proposed": true
+ },
+ {
+  "id": "diagnose-help-recipe",
+  "name": "Capture recipe",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§13",
+    "heading": "13. Help me decode or diagnose",
+    "anchor": "13-help-me-decode-or-diagnose",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.3",
+    "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
+    "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow (step)",
+   "Button (primary, Mark)",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#diagnose-help-recipe--capture-recipe--new"
+ },
+ {
+  "id": "diagnose-help-level",
+  "name": "Level, range and recipients",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§3",
+    "heading": "3. The five levels",
+    "anchor": "3-the-five-levels",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§13",
+    "heading": "13. Help me decode or diagnose",
+    "anchor": "13-help-me-decode-or-diagnose",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§8",
+    "heading": "8. Help threads and L3/L4 hand-overs",
+    "anchor": "8-help-threads-and-l3l4-hand-overs",
+    "label": "Community"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow (level ladder)",
+   "Chip",
+   "Segmented",
+   "Checkbox (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#diagnose-help-level--level-range-and-recipients--new"
+ },
+ {
+  "id": "diagnose-help-preview",
+  "name": "Preview and redaction report",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§11",
+    "heading": "11. Preview, expiry, revoke and audit",
+    "anchor": "11-preview-expiry-revoke-and-audit",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§9.3",
+    "heading": "9.3 `ostler share verify` (platform library and CLI)",
+    "anchor": "93-ostler-share-verify-platform-library-and-cli",
+    "label": "Trip sharing"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "Chip row",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#diagnose-help-preview--preview-and-redaction-report--new"
+ },
+ {
+  "id": "diagnose-help-sent",
+  "name": "Sent, thread and close the loop",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§13",
+    "heading": "13. Help me decode or diagnose",
+    "anchor": "13-help-me-decode-or-diagnose",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§8",
+    "heading": "8. Help threads and L3/L4 hand-overs",
+    "anchor": "8-help-threads-and-l3l4-hand-overs",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§10.2",
+    "heading": "10.2 Decode cards and the workbench",
+    "anchor": "102-decode-cards-and-the-workbench",
+    "label": "Community"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chip (state, countdown)",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#diagnose-help-sent--sent-thread-and-close-the-loop--new"
+ },
+ {
+  "id": "trips-recording",
+  "name": "Recording now (live analysis)",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked view, but the strip's **Mark** chip still works at any speed",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§7",
+    "heading": "7. Analysis tab and Rewind (v1.1)",
+    "anchor": "7-analysis-tab-and-rewind-v11",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§5",
+    "heading": "5. Recording UI, notes UI and the replay map",
+    "anchor": "5-recording-ui-notes-ui-and-the-replay-map",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-06-logs-at-scale-design.md",
+    "section": "§1",
+    "heading": "1. Record only while connected",
+    "anchor": "1-record-only-while-connected",
+    "label": "Logs at scale"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chart (Canvas lanes)",
+   "Button",
+   "Sheet over map"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-recording--recording-now-live-analysis--new"
+ },
+ {
+  "id": "trips-recording-options",
+  "name": "Recording options and flag manager",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "idling": "locked view",
+   "moving": "locked view",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§3",
+    "heading": "3. Audio and accelerometer capture",
+    "anchor": "3-audio-and-accelerometer-capture",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§5",
+    "heading": "5. Recording UI, notes UI and the replay map",
+    "anchor": "5-recording-ui-notes-ui-and-the-replay-map",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§8",
+    "heading": "8. Rewind to the end, automatic flags, the flag manager and ⚑ in replay (v1.3)",
+    "anchor": "8-rewind-to-the-end-automatic-flags-the-flag-manager-and--in-replay-v13",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Toggle (new component)",
+   "Segmented",
+   "TextField (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-recording-options--recording-options-and-flag-manager--new"
+ },
+ {
+  "id": "trips-mark-note",
+  "name": "Mark: \"What happened?\"",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "the mark is saved and no sheet opens; \"Add details later in Trips\"",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§5",
+    "heading": "5. Recording UI, notes UI and the replay map",
+    "anchor": "5-recording-ui-notes-ui-and-the-replay-map",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§8",
+    "heading": "8. Rewind to the end, automatic flags, the flag manager and ⚑ in replay (v1.3)",
+    "anchor": "8-rewind-to-the-end-automatic-flags-the-flag-manager-and--in-replay-v13",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§2",
+    "heading": "2. Notes",
+    "anchor": "2-notes",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "TextField (new component)",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-mark-note--mark-what-happened--new"
+ },
+ {
+  "id": "trips-notes",
+  "name": "Notes and flags panel",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§2",
+    "heading": "2. Notes",
+    "anchor": "2-notes",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§5",
+    "heading": "5. Recording UI, notes UI and the replay map",
+    "anchor": "5-recording-ui-notes-ui-and-the-replay-map",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§8",
+    "heading": "8. Rewind to the end, automatic flags, the flag manager and ⚑ in replay (v1.3)",
+    "anchor": "8-rewind-to-the-end-automatic-flags-the-flag-manager-and--in-replay-v13",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Chip",
+   "Button",
+   "TextField (new component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-notes--notes-and-flags-panel--new"
+ },
+ {
+  "id": "trips-flag-sheet",
+  "name": "Flag sheet",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§8",
+    "heading": "8. Rewind to the end, automatic flags, the flag manager and ⚑ in replay (v1.3)",
+    "anchor": "8-rewind-to-the-end-automatic-flags-the-flag-manager-and--in-replay-v13",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "StatTile",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-flag-sheet--flag-sheet--new"
+ },
+ {
+  "id": "trips-delete",
+  "name": "Delete trip (typed confirm)",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-logs-at-scale-design.md",
+    "section": "§5",
+    "heading": "5. UI",
+    "anchor": "5-ui",
+    "label": "Logs at scale"
+   },
+   {
+    "doc": "specs/2026-10-05-session-logbook-design.md",
+    "section": "",
+    "heading": "UI",
+    "anchor": "ui",
+    "label": "Session logbook"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "TextField (new component)",
+   "Button (danger)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-delete--delete-trip-typed-confirm--new"
+ },
+ {
+  "id": "trips-replay-diagnose",
+  "name": "Whole-app replay of Diagnose",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§4",
+    "heading": "4. Whole-app replay (UI)",
+    "anchor": "4-whole-app-replay-ui",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.1",
+    "heading": "4.1 Garage and active-vehicle switcher",
+    "anchor": "41-garage-and-active-vehicle-switcher",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Scrubber (global transport)",
+   "Chip",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-h-recordings.md#trips-replay-diagnose--whole-app-replay-of-diagnose--new"
+ },
+ {
+  "id": "decode-sniff",
+  "name": "Sniff",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Decode mode in the UI",
+    "anchor": "84-decode-mode-in-the-ui",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.3",
+    "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
+    "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§6",
+    "heading": "6. Admin: Decode and Label",
+    "anchor": "6-admin-decode-and-label",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ByteGrid (new component)",
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-sniff--sniff--new"
+ },
+ {
+  "id": "decode-candidates",
+  "name": "Candidates",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Stages",
+    "anchor": "81-stages",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Data, evidence, fixtures and scrub",
+    "anchor": "83-data-evidence-fixtures-and-scrub",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-candidates--candidates--new"
+ },
+ {
+  "id": "decode-correlate",
+  "name": "Correlate",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Stages",
+    "anchor": "81-stages",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Area line",
+   "scatter chart (new component)",
+   "Segmented",
+   "StatTile",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-correlate--correlate--new"
+ },
+ {
+  "id": "decode-label",
+  "name": "Label",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Stages",
+    "anchor": "81-stages",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§6",
+    "heading": "6. Admin: Decode and Label",
+    "anchor": "6-admin-decode-and-label",
+    "label": "Replay notes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "TextField (new component)",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-label--label--new"
+ },
+ {
+  "id": "decode-verify",
+  "name": "Verify",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Data, evidence, fixtures and scrub",
+    "anchor": "83-data-evidence-fixtures-and-scrub",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "EvidenceChecklist (new component)",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-verify--verify--new"
+ },
+ {
+  "id": "decode-contribute",
+  "name": "Contribute and propose a decode card",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Decode mode in the UI",
+    "anchor": "84-decode-mode-in-the-ui",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.3",
+    "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
+    "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§10.2",
+    "heading": "10.2 Decode cards and the workbench",
+    "anchor": "102-decode-cards-and-the-workbench",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§10.3",
+    "heading": "10.3 Vehicle projects",
+    "anchor": "103-vehicle-projects",
+    "label": "Community"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (mono preview)",
+   "Checkbox (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-contribute--contribute-and-propose-a-decode-card--new"
+ },
+ {
+  "id": "decode-coverage",
+  "name": "Coverage map",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Decode mode in the UI",
+    "anchor": "84-decode-mode-in-the-ui",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "CoverageBar (kit)",
+   "ListRow",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-coverage--coverage-map--new"
+ },
+ {
+  "id": "maint-task",
+  "name": "Task detail",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§3",
+    "heading": "3. Reminder engine",
+    "anchor": "3-reminder-engine",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§6",
+    "heading": "6. Faults and manufacturer schedules",
+    "anchor": "6-faults-and-manufacturer-schedules",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chip",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-task--task-detail--new"
+ },
+ {
+  "id": "maint-odometer",
+  "name": "Odometer reading",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§4",
+    "heading": "4. Odometer and engine-hours ladder",
+    "anchor": "4-odometer-and-engine-hours-ladder",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "TextField (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-odometer--odometer-reading--new"
+ },
+ {
+  "id": "maint-templates",
+  "name": "Task templates and schedules",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§2",
+    "heading": "2. Schema",
+    "anchor": "2-schema",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§6",
+    "heading": "6. Faults and manufacturer schedules",
+    "anchor": "6-faults-and-manufacturer-schedules",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "TextField (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-templates--task-templates-and-schedules--new"
+ },
+ {
+  "id": "maint-import-upload",
+  "name": "Import: upload",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§9",
+    "heading": "9. Import and export",
+    "anchor": "9-import-and-export",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-import-upload--import-upload--new"
+ },
+ {
+  "id": "maint-import-map",
+  "name": "Import: map columns",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§9",
+    "heading": "9. Import and export",
+    "anchor": "9-import-and-export",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "select (new component)",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-import-map--import-map-columns--new"
+ },
+ {
+  "id": "maint-import-preview",
+  "name": "Import: preview",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§9",
+    "heading": "9. Import and export",
+    "anchor": "9-import-and-export",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-import-preview--import-preview--new"
+ },
+ {
+  "id": "maint-export",
+  "name": "Export bundle",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§9",
+    "heading": "9. Import and export",
+    "anchor": "9-import-and-export",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-export--export-bundle--new"
+ },
+ {
+  "id": "maint-buyer-share",
+  "name": "Share history with a buyer",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§10",
+    "heading": "10. Sharing",
+    "anchor": "10-sharing",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "Checkbox (new component)",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-buyer-share--share-history-with-a-buyer--new"
+ },
+ {
+  "id": "diagnose-app-setup",
+  "name": "Diagnostics: first-run setup",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked (Parked only)",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "Diagnostics needs a vehicle, a link and a first scan before its pages mean anything.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-setup--diagnostics-first-run-setup--proposed",
+  "proposed": true
+ },
+ {
+  "id": "diagnose-app-settings",
+  "name": "Diagnostics: settings",
+  "area": "app: Diagnostics",
+  "group": "Diagnose",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle (new component)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "the app's own choices need one home outside system Settings.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-settings--diagnostics-settings--proposed",
+  "proposed": true
+ },
+ {
+  "id": "trips-app-setup",
+  "name": "Trips: first-run setup",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-05-replay-notes-capture-design.md",
+    "section": "§3",
+    "heading": "3. Audio and accelerometer capture",
+    "anchor": "3-audio-and-accelerometer-capture",
+    "label": "Replay notes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.4",
+    "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
+    "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "ListRow",
+   "Toggle (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "recording sources and privacy need choices before the first trip.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--proposed",
+  "proposed": true
+ },
+ {
+  "id": "trips-app-settings",
+  "name": "Trips: settings",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-logs-at-scale-design.md",
+    "section": "§1",
+    "heading": "1. Record only while connected",
+    "anchor": "1-record-only-while-connected",
+    "label": "Logs at scale"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle (new component)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "recording, flags and sharing defaults need one place.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:trips",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-settings--trips-settings--proposed",
+  "proposed": true
+ },
+ {
+  "id": "maint-app-setup",
+  "name": "Maintenance: first-run setup",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§4",
+    "heading": "4. Odometer and engine-hours ladder",
+    "anchor": "4-odometer-and-engine-hours-ladder",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§6",
+    "heading": "6. Faults and manufacturer schedules",
+    "anchor": "6-faults-and-manufacturer-schedules",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§9",
+    "heading": "9. Import and export",
+    "anchor": "9-import-and-export",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "TextField (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "reminders need an odometer anchor, units and currency first.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--proposed",
+  "proposed": true
+ },
+ {
+  "id": "maint-app-settings",
+  "name": "Maintenance: settings",
+  "area": "app: Maintenance & Garage",
+  "group": "Maintenance & Garage",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "locked",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§3",
+    "heading": "3. Reminder engine",
+    "anchor": "3-reminder-engine",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§8",
+    "heading": "8. Reminder delivery",
+    "anchor": "8-reminder-delivery",
+    "label": "Maintenance"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "TextField (new component)",
+   "Toggle (new component)"
+  ],
+  "variants": [],
+  "notes": "leads, reminders and sharing are per vehicle choices.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:maintenance",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--proposed",
+  "proposed": true
+ },
+ {
+  "id": "decode-app-setup",
+  "name": "Decode lab: first-run setup",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.4",
+    "heading": "8.4 Decode mode in the UI",
+    "anchor": "84-decode-mode-in-the-ui",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.3",
+    "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
+    "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StepProgress (new component)",
+   "ListRow",
+   "Checkbox (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "the lab needs service mode, a sniff source and a consent choice.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-setup--decode-lab-first-run-setup--proposed",
+  "proposed": true
+ },
+ {
+  "id": "decode-app-settings",
+  "name": "Decode lab: settings",
+  "area": "developer app: Decode lab",
+  "group": "Decode lab",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "moving": "refused",
+   "parked": "full"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Stages",
+    "anchor": "81-stages",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Data, evidence, fixtures and scrub",
+    "anchor": "83-data-evidence-fixtures-and-scrub",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Toggle (new component)",
+   "TextField (new component)"
+  ],
+  "variants": [],
+  "notes": "sweep limits, scrub and credit need a home.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:decode-lab",
+  "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-settings--decode-lab-settings--proposed",
+  "proposed": true
+ }
+]

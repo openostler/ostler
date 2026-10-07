@@ -1,0 +1,1361 @@
+[
+  {
+    "id": "ia-empty-state",
+    "name": "Empty states",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "full empty state with one action",
+      "moving": "tiles show — and their label only",
+      "passenger": "as Moving"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§2",
+        "heading": "2. Principles",
+        "anchor": "2-principles",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§5.4",
+        "heading": "5.4 Home built from roles",
+        "anchor": "54-home-built-from-roles",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.2",
+        "heading": "8.2 Validation",
+        "anchor": "82-validation",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Empty state (new)",
+      "Button",
+      "Icon"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-empty-state--empty-states--new"
+  },
+  {
+    "id": "ia-loading",
+    "name": "Loading and skeletons",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "static skeleton, caption after 1 s, Retry after 10 s",
+      "moving": "no skeleton in templates; tiles show —"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§5",
+        "heading": "5. Space, radius, elevation, glow, motion",
+        "anchor": "5-space-radius-elevation-glow-motion",
+        "label": "Visual"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.3",
+        "heading": "4.3 Scan all and its honest states",
+        "anchor": "43-scan-all-and-its-honest-states",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Skeleton (new)",
+      "Button (loading)",
+      "StatTile (missing)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-loading--loading-and-skeletons--proposed"
+  },
+  {
+    "id": "ia-error-node-offline",
+    "name": "Node offline",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "banner, stale values with age, actions disabled with reason",
+      "moving": "Link chip only, no banner over Drive mode"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.8",
+        "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+        "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.5",
+        "heading": "4.5 The connection ladder",
+        "anchor": "45-the-connection-ladder",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Banner (new)",
+      "Chip (status)",
+      "StatTile (stale)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-error-node-offline--node-offline--new"
+  },
+  {
+    "id": "ia-error-pack-missing",
+    "name": "Vehicle pack missing",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "warn card with Get it in the Store (owner)",
+      "moving": "not shown; telltale and tiles only"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.4",
+        "heading": "4.4 Identification and fallbacks",
+        "anchor": "44-identification-and-fallbacks",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.1",
+        "heading": "4.1 Garage and active-vehicle switcher",
+        "anchor": "41-garage-and-active-vehicle-switcher",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Card (tone)",
+      "Button",
+      "ListRow"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-error-pack-missing--vehicle-pack-missing--new"
+  },
+  {
+    "id": "ia-error-bus-silent",
+    "name": "Bus silent",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "card per cause with Retry or countdown text",
+      "moving": "Link chip \"Bus · no answer\" only"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.5",
+        "heading": "4.5 The connection ladder",
+        "anchor": "45-the-connection-ladder",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.3",
+        "heading": "4.3 Scan all and its honest states",
+        "anchor": "43-scan-all-and-its-honest-states",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-source-adapters-design.md",
+        "section": "§7",
+        "heading": "7. Safety with no hardware gate",
+        "anchor": "7-safety-with-no-hardware-gate",
+        "label": "Source adapters"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Card (tone)",
+      "Ladder",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-error-bus-silent--bus-silent--new"
+  },
+  {
+    "id": "ia-error-adapter-clone",
+    "name": "Clone or limited adapter",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "capability chips, actions disabled with reason",
+      "moving": "Link chip shows kind and verdict"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-source-adapters-design.md",
+        "section": "§5",
+        "heading": "5. Detection and clone checks",
+        "anchor": "5-detection-and-clone-checks",
+        "label": "Source adapters"
+      },
+      {
+        "doc": "specs/2026-10-07-source-adapters-design.md",
+        "section": "§9",
+        "heading": "9. UI (summary; detail in U-phase specs)",
+        "anchor": "9-ui-summary-detail-in-u-phase-specs",
+        "label": "Source adapters"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Chip (status)",
+      "Button (disabled with reason)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-error-adapter-clone--clone-or-limited-adapter--new"
+  },
+  {
+    "id": "ia-error-permission",
+    "name": "Not allowed",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "inline notice naming who can",
+      "moving": "actions absent; locked view"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Action categories, the second axis (ADR-0033)",
+        "anchor": "71-action-categories-the-second-axis-adr-0033",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§7.2",
+        "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+        "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Inline notice (new)",
+      "Sheet",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-error-permission--not-allowed--new"
+  },
+  {
+    "id": "ia-offline-banner",
+    "name": "Offline and reconnecting",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "bar under the strip with Details",
+      "moving": "no bar over Drive mode; Link chip carries it"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.5",
+        "heading": "4.5 The connection ladder",
+        "anchor": "45-the-connection-ladder",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.7",
+        "heading": "3.7 Network page, peer view and cluster view (accepted 2026-10-06)",
+        "anchor": "37-network-page-peer-view-and-cluster-view-accepted-2026-10-06",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Banner (new)",
+      "Chip (status)",
+      "Button (ghost)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-a.md#ia-offline-banner--offline-and-reconnecting--new"
+  },
+  {
+    "id": "ia-toast",
+    "name": "Toasts and snackbars",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "one toast, 4 s or 8 s with a button",
+      "moving": "only \"Park to edit\" and \"Sent\""
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§6",
+        "heading": "6. The shell ↔ app API",
+        "anchor": "6-the-shell--app-api",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-07-shell-input-design.md",
+        "section": "§14",
+        "heading": "14. Amendment (2026-10-07, DMD round), approved: editing and the movable switcher",
+        "anchor": "14-amendment-2026-10-07-dmd-round-approved-editing-and-the-movable-switcher",
+        "label": "Shell input"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Toast (new)",
+      "Button (ghost)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-b.md#ia-toast--toasts-and-snackbars--new"
+  },
+  {
+    "id": "ia-permission-prompt",
+    "name": "Browser and OS permission prompts",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "our sheet, then the OS prompt; denied card",
+      "moving": "phone only; never on a driver-facing head unit"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Amendment (2026-10-06): the phone build",
+        "anchor": "71-amendment-2026-10-06-the-phone-build",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+        "section": "§7.2",
+        "heading": "7.2 Android notification bridge (opt-in)",
+        "anchor": "72-android-notification-bridge-opt-in",
+        "label": "Phone & Comms"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Sheet",
+      "Button",
+      "Card (tone)",
+      "Icon"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-b.md#ia-permission-prompt--browser-and-os-permission-prompts--new"
+  },
+  {
+    "id": "ia-open-on-phone",
+    "name": "Open on phone",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide",
+      "phone"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "moving": "head unit: \"Sent to your phone\", back to Drive mode",
+      "passenger": "phone opens the route, view-only"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Toast",
+      "`short_list`",
+      "OS notification"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-b.md#ia-open-on-phone--open-on-phone--new"
+  },
+  {
+    "id": "ia-long-job",
+    "name": "Long-running jobs",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "progress, Stop, result",
+      "idling": "Tier 1 jobs with Park evidence",
+      "moving": "Tier 1–3 jobs stop or are refused; pages lock"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.3",
+        "heading": "4.3 Scan all and its honest states",
+        "anchor": "43-scan-all-and-its-honest-states",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§7",
+        "heading": "7. Safety gating tiers",
+        "anchor": "7-safety-gating-tiers",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.2",
+        "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+        "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Progress (new",
+      "[03-components-c](03-components-c.md))",
+      "ListRow",
+      "Button (Stop)",
+      "Toast"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-long-job--long-running-jobs--proposed"
+  },
+  {
+    "id": "ia-destructive-undo",
+    "name": "Destructive actions and undo",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "confirm or toast with Undo",
+      "moving": "destructive buttons absent on driver-facing displays"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Common states and gestures",
+        "anchor": "71-common-states-and-gestures",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.7",
+        "heading": "7.7 Hide, replace and reachability (v0.2)",
+        "anchor": "77-hide-replace-and-reachability-v02",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.8",
+        "heading": "7.8 Reset layout, always reachable (v0.2)",
+        "anchor": "78-reset-layout-always-reachable-v02",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.7",
+        "heading": "3.7 Network page, peer view and cluster view (accepted 2026-10-06)",
+        "anchor": "37-network-page-peer-view-and-cluster-view-accepted-2026-10-06",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.7",
+        "heading": "14.7 Shell screens: gap list and short specs",
+        "anchor": "147-shell-screens-gap-list-and-short-specs",
+        "label": "Accounts"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Sheet",
+      "Button (danger)",
+      "Toast"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-destructive-undo--destructive-actions-and-undo--new"
+  },
+  {
+    "id": "ia-empty-vehicle",
+    "name": "Empty vehicle (no pack matched)",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "banner, coarse identity, Choose your vehicle, Help decode it",
+      "moving": "banner hidden; generic OBD-II tiles only"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§4.4",
+        "heading": "4.4 Identification and fallbacks",
+        "anchor": "44-identification-and-fallbacks",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§8.2",
+        "heading": "8.2 `generic_obd2` and \"unknown vehicle — help decode it\"",
+        "anchor": "82-generic_obd2-and-unknown-vehicle--help-decode-it",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§5.4",
+        "heading": "5.4 Home built from roles",
+        "anchor": "54-home-built-from-roles",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Banner",
+      "StatTile (candidate)",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-empty-vehicle--empty-vehicle-no-pack-matched--new"
+  },
+  {
+    "id": "ia-update-available",
+    "name": "Update available",
+    "area": "os",
+    "group": "Foundation patterns",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "badge dots and update page (owner)",
+      "moving": "no prompts"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Amendment (2026-10-06): the phone build",
+        "anchor": "71-amendment-2026-10-06-the-phone-build",
+        "label": "App model"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "ListRow",
+      "Badge (dot)",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-update-available--update-available--proposed"
+  },
+  {
+    "id": "ia-kit-controls",
+    "name": "Kit sheet: controls",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "hu7",
+      "hu9"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§8",
+        "heading": "8. Charts, gauges and the component kit",
+        "anchor": "8-charts-gauges-and-the-component-kit",
+        "label": "Visual"
+      },
+      {
+        "doc": "specs/2026-10-07-shell-input-design.md",
+        "section": "§9",
+        "heading": "9. Focus visuals",
+        "anchor": "9-focus-visuals",
+        "label": "Shell input"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Button",
+      "Segmented",
+      "Chip",
+      "ListRow",
+      "Card",
+      "Text field",
+      "Toggle"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-controls--kit-sheet-controls--new"
+  },
+  {
+    "id": "ia-kit-data",
+    "name": "Kit sheet: data display",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "hu7",
+      "hu9"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§3.3",
+        "heading": "3.3 Data ramps and chart colours (`data.tokens.json`)",
+        "anchor": "33-data-ramps-and-chart-colours-datatokensjson",
+        "label": "Visual"
+      },
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§8",
+        "heading": "8. Charts, gauges and the component kit",
+        "anchor": "8-charts-gauges-and-the-component-kit",
+        "label": "Visual"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "as listed in [03-components-b §2](03-components-b.md#2-data-display)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-data--kit-sheet-data-display--new"
+  },
+  {
+    "id": "ia-kit-surfaces",
+    "name": "Kit sheet: surfaces and feedback",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§5",
+        "heading": "5. Space, radius, elevation, glow, motion",
+        "anchor": "5-space-radius-elevation-glow-motion",
+        "label": "Visual"
+      },
+      {
+        "doc": "specs/2026-10-07-visual-design-system-design.md",
+        "section": "§8",
+        "heading": "8. Charts, gauges and the component kit",
+        "anchor": "8-charts-gauges-and-the-component-kit",
+        "label": "Visual"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "as listed"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-surfaces--kit-sheet-surfaces-and-feedback--new"
+  },
+  {
+    "id": "ia-kit-shell",
+    "name": "Kit sheet: the OS frame",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§3.2",
+        "heading": "3.2 The persistent status strip",
+        "anchor": "32-the-persistent-status-strip",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.5",
+        "heading": "7.5 Strip (v0.2)",
+        "anchor": "75-strip-v02",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Status strip",
+      "Strip chip",
+      "Strip badge",
+      "Page chip",
+      "Frame",
+      "Locked view card"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-shell--kit-sheet-the-os-frame--new"
+  },
+  {
+    "id": "ia-kit-launcher",
+    "name": "Kit sheet: launcher",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Common states and gestures",
+        "anchor": "71-common-states-and-gestures",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "as in [03-components-a §2](03-components-a.md#2-launcher)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-launcher--kit-sheet-launcher--proposed"
+  },
+  {
+    "id": "ia-kit-moving-templates",
+    "name": "Kit sheet: Moving templates",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§4.3",
+        "heading": "4.3 The Moving section and the template mapping",
+        "anchor": "43-the-moving-section-and-the-template-mapping",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "the templates in [03-components-b §3](03-components-b.md#3-moving-templates-os-only)"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-moving-templates--kit-sheet-moving-templates--new"
+  },
+  {
+    "id": "ia-kit-wizard",
+    "name": "Kit sheet: wizard frame",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu7",
+      "hu9"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§7",
+        "heading": "7. Safety gating tiers",
+        "anchor": "7-safety-gating-tiers",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Wizard frame",
+      "Checklist",
+      "Text field",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-wizard--kit-sheet-wizard-frame--new"
+  },
+  {
+    "id": "ia-kit-key-test",
+    "name": "Kit sheet: key-test grid",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-shell-input-design.md",
+        "section": "§8",
+        "heading": "8. Bindings and the key test",
+        "anchor": "8-bindings-and-the-key-test",
+        "label": "Shell input"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Key-test grid"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-key-test--kit-sheet-key-test-grid--new"
+  },
+  {
+    "id": "ia-kit-hardware",
+    "name": "Kit sheet: hardware set-up",
+    "area": "os",
+    "group": "Foundation kit",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "hu7"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim",
+      "deep-night"
+    ],
+    "driving_states": {
+      "parked": "design frame of the kit",
+      "moving": "Moving variants where the kit has them"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§7",
+        "heading": "7. Safety gating tiers",
+        "anchor": "7-safety-gating-tiers",
+        "label": "UI"
+      }
+    ],
+    "tokens": [],
+    "components": [
+      "Wiring diagram card",
+      "Calibration gauge",
+      "Progress"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "owner": "os",
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-hardware--kit-sheet-hardware-set-up--proposed"
+  }
+]

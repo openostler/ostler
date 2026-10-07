@@ -1,0 +1,166 @@
+{
+ "shell-strip": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-strip--status-strip-all-chips--existing",
+  "owner": "os"
+ },
+ "shell-rail": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-rail--dock-was-the-rail-and-the-phone-bottom-bar--existing",
+  "owner": "os"
+ },
+ "shell-focus-states": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-focus-states--d-pad-focus-states-across-the-kit--existing",
+  "owner": "os"
+ },
+ "shell-telltale-sheet": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-telltale-sheet--worst-telltale-sheet--existing",
+  "owner": "os"
+ },
+ "shell-connection-sheet": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-connection-sheet--link-chip-sheet--existing",
+  "owner": "os"
+ },
+ "shell-vehicle-switcher": {
+  "brief": "references/design/2026-10/brief/40-drive-a.md#shell-vehicle-switcher--active-vehicle-switcher-sheet--existing",
+  "owner": "os"
+ },
+ "shell-locked-view": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-locked-view--locked-view-available-when-parked--existing",
+  "owner": "os"
+ },
+ "shell-passenger-view": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-passenger-view--passenger-prompt-badge-and-frame--existing",
+  "owner": "os"
+ },
+ "shell-phone-moving-banner": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-phone-moving-banner--phone-moving-banner-and-im-a-passenger--existing",
+  "owner": "os"
+ },
+ "shell-driving-page": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-driving-page--using-ostler-while-driving--existing",
+  "owner": "os"
+ },
+ "shell-service-mode": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-service-mode--service-mode-frame-and-strip-badge--existing",
+  "owner": "os"
+ },
+ "shell-brain-wake": {
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-brain-wake--brain-wake-sheet-queued-button-needs-the-brain--existing",
+  "owner": "os"
+ },
+ "home": {
+  "brief": "references/design/2026-10/brief/40-drive-c.md#home--home--existing",
+  "owner": "os"
+ },
+ "more": {
+  "brief": "references/design/2026-10/brief/40-drive-c.md#more--app-drawer-was-more--existing",
+  "owner": "os"
+ },
+ "shell-home-edit": {
+  "brief": "references/design/2026-10/brief/40-drive-c.md#shell-home-edit--home-edit-mode-os-rules--existing",
+  "owner": "os"
+ },
+ "shell-widget-picker": {
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker--widget-picker-os-rules--existing",
+  "owner": "os"
+ },
+ "shell-rail-editor": {
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-rail-editor--dock-editor-was-the-rail-editor--existing",
+  "owner": "os"
+ },
+ "shell-reset-confirm": {
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-reset-confirm--reset-to-default--discard-changes--existing",
+  "owner": "os"
+ },
+ "drive-diagnostic-tiles": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-diagnostic-tiles--diagnostic--tiles--existing",
+  "owner": "app:diagnostics"
+ },
+ "drive-diagnostic-system": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-diagnostic-system--diagnostic--system-view-parked-page--existing",
+  "owner": "app:diagnostics"
+ },
+ "drive-dashboard-cluster": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-dashboard-cluster--dashboard--cluster--existing",
+  "owner": "os"
+ },
+ "drive-dashboard-map": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-dashboard-map--dashboard--map-with-speed-overlay--existing",
+  "owner": "os"
+ },
+ "drive-map-map": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-map-map--map--map--existing",
+  "owner": "app:map"
+ },
+ "drive-minimal-minimal": {
+  "brief": "references/design/2026-10/brief/40-drive-e.md#drive-minimal-minimal--minimal--night--minimal--existing",
+  "owner": "os"
+ },
+ "drive-convoy-map-ptt": {
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-convoy-map-ptt--convoy--ride--map--ptt--existing",
+  "owner": "app:social"
+ },
+ "drive-convoy-ride": {
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-convoy-ride--convoy--ride--ride--existing",
+  "owner": "app:social"
+ },
+ "drive-offroad-tilt": {
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-offroad-tilt--off-road-d2--tilt--existing",
+  "owner": "os"
+ },
+ "drive-offroad-trail": {
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-offroad-trail--off-road-d2--trail-map--existing",
+  "owner": "os"
+ },
+ "drive-split-split": {
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-split-split--split--media--split--existing",
+  "owner": "app:media"
+ },
+ "drive-switcher": {
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-switcher--drive-page-chip-and-flat-page-list-moving-and-d-pad-rules--existing",
+  "owner": "os"
+ },
+ "drive-menu": {
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-menu--drive-menu--existing",
+  "owner": "os"
+ },
+ "drive-modes-list": {
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-modes-list--drive-page-list-os-rules--existing",
+  "owner": "os"
+ },
+ "drive-mode-editor": {
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-mode-editor--drive-page-editor-os-rules--existing",
+  "owner": "os"
+ },
+ "drive-widget-settings": {
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-widget-settings--widget-setup-page-signal-tile-or-gauge-os-rules--existing",
+  "owner": "os"
+ },
+ "drive-mode-preview": {
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-mode-preview--preview-parked-and-moving-side-by-side--existing",
+  "owner": "os"
+ },
+ "drive-layout-import": {
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-layout-import--layout-import-and-export--existing",
+  "owner": "os"
+ },
+ "alert-message": {
+  "brief": "references/design/2026-10/brief/40-drive-i.md#alert-message--message-alert-card--existing",
+  "owner": "os"
+ },
+ "alert-reply-list": {
+  "brief": "references/design/2026-10/brief/40-drive-i.md#alert-reply-list--reply-list--existing",
+  "owner": "os"
+ },
+ "alert-other": {
+  "brief": "references/design/2026-10/brief/40-drive-i.md#alert-other--other-alert-cards--existing",
+  "owner": "os"
+ },
+ "alert-settings": {
+  "brief": "references/design/2026-10/brief/40-drive-i.md#alert-settings--message-alert-settings--existing",
+  "owner": "os"
+ },
+ "call-template": {
+  "brief": "references/design/2026-10/brief/40-drive-i.md#call-template--call-template-incoming-in-call-ptt-call-waiting--existing",
+  "owner": "os"
+ }
+}

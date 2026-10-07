@@ -1,0 +1,2871 @@
+[
+ {
+  "id": "companion-connect",
+  "name": "Connect to your car",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.1",
+    "heading": "2.1 Bootstrap",
+    "anchor": "21-bootstrap",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-a.md#companion-connect--connect-to-your-car--new"
+ },
+ {
+  "id": "companion-home",
+  "name": "Companion home",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.8",
+    "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+    "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/60-apps-companion-a.md#companion-home--companion-home--proposed"
+ },
+ {
+  "id": "companion-car-status",
+  "name": "Car status (from the node)",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.8",
+    "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+    "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "decisions/adr-0032-one-node-optional-brain.md",
+    "section": "",
+    "heading": "",
+    "anchor": "",
+    "label": "ADR-0032"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-a.md#companion-car-status--car-status-from-the-node--new"
+ },
+ {
+  "id": "companion-remote",
+  "name": "Remote access to the car",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full; away from the car"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.8",
+    "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+    "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+    "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-a.md#companion-remote--remote-access-to-the-car--new"
+ },
+ {
+  "id": "companion-alarm-alert",
+  "name": "Alarm alert on the phone",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full screen alert",
+   "moving": "notification; full screen view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "decisions/adr-0032-one-node-optional-brain.md",
+    "section": "",
+    "heading": "",
+    "anchor": "",
+    "label": "ADR-0032"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-a.md#companion-alarm-alert--alarm-alert-on-the-phone--new"
+ },
+ {
+  "id": "companion-notifications",
+  "name": "Notification settings",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md",
+    "section": "",
+    "heading": "",
+    "anchor": "",
+    "label": "ADR-0042"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-notifications--notification-settings--proposed"
+ },
+ {
+  "id": "companion-trips-sync",
+  "name": "Trips on this phone",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0009-session-logbook-and-location.md",
+    "section": "",
+    "heading": "",
+    "anchor": "",
+    "label": "ADR-0009"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-trips-sync--trips-on-this-phone--proposed"
+ },
+ {
+  "id": "companion-favourites-pick",
+  "name": "Pick favourites from this phone",
+  "area": "app: Phone (companion bridge)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "app:phone",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§3.3",
+    "heading": "3.3 The companion bridge (path a)",
+    "anchor": "33-the-companion-bridge-path-a",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§5",
+    "heading": "5. Contacts: one view, two sources",
+    "anchor": "5-contacts-one-view-two-sources",
+    "label": "Phone & Comms"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-favourites-pick--pick-favourites-from-this-phone--new"
+ },
+ {
+  "id": "companion-passenger",
+  "name": "Moving banner and \"I'm a passenger\"",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "moving": "Moving banner; 'I'm a passenger' prompt once per trip",
+   "passenger": "Passenger badge, view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-passenger--moving-banner-and-im-a-passenger--new"
+ },
+ {
+  "id": "companion-approval",
+  "name": "Approve an action on the phone",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "approve with Stop over a local link",
+   "moving": "refused by the node: 'Not while moving'"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+    "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§3.2",
+    "heading": "3.2 The one rule",
+    "anchor": "32-the-one-rule",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-approval--approve-an-action-on-the-phone--new"
+ },
+ {
+  "id": "companion-account",
+  "name": "Account and cars",
+  "area": "os (companion phone app)",
+  "group": "Companion app",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full, on the phone",
+   "moving": "phone Moving banner; view-only"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/60-apps-companion-b.md#companion-account--account-and-cars--proposed"
+ },
+ {
+  "id": "hub-link-account",
+  "name": "Link an Ostler Community account",
+  "area": "app: Community (ostler-app-hub)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§4",
+    "heading": "4. Hub accounts and device linking",
+    "anchor": "4-hub-accounts-and-device-linking",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.5a",
+    "heading": "15.5a Hub identity is hub-owned; one Ostler account later (approved; changes §14.8 later)",
+    "anchor": "155a-hub-identity-is-hub-owned-one-ostler-account-later-approved-changes-148-later",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-link-account--link-an-ostler-community-account--new"
+ },
+ {
+  "id": "hub-help-compose",
+  "name": "Ask for help on Ostler Community",
+  "area": "app: Community (ostler-app-hub)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§8",
+    "heading": "8. Help threads and L3/L4 hand-overs",
+    "anchor": "8-help-threads-and-l3l4-hand-overs",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§13",
+    "heading": "13. Help me decode or diagnose",
+    "anchor": "13-help-me-decode-or-diagnose",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.2",
+    "heading": "13.2 \"Get help with this fault\" (Diagnose; changes §3.4's Diagnose row)",
+    "anchor": "132-get-help-with-this-fault-diagnose-changes-34s-diagnose-row",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.3",
+    "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
+    "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-help-compose--ask-for-help-on-ostler-community--new"
+ },
+ {
+  "id": "hub-name-helper",
+  "name": "Name a helper",
+  "area": "app: Community (ostler-app-hub)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§8",
+    "heading": "8. Help threads and L3/L4 hand-overs",
+    "anchor": "8-help-threads-and-l3l4-hand-overs",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-name-helper--name-a-helper--new"
+ },
+ {
+  "id": "hub-home-card",
+  "name": "Community Home card",
+  "area": "app: Community (ostler-app-hub)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "card on Home",
+   "moving": "hidden; strip count only"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§15.2",
+    "heading": "15.2 In-shell add-on (`ostler-app-hub`)",
+    "anchor": "152-in-shell-add-on-ostler-app-hub",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-home-card--community-home-card--new"
+ },
+ {
+  "id": "hub-settings",
+  "name": "Community: settings",
+  "area": "app: Community (ostler-app-hub)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§4",
+    "heading": "4. Hub accounts and device linking",
+    "anchor": "4-hub-accounts-and-device-linking",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§7",
+    "heading": "7. Item states, links and their controls",
+    "anchor": "7-item-states-links-and-their-controls",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§9",
+    "heading": "9. The forum",
+    "anchor": "9-the-forum",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§15.2",
+    "heading": "15.2 In-shell add-on (`ostler-app-hub`)",
+    "anchor": "152-in-shell-add-on-ostler-app-hub",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-settings--community-settings--new"
+ },
+ {
+  "id": "hub-web-signin",
+  "name": "Community web: sign in and sign up",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§4",
+    "heading": "4. Hub accounts and device linking",
+    "anchor": "4-hub-accounts-and-device-linking",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§13",
+    "heading": "13. Privacy, law, age and licences",
+    "anchor": "13-privacy-law-age-and-licences",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.5a",
+    "heading": "15.5a Hub identity is hub-owned; one Ostler account later (approved; changes §14.8 later)",
+    "anchor": "155a-hub-identity-is-hub-owned-one-ostler-account-later-approved-changes-148-later",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-signin--community-web-sign-in-and-sign-up--new"
+ },
+ {
+  "id": "hub-web-search",
+  "name": "Community web: search",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§9",
+    "heading": "9. The forum",
+    "anchor": "9-the-forum",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§15.1",
+    "heading": "15.1 Web app (`ostler-hub`)",
+    "anchor": "151-web-app-ostler-hub",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-search--community-web-search--new"
+ },
+ {
+  "id": "hub-web-me",
+  "name": "Community web: my account and data",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§5",
+    "heading": "5. Exit guarantee and data rights",
+    "anchor": "5-exit-guarantee-and-data-rights",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§4",
+    "heading": "4. Hub accounts and device linking",
+    "anchor": "4-hub-accounts-and-device-linking",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§13",
+    "heading": "13. Privacy, law, age and licences",
+    "anchor": "13-privacy-law-age-and-licences",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-me--community-web-my-account-and-data--new"
+ },
+ {
+  "id": "hub-web-report",
+  "name": "Community web: report",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§14",
+    "heading": "14. Moderation and abuse",
+    "anchor": "14-moderation-and-abuse",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§13",
+    "heading": "13. Privacy, law, age and licences",
+    "anchor": "13-privacy-law-age-and-licences",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-report--community-web-report--new"
+ },
+ {
+  "id": "hub-web-mod-queue",
+  "name": "Community web: moderation queue",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§14",
+    "heading": "14. Moderation and abuse",
+    "anchor": "14-moderation-and-abuse",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§9",
+    "heading": "9. The forum",
+    "anchor": "9-the-forum",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-mod-queue--community-web-moderation-queue--new"
+ },
+ {
+  "id": "hub-web-helper-viewer",
+  "name": "Community web: helper attachment viewer",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§8",
+    "heading": "8. Help threads and L3/L4 hand-overs",
+    "anchor": "8-help-threads-and-l3l4-hand-overs",
+    "label": "Community"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§9.3",
+    "heading": "9.3 `ostler share verify` (platform library and CLI)",
+    "anchor": "93-ostler-share-verify-platform-library-and-cli",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-helper-viewer--community-web-helper-attachment-viewer--new"
+ },
+ {
+  "id": "hub-web-workbench",
+  "name": "Community web: decode workbench (H2)",
+  "area": "Ostler Community web (ostler-hub, closed, Ostler-run)",
+  "group": "Ostler Community",
+  "layout_classes": [
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:community",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-community-hub-design.md",
+    "section": "§10.2",
+    "heading": "10.2 Decode cards and the workbench",
+    "anchor": "102-decode-cards-and-the-workbench",
+    "label": "Community"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-hub-d.md#hub-web-workbench--community-web-decode-workbench-h2--new"
+ },
+ {
+  "id": "vehicles-convoy",
+  "name": "Convoy layer (ride map)",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full convoy layer",
+   "idling": "full with Park evidence",
+   "moving": "map template: plain convoy markers ≤ 6, leader distance tile",
+   "passenger": "never unlocked; Open on phone"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§6.1",
+    "heading": "6.1 Rides",
+    "anchor": "61-rides",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§6.2",
+    "heading": "6.2 Routes and precision",
+    "anchor": "62-routes-and-precision",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§7",
+    "heading": "7. Head units and driving",
+    "anchor": "7-head-units-and-driving",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Convoy / Ride",
+    "anchor": "54-convoy--ride",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-convoy--convoy-layer-ride-map--new"
+ },
+ {
+  "id": "vehicles-ride-ask",
+  "name": "\"Share live position with this ride?\"",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "waits; ride runs talk-only until answered"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§5",
+    "heading": "5. Per-friend, group and field sharing",
+    "anchor": "5-per-friend-group-and-field-sharing",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§6.1",
+    "heading": "6.1 Rides",
+    "anchor": "61-rides",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.6",
+    "heading": "14.6 Contacts, groups and invites",
+    "anchor": "146-contacts-groups-and-invites",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-ride-ask--share-live-position-with-this-ride--new"
+ },
+ {
+  "id": "vehicles-card-editor",
+  "name": "My garage card editor",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§1",
+    "heading": "1. Scope and boundaries",
+    "anchor": "1-scope-and-boundaries",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§2.2",
+    "heading": "2.2 Garage card (the face of a shared vehicle)",
+    "anchor": "22-garage-card-the-face-of-a-shared-vehicle",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-card-editor--my-garage-card-editor--new"
+ },
+ {
+  "id": "vehicles-seen-by",
+  "name": "\"Seen by\" (my shares' audit)",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§3",
+    "heading": "3. The map (built into Vehicles)",
+    "anchor": "3-the-map-built-into-vehicles",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.3",
+    "heading": "5.3 Share levels and privacy",
+    "anchor": "53-share-levels-and-privacy",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-seen-by--seen-by-my-shares-audit--new"
+ },
+ {
+  "id": "vehicles-relay-link",
+  "name": "Relay link for viewers without Ostler (V5)",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§8",
+    "heading": "8. Viewers without Ostler (later)",
+    "anchor": "8-viewers-without-ostler-later",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§11",
+    "heading": "11. Phases",
+    "anchor": "11-phases",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.2",
+    "heading": "15.2 Audiences: `link` added, `public` brought forward (changes §14.2)",
+    "anchor": "152-audiences-link-added-public-brought-forward-changes-142",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-relay-link--relay-link-for-viewers-without-ostler-v5--new"
+ },
+ {
+  "id": "vehicles-setup",
+  "name": "Vehicles & Map: first setup",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§4",
+    "heading": "4. Ghost mode and the visibility sheet",
+    "anchor": "4-ghost-mode-and-the-visibility-sheet",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§7",
+    "heading": "7. Head units and driving",
+    "anchor": "7-head-units-and-driving",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§2.2",
+    "heading": "2.2 Garage card (the face of a shared vehicle)",
+    "anchor": "22-garage-card-the-face-of-a-shared-vehicle",
+    "label": "Vehicles & Map"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-setup--vehicles--map-first-setup--new"
+ },
+ {
+  "id": "vehicles-settings",
+  "name": "Vehicles & Map: settings",
+  "area": "app: Vehicles & Map",
+  "group": "Vehicles & Map",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:map",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§1",
+    "heading": "1. Scope and boundaries",
+    "anchor": "1-scope-and-boundaries",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§5",
+    "heading": "5. Per-friend, group and field sharing",
+    "anchor": "5-per-friend-group-and-field-sharing",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§7",
+    "heading": "7. Head units and driving",
+    "anchor": "7-head-units-and-driving",
+    "label": "Vehicles & Map"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-map-b.md#vehicles-settings--vehicles--map-settings--new"
+ },
+ {
+  "id": "nav-search",
+  "name": "Destination search results",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§3",
+    "heading": "3. Offline map regions",
+    "anchor": "3-offline-map-regions",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§6.4",
+    "heading": "6.4 Waypoints, places and POIs",
+    "anchor": "64-waypoints-places-and-pois",
+    "label": "Navigation"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-search--destination-search-results--new"
+ },
+ {
+  "id": "nav-route-preview",
+  "name": "Route preview",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§4",
+    "heading": "4. Profiles",
+    "anchor": "4-profiles",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§7",
+    "heading": "7. Curated routes, sharing and reports",
+    "anchor": "7-curated-routes-sharing-and-reports",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§8",
+    "heading": "8. Data, privacy and offline behaviour",
+    "anchor": "8-data-privacy-and-offline-behaviour",
+    "label": "Navigation"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-route-preview--route-preview--new"
+ },
+ {
+  "id": "nav-regions",
+  "name": "Settings → Maps: regions",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§3",
+    "heading": "3. Offline map regions",
+    "anchor": "3-offline-map-regions",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§7",
+    "heading": "7. Maps",
+    "anchor": "7-maps",
+    "label": "Visual"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-regions--settings--maps-regions--new"
+ },
+ {
+  "id": "nav-places",
+  "name": "Saved places and waypoints",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§6.4",
+    "heading": "6.4 Waypoints, places and POIs",
+    "anchor": "64-waypoints-places-and-pois",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§8",
+    "heading": "8. Data, privacy and offline behaviour",
+    "anchor": "8-data-privacy-and-offline-behaviour",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.4",
+    "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
+    "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-places--saved-places-and-waypoints--new"
+ },
+ {
+  "id": "nav-setup",
+  "name": "Navigation: first setup",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§3",
+    "heading": "3. Offline map regions",
+    "anchor": "3-offline-map-regions",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§4",
+    "heading": "4. Profiles",
+    "anchor": "4-profiles",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Voice",
+    "anchor": "54-voice",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Speed limit (off by default)",
+    "anchor": "55-speed-limit-off-by-default",
+    "label": "Navigation"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-setup--navigation-first-setup--new"
+ },
+ {
+  "id": "nav-settings",
+  "name": "Navigation: settings",
+  "area": "app: Navigation",
+  "group": "Navigation",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:navigation",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.2",
+    "heading": "5.2 While Moving: the `map` template's next manoeuvre",
+    "anchor": "52-while-moving-the-map-templates-next-manoeuvre",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Voice",
+    "anchor": "54-voice",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Speed limit (off by default)",
+    "anchor": "55-speed-limit-off-by-default",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.6",
+    "heading": "5.6 Drive menu rows",
+    "anchor": "56-drive-menu-rows",
+    "label": "Navigation"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§6.2",
+    "heading": "6.2 Import and export",
+    "anchor": "62-import-and-export",
+    "label": "Navigation"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-nav-b.md#nav-settings--navigation-settings--new"
+ },
+ {
+  "id": "phone-messages",
+  "name": "Phone: Messages tab",
+  "area": "app: Phone",
+  "group": "Phone & Comms",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1); alerts arrive as cards"
+  },
+  "owner": "app:phone",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§7.1",
+    "heading": "7.1 SMS and iMessage (MAP, both platforms)",
+    "anchor": "71-sms-and-imessage-map-both-platforms",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§10",
+    "heading": "10. UI per layout class and driving state",
+    "anchor": "10-ui-per-layout-class-and-driving-state",
+    "label": "Phone & Comms"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-messages--phone-messages-tab--new"
+ },
+ {
+  "id": "phone-settings",
+  "name": "Phone: Settings tab",
+  "area": "app: Phone",
+  "group": "Phone & Comms",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:phone",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§6.1",
+    "heading": "6.1 Incoming",
+    "anchor": "61-incoming",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§8",
+    "heading": "8. Alerts and rate limits (shared)",
+    "anchor": "8-alerts-and-rate-limits-shared",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§9",
+    "heading": "9. Data and privacy",
+    "anchor": "9-data-and-privacy",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§13",
+    "heading": "13. Security",
+    "anchor": "13-security",
+    "label": "Phone & Comms"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-settings--phone-settings-tab--new"
+ },
+ {
+  "id": "share-audience-picker",
+  "name": "Who to share with",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.2",
+    "heading": "14.2 Audiences and grants",
+    "anchor": "142-audiences-and-grants",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.2",
+    "heading": "15.2 Audiences: `link` added, `public` brought forward (changes §14.2)",
+    "anchor": "152-audiences-link-added-public-brought-forward-changes-142",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§3",
+    "heading": "3. The five levels",
+    "anchor": "3-the-five-levels",
+    "label": "Trip sharing"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-a.md#share-audience-picker--who-to-share-with--new"
+ },
+ {
+  "id": "share-link-controls",
+  "name": "Link controls (More options)",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.4",
+    "heading": "15.4 Link controls (changes §14.2 and §14.12)",
+    "anchor": "154-link-controls-changes-142-and-1412",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-a.md#share-link-controls--link-controls-more-options--new"
+ },
+ {
+  "id": "share-visible-summary",
+  "name": "\"What each audience will see\"",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "not offered; only Go ghost"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.3",
+    "heading": "14.3 Ghost mode",
+    "anchor": "143-ghost-mode",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§4",
+    "heading": "4. Ghost mode and the visibility sheet",
+    "anchor": "4-ghost-mode-and-the-visibility-sheet",
+    "label": "Vehicles & Map"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-b.md#share-visible-summary--what-each-audience-will-see--new"
+ },
+ {
+  "id": "share-recipient-view",
+  "name": "A trip shared with me",
+  "area": "app: Trips",
+  "group": "Trips",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:trips",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§15.4",
+    "heading": "15.4 Link controls (changes §14.2 and §14.12)",
+    "anchor": "154-link-controls-changes-142-and-1412",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§2.2",
+    "heading": "2.2 Garage card (the face of a shared vehicle)",
+    "anchor": "22-garage-card-the-face-of-a-shared-vehicle",
+    "label": "Vehicles & Map"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-b.md#share-recipient-view--a-trip-shared-with-me--new"
+ },
+ {
+  "id": "share-relay-viewer",
+  "name": "Relay link viewer (browser)",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "web page; no driving rules"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-trip-sharing-design.md",
+    "section": "§10",
+    "heading": "10. Delivery paths and link controls",
+    "anchor": "10-delivery-paths-and-link-controls",
+    "label": "Trip sharing"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Invite payload",
+    "anchor": "52-invite-payload",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-b.md#share-relay-viewer--relay-link-viewer-browser--new"
+ },
+ {
+  "id": "share-invite-code",
+  "name": "Enter an invite code",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.6",
+    "heading": "14.6 Contacts, groups and invites",
+    "anchor": "146-contacts-groups-and-invites",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-b.md#share-invite-code--enter-an-invite-code--new"
+ },
+ {
+  "id": "share-invite-accept",
+  "name": "Accept an invite",
+  "area": "os (sharing)",
+  "group": "Sharing",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "os",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.6",
+    "heading": "14.6 Contacts, groups and invites",
+    "anchor": "146-contacts-groups-and-invites",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Invite payload",
+    "anchor": "52-invite-payload",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-share-b.md#share-invite-accept--accept-an-invite--new"
+ },
+ {
+  "id": "social-conversation",
+  "name": "Social: conversation",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "read; composer needs Park evidence",
+   "moving": "locked; alert_card instead",
+   "passenger": "phone: full"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§4",
+    "heading": "4. Messaging",
+    "anchor": "4-messaging",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§6",
+    "heading": "6. The link router and per-class rules",
+    "anchor": "6-the-link-router-and-per-class-rules",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§13",
+    "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+    "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-a.md#social-conversation--social-conversation--new"
+ },
+ {
+  "id": "social-ride-new",
+  "name": "Social: New ride",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§3",
+    "heading": "3. Contacts, friends, groups and rides",
+    "anchor": "3-contacts-friends-groups-and-rides",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.6",
+    "heading": "14.6 Contacts, groups and invites",
+    "anchor": "146-contacts-groups-and-invites",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-07-vehicles-and-map-addon-design.md",
+    "section": "§6.1",
+    "heading": "6.1 Rides",
+    "anchor": "61-rides",
+    "label": "Vehicles & Map"
+   },
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§7",
+    "heading": "7. Curated routes, sharing and reports",
+    "anchor": "7-curated-routes-sharing-and-reports",
+    "label": "Navigation"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-ride-new--social-new-ride--new"
+ },
+ {
+  "id": "social-ptt-sheet",
+  "name": "Social: PTT and ride call sheet",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full sheet",
+   "idling": "full sheet",
+   "moving": "call template: Hold to talk, Mute, End"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§2",
+    "heading": "2. Where it sits in the shell",
+    "anchor": "2-where-it-sits-in-the-shell",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§5",
+    "heading": "5. Push-to-talk, voice calls and video calls",
+    "anchor": "5-push-to-talk-voice-calls-and-video-calls",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§13",
+    "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+    "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Convoy / Ride",
+    "anchor": "54-convoy--ride",
+    "label": "Drive modes"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-ptt-sheet--social-ptt-and-ride-call-sheet--new"
+ },
+ {
+  "id": "social-call-voice",
+  "name": "Social: voice call (Parked)",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "call template",
+   "moving": "call template, audio only",
+   "passenger": "phone: full"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§5",
+    "heading": "5. Push-to-talk, voice calls and video calls",
+    "anchor": "5-push-to-talk-voice-calls-and-video-calls",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§6",
+    "heading": "6. The link router and per-class rules",
+    "anchor": "6-the-link-router-and-per-class-rules",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§13",
+    "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+    "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-call-voice--social-voice-call-parked--new"
+ },
+ {
+  "id": "social-call-video",
+  "name": "Social: video call (Parked, passenger devices)",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "driver-facing: call template, no video",
+   "moving": "driver-facing: never video",
+   "passenger": "phone or rear screen: full"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§5",
+    "heading": "5. Push-to-talk, voice calls and video calls",
+    "anchor": "5-push-to-talk-voice-calls-and-video-calls",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§6",
+    "heading": "6. The link router and per-class rules",
+    "anchor": "6-the-link-router-and-per-class-rules",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "references/research/calls_video_camera_sharing.md",
+    "section": "§7",
+    "heading": "7. Calls in a moving car: what is allowed",
+    "anchor": "7-calls-in-a-moving-car-what-is-allowed",
+    "label": "Calls research"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-call-video--social-video-call-parked-passenger-devices--new"
+ },
+ {
+  "id": "social-camera-grant",
+  "name": "Social: share a camera",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§7",
+    "heading": "7. Camera sharing (S4)",
+    "anchor": "7-camera-sharing-s4",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   },
+   {
+    "doc": "decisions/adr-0038-mesh-car-to-car-and-off-grid.md",
+    "section": "",
+    "heading": "",
+    "anchor": "",
+    "label": "ADR-0038"
+   },
+   {
+    "doc": "references/research/calls_video_camera_sharing.md",
+    "section": "§8",
+    "heading": "8. Camera sharing",
+    "anchor": "8-camera-sharing",
+    "label": "Calls research"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-camera-grant--social-share-a-camera--new"
+ },
+ {
+  "id": "social-camera-viewer",
+  "name": "Social: live camera viewer",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "never on a driver-facing display",
+   "passenger": "phone: full"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§7",
+    "heading": "7. Camera sharing (S4)",
+    "anchor": "7-camera-sharing-s4",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-camera-viewer--social-live-camera-viewer--new"
+ },
+ {
+  "id": "social-being-viewed",
+  "name": "Social: \"Being viewed\" badge and sheet",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "badge and sheet",
+   "moving": "badge; one-tap Stop all"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§7",
+    "heading": "7. Camera sharing (S4)",
+    "anchor": "7-camera-sharing-s4",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.3",
+    "heading": "14.3 Ghost mode",
+    "anchor": "143-ghost-mode",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-being-viewed--social-being-viewed-badge-and-sheet--new"
+ },
+ {
+  "id": "social-interior-consent",
+  "name": "Social: interior camera consent",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "waits for Parked; share stays off"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§7",
+    "heading": "7. Camera sharing (S4)",
+    "anchor": "7-camera-sharing-s4",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-interior-consent--social-interior-camera-consent--new"
+ },
+ {
+  "id": "social-settings",
+  "name": "Social: settings",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§3",
+    "heading": "3. Contacts, friends, groups and rides",
+    "anchor": "3-contacts-friends-groups-and-rides",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§8",
+    "heading": "8. Driving, privacy and compliance",
+    "anchor": "8-driving-privacy-and-compliance",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§9",
+    "heading": "9. Media stack and integrations",
+    "anchor": "9-media-stack-and-integrations",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§12",
+    "heading": "12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving",
+    "anchor": "12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§13",
+    "heading": "13. Amendment (2026-10-07, DMD round), approved: comms overlap",
+    "anchor": "13-amendment-2026-10-07-dmd-round-approved-comms-overlap",
+    "label": "Social"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-settings--social-settings--new"
+ },
+ {
+  "id": "social-setup",
+  "name": "Social: first setup",
+  "area": "app: Social",
+  "group": "Social",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "owner": "app:social",
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§1",
+    "heading": "1. Purpose and non-goals",
+    "anchor": "1-purpose-and-non-goals",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§3",
+    "heading": "3. Contacts, friends, groups and rides",
+    "anchor": "3-contacts-friends-groups-and-rides",
+    "label": "Social"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.3",
+    "heading": "14.3 Ghost mode",
+    "anchor": "143-ghost-mode",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "brief": "references/design/2026-10/brief/60-apps-social-b.md#social-setup--social-first-setup--new"
+ }
+]

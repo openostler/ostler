@@ -1,0 +1,1480 @@
+[
+ {
+  "id": "security-arm-sheet",
+  "name": "Arm the alarm",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full sheet",
+   "idling": "full sheet",
+   "moving": "arm template short form (Arm / Cancel)",
+   "passenger": "as Moving on head units"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§1",
+    "heading": "1. Categories beside tiers",
+    "anchor": "1-categories-beside-tiers",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "decisions/adr-0040-power-states-and-wake.md",
+    "section": "§5",
+    "heading": "5. The owner's rule for actions",
+    "anchor": "5-the-owners-rule-for-actions",
+    "label": "ADR-0040"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Sheet",
+   "Segmented",
+   "ListRow (warn)",
+   "Button",
+   "Toast"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/85-security-a-main.md#security-arm-sheet--arm-the-alarm--new"
+ },
+ {
+  "id": "security-disarm-sheet",
+  "name": "Disarm (at the car)",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full sheet",
+   "idling": "not offered: 'Switch the engine off to disarm'",
+   "moving": "not offered: 'Park to disarm'"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§1",
+    "heading": "1. Categories beside tiers",
+    "anchor": "1-categories-beside-tiers",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Action categories, the second axis (ADR-0033)",
+    "anchor": "71-action-categories-the-second-axis-adr-0033",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Sheet",
+   "Button",
+   "Toast"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/85-security-a-main.md#security-disarm-sheet--disarm-at-the-car--new"
+ },
+ {
+  "id": "security-remote-disarm",
+  "name": "Disarm remotely",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full sheet (car parked; node re-checks)",
+   "moving": "not offered (car must be parked)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+    "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-02-gps-tracker-alarm-design.md",
+    "section": "Security threat model (this is a new unlock path)",
+    "heading": "Security threat model (this is a new unlock path)",
+    "anchor": "security-threat-model-this-is-a-new-unlock-path",
+    "label": "Tracker and alarm (draft)"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Sheet",
+   "Card (notice)",
+   "Button",
+   "Strip badge (\"Remote control enabled\")"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/85-security-a-main.md#security-remote-disarm--disarm-remotely--new"
+ },
+ {
+  "id": "security-events",
+  "name": "Events",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)",
+   "passenger": "phone only after I'm a passenger"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Chip (filter)",
+   "Segmented",
+   "ListRow",
+   "Card (alarm tone)",
+   "Empty state",
+   "Skeleton"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-b-events.md#security-events--events--new"
+ },
+ {
+  "id": "security-event-detail",
+  "name": "Event",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-02-gps-tracker-alarm-design.md",
+    "section": "Read side — alarm/security via signal taps",
+    "heading": "Read side — alarm/security via signal taps",
+    "anchor": "read-side--alarmsecurity-via-signal-taps",
+    "label": "Tracker and alarm (draft)"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "ListRow",
+   "Chip (status)",
+   "Map",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-b-events.md#security-event-detail--event--new"
+ },
+ {
+  "id": "security-clip",
+  "name": "Event clip",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full playback",
+   "idling": "full playback",
+   "moving": "never plays on driver-facing displays; locked view"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0040-power-states-and-wake.md",
+    "section": "§3",
+    "heading": "3. Wake sources",
+    "anchor": "3-wake-sources",
+    "label": "ADR-0040"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "video frame (new component, as in 45-launcher-f)",
+   "Scrubber",
+   "Segmented",
+   "ListRow",
+   "Button (danger)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-b-events.md#security-clip--event-clip--new"
+ },
+ {
+  "id": "security-alert-card",
+  "name": "Alarm alert card",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "card with Open and Disarm",
+   "idling": "card with Open; Disarm reads 'Park to disarm'",
+   "moving": "alert_card template: icon + 2 lines, Open on phone and Dismiss",
+   "passenger": "same card"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§15.2",
+    "heading": "15.2 Editing (changes §3.4 and §5.3)",
+    "anchor": "152-editing-changes-34-and-53",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "`alert_card` (shell template)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/85-security-b-events.md#security-alert-card--alarm-alert-card--new"
+ },
+ {
+  "id": "security-tracker",
+  "name": "Where's my car",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full",
+   "moving": "head unit: Map app or map template instead; phone Moving banner"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0009-session-logbook-and-location.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0009"
+   },
+   {
+    "doc": "specs/2026-10-02-gps-tracker-alarm-design.md",
+    "section": "GPS + reporting",
+    "heading": "GPS + reporting",
+    "anchor": "gps--reporting",
+    "label": "Tracker and alarm (draft)"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Map",
+   "Sheet over map",
+   "Button",
+   "ListRow",
+   "Chip (fix age)",
+   "Empty state"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-c-tracker.md#security-tracker--wheres-my-car--new"
+ },
+ {
+  "id": "security-trail",
+  "name": "Movement trail",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0009-session-logbook-and-location.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0009"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Map",
+   "ListRow",
+   "Button",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-c-tracker.md#security-trail--movement-trail--proposed"
+ },
+ {
+  "id": "security-geofences",
+  "name": "Geofences",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "view; edit needs Park evidence",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0032-one-node-optional-brain.md",
+    "section": "A. GPS split: two receivers, two jobs",
+    "heading": "A. GPS split: two receivers, two jobs",
+    "anchor": "a-gps-split-two-receivers-two-jobs",
+    "label": "ADR-0032"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Map",
+   "ListRow",
+   "Toggle",
+   "Button",
+   "Empty state"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-c-tracker.md#security-geofences--geofences--new"
+ },
+ {
+  "id": "security-geofence-edit",
+  "name": "Add or edit a geofence",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "needs Park evidence for typing",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0032-one-node-optional-brain.md",
+    "section": "A. GPS split: two receivers, two jobs",
+    "heading": "A. GPS split: two receivers, two jobs",
+    "anchor": "a-gps-split-two-receivers-two-jobs",
+    "label": "ADR-0032"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Map",
+   "Segmented",
+   "Text field",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-c-tracker.md#security-geofence-edit--add-or-edit-a-geofence--new"
+ },
+ {
+  "id": "security-tow-mode",
+  "name": "Tow and theft mode",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "view; changes need Park evidence",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0040-power-states-and-wake.md",
+    "section": "§4",
+    "heading": "4. Wake requests",
+    "anchor": "4-wake-requests",
+    "label": "ADR-0040"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-02-gps-tracker-alarm-design.md",
+    "section": "GPS + reporting",
+    "heading": "GPS + reporting",
+    "anchor": "gps--reporting",
+    "label": "Tracker and alarm (draft)"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Card (tone)",
+   "Toggle",
+   "Segmented",
+   "Button",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-c-tracker.md#security-tow-mode--tow-and-theft-mode--proposed"
+ },
+ {
+  "id": "security-setup-welcome",
+  "name": "Set up Security",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0039"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Wizard frame",
+   "ListRow",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-welcome--set-up-security--proposed"
+ },
+ {
+  "id": "security-setup-done",
+  "name": "Security is ready",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Wizard frame",
+   "ListRow",
+   "Chip (status)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-done--security-is-ready--proposed"
+ },
+ {
+  "id": "security-channels",
+  "name": "Where alerts go",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "view; typing needs Park evidence",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§7",
+    "heading": "7. Alarm paths",
+    "anchor": "7-alarm-paths",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "decisions/adr-0040-power-states-and-wake.md",
+    "section": "§6",
+    "heading": "6. Latency budgets",
+    "anchor": "6-latency-budgets",
+    "label": "ADR-0040"
+   },
+   {
+    "doc": "decisions/adr-0038-mesh-car-to-car-and-off-grid.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0038"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Card (alarm tone)",
+   "ListRow",
+   "Toggle",
+   "Button",
+   "Text field",
+   "Inline notice"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-channels--where-alerts-go--new"
+ },
+ {
+  "id": "security-settings",
+  "name": "Security settings",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "view; changes need Park evidence",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§2",
+    "heading": "2. Roles grant categories",
+    "anchor": "2-roles-grant-categories",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Toggle",
+   "Button (danger)",
+   "Text field (typed confirm)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-settings--security-settings--proposed"
+ },
+ {
+  "id": "security-widget-arm",
+  "name": "Arm button widget",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "placed widget; tap opens the confirm sheet",
+   "idling": "as Parked (disarm not offered)",
+   "moving": "not shown; arming via the Drive menu row"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Driver-safe templates",
+    "anchor": "44-driver-safe-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Widget frame",
+   "Button",
+   "Segmented",
+   "Toggle"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-e-widgets.md#security-widget-arm--arm-button-widget--proposed"
+ },
+ {
+  "id": "security-widget-last-event",
+  "name": "Last event widget",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "placed widget",
+   "idling": "placed widget",
+   "moving": "not shown"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§6",
+    "heading": "6. Add-on devices",
+    "anchor": "6-add-on-devices",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Widget frame",
+   "ListRow",
+   "Chip (filter)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-e-widgets.md#security-widget-last-event--last-event-widget--proposed"
+ },
+ {
+  "id": "security-widget-tracker-map",
+  "name": "Tracker mini-map widget",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "placed widget",
+   "idling": "placed widget",
+   "moving": "not shown (Map app map template covers the moving car)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0009-session-logbook-and-location.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0009"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§7",
+    "heading": "7. Maps",
+    "anchor": "7-maps",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Widget frame",
+   "Map",
+   "Segmented",
+   "Toggle"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-e-widgets.md#security-widget-tracker-map--tracker-mini-map-widget--proposed"
+ },
+ {
+  "id": "security-companion-remote",
+  "name": "Security on the phone, away from the car",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full (remote: view plus arm and disarm)",
+   "moving": "phone Moving banner, view only"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0033-action-categories-and-approvals.md",
+    "section": "§6",
+    "heading": "6. Local links, phone approval and the install override",
+    "anchor": "6-local-links-phone-approval-and-the-install-override",
+    "label": "ADR-0033"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Phone approval and remote paths (ADR-0033)",
+    "anchor": "72-phone-approval-and-remote-paths-adr-0033",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.8",
+    "heading": "3.8 Asleep, waking and queued actions (accepted 2026-10-06)",
+    "anchor": "38-asleep-waking-and-queued-actions-accepted-2026-10-06",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only",
+   "Ostler Night / Ostler Day map styles, collapsed attribution control"
+  ],
+  "components": [
+   "Chip (link)",
+   "Banner",
+   "Card (tone)",
+   "ListRow",
+   "Map",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-companion-remote--security-on-the-phone-away-from-the-car--new"
+ },
+ {
+  "id": "security-guardian-home",
+  "name": "Guardian home pages",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full grid",
+   "idling": "full grid",
+   "moving": "head unit: strip, arm template and alert cards only; phone Moving banner",
+   "passenger": "phone banner"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision",
+    "heading": "Decision",
+    "anchor": "decision",
+    "label": "ADR-0039"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Home built from roles",
+    "anchor": "54-home-built-from-roles",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "Home page grid",
+   "Widget frame",
+   "Dock",
+   "Dock item",
+   "Page indicator dots",
+   "Strip chip",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--proposed"
+ },
+ {
+  "id": "security-crash-sos",
+  "name": "Crash SOS (later)",
+  "area": "app: Security",
+  "group": "Security",
+  "layout_classes": [
+   "phone",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "card",
+   "moving": "alert_card template: 2 lines, I'm OK and Send now",
+   "passenger": "same card"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.5",
+    "heading": "14.5 Precision, and who can raise it",
+    "anchor": "145-precision-and-who-can-raise-it",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)",
+   "accent (interactive and live only)",
+   "Material Symbols (outlined) only"
+  ],
+  "components": [
+   "`alert_card`",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:security",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-crash-sos--crash-sos-later--proposed"
+ }
+]

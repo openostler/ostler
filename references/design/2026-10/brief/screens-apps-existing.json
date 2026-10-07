@@ -1,0 +1,218 @@
+{
+ "accounts-s1": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-a.md#accounts-s1--accounts-s1-first-run--existing",
+  "owner": "os"
+ },
+ "accounts-s2": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-a.md#accounts-s2--accounts-s2-sign-in--existing",
+  "owner": "os"
+ },
+ "accounts-s3": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-a.md#accounts-s3--accounts-s3-passkeys--existing",
+  "owner": "os"
+ },
+ "accounts-s4": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-a.md#accounts-s4--accounts-s4-head-unit-profile-switcher--existing",
+  "owner": "os"
+ },
+ "accounts-s5": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-a.md#accounts-s5--accounts-s5-users-and-roles--existing",
+  "owner": "os"
+ },
+ "accounts-s6": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-b.md#accounts-s6--accounts-s6-signed-in-devices--existing",
+  "owner": "os"
+ },
+ "accounts-s7": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-b.md#accounts-s7--accounts-s7-contacts-groups-and-invites--existing",
+  "owner": "os"
+ },
+ "accounts-s8": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-b.md#accounts-s8--accounts-s8-sharing-who-sees-what--existing",
+  "owner": "os"
+ },
+ "accounts-s9": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-b.md#accounts-s9--accounts-s9-ghost-toggle--existing",
+  "owner": "os"
+ },
+ "accounts-s10": {
+  "brief": "references/design/2026-10/brief/60-apps-accounts-b.md#accounts-s10--accounts-s10-safety-contacts--existing",
+  "owner": "os"
+ },
+ "addons-catalogue": {
+  "brief": "references/design/2026-10/brief/60-apps-addons.md#addons-catalogue--more--add-ons-now-the-store-and-app-info--existing",
+  "owner": "os"
+ },
+ "hub-web-p1": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p1--community-web-p1-discover--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p2": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p2--community-web-p2-shared-trip--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p3": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p3--community-web-p3-help-thread--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p4": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p4--community-web-p4-group-or-club--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p5": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p5--community-web-p5-live-ride--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p6": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p6--community-web-p6-event--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p7": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-a.md#hub-web-p7--community-web-p7-profile--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p8": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p8--community-web-p8-publish--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p9": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p9--community-web-p9-my-shares--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p10": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p10--community-web-p10-forum--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p11": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p11--community-web-p11-thread--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p12": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p12--community-web-p12-vehicle-project--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p13": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p13--community-web-p13-decode-card--existing",
+  "owner": "app:community"
+ },
+ "hub-web-p14": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-b.md#hub-web-p14--community-web-p14-wiki-page--existing",
+  "owner": "app:community"
+ },
+ "hub-shell": {
+  "brief": "references/design/2026-10/brief/60-apps-hub-c.md#hub-shell--app-drawer--community--existing",
+  "owner": "app:community"
+ },
+ "vehicles-map": {
+  "brief": "references/design/2026-10/brief/60-apps-map-a.md#vehicles-map--vehicles--map-live-map--existing",
+  "owner": "app:map"
+ },
+ "vehicles-list": {
+  "brief": "references/design/2026-10/brief/60-apps-map-a.md#vehicles-list--vehicles-list--existing",
+  "owner": "app:map"
+ },
+ "vehicles-garage-card": {
+  "brief": "references/design/2026-10/brief/60-apps-map-a.md#vehicles-garage-card--garage-card-and-view-as--existing",
+  "owner": "app:map"
+ },
+ "vehicles-visibility": {
+  "brief": "references/design/2026-10/brief/60-apps-map-a.md#vehicles-visibility--visibility-sheet--existing",
+  "owner": "app:map"
+ },
+ "vehicles-share": {
+  "brief": "references/design/2026-10/brief/60-apps-map-a.md#vehicles-share--per-friend-group-and-field-sharing--existing",
+  "owner": "app:map"
+ },
+ "nav-turn-card": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-turn-card--turn-card--existing",
+  "owner": "app:navigation"
+ },
+ "nav-off-route": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-off-route--off-route-card--existing",
+  "owner": "app:navigation"
+ },
+ "nav-page": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-page--navigation-page--existing",
+  "owner": "app:navigation"
+ },
+ "nav-planner": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-planner--planner--existing",
+  "owner": "app:navigation"
+ },
+ "nav-library": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-library--gpx-library-and-follow-a-track--existing",
+  "owner": "app:navigation"
+ },
+ "nav-roadbook": {
+  "brief": "references/design/2026-10/brief/60-apps-nav-a.md#nav-roadbook--roadbook-view-n4--existing",
+  "owner": "app:navigation"
+ },
+ "phone-page": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-a.md#phone-page--app-drawer--phone--existing",
+  "owner": "app:phone"
+ },
+ "phone-dialer": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-a.md#phone-dialer--dialer-keypad-and-voice-dial--existing",
+  "owner": "app:phone"
+ },
+ "phone-favourites": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-a.md#phone-favourites--favourites--existing",
+  "owner": "app:phone"
+ },
+ "phone-recents": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-a.md#phone-recents--recents--existing",
+  "owner": "app:phone"
+ },
+ "phone-contacts": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-a.md#phone-contacts--contacts-ostler--phone--existing",
+  "owner": "app:phone"
+ },
+ "phone-incoming": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-incoming--incoming-call-and-in-call--existing",
+  "owner": "app:phone"
+ },
+ "phone-message-card": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-message-card--message-card-sms-imessage-bridge--existing",
+  "owner": "app:phone"
+ },
+ "phone-widgets": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-widgets--phone-widgets--existing",
+  "owner": "app:phone"
+ },
+ "phone-pairing": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-pairing--pair-a-phone--existing",
+  "owner": "app:phone"
+ },
+ "phone-bridge-setup": {
+  "brief": "references/design/2026-10/brief/60-apps-phone-b.md#phone-bridge-setup--companion-notification-bridge-setup-android--existing",
+  "owner": "app:phone"
+ },
+ "trips-share-sheet": {
+  "brief": "references/design/2026-10/brief/60-apps-share-a.md#trips-share-sheet--trips-share-sheet--existing",
+  "owner": "app:trips"
+ },
+ "trips-share-preview": {
+  "brief": "references/design/2026-10/brief/60-apps-share-a.md#trips-share-preview--what-they-will-see-and-redaction-report--existing",
+  "owner": "app:trips"
+ },
+ "trips-share-history": {
+  "brief": "references/design/2026-10/brief/60-apps-share-a.md#trips-share-history--share-history-and-revoke--existing",
+  "owner": "app:trips"
+ },
+ "social-chats": {
+  "brief": "references/design/2026-10/brief/60-apps-social-a.md#social-chats--social-chats-list--existing",
+  "owner": "app:social"
+ },
+ "social-calls": {
+  "brief": "references/design/2026-10/brief/60-apps-social-a.md#social-calls--social-calls-history--existing",
+  "owner": "app:social"
+ },
+ "social-rides": {
+  "brief": "references/design/2026-10/brief/60-apps-social-a.md#social-rides--social-rides-live-ride-panel--existing",
+  "owner": "app:social"
+ },
+ "social-cameras": {
+  "brief": "references/design/2026-10/brief/60-apps-social-a.md#social-cameras--social-cameras-s4--existing",
+  "owner": "app:social"
+ }
+}
