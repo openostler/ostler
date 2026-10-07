@@ -20,7 +20,8 @@
       "normal": [
         650,
         4200
-      ]
+      ],
+      "metric": "Vehicle.Powertrain.CombustionEngine.Speed"
     },
     {
       "name": "speed",
@@ -38,7 +39,8 @@
         0,
         180
       ],
-      "normal": null
+      "normal": null,
+      "metric": "Vehicle.Speed"
     },
     {
       "name": "battery",
@@ -59,7 +61,8 @@
       "normal": [
         12.4,
         14.8
-      ]
+      ],
+      "metric": "Vehicle.LowVoltageBattery.CurrentVoltage"
     },
     {
       "name": "coolant_temp",
@@ -80,7 +83,8 @@
       "normal": [
         80,
         100
-      ]
+      ],
+      "metric": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
     },
     {
       "name": "air_temp",
@@ -101,7 +105,8 @@
       "normal": [
         -10,
         50
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "ext_temp",
@@ -119,7 +124,8 @@
         -49.0,
         59.0
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "fuel_temp",
@@ -140,7 +146,8 @@
       "normal": [
         0,
         85
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "accel_way1",
@@ -161,7 +168,8 @@
       "normal": [
         0.2,
         4.8
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "accel_way2",
@@ -182,7 +190,8 @@
       "normal": [
         0.2,
         4.8
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "accel_way3",
@@ -203,7 +212,8 @@
       "normal": [
         0.0,
         4.8
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "manifold_press",
@@ -224,7 +234,8 @@
       "normal": [
         0.9,
         2.3
-      ]
+      ],
+      "metric": "Vehicle.Powertrain.CombustionEngine.MAP"
     },
     {
       "name": "rpm_error",
@@ -245,7 +256,8 @@
       "normal": [
         -50,
         50
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "ambient_press_1",
@@ -266,7 +278,8 @@
       "normal": [
         0.85,
         1.05
-      ]
+      ],
+      "metric": "Vehicle.Exterior.AirPressure"
     },
     {
       "name": "ambient_press_2",
@@ -287,7 +300,8 @@
       "normal": [
         0.85,
         1.05
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "balance_1",
@@ -308,7 +322,8 @@
       "normal": [
         -4,
         4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "balance_2",
@@ -329,7 +344,8 @@
       "normal": [
         -4,
         4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "balance_3",
@@ -350,7 +366,8 @@
       "normal": [
         -4,
         4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "balance_4",
@@ -371,7 +388,8 @@
       "normal": [
         -4,
         4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "balance_5",
@@ -392,7 +410,8 @@
       "normal": [
         -4,
         4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "injection_qty",
@@ -410,7 +429,8 @@
         0,
         80
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "egr_modulator",
@@ -428,7 +448,8 @@
         0,
         100
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "wastegate_modulator",
@@ -446,7 +467,8 @@
         0,
         100
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "maf",
@@ -464,7 +486,8 @@
         0,
         700
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "maf_sensor",
@@ -482,7 +505,8 @@
         -70.0,
         770.0
       ],
-      "normal": null
+      "normal": null,
+      "metric": "Vehicle.Powertrain.CombustionEngine.MAF"
     },
     {
       "name": "wastegate_pos",
@@ -500,7 +524,8 @@
         0,
         100
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "egr_pos",
@@ -518,7 +543,8 @@
         0,
         100
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "battery_direct",
@@ -539,7 +565,8 @@
       "normal": [
         12.4,
         14.8
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "driver_demand",
@@ -557,7 +584,8 @@
         0,
         80
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "smoke_limit",
@@ -575,7 +603,8 @@
         0,
         80
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "torque_limit",
@@ -593,7 +622,8 @@
         0,
         80
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "egr_inlet",
@@ -611,7 +641,8 @@
         0,
         100
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "coolant_sensor_v",
@@ -629,7 +660,8 @@
         0,
         5
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "intake_sensor_v",
@@ -647,7 +679,8 @@
         0,
         5
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "fuel_sensor_v",
@@ -665,7 +698,8 @@
         0,
         5
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "brake_switch_2",
@@ -677,7 +711,8 @@
       "description": "Second brake pedal switch (active-high).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "brake_main",
@@ -689,7 +724,8 @@
       "description": "Main brake pedal switch (active-low: 0 = pressed).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "cruise_master",
@@ -701,7 +737,8 @@
       "description": "Cruise control master switch on the dash (latching).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "cruise_set",
@@ -713,7 +750,8 @@
       "description": "Cruise SET button on the steering wheel (momentary).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "cruise_resume",
@@ -725,7 +763,8 @@
       "description": "Cruise RESUME button on the steering wheel (momentary).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "maf_sensor_v",
@@ -743,7 +782,8 @@
         -0.5,
         5.5
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "accel_supply",
@@ -764,7 +804,8 @@
       "normal": [
         4.9,
         5.1
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "fuel_pump_relay",
@@ -776,7 +817,8 @@
       "description": "Fuel pump relay status as commanded by the ECU (21 36 byte1 bit2). Candidate.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "accel_pedal_pct",
@@ -794,7 +836,8 @@
         -10.0,
         110.0
       ],
-      "normal": null
+      "normal": null,
+      "metric": "Vehicle.Chassis.Accelerator.PedalPosition"
     },
     {
       "name": "fuel_rate",
@@ -809,7 +852,8 @@
         0,
         20
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "economy",
@@ -824,7 +868,8 @@
         0,
         25
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "trip_economy",
@@ -839,7 +884,8 @@
         0,
         25
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "lifetime_economy",
@@ -854,7 +900,8 @@
         0,
         25
       ],
-      "normal": null
+      "normal": null,
+      "metric": null
     }
   ]
 }

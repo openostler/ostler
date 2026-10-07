@@ -123,6 +123,19 @@ describe("the status strip as data (§3.2)", () => {
     expect(ids(input())).not.toContain("back");
   });
 
+  it("puts the Drive-mode chip right after Back in Drive mode, on every class (drive-modes §6)", () => {
+    const rec = snap({ recording: { session: "s", since_utc: "", rows: 1 } });
+    for (const layout of ["hu5", "hu7", "hu9", "huwide", "phone", "tablet", "desktop"] as const) {
+      const chips = stripChips(input({ layout, snap: rec, driveMode: true, mode: { name: "Dashboard", icon: "dashboard" } }));
+      expect(chips[1]).toMatchObject({ id: "drive_mode", kind: "button", icon: "dashboard", word: "Dashboard", open: "drive_mode" });
+      expect(chips[1]!.label).toContain("Dashboard"); // label in name (WCAG 2.5.3)
+      // the phone's Drive strip stays one row: Link and REC give their places to the switcher
+      expect(chips.some((c) => c.id === "rec")).toBe(layout !== "phone");
+      expect(chips.some((c) => c.id === "link")).toBe(layout !== "phone");
+    }
+    expect(ids(input({ mode: { name: "Dashboard", icon: "dashboard" } }))).not.toContain("drive_mode");
+  });
+
   it("makes the worst telltale red for a current fault, amber for logged ones, with a count", () => {
     const red = stripChips(input({ snap: snap({ faults: ["a (Current)", "b (Logged)"] }), unacked: 2 }))[0]!;
     expect(red).toMatchObject({ id: "telltale", tone: "alarm", icon: "error", word: "2 faults", attention: true, open: "faults" });

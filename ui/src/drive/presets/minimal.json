@@ -1,0 +1,574 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.minimal",
+ "version": 1,
+ "name": "Minimal",
+ "icon": "bedtime",
+ "description": "Speed and one calm status line",
+ "license": "CC-BY-SA-4.0",
+ "theme_hint": "night_dim",
+ "classes": {
+  "hu5": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "line"
+     ],
+     "grid": {
+      "cols": 1,
+      "rows": 2
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "line": [
+       0,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "line"
+     ],
+     "grid": {
+      "cols": 1,
+      "rows": 2
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "line": [
+       0,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       8,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "line"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       2,
+       1
+      ],
+      "line": [
+       0,
+       1,
+       2,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       12,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       12,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "line"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       2,
+       1
+      ],
+      "line": [
+       0,
+       1,
+       2,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "hero"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       4
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "line"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 3
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       2,
+       2
+      ],
+      "line": [
+       0,
+       2,
+       2,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       8,
+       3
+      ],
+      "size": "medium"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "minimal",
+    "name": "Minimal",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "line",
+      "widget": "ostler.status_line",
+      "style": "text",
+      "label": "Status",
+      "values": [
+       {
+        "bind": {
+         "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+        },
+        "label": "Coolant",
+        "dec": 0
+       },
+       {
+        "bind": {
+         "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+        },
+        "label": "Battery",
+        "dec": 1
+       }
+      ],
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       8,
+       3
+      ],
+      "size": "medium"
+     }
+    ]
+   }
+  ]
+ }
+}

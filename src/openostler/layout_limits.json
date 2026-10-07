@@ -1,0 +1,43 @@
+{
+  "$comment": "The ostler.layout/1 Moving limits; `moving_required` marks the classes whose faces must carry a strictly validated Moving section (the head units and the phone) (specs/2026-10-07-drive-modes-and-editing-design.md §4.3-§4.4, UI spec §12.1). One source for both validators: openostler/layouts.py (server) and ui/src/drive/validate.ts (shell). The per-class `type` mirrors ui/tokens/size.tokens.json (drive-num, drive-label, drive-hero); a UI test keeps them equal.",
+  "format": "ostler.layout/1",
+  "max_bytes": 262144,
+  "faces": { "min": 1, "max": 3 },
+  "text": { "name": 30, "face": 30, "label": 30, "description": 120 },
+  "moving": {
+    "max_tiles": 6,
+    "max_refresh_hz": 4,
+    "digits_floor_px": 56,
+    "label_floor_px": 24
+  },
+  "classes": {
+    "hu5":     { "moving_required": true,  "content": [720, 432],  "parked_grid": [6, 4],  "min_tile": [208, 176], "min_pane": [340, 300], "max_panes": 2, "type": { "digits": 64, "label": 24, "hero": 96 } },
+    "hu7":     { "moving_required": true,  "content": [928, 544],  "parked_grid": [6, 4],  "min_tile": [280, 240], "min_pane": [440, 360], "max_panes": 2, "type": { "digits": 64, "label": 24, "hero": 96 } },
+    "hu9":     { "moving_required": true,  "content": [1168, 656], "parked_grid": [8, 4],  "min_tile": [260, 290], "min_pane": [540, 420], "max_panes": 3, "type": { "digits": 72, "label": 24, "hero": 120 } },
+    "huwide":  { "moving_required": true,  "content": [1808, 656], "parked_grid": [12, 4], "min_tile": [280, 290], "min_pane": [560, 560], "max_panes": 3, "type": { "digits": 72, "label": 24, "hero": 120 } },
+    "phone":   { "moving_required": true,  "content": [393, 730],  "parked_grid": [4, 6],  "min_tile": [170, 200], "min_pane": [361, 300], "max_panes": 2, "type": { "digits": 56, "label": 24, "hero": 64 } },
+    "tablet":  { "moving_required": false,"content": null,        "parked_grid": [8, 6],  "min_tile": null,       "min_pane": null,       "max_panes": 3, "type": { "digits": 56, "label": 24, "hero": 72 } },
+    "desktop": { "moving_required": false,"content": null,        "parked_grid": [8, 6],  "min_tile": null,       "min_pane": null,       "max_panes": 3, "type": { "digits": 56, "label": 24, "hero": 72 } }
+  },
+  "fallback": { "hu5": "hu7", "hu7": "hu9", "tablet": "desktop" },
+  "widgets": {
+    "ostler.tile":         { "template": "tiles", "styles": ["number", "bar", "arc", "chip", "text", "sparkline"] },
+    "ostler.gauge":        { "template": "tiles", "styles": ["arc", "bar"] },
+    "ostler.hero":         { "template": "tiles", "styles": ["number", "arc"] },
+    "ostler.chip":         { "template": "tiles", "styles": ["chip"] },
+    "ostler.inclinometer": { "template": "tiles", "styles": ["inclinometer"] },
+    "ostler.compass":      { "template": "tiles", "styles": ["compass"] },
+    "ostler.status_line":  { "template": "value", "styles": ["text"] },
+    "ostler.sparkline":    { "template": null,    "styles": ["sparkline"] },
+    "ostler.map":          { "template": "map",   "styles": [] },
+    "ostler.media":        { "template": "media", "styles": [] },
+    "ostler.ptt":          { "template": "call",  "styles": [] }
+  },
+  "templates": {
+    "tiles": { "kind": "tile", "cost": 1 },
+    "value": { "kind": "tile", "cost": 2 },
+    "map":   { "kind": "pane" },
+    "media": { "kind": "pane" },
+    "call":  { "kind": "pane" }
+  }
+}

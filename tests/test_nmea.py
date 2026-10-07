@@ -116,10 +116,11 @@ def test_merger_lost_fix():
 
 
 def test_fix_snapshot():
-    f = Fix(utc_ms=1, lat=1.0, lon=2.0, speed_kmh=3.0, heading=4.0, sats=5, hdop=0.9,
+    f = Fix(utc_ms=1, lat=1.0, lon=2.0, speed_kmh=3.0, heading=4.0, alt_m=312.0, sats=5, hdop=0.9,
             fix=True, mono=100.0)
     s = f.snapshot(src="usb", now=102.5)
-    assert set(s) == {"fix", "lat", "lon", "speed_kmh", "heading", "sats", "hdop", "src", "age_s"}
+    assert set(s) == {"fix", "lat", "lon", "speed_kmh", "heading", "alt_m", "sats", "hdop", "src", "age_s"}
+    assert s["alt_m"] == 312.0  # Drive modes' altitude tile (drive-modes spec §5.3)
     assert s["age_s"] == 2.5 and s["src"] == "usb" and s["fix"] is True
 
 

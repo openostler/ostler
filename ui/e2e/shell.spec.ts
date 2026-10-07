@@ -161,6 +161,7 @@ for (const vp of VIEWPORTS) {
 }
 
 // §12.3 (UI audit P1, D6): Drive mode is one screen at every head-unit class and the phone —
+// here the Diagnostic mode with its alarm tile; every Drive mode's faces: drive-modes.spec.ts —
 // `main` never scrolls, and every tile (the red one included) is inside the viewport, unclipped.
 const DRIVE_SIZES = [[800, 480], [1024, 600], [1280, 720], [1280, 480], [1920, 720], [393, 852]] as const;
 
@@ -172,6 +173,15 @@ for (const [width, height] of DRIVE_SIZES) {
       await returningUser(page);
       await page.goto("/");
       await page.locator(".home").getByRole("button", { name: "Drive", exact: true }).click();
+      // the Diagnostic mode is today's six tiles (drive-modes spec §5.1); Dashboard is the
+      // default on these screens, so pick it from the list (every preset: drive-modes.spec.ts)
+      const mode = page.locator('[data-chip="drive_mode"]');
+      const box = (await mode.boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(750);
+      await page.mouse.up();
+      await page.getByRole("dialog").getByRole("button", { name: "Diagnostic", exact: true }).click();
       const tiles = page.getByRole("region", { name: "Drive mode" }).locator(".tile");
       await expect(tiles).toHaveCount(6);
       await expect(page.locator(".drivemode .tile.alarm").first()).toBeVisible(); // a critical tile: the replay's hot intake air

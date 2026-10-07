@@ -1,0 +1,109 @@
+/*
+ * SPDX-FileCopyrightText: 2026 OpenOstler contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/* ---- Drive modes (drive-modes spec §4.3, §6; visual spec §4, §8) ----------------------
+   A face is a grid whose rows share the height (1fr), so nothing scrolls. While Moving:
+   digits at --drive-num (≥ 56 px), labels and units at --drive-label (≥ 24 px), the hero at
+   --drive-hero; no sparkline, no glow, no transition or animation (values step ≤ 4 Hz). */
+.dm { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; touch-action: pan-y; }
+.dm-face { flex: 1 1 0; min-height: 0; display: grid; gap: var(--gap, 16px); }
+.dm-cell { min-width: 0; min-height: 0; display: flex; container-type: inline-size; }
+.dm-cell > * { flex: 1 1 auto; min-width: 0; min-height: 0; }
+
+.dm-tile { display: flex; flex-direction: column; gap: var(--space-1); overflow: hidden; }
+/* a narrow tile moves the unit up beside the label, so the digits keep their size (never clipped) */
+.dm-unit-top { display: none; flex: 0 0 auto; }
+@container (max-width: 300px) {
+  .dm-value .dm-unit { display: none; }
+  .dm-unit-top { display: inline; }
+}
+.dm-tile.warn { border-color: var(--warn); }
+.dm-tile.stale .dm-num { color: var(--text-3); }
+.dm-top { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.dm-label {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--type-label); line-height: 1.2; font-weight: var(--weight-semibold); color: var(--text-2);
+}
+.dm-source { flex: 0 0 auto; font-size: var(--type-caption); font-weight: var(--weight-semibold); color: var(--text-2); }
+.dm-value { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; margin-top: auto; margin-bottom: auto; white-space: nowrap; }
+.dm-value.alarm .dm-num { color: var(--alarm); }
+.dm-num { font-size: var(--type-num-xl); line-height: 1; font-weight: var(--weight-bold); color: var(--text-1); font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-hero); }
+.dm-unit { font-size: var(--type-label); font-weight: var(--weight-semibold); color: var(--text-2); }
+.dm-hero .dm-num { font-size: var(--type-hero); }
+.dm-tile .gwrap2 { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
+.dm-tile .stat-viz { flex: 0 0 auto; }
+.dm-tile .spark { flex: 0 1 28px; min-height: 12px; height: auto; }
+
+/* honest absence (ADR-0006): words, never a zero */
+.dm-absent { margin: auto 0; display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.dm-why { font-size: var(--type-body); line-height: 1.25; font-weight: var(--weight-semibold); color: var(--text-2); }
+.dm-why-detail { font-size: var(--type-caption); color: var(--text-2); }
+
+.dm-chips { justify-content: space-around; }
+.dm-chiprow { display: flex; flex-direction: column; gap: var(--space-1); }
+.dm-chiprow .dm-absent { margin: 0; }
+.dm-chiprow .dm-why { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dm-state { font-size: var(--type-num-l); line-height: 1.1; font-weight: var(--weight-bold); color: var(--text-1); }
+.dm-incline-body { flex: 1 1 0; min-height: 0; display: flex; align-items: center; gap: var(--space-3); }
+.dm-silhouette { flex: 1 1 0; min-width: 0; height: 100%; max-height: 120px; }
+.dm-silhouette path { fill: var(--surface-3); stroke: var(--text-2); stroke-width: 2; }
+.dm-line { justify-content: center; }
+.dm-line-text { font-size: var(--type-num-l); line-height: 1.2; font-weight: var(--weight-semibold); color: var(--text-1); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* panes: the map (own position only), and the add-on panes that are not there yet */
+.dm-pane { position: relative; overflow: hidden; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--line); }
+.dm-map .replay-map, .dm-map .replay-map-gl { position: absolute; inset: 0; height: 100%; border-radius: 0; }
+.dm-map .replay-arrow { width: 32px; height: 32px; }
+.dm-map .replay-arrow svg { width: 32px; height: 32px; }
+.dm-map .replay-arrow path { fill: var(--accent); stroke: var(--bg); stroke-width: 2; stroke-linejoin: round; }
+.dm-map .replay-map-note { position: absolute; left: 50%; top: 62%; transform: translateX(-50%); padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); background: var(--surface-glass); color: var(--text-2); font-size: var(--type-caption); }
+.dm-map-note { position: absolute; left: 50%; bottom: var(--space-4); transform: translateX(-50%); padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); background: var(--surface-glass); }
+.dm-needs { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); color: var(--text-2); text-align: center; padding: var(--space-4); }
+.dm-empty { border-style: dashed; background: transparent; }
+
+/* a tile over a pane is an overlay: content-sized, in its corner, on glass */
+.dm-cell.dm-overlay { z-index: 1; pointer-events: none; padding: var(--space-2); }
+.dm-cell.dm-overlay > .dm-tile { flex: 0 1 auto; max-width: 100%; background: var(--surface-glass); }
+.dm-cell.dm-overlay .dm-top { flex-wrap: wrap; }
+.dm-cell.dm-overlay[data-edge^="top"] { align-items: flex-start; }
+.dm-cell.dm-overlay[data-edge^="bottom"] { align-items: flex-end; }
+.dm-cell.dm-overlay[data-edge$="left"] { justify-content: flex-start; }
+.dm-cell.dm-overlay[data-edge$="right"] { justify-content: flex-end; }
+
+/* the faces of a mode: a quiet pager, drawn over the face so it costs no height */
+.dm-pager { position: absolute; left: 50%; bottom: calc(-1 * var(--space-3)); transform: translateX(-50%); display: flex; gap: var(--space-2); pointer-events: none; }
+.dm-pager span { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--line-strong); }
+.dm-pager span.on { background: var(--text-2); }
+
+/* Moving: the class's Moving type, and nothing glides */
+.dm-face[data-moving="true"] .dm-label,
+.dm-face[data-moving="true"] .dm-unit,
+.dm-face[data-moving="true"] .dm-source,
+.dm-face[data-moving="true"] .dm-why-detail { font-size: var(--drive-label); }
+.dm-face[data-moving="true"] .dm-why { font-size: var(--drive-label); }
+.dm-face[data-moving="true"] .dm-num { font-size: var(--drive-num); }
+.dm-face[data-moving="true"] .dm-hero .dm-num { font-size: var(--drive-hero); }
+.dm-face[data-moving="true"] .dm-state,
+.dm-face[data-moving="true"] .dm-line-text { font-size: var(--drive-num); }
+.dm-face[data-moving="true"] .g2-read { --g-num: var(--drive-num); }
+.dm-face[data-moving="true"] .dm-hero .g2-read { --g-num: var(--drive-hero); }
+.dm-face[data-moving="true"] .g2-unit { font-size: var(--drive-label); }
+.dm-face[data-moving="true"] .range-legend { display: none; }
+.dm-face[data-moving="true"] *,
+.dm-face[data-moving="true"] *::before,
+.dm-face[data-moving="true"] *::after { transition: none; animation: none; }
+.dm-face[data-moving="true"] [data-glow] { box-shadow: none; }
+
+/* the mode list: a short_list of ≤ 6 rows at the class's target size */
+.dm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.dm-list-row {
+  width: 100%; min-height: var(--target, 48px); display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text-1); font: inherit; font-size: var(--type-body); font-weight: var(--weight-semibold); text-align: left; cursor: pointer;
+}
+.dm-list-row[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.dm-list-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dm-list-tick { display: inline-flex; color: var(--accent); }

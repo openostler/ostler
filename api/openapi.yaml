@@ -1731,6 +1731,7 @@ components:
         lon: {type: [number, "null"]}
         speed_kmh: {type: [number, "null"]}
         heading: {type: [number, "null"]}
+        alt_m: {type: [number, "null"], description: "GNSS altitude in metres (Drive modes' altitude tile; error is tens of metres)."}
         sats: {type: [number, "null"]}
         hdop: {type: [number, "null"]}
         src: {type: string, description: "usb | mock | replay"}
@@ -2409,6 +2410,7 @@ components:
         derived: {type: boolean}
         span: {$ref: "#/components/schemas/NumberPair"}
         normal: {$ref: "#/components/schemas/NumberPair"}
+        metric: {type: [string, "null"], description: "The COVESA VSS path the field publishes (ADR-0016), null when unmapped; Drive modes bind to it."}
       additionalProperties: true
     FieldsResponse:
       type: object
@@ -2589,6 +2591,10 @@ components:
         aliases:
           type: object
           additionalProperties: {type: string}
+        metrics:
+          type: object
+          description: The VSS paths the vehicle provides, each with the modules whose fields publish it (a Drive mode tells "Not in this session" from "Not available on this car" with it).
+          additionalProperties: {type: array, items: {type: string}}
         layout:
           type: object
           description: The pack's screen layout; every part is optional so a minimal pack works.

@@ -408,6 +408,30 @@
         "$type": "dimension",
         "$value": "{layout.hu5.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "hu7": {
@@ -578,6 +602,30 @@
         "$type": "dimension",
         "$value": "{layout.hu7.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "hu9": {
@@ -745,6 +793,30 @@
         "$type": "dimension",
         "$value": "{layout.hu9.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "huwide": {
@@ -927,6 +999,30 @@
         "$type": "dimension",
         "$value": "{layout.huwide.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 120,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "phone": {
@@ -1095,6 +1191,30 @@
         "$type": "dimension",
         "$value": "{layout.phone.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "tablet": {
@@ -1262,6 +1382,30 @@
         "$type": "dimension",
         "$value": "{layout.tablet.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     },
     "desktop": {
@@ -1429,6 +1573,30 @@
         "$type": "dimension",
         "$value": "{layout.desktop.type-body}",
         "$description": "alias of type-body; retired in V3.5"
+      },
+      "drive-num": {
+        "$type": "dimension",
+        "$value": {
+          "value": 56,
+          "unit": "px"
+        },
+        "$description": "Drive-mode digits while Moving: never below 56 px (drive-modes spec §4.3; mirrored in src/openostler/layout_limits.json)"
+      },
+      "drive-label": {
+        "$type": "dimension",
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Drive-mode labels and units while Moving: never below 24 px (AAOS floor, visual spec §4)"
+      },
+      "drive-hero": {
+        "$type": "dimension",
+        "$value": {
+          "value": 72,
+          "unit": "px"
+        },
+        "$description": "Drive-mode hero digits (speed): the class's type-hero"
       }
     }
   }

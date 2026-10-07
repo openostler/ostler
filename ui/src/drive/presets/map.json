@@ -1,0 +1,825 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.map",
+ "version": 1,
+ "name": "Map",
+ "icon": "map",
+ "description": "Your position and trail, speed and two stats",
+ "license": "CC-BY-SA-4.0",
+ "classes": {
+  "hu5": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "alt",
+      "hdg"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       3,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "alt": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "hdg": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "alt",
+      "hdg"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       3,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "alt": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "hdg": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "alt",
+      "hdg"
+     ],
+     "grid": {
+      "cols": 4,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       4,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       2,
+       1
+      ],
+      "alt": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "hdg": [
+       2,
+       1,
+       2,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       12,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       8,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "alt",
+      "hdg"
+     ],
+     "grid": {
+      "cols": 6,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       6,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       2,
+       1
+      ],
+      "alt": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "hdg": [
+       4,
+       1,
+       2,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       2,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "alt",
+      "hdg"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 3
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       2,
+       3
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "alt": [
+       0,
+       2,
+       1,
+       1
+      ],
+      "hdg": [
+       1,
+       2,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       4,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "alt",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Altitude"
+      },
+      "style": "number",
+      "label": "Altitude",
+      "unit": "m",
+      "dec": 0,
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "hdg",
+      "widget": "ostler.compass",
+      "bind": {
+       "path": "Vehicle.CurrentLocation.Heading"
+      },
+      "style": "compass",
+      "label": "Heading",
+      "at": [
+       4,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "medium"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,1576 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.dashboard",
+ "version": 1,
+ "name": "Dashboard",
+ "icon": "dashboard",
+ "description": "Speed, engine and the side gauges",
+ "license": "CC-BY-SA-4.0",
+ "classes": {
+  "hu5": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "cool",
+      "spd",
+      "boost",
+      "batt",
+      "rpm"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "cool": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "spd": [
+       1,
+       0,
+       1,
+       2
+      ],
+      "boost": [
+       2,
+       0,
+       1,
+       1
+      ],
+      "batt": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "rpm": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       3,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "cool",
+      "spd",
+      "boost",
+      "batt",
+      "rpm"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "cool": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "spd": [
+       1,
+       0,
+       1,
+       2
+      ],
+      "boost": [
+       2,
+       0,
+       1,
+       1
+      ],
+      "batt": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "rpm": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       3,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "hero"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       6,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "cool",
+      "spd",
+      "boost",
+      "batt",
+      "rpm"
+     ],
+     "grid": {
+      "cols": 4,
+      "rows": 2
+     },
+     "place": {
+      "cool": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "spd": [
+       1,
+       0,
+       2,
+       2
+      ],
+      "boost": [
+       3,
+       0,
+       1,
+       1
+      ],
+      "batt": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "rpm": [
+       3,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s"
+     ],
+     "grid": {
+      "cols": 4,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       4,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "hero"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       8,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "fuel",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.FuelSystem.RelativeLevel"
+      },
+      "style": "bar",
+      "label": "Fuel",
+      "dec": 0,
+      "at": [
+       8,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     }
+    ],
+    "moving": {
+     "show": [
+      "cool",
+      "boost",
+      "spd",
+      "batt",
+      "rpm",
+      "fuel"
+     ],
+     "grid": {
+      "cols": 6,
+      "rows": 2
+     },
+     "place": {
+      "cool": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "boost": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "spd": [
+       2,
+       0,
+       2,
+       2
+      ],
+      "batt": [
+       4,
+       0,
+       2,
+       1
+      ],
+      "rpm": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "fuel": [
+       4,
+       1,
+       2,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       12,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s"
+     ],
+     "grid": {
+      "cols": 6,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       6,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "medium"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       2,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       0,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       2,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "spd",
+      "rpm",
+      "cool",
+      "boost",
+      "batt"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 3
+     },
+     "place": {
+      "spd": [
+       0,
+       0,
+       2,
+       1
+      ],
+      "rpm": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "cool": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "boost": [
+       0,
+       2,
+       1,
+       1
+      ],
+      "batt": [
+       1,
+       2,
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 3
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       2,
+       3
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "hero"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       6,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "cluster",
+    "name": "Cluster",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "spd",
+      "widget": "ostler.hero",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "arc",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "range": [
+       0,
+       160
+      ],
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "hero"
+     },
+     {
+      "slot": "boost",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.MAP"
+      },
+      "style": "bar",
+      "label": "Boost",
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "batt",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      },
+      "style": "bar",
+      "label": "Battery",
+      "dec": 1,
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "rpm",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.Speed"
+      },
+      "style": "bar",
+      "label": "Engine",
+      "dec": 0,
+      "refresh_hz": 4,
+      "at": [
+       6,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   },
+   {
+    "face": "map",
+    "name": "Map",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       8,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ]
+ }
+}

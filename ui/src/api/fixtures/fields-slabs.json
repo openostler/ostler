@@ -17,7 +17,8 @@
       "normal": [
         135,
         165
-      ]
+      ],
+      "metric": "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw"
     },
     {
       "name": "height_right",
@@ -35,7 +36,8 @@
       "normal": [
         135,
         165
-      ]
+      ],
+      "metric": "Vehicle.Ostler.Chassis.RideHeight.RearRightRaw"
     },
     {
       "name": "any_door",
@@ -47,7 +49,8 @@
       "description": "Any door open. SLABS won't adjust suspension with a door open. Normal: closed.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "battery",
@@ -68,7 +71,8 @@
       "normal": [
         12.4,
         14.8
-      ]
+      ],
+      "metric": "Vehicle.LowVoltageBattery.CurrentVoltage"
     },
     {
       "name": "ecu_supply",
@@ -89,7 +93,8 @@
       "normal": [
         12.4,
         14.8
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "wheel_speed_fl",
@@ -101,7 +106,8 @@
       "description": "Front-left wheel speed (raw ~124 stationary). ⚠ Wheel order unconfirmed.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "wheel_speed_fr",
@@ -113,7 +119,8 @@
       "description": "Front-right wheel speed (raw ~124 stationary). ⚠ Wheel order unconfirmed.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "wheel_speed_rl",
@@ -125,7 +132,8 @@
       "description": "Rear-left wheel speed. ⚠ Wheel order unconfirmed.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "wheel_speed_rr",
@@ -137,7 +145,8 @@
       "description": "Rear-right wheel speed. ⚠ Wheel order unconfirmed.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "abs_sensor_fl",
@@ -158,7 +167,8 @@
       "normal": [
         2.0,
         2.4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "abs_sensor_fr",
@@ -179,7 +189,8 @@
       "normal": [
         2.0,
         2.4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "abs_sensor_rl",
@@ -200,7 +211,8 @@
       "normal": [
         2.0,
         2.4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "abs_sensor_rr",
@@ -221,7 +233,8 @@
       "normal": [
         2.0,
         2.4
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "reverse_gear",
@@ -233,7 +246,8 @@
       "description": "Reverse gear selected (automatic gearbox selector).",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "neutral_gear",
@@ -245,7 +259,8 @@
       "description": "Neutral selected (automatic gearbox selector). Park also reads 0 here.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "diff_lock",
@@ -257,7 +272,8 @@
       "description": "Centre differential lock engaged.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "transfer_low",
@@ -269,7 +285,8 @@
       "description": "Set when the transfer box is in low range.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": "Vehicle.Powertrain.Transmission.IsLowRangeEngaged"
     },
     {
       "name": "brake_analog",
@@ -281,7 +298,8 @@
       "description": "Analogue brake-pedal signal on SLABS 21 48 (raw u16; falls when the pedal is pressed). Candidate, unscaled.",
       "derived": false,
       "span": null,
-      "normal": null
+      "normal": null,
+      "metric": null
     },
     {
       "name": "height_left_mm",
@@ -299,7 +317,8 @@
       "normal": [
         154,
         189
-      ]
+      ],
+      "metric": null
     },
     {
       "name": "height_right_mm",
@@ -317,7 +336,8 @@
       "normal": [
         154,
         189
-      ]
+      ],
+      "metric": null
     }
   ]
 }

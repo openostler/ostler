@@ -17,14 +17,15 @@ import type { LayoutClass } from "./layoutClass";
  * Each chip pairs an icon with a word and is at least 48 px tall. U1 has the Worst
  * telltale, Link, REC, 12 V, Clock and Mark chips (plus the admin badge); Vehicle waits for
  * the garage (U6), Security and the device slot for the node and add-on manifests (U5).
- * In Drive mode the strip leads with Back, so the mode needs no page chrome (§12.3).
+ * In Drive mode the strip leads with Back, so the mode needs no page chrome (§12.3), then the
+ * Drive-mode chip: a tap cycles the rotation, a long press lists the modes (drive-modes §6).
  */
 export type ChipTone = "neutral" | "ok" | "warn" | "alarm" | "replay";
 /** What tapping a chip opens; `status` chips are not interactive. */
-export type ChipOpen = "faults" | "connection" | "exit-replay" | "logs" | "back";
+export type ChipOpen = "faults" | "connection" | "exit-replay" | "logs" | "back" | "drive_mode" | "drive_mode_list";
 
 export type ChipDescriptor = {
-  id: "back" | "admin" | "telltale" | "link" | "rec" | "battery" | "clock" | "mark";
+  id: "back" | "drive_mode" | "admin" | "telltale" | "link" | "rec" | "battery" | "clock" | "mark";
   /** `button` opens something, `status` only shows, `mark` is the shell's Mark control. */
   kind: "button" | "status" | "mark";
   icon: SymbolName | null;
@@ -62,11 +63,13 @@ export type StripInput = {
   quantity: (v: number, unit: string, dec?: number) => string;
   /** Drive mode is open: the strip carries its Back control (§12.3). */
   driveMode?: boolean;
+  /** Drive mode's current mode, for the Drive-mode chip (drive-modes spec §6). */
+  mode?: { name: string; icon: SymbolName };
 };
 
 /** The chips the phone keeps (§3.2: chips 2–5 and 9, plus the service/admin badge and
  * Drive mode's Back); HU-5 keeps the clock too (§12.3). */
-const PHONE: ReadonlySet<ChipDescriptor["id"]> = new Set(["back", "admin", "telltale", "link", "rec", "mark"]);
+const PHONE: ReadonlySet<ChipDescriptor["id"]> = new Set(["back", "drive_mode", "admin", "telltale", "link", "rec", "mark"]);
 const HU5: ReadonlySet<ChipDescriptor["id"]> = new Set([...PHONE, "clock"]);
 
 /** A node's power record as a badge, icon and word (ADR-0040, §3.8); null when awake or
@@ -131,6 +134,11 @@ function rec(snap: Snapshot | null, replaying: boolean): ChipDescriptor | null {
 export function stripChips(i: StripInput): ChipDescriptor[] {
   const chips: (ChipDescriptor | null)[] = [
     i.driveMode ? { id: "back", kind: "button", icon: "arrow_back", word: "Back", label: "Back", tone: "neutral", open: "back" } : null,
+    // the switcher (drive-modes spec §6): an anchor chip, found by id, its word the mode's name
+    i.driveMode && i.mode ? {
+      id: "drive_mode", kind: "button", icon: i.mode.icon, word: i.mode.name,
+      label: `Drive mode: ${i.mode.name}`, tone: "neutral", open: "drive_mode",
+    } : null,
     i.admin ? { id: "admin", kind: "status", icon: "code", word: "admin", label: "admin", tone: "neutral" } : null,
     i.replaying ? null : telltale(i.snap, i.unacked),
     link(i),
@@ -143,6 +151,9 @@ export function stripChips(i: StripInput): ChipDescriptor[] {
     { id: "mark", kind: "mark", icon: "flag", word: "Mark", label: "Mark", tone: "neutral" },
   ];
   const all = chips.filter((c): c is ChipDescriptor => c !== null);
-  if (i.layout === "phone") return all.filter((c) => PHONE.has(c.id));
+  // the phone's Drive strip gives Link's and REC's places to the Drive-mode chip so it stays one
+  // row (drive-modes spec §7.5's phone budget); the Connection sheet still opens by itself when
+  // the link drops, and recording shows on Home and Trips
+  if (i.layout === "phone") return all.filter((c) => PHONE.has(c.id) && !(i.driveMode && (c.id === "rec" || c.id === "link")));
   return i.layout === "hu5" ? all.filter((c) => HU5.has(c.id)) : all;
 }

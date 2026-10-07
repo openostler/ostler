@@ -84,6 +84,9 @@ export function createTraceMap(opts: {
   onBlank?: () => void;
   /** The online style has loaded (called once per successful load). */
   onReady?: () => void;
+  /** Drive mode's map pane (drive-modes spec §4.3, UI spec §12.1 `map`): no gestures, no
+   * controls but the credits, and the view follows the cursor without animation. */
+  drive?: boolean;
 }): TraceMapHandle {
   const traces = { ...opts.traces };
   const colors = { ...opts.colors };
@@ -101,8 +104,9 @@ export function createTraceMap(opts: {
     dragRotate: false,
     pitchWithRotate: false,
     // the map sits in a scrolling page: one finger (or a plain wheel) scrolls the page, two
-    // fingers (or Ctrl + wheel) move the map (UI audit P2, visual spec §7)
-    cooperativeGestures: true,
+    // fingers (or Ctrl + wheel) move the map (UI audit P2, visual spec §7). In Drive mode
+    // there is no free panning or zooming by touch at all (the `map` template).
+    ...(opts.drive ? { interactive: false, zoom: 15, fadeDuration: 0 } : { cooperativeGestures: true }),
   });
   // the credits stay, collapsed behind the (i) toggle until tapped (OSMF guideline, spec §7)
   map.addControl(new AttributionControl({ compact: true, customAttribution: OPENFREEMAP_ATTRIBUTION }), "bottom-right");
@@ -117,8 +121,10 @@ export function createTraceMap(opts: {
     el.removeAttribute("open");
   };
   for (const ev of ["styledata", "sourcedata", "idle"] as const) map.on(ev, collapse);
-  map.addControl(new NavigationControl({ showCompass: false }), "top-right");
-  map.touchZoomRotate.disableRotation();
+  if (!opts.drive) {
+    map.addControl(new NavigationControl({ showCompass: false }), "top-right");
+    map.touchZoomRotate.disableRotation();
+  }
 
   const toBlank = () => {
     if (blank) return;
@@ -221,6 +227,8 @@ export function createTraceMap(opts: {
       marker.getElement().classList.toggle("no-heading", c.heading == null);
       if (!markerOn) marker.addTo(map);
       markerOn = true;
+      // Drive mode follows the car, stepped, never animated (§4.3: no tweening)
+      if (opts.drive) map.jumpTo({ center: [c.lon, c.lat] });
     },
     isBlank: () => blank,
     isReady: () => styleLoaded && !blank,

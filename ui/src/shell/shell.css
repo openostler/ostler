@@ -48,6 +48,9 @@ span.schip { cursor: default; border-color: transparent; background: transparent
 /* the Link chip gives way first when the row is tight */
 .schip-link { flex-shrink: 1; min-width: var(--chip-min-h); overflow: hidden; }
 .schip-link .schip-word { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* the Drive-mode chip (drive-modes spec §6) gives way before the strip would scroll */
+.schip-drive_mode { flex-shrink: 1; min-width: var(--chip-min-h); overflow: hidden; }
+.schip-drive_mode .schip-word { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* the right-hand group: 12 V and the clock, then Mark at the end */
 .schip-clock { margin-left: auto; }
 .schip-battery { margin-left: auto; }

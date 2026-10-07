@@ -1,0 +1,1028 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.diagnostic",
+ "version": 1,
+ "name": "Diagnostic",
+ "icon": "stethoscope",
+ "description": "The system in session: today's six tiles",
+ "license": "CC-BY-SA-4.0",
+ "classes": {
+  "hu5": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       2,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "t0",
+      "t1",
+      "t2",
+      "t3",
+      "t4",
+      "t5"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "t0": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "t1": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "t2": [
+       2,
+       0,
+       1,
+       1
+      ],
+      "t3": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "t4": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "t5": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       2,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "t0",
+      "t1",
+      "t2",
+      "t3",
+      "t4",
+      "t5"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "t0": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "t1": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "t2": [
+       2,
+       0,
+       1,
+       1
+      ],
+      "t3": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "t4": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "t5": [
+       2,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       2,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "t0",
+      "t1",
+      "t2",
+      "t3",
+      "t4",
+      "t5"
+     ],
+     "grid": {
+      "cols": 4,
+      "rows": 2
+     },
+     "place": {
+      "t0": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "t1": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "t2": [
+       2,
+       0,
+       1,
+       1
+      ],
+      "t3": [
+       3,
+       0,
+       1,
+       1
+      ],
+      "t4": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "t5": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       8,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       10,
+       0
+      ],
+      "span": [
+       2,
+       4
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "t0",
+      "t1",
+      "t2",
+      "t3",
+      "t4",
+      "t5"
+     ],
+     "grid": {
+      "cols": 6,
+      "rows": 2
+     },
+     "place": {
+      "t0": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "t1": [
+       1,
+       0,
+       1,
+       2
+      ],
+      "t2": [
+       2,
+       0,
+       1,
+       2
+      ],
+      "t3": [
+       3,
+       0,
+       1,
+       2
+      ],
+      "t4": [
+       4,
+       0,
+       1,
+       2
+      ],
+      "t5": [
+       5,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       2,
+       2
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       0,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       2,
+       4
+      ],
+      "span": [
+       2,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "t0",
+      "t1",
+      "t2",
+      "t3",
+      "t4",
+      "t5"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 3
+     },
+     "place": {
+      "t0": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "t1": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "t2": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "t3": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "t4": [
+       0,
+       2,
+       1,
+       1
+      ],
+      "t5": [
+       1,
+       2,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       2,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "tiles",
+    "name": "Tiles",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "t0",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 0
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t1",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 1
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t2",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 2
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t3",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 3
+      },
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t4",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 4
+      },
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "t5",
+      "widget": "ostler.tile",
+      "bind": {
+       "drive_tile": 5
+      },
+      "at": [
+       2,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ]
+ }
+}

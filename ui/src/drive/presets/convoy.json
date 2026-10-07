@@ -1,0 +1,1390 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.convoy",
+ "version": 1,
+ "name": "Convoy",
+ "icon": "groups",
+ "description": "The ride: map, push to talk, leader and sweep",
+ "license": "CC-BY-SA-4.0",
+ "requires": {
+  "addons": [
+   "ostler-app-social"
+  ],
+  "capabilities": [
+   "ride_active"
+  ]
+ },
+ "classes": {
+  "hu5": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "ptt"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "ptt": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       3,
+       2
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "ride",
+      "lead",
+      "sweep",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "ride": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "sweep": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "s": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "ptt"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "ptt": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       3,
+       2
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "ride",
+      "lead",
+      "sweep",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "ride": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "sweep": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "s": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "ptt"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "ptt": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       4,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "ride",
+      "lead",
+      "sweep",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "ride": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "sweep": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "s": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       8,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "s",
+      "lead",
+      "m",
+      "ptt"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "m": [
+       1,
+       0,
+       1,
+       2
+      ],
+      "ptt": [
+       2,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       6,
+       0
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       6,
+       2
+      ],
+      "span": [
+       6,
+       2
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "ride",
+      "lead",
+      "sweep",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "ride": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "sweep": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "s": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "ptt"
+     ],
+     "grid": {
+      "cols": 1,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "ptt": [
+       0,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       2,
+       0
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       2,
+       3
+      ],
+      "span": [
+       2,
+       3
+      ],
+      "size": "small"
+     }
+    ],
+    "moving": {
+     "show": [
+      "ride",
+      "lead",
+      "sweep",
+      "s"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "ride": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "lead": [
+       1,
+       0,
+       1,
+       1
+      ],
+      "sweep": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "s": [
+       1,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     }
+    ]
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       4,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "talk",
+    "name": "Map and talk",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "ptt",
+      "widget": "ostler.ptt",
+      "label": "Talk",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     }
+    ]
+   },
+   {
+    "face": "ride",
+    "name": "Ride",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "ride",
+      "widget": "social.ride_status",
+      "label": "Ride",
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "lead",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Leader",
+      "config": {
+       "to": "leader"
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "sweep",
+      "widget": "vehicles_map.convoy_distance",
+      "label": "Sweep",
+      "config": {
+       "to": "sweep"
+      },
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       4,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,663 @@
+{
+ "format": "ostler.layout/1",
+ "kind": "drive_mode",
+ "id": "ostler.split",
+ "version": 1,
+ "name": "Split",
+ "icon": "music_note",
+ "description": "The map beside what is playing",
+ "license": "CC-BY-SA-4.0",
+ "requires": {
+  "capabilities": [
+   "media_source"
+  ]
+ },
+ "classes": {
+  "hu5": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "media"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "media": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   }
+  ],
+  "hu7": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 6,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       3,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       3,
+       0
+      ],
+      "span": [
+       3,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "media"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "media": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   }
+  ],
+  "hu9": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 8,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "media"
+     ],
+     "grid": {
+      "cols": 2,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       2
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "media": [
+       1,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   }
+  ],
+  "huwide": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 12,
+     "rows": 4
+    },
+    "widgets": [
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "cool",
+      "widget": "ostler.gauge",
+      "bind": {
+       "path": "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature"
+      },
+      "style": "bar",
+      "label": "Coolant",
+      "dec": 0,
+      "levels": {
+       "warning": [
+        105,
+        112
+       ],
+       "critical": [
+        112,
+        null
+       ]
+      },
+      "at": [
+       0,
+       2
+      ],
+      "span": [
+       4,
+       2
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       8,
+       0
+      ],
+      "span": [
+       4,
+       4
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "s",
+      "cool",
+      "m",
+      "media"
+     ],
+     "grid": {
+      "cols": 3,
+      "rows": 2
+     },
+     "place": {
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "cool": [
+       0,
+       1,
+       1,
+       1
+      ],
+      "m": [
+       1,
+       0,
+       1,
+       2
+      ],
+      "media": [
+       2,
+       0,
+       1,
+       2
+      ]
+     }
+    }
+   }
+  ],
+  "phone": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 4,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       0,
+       3
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "wide"
+     }
+    ],
+    "moving": {
+     "show": [
+      "m",
+      "s",
+      "media"
+     ],
+     "grid": {
+      "cols": 1,
+      "rows": 2
+     },
+     "place": {
+      "m": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "s": [
+       0,
+       0,
+       1,
+       1
+      ],
+      "media": [
+       0,
+       1,
+       1,
+       1
+      ]
+     }
+    }
+   }
+  ],
+  "tablet": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     }
+    ]
+   }
+  ],
+  "desktop": [
+   {
+    "face": "split",
+    "name": "Split",
+    "grid": {
+     "cols": 8,
+     "rows": 6
+    },
+    "widgets": [
+     {
+      "slot": "m",
+      "widget": "ostler.map",
+      "label": "Map",
+      "config": {
+       "follow": "heading_up",
+       "trail": "trip",
+       "layers": []
+      },
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     },
+     {
+      "slot": "s",
+      "widget": "ostler.tile",
+      "bind": {
+       "path": "Vehicle.Speed"
+      },
+      "style": "number",
+      "unit": "km/h",
+      "label": "Speed",
+      "dec": 0,
+      "at": [
+       0,
+       0
+      ],
+      "span": [
+       4,
+       3
+      ],
+      "size": "small"
+     },
+     {
+      "slot": "media",
+      "widget": "ostler.media",
+      "label": "Now playing",
+      "at": [
+       4,
+       0
+      ],
+      "span": [
+       4,
+       6
+      ],
+      "size": "wide"
+     }
+    ]
+   }
+  ]
+ }
+}

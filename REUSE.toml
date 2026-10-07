@@ -174,3 +174,16 @@ SPDX-FileCopyrightText = [
     "Contributors to COVESA",
 ]
 SPDX-License-Identifier = "MPL-2.0 AND CC-BY-SA-4.0"
+
+# Drive modes (drive-modes spec §4-§5, DM1): the shared Moving limits are code-adjacent
+# config; the shipped presets are layouts as data, CC BY-SA 4.0 like other shared layouts
+# (ADR-0012), as the spec's §5 says.
+[[annotations]]
+path = "src/openostler/layout_limits.json"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = "ui/src/drive/presets/*.json"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
