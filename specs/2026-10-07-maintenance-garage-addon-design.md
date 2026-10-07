@@ -1,23 +1,23 @@
 ---
 title: "Maintenance & Garage add-on — services, reminders, fuel, costs and documents fed by the car — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-api-consistency-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0006-english-confidence-vocabulary.md, decisions/adr-0008-unified-status-vocabulary.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, references/research/maintenance_trackers.md, references/research/code_review_lubelogger.md, references/research/code_review_tracktor.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md]
 summary: >
-  Draft for owner review. Maintenance & Garage (`ostler-app-maintenance`, optional first-party add-on) tracks services, reminders, fuel, costs and documents per vehicle, fed by the car where it can be. Own schema (SI units, ISO 8601, `vid`, `source`, confidence) with records for meter readings, task templates, tasks, services, fuel, expenses, generic compliance documents (MOT, insurance, tax as kinds) and attachments. A reminder engine over distance, engine hours, time and "fault seen", whichever first, with four urgency bands and fixed or rolling intervals, translated from LubeLogger with its defects fixed (MIT notice, `AGPL-3.0-or-later AND MIT` REUSE header). Fuel economy full-to-full as total distance over total fuel. An odometer and engine-hours ladder (car value, else user anchor plus Trips distance, labelled estimated). Fault-triggered task suggestions that close after N clean drives and reopen if the code returns. Manufacturer schedules as vehicle-pack data (`maintenance.json`). Garage screens in the Speedometer style; reminders on a Home card, strip chip, notifications and VSS `Vehicle.Service.*`, in the car only at trip start or end. Fuelly and LubeLogger CSV import/export and an export bundle; a `maintenance` data class off by default, a time-boxed buyer share and mechanic records; an optional LubeLogger bridge later; signed history deferred. Phases, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all"). Maintenance & Garage (`ostler-app-maintenance`, optional first-party add-on) tracks services, reminders, fuel, costs and documents per vehicle, fed by the car where it can be. Own schema (SI units, ISO 8601, `vid`, `source`, confidence) with records for meter readings, task templates, tasks, services, fuel, expenses, generic compliance documents (MOT, insurance, tax as kinds) and attachments. A reminder engine over distance, engine hours, time and "fault seen", whichever first, with four urgency bands and fixed or rolling intervals, translated from LubeLogger with its defects fixed (MIT notice, `AGPL-3.0-or-later AND MIT` REUSE header). Fuel economy full-to-full as total distance over total fuel. An odometer and engine-hours ladder (car value, else user anchor plus Trips distance, labelled estimated). Fault-triggered task suggestions that close after N clean drives and reopen if the code returns. Manufacturer schedules as vehicle-pack data (`maintenance.json`). Garage screens in the Speedometer style; reminders on a Home card, strip chip, notifications and VSS `Vehicle.Service.*`, in the car only at trip start or end. Fuelly and LubeLogger CSV import/export and an export bundle; a `maintenance` data class off by default, a time-boxed buyer share and mechanic records; an optional LubeLogger bridge later; signed history deferred. Phases, tests and decisions.
 ---
 
-# Maintenance & Garage add-on — design (draft)
+# Maintenance & Garage add-on — design
 
-**Status:** draft v0.1 for owner review. Not built before U1, U6 (garage) and app-model UA.
+**Status:** approved by the owner on 2026-10-07 ("approve all"), v0.2. Not built before U1, U6 (garage) and app-model UA.
 **Owner direction:** a maintenance tracker add-on; of LubeLogger and Tracktor, "we can use
 the code likely". Evidence: [maintenance trackers](../references/research/maintenance_trackers.md),
 [LubeLogger review](../references/research/code_review_lubelogger.md),
 [Tracktor review](../references/research/code_review_tracktor.md),
 [Speedometer teardown](../references/research/app_teardown_speedometer.md) §3.6.
-Ecosystem framing: [ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (Proposed). Every other tracker is a typing app; this one reads
+Ecosystem framing: [ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (accepted). Every other tracker is a typing app; this one reads
 odometer, engine hours and faults from the car and says where every number came from.
 
 ## 1. Scope and boundaries
@@ -26,7 +26,7 @@ odometer, engine hours and faults from the car and says where every number came 
   app on Ostler Diagnostics alone) plus a React UI bundled into the shell (app model §3, §7).
 - **Reads from core:** the garage (`vid`, U6), the odometer/engine-hours series written by
   **Trips** (§4), fault events and snapshots from Diagnose, the pack's `maintenance.json`
-  (§6), the data-class registry ([accounts-sharing spec §14](2026-10-06-accounts-sharing-design.md#14-proposed-amendment-2026-10-07-one-permission-model-and-the-shell-screens), proposed).
+  (§6), the data-class registry ([accounts-sharing spec §14](2026-10-06-accounts-sharing-design.md#14-amendment-2026-10-07-approved-one-permission-model-and-the-shell-screens), approved).
 - **Never** touches the car itself. The one car action it offers, a pack's service-interval
   reset, is requested through the shell's action API and the gate (Maintenance, Tier 1).
 - **Tracktor:** ideas and schema shape only (generic compliance documents, stable
@@ -236,8 +236,15 @@ Speedometer Garage style (teardown §3.6); colours, ramps and type from the visu
 ## Changelog
 
 - 2026-10-07: v0.1, first draft for owner review (ecosystem drafts).
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all"): every §14 decision
+  answered as recommended (alternatives not chosen); `maintenance.json` is added to the
+  vehicle-pack contract (ADR-0013 amendment, 2026-10-07); the LubeLogger bridge add-on
+  `ostler-app-lubelogger` is listed in ADR-0034, not yet created.
 
 ## 14. Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **Own app and schema?** Recommend: `ostler-app-maintenance` with our own SI schema and a
    published LubeLogger mapping. Alternative: adopt LubeLogger's model as our storage.

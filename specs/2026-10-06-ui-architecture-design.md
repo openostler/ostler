@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.12
+version: 0.13
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md, references/research/driver_distraction_rules.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/ui_audit_current.md, references/research/visual_design_direction.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-logs-at-scale-design.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback. v0.11 (plan notes, 2026-10-06; the module-bus spec's owner answers): the Network page gains the owner action Remove device, the only way to clear a stale transmit-gate claim; an approval is confirmed first and the grant challenged and signed after; a queued action is offered only when the target checks in before it would expire. v0.12 (proposed amendment of 2026-10-07, pending the owner's answers; §12): U2 lockouts (driver-facing means any screen the driver can see or reach, Idling needs Park evidence, a per-trip head-unit Passenger view limited to UK reg 109 content with Open on phone for the rest, six new Moving templates with limits, task depth ≤ 3, a "Using Ostler while driving" page, a legal check before U2 ships); Logs renamed Trips with aliased routes, a two-tier trip summary index over the full recording, trip list, map-first trip detail, playback, Statistics, Records and gated Sprints, End trip now, Exclude from stats, Export all and no score; Drive layouts as data (RealDash model), one-screen Drive mode at every head-unit class with a new HU-5 800×480 class; the Add-ons catalogue at More → Add-ons with an empty-state Home card.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback. v0.11 (plan notes, 2026-10-06; the module-bus spec's owner answers): the Network page gains the owner action Remove device, the only way to clear a stale transmit-gate claim; an approval is confirmed first and the grant challenged and signed after; a queued action is offered only when the target checks in before it would expire. v0.12–v0.13 (§12, amendment of 2026-10-07, approved by the owner on 2026-10-07 ("approve all"); §12): U2 lockouts (driver-facing means any screen the driver can see or reach, Idling needs Park evidence, a per-trip head-unit Passenger view limited to UK reg 109 content with Open on phone for the rest, six new Moving templates with limits, task depth ≤ 3, a "Using Ostler while driving" page, a legal check before U2 ships); Logs renamed Trips with aliased routes, a two-tier trip summary index over the full recording, trip list, map-first trip detail, playback, Statistics, Records and gated Sprints, End trip now, Exclude from stats, Export all and no score; Drive layouts as data (RealDash model), one-screen Drive mode at every head-unit class with a new HU-5 800×480 class; the Add-ons catalogue at More → Add-ons with an empty-state Home card.
 ---
 
 # UI architecture — design
@@ -34,9 +34,10 @@ peer view and cluster view), the manifest fields of §5.1 and the device pages o
 brain product is **Ostler Brain** (was Hub; ADR-0039 Amendments), and §5.1's device entries
 gain `memory` and a `pbroker` role's `max_clients` (ADR-0037 Amendments); the spec stays
 approved.
-**Proposed amendment of 2026-10-07 (v0.12)** in §12, pending the owner's answers: U2
-lockouts and Passenger view, Logs renamed Trips, and Drive layouts as data with a new HU-5
-class. Nothing in §1–§11 changes until the owner accepts it.
+**Amendment of 2026-10-07 (v0.12), approved by the owner on 2026-10-07 ("approve all")
+(v0.13)** in §12: U2 lockouts and Passenger view, Logs renamed Trips, Drive layouts as data
+with a new HU-5 class, and the Add-ons catalogue. Where §12 differs from §1–§11, §12 wins;
+the spec stays approved.
 
 ## 1. Context and goals
 
@@ -746,34 +747,35 @@ EKA read/set stays in the D2 pack, gated and opt-in (GOALS §3).
 
 **Still open:** whether `docs/` is CC BY-SA; CRA legal advice before the first sale.
 
-## 12. Proposed amendment (2026-10-07): U2 lockouts, Trips and Drive layouts
+## 12. Amendment (2026-10-07), approved: U2 lockouts, Trips and Drive layouts
 
-*Proposed on 2026-10-07 (v0.12), pending the owner's answers in **Decisions for the owner** at
-the end of this spec. Nothing in §1–§11 changes until they are accepted; each subsection names
-the sections it would change. Evidence:
+*Drafted on 2026-10-07 (v0.12) and approved by the owner on 2026-10-07 ("approve all")
+(v0.13); the answers are in **Decisions for the owner** at the end of this spec, each
+recommendation adopted and each alternative not chosen. Each subsection names the sections
+of §1–§11 it changes; where they differ, §12 wins. Evidence:
 [driver-distraction rules](../references/research/driver_distraction_rules.md),
 [Speedometer/Odo teardown](../references/research/app_teardown_speedometer.md),
 [OBD and telematics apps](../references/research/obd_telematics_apps.md),
 [current UI audit](../references/research/ui_audit_current.md) and
 [visual design direction](../references/research/visual_design_direction.md). Framing:
-[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) "Ecosystem: small core, add-ons are the product" (Proposed), where Trips is core and
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) "Ecosystem: small core, add-ons are the product" (accepted), where Trips is core and
 Social, Vehicles & Map and Maintenance & Garage are add-ons. Visual values belong to the
-[visual design system spec](2026-10-07-visual-design-system-design.md) (draft); this section
+[visual design system spec](2026-10-07-visual-design-system-design.md) (approved); this section
 names tokens only. Tiers, the gate, action categories (§7) and the five-destination cap are
 unchanged.*
 
-### 12.1 U2 lockouts (would change §3.5, §10 U2, §10.1 U2; app-model §4.4)
+### 12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)
 
 **Stance.** The owner proposed strict driver-safe templates on the driver-facing head unit
 while Moving, guidelines plus review elsewhere, and a Waze-style per-trip "I'm a passenger"
 override (re-prompted, no "always", logged, view-only, car actions still through the gate).
-**Recommended, with one adjustment from the research:** UK Construction and Use regulation
+**Decided (owner, 2026-10-07), with one adjustment from the research:** UK Construction and Use regulation
 109 makes non-driving content on any screen the driver can see unlawful while moving, whoever
 asked for it (research §4.2), and the one centre-screen passenger unlock that shipped (Tesla
 Passenger Play) drew a federal investigation and was withdrawn (§5). So the head-unit
 **Passenger view** unlocks driving-related content only (vehicle state, own route and
 location, driving cameras), and everything else goes **Open on phone**, where the full
-"I'm a passenger" override applies. **Alternative (the owner's original):** the head-unit
+"I'm a passenger" override applies. **Not chosen (the owner's original):** the head-unit
 override unlocks all viewing. Decision 1.
 
 **§3.5 wording** (research §8.1, with Logs read as Trips). Replace the Idling row's rule with:
@@ -831,7 +833,7 @@ gate's stationary checks (§3.5, §7). Holding the phone is the driver's legal p
   109 (b) covers your own vehicle; Decision 5). Who may be seen at all comes from the core
   data-class registry with ghost on by default (accounts and sharing spec); the `map` template
   only draws what it is given.
-- **Social surfaces** (Social add-on draft): Social contributes a `more:social` slot (a
+- **Social surfaces** ([Social add-on spec](2026-10-07-social-addon-design.md), approved): Social contributes a `more:social` slot (a
   More → Social page, not a destination, so the five-destination cap holds; locked while
   Moving like the rest of More) and a **ride/call strip chip** shown only while a ride or call
   is active, which opens the `call` template while Moving. Neither adds a template or unlocks
@@ -841,7 +843,7 @@ gate's stationary checks (§3.5, §7). Holding the phone is the driver's legal p
 - **Server state:** apps can neither set nor read "unlocked"; they render what the shell
   allows.
 
-**Templates and limits** (would change §3.5's Moving row and app-model §4.4). The existing
+**Templates and limits** (changes §3.5's Moving row and app-model §4.4). The existing
 five (`telltale_list`, `value`, `setpoint`, `camera_live`, `arm`, as app-model §4.4) plus:
 
 | Template | Limit while Moving on a driver-facing display | Source |
@@ -878,7 +880,7 @@ on reg 109's application to LCD head units and on Passenger view is recorded in
 (software is a product from 9 December 2026) is due before hardware sales start. Without the
 first opinion, U2 ships with no head-unit override at all, only **Open on phone**.
 
-**§10 U2 row would read.** *Ships:* platform driving state (vehicle → GPS) with Park evidence
+**§10 U2 row reads.** *Ships:* platform driving state (vehicle → GPS) with Park evidence
 for Idling, driver-facing displays, Passenger view with its exits and local log, Open on
 phone, the six new templates with their limits, server refusal of Tiers 1–3 while Moving,
 service mode with frame, the "Using Ostler while driving" page. *Test:* the Moving fixture
@@ -886,12 +888,12 @@ locks actions, text and video; Passenger view is refused for a view that declare
 non-driving data class; each exit and the 15-minute timeout end it; no "always" exists in the
 DOM or settings; an alert card carries no message text; the head-unit map shows no other
 vehicle except opted-in convoy markers; Idling without Park evidence locks text entry and
-Maintenance; server tests. **§10.1 U2 would read:** NHTSA 2 s / 12 s glance criteria and the
+Maintenance; server tests. **§10.1 U2 reads:** NHTSA 2 s / 12 s glance criteria and the
 per se lockout list, the Android for Cars and CarPlay template limits above, ESoP
 (2008/653/EC) principles I, III and IV, and UK reg 109 as the content rule; "≤ 30 characters"
 cited as ours; ASVS L1 on the gate; refusals in the OpenAPI error schema.
 
-### 12.2 Logs → Trips (would change §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)
+### 12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)
 
 **Rename everywhere in the UI plan.** The destination, its core app and every UI string read
 **Trips** (was Logs). §3.4's destinations read `Home · Diagnose · Trips · Security (Map) ·
@@ -959,7 +961,7 @@ Ostler-run server (telematics research Decide 7).
 speed-limit violation history (teardown Avoid 3). Any score or board lives in the Social
 add-on, opt-in per friend or group, and never ranks speed.
 
-### 12.3 Drive mode (would change §3.1, §3.5, §5.3, §5.4, §10 U1 and its test)
+### 12.3 Drive mode (changes §3.1, §3.5, §5.3, §5.4, §10 U1 and its test)
 
 **Layouts as data** (the RealDash model; telematics research, RealDash deep dive and Decide 1).
 A **Drive layout** is a file with one grid per layout class (authored per class, never scaled):
@@ -995,12 +997,13 @@ landscape** with the sheet on the right; on a head unit (Parked) the sheet sits 
 passenger side (visual research §9), so on a right-hand-drive car the map takes the right half.
 The map style follows the theme (Ostler Night or Day; OpenFreeMap dark or positron as the
 online fallback), the offline fallback takes the `bg` token instead of a fixed light grey, and
-`cooperativeGestures` is on wherever the page scrolls. The session-logbook spec's replay
-layout and ADR-0009's basemap rule would be amended to match (owner's call).
+`cooperativeGestures` is on wherever the page scrolls. ADR-0009's basemap rule is amended
+to match ([ADR-0009 amendment, 2026-10-07](../decisions/adr-0009-session-logbook-and-location.md#amendment-2026-10-07));
+the session-logbook spec's replay layout follows this section.
 
-### 12.4 Add-ons catalogue placement (would change §3.4's More and Home rows)
+### 12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)
 
-ADR-0042 (Proposed) and app-model §14.2 add a Home Assistant-style **Add-ons catalogue**
+ADR-0042 (accepted) and app-model §14.2 add a Home Assistant-style **Add-ons catalogue**
 (Installed and Available tabs; cards labelled Core, Add-on or Developer) that replaces More →
 Apps. This spec has no Settings page (More holds Preferences), so the catalogue lives at
 **More → Add-ons, the top entry of More**, above Garage, Network, Integrations, Preferences,
@@ -1009,6 +1012,18 @@ driver-facing display; installing or removing an add-on is an owner operation on
 (§7.2). **Home** gains an **empty-state card**: when no optional add-on is installed, one
 dismissible card suggests a few (for example Maintenance & Garage, Vehicles & Map) and opens
 More → Add-ons; it never appears while Moving and never replaces a warning or vehicle card.
+
+### 12.5 Visual design system (changes §2 principle 7)
+
+The [visual design system spec](2026-10-07-visual-design-system-design.md) (approved
+2026-10-07) owns every visual value. §2 principle 7 reads: **Calm instrument.** ISO 2575
+colours for telltales only, a word with every icon, gauges neutral in range with a status
+colour and word only out of range, motion only for red alarms, **at most one glowing element
+per screen and none on head units at night or in Drive mode**, and night dark by default
+(Night, with Day equal and Auto available). Minimum text sizes are 12 px on a phone, 18 px on
+a Parked head unit and 24 px in Moving templates (visual spec §4). The visual migration (V1
+tokens, font and maps; V2 component kit; V3 pages) lands before U2 build work; the Drive-mode
+fit fix (§12.3) may land first.
 
 ## Notes on sources
 
@@ -1129,8 +1144,19 @@ More → Add-ons; it never appears while Moving and never replaces a warning or 
   layouts as data, one-screen Drive mode with an HU-5 800×480 class and a no-scroll
   Playwright assert, map-first Analysis; §12.4 the Add-ons catalogue at More → Add-ons (top
   of More) and an empty-state Home card suggesting add-ons.
+- 2026-10-07: v0.13, **§12 approved by the owner on 2026-10-07 ("approve all")**: §12 renamed
+  "Amendment (2026-10-07), approved"; its subsections now change the sections they name;
+  every "Decisions for the owner" item answered as recommended (alternatives not chosen);
+  ADR-0042 and the visual design system and Social specs cited as approved; ADR-0009's
+  basemap rule amended to match §12.3 (Ostler Night/Day on Brain-served PMTiles,
+  OpenFreeMap online fallback, `bg` offline); §12.5 amends §2 principle 7 for the visual
+  spec's glow budget and calm gauges. Build order: the Drive-mode fit fix (HU-5 and
+  the no-scroll assert), V1 visual, the U2 lockouts, Trips.
 
-## Decisions for the owner (proposed amendment of 2026-10-07)
+## Decisions for the owner (amendment of 2026-10-07)
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **Head-unit passenger override: what may it unlock?** Recommend: Passenger view for
    driving-related content only (vehicle state, own route and location, driving cameras),

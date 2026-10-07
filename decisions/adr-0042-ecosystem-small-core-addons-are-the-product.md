@@ -1,21 +1,23 @@
 ---
 title: "ADR-0042 — Ecosystem: small core, add-ons are the product"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-07
 depends_on: [GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
 summary: >
-  Proposed (2026-10-07), awaiting the owner. Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. Settings → Add-ons lists Installed and Available with Core / Add-on labels; an empty Home suggests add-ons. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core.
+  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core.
 ---
 
 # ADR-0042 — Ecosystem: small core, add-ons are the product
 
 - **Date:** 2026-10-07
-- **Status:** proposed (drafted from the owner's ecosystem direction of 2026-10-07; not
-  accepted). Specs it changes carry a dated "Proposed amendment (2026-10-07)":
-  [app-model spec §14](../specs/2026-10-06-app-model-design.md#14-proposed-amendment-2026-10-07-ecosystem-add-ons-trips-and-templates),
-  the UI spec §3.5 (lockouts and templates), the accounts spec (data-class registry).
+- **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all"), drafted from
+  the owner's ecosystem direction of the same day. Specs it changes carry a dated
+  "Amendment (2026-10-07), approved":
+  [app-model spec §14](../specs/2026-10-06-app-model-design.md#14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates),
+  the UI spec §12 (lockouts, templates, Trips, Drive), the accounts spec §14 (data-class
+  registry).
   Map of the result: [docs/ecosystem.md](../docs/ecosystem.md).
 
 ## Context
@@ -72,13 +74,13 @@ summary: >
    | **Diagnose** | **Vehicles & Map** (`ostler-app-vehicles`) |
    | **Trips** (was Logs; Speedometer/Odo features folded in) | **Maintenance & Garage** (`ostler-app-maintenance`): services, reminders, fuel, costs |
    | **Network** | **Cameras** (`ostler-app-cameras`) |
-   | **Security**, shown once a node exists | **Integrations**: RealDash CAN out, LubeLogger bridge (`ostler-app-lubelogger`), social integrations |
+   | **Security**, shown once a node exists | **Integrations**, one add-on per integration: RealDash CAN out, LubeLogger bridge (`ostler-app-lubelogger`), social integrations |
    | | **Decode lab**, a **developer** add-on, shown only in service mode |
 
    Decode lab moves from "core app" (app-model Q5) to developer add-on: off by default,
    labelled Developer; its code stays in `ostler` until ADR-0034's split rule applies.
    No add-on adds a destination.
-5. **The Add-ons catalogue.** **Settings → Add-ons** (replacing More → Apps) has two tabs,
+5. **The Add-ons catalogue.** **More → Add-ons** (replacing More → Apps; UI spec §12.4) has two tabs,
    **Installed** and **Available**; every card shows a **Core** or **Add-on** label
    (Developer for Decode lab), what it needs ("Needs a camera", "Needs the Brain") and the
    data classes it reads. Core cards cannot be removed. **Available** lists add-ons bundled
@@ -112,13 +114,15 @@ summary: >
 
 ## Consequences
 
-- App-model spec §3, §7 and §8 change (proposed amendment §14); UI spec §3.4 renames Logs to
-  Trips and §3.5 gains the new templates and passenger rules.
+- App-model spec §3, §7 and §8 change (amendment §14, approved); UI spec §3.4 renames Logs
+  to Trips and §3.5 gains the new templates and passenger rules (UI spec §12, approved).
 - Social, Vehicles & Map and Maintenance & Garage each need a spec before code.
-- SCOPE.md and GOALS.md re-state the mission (proposed wording).
+- SCOPE.md and GOALS.md re-state the mission (approved wording).
 - The catalogue UI and empty Home land in phase UA with the registry.
 
 ## Alternatives considered
+
+The owner's alternatives in the decision list below were not chosen.
 
 - **A big single app** (the Odo model). Rejected: everything becomes core and grows, and
   every feature shares one release cadence.
@@ -130,11 +134,14 @@ summary: >
 ## Relation to other ADRs
 
 - **ADR-0034:** applied; add-on repos are `ostler-app-<x>`.
-- **ADR-0018 / UI spec:** five destinations kept; Logs reads Trips (proposed).
+- **ADR-0018 / UI spec:** five destinations kept; Logs reads Trips.
 - **ADR-0029:** the data-class registry with audiences extends its token data classes.
 - **ADR-0009, ADR-0033, ADR-0038:** unchanged and relied on.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended. Each recommendation below is the decision;
+each alternative was not chosen.
 
 1. **Accept the small-core model?** Recommend: accept this ADR. Alternative: keep the
    app-model spec as is and decide core/add-on per feature.
@@ -150,3 +157,10 @@ summary: >
    Auto IoT companion first.
 6. **Remote catalogue?** Recommend: not now; Available lists bundled and device-suggested
    add-ons only. Alternative: a signed catalogue repo, with its own outbound-path ADR.
+
+## Changelog
+
+- 2026-10-07 — v0.1, proposed: drafted from the owner's ecosystem direction.
+- 2026-10-07 — v1.0, accepted: approved by the owner ("approve all"). The catalogue sits at
+  More → Add-ons (UI spec §12.4); Integrations is one add-on per integration; every
+  "Decisions for the owner" item answered as recommended.

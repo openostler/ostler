@@ -1,12 +1,12 @@
 ---
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
-  Draft for owner approval, answering "our styling is pretty terrible". Ostler becomes dark by default and
+  Approved by the owner on 2026-10-07 ("approve all"), answering "our styling is pretty terrible". Ostler becomes dark by default and
   map-first, with numbers as the hero, calm gauges, one cyan accent and a glow budget, night-first on head
   units. Gives the full token set as tables ready to lift into ui/tokens/*.tokens.json (W3C DTCG, the
   existing pipeline): surfaces, text, accent and status for dark, dim, OLED and light; the validated violet
@@ -18,14 +18,14 @@ summary: >
   in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work.
 ---
 
-# Visual design system — design (draft)
+# Visual design system — design
 
-**Status:** draft for the owner's approval; nothing is built until it is approved. The evidence is
+**Status:** approved by the owner on 2026-10-07 ("approve all"), v0.2. The evidence is
 [visual design direction](../references/research/visual_design_direction.md) (values, references) and
 the [UI audit](../references/research/ui_audit_current.md) (problems P1–P15 with file:line citations and
 196 screenshots); this spec decides and does not repeat them. It changes no decision of the
 [UI spec](2026-10-06-ui-architecture-design.md) except where a numbered item in **Decisions for the
-owner** proposes an amendment. Other drafts of this round (Trips, Vehicles & Map, Social, Maintenance,
+owner** amends it (UI spec §12.5; ADR-0009 amendment of 2026-10-07). Other documents of this round (Trips, Vehicles & Map, Social, Maintenance,
 ADR-0042) reference **token names only**; this spec owns the values.
 
 ## 1. Principles
@@ -298,7 +298,7 @@ Retired with V3: `.btn`, `.iconbtn`, `.chip`, `.rchip`, `.seg`, `.area-tab`, `.o
 | **Trip detail** | title, back, Export, a prose paragraph, then a 42 vh light Liberty map, values, G-G, lanes; transport outside the map, emoji buttons (P2, P6, P8) | full-bleed Ostler Night map with the violet trace and cyan puck; a Sheet over the map: peek = HeroStat (distance or max speed) + Scrubber with Material transport; half = 3×3 stat grid (distance, duration, moving, idle, avg, max, stops, elevation, avg moving), time-at-speed Donut with Time/Distance Segmented, DistributionBars; full = speed-over-time area line, lanes, notes, "About this trip" collapsed; on HU a 520 px side sheet, Parked only |
 | **Drive mode** | 76 px Back button and title take ~45 % of the height; the red tile is below the fold at 1024×600; accent gauge arcs (P1, P14) | no title; Back moves into the strip; the fault folds into the telltale chip; ≤ 6 tiles sized by height (`grid-auto-rows: 1fr`), Night dim after dusk, `num-xl` digits, neutral arcs, the out-of-range tile in `alarm` with its word; no glow, no gradient; fits one screen at every HU size (tested) |
 
-## 11. Migration (small PRs; waits for approval; all before U2 build work)
+## 11. Migration (small PRs; approved 2026-10-07; all before U2 build work)
 
 | PR | Ships | Test |
 |---|---|---|
@@ -329,6 +329,9 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 
 ## Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
+
 1. **Default theme?** Recommend: dark (Night) on every layout class, Day equal, Auto as an option.
    Alternative: phones follow the OS by default, head units dark (audit D1).
 2. **Night variants?** Recommend: add Night dim (automatic on head units after dusk) and Deep night
@@ -357,3 +360,6 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 ## Changelog
 
 - 0.1 (2026-10-07): first draft from the visual design direction and UI audit research.
+- 0.2 (2026-10-07): approved by the owner on 2026-10-07 ("approve all"): every decision answered
+  as recommended (alternatives not chosen); ADR-0009 amended for the basemap (decision 9); UI spec
+  §2 principle 7 amended for the glow budget (UI spec §12.5); HU-5 is UI spec §12.3.

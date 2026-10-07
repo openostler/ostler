@@ -1,17 +1,17 @@
 ---
 title: "Vehicles & Map add-on — browse friends' vehicles on a built-in live map, ghost by default — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, references/research/social_group_drive_apps.md, references/research/accounts_social_login.md, references/research/mesh_transports.md, references/research/driver_distraction_rules.md]
 summary: >
-  Draft for owner review. Vehicles & Map (`ostler-app-vehicles`, optional first-party add-on) is one feature: browsing the vehicles your friends and groups share with you, with the full-screen dark map built into it. It lists shared vehicles as garage cards (owner-curated fields; no VIN, masked or not; plate hidden by default; photo EXIF stripped; live stats only through granted data classes) and draws them on the map as vehicle pins with heading, an age ring and "updated … ago", a bottom sheet, the share countdown and a visible/ghost chip. Ghost mode is the default (one switch; turning visible offers 1 h, 24 h or until I go ghost; ghost hides presence, location and live signals). Who sees what comes from the core data-class registry of the accounts-sharing amendment (audience, class, detail, window; accounts §14); this app only reads it. Group drives share live position for the ride only and end at ride end. Positions arrive over shares and the Social link router (internet, Wi-Fi mesh, HaLow, LoRa), with coarse = Meshtastic 13-bit precision. On a head unit while Moving: no other vehicles, except opted-in convoy members as plain markers. Viewers without Ostler come later, through a relay link of at most 24 h. ADR-0009/0029/0033/0036/0038 compliance, phases, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all"). Vehicles & Map (`ostler-app-vehicles`, optional first-party add-on) is one feature: browsing the vehicles your friends and groups share with you, with the full-screen dark map built into it. It lists shared vehicles as garage cards (owner-curated fields; no VIN, masked or not; plate hidden by default; photo EXIF stripped; live stats only through granted data classes) and draws them on the map as vehicle pins with heading, an age ring and "updated … ago", a bottom sheet, the share countdown and a visible/ghost chip. Ghost mode is the default (one switch; turning visible offers 1 h, 24 h or until I go ghost; ghost hides presence, location and live signals). Who sees what comes from the core data-class registry of the accounts-sharing amendment (audience, class, detail, window; accounts §14); this app only reads it. Group drives share live position for the ride only and end at ride end. Positions arrive over shares and the Social link router (internet, Wi-Fi mesh, HaLow, LoRa), with coarse = Meshtastic 13-bit precision. On a head unit while Moving: no other vehicles, except opted-in convoy members as plain markers. Viewers without Ostler come later, through a relay link of at most 24 h. ADR-0009/0029/0033/0036/0038 compliance, phases, tests and decisions.
 ---
 
-# Vehicles & Map add-on — design (draft)
+# Vehicles & Map add-on — design
 
-**Status:** draft v0.1 for owner review. Nothing here is built before U1 and accounts P2.
+**Status:** approved by the owner on 2026-10-07 ("approve all"), v0.2. Nothing here is built before U1 and accounts P2.
 **Owner direction (2026-10-07):** "the map feature should be built into the feature that
 allows you to browse other people's vehicles"; ghost mode by default; the permissions system
 decides who sees what (friend, group…). Evidence:
@@ -20,13 +20,13 @@ decides who sees what (friend, group…). Evidence:
 [mesh transports](../references/research/mesh_transports.md) §5,
 [driver-distraction rules](../references/research/driver_distraction_rules.md) §7.
 Ecosystem framing: [ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)
-(Proposed), "small core, add-ons are the product". Sibling add-on: [Social](2026-10-07-social-addon-design.md).
+(accepted), "small core, add-ons are the product". Sibling add-on: [Social](2026-10-07-social-addon-design.md).
 
 ## 1. Scope and boundaries
 
 | Owns | Does not own (reads from) |
 |---|---|
-| The **Vehicles** list, the shared-vehicle page with its garage card, the **Map** (peer layer, pins, bottom sheet, visibility sheet), the convoy layer of an active ride, the head-unit convoy markers | **Permissions:** the core data-class registry, audiences, ghost master toggle, grants and audit ([accounts-sharing spec §14](2026-10-06-accounts-sharing-design.md#14-proposed-amendment-2026-10-07-one-permission-model-and-the-shell-screens), Proposed amendment 2026-10-07). This app **stores no permissions** |
+| The **Vehicles** list, the shared-vehicle page with its garage card, the **Map** (peer layer, pins, bottom sheet, visibility sheet), the convoy layer of an active ride, the head-unit convoy markers | **Permissions:** the core data-class registry, audiences, ghost master toggle, grants and audit ([accounts-sharing spec §14](2026-10-06-accounts-sharing-design.md#14-amendment-2026-10-07-approved-one-permission-model-and-the-shell-screens), amendment 2026-10-07, approved). This app **stores no permissions** |
 | The garage-card editor for *my* vehicles (which curated fields exist) | **Groups and rides:** groups (kinds friends, club, ride, safety) are core (accounts §14.6); [Social](2026-10-07-social-addon-design.md) runs ride channels and talk; this app shows rides on the map |
 | — | **Transport:** the Social link router (mesh transports §5) and `/peer/v1` shares (accounts spec §9) |
 | — | **My own trips and replay:** core **Trips**; **find my car / tracker map:** core Security |
@@ -52,7 +52,7 @@ It is an optional first-party app in its own repo `ostler-app-vehicles` (ADR-003
 
 Owner-curated fields only, under the `vehicle_card` class of the registry (accounts §14.1,
 detail `basic · with plate`). Mods, the "about" text and the mileage band are fields this app
-proposes to add to that class, each with its own tick per grant (Decision 9):
+adds to that class, each with its own tick per grant (Decision 9):
 
 | Field | Default to others | Rule |
 |---|---|---|
@@ -197,8 +197,8 @@ device-to-device. Not before phase V5.
                    "notifications": true, "storage": "memory" } }
 ```
 
-`more:vehicles` and `home:card` are new slot names (platform change, Decision 7; Social
-proposes `more:social` the same way); `storage:
+`more:vehicles` and `home:card` are new slot names (platform change, Decision 7, added to
+app-model §4.2 by its §14.7; Social adds `more:social` the same way); `storage:
 "memory"` means peer data is never written to disk.
 
 ## 10. Compliance
@@ -237,8 +237,15 @@ proposes `more:social` the same way); `storage:
 ## Changelog
 
 - 2026-10-07: v0.1, first draft for owner review (ecosystem drafts).
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all"): every §13 decision
+  answered as recommended (alternatives not chosen); slots `more:vehicles` and `home:card`
+  added to app-model §4.2 (§14.7); ADR-0038 §2 narrowed so inbound mesh positions are never
+  written to the logbook (ADR-0038 amendment item 10).
 
 ## 13. Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **One add-on for browsing and the map?** Recommend: yes, `ostler-app-vehicles` opens on
    the map with the list as its bottom sheet. Alternative: a separate core map destination.

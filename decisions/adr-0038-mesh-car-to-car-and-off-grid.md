@@ -2,11 +2,11 @@
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
 status: locked
-version: 1.4
+version: 1.5
 updated: 2026-10-07
 depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, specs/2026-10-07-social-addon-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry. Proposed amendment 2026-10-07 (awaiting the owner): MeshCore as the second LoRa bridge; batman-adv over 802.11s allowed inside a convoy Wi-Fi mesh, routed at each brain with Babel at the edge; UK/EU HaLow is a car-to-camp uplink, not a mesh; live voice, video and camera streams only over a Wi-Fi IP mesh between ride members, never over HaLow, LoRa or MQTT; router topics and payload fields; ghost and camera consent; bench additions.
+  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry. Amendment 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): MeshCore as the second LoRa bridge; batman-adv over 802.11s allowed inside a convoy Wi-Fi mesh, routed at each brain with Babel at the edge; UK/EU HaLow is a car-to-camp uplink, not a mesh; live voice, video and camera streams only over a Wi-Fi IP mesh between ride members, never over HaLow, LoRa or MQTT; router topics and payload fields; ghost and camera consent; inbound mesh positions kept only as expiring retained state, never written to the logbook (narrows §2); bench additions (UK/EU HaLow pair, two-car batman-adv pair, LiveKit on a Pi 5, handover, MeshCore beside Meshtastic).
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
@@ -14,7 +14,7 @@ summary: >
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 > **Amended 2026-10-06 (owner, module-bus answers):** the bridge's ACL also lets it publish its own `status`, `power` and `manifest`; QoS and retain per topic. See [Amendments (bridge ACL)](#amendments-2026-10-06-bridge-acl).
-> **Proposed amendment (2026-10-07, mesh transports), awaiting owner approval:** MeshCore, a Wi-Fi mesh with batman-adv inside it, HaLow as an uplink, live media between ride members over Wi-Fi only. Nothing changes until approved. See [Proposed amendment (2026-10-07)](#proposed-amendment-2026-10-07).
+> **Amended 2026-10-07 (mesh transports), approved by the owner on 2026-10-07 ("approve all"):** MeshCore, a Wi-Fi mesh with batman-adv inside it, HaLow as an uplink, live media between ride members over Wi-Fi only; inbound mesh positions kept only as expiring retained state, never written to the logbook (§2 narrowed). See [Amendment (2026-10-07), approved](#amendment-2026-10-07-approved).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner answers, 2026-10-06; see
@@ -206,14 +206,20 @@ they win.
 
 - 2026-10-07: v1.4, adds the Proposed amendment (2026-10-07, mesh transports) below for owner
   approval; the accepted text above is unchanged.
+- 2026-10-07: v1.5, the amendment is approved by the owner on 2026-10-07 ("approve all"),
+  renamed "Amendment (2026-10-07), approved"; its decisions answered as recommended; item 10
+  narrows §2 so inbound mesh positions are kept only as expiring retained state and never
+  written to the logbook (Vehicles & Map spec decision 6); the bench additions join the
+  bench-test plan, before Social phase S3.
 
-## Proposed amendment (2026-10-07)
+## Amendment (2026-10-07), approved
 
-**Status: proposed, awaiting the owner.** Text from the
+**Status: approved by the owner on 2026-10-07 ("approve all").** Text from the
 [mesh transports research §7](../references/research/mesh_transports.md#7-proposed-amendment-to-adr-0038-accepted-for-owner-approval),
 reconciled with [calls, video and camera sharing](../references/research/calls_video_camera_sharing.md)
-§6–§8 and the [Social add-on spec](../specs/2026-10-07-social-addon-design.md) §6–§7. If
-approved, the decision text above stands except as follows; where these entries differ, they win.
+§6–§8, the [Social add-on spec](../specs/2026-10-07-social-addon-design.md) §6–§7 and the
+[Vehicles & Map add-on spec](../specs/2026-10-07-vehicles-and-map-addon-design.md) §6.2. The
+decision text above stands except as follows; where these entries differ, they win.
 
 1. **§3, §7 — MeshCore.** MeshCore becomes the **second LoRa bridge** (`mesh-<n>` with
    `via: meshcore`; own repo `ostler-bridge-meshcore`, MIT), built after the Meshtastic bridge
@@ -260,6 +266,14 @@ approved, the decision text above stands except as follows; where these entries 
    on a driver-facing screen (Social spec §5).
 9. **Gate.** The gate's transport value stays `mesh` for every mesh kind, with a new audit field
    `via` (`meshtastic`, `meshcore`, `wifi-mesh`, `halow`).
+10. **§2 — inbound positions are not recorded.** §2's "In: … peer positions … recorded and
+    shown as untrusted data" is narrowed for positions: a peer position received over any
+    mesh is kept **only as expiring retained state** (the retained `in/position/<peer>`
+    message with its expiry, module-bus spec §16) and is **never written to the logbook**
+    or a session; it fades from the map when it expires, and ride end deletes it. Inbound
+    text and alerts stay as §2 says. Source:
+    [Vehicles & Map spec](../specs/2026-10-07-vehicles-and-map-addon-design.md) §6.2 and its
+    decision 6.
 
 **Confirmation additions.** The gate matrix's `mesh` row gains `via` and is refused above Read
 for every value; an inbound call or camera request from a peer starts nothing without the local
@@ -267,7 +281,7 @@ tap or a live grant; ghost mode emits no `position` or `telemetry` on any link; 
 on three links appears once in `social/inbox/alert`; no audio or video bytes on the broker; a
 non-ride peer on the Wi-Fi mesh cannot join a ride's media room.
 
-**Bench additions** (to the plan above):
+**Bench additions** (to the plan above; approved, run before Social phase S3):
 - a **HaLow EU pair** (camp access point, car client): range at 25 mW, airtime used against the
   2.8 % client budget, delivery of text, PTT bursts, voice notes and stills;
 - a **two-car 802.11s/batman-adv pair** on 2.4 GHz, each brain routing, Babel at the edge: range
@@ -280,6 +294,9 @@ non-ride peer on the Wi-Fi mesh cannot join a ride's media room.
 - **MeshCore beside Meshtastic** on the same boards with the same scripted traffic.
 
 ### Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **MeshCore** — the second LoRa bridge after Meshtastic and the bench test, MIT, own repo? *Recommend:* yes. *Alternative:* Meshtastic only.
 2. **batman-adv inside the convoy Wi-Fi mesh** — 802.11s, routed at each brain, Babel at the edge? *Recommend:* yes. *Alternative:* Babel only, each car its own subnet (accepted §8 as is).
