@@ -39,16 +39,17 @@ describe("the shell on a head unit (HU-7, 1024×600)", () => {
     expect(within(strip).getByText(/^Time /)).toBeInTheDocument();
   });
 
-  it("opens Drive mode full screen (strip kept, nav hidden) and goes back", async () => {
+  it("opens Drive mode full screen (strip kept with Back, nav hidden, no heading) and goes back", async () => {
     const user = userEvent.setup();
     installFakeServer({ snapshot: connected });
     render(<App path="/" />);
     await user.click(within(await destinations()).getByRole("button", { name: "Drive" }));
     const mode = screen.getByRole("region", { name: "Drive mode" });
-    expect(within(mode).getByRole("heading", { name: "Drive" })).toBeInTheDocument();
+    expect(within(mode).queryByRole("heading")).not.toBeInTheDocument(); // §12.3: no page chrome
+    expect(within(mode).queryByRole("button", { name: /^Vehicle status/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Destinations" })).not.toBeInTheDocument();
-    expect(screen.getByRole("banner", { name: "Status" })).toBeInTheDocument();
-    await user.click(within(mode).getByRole("button", { name: "Back" }));
+    const strip = screen.getByRole("banner", { name: "Status" });
+    await user.click(within(strip).getByRole("button", { name: "Back" }));
     expect(await destinations()).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Drive mode" })).not.toBeInTheDocument();
   });
@@ -69,7 +70,7 @@ describe("the shell on a head unit (HU-7, 1024×600)", () => {
     render(<App path="/" />);
     await destinations();
     expect(document.querySelector(".app")).toHaveAttribute("data-side", "left");
-    expect(document.querySelector(".app")).toHaveAttribute("data-layout", "hu7");
+    expect(document.querySelector(".app")).toHaveAttribute("data-layout", "hu5");
   });
 
   it("keeps the compact system switcher on HU-7 (no room for the list pane)", async () => {

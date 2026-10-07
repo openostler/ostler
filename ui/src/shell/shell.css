@@ -44,6 +44,7 @@ span.schip { cursor: default; border-color: transparent; background: transparent
 }
 /* the Link chip gives way first when the row is tight */
 .schip-link { flex-shrink: 1; min-width: var(--chip-min-h); overflow: hidden; }
+.schip-link .schip-word { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* the right-hand group: 12 V and the clock, then Mark at the end */
 .schip-clock { margin-left: auto; }
 .schip-battery { margin-left: auto; }
@@ -72,7 +73,8 @@ span.schip { cursor: default; border-color: transparent; background: transparent
 .app[data-layout="phone"] .schip { padding: 0 10px; }
 .app[data-layout="phone"] .schip-detail { display: none; }
 .app[data-layout="phone"] .schip-slot-mark { margin-left: auto; }
-.app[data-layout="phone"] .schip-mark .schip-word, .app[data-layout="phone"] .mark-btn .schip-word { display: none; }
+.app[data-layout="phone"] .schip-mark .schip-word, .app[data-layout="phone"] .mark-btn .schip-word,
+.app[data-layout="phone"] .schip-back .schip-word { display: none; }
 @media (max-width: 380px) {
   .app[data-layout="phone"] .schip-telltale .schip-word { font-size: 13px; }
 }
@@ -103,8 +105,10 @@ span.schip { cursor: default; border-color: transparent; background: transparent
 .bar .navitem[aria-current="page"] { background: transparent; border-color: transparent; }
 
 /* ---- Head-unit sizes: 76 px targets and the 24 px gap -------------------------------- */
-.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) main { gap: var(--gap); padding: var(--gap); }
-.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .navitem { font-size: 15px; }
+.app:is([data-layout="hu5"], [data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) main { gap: var(--gap); padding: var(--gap); }
+.app:is([data-layout="hu5"], [data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .navitem { font-size: 15px; }
+/* HU-5's 80 px rail (§12.3) gives its items the full width so they stay 76 px targets */
+.app[data-layout="hu5"] .rail { padding-left: 0; padding-right: 0; }
 
 /* HU-wide: the vehicle pane, always on (§3.1); main widens over the secondary pane until a
    camera or mini-timeline fills it (U5) */
@@ -114,14 +118,19 @@ span.schip { cursor: default; border-color: transparent; background: transparent
 }
 .vehiclepane > * { flex-shrink: 0; }
 
-/* ---- Drive mode (§3.5): full screen with the strip and a back target --------------- */
-.drivemode { gap: 16px; }
-.drivemode-back {
-  align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
-  min-height: var(--target); min-width: var(--target); font-size: 16px;
-}
-.app:is([data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .drivemode .drive2 { grid-template-columns: repeat(3, 1fr); }
-.drivemode .stat-value { font-size: max(56px, min(11vw, 72px)); }
+/* ---- Drive mode (§3.5, §12.3): one screen at every class. No page heading; Back is the
+   strip's first chip and faults its telltale; the tiles fill the remaining height, rows sized
+   by it (never by content), so nothing scrolls. */
+.drivemode { flex: 1 1 0; min-height: 0; gap: 16px; }
+.drivemode .drive2 { flex: 1 1 0; min-height: 0; grid-auto-rows: 1fr; }
+.drivemode .tile { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+.drivemode .tile .gwrap2 { flex: 1 1 0; min-height: 0; aspect-ratio: auto; }
+.drivemode .tile .spark { flex: 0 1 28px; min-height: 12px; height: auto; margin-top: auto; }
+.app:is([data-layout="hu5"], [data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .drivemode .drive2 { grid-template-columns: repeat(3, 1fr); }
+/* head units: values ≥ 56 px (§12.3), a short screen (HU-5, 1280×480) at the floor so the rows
+   fit, and the tighter phone padding round the tiles; the phone keeps the tiles' own type */
+.app:is([data-layout="hu5"], [data-layout="hu7"], [data-layout="hu9"], [data-layout="huwide"]) .drivemode .stat-value { font-size: max(56px, min(11vw, 12vh, 72px)); }
+.app[data-drive] main { padding: 16px; }
 
 /* ---- Home (§3.4) ----------------------------------------------------------------- */
 .drive-btn {

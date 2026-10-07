@@ -43,6 +43,7 @@ describe("W3C design tokens (ui/tokens/*.tokens.json, UI spec §10.1)", () => {
       const block = css.split(`.app[data-layout="${cls}"] {`)[1]?.split("}")[0] ?? "";
       for (const v of ["rail-w", "strip-h", "nav-item", "target", "gap"]) expect(block, `${cls} --${v}`).toContain(`--${v}:`);
     }
+    expect(css).toMatch(/\.app\[data-layout="hu5"\] \{[^}]*--rail-w: 80px;[^}]*--strip-h: 48px;[^}]*--target: 76px;/);
     expect(css).toMatch(/\.app\[data-layout="hu7"\] \{[^}]*--rail-w: 96px;[^}]*--strip-h: 56px;[^}]*--target: 76px;/);
     expect(css).toMatch(/\.app\[data-layout="hu9"\] \{[^}]*--rail-w: 112px;[^}]*--strip-h: 64px;/);
     expect(css).toMatch(/\.app\[data-layout="huwide"\] \{[^}]*--vehicle-pane: 520px;/);

@@ -7,7 +7,7 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 
 - `src/api/` — `schemas.ts` (Zod contract), `client.ts`, `useSnapshot`/`useSniff`/`useCatalog`,
   `useAction` (every module action; adds `trust: "experimental"` in Experimental mode), `fixtures/`.
-- `src/shell/` — the shell (U1, UI spec §3): `layoutClass.ts` (HU-7, HU-9/10, HU-wide, phone,
+- `src/shell/` — the shell (U1, UI spec §3): `layoutClass.ts` (HU-5, HU-7, HU-9/10, HU-wide, phone,
   tablet, desktop; kiosk flag `?display=headunit&side=left|right`; the rail side from the pack
   layout's `driver_side`), `strip.ts` (the status strip
   as chip descriptors; `Strip.tsx` draws them), `destinations.ts` (the registry the rail or
@@ -51,7 +51,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   Outputs, Settings and Utilities come from `/catalog`, never from a hard-coded list.
 - `src/styles.css` — the screens' styles over the tokens (auto day/night); `src/shell/shell.css` the shell's.
 - `e2e/` — Playwright against the test-only server `tests/e2e_server.py` (simulated car; ADR-0011);
-  `shell.spec.ts` runs the four reference viewports with target-size asserts and axe (WCAG 2.2 AA).
+  `shell.spec.ts` runs the five reference viewports with target-size asserts and axe (WCAG 2.2 AA),
+  and asserts Drive mode never scrolls at every head-unit size and the phone.
 
 ## Editing rules
 
@@ -78,7 +79,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   and a word (`StatusChip` for value ranges); OK values show no badge at all.
 - Every number in context: `RangeBar` (span + `normal` band from the signal store) and a
   60 s `Sparkline`. Bands live in `signals/*.json` (`span`, `normal`), never in components.
-- `HealthStrip` leads Home, Drive mode and Inputs with the one-line answer and links to the cause.
+- `HealthStrip` leads Home and Inputs with the one-line answer and links to the cause. Drive mode
+  is one screen with no page chrome: its Back is a strip chip, faults are the telltale chip, and
+  rows are sized by the height (UI spec §12.3).
 - Shell targets: 76 px on head units (`--target`), strip chips ≥ 48 px with an icon and a word,
   nothing interactive under 24 × 24 px (WCAG 2.2). Size with the layout tokens, not media queries.
 - Status hues are validated with the dataviz `validate_palette.js` in both modes — re-run it
