@@ -33,6 +33,10 @@ orient cheaply, then load on demand.
 
 ## Working rules
 
+- UX first (ADR-0045): for anything a user sees, write the UX brief in
+  `references/design/briefs/` and get it approved; then build the UI against recorded
+  fixtures; only then wire it to real services. Backend-only integrations need only a
+  setup-page brief.
 - Design before code: write a spec in `specs/` and get it approved before implementing.
 - Run `pytest -q` before committing code. It needs no hardware. Install the D2 pack
   (`pip install --no-deps -e <pack checkout>`) so the `needs_pack` tests run too.

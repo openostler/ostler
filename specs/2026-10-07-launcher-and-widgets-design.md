@@ -1,18 +1,19 @@
 ---
 title: "Launcher and widgets — the Android-model home screen: pages in a carousel, dock, drawer, widget host, widget setup, starter widgets, dashboard builder and theme wizard — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_integrations_dashboards.md, references/research/driver_distraction_rules.md, references/research/obd_telematics_apps.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, schemas/ostler-layout.schema.json, src/openostler/layouts.py, ui/src/drive/DriveFace.tsx]
 summary: >
-  Draft for the owner (2026-10-07), under ADR-0045 (UX first) and ADR-0046 (the empty OS). The OS launcher follows Android. Home pages are dashboards in a carousel; on a head unit while Moving the carousel is Drive mode, showing each driving page's Moving section, switched by swipe, D-pad or the page chip. The rail becomes the dock (bottom on phones, driver's side on head units) with two anchors, Home and Apps; More becomes the app drawer, always reachable (a short list of driving apps while Moving). App shortcuts and folders go on pages and the dock. Each class has a cell grid; drag, drop with reflow, edge resize and page add, remove and reorder work as on Android, Parked only on driver-facing displays. A widget gallery (By app, By signal) and a widget setup page (a schema form drawn by the OS with live Parked and Moving previews, or an app's own Parked setup view) configure look and data source. The widget SDK contract: manifest, config schema, VSS data bindings, cell sizes, and a required, explicit Moving template. The starter pack lists 24 widgets with their options. Preset dashboards and a dashboard builder wizard run at first run and at any time; a theme wizard sets background, accent, icon pack and gauge style with safety colours fixed. Safety mapping, migration from ostler.layout/1 to ostler.layout/2, phases LW0–LW5, tests and owner decisions. Supersedes, if approved, the Drive-modes spec's rail (§4.5, §7.3), switcher (§6) and editing (§7) sections.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 14–21 and 44–53), v0.2; every decision answered as recommended, under ADR-0045 (UX first) and ADR-0046 (the empty OS). The OS launcher follows Android. Home pages are dashboards in a carousel; on a head unit while Moving the carousel is Drive mode, showing each driving page's Moving section, switched by swipe, D-pad or the page chip. The rail becomes the dock (bottom on phones, driver's side on head units) with two anchors, Home and Apps; More becomes the app drawer, always reachable (a short list of driving apps while Moving). App shortcuts and folders go on pages and the dock. Each class has a cell grid; drag, drop with reflow, edge resize and page add, remove and reorder work as on Android, Parked only on driver-facing displays. A widget gallery (By app, By signal) and a widget setup page (a schema form drawn by the OS with live Parked and Moving previews, or an app's own Parked setup view) configure look and data source. The widget SDK contract: manifest, config schema, VSS data bindings, cell sizes, and a required, explicit Moving template. The starter pack lists 24 widgets with their options. Preset dashboards and a dashboard builder wizard run at first run and at any time; a theme wizard sets background, accent, icon pack and gauge style with safety colours fixed. Safety mapping, migration from ostler.layout/1 to ostler.layout/2, phases LW0–LW5, tests and owner decisions. Supersedes the Drive-modes spec's rail (§4.5, §7.3), switcher (§6) and editing (§7) sections.
 ---
 
-# Launcher and widgets — design (draft)
+# Launcher and widgets — design
 
-**Status:** draft v0.1 for the owner. Nothing here is built before its UX briefs are approved
-([ADR-0045](../decisions/adr-0045-ux-first.md)). If approved it **supersedes** the
+**Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
+items 14–21 and 44–53), v0.2. Nothing here is built before its UX briefs are approved
+([ADR-0045](../decisions/adr-0045-ux-first.md)). It **supersedes** the
 [Drive-modes spec](2026-10-07-drive-modes-and-editing-design.md) §4.5 (rail), §6 (the
 switcher) and §7 (editing), and **refines** its §4 (format, now `ostler.layout/2`), §5
 (presets, now preset dashboards) and §8 (safety, validation, storage). It extends the widget
@@ -488,6 +489,9 @@ Kinds `home` (all pages of a class), `dock`, `strip` and `drawer`. Item override
 
 ## 16. Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all", OS round; decision list items
+14–21 and 44–53). Each recommendation below is the decision; each alternative was not chosen.
+
 1. **Pages replace Home plus Drive modes?** Recommend: yes, one set of pages; Drive mode is
    their Moving view. Alternative: keep Home and Drive modes as two sets.
 2. **Driving set size?** Recommend: ≤ 6 pages. Alternative: no limit.
@@ -509,3 +513,5 @@ Kinds `home` (all pages of a class), `dock`, `strip` and `drawer`. Item override
 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07 (Android launcher
   model), for ADR-0046.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
+  list items 14–21 and 44–53): every decision answered as recommended (alternatives not chosen).

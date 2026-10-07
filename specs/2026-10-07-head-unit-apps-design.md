@@ -1,22 +1,23 @@
 ---
 title: "Head-unit apps — every standard head-unit page mapped to an Ostler app: Radio, Audio, Media, Camera, Phone, Navigation, vehicle settings, steering-wheel controls, clock and weather, voice, projection and climate, with UX outlines, hardware and open legal points — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, references/research/canbus_headunit.md, references/research/driver_distraction_rules.md, references/research/hardware.md, GOALS.md]
 summary: >
-  Draft for the owner (2026-10-07). Maps every page a head unit has to an Ostler app or to the OS, with a UX outline, hardware options, v1 or later, and open legal points. Two setups: the Brain as the head-unit computer (Ostler owns the audio path) or an aftermarket Android head unit used as a display (its own radio and projection stay). Radio (FM, AM, DAB+, RDS and DLS, slideshow, presets, seek and scan, service following, traffic announcements; tuners as device integrations: an Si468x-based HAT or module, or a USB SDR dongle), Audio (EQ, balance and fade, loudness, volume limits, speed-dependent volume, crossover and time alignment Parked and owner-only, a software DSP on the Brain or an external DSP, USB or I2S DACs, source switching through the OS's audio focus), Media (local and USB, Bluetooth A2DP and AVRCP shared with Phone & Comms, internet radio and podcasts later, streaming services an open legal point, video Parked or passenger-only), Camera (reverse trigger from a pack signal or a 12 V input, static and steering-angle guidelines, other views Parked only), Phone and Navigation (their approved specs), a Car app for pack-declared comfort settings, steering-wheel control learning in the OS, clock and weather, an on-device voice assistant later (a spoken yes never confirms a gated action), projection left open with the certification and licensing limits stated plainly, and climate where a pack or device supports it. Audio focus priorities, phases HU0–HU5, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 36–40, 54 and 55), v0.2; every decision answered as recommended. Maps every page a head unit has to an Ostler app or to the OS, with a UX outline, hardware options, v1 or later, and open legal points. Two setups: the Brain as the head-unit computer (Ostler owns the audio path) or an aftermarket Android head unit used as a display (its own radio and projection stay). Radio (FM, AM, DAB+, RDS and DLS, slideshow, presets, seek and scan, service following, traffic announcements; tuners as device integrations: an Si468x-based HAT or module, or a USB SDR dongle), Audio (EQ, balance and fade, loudness, volume limits, speed-dependent volume, crossover and time alignment Parked and owner-only, a software DSP on the Brain or an external DSP, USB or I2S DACs, source switching through the OS's audio focus), Media (local and USB, Bluetooth A2DP and AVRCP shared with Phone & Comms, internet radio and podcasts later, streaming services an open legal point, video Parked or passenger-only), Camera (reverse trigger from a pack signal or a 12 V input, static and steering-angle guidelines, other views Parked only), Phone and Navigation (their approved specs), a Car app for pack-declared comfort settings, steering-wheel control learning in the OS, clock and weather, an on-device voice assistant later (a spoken yes never confirms a gated action), projection not built, with the certification and licensing limits stated plainly, and climate where a pack or device supports it. Audio focus priorities, phases HU0–HU5, tests and decisions.
 ---
 
-# Head-unit apps — design (draft)
+# Head-unit apps — design
 
-**Status:** draft v0.1 for the owner. Every app here starts with a UX brief
+**Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
+items 36–40, 54 and 55), v0.2. Every app here starts with a UX brief
 ([ADR-0045](../decisions/adr-0045-ux-first.md)). It depends on
-[ADR-0046](../decisions/adr-0046-empty-os-every-app-an-add-on.md), which proposes removing
+[ADR-0046](../decisions/adr-0046-empty-os-every-app-an-add-on.md), which removes
 GOALS' non-goal "Rebuilding media: CarPlay/Android Auto, radio, amplifier and wheel controls
 stay on a media head unit" ([GOALS](../GOALS.md) §3) and adding projection receivers as the
-non-goal instead. Templates, the gate and the lockouts are unchanged
+non-goal instead (applied to GOALS on 2026-10-07). Templates, the gate and the lockouts are unchanged
 ([UI spec §12.1](2026-10-06-ui-architecture-design.md)).
 
 ## 1. Context and the two setups
@@ -199,7 +200,7 @@ Parked): press each button, the OS records its code or voltage band, then pick a
   "yes" never counts as a confirmation for a gated action**, as an AI client's accept never
   does. Needs a microphone with echo cancellation. Engines and licences go in its own spec.
 
-## 11. Projection (Android Auto, CarPlay): open
+## 11. Projection (Android Auto, CarPlay): not built
 
 Stated plainly:
 
@@ -212,7 +213,7 @@ Stated plainly:
 - **Wireless dongles** turn a head unit's wired projection into wireless; they do not add
   projection to a Brain.
 
-**Recommendation:** Ostler does not build projection receivers. Owners who want projection
+**Decision (owner, 2026-10-07):** Ostler does not build projection receivers. Owners who want projection
 keep a projection-capable head unit (setup B) with Ostler beside it. Ostler's own thin
 companions inside Android Auto and CarPlay stay as ADR-0042 decision 2 says. The Store does
 not list uncertified receivers.
@@ -259,6 +260,9 @@ Media, Bluetooth). Apps request focus through the SDK (`permissions.audio`); the
 
 ## 16. Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all", OS round; decision list items
+36–40, 54 and 55). Each recommendation below is the decision; each alternative was not chosen.
+
 1. **First tuner path?** Recommend: an Si468x-based HAT or module (DAB+ in hardware).
    Alternative: a USB SDR dongle first.
 2. **Software DSP on the Brain in v1?** Recommend: yes; external DSP later. Alternative: an
@@ -277,3 +281,5 @@ Media, Bluetooth). Apps request focus through the SDK (`permissions.audio`); the
 ## Changelog
 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
+  list items 36–40, 54 and 55): every decision answered as recommended (alternatives not chosen).

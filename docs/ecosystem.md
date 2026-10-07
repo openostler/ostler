@@ -2,14 +2,20 @@
 title: "The Ostler ecosystem — core, add-ons, how add-ons get car data, and the safety boundaries"
 area: docs
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, references/research/addons_catalogue.md]
 summary: >
-  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. The amendment of 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round), adds rows for Ostler Community (the open `ostler-app-hub` add-on and the closed, Ostler-run `ostler-hub` service: publishing, forum, vehicle development, wiki), Navigation, Phone & Comms and, later, Alerts; core ShellInput, per-trip sharing, third-party adapters (the Brain only for a vehicle with no node, ADR-0044) and later Crash SOS; and points to the Home Assistant direction in ADR-0042.
+  Map of the Ostler ecosystem, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted), whose main goal is getting the car's data into apps. A table of core (shell, Diagnose, Trips, Network, Security) and add-ons (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations one per integration, Decode lab as a developer add-on) enabled at More → Add-ons, with repo, where each appears, what car data it reads and what it adds. How add-ons get car data: the VSS signal stream, events, faults, trips (summary index and recordings, odometer and engine hours) and the data-class registry with audiences and ghost by default, all through the shell SDK, plus opt-in MQTT/Home Assistant outside the shell. The safety boundaries: the node gate, ADR-0033 remote paths (mesh included) read and alerts only, shell templates only on a driver-facing display while Moving, and ghost by default. The amendment of 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round), adds rows for Ostler Community (the open `ostler-app-hub` add-on and the closed, Ostler-run `ostler-hub` service: publishing, forum, vehicle development, wiki), Navigation, Phone & Comms and, later, Alerts; core ShellInput, per-trip sharing, third-party adapters (the Brain only for a vehicle with no node, ADR-0044) and later Crash SOS; and points to the Home Assistant direction in ADR-0042. Amended 2026-10-07 (OS round): the core/add-on table is superseded by ADR-0046 (the empty OS; every feature an app).
 ---
 
 # The Ostler ecosystem
+
+> **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
+> round):** the core and add-on split below is superseded by
+> [ADR-0046](../decisions/adr-0046-empty-os-every-app-an-add-on.md): the platform is an empty
+> OS (system services and system UI); Diagnose, Trips, Security and every add-on are apps in
+> their own repos, found in the drawer and the Store. This map is re-drawn when next revised.
 
 **Approved by the owner on 2026-10-07 ("approve all").** Ostler is an ecosystem whose main goal is **getting the car's data
 into apps**: a small core reads and interprets the car and hands its data to **add-ons**, which
@@ -159,6 +165,8 @@ Every DMD2 and DMD Hub feature, with its home, phase and spec status, is in
   all", DMD round) and renamed "Amendment (2026-10-07, DMD round), approved"; the rows lose
   "proposed" (Alerts stays later, named only); adapters (ADR-0044) and the Home Assistant
   direction added; DMD-round decision 4 answered as recommended.
+- 2026-10-07: v1.5, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
+  the core and add-on split superseded by ADR-0046.
 
 ## Decisions for the owner
 

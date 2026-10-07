@@ -1,17 +1,18 @@
 ---
 title: "App UI model — what an app contributes to the empty OS: drawer entry, pages, shortcuts, widgets, setup and options flows, notification channels, themes and data classes; object kinds; App info; manifest schema 2 — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-store-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Draft for the owner (2026-10-07). Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 22–27 and 56–58), v0.2; every decision answered as recommended. Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions.
 ---
 
-# App UI model — design (draft)
+# App UI model — design
 
-**Status:** draft v0.1 for the owner. It **amends** the
+**Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
+items 22–27 and 56–58), v0.2. It **amends** the
 [app-model spec](2026-10-06-app-model-design.md) (draft v0.9): §3 (app kinds) and §14.1 (the
 core list) give way to [ADR-0046](../decisions/adr-0046-empty-os-every-app-an-add-on.md);
 §4 (the manifest) goes to schema 2 (§10 here); §14.2's More → Add-ons gives way to the drawer,
@@ -294,6 +295,9 @@ mapped to pages and the drawer).
 
 ## 13. Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all", OS round; decision list items
+22–27 and 56–58). Each recommendation below is the decision; each alternative was not chosen.
+
 1. **Schema-rendered pages as a page kind?** Recommend: yes (list, detail, form, tiles, map,
    media). Alternative: custom pages only.
 2. **Config-flow setup drawn by the OS?** Recommend: yes, apps supply schemas and handlers.
@@ -310,3 +314,5 @@ mapped to pages and the drawer).
 ## Changelog
 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
+  list items 22–27 and 56–58): every decision answered as recommended (alternatives not chosen).

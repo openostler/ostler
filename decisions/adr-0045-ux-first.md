@@ -1,22 +1,23 @@
 ---
 title: "ADR-0045 — UX first: design the UX, then build the UI against recorded fixtures, then wire it"
 area: decisions
-status: draft
-version: 0.1
+status: locked
+version: 1.0
 updated: 2026-10-07
 depends_on: [CONSTITUTION.md, CLAUDE.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, references/design/2026-10/README.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md]
 summary: >
-  Proposed (2026-10-07), awaiting the owner. Makes the owner's fixed rule a hard rule: every user-facing feature goes UX brief (one file in references/design/briefs/) → owner approval → UI built against recorded fixtures (real captures or real service replies, scrubbed per ADR-0036, served only by the test-only fixture server, never a demo mode, ADR-0011) → wiring to real services. No backend work for a user-facing feature starts before its brief is approved; a backend-only integration needs only its setup-page design. Exempt: safety and security fixes, bug fixes that change no screen, protocol, firmware, decoder and pack-data work, research and bench captures. Gives the brief's required sections, the approval record, the order of work per phase, the proposed text for CONSTITUTION.md (Authoring rules, v1.8), the CLAUDE.md working rules and the matching line for every pack and app repo, and a CI check on spec frontmatter (`ux_brief`).
+  Accepted 2026-10-07 ("approve all", OS round; decision list items 1–3): approved by the owner on 2026-10-07, every item as recommended. Makes the owner's fixed rule a hard rule: every user-facing feature goes UX brief (one file in references/design/briefs/) → owner approval → UI built against recorded fixtures (real captures or real service replies, scrubbed per ADR-0036, served only by the test-only fixture server, never a demo mode, ADR-0011) → wiring to real services. No backend work for a user-facing feature starts before its brief is approved; a backend-only integration needs only its setup-page design. Exempt: safety and security fixes, bug fixes that change no screen, protocol, firmware, decoder and pack-data work, research and bench captures. Gives the brief's required sections, the approval record, the order of work per phase, the text applied to CONSTITUTION.md (Authoring rules, v1.8) and the CLAUDE.md working rules, the matching line for every pack and app repo, and a CI check on spec frontmatter (`ux_brief`).
 ---
 
 # ADR-0045 — UX first
 
 - **Date:** 2026-10-07
-- **Status:** proposed (drafted from the owner's direction of 2026-10-07; not accepted). It
-  adds one hard rule. It edits no file by itself: the text for
-  [CONSTITUTION.md](../CONSTITUTION.md), [CLAUDE.md](../CLAUDE.md) and the pack and app repos
-  is given below as proposed text, applied only when this ADR is accepted.
-- **Companions (drafts of the same day):**
+- **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all", OS round;
+  decision list items 1–3), drafted from the owner's direction of the same day. It adds one
+  hard rule. The text below is applied to [CONSTITUTION.md](../CONSTITUTION.md) (v1.8) and
+  [CLAUDE.md](../CLAUDE.md); the pack and app repos take their line when each is next
+  touched.
+- **Companions (approved the same day):**
   [ADR-0046](adr-0046-empty-os-every-app-an-add-on.md) (the empty OS),
   [launcher and widgets](../specs/2026-10-07-launcher-and-widgets-design.md),
   [app UI model](../specs/2026-10-07-app-ui-model-design.md),
@@ -40,7 +41,7 @@ summary: >
   in the product. The test-only server (`tests/e2e_server.py`) serves simulated sources for
   Playwright. Building UI against invented values hides the real states: stale data, missing
   signals, refusals, one-session K-line.
-- [ADR-0046](adr-0046-empty-os-every-app-an-add-on.md) (proposed) turns most features into
+- [ADR-0046](adr-0046-empty-os-every-app-an-add-on.md) (accepted) turns most features into
   apps in their own repos. Without a shared rule, each repo would invent its own order of
   work.
 
@@ -134,9 +135,9 @@ summary: >
    pack repos keep their briefs in the platform's `references/design/briefs/` (one register,
    one review), or in their own `references/design/` with a link from the platform register.
 
-## Proposed text for the files this ADR changes
+## Text for the files this ADR changes
 
-Applied only when this ADR is accepted.
+Applied on acceptance (2026-10-07) to CONSTITUTION.md and CLAUDE.md.
 
 **CONSTITUTION.md**, Authoring rules, a new bullet after "No code, scaffolding or
 implementation until a design is approved":
@@ -169,7 +170,7 @@ of ADR-0046), in its CLAUDE.md Working rules:
 
 ## Confirmation
 
-- A docs check (`skill/scripts/check_ux_brief.py`, built when this is accepted): every spec
+- A docs check (`skill/scripts/check_ux_brief.py`, to be built): every spec
   whose frontmatter says `user_facing: true` names a `ux_brief` that exists and is `stable`;
   CI fails otherwise. Specs approved before this ADR are listed once as grandfathered.
 - A fixture check: every file under `tests/fixtures/` that a UI test uses has its metadata
@@ -205,7 +206,23 @@ of ADR-0046), in its CLAUDE.md Working rules:
 - **ADR-0036:** every fixture is scrubbed of identity data.
 - **ADR-0042, ADR-0046:** every add-on or app follows this rule in its own repo.
 
+## Owner decisions
+
+Approved by the owner on 2026-10-07 ("approve all", OS round). Every item takes its
+recommendation; no alternative was chosen. The full list is in
+[ADR-0046, Decisions (OS round)](adr-0046-empty-os-every-app-an-add-on.md#decisions-os-round).
+
+- **Item 1:** UX first is a hard rule in the CONSTITUTION (brief → approval → UI on recorded
+  fixtures → wiring), with a short review of the built screens against the brief before
+  wiring.
+- **Item 2:** all briefs live in the platform's `references/design/briefs/`, one register.
+- **Item 3:** synthetic fixtures only for states that cannot be recorded safely, labelled
+  `synthetic`.
+
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", OS round; decision list items
+1–3). Each recommendation below is the decision; each alternative was not chosen.
 
 1. **Accept UX first as a hard rule in the CONSTITUTION?** Recommend: yes, with the text above.
    Alternative: a working rule in CLAUDE.md only.
@@ -219,3 +236,6 @@ of ADR-0046), in its CLAUDE.md Working rules:
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed: drafted from the owner's direction of 2026-10-07.
+- 2026-10-07 — v1.0, accepted: approved by the owner on 2026-10-07 ("approve all", OS round;
+  decision list items 1–3); every decision answered as recommended; the text applied to
+  CONSTITUTION.md (v1.8) and CLAUDE.md.

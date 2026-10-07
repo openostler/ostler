@@ -1,12 +1,14 @@
 # Ostler — an open ecosystem that gets your car's data into apps
 
 > **Ostler: an open ecosystem that gets your car's data into apps**
-> ([ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)). A small
-> core (the shell, Diagnose, Trips, Network, and Security once a node exists) reads and
-> interprets the car; **add-ons are the product** (Social, Vehicles & Map, Maintenance &
-> Garage, Cameras, Integrations), installed from More → Add-ons, Home Assistant style.
-> One app, no separate apps per feature; every data class starts in ghost; Export all, and
-> nothing in core needs an Ostler-run server. Map: [docs/ecosystem.md](docs/ecosystem.md).
+> ([ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md)). Ostler is an empty
+> OS, like an Android phone with no apps: system services and system UI (the launcher, the
+> status strip, the safety lockouts, Settings and the Store) read and interpret the car;
+> **every feature is an app** in its own repo (Diagnostics, Trips, Security, Maintenance,
+> Social, Map, Navigation, Phone, Radio, Audio, Media, Camera), installed from the Store,
+> Home Assistant style. Each product comes with its own set of apps preinstalled. Safety is
+> never an app; every data class starts in ghost; Export all, and nothing in the OS needs an
+> Ostler-run server. Map: [docs/ecosystem.md](docs/ecosystem.md).
 
 **Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its

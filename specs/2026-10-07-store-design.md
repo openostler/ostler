@@ -1,17 +1,18 @@
 ---
 title: "Store — the system app that finds, installs and updates apps, integrations, widget packs, themes, icons, wallpapers, dashboards and sound presets: signed catalogue, publisher keys and review, Works with Ostler, bundled offline catalogue, sideloading — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0017-open-standards-first.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-community-hub-design.md, references/research/ha_architecture_addons.md, references/research/ha_companion_community.md, references/research/ha_integrations_dashboards.md]
 summary: >
-  Draft for the owner (2026-10-07). The Store is a system app (ADR-0046), like Google Play on Android: home, categories, search, detail pages, an install sheet that shows permissions and outbound hosts in plain words, updates, a library and publisher pages; Parked only on driver-facing displays. It hosts every object kind of the app UI model. The catalogue is static, signed data in TUF-style roles with Ed25519 keys (root, targets, snapshot, timestamp), with delegated publisher keys; packages are pinned by hash and fetched from their repos' releases. Review levels: System, First party, Verified publisher, Community, Sideloaded; revocation disables an item with a notice. "Works with Ostler" badges certify hardware, apps and integrations against written, testable criteria, separate from review. A bundled offline catalogue ships in the OS image and the phone binary, so flavours install with no internet; browsing online is an opt-in outbound path that needs its own ADR. Sideloading is for developers in service mode, on web hosts and the Brain; the phone installs only data objects and declarative apps. Ratings are an owner decision (recommend none, keeping the hub's no-votes rule); paid items are an owner decision (recommend none in v1). Updates, privacy, phases S0–S4, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 28–35 and 62), v0.2; every decision answered as recommended. The Store is a system app (ADR-0046), like Google Play on Android: home, categories, search, detail pages, an install sheet that shows permissions and outbound hosts in plain words, updates, a library and publisher pages; Parked only on driver-facing displays. It hosts every object kind of the app UI model. The catalogue is static, signed data in TUF-style roles with Ed25519 keys (root, targets, snapshot, timestamp), with delegated publisher keys; packages are pinned by hash and fetched from their repos' releases. Review levels: System, First party, Verified publisher, Community, Sideloaded; revocation disables an item with a notice. "Works with Ostler" badges certify hardware, apps and integrations against written, testable criteria, separate from review. A bundled offline catalogue ships in the OS image and the phone binary, so flavours install with no internet; browsing online is an opt-in outbound path that needs its own ADR. Sideloading is for developers in service mode, on web hosts and the Brain; the phone installs only data objects and declarative apps. No ratings, keeping the hub's no-votes rule, and no paid items in v1 (owner decisions). Updates, privacy, phases S0–S4, tests and decisions.
 ---
 
-# Store — design (draft)
+# Store — design
 
-**Status:** draft v0.1 for the owner. Nothing is built before its UX briefs are approved
+**Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
+items 28–35 and 62), v0.2. Nothing is built before its UX briefs are approved
 ([ADR-0045](../decisions/adr-0045-ux-first.md)): Store home, detail page, install and
 permissions sheet, updates and library come first. Browsing an **online** catalogue is a new
 outbound path, so it waits for its own ADR ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)
@@ -209,6 +210,9 @@ Badges are listed on the detail page with the version tested. A fee is an owner 
 
 ## 14. Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all", OS round; decision list items
+28–35 and 62). Each recommendation below is the decision; each alternative was not chosen.
+
 1. **Store as a system app?** Recommend: yes. Alternative: an uninstallable first-party app.
 2. **Signed catalogue in TUF-style roles with our own small verifier?** Recommend: yes.
    Alternative: a TUF library (a new dependency).
@@ -228,3 +232,5 @@ Badges are listed on the detail page with the version tested. A fee is an owner 
 ## Changelog
 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
+  list items 28–35 and 62): every decision answered as recommended (alternatives not chosen).
