@@ -1,21 +1,21 @@
 ---
 title: "Drive modes and the editable UI — mode switcher, seven presets, Android-style editing of everything (rail, strip, Home, Drive, pages) with safety guardrails — design"
 area: specs
-status: draft
-version: 0.2
+status: stable
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-shell-input-design.md, references/research/obd_telematics_apps.md, references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/node_sensors.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, ui/src/screens/Drive.tsx, ui/src/shell/strip.ts, ui/src/shell/layoutClass.ts, ui/src/shell/destinations.ts, ui/src/icons/symbols.ts, ui/tokens/size.tokens.json, schemas/layout.schema.json]
 summary: >
-  DRAFT for the owner (DMD round, 2026-10-07; v0.2 revised for the owner's "the entire UI is editable, with no fixed icons"). Drive mode gains several modes, each a Drive layout as data (UI spec §12.3) in a versioned JSON format, `ostler.layout/1`, authored per layout class, with tiles bound to VSS paths (range, normal/warning/critical levels, units, gauge style) and map, media and push-to-talk panes, plus an explicit, strictly validated Moving section that maps onto the shell templates. Seven presets: Diagnostic (today's six tiles), Dashboard (speed hero, rpm sweep, side gauges), Map, Convoy / Ride, Off-road (D2), Split / Media and Minimal / Night, each with per-class wireframes and its data and add-on needs (D2 gaps marked). A Drive-mode chip in the strip switches with one tap while Moving (tap cycles a rotation of up to four modes, long-press lists up to six). Everything the user sees is editable: rail items including Home (move, replace, re-icon, rename, hide), strip chip order and visibility, Home widgets, Drive tiles and add-on pages, with an icon picker over the one icon set (Material Symbols), length-limited, i18n-aware custom names and a hidden-items list so nothing becomes unreachable. Guardrails: More may be moved, renamed or re-iconed but never removed; long-press on the strip or any empty area always opens edit mode; Reset layout is always reachable from More and from the Connection sheet; safety items (fault telltale, alarm alerts, the Moving templates and their limits) may move but never go; on a head unit while Moving it is "Park to edit", enforced by the server. Layout kinds `rail`, `strip`, `home` and `drive_mode` with icon, label and hidden overrides; one validator refuses any write that removes a safety item or More. Layouts are stored per vehicle, layout class and user profile on the Brain (on the device without one) and travel as files. Add-ons register widgets and supply only default icons and labels (app-model §15). ShellInput focus zones and the switcher chip work in any strip order. Tests, phases DM1–DM5, decisions, and revised items 51–52 for the DMD decision list.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 was revised for the owner's "the entire UI is editable, with no fixed icons". Drive mode gains several modes, each a Drive layout as data (UI spec §12.3) in a versioned JSON format, `ostler.layout/1`, authored per layout class, with tiles bound to VSS paths (range, normal/warning/critical levels, units, gauge style) and map, media and push-to-talk panes, plus an explicit, strictly validated Moving section that maps onto the shell templates. Seven presets: Diagnostic (today's six tiles), Dashboard (speed hero, rpm sweep, side gauges), Map, Convoy / Ride, Off-road (D2), Split / Media and Minimal / Night, each with per-class wireframes and its data and add-on needs (D2 gaps marked). A Drive-mode chip in the strip switches with one tap while Moving (tap cycles a rotation of up to four modes, long-press lists up to six). Everything the user sees is editable: rail items including Home (move, replace, re-icon, rename, hide), strip chip order and visibility, Home widgets, Drive tiles and add-on pages, with an icon picker over the one icon set (Material Symbols), length-limited, i18n-aware custom names and a hidden-items list so nothing becomes unreachable. Guardrails: More may be moved, renamed or re-iconed but never removed; long-press on the strip or any empty area always opens edit mode; Reset layout is always reachable from More and from the Connection sheet; safety items (fault telltale, alarm alerts, the Moving templates and their limits) may move but never go; on a head unit while Moving it is "Park to edit", enforced by the server. Layout kinds `rail`, `strip`, `home` and `drive_mode` with icon, label and hidden overrides; one validator refuses any write that removes a safety item or More. Layouts are stored per vehicle, layout class and user profile on the Brain (on the device without one) and travel as files. Add-ons register widgets and supply only default icons and labels (app-model §15). ShellInput focus zones and the switcher chip work in any strip order. Tests, phases DM1–DM5, and decisions, all answered as recommended, including the revised items 51–52 of the DMD decision list.
 ---
 
 # Drive modes and the editable UI — design
 
-**Status:** draft for the owner, DMD round (2026-10-07). Nothing here is built before U1, and
+**Status:** approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3. Nothing here is built before U1, and
 the Moving parts land no earlier than U2's lockouts. It **refines, and where marked amends,**
 UI spec [§12.3 Drive layouts as data](2026-10-06-ui-architecture-design.md#123-drive-mode-changes-31-35-53-54-10-u1-and-its-test)
-and §3.2–§3.4, and proposes a widget and slot contract for the
-[app-model spec](2026-10-06-app-model-design.md) (its proposed §15). Tiers, the gate, action
+and §3.2–§3.4 (the UI spec's §15, approved), and sets a widget and slot contract for the
+[app-model spec](2026-10-06-app-model-design.md) (its §15, approved). Tiers, the gate, action
 categories, the templates and their limits (UI spec §12.1) are unchanged.
 
 **Owner's ask (2026-10-07, in brief).** (1) Several Drive modes with a switcher, because "the
@@ -45,8 +45,8 @@ end).
 §3 layout editors, §4 Drive versus the cluster, §5 remote model, Copy 4–6, Avoid 1);
 [DMD2 features](../references/research/dmd2_features.md) (§3, Decide 2 "no rider profiles");
 [driver-distraction rules](../references/research/driver_distraction_rules.md) (§7.2 limits).
-Sibling draft in this round: the D-pad input model `ShellInput`,
-[shell input spec](2026-10-07-shell-input-design.md) (drafted in parallel; this spec uses its
+Sibling spec in this round (approved the same day): the D-pad input model `ShellInput`,
+[shell input spec](2026-10-07-shell-input-design.md) (this spec uses its
 intents `up`/`down`/`left`/`right`/`ok`/`back`/`menu` and its 600 ms long press by name).
 
 ## 1. Where we are, plainly
@@ -205,7 +205,7 @@ vehicle state, own location or a driving camera, and still without animation.
 ### 4.4 Grids and minimum sizes per class
 
 Content area per class from §3.1 and §12.3 (Drive mode is full-screen: strip on top, rail on
-the driver's side). Proposed values, tuned in DM1 by the no-scroll tests.
+the driver's side). Starting values, tuned in DM1 by the no-scroll tests.
 
 | Class | Drive content (px) | Moving grid | Parked grid | Min Moving tile | Min pane |
 |---|---|---|---|---|---|
@@ -303,7 +303,7 @@ vehicle-hinted layouts.
 
 A speed hero in the middle, an rpm sweep, side gauges; DMD's full-screen cluster and the
 RealDash two-page pattern ([telematics research](../references/research/obd_telematics_apps.md#editor-and-screens),
-teardown §4). **Proposed default on head units.**
+teardown §4). **The default on head units** (decision list item 48).
 
 ```
 HU-5 / HU-7 Moving                  HU-9/10 Moving                     HU-wide Moving
@@ -402,7 +402,7 @@ the user's threshold, for example roll ≥ 30°). **Data on the D2, honestly:**
 | Altitude | `Vehicle.CurrentLocation.Altitude` | ✔ GPS (`GPS_Altitude`) | GNSS altitude error is tens of metres; label "GPS" |
 | Compass | `Vehicle.CurrentLocation.Heading` | ◐ GPS course over ground; frozen below about 3 km/h | No magnetometer on the node; a parked or crawling heading shows the last course with "stale" |
 | Low range | `Vehicle.Powertrain.Transmission.IsLowRangeEngaged` | ✔ `slabs.transfer_low`, proven (T-29) | **Only in a SLABS session** (`21 42`): the Td5 is then not in session, so rpm and coolant read "Not in this session" and speed comes from GPS (UI spec §3.5) |
-| Centre diff lock | none in VSS (VSS has `DiffLockFront/RearEngagement` only) | ✔ `slabs.diff_lock`, proven, but unmapped | Needs an overlay leaf, proposed `Vehicle.Ostler.Powertrain.Transmission.IsCentreDiffLocked`, a D2 pack change (`metric` on the store record and `test_metrics_d2.py`), same SLABS-session limit |
+| Centre diff lock | none in VSS (VSS has `DiffLockFront/RearEngagement` only) | ✔ `slabs.diff_lock`, proven, but unmapped | Needs an overlay leaf, new `Vehicle.Ostler.Powertrain.Transmission.IsCentreDiffLocked`, a D2 pack change (`metric` on the store record and `test_metrics_d2.py`), same SLABS-session limit |
 | Breadcrumb map | own track | ✔ Trips' live track | Back-track along the trail needs the navigation add-on |
 
 **Add-on:** none for the tiles; navigation optional. Because K-line holds one session, the
@@ -502,7 +502,7 @@ mode lands on `drive_mode` the first time (then on the chip last focused there, 
 §4.2 says); (2) while Moving, where ShellInput §6 has `back` do "nothing" (no sheet or
 `alert_card` open), `back` moves focus to `drive_mode` wherever it sits, so one `back` and one
 `ok` switch modes on every face, map faces included (`up`/`down` keep zooming the map). Rule
-(2) is a proposed addition to ShellInput §6 for that spec's owner (Decision 15).
+(2) is an addition to ShellInput §6, approved as its §14.2 (Decision 15).
 `left`/`right` inside the strip move between chips and never switch faces; a short `ok` on `drive_mode` cycles, a long `ok` lists. Moving the
 telltale or Security chip changes only where they sit: `alert_card` still takes focus by itself
 (ShellInput §6).
@@ -566,7 +566,7 @@ Entering Moving while Editing: the draft is kept, the editor closes to Drive mod
   widget picker. Resizing by buttons, not corner drags, keeps it glove-friendly (76 px targets).
 - **D-pad** (ShellInput): **Edit layout** (a row in More, never hideable, §7.8), or a long
   `ok` (600 ms) on a focused strip chip, rail item or widget, enters edit mode when Parked (a
-  long `ok` binding proposed for ShellInput §5; Decision 15);
+  long `ok` binding added to ShellInput §5 by its §14.1; Decision 15);
   arrows move focus between widgets; `ok` picks a widget up (focus ring doubles), arrows move
   it cell by cell, `ok` drops (swap on occupied), `back` cancels the move; `menu` on a focused
   widget opens its options sheet (size, settings, remove); `back` with nothing picked asks
@@ -699,7 +699,7 @@ whichever chip it applies to.
 | Service-mode and replay badges, the admin badge | shell-drawn badges (R3) | nothing: they are not chips in the layout and always show while their mode is on |
 
 **Capacity.** The strip never scrolls (§3.2), so each class has a chip budget measured at the
-class width with the longest default words: proposed **phone 5, HU-5 6, HU-7 7, HU-9/10 8,
+class width with the longest default words: starting budgets **phone 5, HU-5 6, HU-7 7, HU-9/10 8,
 HU-wide 10, tablet and desktop 10** (tuned in DM3 by a no-overflow test). Safety and anchor
 items count first; showing a chip over budget asks which to hide ("The strip is full: hide one
 first"). Hidden chips are listed in the strip editor's **Hidden** shelf and can be shown again
@@ -913,7 +913,7 @@ layouts are editable Parked from the head unit unless the owner sets **Lock car 
 
 ## 9. The widget and slot contract (summary)
 
-The contract is proposed as **app-model §15** (Proposed amendment (2026-10-07, DMD round));
+The contract is **app-model §15** (Amendment (2026-10-07, DMD round), approved);
 in short:
 
 - An add-on declares widgets in its manifest under **`contributes.widgets`**: `id`, `title`,
@@ -1030,8 +1030,15 @@ source), service due (Maintenance & Garage), camera live (Cameras, `camera_live`
   icon/label/hidden overrides (§4.5); rules R3 and R4 revised, R9–R11 added; guardrail
   validation (§8.2 step 7); add-ons supply defaults only (§9); tests; Decision 4 revised,
   decisions 11–17 added; revised DMD items 51–52.
+- 2026-10-07: v0.3, approved by the owner on 2026-10-07 ("approve all", DMD round; decision
+  list items 47–56 and 86–91): every decision answered as recommended (alternatives not
+  chosen), items 51–52 as revised here; Dashboard is the default on head units; the
+  ShellInput additions of Decision 15 are approved as ShellInput §14.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **Modes and faces as two levels?** Recommend: yes, as ShellInput defines them: the strip
    chip switches modes; D-pad `left`/`right` or a swipe switches 1–3 faces inside a mode (for
@@ -1104,7 +1111,8 @@ source), service due (Maintenance & Garage), camera live (Cameras, `camera_live`
 
 ## Revised items for the DMD decision list (51–52)
 
-These replace items 51 and 52 of the DMD-round decision list (v0.1's "Home and More locked" rail
+Answered 2026-10-07: approved as recommended ("approve all", DMD round); each alternative
+was not chosen. These replace items 51 and 52 of the DMD-round decision list (v0.1's "Home and More locked" rail
 and "core strip chips locked" safety items).
 
 51. **How editable are the rail and the pages? (replaces 51)** Recommend: everything, with

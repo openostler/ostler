@@ -1,17 +1,18 @@
 ---
 title: "Design hand-off, October 2026 — how designs come in, how they are reviewed, and every screen to design"
 area: references
-status: draft
-version: 0.2
+status: stable
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/visual_design_direction.md]
 summary: >
-  The hand-off folder for the owner's one combined designer prompt (DMD round, October 2026). It says how designs arrive (claude.ai design artifact links read by the manager, plus exported PNG and HTML saved here as `<screen-id>/<layout-class>-<theme>.png` and `.html`, with optional state and variant suffixes), what is recorded per screen (link, date, designer prompt version, status awaiting · received · reviewed · matches-spec · differs, and each difference), and how each screen is reviewed against its spec section before the V2 component kit and V3 page work. It holds a designer prompt checklist of the hard constraints (Moving templates and their limits, minimum sizes, tokens only, one icon set, no glow on head units at night or in Drive mode, Park to edit, non-removable safety items, no message text while Moving, no video on driver-facing screens) with citations, and the full screen index: 127 screens and sheets across the shell, Home, Drive modes and their faces, alerts and calls, Trips and sharing, Places, Diagnose and the help flow, Decode lab, Vehicles & Map, Social, Phone & Comms (linked to its draft spec), Navigation, Ostler Community (the closed, Ostler-run hub: web P1–P14 including Forum, Thread, Vehicle project, Decode card and Wiki page, and More → Community), adapters, Maintenance & Garage, Network, More, Preferences, accounts S1–S10 and the Add-ons catalogue, each with layout classes, themes, driving states, spec sections and tokens. The machine-readable copy is `screens.json` in this folder.
+  The hand-off folder for the owner's one combined designer prompt (DMD round, October 2026). It says how designs arrive (claude.ai design artifact links read by the manager, plus exported PNG and HTML saved here as `<screen-id>/<layout-class>-<theme>.png` and `.html`, with optional state and variant suffixes), what is recorded per screen (link, date, designer prompt version, status awaiting · received · reviewed · matches-spec · differs, and each difference), and how each screen is reviewed against its spec section before the V2 component kit and V3 page work. It holds a designer prompt checklist of the hard constraints (Moving templates and their limits, minimum sizes, tokens only, one icon set, no glow on head units at night or in Drive mode, Park to edit, non-removable safety items, no message text while Moving, no video on driver-facing screens) with citations, and the full screen index: 127 screens and sheets across the shell, Home, Drive modes and their faces, alerts and calls, Trips and sharing, Places, Diagnose and the help flow, Decode lab, Vehicles & Map, Social, Phone & Comms (linked to its spec), Navigation, Ostler Community (the closed, Ostler-run hub: web P1–P14 including Forum, Thread, Vehicle project, Decode card and Wiki page, and More → Community), adapters, Maintenance & Garage, Network, More, Preferences, accounts S1–S10 and the Add-ons catalogue, each with layout classes, themes, driving states, spec sections and tokens. The machine-readable copy is `screens.json` in this folder. Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 92–96): key frames first, design files under the CLA annotated like the docs, PNG plus HTML per frame (≤ 2 MB each), the approved message card (sender and app with Play / Reply), and every spec of the round now approved, so no screen is provisional.
 ---
 
 # Design hand-off, October 2026
 
-**Status: draft for the owner.** This folder receives the designs the owner commissions with
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** Every
+spec this folder cites was approved the same day. This folder receives the designs the owner commissions with
 one combined designer prompt covering every screen of this round: the editable UI, Drive
 modes, D-pad and remote input, message alerts, the Phone & Comms add-on, trip sharing,
 Navigation, Ostler Community, source adapters, and updates to the existing pages (Home,
@@ -27,7 +28,7 @@ Two files:
   where each delivery and review is recorded. `screens.json` is the source of truth; the
   table below mirrors it and is updated in the same commit.
 
-The **Phone & Comms** screens link the sections of the draft
+The **Phone & Comms** screens link the sections of the approved
 [Phone & Comms spec](../../../specs/2026-10-07-phone-comms-addon-design.md) (dialer, contacts,
 recents, favourites, incoming call, the message card for SMS/iMessage and the notification
 bridge, More → Phone, widgets, pairing and the companion bridge setup). **Ostler Community**
@@ -96,7 +97,8 @@ the **visual design system** ([visual spec][vds-1]) and the **designer prompt ch
    §12.1, §14, Drive modes §8.1 or the visual spec's glow and type floors goes to the owner.
 4. **Before the V2 component kit and V3 pages are built** ([visual §11][vds-11]), every
    screen in that slice is `matches-spec`, or its differences are resolved by a spec
-   amendment (in a dated "Proposed amendment" section of the spec) or a revised design. A
+   amendment (in a dated "Proposed amendment" section of the spec, approved by the owner) or a
+   revised design. A
    spec changed this way names the design file it followed.
 5. A design for a **proposed** (not yet approved) spec section is reviewed against the
    proposal and marked as such; it is re-checked once the owner answers.
@@ -141,8 +143,9 @@ Constraints the designer must honour on every screen. Paste this list into the p
    frames are drawn by the shell outside any layout; Home's warnings and Security cards may
    move, never go. ([Drive modes §8.1][dm-8.1], [UI §15.2][ui-15.2])
 10. **No message text while Moving.** A message alert shows the sender and the app with Play
-    and Reply (proposed) or "Message from *name*" with Play and Later (approved); never
-    text, images, avatars or previews while Moving. Draw both until the owner answers.
+    and Reply (approved 2026-10-07; the earlier "Message from *name*" with Play and Later was
+    not chosen); never text, images, avatars or previews while Moving; the opt-in first-line
+    preview only for a message that arrived while Parked.
     ([UI §12.1][ui-12.1], [UI §14][ui-14], [Social §12][soc-12])
 11. **No video on driver-facing screens** while Idling or Moving, Passenger view included;
     calls are audio only. ([UI §12.1][ui-12.1], [Social §5][soc-5])
@@ -163,8 +166,10 @@ Constraints the designer must honour on every screen. Paste this list into the p
     ([Shell input §7][si-7], [Shell input §9][si-9])
 17. **Driver side.** The rail sits on the driver's side; draw right-hand drive (the D2) and
     left-hand drive where the layout differs. ([UI §3.3][ui-3.3])
-18. **Rail and destinations.** Five slots, Home first and More last; add-on pages may be
-    pinned in the middle three. ([Drive modes §7.3][dm-7.3])
+18. **Rail and destinations.** Five slots; More is always one of them (movable, renamable,
+    re-iconable, never removed); any core destination, Home included, or add-on page may sit
+    in any slot (default: Home first, More last); Home stays the landing page and the root
+    of Back; everything else is under More → Pages. ([Drive modes §7.3][dm-7.3])
 19. **No score.** Trips shows neutral facts only: no driving score, speed ranking or
     speed-limit history. ([UI §12.2][ui-12.2])
 20. **Our names only.** No other brand's marks, fonts or signature colours; Figtree is the
@@ -350,8 +355,8 @@ listed class, theme and state.
 | `accounts-s10` | Accounts S10: Safety contacts | core (accounts) | Phone Tablet Desktop | N D | P: full; M: locked view: 'Available when parked' + Open on phone (UI §12.1) | [Accounts §14.7][acc-14.7] | ListRow; Button; Sheet; Chip · **S · A · St** |
 <!-- screens:end -->
 
-Phone & Comms rows cite sections of the draft Phone & Comms spec; if its section numbers
-change before approval, regenerate both `screens.json` and this table.
+Phone & Comms rows cite sections of the Phone & Comms spec (approved 2026-10-07); if its
+section numbers change, regenerate both `screens.json` and this table.
 
 ## Changelog
 
@@ -366,8 +371,20 @@ change before approval, regenerate both `screens.json` and this table.
   reads Discover · Forum · Help · Mine, plus Wiki links; hub section links renumbered); the
   share sheet and help flow show "Ask on Ostler Community"; the call template links the shell's
   call session; 127 screens.
+- **0.3 (2026-10-07):** approved by the owner on 2026-10-07 ("approve all", DMD round;
+  decision list items 92–96): every decision answered as recommended (alternatives not
+  chosen); the cited specs and amendments approved, so their links follow the renamed
+  "Amendment (2026-10-07, DMD round), approved" headings (here and in `screens.json` 0.3,
+  whose review statuses are unchanged); checklist item 10 shows the approved message card
+  and item 18 the approved editable rail.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen. Decision 3 is settled by the same
+approval: items 57–61 (M1–M4) were approved, so the designer draws the sender-and-app card;
+the "Message from *name*" card is no longer needed. Decision 5: the Phone & Comms spec is
+approved, so its screens are no longer provisional.
 
 1. **How much of the class × theme matrix in the first pass?** *Recommend:* key frames first:
    Night on every listed class; Night dim and the Moving state for every Drive-mode face,
@@ -404,11 +421,11 @@ change before approval, regenerate both `screens.json` and this table.
 [am-14.5]: ../../../specs/2026-10-06-app-model-design.md#14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates
 [am-14.6]: ../../../specs/2026-10-06-app-model-design.md#14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates
 [am-14.7]: ../../../specs/2026-10-06-app-model-design.md#14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates
-[am-15.1]: ../../../specs/2026-10-06-app-model-design.md#15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots
-[am-15.2]: ../../../specs/2026-10-06-app-model-design.md#15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots
-[am-15.3]: ../../../specs/2026-10-06-app-model-design.md#15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots
-[am-15.4]: ../../../specs/2026-10-06-app-model-design.md#15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots
-[am-15.5]: ../../../specs/2026-10-06-app-model-design.md#15-proposed-amendment-2026-10-07-dmd-round-widgets-drive-menu-rows-input-and-new-slots
+[am-15.1]: ../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
+[am-15.2]: ../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
+[am-15.3]: ../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
+[am-15.4]: ../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
+[am-15.5]: ../../../specs/2026-10-06-app-model-design.md#15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots
 [dm-4.3]: ../../../specs/2026-10-07-drive-modes-and-editing-design.md#43-the-moving-section-and-the-template-mapping
 [dm-4.4]: ../../../specs/2026-10-07-drive-modes-and-editing-design.md#44-grids-and-minimum-sizes-per-class
 [dm-5.1]: ../../../specs/2026-10-07-drive-modes-and-editing-design.md#51-diagnostic-todays-six-tiles
@@ -483,8 +500,8 @@ change before approval, regenerate both `screens.json` and this table.
 [si-7]: ../../../specs/2026-10-07-shell-input-design.md#7-confirms-and-countdowns
 [si-8]: ../../../specs/2026-10-07-shell-input-design.md#8-bindings-and-the-key-test
 [si-9]: ../../../specs/2026-10-07-shell-input-design.md#9-focus-visuals
-[soc-12]: ../../../specs/2026-10-07-social-addon-design.md#12-proposed-amendment-2026-10-07-dmd-round-message-alerts-while-moving
-[soc-13]: ../../../specs/2026-10-07-social-addon-design.md#13-proposed-amendment-2026-10-07-dmd-round-comms-overlap
+[soc-12]: ../../../specs/2026-10-07-social-addon-design.md#12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving
+[soc-13]: ../../../specs/2026-10-07-social-addon-design.md#13-amendment-2026-10-07-dmd-round-approved-comms-overlap
 [soc-2]: ../../../specs/2026-10-07-social-addon-design.md#2-where-it-sits-in-the-shell
 [soc-3]: ../../../specs/2026-10-07-social-addon-design.md#3-contacts-friends-groups-and-rides
 [soc-4]: ../../../specs/2026-10-07-social-addon-design.md#4-messaging
@@ -509,7 +526,7 @@ change before approval, regenerate both `screens.json` and this table.
 [ui-13.3]: ../../../specs/2026-10-06-ui-architecture-design.md#133-ask-for-help-decoding-decode-lab-changes-84
 [ui-13.4]: ../../../specs/2026-10-06-ui-architecture-design.md#134-more--places-changes-34s-more-row-and-124s-order
 [ui-13.5]: ../../../specs/2026-10-06-ui-architecture-design.md#135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence
-[ui-14]: ../../../specs/2026-10-06-ui-architecture-design.md#14-proposed-amendment-2026-10-07-dmd-round-message-alerts-amends-121-alert_card-and-the-u2-legal-check
+[ui-14]: ../../../specs/2026-10-06-ui-architecture-design.md#14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check
 [ui-15.1]: ../../../specs/2026-10-06-ui-architecture-design.md#151-drive-modes-changes-123
 [ui-15.2]: ../../../specs/2026-10-06-ui-architecture-design.md#152-editing-changes-34-and-53
 [ui-3.1]: ../../../specs/2026-10-06-ui-architecture-design.md#31-layout-classes

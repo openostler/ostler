@@ -2,11 +2,11 @@
 title: "ADR-0032 — One node, optional brain (Ostler Lite and Ostler)"
 area: decisions
 status: locked
-version: 1.4
-updated: 2026-10-06
+version: 1.5
+updated: 2026-10-07
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md]
 summary: >
-  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027. Amended 2026-10-06: GPS split (the guardian's 1 Hz modem GNSS for security, a 10 Hz u-blox for drive logging, every fix a tagged reading, best fix selected, GNSS time served by the time-role holder) with the u-blox placement pending product-family research; sensor detection (board profile, detected chips, declared config or harness ID, one manifest with origin and status per item, read-only probing). Amended 2026-10-06 by ADR-0039 and ADR-0040: renamed Ostler Diagnostics (was Lite) and Ostler Hub (the brain); USB-NCM is a product link and UART dev-only; the u-blox sits on the Diagnostics node, closing the GPS placement; wake and shutdown extended with power states, wake requests and node parked modes. Amended 2026-10-06 (ADR-0039 Amendments): the brain product is Ostler Brain (was Hub).
+  Owner direction of 2026-10-06. Two tiers: Ostler Lite is an ESP32 diagnostic node alone (optional 4G, phone app or Ostler Cloud, fully offline with a phone); Ostler adds a Pi brain. The node replaces the buddy and owns the car and power: bus I/O, decoding to VSS, the transmit gate (the only path to the car), GPS, optional 4G, the parked broker and brain power. The brain owns compute and network, never touches the car, and is woken and shut down cleanly by the node. The guardian is a hidden, output-free hardware variant of the node; one firmware publishes a capability manifest that drives each device's UI. One portable C decoder reads packs as JSON on ESP32 and PC (ctypes), checked by shared vectors, with Python as the lab and reference fallback. One app runs in the cloud, on the brain and on the phone. Sensor nodes add tagged data through read-only isolated taps. Supersedes parts of ADR-0028, ADR-0002, ADR-0020 and ADR-0027. Amended 2026-10-06: GPS split (the guardian's 1 Hz modem GNSS for security, a 10 Hz u-blox for drive logging, every fix a tagged reading, best fix selected, GNSS time served by the time-role holder) with the u-blox placement pending product-family research; sensor detection (board profile, detected chips, declared config or harness ID, one manifest with origin and status per item, read-only probing). Amended 2026-10-06 by ADR-0039 and ADR-0040: renamed Ostler Diagnostics (was Lite) and Ostler Hub (the brain); USB-NCM is a product link and UART dev-only; the u-blox sits on the Diagnostics node, closing the GPS placement; wake and shutdown extended with power states, wake requests and node parked modes. Amended 2026-10-06 (ADR-0039 Amendments): the brain product is Ostler Brain (was Hub). Amended 2026-10-07 by ADR-0044 (approved by the owner on 2026-10-07, "approve all", DMD round): §2's "only path to the car" and §3's "never touches the car" gain one exception, a third-party adapter hosted on the Brain only for a vehicle with no node, driven through the soft gate under the adapter rules R1–R10, one tester per bus, local only.
 ---
 
 # ADR-0032 — One node, optional brain
@@ -14,6 +14,7 @@ summary: >
 > **Amended 2026-10-06 (owner answers):** §5, §6, §13 and §14 gain the GPS split and sensor detection; the 10 Hz u-blox's placement is **pending (product-family research)**. See [Amendments](#amendments-2026-10-06-gps-split-and-sensor-detection).
 > **Amended 2026-10-06 (product family and power states, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), [ADR-0040](adr-0040-power-states-and-wake.md)):** renamed by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics" and "Ostler" (with a brain) as "Ostler Diagnostics + Ostler Hub"; §3's link: USB-NCM is a product link, UART for development only; the 10 Hz u-blox sits on the Diagnostics node, closing A1's pending placement; §4's wake and shutdown are extended by ADR-0040. See [Amendments (product family and power states)](#amendments-2026-10-06-product-family-and-power-states).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
+> **Amended 2026-10-07 ([ADR-0044](adr-0044-adapters-on-the-brain-without-a-node.md), approved by the owner on 2026-10-07, "approve all", DMD round):** §2–§3 gain one exception: for a vehicle with no node, the Brain may host a third-party adapter through the soft gate. See [Amendment (2026-10-07, adapters without a node)](#amendment-2026-10-07-adapters-without-a-node).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). Supersedes parts of
@@ -372,3 +373,33 @@ shutdown with a timeout stand.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Amendment (2026-10-07, adapters without a node)
+
+With [ADR-0044](adr-0044-adapters-on-the-brain-without-a-node.md), approved by the owner on
+2026-10-07 ("approve all", DMD round). The decision text and the Amendments above are
+unchanged; where these entries differ, they win.
+
+**D1. §2, the only path to the car.** The node's transmit gate stays the only path to the
+car **wherever a node exists**. For a vehicle with **no node**, a third-party adapter (ELM327,
+STN/OBDLink, KKL cable, SocketCAN or slcan dongle, WiCAN) may transmit, driven only through
+the **soft gate** (the platform's own `TxGate`, checked by the same shared vectors) under the
+adapter rules R1–R10 of ADR-0044 and the
+[source adapters spec](../specs/2026-10-07-source-adapters-design.md) §7: read-only by
+default; clears only when Parked or Idling is evidenced from the bus, never the airbag; Tier
+2–3 only after a per-vehicle, per-adapter owner opt-in, Parked, local, never on a clone or
+over Wi-Fi; Tier 4 never; nothing above Tier 0 while Moving or with unknown speed; local only.
+
+**D2. §3, the brain never touches the car.** It still never does **where a node exists**. For
+a vehicle with no node, the Brain may host such an adapter, as a laptop or the phone app may.
+**One tester per bus:** beside a node any adapter is passive only (verified listen-only CAN
+sniffing, no K-line access, no OBD requests), and before a K-line init an adapter listens for
+3 s and refuses if another tool is active. ADR-0039's rejection of raw serial over the network
+stands.
+
+## Changelog
+
+- 2026-10-06 — v1.0–v1.4, accepted and amended (GPS split and sensor detection; product
+  family and power states; Brain rename).
+- 2026-10-07 — v1.5, Amendment (2026-10-07, adapters without a node): §2–§3 gain the
+  ADR-0044 exception (approved by the owner on 2026-10-07, "approve all", DMD round).
