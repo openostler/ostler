@@ -157,10 +157,16 @@ describe("live dashboard", () => {
     const server = installFakeServer({ snapshot: { ...connected, faults } });
     render(<App path="/" />);
     await area(user, "Faults");
-    vi.mocked(window.confirm).mockReturnValueOnce(false);
+    // the shell's confirm sheet opens with Cancel focused (shell input spec §7)
     await user.click(screen.getByRole("button", { name: /Clear codes/ }));
+    let sheet = screen.getByRole("dialog");
+    expect(within(sheet).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await user.click(within(sheet).getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(server.commandsSent()).not.toContain("clear_faults");
     await user.click(screen.getByRole("button", { name: /Clear codes/ }));
+    sheet = screen.getByRole("dialog");
+    await user.click(within(sheet).getByRole("button", { name: "Clear codes" }));
     await waitFor(() => expect(server.commandsSent()).toContain("clear_faults"));
   });
 
@@ -182,9 +188,10 @@ describe("live dashboard", () => {
     await area(user, "Outputs");
     const card = (await screen.findByText("Compressor test")).closest(".card") as HTMLElement;
     await user.click(within(card).getByRole("button", { name: "Compressor" }));
-    const run = within(card).getByRole("button", { name: "Compressor" });
+    const sheet = screen.getByRole("dialog");
+    const run = within(sheet).getByRole("button", { name: "Compressor" });
     expect(run).toBeDisabled();
-    await user.click(within(card).getByRole("checkbox", { name: "Vehicle stationary" }));
+    await user.click(within(sheet).getByRole("checkbox", { name: "Vehicle stationary" }));
     await user.click(run);
     await waitFor(() => expect(server.commandBodies()).toEqual([{ action: "compressor" }])); // Stable: no trust param
   });
@@ -199,8 +206,9 @@ describe("live dashboard", () => {
     const card = (await screen.findByText("4. Fuel Pump (pulse)", { selector: ".item-name" })).closest(".card") as HTMLElement;
     expect(within(card).getByText("Candidate")).toBeInTheDocument(); // status chip shown in Experimental
     await user.click(within(card).getByRole("button", { name: "Fuel pump" }));
-    for (const c of within(card).getAllByRole("checkbox")) await user.click(c);
-    await user.click(within(card).getByRole("button", { name: "Fuel pump" }));
+    const sheet = screen.getByRole("dialog");
+    for (const c of within(sheet).getAllByRole("checkbox")) await user.click(c);
+    await user.click(within(sheet).getByRole("button", { name: "Fuel pump" }));
     await waitFor(() => expect(server.commandBodies()).toEqual([{ action: "output_fuel_pump", params: { trust: "experimental" } }]));
   });
 

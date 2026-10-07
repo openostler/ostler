@@ -15,6 +15,14 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   bottom bar is built from: `slot`, `order`, `requires`, `trust`, a lazy chunk), `routes.ts`
   (route names), `landing.ts` (driving state and landing), `context.tsx` (`useShell()`),
   `Shell.tsx` (layout, Drive mode, sheets, an error boundary per destination), `shell.css`.
+  ShellInput (shell input spec, I1): `input.ts` (keys → intents; arrows repeat 400/100 ms,
+  long press 600 ms: long `back` = `menu`, long `ok` reserved for DM3's edit mode),
+  `focus.ts` (zones by `data-zone` = strip, rail, main, sheet; the spatial scorer; per-zone
+  memory; the layer stack `back` closes and the 500 ms `ok` guard reads), `useShellInput.ts`
+  (the capture-phase key listener; Drive mode's faces, Drive menu and `back` → the
+  `drive_mode` chip while Moving; unknown counts as Moving on driver-facing classes). A new
+  sheet uses `components/Sheet` (it registers itself); a control that handles its own Enter
+  carries `data-own-ok`; text fields and sliders are never intercepted.
 - `src/destinations/` — Home, Diagnose (system list or switcher + the five areas), Logs
   (sessions, Analysis, Rewind), More (Preferences, Connection, Developer on /admin), Security
   (registered; shown only with a node in the capability manifest, U5).
@@ -32,7 +40,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   node's IMU", never a zero), `DriveFace.tsx` (the Moving section on head units and the phone
   unless the car is known Parked; the full grid on tablet/desktop; values step ≤ 4 Hz),
   `widgets.tsx` (tile, gauge, hero, chip, inclinometer, compass, status line, map and add-on
-  panes), `ModeList.tsx` and `drive.css` (Moving type from `--drive-num`/`--drive-label`/
+  panes), `ModeList.tsx`, `driveMenu.ts` + `DriveMenu.tsx` (the Drive menu: ≤ 6 rows of
+  ≤ 30 characters, only items that exist) and `drive.css` (Moving type from `--drive-num`/`--drive-label`/
   `--drive-hero`, no transition or animation).
 - `src/icons/` — the Material Symbols subset (`material-symbols/*.svg`, Apache-2.0, copied
   verbatim) and `Icon`; list a new symbol in `symbols.ts` (a test keeps both in step). The only
@@ -80,7 +89,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   `shell.spec.ts` runs the five reference viewports with target-size asserts and axe (WCAG 2.2 AA),
   and asserts Drive mode never scrolls at every head-unit size and the phone. `drive-modes.spec.ts` covers the
   switcher chip and every face of every preset at the six Drive sizes (no scroll, ≤ 6 tiles,
-  digits ≥ 56 px, labels ≥ 24 px, nothing clipped, glowing or moving).
+  digits ≥ 56 px, labels ≥ 24 px, nothing clipped, glowing or moving). `input.spec.ts` is
+  ShellInput keyboard-only at every class (destinations, Drive menu, ring, confirm guard);
+  `SHOTS_DIR` sets where its screenshots go. e2e serves the built bundle: `npm run build` first.
 
 ## Editing rules
 
@@ -93,8 +104,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
   and ESLint's `ostler/no-raw-style` ban raw colours and px font sizes. Old violations are frozen in
   `stylelint-baseline.json` and `eslint-suppressions.json`; never add to them. After fixing some,
   shrink them: `node scripts/lint-css.mjs --update`, `npx eslint . --prune-suppressions`.
-- Anything that writes to an ECU goes through `components/confirm.ts` (catalog actions via
-  `ActionButton`, which applies the registry's `confirm` level). Actions are sent by `useAction`;
+- Anything that writes to an ECU goes through `components/ConfirmSheet.tsx` with the rules in
+  `components/confirm.ts` (catalog actions via `ActionButton`, which applies the registry's
+  `confirm` level): Cancel focused, no countdown, never `window.confirm`. Actions are sent by `useAction`;
   a lint rule forbids naming `/command` outside `api/client.ts` and importing the raw `command()`
   outside the server-state senders listed in `eslint.config.js`.
 - Navigate with route names (`goTo("diagnose.faults")`, `useShell().nav.open`), never tab ids.
@@ -118,6 +130,8 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `HealthStrip` leads Home and Inputs with the one-line answer and links to the cause. Drive mode
   is one screen with no page chrome: its Back is a strip chip, faults are the telltale chip, and
   rows are sized by the height (UI spec §12.3).
+- Focus: one ring for everything, from the `focus-ring-*` tokens on `:focus-visible` in
+  `styles.css` (3 px accent, 2 px bg gap, no glow, no resize); never style focus per component.
 - Shell targets: 76 px on head units (`--target`), strip chips ≥ 48 px with an icon and a word,
   nothing interactive under 24 × 24 px (WCAG 2.2). Size with the layout tokens, not media queries.
 - Status hues are validated with the dataviz `validate_palette.js` in both modes — re-run it

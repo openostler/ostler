@@ -337,6 +337,11 @@
       "$type": "color",
       "$value": "{color.surface-3}",
       "$description": "legacy alias, retired in V3.5"
+    },
+    "focus-ring-color": {
+      "$type": "color",
+      "$value": "{color.accent}",
+      "$description": "the focus ring (shell input spec §9): accent, 3 px, outside a 2 px bg gap; no glow, no resize"
     }
   },
   "shadow": {

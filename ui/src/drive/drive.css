@@ -107,3 +107,7 @@
 .dm-list-row[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .dm-list-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dm-list-tick { display: inline-flex; color: var(--accent); }
+/* the Drive menu (shell input spec §6): the state on the right; a focused or tap-selected row
+   takes accent-soft as well as the ring (§9: focus is never colour alone, and never a resize) */
+.dm-list-state { flex: 0 0 auto; color: var(--text-2); white-space: nowrap; }
+.dm-list-row:focus-visible, .dm-list-row[data-armed] { background: var(--accent-soft); }

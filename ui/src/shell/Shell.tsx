@@ -12,9 +12,12 @@ import { GlobalTransport } from "../components/GlobalTransport";
 import { Preferences } from "../components/Preferences";
 import { ReplayAudio } from "../components/replay/ReplayAudio";
 import { moduleName } from "../layout";
+import { canLiveMark, saveLiveMark } from "../lib/mark";
 import { formatClock, formatQuantity } from "../lib/units";
 import { usePack } from "../pack/store";
 import { iconOr } from "../drive/icon";
+import { DriveMenu } from "../drive/DriveMenu";
+import { driveMenuRows, type DriveMenuRowId } from "../drive/driveMenu";
 import { ModeList } from "../drive/ModeList";
 import { parseCaps } from "../drive/presets";
 import { useDriveModes } from "../drive/useDriveModes";
@@ -31,6 +34,7 @@ import { Nav } from "./Nav";
 import { destinationOf, type RouteName } from "./routes";
 import { Strip } from "./Strip";
 import { stripChips, type ChipOpen } from "./strip";
+import { useShellInput } from "./useShellInput";
 
 /** No capability manifest before U3/U5: nothing device-gated shows (shell/destinations.ts). */
 const NO_CAPABILITIES: Capabilities = { devices: [] };
@@ -122,6 +126,30 @@ export function Shell(p: ShellProps) {
     else p.goTo("logs");
   };
 
+  // ShellInput (shell input spec, I1): keys become intents over the focus zones; in Drive mode
+  // `ok` opens the Drive menu, `left`/`right` switch faces, `back` finds the switcher (§6, §14.2)
+  const [driveMenu, setDriveMenu] = useState(false);
+  const [menuIn, setMenuIn] = useState(p.driveMode);
+  if (menuIn !== p.driveMode) {
+    // leaving or entering Drive mode closes the menu
+    setMenuIn(p.driveMode);
+    setDriveMenu(false);
+  }
+  const canMark = canLiveMark(snap, replay.active);
+  const menuRows = driveMenuRows({ canMark, mode: { name: modes.active.name, icon: iconOr(modes.active.icon, "speed") } });
+  const onMenuPick = (id: DriveMenuRowId) => {
+    setDriveMenu(false);
+    if (id === "mark") void saveLiveMark(app.toast);
+    else if (id === "mode") modes.openList();
+    else if (id === "exit") p.setDriveMode(false);
+  };
+  useShellInput({
+    layout: p.layout, driving: p.driving, driveMode: p.driveMode, stepFace: modes.stepFace,
+    openDriveMenu: () => { if (!modes.listOpen) setDriveMenu(true); },
+    exitDrive: () => p.setDriveMode(false),
+    goHome: () => p.goTo("home"),
+  });
+
   const Destination = entry.component;
   let content: ReactNode;
   if (p.driveMode) {
@@ -151,7 +179,7 @@ export function Shell(p: ShellProps) {
     <ShellCtx.Provider value={shell}>
       <div className={`app${replay.active ? " replaying" : ""}`} data-layout={p.layout} data-side={p.side}
         data-drive={p.driveMode ? "on" : undefined}>
-        <div className="column">
+        <div className="column" data-zone="main">
           <Strip chips={chips} onOpen={onChip} />
           {replay.active ? null : <ActiveTestBanner />}
           {experimental && !replay.active ? (
@@ -163,7 +191,7 @@ export function Shell(p: ShellProps) {
                 <Boundary name="Vehicle"><VehicleCard /></Boundary>
               </aside>
             ) : null}
-            <main id="view" className={replay.active ? "replay-edge" : undefined}>{content}</main>
+            <main id="view" tabIndex={-1} className={replay.active ? "replay-edge" : undefined}>{content}</main>
           </div>
           <GlobalTransport />
           <ReplayAudio />
@@ -174,6 +202,9 @@ export function Shell(p: ShellProps) {
           ? <FaultSheet faults={p.sheetFaults} onDismiss={p.dismissFaults} /> : null}
         {p.connSheet.open && !p.prefsOpen ? <ConnectionSheet onClose={p.connSheet.dismiss} downSince={p.connSheet.downSince} /> : null}
         {p.prefsOpen ? <Preferences onClose={() => p.setPrefsOpen(false)} /> : null}
+        {p.driveMode && driveMenu && !modes.listOpen ? (
+          <DriveMenu rows={menuRows} onPick={onMenuPick} onClose={() => setDriveMenu(false)} />
+        ) : null}
         {p.driveMode && modes.listOpen ? (
           <ModeList modes={modes.list} current={modes.active.id} onPick={modes.pick} onClose={modes.closeList} />
         ) : null}

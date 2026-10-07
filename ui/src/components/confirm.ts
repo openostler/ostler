@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /**
- * The ONE confirmation for anything that writes to an ECU or drives hardware
- * (actuators, clear faults, shutdown). Kept as a plain function so every caller states
- * the same safety conditions; tests stub window.confirm.
+ * The ONE confirmation for anything that writes to an ECU or drives hardware (actuators,
+ * clear faults, shutdown): the shell-drawn `ConfirmSheet` (components/ConfirmSheet.tsx), which
+ * opens with Cancel focused, ignores `ok` for its first 500 ms and never counts down (shell
+ * input spec §7). This module holds the rules every caller shares.
  */
 export const SAFETY = "Vehicle stationary, handbrake on, ignition on, nobody under the car.";
-
-export function confirmAction(title: string, detail: string = SAFETY): boolean {
-  return window.confirm(`${title}\n\n${detail}`);
-}
 
 /**
  * Friction proportional to consequence, per the registry's `confirm` level (ADR-0008):

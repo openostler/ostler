@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { useEffect, useId, useRef, useState } from "react";
+import { pushLayer } from "../shell/focus";
 
 /** The words the admin Decode and Label tabs use, in plain English. */
 const GLOSSARY: { term: string; text: string }[] = [
@@ -20,11 +21,11 @@ export function Glossary() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    // `back` (Escape) closes it as the newest layer (shell input spec §4.3)
+    const pop = pushLayer(() => setOpen(false), { sheet: false });
     const onDown = (e: PointerEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
-    window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown);
-    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("pointerdown", onDown); };
+    return () => { pop(); window.removeEventListener("pointerdown", onDown); };
   }, [open]);
   return (
     <div className="gloss" ref={ref}>

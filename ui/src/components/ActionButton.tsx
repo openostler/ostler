@@ -9,12 +9,13 @@ import { actionLocked } from "../lib/catalog";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
 import { confirmReady, SAFETY } from "./confirm";
+import { ConfirmSheet } from "./ConfirmSheet";
 import { Icon } from "../icons/Icon";
 
 /**
  * One registry action as a button, with the confirm the registry asks for:
  * none → runs on tap; preconditions → a checklist the user ticks; typed → type the item
- * name. Gated or planned → a lock, no button. Experimental actions exist only in
+ * name, both in the shell's confirm sheet (Cancel focused; shell input spec §7). Gated or planned → a lock, no button. Experimental actions exist only in
  * Experimental mode. In replay every action is a lock with the word "replay" (read-only).
  */
 export function ActionButton({ action, itemName, disabled, onResult }: {
@@ -62,25 +63,32 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
   const danger = action.safety === "actuator" || action.safety === "service";
   const ready = confirmReady(action.confirm, { ticked, typed, name: itemName });
 
+  const cancel = () => {
+    setConfirming(false);
+    setTicked(conditions.map(() => false));
+    setTyped("");
+  };
+
   return (
     <div className="action" data-action={action.action}>
-      {!confirming ? (
-        <button className={`btn ${danger ? "danger" : ""}`} disabled={disabled || busy} onClick={tap}>
-          {busy ? `${action.label}…` : action.label}
-        </button>
-      ) : (
-        <div className="confirm card" role="group" aria-label={`Confirm ${action.label}`}>
+      <button className={`btn ${danger ? "danger" : ""}`} disabled={disabled || busy} onClick={tap}>
+        {busy ? `${action.label}…` : action.label}
+      </button>
+      {confirming ? (
+        // the shell's confirm sheet: Cancel focused, no ok in the first 500 ms, no countdown (§7)
+        <ConfirmSheet title={`${action.label}: ${itemName}`} confirmLabel={action.label} danger={danger}
+          ready={ready && !disabled} onConfirm={() => void fire()} onCancel={cancel}>
           {action.confirm === "typed" ? (
-            <label className="stack small" style={{ gap: 6 }}>
+            <label className="stack small confirm-typed">
               <span>Type <b>{itemName}</b> to confirm.</span>
               <input className="input" value={typed} aria-label={`Type ${itemName} to confirm`}
                 onChange={(e) => setTyped(e.target.value)} />
             </label>
           ) : (
-            <div className="stack small" style={{ gap: 6 }}>
+            <div className="stack small confirm-checks" role="group" aria-label="Before you run it">
               <span className="kicker">Before you run it</span>
               {conditions.map((c, i) => (
-                <label key={c} className="row check" style={{ gap: 8 }}>
+                <label key={c} className="row check">
                   <input type="checkbox" checked={ticked[i] ?? false}
                     onChange={(e) => setTicked((t) => t.map((x, j) => (j === i ? e.target.checked : x)))} />
                   <span className="pretty">{c}</span>
@@ -88,14 +96,8 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
               ))}
             </div>
           )}
-          <div className="btn-row" style={{ marginTop: 10 }}>
-            <button className="btn" onClick={() => setConfirming(false)}>Cancel</button>
-            <button className={`btn ${danger ? "danger" : "accent"}`} disabled={!ready || disabled} onClick={() => void fire()}>
-              {action.label}
-            </button>
-          </div>
-        </div>
-      )}
+        </ConfirmSheet>
+      ) : null}
     </div>
   );
 }

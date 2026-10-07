@@ -127,7 +127,10 @@ for (const s of SIZES) {
       await list.getByRole("button", { name: "Off-road", exact: true }).click();
       await expect(chip(page)).toHaveText("Off-road");
 
-      // the arrow keys switch faces, never the mode
+      // the arrow keys switch faces, never the mode; closing the list returned focus to the chip
+      // (ShellInput §4.3), where arrows move between chips, so `back` returns to the face (§14.2)
+      await expect(chip(page)).toBeFocused();
+      await page.keyboard.press("Escape");
       await expect(page.locator(".dm-face")).toHaveAttribute("data-face", "tilt");
       await page.keyboard.press("ArrowRight");
       await expect(page.locator(".dm-face")).toHaveAttribute("data-face", "trail");

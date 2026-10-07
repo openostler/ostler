@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CatalogAction } from "../api/schemas";
@@ -102,11 +102,14 @@ describe("ActionButton confirm levels", () => {
     const server = installFakeServer();
     renderWithApp(<ActionButton action={act({ confirm: "preconditions", preconditions: ["Ignition on", "Engine off"] })} itemName="Compressor test" />);
     await user.click(screen.getByRole("button", { name: "Compressor" }));
-    const run = screen.getByRole("button", { name: "Compressor" });
+    // the confirm sheet opens with Cancel focused (shell input spec §7)
+    const sheet = screen.getByRole("dialog");
+    expect(within(sheet).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    const run = within(sheet).getByRole("button", { name: "Compressor" });
     expect(run).toBeDisabled();
-    await user.click(screen.getByRole("checkbox", { name: "Ignition on" }));
+    await user.click(within(sheet).getByRole("checkbox", { name: "Ignition on" }));
     expect(run).toBeDisabled();
-    await user.click(screen.getByRole("checkbox", { name: "Engine off" }));
+    await user.click(within(sheet).getByRole("checkbox", { name: "Engine off" }));
     await user.click(run);
     await waitFor(() => expect(server.commandsSent()).toEqual(["compressor"]));
   });
@@ -116,7 +119,7 @@ describe("ActionButton confirm levels", () => {
     const server = installFakeServer();
     renderWithApp(<ActionButton action={act({ confirm: "typed", safety: "service" })} itemName="Bleed" />, { experimental: true });
     await user.click(screen.getByRole("button", { name: "Compressor" }));
-    const run = screen.getByRole("button", { name: "Compressor" });
+    const run = within(screen.getByRole("dialog")).getByRole("button", { name: "Compressor" });
     await user.type(screen.getByRole("textbox", { name: "Type Bleed to confirm" }), "Blee");
     expect(run).toBeDisabled();
     await user.type(screen.getByRole("textbox"), "d");

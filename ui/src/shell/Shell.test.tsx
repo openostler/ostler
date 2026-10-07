@@ -145,3 +145,85 @@ describe("error boundary per destination (app-model spec §5)", () => {
     expect(screen.getByText("fine")).toBeInTheDocument();
   });
 });
+
+/** ShellInput (shell input spec, I1) without a mouse: Drive mode's intents and the Drive menu
+ * (§6, §14.2), layers closed newest first (§4.3) and the confirm rules (§7). Spatial movement
+ * needs layout boxes, so it is covered by e2e/input.spec.ts. */
+describe("ShellInput on a head unit (HU-7)", () => {
+  beforeEach(() => setViewport(1024, 600));
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  it("Drive mode: back finds the switcher and returns to the face; ok opens the Drive menu", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    await user.click(within(await destinations()).getByRole("button", { name: "Drive" }));
+    const chip = document.querySelector<HTMLElement>('[data-chip="drive_mode"]')!;
+    // the driving state is unknown before U2, which counts as Moving on a head unit
+    await user.keyboard("{Escape}");
+    expect(chip).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(document.querySelector("main")).toHaveFocus();
+    expect(screen.getByRole("region", { name: "Drive mode" })).toBeInTheDocument(); // never leaves while Moving
+    await user.keyboard("{Enter}");
+    const menu = screen.getByRole("dialog");
+    const rows = within(menu).getAllByRole("button");
+    expect(rows.map((b) => b.textContent)).toEqual(["Drive modeDashboard", "Exit to Home", "Back to Drive"]);
+    expect(rows[0]).toHaveFocus();
+    // an ok in the menu's first 500 ms is ignored (§5)
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog")).toBe(menu);
+    await wait(550);
+    await user.keyboard("{Enter}"); // Drive mode: opens the mode list in its place
+    expect(within(screen.getByRole("dialog")).getByRole("list", { name: "Drive modes" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Drive mode" })).toBeInTheDocument();
+  });
+
+  it("a long back (600 ms) opens the Drive menu in Drive mode", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    await user.click(within(await destinations()).getByRole("button", { name: "Drive" }));
+    await user.keyboard("{Escape>}");
+    await wait(650);
+    await user.keyboard("{/Escape}");
+    expect(within(screen.getByRole("dialog")).getByRole("list", { name: "Drive menu" })).toBeInTheDocument();
+    // the release did not also act: focus is in the menu, not on the switcher
+    expect(document.querySelector('[data-chip="drive_mode"]')).not.toHaveFocus();
+  });
+
+  it("a confirm sheet opens with Cancel focused, ignores ok for 500 ms, and back closes only it", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: { ...connected, faults: ["inlet air temp. circuit (Current)"] } });
+    render(<App path="/" />);
+    await user.click(within(await destinations()).getByRole("button", { name: "Diagnose" }));
+    const clear = await screen.findByRole("button", { name: /Clear codes/ });
+    clear.focus();
+    await user.keyboard("{Enter}");
+    const sheet = screen.getByRole("dialog");
+    expect(within(sheet).getByRole("button", { name: "Cancel" })).toHaveFocus();
+    expect(sheet.textContent).not.toMatch(/\d+ s\b/); // no countdown
+    await user.keyboard("{Enter}"); // within 500 ms: ignored, so a double press cannot even cancel
+    expect(screen.getByRole("dialog")).toBe(sheet);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(clear).toHaveFocus(); // focus returns to where it was
+  });
+
+  it("back from the page focuses the rail item of the destination, then goes Home", async () => {
+    const user = userEvent.setup();
+    installFakeServer({ snapshot: connected });
+    render(<App path="/" />);
+    const nav = await destinations();
+    await user.click(within(nav).getByRole("button", { name: "More" }));
+    const row = (await screen.findAllByRole("button", { name: /Preferences/ }))[0]!;
+    row.focus();
+    await user.keyboard("{Escape}");
+    expect(within(nav).getByRole("button", { name: "More" })).toHaveFocus();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(within(nav).getByRole("button", { name: "Home" })).toHaveAttribute("aria-current", "page"));
+    await waitFor(() => expect(within(nav).getByRole("button", { name: "Home" })).toHaveFocus());
+  });
+});
