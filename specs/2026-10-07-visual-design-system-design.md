@@ -2,7 +2,7 @@
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
@@ -15,10 +15,16 @@ summary: >
   Material Symbols as the one icon set and bans emoji glyphs. Maps are "Ostler Night/Day" Protomaps flavours
   on brain-served regional PMTiles with an OpenFreeMap fallback. Charts are our own SVG. One component kit
   (Button to TabBar) with phone and head-unit density, enforced by stylelint and Playwright, and a migration
-  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work.
+  in small PRs (V1 tokens, font, maps; V2 kit; V3 pages) that lands before U2 build work. Amended 2026-10-07 (OS round): validated accent colour sets beyond cyan, and icon packs mapped to Material Symbols names with fixed safety icons.
 ---
 
 # Visual design system — design
+
+> **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
+> round):** validated accent colour sets beyond cyan are allowed (decision list item 48), and
+> icon packs are glyph sets mapped to Material Symbols names, with the safety icons fixed
+> (item 49). The theme wizard is in the
+> [launcher spec](2026-10-07-launcher-and-widgets-design.md) §11.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all"), v0.2. The evidence is
 [visual design direction](../references/research/visual_design_direction.md) (values, references) and
@@ -40,6 +46,7 @@ ADR-0042) reference **token names only**; this spec owns the values.
    never marks a value (P14, UI spec §2 principle 7).
 5. **One accent.** Cyan, for interactive and *live* things only: the selected tab, the primary button,
    the scrub thumb, the live puck, the live series. Data ramps never use it; status never uses it.
+   *Amended 2026-10-07 (OS round): a theme may pick a validated accent colour set beyond cyan.*
 6. **Glow budget.** At most one glowing element per screen on phone, tablet and desktop; **no glow** on
    head units in Night dim or Deep night, in Drive mode or in any Moving template (halation).
 7. **Night-first head units.** Head units go to **Night dim** after dusk (Auto), with no top glow, no blur
@@ -210,6 +217,8 @@ glyphs that are emoji today (P8): `fast_rewind`, `play_arrow`, `pause`, `fast_fo
 `chevron_left`, `bolt`, `speed`, `route`, `timer`. Icon sizes: 20/24 phone, 32/40 HU. Icons sit in text
 colour; a status icon wears its status hue; never an emoji, dingbat or Unicode arrow in UI text (§9).
 Medals for records are numerals in a `surface-3` disc, not gold/silver/bronze colour.
+*Amended 2026-10-07 (OS round): an icon pack is a glyph set mapped to Material Symbols names;
+safety icons never change.*
 
 ## 7. Maps
 
@@ -363,3 +372,6 @@ the decision; each alternative was not chosen.
 - 0.2 (2026-10-07): approved by the owner on 2026-10-07 ("approve all"): every decision answered
   as recommended (alternatives not chosen); ADR-0009 amended for the basemap (decision 9); UI spec
   §2 principle 7 amended for the glow budget (UI spec §12.5); HU-5 is UI spec §12.3.
+- 0.3 (2026-10-07): amended (OS round, approved by the owner on 2026-10-07, "approve all"):
+  validated accent colour sets (item 48); icon packs mapped to Material Symbols names, safety
+  icons fixed (item 49).

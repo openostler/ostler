@@ -2,7 +2,7 @@
 title: "ShellInput — a D-pad input model for the shell: intents, focus zones, spatial navigation, Drive menu, bindings and key test — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
@@ -19,10 +19,15 @@ summary: >
   visual spec, app-model and module-bus sections it amends. v0.2 (amendment §14, DMD round, approved): a long
   `ok` (600 ms) on a focused strip chip, rail item or widget enters edit mode when Parked ("Park to edit" while
   Moving); while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip wherever it sits;
-  the switcher is found by id (drive-modes spec v0.2 decision 15).
+  the switcher is found by id (drive-modes spec v0.2 decision 15). Amended 2026-10-07 (OS round): voice control is no longer a non-goal; a local-first assistant comes later.
 ---
 
 # ShellInput — design
+
+> **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
+> round; decision list item 54):** voice control is no longer a non-goal (§1); a local-first
+> assistant comes later ([head-unit apps](2026-10-07-head-unit-apps-design.md) §10). A spoken
+> yes never confirms a gated action.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3, with the
 amendment §14 (editing and the movable switcher), approved. Its amendments to other specs (§11)
@@ -39,8 +44,9 @@ spatial navigation (teardown, "Ostler today").
 **Goals.** Every destination, sheet and Drive mode works from a D-pad plus two buttons, so a
 gloved rider, a wet screen, a steering-wheel button or a handlebar remote can drive Ostler
 safely; keyboard users on desktop get the same model (WCAG 2.1.1). Input is **core and free**
-(teardown Avoid 8). **Non-goals:** input never adds a capability a tap does not have; no voice
-control; no text entry by D-pad while Moving; no pointer emulation.
+(teardown Avoid 8). **Non-goals:** input never adds a capability a tap does not have; no text
+entry by D-pad while Moving; no pointer emulation. (*Amended 2026-10-07, OS round:* "no voice
+control" is lifted; a local-first assistant comes later.)
 
 ## 2. Intents
 
@@ -319,6 +325,8 @@ switcher only by `data-chip="drive_mode"`.
 - 2026-10-07: v0.3, approved by the owner on 2026-10-07 ("approve all", DMD round; decision
   list items 41–46 and 90): every decision answered as recommended (alternatives not
   chosen); §14 renamed "Amendment (2026-10-07, DMD round), approved"; ships with U2 (I1–I2).
+- 2026-10-07: v0.4, amended (OS round, approved by the owner on 2026-10-07, "approve all";
+  decision list item 54): voice control is no longer a non-goal.
 
 ## Decisions for the owner
 

@@ -415,6 +415,18 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **The Android-style OS direction, approved by the owner on 2026-10-07 ("approve all", OS
+  round; docs only, no code).** [ADR-0045](decisions/adr-0045-ux-first.md) (UX first) and
+  [ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md) (the empty OS; the round's
+  decision list, items 1–65, is its appendix) are accepted; the
+  [launcher and widgets](specs/2026-10-07-launcher-and-widgets-design.md),
+  [app UI model](specs/2026-10-07-app-ui-model-design.md),
+  [Store](specs/2026-10-07-store-design.md) and
+  [head-unit apps](specs/2026-10-07-head-unit-apps-design.md) specs are approved (v0.2).
+  CONSTITUTION v1.8 and CLAUDE.md gain the UX-first rule; GOALS v2.7 drops the media and
+  user-arranged-dashboard non-goals and adds projection receivers. Amendment notes on
+  ADR-0034, ADR-0039, ADR-0042, SCOPE, README, docs/ecosystem.md and the app-model, UI,
+  Drive-modes, visual design and ShellInput specs.
 - **Visual design system V1a: tokens** ([visual spec](specs/2026-10-07-visual-design-system-design.md)
   §2–§5, §11). Night (dark) is now the default theme at `:root` on every layout class; Day,
   Night dim and Deep night (OLED) are `data-theme` overrides, and Preferences → Display offers

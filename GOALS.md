@@ -2,14 +2,20 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.6
+version: 2.7
 updated: 2026-10-07
-depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
+depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-head-unit-apps-design.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
+  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md. Amended 2026-10-07 (OS round; ADR-0046 accepted): the small core becomes an empty OS (system services and system UI only; every feature is an app), the dock's per-class cap replaces the five-destination cap, media is no longer a non-goal and projection receivers are.
 ---
 
 # Goals
+
+> **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
+> round; [ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md) §10, decision list
+> item 13):** the small core becomes the **empty OS**; the dock's per-class cap replaces the
+> five-destination cap; "rebuilding media" and "user-arranged dashboards" leave the non-goals
+> and **projection receivers** join them.
 
 What Ostler is for and what comes next. The long term is in
 **[references/vision.md](references/vision.md)**; the detail is in the
@@ -31,9 +37,8 @@ core reads and interprets the car and hands its data, safely and privately, to a
   no separate apps per feature; thin Android Auto, CarPlay and watch companions later, each
   within its platform's rules (the first, CarPlay Driving Task, only after Trips and Drive
   mode ship on the head unit).
-- **Small core:** the shell (layouts, status strip, rail, Drive mode, sign-in and invites, the
-  VSS data stream, the gate client, the app registry, the Add-ons catalogue at More →
-  Add-ons), Diagnose, **Trips** (was Logs), Network, and Security once a node exists.
+- **Empty OS:** system services and system UI only; every feature is an app
+  ([ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md)).
 - **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (one
   add-on per integration), and Decode lab for developers, plus hardware add-on modules.
   Map: [docs/ecosystem.md](docs/ecosystem.md).
@@ -109,7 +114,9 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
    - *Core only shrinks:* new features land as packs or integrations.
    - *An ADR first* for a new top-level destination, a new outbound data path, a new
      runtime dependency or a new language
-     ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). Five destinations is a hard cap.
+     ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). The dock holds at most its layout
+     class's slots ([launcher](specs/2026-10-07-launcher-and-widgets-design.md) §5.1); every
+     app stays reachable from the drawer.
    - *The D2 pack's coverage is protected:* CI fails if it regresses.
    - Every idea is tagged **core**, **add-on** or **moonshot**
      ([feature backlog](references/research/features_backlog.md)); add-ons are off by
@@ -154,11 +161,11 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
 
 **Non-goals:**
 
-- Rebuilding media: CarPlay/Android Auto, radio, amplifier and wheel controls stay on a
-  media head unit.
+- **Projection receivers** (Android Auto, CarPlay) are not built by the project: they need
+  certification and licences an open project cannot hold
+  ([head-unit apps](specs/2026-10-07-head-unit-apps-design.md) §11).
 - HEVAC control inside the platform (a separate project).
-- A remote layout server, runtime- or model-composed screens, or user-arranged dashboards
-  (maybe later, as a diff over the generated views).
+- A remote layout server, or runtime- or model-composed screens.
 - Features without a spec, or add-ons that are on by default.
 
 ## 4. Product line and add-ons
@@ -224,6 +231,10 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-07: v2.7, amended (OS round; ADR-0046 accepted, decision list item 13): "Small
+  core" reads "Empty OS"; the dock's per-class cap replaces the five-destination cap; the
+  "rebuilding media" and "user-arranged dashboards" non-goals go; projection receivers become
+  a non-goal.
 - 2026-10-07: v2.6, the ADR-0044 exception (adapters on the Brain only with no node fitted) added to the promises and principle 3.
 - 2026-10-07: v2.5, mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042
   accepted): the proposed §0 is folded into §1 as the real text; the tagline reads "Ostler:

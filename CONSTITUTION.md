@@ -2,7 +2,7 @@
 title: Constitution
 area: root
 status: stable
-version: 1.7
+version: 1.8
 updated: 2026-10-07
 summary: >
   Hard rules for every agent and contributor: the five Vibes as Code operating
@@ -132,6 +132,12 @@ summary: >
 - No code, scaffolding or implementation until a design is approved (a spec in
   `specs/`). Car findings route per the pack's
   [test plan](https://github.com/openostler/ostler-pack-lr-d2/blob/main/references/test_plan.md).
+- **UX first** ([ADR-0045](decisions/adr-0045-ux-first.md)). Every user-facing feature goes:
+  UX brief in `references/design/briefs/` → owner approval → UI built against recorded
+  fixtures (never demo data, ADR-0011) → wiring to real services. No backend work for a
+  user-facing feature starts before its brief is approved. A backend-only integration needs
+  only its setup-page design. Safety and security fixes are exempt and update the brief
+  after.
 
 ## Changelog
 
@@ -160,3 +166,5 @@ summary: >
   only path to the car" gain one exception (ADR-0044, approved by the owner on 2026-10-07,
   "approve all", DMD round): for a vehicle with no node, a third-party adapter driven through
   the soft gate under the adapter rules, one tester per bus, local only.
+- 2026-10-07 — v1.8: UX first (ADR-0045): brief, approval, UI on recorded fixtures, then
+  wiring.

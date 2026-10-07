@@ -2,13 +2,19 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-07
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on.
+  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on. Amended 2026-10-07 (OS round): small core reads as the empty OS of ADR-0046.
 ---
 
 # Scope & architecture
+
+> **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
+> round):** "small core" now reads as the **empty OS** of
+> [ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md): system services and system
+> UI only; Diagnose, Trips, Security and every other feature are apps. The core mission (comms
+> and interpretation) is unchanged.
 
 ## Mission
 
@@ -130,6 +136,8 @@ See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack an
 
 ## Changelog
 
+- 2026-10-07: v1.6, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
+  small core reads as the empty OS (ADR-0046).
 - 2026-10-07: v1.5, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted):
   the restatement is the mission text at the top; the out-of-scope line narrows "maintenance
   history" to the owner's own Discovery 2 records, maintenance as a feature being the
