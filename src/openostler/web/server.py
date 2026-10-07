@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import base64
 import hmac
+import ipaddress
 import json
 import mimetypes
 import os
@@ -100,6 +101,7 @@ _STATUS_FOR_CODE = {
     "no_match": 400,          # /automap: valid samples, no raw field explains them
     "auth_required": 401,
     "public_mode": 403,       # refused on the public server (_PUBLIC_REFUSAL)
+    "not_local": 403,         # an owner action asked over a remote path (Remove device)
     "read_only": 403,         # a write to a synthetic (demo) session
     "not_found": 404,
     "not_recording": 409,
@@ -526,6 +528,31 @@ _FILE_EXT = re.compile(r"\.[^/]*$")
 _AUTH_REALM = 'Basic realm="Ostler admin"'
 
 
+# Remote paths (ADR-0033 §6): the Tailscale ranges and any proxy or relay header.
+_TAILSCALE_NETS = (ipaddress.ip_network("100.64.0.0/10"),
+                   ipaddress.ip_network("fd7a:115c:a1e0::/48"))
+_LOCAL_NETS = (ipaddress.ip_network("10.0.0.0/8"), ipaddress.ip_network("172.16.0.0/12"),
+               ipaddress.ip_network("192.168.0.0/16"), ipaddress.ip_network("169.254.0.0/16"),
+               ipaddress.ip_network("fc00::/7"), ipaddress.ip_network("fe80::/10"))
+_PROXY_HEADERS = ("Forwarded", "X-Forwarded-For", "X-Forwarded-Host", "X-Real-IP",
+                  "CF-Connecting-IP", "Tailscale-User-Login", "Via")
+
+
+def is_local_link(peer: "str | None", headers=None) -> bool:
+    """A local link (module-bus spec §7.2, UI spec §3.7): see ``_Handler._local_link``."""
+    if headers is not None and any(headers.get(h) for h in _PROXY_HEADERS):
+        return False
+    try:
+        ip = ipaddress.ip_address((peer or "").split("%", 1)[0])
+    except ValueError:
+        return False
+    if getattr(ip, "ipv4_mapped", None) is not None:
+        ip = ip.ipv4_mapped
+    if any(ip in n for n in _TAILSCALE_NETS):
+        return False
+    return ip.is_loopback or any(ip in n for n in _LOCAL_NETS)
+
+
 class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:  # silent log
         pass
@@ -597,6 +624,17 @@ class _Handler(BaseHTTPRequestHandler):
                 self._error(403, _PUBLIC_REFUSAL, "public_mode")
                 return
             self._json(self.server.cluster())
+        elif path == "/cluster/events":
+            # The devices' events (module-bus spec §6.1), de-duplicated by id; read-only.
+            if self.server._public:
+                self._error(403, _PUBLIC_REFUSAL, "public_mode")
+                return
+            self._api(lambda: self.server.node_events(self._query()))
+        elif path == "/cluster/events/stream":
+            if self.server._public:
+                self._error(403, _PUBLIC_REFUSAL, "public_mode")
+                return
+            self._event_stream()
         elif path == "/version":
             # Public: what is running (platform + pack versions and commits) for Settings.
             from ..version import build_info
@@ -666,6 +704,20 @@ class _Handler(BaseHTTPRequestHandler):
             self._api(self._capture)
         elif path == "/notes/live":
             self._api(lambda: self.server.live_note(self._json_body()))
+        elif path == "/cluster/remove":
+            # The owner's Remove device (module-bus spec §7.2, §13; UI spec §3.7): admin
+            # (the owner until accounts land), never in public mode, local links only.
+            if self.server._public:
+                self._error(403, _PUBLIC_REFUSAL, "public_mode")
+                return
+            if not self._require_admin():
+                return
+            if not self._local_link():
+                self._error(403, "Remove device works only over a local link (the head "
+                                 "unit, the in-car network, the node's Wi-Fi), never over "
+                                 "a remote path", "not_local")
+                return
+            self._api(lambda: self.server.remove_device(self._json_body()))
         elif path.startswith("/sessions/"):
             self._sessions_post(path)
         elif path == "/signal":
@@ -994,6 +1046,45 @@ class _Handler(BaseHTTPRequestHandler):
                 return True
         return False
 
+    def _local_link(self) -> bool:
+        """The request came over a local link (ADR-0033 §6; accounts spec §2.3): a
+        loopback, private (RFC 1918), link-local or unique-local peer, and no proxy or relay
+        header. Tailscale (100.64.0.0/10, ``fd7a:115c:a1e0::/48``), any public address and
+        any forwarded request are remote paths."""
+        return is_local_link(self.client_address[0] if self.client_address else None,
+                             self.headers)
+
+    def _event_stream(self) -> None:
+        """``GET /cluster/events/stream``: the events feed as SSE, one ``node_event`` per
+        event with its ``seq`` as the SSE ``id`` (a reconnect sends ``Last-Event-ID``, or
+        ``?after=``); a comment every 15 s keeps the connection open."""
+        feed = getattr(self.server.source, "feed", None)
+        if feed is None or not hasattr(feed, "events"):
+            self._error(503, "no node source: events come from the devices' MQTT messages "
+                             "(--source node)", "unavailable")
+            return
+        try:
+            after = int(self.headers.get("Last-Event-ID") or self._query().get("after") or 0)
+        except ValueError:
+            after = 0
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "keep-alive")
+        self.end_headers()
+        try:
+            while not self.server._stop.is_set():
+                for ev in feed.events(after)["events"]:
+                    after = max(after, ev["seq"])
+                    self.wfile.write(f"id: {ev['seq']}\nevent: node_event\n"
+                                     f"data: {json.dumps(ev)}\n\n".encode())
+                self.wfile.flush()
+                if not feed.wait_events(after, self.server.event_keepalive):
+                    self.wfile.write(b": keep-alive\n\n")
+                    self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # the client closed
+
     def _require_admin(self, page: bool = False) -> bool:
         """True if the call may proceed; otherwise a 401 is sent and False returned.
 
@@ -1154,6 +1245,7 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         kline_profile: "str | None" = None,
         state_dir: "str | None" = None,
         module_scan=None,
+        device_revoker=None,
     ) -> None:
         if public and not admin_password:
             # Public mode is for a bind other people can reach; with no password every
@@ -1263,6 +1355,13 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
         # K-line probing gate, process override and remembered profiles (kline_cmds.py).
         self._init_kline(kline_detect=kline_detect, kline_profile=kline_profile,
                          state_dir=state_dir, module_scan=module_scan)
+        # Remove device (module-bus spec §7.2): the Brain's revocation list in the state
+        # directory, and the install's hook that revokes the certificate and ACL entry on
+        # the broker host (``device_revoker(vid, device) -> str``; None: not configured).
+        self._state_dir = state_dir
+        self._device_revoker = device_revoker
+        self.event_keepalive = 15.0
+        self._load_removed()
 
     # ---- session logbook --------------------------------------------- #
     def _init_logbook(self, record: bool) -> None:
@@ -1380,6 +1479,82 @@ class DiagServer(KLineCommandsMixin, ThreadingHTTPServer):
                 "note": ("the cluster view failed; see the connection log" if feed is not None
                          else "no node source: the cluster is read from the node's MQTT "
                               "messages (--source node)")}
+
+    # ---- events and Remove device (module-bus spec v1.3 §6.1, §7.2, §13) -------- #
+    def _removed_registry(self):
+        from ..logbook.vehicle import state_dir_for
+        from ..node.removal import REGISTRY_FILE, RemovedRegistry
+
+        sd = self._state_dir or state_dir_for(self._sessions_dir)
+        return RemovedRegistry(os.path.join(sd, REGISTRY_FILE))
+
+    def _load_removed(self) -> None:
+        feed = getattr(self.source, "feed", None)
+        if feed is None or not hasattr(feed, "load_removed"):
+            return
+        try:
+            feed.load_removed(self._removed_registry().devices(feed.vid))
+        except Exception as exc:  # noqa: BLE001 — the view then shows them again
+            self._conn_log_early(f"node: removed devices unreadable ({type(exc).__name__}: {exc})")
+
+    def node_events(self, query: "dict[str, str]") -> dict:
+        """``GET /cluster/events``: the events feed (``?after=<seq>``, ``?limit=``)."""
+        feed = getattr(self.source, "feed", None)
+        if feed is None or not hasattr(feed, "events"):
+            return {"vid": None, "events": [], "last_seq": 0, "duplicates": 0,
+                    "stale": False, "note": "no node source: events come from the devices' "
+                                            "MQTT messages (--source node)"}
+        try:
+            after = max(0, int(query.get("after") or 0))
+            limit = min(200, max(1, int(query.get("limit") or 200)))
+        except ValueError:
+            raise ApiError(400, "after and limit must be integers", "bad_request") from None
+        return feed.events(after, limit)
+
+    def remove_device(self, body: dict) -> dict:
+        """``POST /cluster/remove {device, confirm: true}``: the owner's Remove device. The
+        route has checked the owner (admin) and the local link. Records the revocation,
+        runs the install's revoke hook, then the broker-host purge of the device's
+        retained topics; answers what was done, and 503 when the purge was incomplete."""
+        from ..node.removal import check_device
+
+        feed = getattr(self.source, "feed", None)
+        if feed is None or not hasattr(feed, "remove_device"):
+            raise ApiError(409, "no node source: devices are removed from the Brain's broker "
+                                "(--source node)", "conflict")
+        try:
+            device = check_device(body.get("device"))
+        except ValueError as exc:
+            raise ApiError(400, str(exc), "bad_request") from None
+        if body.get("confirm") is not True:
+            raise ApiError(400, "Remove device needs one confirmation (confirm: true)",
+                           "bad_request")
+        registry = self._removed_registry()
+        known = device in feed.table.devices() or device in registry.devices(feed.vid)
+        if not known:
+            raise ApiError(404, f"no device {device!r} under vehicle {feed.vid}", "not_found")
+        registry.add(feed.vid, device, by="owner")
+        if self._device_revoker is not None:
+            try:
+                broker_revoked = str(self._device_revoker(feed.vid, device) or "done")
+            except Exception as exc:  # noqa: BLE001
+                broker_revoked = f"failed: {type(exc).__name__}: {exc}"
+        else:
+            broker_revoked = "not configured"
+        res = feed.remove_device(device)
+        registry.update(feed.vid, device, topics_purged=res["purged"])
+        self._conn_log(f"node: owner removed device {device} (purged {len(res['purged'])}, "
+                       f"refused {len(res['refused'])}, left {len(res['remaining'])})")
+        out = {"ok": True, "vid": feed.vid, **res,
+               "revoked": {"brain": True, "broker": broker_revoked}}
+        problem = res.get("error") or (
+            "the broker refused to clear some retained topics (the broker-host identity "
+            "needs write access to the vehicle's topics)" if res["refused"] else None) or (
+            "some retained topics are still on the broker" if res["remaining"] else None)
+        if problem:
+            out.update(ok=False, error=f"Device removed from this Brain, but the purge is "
+                                       f"incomplete: {problem}", code="unavailable")
+        return out
 
     def _sync_tap(self, status: "dict | None"):
         """A node source's raw tap follows the recorder (NodeSource spec §7, owner answer

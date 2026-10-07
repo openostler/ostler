@@ -88,11 +88,14 @@ def test_metrics_json_is_sorted_and_well_formed():
     assert paths == sorted(paths) and len(paths) == len(set(paths))
     for r in rows:
         assert PATH_RE.match(r["path"]), r["path"]
-        assert set(r) == {"path", "type", "datatype", "unit", "description", "ostler_role",
-                          "aliases", "extension"}
+        assert set(r) - {"allowed"} == {"path", "type", "datatype", "unit", "description",
+                                        "ostler_role", "aliases", "extension"}
+        if "allowed" in r:  # a fixed value set (a labelled enum on the module bus)
+            assert r["allowed"] and all(isinstance(v, str) for v in r["allowed"])
         assert r["type"] in ("sensor", "actuator", "attribute")
         assert r["extension"] == r["path"].startswith("Vehicle.Ostler.")
-        assert set(r["aliases"]) <= {"ovms", "ha_device_class", "ha_state_class", "obdb"}
+        assert set(r["aliases"]) <= {"ovms", "ha_device_class", "ha_state_class", "obdb",
+                                     "ha_domain"}
 
 
 def test_every_unit_is_a_verbatim_key_of_the_pinned_units_file():

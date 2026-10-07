@@ -80,7 +80,8 @@ def seed_session(root: str) -> "str | None":
 def node_modules(pack) -> dict:
     """NodeSource over a fake broker fed by a simulated node (``--node``)."""
     from openostler.metrics import is_known
-    from openostler.web.node_source import NodeFeed, node_sources, store_lookup
+    from openostler.web.node_source import (NodeFeed, node_sources, store_lookup,
+                                            store_primaries)
     from tests.fake_broker import FakeBroker
     from tests.fake_node import VID, FakeNode, cluster_messages
 
@@ -93,7 +94,7 @@ def node_modules(pack) -> dict:
             broker.inject(m["topic"], m["payload"], m["qos"], m["retain"])
     feed = NodeFeed(VID, broker.host, broker.port, client_id="e2e-nodesource",
                     pack_id=pack.id, lookup=store_lookup(), canonical=pack.canonical,
-                    is_known=is_known)
+                    is_known=is_known, primary=store_primaries(pack.module_ids()))
     feed.start()
     return node_sources(feed, pack.module_ids())
 

@@ -21,12 +21,25 @@ phases P1 read-only ingest, P2 recording and raw tap, P3 Network page data).
   (a batch's content type and ``first_seq``, module-bus spec §8), to the recorder's sink;
   :meth:`NodeFeed.stop_tap` unsubscribes and closes it when the session ends (owner
   answer 9: no rolling buffer).
+- **Faults and events (module-bus spec v1.3 §6.1, §6.2).** The read set includes
+  ``faults/+`` and ``event/+`` at QoS 1 (and the alarm state at QoS 1, §6): the snapshot's
+  ``faults`` come from the node's retained whole list (an absent topic is "not read"),
+  and events are de-duplicated by ``id`` into a feed (``GET /cluster/events`` and its SSE
+  stream).
+- **Remove device (spec §7.2, §13).** :meth:`NodeFeed.remove_device` is the Brain's
+  broker-host operation: it records the device as removed (the Brain ignores it from then
+  on) and, over a separate broker-host connection (client id ``<id>-host``, its own
+  credentials), publishes an empty retained message to each retained topic of
+  ``ostler/v1/<vid>/<device>/#`` it has seen or finds there, then checks that none is
+  left. The read connection never publishes.
 - **The serial-source rule (P3, owner answer 7).** :func:`check_serial_beside_node` reads
   the vehicle's retained manifests and role claims once (:func:`probe_cluster`); a K-line
   cable source refuses to start when a node holds, or is wired to, the K-line gate.
 
 The Brain never touches the car (ADR-0032): nothing here opens a serial port, imports a
-transport or publishes a request (requests are P4). It is read-only: it publishes nothing.
+transport or publishes a request (requests are P4). The read and tap connections publish
+nothing; only Remove device's broker-host connection does, and only empty retained
+messages under the removed device's own topics.
 """
 from __future__ import annotations
 
@@ -39,7 +52,8 @@ from typing import Callable, Optional
 from ..mqtt import MqttClient, StdlibMqttClient, SubOptions
 from ..node import (FAULTS_NOTE, DeviceTable, check_vid, parse_tap_rest, parse_topic,
                     serial_refusal, subscriptions, tap_subscriptions)
-from ..node.table import utc
+from ..node.removal import check_device, device_filter, gate_buses
+from ..node.table import RETAINED_KINDS, utc
 from .sources import DataSource
 
 KEEP_ALIVE_S = 10
@@ -93,6 +107,34 @@ def store_lookup() -> "Callable[[str, str], Optional[tuple]]":
     return lookup
 
 
+def _allowed_values(path: str) -> "Optional[list]":
+    """A VSS path's allowed values (metrics.json), e.g. the alarm state's four labels."""
+    from ..metrics import metric_info
+
+    allowed = (metric_info(path) or {}).get("allowed")
+    return allowed if isinstance(allowed, list) else None
+
+
+def store_primaries(modules: "list[str]") -> "Callable[[str], Optional[tuple]]":
+    """``VSS path → (module, field)`` the Brain's installed pack store marks ``primary``
+    (module-bus spec v1.3 §6), read once on first use; None for a path with no marker.
+    A store the Brain cannot read marks nothing (the generic selection rule applies)."""
+    from ..signals import primary_fields
+
+    cache: "dict[str, tuple[str, str]] | None" = None
+
+    def lookup(path: str):
+        nonlocal cache
+        if cache is None:
+            try:
+                cache = primary_fields(list(modules))
+            except (OSError, ValueError, KeyError, LookupError):
+                cache = {}
+        return cache.get(path)
+
+    return lookup
+
+
 class NodeFeed:
     """One read-only MQTT connection and the device table it fills."""
 
@@ -103,14 +145,18 @@ class NodeFeed:
                  clock: Callable[[], float] = time.monotonic,
                  wall: Callable[[], float] = time.time,
                  log: "Callable[[str], None] | None" = None,
-                 tap_client: "Callable[[], MqttClient] | None" = None) -> None:
+                 tap_client: "Callable[[], MqttClient] | None" = None,
+                 primary=None,
+                 host_client: "Callable[[], MqttClient] | None" = None,
+                 host_ssl_context=None) -> None:
         self.vid = check_vid(vid)
         self.host, self.port = host, port
         self._clock, self._wall = clock, wall
         self.log = log or (lambda msg: print(f"node: {msg}", file=sys.stderr))
         self.table = DeviceTable(self.vid, pack_id=pack_id, lookup=lookup,
                                  canonical=canonical, is_known=is_known,
-                                 log=lambda m: self.log(m))
+                                 log=lambda m: self.log(m), primary=primary,
+                                 allowed=_allowed_values)
         cid = client_id or getattr(client, "client_id", None) or \
             f"{socket.gethostname().split('.')[0]}-nodesource"
         if client is None:
@@ -121,6 +167,14 @@ class NodeFeed:
         self._tap_factory = tap_client or (lambda: StdlibMqttClient(
             f"{cid}-tap", keep_alive=KEEP_ALIVE_S, clean_start=True,
             session_expiry=TAP_SESSION_EXPIRY_S, ssl_context=ssl_context))
+        # Remove device's broker-host connection (spec §13): built per removal, with its
+        # own credentials when the install gives them (the broker's ACL grants that
+        # identity the vehicle's topics), else the read identity's TLS context.
+        self._host_factory = host_client or (lambda: StdlibMqttClient(
+            f"{cid}-host", keep_alive=KEEP_ALIVE_S, clean_start=True, session_expiry=0,
+            ssl_context=host_ssl_context if host_ssl_context is not None else ssl_context,
+            timeout=5.0))
+        self._remove_lock = threading.Lock()
         self._tap: "MqttClient | None" = None
         self._tap_sink: "Callable[[str, str, str, bytes, dict], object] | None" = None
         self._tap_session: "str | None" = None
@@ -211,6 +265,118 @@ class NodeFeed:
         return {"vid": self.vid, "source_kind": "node", "built_utc": utc(self._wall()),
                 "as_of_utc": utc(self._last_msg_wall) if self._last_msg_wall else None,
                 "stale": not broker["connected"], "broker": broker, **view}
+
+    # ---- events (module-bus spec §6.1) ----------------------------------------------- #
+    def events(self, after: int = 0, limit: int = 200) -> dict:
+        """``GET /cluster/events``: the de-duplicated events feed, oldest first, with the
+        cursor to ask for newer ones (``after``)."""
+        evs = self.table.events(after, limit)
+        return {"vid": self.vid, "events": evs,
+                "last_seq": self.table.last_event_seq(),
+                "duplicates": self.table.duplicate_events,
+                "stale": not self.connected}
+
+    def wait_events(self, after: int, timeout: float) -> bool:
+        return self.table.wait_events(after, timeout)
+
+    # ---- Remove device (module-bus spec §7.2, §13) ---------------------------------- #
+    def load_removed(self, devices: "list[str]") -> None:
+        """Devices removed earlier (the Brain's revocation list): ignored from now on."""
+        for d in devices:
+            self.table.remove_device(d)
+
+    def remove_device(self, device: str, *, settle: float = 0.5, settle_max: float = 3.0,
+                      sleep: Callable[[float], None] = time.sleep) -> dict:
+        """The broker-host purge for one removed device. The caller has checked the owner,
+        the local link and the confirmation, and recorded the revocation. Returns ``{device,
+        topics, purged, refused, remaining, buses, error?}``:
+
+        - ``topics``: every retained topic purged or tried (seen by this feed, plus those
+          the broker-host connection finds under ``<device>/#``);
+        - ``refused``: topics whose empty retained publish the broker refused (its ACL);
+        - ``remaining``: retained topics still there after the purge (re-read);
+        - ``buses``: the gate buses its claims held (writable again by their holder).
+
+        Limits: only this broker; a device still connected may republish (its certificate
+        and ACL entry are revoked by the broker host, outside this call); retained topics
+        the broker-host identity may not read are found only if this feed saw them."""
+        check_device(device)
+        with self._remove_lock:
+            buses = gate_buses(self.table.cluster(), device)
+            seen = self.table.remove_device(device)
+            out: dict = {"device": device, "topics": [], "purged": [], "refused": [],
+                         "remaining": [], "buses": buses}
+            client = self._host_factory()
+            found: "dict[str, bytes]" = {}
+            lock = threading.Lock()
+            last = {"t": time.monotonic()}
+
+            def on_message(pkt) -> None:
+                with lock:  # a stored copy, or a live one meanwhile (the latest wins)
+                    found[pkt.topic] = pkt.payload
+                    last["t"] = time.monotonic()
+
+            client.on_message = on_message
+            flt = device_filter(self.vid, device)
+            try:
+                client.connect(self.host, self.port)
+            except Exception as exc:  # noqa: BLE001 — reported, never raised
+                out["topics"] = seen
+                out["error"] = f"cannot reach the broker as its host ({exc})"
+                return out
+            try:
+                self._collect(client, flt, found, lock, last, settle, settle_max, sleep)
+                with lock:
+                    listed = {t for t, pl in found.items() if pl and _retained_kind(t)}
+                topics = sorted(set(seen) | listed)
+                out["topics"] = topics
+                for t in topics:
+                    try:
+                        code = client.publish(t, b"", qos=1, retain=True)
+                    except Exception as exc:  # noqa: BLE001
+                        out["refused"].append(t)
+                        out.setdefault("error", f"publish failed ({exc})")
+                        continue
+                    (out["refused"] if code >= 0x80 else out["purged"]).append(t)
+                # Re-read: a fresh subscription delivers what is still retained.
+                with lock:
+                    found.clear()
+                try:
+                    client.unsubscribe([flt])
+                except Exception:  # noqa: BLE001
+                    pass
+                self._collect(client, flt, found, lock, last, settle, settle_max, sleep)
+                with lock:
+                    out["remaining"] = sorted(t for t, pl in found.items() if pl)
+            except Exception as exc:  # noqa: BLE001
+                out.setdefault("error", f"broker-host purge failed ({exc})")
+            finally:
+                try:
+                    client.disconnect()
+                except Exception:  # noqa: BLE001
+                    pass
+            self.log(f"removed device {device}: purged {len(out['purged'])} retained topic(s)"
+                     + (f", {len(out['refused'])} refused" if out["refused"] else "")
+                     + (f", {len(out['remaining'])} left" if out["remaining"] else ""))
+            return out
+
+    @staticmethod
+    def _collect(client, flt, found, lock, last, settle, settle_max, sleep) -> None:
+        """Subscribe ``flt`` (QoS 1, Retain Handling 0) and wait until the retained copies
+        stop arriving (``settle`` s quiet, at most ``settle_max`` s)."""
+        with lock:
+            last["t"] = time.monotonic()
+        codes = client.subscribe([SubOptions(flt, 1, no_local=True, retain_as_published=True,
+                                             retain_handling=0)])
+        if codes and codes[0] >= 0x80:
+            return  # the host identity may not read: only what the feed saw is purged
+        start = time.monotonic()
+        while time.monotonic() - start < settle_max:
+            with lock:
+                quiet = time.monotonic() - last["t"]
+            if quiet >= settle:
+                break
+            sleep(0.02)
 
     # ---- the raw tap (P2) ------------------------------------------------------------ #
     def tap_subscription_options(self) -> "list[SubOptions]":
@@ -324,6 +490,29 @@ class NodeFeed:
         return {"session": session, "state": state, "batches": batches}
 
 
+_FAULT_NOTES = {"error": "the node's fault read failed",
+                "unimplemented": "the node does not read faults on this module"}
+
+
+def fault_lines(read: "dict | None") -> "tuple[list[str], str | None]":
+    """The snapshot's ``faults`` (one line per code, as the cable sources show them) and
+    ``faults_note`` from a node's fault list (module-bus spec §6.2): no list is "not read"
+    (:data:`FAULTS_NOTE`); ``ok`` with none is read, none (no note); ``error`` and
+    ``unimplemented`` say so (the node's ``note`` when it sent one)."""
+    if read is None:
+        return [], FAULTS_NOTE
+    lines = []
+    for f in read["faults"]:
+        text = f.get("text")
+        line = f"{f['code']} {text}" if text and text != f["code"] else f["code"]
+        if f.get("state"):
+            line += f" ({f['state']})"
+        lines.append(line)
+    if read["status"] in _FAULT_NOTES:
+        return lines, read.get("note") or _FAULT_NOTES[read["status"]]
+    return lines, None
+
+
 class NodeSource(DataSource):
     """One pack module's view of the node feed (spec §6, §10)."""
 
@@ -351,12 +540,17 @@ class NodeSource(DataSource):
         tap = self.feed.tap_state()
         if dev is not None:
             node = {**dev, "broker": broker, "tap": tap}
+        read = self.feed.table.faults_for(self.name, prefer=(dev or {}).get("device"))
+        faults, note = fault_lines(read)
         snap = {"source": self.name, "source_kind": "node", "signals": view["signals"],
-                "vss": view["vss"], "faults": [], "faults_note": FAULTS_NOTE,
-                "node": node or {"device": None, "status": None, "power": None, "boot": None,
+                "vss": view["vss"], "faults": faults, "faults_read": read,
+                "node": node or {"device": None, "status": None, "feed": None, "power": None,
+                                 "boot": None,
                                  "last_seen_utc": None, "fw": None, "etag": None,
                                  "broker": broker, "tap": tap},
                 "devices": view["devices"], "device_info": self.feed.device_info()}
+        if note is not None:
+            snap["faults_note"] = note
         state = ((dev or {}).get("power") or {}).get("state")
         if not broker["connected"]:
             snap["status"] = "broker-down" if self.feed.is_down() else "connecting"
@@ -365,6 +559,9 @@ class NodeSource(DataSource):
         elif dev is None or dev.get("status") is None:
             snap["status"] = "connecting"
             snap["connect_phase"] = "waiting for the node"
+        elif dev["status"] == "offline" and (dev.get("feed") or {}).get("state") == "off":
+            # its feed owner cut its supply (module-bus spec v1.3 §5): off, not a loss
+            snap["status"] = "asleep"
         elif dev["status"] == "offline":
             snap["status"] = "error"
             snap["error"] = "Node offline"
@@ -388,6 +585,14 @@ class NodeSource(DataSource):
         return {"ok": False, "code": "unavailable",
                 "error": "the node takes no requests yet (read-only ingest; requests to the "
                          "node's gate come later)"}
+
+
+def _retained_kind(topic: str) -> bool:
+    """A topic of a kind a device publishes retained (spec §3), or a tap header."""
+    t = parse_topic(topic)
+    if t is None:
+        return False
+    return t.kind in RETAINED_KINDS or (t.kind == "tap" and t.rest.endswith("/meta"))
 
 
 def node_sources(feed: NodeFeed, modules: "list[str]") -> "dict[str, NodeSource]":
@@ -436,28 +641,39 @@ def check_serial_beside_node(url: str, vid: str, **kw) -> "str | None":
 
 def build_feed(url: str, vid: str, *, ca: "str | None" = None, cert: "str | None" = None,
                key: "str | None" = None, insecure_lab: bool = False,
-               client_id: "str | None" = None, log=None) -> NodeFeed:
+               client_id: "str | None" = None, log=None,
+               host_cert: "str | None" = None, host_key: "str | None" = None) -> NodeFeed:
     """A feed for the active pack from a broker URL. ``mqtts://`` needs the CA and the
     client certificate and key (mTLS, spec §5; no passwords). Plain ``mqtt://`` is for a
-    lab or test broker only and must be asked for with ``insecure_lab``."""
+    lab or test broker only and must be asked for with ``insecure_lab``. ``host_cert`` and
+    ``host_key`` are the broker host's own identity for Remove device's purge (module-bus
+    spec §13); without them the purge uses the read identity, which a production ACL
+    refuses (the refusal is reported)."""
     from ..metrics import is_known
     from ..mqtt import tls_context
     from ..pack import active_pack
 
     scheme, host, port = parse_mqtt_url(url)
-    ctx = None
+    ctx = host_ctx = None
+    if bool(host_cert) != bool(host_key):
+        raise ValueError("the broker-host identity needs both --mqtt-host-cert and "
+                         "--mqtt-host-key")
     if scheme == "mqtts":
         if not (ca and cert and key):
             raise ValueError("mqtts:// needs --mqtt-ca, --mqtt-cert and --mqtt-key (mTLS)")
         ctx = tls_context(ca, cert, key)
+        if host_cert and host_key:
+            host_ctx = tls_context(ca, host_cert, host_key)
     elif not insecure_lab:
         raise ValueError("plain mqtt:// is for a lab broker only: pass --mqtt-insecure-lab, "
                          "or use mqtts:// with a client certificate")
     pack = active_pack()
     return NodeFeed(vid, host, port, client_id=client_id, ssl_context=ctx, pack_id=pack.id,
                     lookup=store_lookup(), canonical=pack.canonical, is_known=is_known,
-                    log=log)
+                    log=log, primary=store_primaries(pack.module_ids()),
+                    host_ssl_context=host_ctx)
 
 
-__all__ = ["NodeFeed", "NodeSource", "build_feed", "check_serial_beside_node", "node_sources",
-           "parse_mqtt_url", "probe_cluster", "store_lookup"]
+__all__ = ["NodeFeed", "NodeSource", "build_feed", "check_serial_beside_node", "fault_lines",
+           "node_sources",
+           "parse_mqtt_url", "probe_cluster", "store_lookup", "store_primaries"]

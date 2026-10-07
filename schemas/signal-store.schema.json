@@ -57,6 +57,10 @@
           "type": "string",
           "pattern": "^Vehicle(\\.[A-Za-z0-9_]+)+$",
           "description": "The canonical meaning: a COVESA VSS path known to openostler.metrics (ADR-0016). Optional."
+        },
+        "primary": {
+          "type": "boolean",
+          "description": "This module's field is the primary source of its metric when more than one module maps the same VSS path (module-bus spec v1.3 \u00a76, owner answer 9): the node publishes vss/<VSS path> only from it and the other modules' readings under their pack leaves. Packs write it only as true (absent = not primary; false is accepted and means not primary), on every record of the field, length variants included; at most one module per path."
         }
       },
       "patternProperties": { "^x-": true },

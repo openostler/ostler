@@ -29,17 +29,20 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
-      - run: pip install -e ".[dev]"
+      # The [signing] extra too (ADR-0041): the grant-signing tests skip without it and
+      # must run here (OSTLER_REQUIRE_SIGNING).
+      - run: pip install -e ".[dev,signing]"
       - name: Install the D2 reference pack
         # A source checkout, not a git+ wheel: the pack serves its docs (references/, docs/)
         # from the checkout, and the Docs tab and its e2e test need them.
         run: |
           git clone --depth 1 --branch "$PACK_REF" "$PACK_REPO" "$RUNNER_TEMP/d2-pack"
           pip install --no-deps -e "$RUNNER_TEMP/d2-pack"
-      - name: Tests (the pack is required here, so needs_pack tests must run, not skip)
+      - name: Tests (the pack and the signing extra are required here, so their tests must run, not skip)
         run: pytest -q
         env:
           OSTLER_REQUIRE_PACK: "1"
+          OSTLER_REQUIRE_SIGNING: "1"
       - name: metrics.json is current (vss-tools from the [dev] extra, ADR-0016)
         run: |
           python -c "import vss_tools" || { echo "vss-tools missing: the [dev] extra installs it on Python >= 3.11"; exit 1; }

@@ -30,12 +30,12 @@ info:
 
     **Errors.** Every API error is the JSON envelope `{ok: false, error, code?}`
     (`ErrorReply`): `error` is an English sentence for people, `code` a stable token for
-    programs (`bad_request`, `auth_required`, `public_mode`, `read_only`, `not_found`,
-    `not_recording`, `disconnected`, `community_off`, `conflict`, `too_large`, `internal`,
-    `car_refused`, `car_timeout`, `unavailable`, `no_match`). A 2xx body never carries
+    programs (`bad_request`, `auth_required`, `public_mode`, `not_local`, `read_only`,
+    `not_found`, `not_recording`, `disconnected`, `community_off`, `conflict`, `too_large`,
+    `internal`, `car_refused`, `car_timeout`, `unavailable`, `no_match`). A 2xx body never carries
     `ok: false`. The statuses: 202 accepted but not yet done (a queued community
     contribution), 400 bad input, 401 admin auth missing, 403 refused by policy (public
-    mode, a synthetic session), 404 unknown, 409 conflict with server state, 413 body too
+    mode, a synthetic session, an owner action over a remote path), 404 unknown, 409 conflict with server state, 413 body too
     large, 416 bad range, 500 unexpected failure, 502 the car refused (an ECU negative
     response), 503 temporarily unavailable, 504 the car did not answer in time. Only the
     app pages answer HTML; their 401 has an empty body so the browser shows its Basic
@@ -321,6 +321,138 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Cluster"}
         "403": {$ref: "#/components/responses/Forbidden"}
+  /cluster/events:
+    get:
+      tags: [metadata]
+      operationId: getClusterEvents
+      summary: The devices' events feed (module-bus spec v1.3 §6.1).
+      description: >
+        Every `event/<name>` the devices under the vehicle id published (QoS 1, never
+        retained), de-duplicated by the event's `id` (a ULID) and numbered by the Brain's
+        `seq` in arrival order; the latest 200 are kept. `?after=<seq>` returns only newer
+        ones, `?limit=` (1–200) the newest that many. Read-only. With a cable source the
+        list is empty and `note` says why. The same events stream live from
+        `/cluster/events/stream`.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - {name: after, in: query, required: false, schema: {type: integer, minimum: 0}, description: "Only events with a higher `seq`."}
+        - {name: limit, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 200}}
+      responses:
+        "200":
+          description: The events feed.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/NodeEvents"}
+        "400":
+          description: "`after` or `limit` is not an integer (`code: bad_request`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "403": {$ref: "#/components/responses/Forbidden"}
+  /cluster/events/stream:
+    get:
+      tags: [metadata]
+      operationId: streamClusterEvents
+      summary: The devices' events as Server-Sent Events (see api/asyncapi.yaml).
+      description: >
+        `text/event-stream`: one `event: node_event` per event with `id: <seq>` and the
+        `NodeEvent` JSON as `data:`; a comment line every 15 s while there is none. A
+        reconnect resumes after `Last-Event-ID` (or `?after=<seq>`). 503 without a node
+        source.
+      x-ostler-access: public
+      x-ostler-public-mode: refused
+      parameters:
+        - {name: after, in: query, required: false, schema: {type: integer, minimum: 0}}
+        - {name: Last-Event-ID, in: header, required: false, schema: {type: string}}
+      responses:
+        "200":
+          description: An endless SSE stream.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: "`id: <seq>\\nevent: node_event\\ndata: <NodeEvent JSON>\\n\\n`, repeated."
+        "403": {$ref: "#/components/responses/Forbidden"}
+        "503":
+          description: "No node source (`code: unavailable`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+  /cluster/remove:
+    post:
+      tags: [metadata]
+      operationId: postClusterRemove
+      summary: The owner's Remove device (module-bus spec v1.3 §7.2, §13; UI spec §3.7).
+      description: >
+        Unpairs one device of the vehicle: the only way to clear a stale transmit-gate
+        claim, which never expires. Owner only (the admin password until accounts land),
+        **local links only** (loopback, a private, link-local or unique-local address, no
+        proxy or relay header; Tailscale and public addresses are remote paths, whatever
+        `OSTLER_ALLOW_REMOTE_CONTROL` says), never in public mode, with one confirmation
+        (`confirm: true`; the UI names the buses in `buses` that become writable). The
+        Brain records the device in its revocation list (the state directory's
+        `removed_devices.json`) and ignores its messages from then on, runs the install's
+        revoke hook for its certificate and ACL entry on the broker host (`revoked.broker`;
+        `not configured` without one), then purges its retained topics under
+        `ostler/v1/<vid>/<device>/#` on the Brain's broker as a broker-host operation: a
+        broker-host connection (its own identity, `--mqtt-host-cert`) publishes an empty
+        retained message to every retained topic the Brain saw from the device or finds
+        there, then re-reads the tree. **Limits:** only the broker the Brain connects to
+        (the node purges its parked broker itself); a device still connected can republish
+        until the broker host revokes it; topics the host identity may not read are purged
+        only if the Brain saw them. A purge that is refused or incomplete answers 503 with
+        the same details (the revocation stays recorded).
+      x-ostler-access: admin
+      x-ostler-public-mode: refused
+      security:
+        - adminBasic: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device, confirm]
+              properties:
+                device: {type: string, description: "The device id (one topic level)."}
+                confirm: {const: true, description: "The owner's one confirmation."}
+              additionalProperties: true
+      responses:
+        "200":
+          description: Removed and purged.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/RemoveDeviceReply"}
+        "400":
+          description: "No valid `device`, or no `confirm: true` (`code: bad_request`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: "Public mode (`code: public_mode`), or the request came over a remote path (`code: not_local`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "404":
+          description: "No such device under the vehicle id (`code: not_found`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "409":
+          description: "No node source (`code: conflict`)."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "503":
+          description: "Removed from this Brain, but the broker refused or did not finish the purge (`code: unavailable`); the body also carries the `RemoveDeviceReply` fields."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorReply"}
   /version:
     get:
       tags: [metadata]
@@ -1514,7 +1646,7 @@ components:
           pattern: "^[a-z][a-z0-9_]*$"
           description: >
             A stable token for programs: `bad_request`, `no_match`, `auth_required`,
-            `public_mode`, `read_only`, `not_found`, `not_recording`, `disconnected`,
+            `public_mode`, `not_local`, `read_only`, `not_found`, `not_recording`, `disconnected`,
             `community_off`, `conflict`, `too_large`, `internal`, `car_refused`,
             `unavailable`, `car_timeout`. Open: a client treats an unknown code by its
             HTTP status.
@@ -1656,7 +1788,12 @@ components:
           type: object
           description: "A node source: each device's firmware version and manifest `etag`, from its retained capability manifest (P3); devices with no manifest are absent."
           additionalProperties: {$ref: "#/components/schemas/DeviceInfo"}
-        faults_note: {type: string, description: "Why `faults` is empty when it is not read (a node source: `not read by the node yet`)."}
+        faults_note: {type: string, description: "Why `faults` is empty or incomplete (a node source: `not read by the node yet` when no device publishes a fault list for the module; the node's note when its read failed or is not implemented). Absent when the list was read."}
+        faults_read:
+          description: "A node source: the node's latest whole fault list for the module (module-bus spec v1.3 §6.2); null when not read."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeFaults"}
         source: {type: string}
         module: {type: string, description: A canonical module id (a /pack module id).}
         mode: {type: [string, "null"]}
@@ -1718,6 +1855,17 @@ components:
         next_checkin: {type: [string, "null"]}
         leases: {type: array}
         est_ma: {type: [number, "null"]}
+        feeds:
+          type: array
+          description: "A feed owner's switched supplies (module-bus spec v1.3 §5): `{target, state: on | off, since}`; entries of another shape are dropped."
+          items:
+            type: object
+            required: [target, state]
+            properties:
+              target: {type: string}
+              state: {type: string, enum: ["on", "off"]}
+              since: {type: [string, "null"]}
+            additionalProperties: true
         reason: {type: string}
       additionalProperties: true
     NodeState:
@@ -1727,6 +1875,11 @@ components:
       properties:
         device: {type: [string, "null"], description: "The device id in the node's topics; null before any is seen."}
         status: {type: [string, "null"], description: "online | offline (its will) | asleep (a clean sleep, ADR-0037 Amendment 8) | null (never seen)"}
+        feed:
+          description: "The switched supply the device is on, from its feed owner's `power.feeds` (module-bus spec v1.3 §5); null when none reports one. An `offline` device whose feed is `off` reads as asleep (off), not as a loss."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeFeed"}
         power:
           oneOf:
             - {type: "null"}
@@ -1849,7 +2002,7 @@ components:
             type: object
             properties:
               id: {type: string}
-              category: {type: string}
+              category: {type: string, description: "An ADR-0033 category, or `system` for a device-to-device power order (the `shutdown` act, module-bus spec v1.3 §11) that no role grants."}
               tier: {type: integer}
               runs_on: {type: string}
               needs_brain: {type: boolean}
@@ -1929,6 +2082,11 @@ components:
           description: "The manifest's `problems` (`{item, code}`; sensor-detection §7), e.g. `gate_conflict`: another device claims this device's transmit gate, so it transmits nothing on that bus."
           items: {type: object, additionalProperties: true}
         claims: {type: array, items: {$ref: "#/components/schemas/ClusterClaim"}}
+        feed:
+          description: "The switched supply it is on, from its feed owner's `power.feeds` (module-bus spec v1.3 §5); null when none reports one."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeFeed"}
       additionalProperties: true
     ClusterRole:
       type: object
@@ -1958,6 +2116,11 @@ components:
               power_state: {type: [string, "null"]}
             additionalProperties: true
         claims: {type: array, items: {$ref: "#/components/schemas/ClusterClaim"}}
+        feed:
+          description: "The switched supply it is on, from its feed owner's `power.feeds` (module-bus spec v1.3 §5); null when none reports one."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/NodeFeed"}
         last_handover:
           description: "The last change of holder caused by a live message the Brain received (a claim, a release, the holder going offline or asleep; for a gate it is never a handover, only the bus losing or regaining its gate); never inferred from the stored copies a subscribe delivers. Null when none was seen."
           oneOf:
@@ -2006,8 +2169,8 @@ components:
               code: {type: string, enum: [gate_conflict, void_claim]}
               by:
                 type: string
-                enum: [claims, manifest]
-                description: "`gate_conflict` only: `claims` when two live gate claims meet on one bus (ADR-0037 §5); `manifest` when a device reports `gate_conflict` in its manifest's `problems` (it saw another claim on its gate, void ones included, and transmits nothing on that bus)."
+                enum: [claims, manifest, bus]
+                description: "`gate_conflict` only: `claims` when two live gate claims meet on one bus (ADR-0037 §5); `manifest` when a device reports `gate_conflict` in its manifest's `problems` (it saw another claim on its gate, void ones included, and transmits nothing on that bus); `bus` when its `problems` entry carries `by: bus`: it saw traffic it did not send on the wire (module-bus spec v1.3 §7.2), released by the owner's acknowledgement or a quiet period, not by Remove device."
               role: {type: string}
               scope: {type: [string, "null"]}
               devices: {type: array, items: {type: string}}
@@ -2016,6 +2179,102 @@ components:
               message: {type: string}
             additionalProperties: true
         note: {type: string, description: Why the lists are empty (no node source).}
+      additionalProperties: true
+    NodeEvent:
+      type: object
+      description: >
+        One device event (module-bus spec v1.3 §6.1) as the Brain received it: the event's
+        own fields plus `seq` (the Brain's arrival number), `device` (from the topic) and
+        `received_utc`. `severity` is null when the device sent a value outside the enum.
+      required: [seq, device, id, name, severity, received_utc]
+      properties:
+        seq: {type: integer, minimum: 1}
+        device: {type: string}
+        id: {type: string, description: "The event's ULID (de-duplication key)."}
+        name: {type: string, description: "Dotted, lower case: `alarm.triggered`, `gate.conflict`, `fault.new`."}
+        class: {type: [string, "null"]}
+        severity: {type: [string, "null"], enum: [info, warning, alarm, null]}
+        ts: {type: [string, "null"], description: "RFC 3339 UTC on the device; null until its clock is set."}
+        t_us: {type: [integer, "null"]}
+        boot: {type: [integer, "null"]}
+        source: {type: [string, "null"]}
+        cause: {type: [string, "null"]}
+        text: {type: [string, "null"]}
+        received_utc: {$ref: "#/components/schemas/Rfc3339Utc"}
+        retained: {type: boolean, description: "Delivered as a stored message (events are never retained; a misbehaving publisher)."}
+      additionalProperties: true
+    NodeEvents:
+      type: object
+      description: "`GET /cluster/events`."
+      required: [vid, events, last_seq]
+      properties:
+        vid: {type: [string, "null"]}
+        events: {type: array, items: {$ref: "#/components/schemas/NodeEvent"}}
+        last_seq: {type: integer, minimum: 0}
+        duplicates: {type: integer, minimum: 0, description: "Copies dropped by `id` (QoS 1 redelivery, bridge echoes)."}
+        stale: {type: boolean}
+        note: {type: string}
+      additionalProperties: true
+    NodeFaults:
+      type: object
+      description: >
+        A node's latest whole fault list for the active module (module-bus spec v1.3 §6.2,
+        `faults/<pack>.<module>`, retained). `status: ok` with no faults means read, none.
+      required: [device, status, faults]
+      properties:
+        device: {type: string}
+        topic_module: {type: string, description: "`<pack>.<module>` from the topic."}
+        status: {type: string, enum: [ok, faults, error, unimplemented]}
+        faults:
+          type: array
+          items:
+            type: object
+            required: [code, c]
+            properties:
+              code: {type: string}
+              text: {type: string}
+              state: {type: string}
+              c: {$ref: "#/components/schemas/Confidence"}
+            additionalProperties: true
+        note: {type: [string, "null"]}
+        read_utc:
+          description: "The node's `ts` of the read; null until its clock is set."
+          oneOf:
+            - {type: "null"}
+            - {$ref: "#/components/schemas/Rfc3339Utc"}
+        source: {type: [string, "null"]}
+        last_known: {type: boolean, description: "A stored copy from before the Brain subscribed (no newer read seen live)."}
+        before_restart: {type: boolean}
+      additionalProperties: true
+    NodeFeed:
+      type: object
+      description: "The switched supply a device is on, as its feed owner reports it in its own `power.feeds` (module-bus spec v1.3 §5)."
+      required: [owner, state]
+      properties:
+        owner: {type: string}
+        state: {type: string, enum: ["on", "off"]}
+        since: {type: [string, "null"]}
+      additionalProperties: true
+    RemoveDeviceReply:
+      type: object
+      description: "`POST /cluster/remove`: what Remove device did."
+      required: [ok, vid, device, topics, purged, refused, remaining, buses, revoked]
+      properties:
+        ok: {type: boolean}
+        vid: {type: string}
+        device: {type: string}
+        topics: {type: array, items: {type: string}, description: Every retained topic purged or tried.}
+        purged: {type: array, items: {type: string}}
+        refused: {type: array, items: {type: string}, description: Topics the broker refused to clear (its ACL).}
+        remaining: {type: array, items: {type: string}, description: Retained topics still there after the purge.}
+        buses: {type: array, items: {type: string}, description: The gate buses its claims held.}
+        revoked:
+          type: object
+          properties:
+            brain: {type: boolean}
+            broker: {type: string, description: "The install's revoke hook result, or `not configured`."}
+          additionalProperties: true
+        error: {type: string}
       additionalProperties: true
     VssReading:
       type: object
@@ -2046,6 +2305,7 @@ components:
               age_s: {type: [number, "null"]}
               stale: {type: boolean}
               c: {$ref: "#/components/schemas/Confidence"}
+              primary: {const: true, description: "The pack's primary field for this path (module-bus spec v1.3 §6); a usable primary is selected before other sources."}
             additionalProperties: true
       additionalProperties: true
     KLineLink:

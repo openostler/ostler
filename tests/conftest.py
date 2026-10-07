@@ -30,6 +30,15 @@ def _require_pack() -> bool:
     return os.environ.get("OSTLER_REQUIRE_PACK", "").strip() not in ("", "0")
 
 
+def signing_installed() -> bool:
+    """The optional ``[signing]`` extra (``cryptography``, ADR-0041)."""
+    return importlib.util.find_spec("cryptography") is not None
+
+
+def _require_signing() -> bool:
+    return os.environ.get("OSTLER_REQUIRE_SIGNING", "").strip() not in ("", "0")
+
+
 def pytest_configure(config):
     # Modules that import the pack at the top skip themselves with pytest.importorskip;
     # in CI that must be an error, not a silent skip.
@@ -37,9 +46,19 @@ def pytest_configure(config):
         raise pytest.UsageError(
             f"OSTLER_REQUIRE_PACK is set but the {PACK_DIST!r} vehicle pack is not installed, "
             f"so the needs_pack integration tests would be skipped. Install it: {INSTALL}")
+    if _require_signing() and not signing_installed():
+        raise pytest.UsageError(
+            "OSTLER_REQUIRE_SIGNING is set but the [signing] extra is not installed, so the "
+            "needs_signing tests would be skipped. Install it: pip install -e '.[dev,signing]'")
 
 
 def pytest_collection_modifyitems(config, items):
+    if not signing_installed():
+        skip = pytest.mark.skip(reason="needs the [signing] extra (cryptography, ADR-0041): "
+                                       "pip install -e '.[dev,signing]'")
+        for it in items:
+            if it.get_closest_marker("needs_signing"):
+                it.add_marker(skip)
     if pack_installed():
         return
     needing = [it for it in items if it.get_closest_marker("needs_pack")]

@@ -40,6 +40,19 @@ ISO transport standards (ADR-0025). The OBDb `SAEJ1979` pin belongs to the
   Collin Kidder) was read at `ae857ea9` for the GVRET command numbers and frame layout
   used by `src/openostler/can/gvret.py`; facts only, no code was copied.
 
+## Grant signing — optional `cryptography`
+
+- **cryptography** ([pyca/cryptography](https://github.com/pyca/cryptography),
+  Apache-2.0 OR BSD-3-Clause, © the Python Cryptographic Authority and individual
+  contributors) is an **optional** dependency, installed only with the `[signing]` extra
+  (and the `[passkeys]` extra, which names the same pinned requirement), for the Brain's
+  Ed25519 transmit grants ([ADR-0041](decisions/adr-0041-brain-ed25519-signing.md),
+  module-bus spec §10). It is imported lazily by `src/openostler/signing.py` alone; core
+  stays stdlib + pyserial, and without the extra the Brain mints no grant. On a Pi
+  Debian's `python3-cryptography` satisfies the floor (Debian 13 packages 43.0). Used as a
+  library; none of its code is vendored. Its own dependencies (`cffi`, MIT; `pycparser`,
+  BSD-3-Clause) come with it.
+
 ## Astryx — UI theme tokens (dashboard visual design)
 
 The web dashboard's neutral colour/spacing tokens are adapted from

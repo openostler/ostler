@@ -100,6 +100,12 @@ def main() -> int:
     ap.add_argument("--mqtt-ca", help="--source node: the CA certificate (PEM) of the broker")
     ap.add_argument("--mqtt-cert", help="--source node: this Brain's client certificate (PEM)")
     ap.add_argument("--mqtt-key", help="--source node: the client certificate's key (PEM)")
+    ap.add_argument("--mqtt-host-cert",
+                    help="--source node: the broker host's own client certificate (PEM) for "
+                         "Remove device's purge of a removed device's retained topics "
+                         "(module-bus spec §13); its ACL entry needs write on the vehicle's "
+                         "topics. Without it the purge uses --mqtt-cert and reports refusals")
+    ap.add_argument("--mqtt-host-key", help="--source node: the --mqtt-host-cert key (PEM)")
     ap.add_argument("--mqtt-client-id", default=None,
                     help="--source node: the MQTT client id (default <host>-nodesource)")
     ap.add_argument("--mqtt-insecure-lab", action="store_true",
@@ -242,7 +248,8 @@ def main() -> int:
         try:
             feed = build_feed(args.mqtt, vid, ca=args.mqtt_ca, cert=args.mqtt_cert,
                               key=args.mqtt_key, insecure_lab=args.mqtt_insecure_lab,
-                              client_id=args.mqtt_client_id)
+                              client_id=args.mqtt_client_id, host_cert=args.mqtt_host_cert,
+                              host_key=args.mqtt_host_key)
         except (ValueError, OSError) as exc:  # ssl.SSLError is an OSError
             ap.error(f"--source node: {exc}")
         modules = node_sources(feed, pack.module_ids())

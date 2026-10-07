@@ -2,15 +2,15 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.5
-updated: 2026-10-06
+version: 2.6
+updated: 2026-10-07
 summary: >
   Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), data-hub ideas. Vehicle work lives in each pack.
 ---
 
 # TODO — Ostler platform
 
-Updated 2026-10-06. Check off when done.
+Updated 2026-10-07. Check off when done.
 
 > **Scope:** this repo is the platform. Vehicle work (decoding modules, car tests, fault
 > data) lives in the vehicle packs: for the Discovery 2, the
@@ -130,8 +130,8 @@ are built. Open:
 - [x] **Serial refusal while running:** decided (owner, 2026-10-06, spec §15 second
       round): it stays a start-time check when `--mqtt` is given; no change now. A node
       that appears later, or a lab laptop with no broker, is still not seen.
-- [ ] **§6.5 with the manifest:** the manifest's `primary` and the owner's priority in the
-      selection, and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
+- [ ] **§6.5 with the manifest:** the manifest's `primary` device and the owner's priority in
+      the selection (the pack's primary *field* is in since 2026-10-07), and its signal `rate` (sensor-detection §7 `rate_hz`) instead of the EMA
       interval. The node now publishes `priority` (when set) but no `signals`, `primary` or
       `rate_hz` yet (firmware 5971323).
 - [ ] **Energy ledger and floors** on the Network page's Power section (UI spec §3.8;
@@ -145,15 +145,16 @@ are built. Open:
       the server; until then GNSS paths use the generic §6.5 rule.
 - [ ] **Broker discovery by mDNS** (`_ostler-mod._tcp`, ADR-0027 §6); today `--mqtt` is
       required.
-- [ ] **Firmware topic collision:** the node publishes two modules' readings of one VSS
+- [x] **Firmware topic collision:** the node publishes two modules' readings of one VSS
       path (the D2 battery voltage from the Td5 and SLABS) on one retained topic, so only
       the last survives as a stored value. NodeSource keeps both live (keyed by source).
       Decided (module-bus spec v1.3 §6, owner answer 9): one primary module per VSS path,
-      the other under its pack leaf; build items below (firmware, pack).
+      the other under its pack leaf; built in firmware a65c44d and pack 507ef88, fixtures
+      copied 2026-10-07.
 - [ ] **Regenerate the firmware fixtures** (`td5-vectors`, `slabs-vectors`,
-      `slabs-vectors-no-priority`, `lifecycle`, `gate-conflict` in `tests/fixtures/node/`)
-      from the firmware's `node-fixtures` target whenever its payloads change (copied from
-      `ostler-firmware` 5971323).
+      `slabs-vectors-no-priority`, `lifecycle`, `gate-conflict`, `wire-conflict`, `off` in
+      `tests/fixtures/node/`) from the firmware's `node-fixtures` target whenever its
+      payloads change (last copied from `ostler-firmware` a65c44d).
 - [ ] **UI: the `off` power state.** The Brain accepts `power.state: off` and the snapshot
       reads `asleep`; the strip's power badge (`ui/src/shell/strip.ts` `powerNote`) has no
       word for `off` yet ("Off"), and the Network page will need one.
@@ -175,65 +176,80 @@ are built. Open:
       the alarm state, `faults/<pack>.<module>`, one primary module per VSS path, TXT keys,
       the CAN fallback (deferred to U5), the mesh bridge, gate claims, check-in timings;
       the Brain's signing extra is ADR-0041.
-- [ ] **`grant_invalid`** in the platform's Python gate and the shared CAN vectors (owner,
-      2026-10-06), so both report the same code as the node.
+- [x] **`grant_invalid`** in the platform's Python gate and the shared CAN vectors (owner,
+      2026-10-06), so both report the same code as the node; the signed-token case `T8n`
+      (header, size, boot, challenge, `rh`) runs with real tokens under `[signing]`.
 - [x] **`power.state: off`** is accepted by `node/messages.py` `parse_power` (ADR-0040 §1);
       each device publishes its own `off` and the power owner reports `feeds` (spec v1.3 §5);
       the UI shows it as the **Off** badge.
-- [ ] **AsyncAPI and OpenAPI** follow the spec as channels are built: `act/` (with the
-      `challenge` outcome), `wake/`, `lab/`, `tap/ctl`, `event/`, `faults/`, `power.feeds`;
-      OpenAPI for the Remove device route and grant refusals (`grant_locked`).
+- [ ] **AsyncAPI and OpenAPI** follow the spec as channels are built. Done (2026-10-07):
+      `event/`, `faults/`, `power.feeds`, `tap/ctl`, `lab/req`, `lab/resp` (documented,
+      sent from P4), the events feed and SSE, the Remove device route. Open with P4:
+      `act/` (with the `challenge` outcome), `wake/`, the grant refusals (`grant_locked`).
 
 **Build follow-ups from the owner's answers (spec v1.3, 2026-10-06).**
 
 *Firmware (`ostler-firmware`):*
-- [ ] **`power.feeds`** for the Brain's switched supply, and the `shutdown` act sent to the
-      Brain (only to the device it feeds); the node's own cut adds `power` `off` and
+- [ ] **`power.feeds`** for the Brain's switched supply (built, not used yet: a65c44d), and
+      the `shutdown` act sent to the Brain (only to the device it feeds); the node's own cut adds `power` `off` and
       `status` `asleep` before a reason-0x00 disconnect (spec §4, §5, §11).
 - [ ] **`faults/<pack>.<module>` and `event/<name>` topics** (retained whole list; QoS 1
       events with `id` and severity; `event/alarm.triggered`, `event/gate.conflict`,
       `event/fault.new`) (spec §6.1, §6.2).
-- [ ] **K-line echo mismatch and foreign traffic before init** as `gate_conflict`
+- [x] **K-line echo mismatch and foreign traffic before init** as `gate_conflict`
       `by: "bus"`, released by owner acknowledgement or 10 min quiet (spec §7.2; bench for
       false positives).
 - [ ] **Grant challenge**: the `challenge` outcome after gate steps 1–11, the pinned header,
       `boot` and `rh`, `grant_locked`, RNG only after the radio is up; vendor the optional
       `monocypher-ed25519` part (not core `crypto_eddsa_*`) (spec §10; node-can §6).
-- [ ] **mDNS TXT**: `txtvers=1`, `var`, `md`, `fw`, `pr`, `roles`, `etag`; no `mf` or `cv`
+- [x] **mDNS TXT** (built, not advertised yet; firmware a65c44d): `txtvers=1`, `var`, `md`, `fw`, `pr`, `roles`, `etag`; no `mf` or `cv`
       (spec §14).
-- [ ] **Primary module**: publish `vss/<VSS path>` only from the pack's primary field, the
-      other module under its pack leaf (spec §6).
-- [ ] **`lab/req` de-duplication** by `id` (last 16) and its ≤ 10 s expiry (spec §8).
-- [ ] **`tap/ctl` `session`** field (`{op, session, buses?, filters?}`; repeated start and
+- [x] **Primary module**: publish `vss/<VSS path>` only from the pack's primary field, the
+      other module under its pack leaf (spec §6; firmware a65c44d, fixtures copied).
+- [x] **`lab/req` de-duplication** by `id` (last 16) and its ≤ 10 s expiry (spec §8).
+- [x] **`tap/ctl` `session`** field (`{op, session, buses?, filters?}`; repeated start and
       unknown stop are no-ops) (spec §8).
 - [ ] **Parked broker allow-list** adds `act/+`, `event/+`, `faults/+`; excludes `tap/#`
       and `lab/#` (spec §12); Remove device's broker-local purge on the parked broker
       (spec §13).
 
 *Platform (this repo):*
-- [ ] **Primary selection**: read the pack's `primary` marker; the Brain keeps selecting
-      across devices and pack leaves (spec §6; NodeSource §6.5).
-- [ ] **`faults/` and `event/` parsing** in NodeSource (subscriptions at QoS 1, snapshot
-      `faults` from the whole list, "read, none" vs "not read", events de-duplicated by
-      `id`); the logbook's alarm events (spec §6.1, §6.2).
-- [ ] **Alarm metric**: `Vehicle.Ostler.Security.Alarm.State` in `vss/ostler.vspec`
-      (string enum, OVMS and HA aliases; ADR-0016 Amendments), `metrics.json` regenerated.
-- [ ] **Remove device API** on the Brain: owner role, local link only, revokes the
-      certificate and ACL entry and purges `ostler/v1/<vid>/<device>/#` on the Brain's
-      broker as a broker-host operation; the Network page's action and one-tap remedy
-      (UI spec §3.7; spec §7.2, §13).
-- [ ] **Signing extra and helper** (ADR-0041): `signing` and `passkeys` extras in
-      `pyproject.toml` with one shared `cryptography` requirement; a lazily imported helper
-      for canonical JSON, `rh`, the pinned header and the compact JWS; the Brain's key made
-      on first use; RFC 8032 and RFC 8037 vectors; `tests/vectors/can/gate.json` gains
-      `rh` mismatch, extra header member, wrong `boot` and lock-out cases;
-      `THIRD_PARTY_LICENSES.md` entry.
-- [ ] **Bridge config**: inbound `+/act/+`, `+/event/+`, `+/faults/+`; `lab/resp` not
-      bridged; `try_private`, MQTT 5 bridge protocol, the Brain's echo guard (spec §12).
+- [x] **Primary selection**: `Signal.primary`, `signals.primary_fields`/`primary_problems`,
+      the schema allows the key; selection prefers a usable primary source for a shared
+      VSS path (absent marker: the earlier rule) (spec §6; NodeSource §6.5).
+- [x] **`faults/` and `event/` parsing** in NodeSource (subscriptions at QoS 1, snapshot
+      `faults` and `faults_read` from the whole list, "read, none" vs "not read", events
+      de-duplicated by `id` into `GET /cluster/events` and its SSE stream) (spec §6.1, §6.2).
+- [ ] **The logbook's alarm and node events** (spec §6.1; ADR-0010 amendment): record the
+      events feed and alarm-state changes in node sessions.
+- [ ] **`Vehicle.Ostler.Diagnostics.DtcCount`** derived on the Brain from the fault lists
+      (spec §6.2).
+- [x] **Alarm metric**: `Vehicle.Ostler.Security.Alarm.State` in `vss/ostler.vspec`
+      (string enum via `allowed`, OVMS `v.e.alarm`, HA `ha_domain: alarm_control_panel`;
+      ADR-0016 Amendments), `metrics.json` regenerated; subscribed at QoS 1.
+- [x] **Remove device API** on the Brain: `POST /cluster/remove` (owner = admin until
+      accounts, local link only, one confirmation), the Brain's revocation list, the
+      install's revoke hook, the broker-host purge of `ostler/v1/<vid>/<device>/#`
+      (`docs/brain_broker.md` for the limits) (spec §7.2, §13).
+- [ ] **Remove device: the broker host's revoke hook** in the Brain image (drop the
+      device's ACL entry, revoke its certificate at the local CA) and the Network page's
+      action and one-tap remedy (UI spec §3.7) after U1.
+- [x] **Signing extra and helper** (ADR-0041): `signing` and `passkeys` extras in
+      `pyproject.toml` with one shared `cryptography` requirement; `openostler.signing`
+      (canonical JSON, `rh`, the pinned header, the compact JWS, `BrainKey` made on first
+      use, `jws_grant_verifier`); RFC 8032 and RFC 8037 vectors; `gate.json` case `T8n`
+      (`rh` mismatch, extra header member, other alg, size, wrong `boot`, other challenge);
+      `THIRD_PARTY_LICENSES.md` entry; CI installs `[signing]`.
+- [ ] **`grant_locked` lock-out vectors**: the Python reference gate has no requester, so
+      the lock-out (3 × `grant_invalid` in 60 s, spec §10) waits for the node's `act`
+      gate model in P4; add its shared cases then.
+- [x] **Bridge config**: inbound `+/act/+`, `+/event/+`, `+/faults/+`; `lab/resp` not
+      bridged; `try_private`, MQTT 5 bridge protocol (templates in `docs/brain_broker.md`;
+      spec §12). The Brain's echo guard for its own `act`/`wake` arrives with P4.
 
 *Pack (the Discovery 2 pack):*
-- [ ] **Primary marker** in the signal store for a VSS path decoded by two modules (the D2
-      battery voltage: Td5 primary).
+- [x] **Primary marker** in the signal store for a VSS path decoded by two modules (the D2
+      battery voltage: Td5 primary; pack 507ef88).
 
 *Bench:*
 - [ ] **Mosquitto bridge property pass-through**: whether the Brain's Mosquitto bridge and
