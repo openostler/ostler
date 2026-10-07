@@ -1,23 +1,23 @@
 ---
 title: "Phone & Comms add-on — dialer, contacts, Bluetooth hands-free on the Brain, companion bridge and phone notifications — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/phone_comms.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/calls_video_camera_sharing.md, docs/feature_map_dmd.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0040-power-states-and-wake.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Draft for the owner (DMD round, 2026-10-07). Recommends widening the proposed `ostler-app-phone` (phone mirroring) into one Phone & Comms add-on rather than a separate `ostler-app-dialer`: dialer (keypad Parked only; while Moving voice dial, a favourites `short_list` of at most six and the audio-only `call` template), one contacts view combining Ostler contacts and phone contacts badged by source, recents, and phone notifications. Calls run mainly through the Brain acting as a Bluetooth hands-free unit (HFP HF via PipeWire's native backend and its telephony D-Bus API on Raspberry Pi OS Trixie, behind an adapter for BlueZ's coming call control; PBAP for the phonebook and call history, MAP for SMS and iMessage), which works the same for Android and iPhone and puts call audio in the car; the companion phone app adds the Contact Picker for favourites and, on Android only, an opt-in notification bridge (NotificationListenerService, MessagingStyle, the messenger's own RemoteInput for replies) whose alerts share the shell's one alert pipeline and rate limits with Social. WhatsApp, Signal, Telegram and Messenger calls ring through only where the app hands them to the phone's calling stack; no unofficial messenger libraries; Telegram native only via TDLib later, Matrix through Social. Phone contacts and bridged messages never leave the user's in-car devices and are not persisted by default. Phases PH0–PH4, tests and owner decisions; a matching proposed amendment to the Social spec settles the shared call session, alert pipeline, favourites and call log.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; every decision answered as recommended. Widens the named `ostler-app-phone` (phone mirroring) into one Phone & Comms add-on rather than a separate `ostler-app-dialer`: dialer (keypad Parked only; while Moving voice dial, a favourites `short_list` of at most six and the audio-only `call` template), one contacts view combining Ostler contacts and phone contacts badged by source, recents, and phone notifications. Calls run mainly through the Brain acting as a Bluetooth hands-free unit (HFP HF via PipeWire's native backend and its telephony D-Bus API on Raspberry Pi OS Trixie, behind an adapter for BlueZ's coming call control; PBAP for the phonebook and call history, MAP for SMS and iMessage), which works the same for Android and iPhone and puts call audio in the car; the companion phone app adds the Contact Picker for favourites and, on Android only, an opt-in notification bridge (NotificationListenerService, MessagingStyle, the messenger's own RemoteInput for replies) whose alerts share the shell's one alert pipeline and rate limits with Social. WhatsApp, Signal, Telegram and Messenger calls ring through only where the app hands them to the phone's calling stack; no unofficial messenger libraries; Telegram native only via TDLib later, Matrix through Social. Phone contacts and bridged messages never leave the user's in-car devices and are not persisted by default. Phases PH0–PH4, tests and owner decisions; the matching Social spec amendment §13 (approved) settles the shared call session, alert pipeline, favourites and call log.
 ---
 
-# Phone & Comms add-on — design (draft)
+# Phone & Comms add-on — design
 
-**Status: draft for the owner (DMD round, 2026-10-07).** Nothing is built. Evidence:
+**Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2.** Nothing is built. Evidence:
 [phone and comms research](../references/research/phone_comms.md) (cited as *research §n*),
 [driver-distraction rules](../references/research/driver_distraction_rules.md),
 [message alerts](../references/research/message_alerts_android_auto.md). It turns the
 [DMD feature map](../docs/feature_map_dmd.md)'s "Needs spec: phone add-on" rows (Phone Link,
 ANCS, notification filter, last notifications) into a design, and the overlap with Social is
-settled in the [Social spec's proposed amendment §13](2026-10-07-social-addon-design.md#13-proposed-amendment-2026-10-07-dmd-round-comms-overlap).
+settled in the [Social spec's amendment §13](2026-10-07-social-addon-design.md#13-amendment-2026-10-07-dmd-round-approved-comms-overlap) (approved).
 
 ## 1. Scope and non-goals
 
@@ -412,8 +412,15 @@ Task depth ≤ 3 ending in Drive mode: Favourites → call (2); card → Reply �
 - 2026-10-07: v0.1, draft (DMD round): one `ostler-app-phone` (mirroring + dialer + contacts),
   HFP HF on the Brain as the main call path, companion bridge, Android notification bridge,
   iOS limits, widgets, privacy, phases PH0–PH4; Social overlap in Social amendment §13.
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", DMD round; decision
+  list items 71–85): every decision answered as recommended (alternatives not chosen); the
+  repo `ostler-app-phone` is created at PH0, after asking the owner; the PH0 bench includes
+  messenger-call caller names.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **Repo** — widen `ostler-app-phone` into one Phone & Comms add-on (mirroring, dialer,
    contacts, recents, messages)? *Recommend:* yes. *Alternative:* a separate

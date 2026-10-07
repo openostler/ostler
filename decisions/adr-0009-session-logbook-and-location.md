@@ -2,11 +2,11 @@
 title: "ADR-0009 — Always-on session logbook; location stays on the device"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0004-react-typescript-ui.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
-  Every connected period is recorded on the device as a session in a RaceCapture-style CSV with a meta.json; VBO, GPX and AiM-named CSV are the interop exports; GPS comes from an NMEA receiver parsed by our own stdlib code; location never leaves the device by default and the public server serves only synthetic sessions. Amended 2026-10-07 (approved by the owner, "approve all"): the basemap is Ostler's own Night/Day styles on regional PMTiles the Brain serves, with OpenFreeMap dark/positron as the online fallback and the `--bg` token offline.
+  Every connected period is recorded on the device as a session in a RaceCapture-style CSV with a meta.json; VBO, GPX and AiM-named CSV are the interop exports; GPS comes from an NMEA receiver parsed by our own stdlib code; location never leaves the device by default and the public server serves only synthetic sessions. Amended 2026-10-07 (approved by the owner, "approve all"): the basemap is Ostler's own Night/Day styles on regional PMTiles the Brain serves, with OpenFreeMap dark/positron as the online fallback and the `--bg` token offline. Pointer (2026-10-07, DMD round): ADR-0043, accepted the same day, is the later ADR the community-upload GPS rule asks for; the default here is unchanged.
 ---
 
 # ADR-0009 — Always-on session logbook; location stays on the device
@@ -17,6 +17,11 @@ summary: >
 > **Amended 2026-10-07 (approved by the owner, "approve all"):** the **Map** bullet's
 > basemap changes to Ostler Night/Day styles on Brain-served regional PMTiles, with an
 > OpenFreeMap online fallback and `--bg` offline. See [Amendment (2026-10-07)](#amendment-2026-10-07).
+>
+> **Pointer (2026-10-07, DMD round):** [ADR-0043](adr-0043-gps-and-logs-in-shared-trips.md),
+> approved by the owner on 2026-10-07 ("approve all", DMD round), is the later ADR the
+> community-uploads bullet asks for (L1 routes after trimming, with a preview; full logs only
+> as verified hand-overs). This ADR's default is unchanged.
 
 ## Context
 
@@ -85,3 +90,5 @@ bullet above stands except for the tiles:
 - 2026-10-07: v1.1, Amendment (2026-10-07): the basemap is Ostler Night/Day on Brain-served
   regional PMTiles, OpenFreeMap dark/positron online, `--bg` offline (approved by the owner,
   "approve all"; visual design system spec §7).
+- 2026-10-07: v1.2, pointer to ADR-0043 (accepted, DMD round), which fulfils the
+  community-uploads condition; the decision text is unchanged.

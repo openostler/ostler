@@ -2,11 +2,11 @@
 title: "ADR-0029 — Accounts, multi-vehicle garage, sharing and social"
 area: decisions
 status: locked
-version: 1.7
+version: 1.8
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md]
 summary: >
-  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics". Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): §8's levels give way to one data-class registry with ghost mode on by default and precise location capped at 24 h; §7 gains contacts, groups and an 8-character invite code; §9 allows a later link-only social login through an Ostler Cloud OIDC broker; Basic Auth ends one release after P1 with no re-enable; `auth.db` lives on the Brain with a signed roster on the node; "user role" and "device role". Proposed amendment (2026-10-07, DMD round), for the owner's approval: Ostler Community, the opt-in community hub (a closed service run by Ostler, one instance, not self-hostable, reached through the open `ostler-app-hub`; also the project forum and wiki), holds the directory (Discover) and an opt-in Following feed in place of §9's minimal in-house feed, brings the `public` audience forward for explicit publishing, adds hub accounts linked to devices, and drops federation.
+  Accepted by the owner on 2026-10-06. Each Ostler device gets local users (an owner bootstrapped on first run with a physical setup code, or by phone pairing on Ostler Lite), passkeys through the optional extra openostler[passkeys] with passwords always available, cookie sessions and scoped, revocable API tokens (also for AI/MCP clients). Four roles (Owner, Driver, Viewer, Mechanic, time-boxed) grant action categories, each capped by its tier (ADR-0033); the gate takes the intersection of role, share and token categories and the minimum tier, then transport and driving state, and no role passes a tier gate or a confirmation. The garage defaults to the vehicle the node is on; other cars appear only through shares, and their data stays on their own device, pulled on demand. Invites by link or QR carry a permission level, an expiry and a pinned device key; remote paths are read-only unless the install-level override of ADR-0033 is set. Motorbikes use a guardian-variant or Lite node with the phone as the screen. Shares never carry a VIN, a raw capture or location unless opted in. Social (groups, rides, convoys) and outbound sharing via share intents, webhooks and bots come last, opt-in, with no ads or tracking. Amended 2026-10-06 by ADR-0039: read "Ostler Lite" as "Ostler Diagnostics". Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): §8's levels give way to one data-class registry with ghost mode on by default and precise location capped at 24 h; §7 gains contacts, groups and an 8-character invite code; §9 allows a later link-only social login through an Ostler Cloud OIDC broker; Basic Auth ends one release after P1 with no re-enable; `auth.db` lives on the Brain with a signed roster on the node; "user role" and "device role". Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): Ostler Community, the opt-in community hub (a closed service run by Ostler, one instance, not self-hostable, reached through the open `ostler-app-hub`; also the project forum and wiki), holds the directory (Discover) and an opt-in Following feed in place of §9's minimal in-house feed, brings the `public` audience forward for explicit publishing, adds hub accounts linked to devices, and drops federation.
 ---
 
 # ADR-0029 — Accounts, multi-vehicle garage, sharing and social
@@ -15,7 +15,7 @@ summary: >
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 > **Amended 2026-10-07, approved by the owner on 2026-10-07 ("approve all"):** one permission model (§4, §8), contacts and invite codes (§7), a later link-only social login (§9), the Basic Auth end and `auth.db` placement (§1, Consequences). See [Amendment (2026-10-07), approved](#amendment-2026-10-07-approved).
-> **Proposed amendment (2026-10-07, DMD round), not yet approved:** §9's feed and directory move to the opt-in community hub, Ostler Community (closed, Ostler-run, not self-hostable; also the forum and wiki); `public` comes forward for explicit publishing; hub accounts link to devices; no federation. See [Proposed amendment (2026-10-07, DMD round)](#proposed-amendment-2026-10-07-dmd-round).
+> **Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round):** §9's feed and directory move to the opt-in community hub, Ostler Community (closed, Ostler-run, not self-hostable; also the forum and wiki); `public` comes forward for explicit publishing; hub accounts link to devices; no federation. See [Amendment (2026-10-07, DMD round), approved](#amendment-2026-10-07-dmd-round-approved).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner, 2026-10-06). It approves
@@ -235,16 +235,16 @@ that changes is listed.
   code, head-unit profiles, public name, social login, Basic Auth end, `auth.db` placement,
   "user role").
 
-## Proposed amendment (2026-10-07, DMD round)
+## Amendment (2026-10-07, DMD round), approved
 
-**Proposed for the owner's approval; not in force.** The decision text and the approved
-amendments above are unchanged until the owner approves this. Detail:
-[Ostler Community spec](../specs/2026-10-07-community-hub-design.md) (draft), from the
+**Approved by the owner on 2026-10-07 ("approve all", DMD round).** Where these entries
+differ from the decision text and the amendments above, they win. Detail:
+[Ostler Community spec](../specs/2026-10-07-community-hub-design.md) (approved), from the
 [community hub architecture](../references/research/community_hub_architecture.md),
 [DMD Hub features](../references/research/dmd_hub_features.md) and
 [DMD Hub UI teardown](../references/research/dmd_hub_ui_teardown.md) research; per-trip levels
-are the sibling trip-sharing spec's (`specs/2026-10-07-trip-sharing-design.md`, being drafted).
-Only the text that would change is listed.
+are the [trip-sharing spec](../specs/2026-10-07-trip-sharing-design.md)'s (approved) and
+[ADR-0043](adr-0043-gps-and-logs-in-shared-trips.md)'s. Only the text that changes is listed.
 
 - **§9 Social and integrations: the feed and the directory.** "A minimal in-house feed" is
   replaced: neither core nor Social has a feed or a directory (Social spec §1 stays true). The
@@ -301,8 +301,14 @@ Only the text that would change is listed.
   is closed, Ostler-run and not self-hostable (one instance, devices link to it alone), also the
   forum and wiki with no direct messages; federation dropped; decision 4 revised, decision 5
   added.
+- 2026-10-07: v1.8, the DMD-round amendment is approved by the owner on 2026-10-07
+  ("approve all", DMD round) and renamed "Amendment (2026-10-07, DMD round), approved";
+  its five decisions answered as recommended (alternatives not chosen).
 
-## Decisions for the owner (proposed amendment, 2026-10-07, DMD round)
+## Decisions for the owner (amendment, 2026-10-07, DMD round)
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each
+recommendation below is the decision; each alternative was not chosen.
 
 1. **Feed and directory** — move §9's "minimal in-house feed" to the hub as Discover plus an
    opt-in Following feed in `ostler-app-hub` only? *Recommend:* yes. *Alternative:* keep a

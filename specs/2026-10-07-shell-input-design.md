@@ -1,33 +1,33 @@
 ---
 title: "ShellInput — a D-pad input model for the shell: intents, focus zones, spatial navigation, Drive menu, bindings and key test — design"
 area: specs
-status: draft
-version: 0.2
+status: stable
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
-  Draft for the owner (DMD round, 2026-10-07). `ShellInput`, a core-platform input model so every screen can be
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; every decision answered as recommended. `ShellInput`, a core-platform input model so every screen can be
   driven without touch, from DMD2's remote-control lesson. Eight intents (up, down, left, right, ok, back, menu by
   long-press, mark; optional zoom and push-to-talk) from four sources: keyboard, HID remotes (they arrive as key
   events), the Gamepad API, and read-only steering-wheel and keypad events from vehicle packs and hardware add-ons
-  over a proposed `event/input.button` module-bus topic. Focus zones (strip, rail, main, sheet) with geometric
+  over a new `event/input.button` module-bus topic. Focus zones (strip, rail, main, sheet) with geometric
   spatial navigation; repeat only for movement; long-press 600 ms. Drive mode: left/right switch faces, up/down
   zoom the map, ok opens the Drive menu (a `short_list` of at most six driver-safe rows while Moving), nothing
   scrolls. Confirm sheets for gate actions open with Cancel focused and never auto-confirm. A 3 px focus-ring
   token with no glow and no resize. Bindings belong to the display's install configuration, edited Parked only,
   with a key-test screen. Accessibility and keyboard-only Playwright tests; ships in U2; names the UI spec,
-  visual spec, app-model and module-bus sections it would amend. v0.2 (proposed amendment §14, DMD round): a long
+  visual spec, app-model and module-bus sections it amends. v0.2 (amendment §14, DMD round, approved): a long
   `ok` (600 ms) on a focused strip chip, rail item or widget enters edit mode when Parked ("Park to edit" while
   Moving); while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip wherever it sits;
   the switcher is found by id (drive-modes spec v0.2 decision 15).
 ---
 
-# ShellInput — design (draft)
+# ShellInput — design
 
-**Status:** draft for the owner's approval (DMD round, 2026-10-07), v0.2 with the proposed
-amendment §14 (editing and the movable switcher). It proposes amendments to
-approved specs (§11) but edits none of them; the UI spec's owner in this round folds them in or
-not. Evidence: [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §5 (the
+**Status:** approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3, with the
+amendment §14 (editing and the movable switcher), approved. Its amendments to other specs (§11)
+are approved with it; where those specs' DMD-round amendments (approved the same day) do not
+already carry them, they are folded in when those specs are next revised. Evidence: [DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §5 (the
 remote-control model and the proposal this spec decides), §11 Copy 1–3 and Decide 2, 6, 7;
 [DMD2 features](../references/research/dmd2_features.md) §10; [driver-distraction
 rules](../references/research/driver_distraction_rules.md) §7. Today the shell is touch and
@@ -214,7 +214,7 @@ obscured (the strip and sheets never cover the focused item), and 2.4.13 Focus a
 motion; focus moves have none. Screen readers keep their own navigation; the shell does not
 intercept keys while a text field or `role="application"` region has focus.
 
-## 11. Amendments this spec would make (for the owners of those specs)
+## 11. Amendments this spec makes (for the owners of those specs)
 
 | Spec | Section | Change |
 |---|---|---|
@@ -257,14 +257,14 @@ desktop) and each theme:
   refused by the server.
 - Unit tests for the spatial scorer on fixture layouts.
 
-## 14. Proposed amendment (2026-10-07, DMD round): editing and the movable switcher
+## 14. Amendment (2026-10-07, DMD round), approved: editing and the movable switcher
 
-*Proposed on 2026-10-07 (v0.2), pending the owner; §1–§13 stand until it is approved. It adopts
+*Approved by the owner on 2026-10-07 ("approve all", DMD round); added in v0.2. It adopts
 [drive-modes spec](2026-10-07-drive-modes-and-editing-design.md) v0.2 decision 15 (its §6 and
 §7.1 rely on it), written for the owner's "the entire UI is editable, with no fixed icons":
 the strip is user-ordered, the Drive-mode chip may sit anywhere in it, and a D-pad user must
-reach both edit mode and the switcher without touch. Where approved, §14 changes §4.3, §5, §6
-and §13 as noted and nothing else.*
+reach both edit mode and the switcher without touch. §14 changes §4.3, §5, §6 and §13 as noted and nothing
+else; where it differs from them, it wins.*
 
 **14.1 Long `ok` enters edit mode (changes §5).** `ok` gains one long-press meaning: a long
 `ok` (600 ms held, §5's timing) on a focused **strip chip**, **rail item** or **widget** (Home
@@ -316,8 +316,14 @@ switcher only by `data-chip="drive_mode"`.
   chip, rail item or widget enters edit mode when Parked ("Park to edit" toast while Moving);
   while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip
   wherever it sits; the switcher is found by id; tests; decisions 10–12.
+- 2026-10-07: v0.3, approved by the owner on 2026-10-07 ("approve all", DMD round; decision
+  list items 41–46 and 90): every decision answered as recommended (alternatives not
+  chosen); §14 renamed "Amendment (2026-10-07, DMD round), approved"; ships with U2 (I1–I2).
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all", DMD round). Each recommendation
+below is the decision; each alternative was not chosen.
 
 1. **Adopt ShellInput in core?** Recommend: yes, a platform feature, free, with hardware remotes as
    hardware add-ons that only supply key events. Alternative: an input add-on.
