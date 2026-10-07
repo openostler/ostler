@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { formatClock, SKIP_MS, SPEEDS, usePlayback } from "../../state/playback";
+import { Icon } from "../../icons/Icon";
 
 /** A note or flag on the scrubber: a tick (point) or a short bar (range); tapping it seeks there.
  * `tone`: "note" (accent, the default) for manual notes, "warn"/"alarm" for automatic flags. */
@@ -58,11 +59,11 @@ export function Transport({ offset, follow, onFollow, ticks }: {
         <span className="replay-clock small muted" data-testid="clock-end">{formatClock(p.end, offset)}</span>
       </div>
       <div className="replay-buttons">
-        <button className="rchip" aria-label="Back 10 seconds" onClick={() => p.skip(-SKIP_MS)}>⏪</button>
+        <button className="rchip" aria-label="Back 10 seconds" onClick={() => p.skip(-SKIP_MS)}><Icon name="fast_rewind" size={22} /></button>
         <button className="rchip replay-play" aria-label="Play" aria-pressed={p.playing} onClick={p.toggle}>
-          <span aria-hidden="true">{p.playing ? "❚❚" : "▶"}</span>
+          <Icon name={p.playing ? "pause" : "play_arrow"} size={22} />
         </button>
-        <button className="rchip" aria-label="Forward 10 seconds" onClick={() => p.skip(SKIP_MS)}>⏩</button>
+        <button className="rchip" aria-label="Forward 10 seconds" onClick={() => p.skip(SKIP_MS)}><Icon name="fast_forward" size={22} /></button>
         <span className="replay-now" data-testid="clock-now" aria-live="off">{now}</span>
         <div className="replay-speeds" role="group" aria-label="Playback speed">
           {SPEEDS.map((s) => (
@@ -73,7 +74,7 @@ export function Transport({ offset, follow, onFollow, ticks }: {
           <button className="rchip replay-follow" aria-label="Follow the latest sample" aria-pressed={!!follow}
             title={follow ? "Following the newest sample" : "Jump to the newest sample and follow it"}
             onClick={() => onFollow(true)}>
-            <span className="replay-follow-dot" aria-hidden="true">●</span> Latest
+            <span className="replay-follow-dot" aria-hidden="true"><Icon name="circle-fill" size={12} /></span> Latest
           </button>
         ) : null}
       </div>

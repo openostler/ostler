@@ -73,8 +73,8 @@ export function sessionTitle(s: Pick<SessionMeta, "name" | "place">): string {
 export function sessionPlace(s: Pick<SessionMeta, "name" | "place" | "place_end">): string | null {
   const start = s.place?.label ?? null;
   const end = s.place_end?.label ?? null;
-  const route = start && end && end !== start ? `${start} → ${end}` : start;
-  if (!s.name?.trim()) return end && start && end !== start ? `→ ${end}` : null;
+  const route = start && end && end !== start ? `${start} to ${end}` : start;
+  if (!s.name?.trim()) return end && start && end !== start ? `to ${end}` : null;
   return route;
 }
 

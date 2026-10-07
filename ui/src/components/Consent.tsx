@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api } from "../api/client";
 import { useApp } from "../state/app";
 import { RadioOpt } from "./RadioOpt";
+import { Icon } from "../icons/Icon";
 
 /** First start: trust level and data sharing must be chosen before anything connects. */
 export function Consent() {
@@ -27,7 +28,7 @@ export function Consent() {
         </div>
         <div className="muted pretty">
           This tool writes to real ECUs over the K-line. Two choices decide what it may do. Both
-          change later in Preferences (⚙).
+          change later in Preferences (<Icon name="settings" size="1.1em" className="icon-inline" />).
         </div>
         <section role="radiogroup" aria-label="Trust">
           <div className="kicker" style={{ marginBottom: 8 }}>Trust</div>
@@ -50,7 +51,7 @@ export function Consent() {
       <div style={{ padding: 16, borderTop: "1px solid var(--border)", background: "var(--bg-surface)", display: "flex", flexDirection: "column", gap: 8 }}>
         <button className={`btn ${ready ? "accent" : ""}`} disabled={!ready} onClick={accept}>Continue</button>
         <div className="small dis" style={{ textAlign: "center" }}>
-          {ready ? `${trust === "trusted" ? "Stable" : "Experimental"} · sharing ${share ? "on" : "off"} · changeable in Preferences (⚙).` : "Answer data sharing to continue."}
+          {ready ? `${trust === "trusted" ? "Stable" : "Experimental"} · sharing ${share ? "on" : "off"} · changeable in Preferences.` : "Answer data sharing to continue."}
         </div>
       </div>
     </div>

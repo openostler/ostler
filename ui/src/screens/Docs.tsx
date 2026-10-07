@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { DocEntry } from "../api/schemas";
 import { useApp } from "../state/app";
+import { Icon } from "../icons/Icon";
 
 /** Admin: the repo's canonical markdown (docs/ + references/), rendered by the server
  * fresh on every request — a window on the source, never a copy. */
@@ -32,7 +33,7 @@ export function Docs() {
     return (
       <>
         <div className="screen-head">
-          <button className="iconbtn" onClick={() => setOpen(null)}>← Documents</button>
+          <button className="iconbtn" onClick={() => setOpen(null)}><Icon name="arrow_back" size={18} />Documents</button>
           <span className="sub">{title}</span>
         </div>
         {/* Server-rendered from the repo's own markdown (web/markdown.py escapes inline HTML). */}

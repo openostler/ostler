@@ -60,7 +60,7 @@ describe("admin mode", () => {
     expect(within(dev).getByRole("button", { name: "Decode" })).toHaveAttribute("aria-current", "page");
     expect(within(screen.getByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "More" }))
       .toHaveAttribute("aria-current", "page");
-    await user.click(screen.getByRole("button", { name: "‹ More" }));
+    await user.click(screen.getByRole("button", { name: "Back to More" }));
     const section = await screen.findByRole("region", { name: "Developer" });
     expect(within(section).getAllByRole("button").map((b) => b.textContent)).toEqual(["Decode", "Label", "Docs"]);
   });
@@ -143,7 +143,7 @@ describe("admin mode", () => {
     await user.click(await screen.findByRole("button", { name: "Docs" }));
     await user.click(await screen.findByRole("button", { name: "Notes" }));
     expect(await screen.findByText("test")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "← Documents" }));
+    await user.click(screen.getByRole("button", { name: "Documents" }));
     expect(await screen.findByRole("button", { name: "Notes" })).toBeInTheDocument();
   });
 
@@ -197,7 +197,7 @@ describe("admin mode", () => {
     expect(screen.getByRole("button", { name: "Glossary" })).toBeInTheDocument();
     // the server labels list, normalised to the one record shape
     const list = await screen.findByLabelText("Server labels");
-    expect(list).toHaveTextContent("21 09 02 fa → 762 rpm");
+    expect(list).toHaveTextContent("21 09 02 fa = 762 rpm");
     expect(screen.getByText(/kept in this browser only/)).toBeInTheDocument();
   });
 
@@ -246,7 +246,7 @@ describe("admin mode", () => {
     await user.click(within(await screen.findByRole("navigation", { name: "Destinations" })).getByRole("button", { name: "Diagnose" }));
     await user.click(within(await screen.findByRole("navigation", { name: "Areas" })).getByRole("button", { name: "Utilities" }));
     await user.click(await screen.findByRole("button", { name: /Advanced/ }));
-    await user.click(screen.getByRole("button", { name: "Label these bytes →" }));
+    await user.click(screen.getByRole("button", { name: "Label these bytes" }));
     expect(await screen.findByRole("heading", { name: "Label" })).toBeInTheDocument();
   });
 });

@@ -44,7 +44,8 @@ describe("RewindButton", () => {
     const r = replay();
     const { ctx } = renderRewind(r, "live");
     const btn = screen.getByRole("button", { name: "Rewind" });
-    expect(btn).toHaveTextContent("⏪Rewind");
+    expect(btn).toHaveTextContent("Rewind");
+    expect(btn.querySelector('[data-icon="history"]')).not.toBeNull();
     expect(btn).toHaveAttribute("title", "Rewind to the latest sample");
     fireEvent.click(btn);
     expect(r.enter).toHaveBeenCalledWith("live", { at: "end", follow: true });

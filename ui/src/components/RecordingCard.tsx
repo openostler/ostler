@@ -12,6 +12,7 @@ import "../recording.css";
 import { NoteSheet } from "./NoteSheet";
 import { isPaused } from "./replay/sessionFormat";
 import { RecordingOptions } from "./RecordingOptions";
+import { Icon } from "../icons/Icon";
 
 /** "45 s", "12 min", "1 h 05 min" from seconds. */
 const dur = (s: number) => {
@@ -55,16 +56,16 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
   if (rs?.imu.state === "on") srcs.push({ key: "imu", label: `Pi IMU ${rs.accel_hz} Hz`, tone: "on" });
   if (audio.status === "recording") srcs.push({ key: "mic", label: "Phone mic", tone: "on" });
   else if (audio.status === "lost" || audio.status === "denied" || audio.status === "error")
-    srcs.push({ key: "mic", label: `⚠ Phone mic ${audio.status === "lost" ? "lost" : "off"}`, tone: "lost" });
+    srcs.push({ key: "mic", label: `Phone mic ${audio.status === "lost" ? "lost" : "off"}`, tone: "lost" });
   if (motion.status === "recording") srcs.push({ key: "motion", label: `Phone motion ${motion.rate} Hz`, tone: "on" });
-  else if (motion.status === "denied" || motion.status === "error") srcs.push({ key: "motion", label: "⚠ Phone motion off", tone: "lost" });
+  else if (motion.status === "denied" || motion.status === "error") srcs.push({ key: "motion", label: "Phone motion off", tone: "lost" });
   const wantsPhone = (saved.audio === "phone" && audio.status !== "recording") || (saved.accel === "phone" && motion.status !== "recording" && motion.status !== "armed");
 
   const mark = async () => {
     try {
       const r = await api.liveNote({ kind: "mark" });
       if (!r.note) { toast(r.error ?? "Could not save the mark", true); return; }
-      toast("⚑ Marked");
+      toast("Marked");
       setMarkId({ id: r.note.id, session: r.session ?? recording.session });
       setSheet("mark");
     } catch {
@@ -132,7 +133,11 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
           onClick={() => onOpen(recording.session)} aria-label={`${paused ? "Paused — no connection" : `Recording now, ${elapsed}`} — open`}>{head}</button>
       ) : <div className="rec-head">{head}</div>}
       <div className="rec-sources" aria-label="Sources">
-        {srcs.map((s) => <span key={s.key} className={`rec-src ${s.tone ?? ""}`}>{s.label}</span>)}
+        {srcs.map((s) => (
+          <span key={s.key} className={`rec-src ${s.tone ?? ""}`}>
+            {s.tone === "lost" ? <Icon name="warning" size="1.1em" className="icon-inline" /> : null}{s.label}
+          </span>
+        ))}
       </div>
       {wantsPhone ? (
         <button className="btn" onClick={resume}>Resume phone capture</button>
@@ -140,13 +145,13 @@ export function RecordingCard({ recording, nowS, modules, onOpen, onSplit }: {
       {paused ? (
         <div className="rec-actions paused">
           <p className="muted small">Nothing is written until the car is connected again.</p>
-          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options">⚙ Options</button>
+          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options"><Icon name="settings" size="1.2em" className="icon-inline" /> Options</button>
         </div>
       ) : (
         <div className="rec-actions">
-          <button className="btn" onClick={mark} aria-label="Mark this moment">⚑ Mark</button>
+          <button className="btn" onClick={mark} aria-label="Mark this moment"><Icon name="flag" size="1.2em" className="icon-inline" /> Mark</button>
           <button className="btn" onClick={() => setSheet("note")}>Note…</button>
-          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options">⚙ Options</button>
+          <button className="btn" onClick={() => setSheet("options")} aria-label="Recording options"><Icon name="settings" size="1.2em" className="icon-inline" /> Options</button>
           <button className="btn" onClick={split} aria-label="Split — start a new session">Split</button>
         </div>
       )}

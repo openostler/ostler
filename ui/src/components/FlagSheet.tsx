@@ -13,14 +13,15 @@ import { useReplay } from "../state/replay";
 import { RangeBar } from "./RangeBar";
 import { RecordingOptions } from "./RecordingOptions";
 import { Sheet } from "./Sheet";
+import { Icon, type SymbolName } from "../icons/Icon";
 
 /** What the chip, a tick or a notes-panel row opens: an automatic flag or a manual note. */
 export type FlagSheetItem = { flag: Flag } | { note: Note };
 
 /** Severity as icon + word (colour is never the only cue — ui/CLAUDE.md). */
-export const SEVERITY: Record<FlagSeverity, { icon: string; word: string }> = {
-  warn: { icon: "⚠", word: "Warning" },
-  alarm: { icon: "⛔", word: "Alarm" },
+export const SEVERITY: Record<FlagSeverity, { icon: SymbolName; word: string }> = {
+  warn: { icon: "warning", word: "Warning" },
+  alarm: { icon: "error", word: "Alarm" },
 };
 
 /** "45 s", "2 min 5 s", "1 h 3 min". */
@@ -55,7 +56,7 @@ export function FlagSheet({ item, onClose }: { item: FlagSheetItem; onClose(): v
   if ("note" in item) {
     const n = item.note;
     return (
-      <Sheet title={<span><span aria-hidden="true">⚑</span> {n.text || n.tags.join(", ") || n.kind}</span>} onClose={onClose}>
+      <Sheet title={<span><Icon name="flag" size="1.1em" className="icon-inline" /> {n.text || n.tags.join(", ") || n.kind}</span>} onClose={onClose}>
         <div className="flagsheet">
           <div className="flagsheet-meta small">
             <span className="flagsheet-kind">Note</span> · <span className="note-t">{noteSpan(n)}</span>
@@ -102,7 +103,7 @@ export function FlagSheet({ item, onClose }: { item: FlagSheetItem; onClose(): v
   return (
     <Sheet onClose={onClose} title={
       <span className={`flagsheet-title ${f.severity}`}>
-        <span className={`flag-sev ${f.severity}`}><span className="si" aria-hidden="true">{sev.icon}</span>{sev.word}</span>
+        <span className={`flag-sev ${f.severity}`}><span className="si" aria-hidden="true"><Icon name={sev.icon} size="1.1em" /></span>{sev.word}</span>
         <span className="flagsheet-label">{f.label}</span>
       </span>
     }>

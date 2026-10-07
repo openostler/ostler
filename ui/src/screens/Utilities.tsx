@@ -14,6 +14,7 @@ import { utilLids } from "../layout";
 import { coverageOf, groupTree, pageOf, STABLE_EMPTY, type GroupNode, type VisibleGroup } from "../lib/catalog";
 import { spacedHex } from "../lib/format";
 import { useApp } from "../state/app";
+import { Icon } from "../icons/Icon";
 
 /** Raw LID block dump: read-only `21 xx` reads straight off the ECU (Advanced, Experimental only). */
 function LidDump() {
@@ -68,7 +69,7 @@ function GroupCard({ node, onOpen }: { node: GroupNode; onOpen: (o: Open) => voi
       <button className="util-head" onClick={() => onOpen({ group: node, children: node.children })}>
         <span className="grow item-name">{node.group.title}</span>
         <span className="small dis">{all.length} item{all.length === 1 ? "" : "s"}</span>
-        <span aria-hidden="true" className="dis">›</span>
+        <span aria-hidden="true" className="dis"><Icon name="chevron_right" size={20} /></span>
       </button>
       {experimental && cov.total ? (
         <div className="row wrap" style={{ gap: 6, marginTop: 6 }}>
@@ -81,7 +82,7 @@ function GroupCard({ node, onOpen }: { node: GroupNode; onOpen: (o: Open) => voi
             <button key={c.group.id} className="sub" onClick={() => onOpen({ group: c, children: [] })}>
               <span className="grow">{c.group.title}</span>
               <span className="small dis">{c.items.length}</span>
-              <span aria-hidden="true" className="dis">›</span>
+              <span aria-hidden="true" className="dis"><Icon name="chevron_right" size={20} /></span>
             </button>
           ))}
         </div>
@@ -114,7 +115,7 @@ export function Utilities() {
               <button className="util-head" onClick={() => setOpen("advanced")}>
                 <span className="grow item-name">Advanced</span>
                 <span className="small dis">raw LID dump</span>
-                <span aria-hidden="true" className="dis">›</span>
+                <span aria-hidden="true" className="dis"><Icon name="chevron_right" size={20} /></span>
               </button>
             </div>
           ) : null}
@@ -126,7 +127,7 @@ export function Utilities() {
           {admin ? (
             <div className="row" style={{ gap: 8 }}>
               <span className="small muted grow pretty">To say what these bytes mean, use the Label tab — it reads the same blocks and saves your labels.</span>
-              <button className="btn" onClick={() => { setOpen(null); goTo("more.label"); }}>Label these bytes →</button>
+              <button className="btn" onClick={() => { setOpen(null); goTo("more.label"); }}>Label these bytes <Icon name="arrow_forward" size="1.1em" className="icon-inline" /></button>
             </div>
           ) : null}
           <button className="btn accent" onClick={() => setOpen(null)}>Done</button>

@@ -10,6 +10,7 @@
 import { useMemo, useState } from "react";
 import { Sheet } from "../Sheet";
 import { groupChannels, highlight, loadPins, loadRecent, pushRecent, searchChannels, togglePin, type Category, type PickerChannel } from "./channels";
+import { Icon } from "../../icons/Icon";
 
 export function ChannelPicker({ title, channels, value, onPick, onClose, onRemove, removeLabel = "Remove" }: {
   title: string;
@@ -60,7 +61,7 @@ export function ChannelPicker({ title, channels, value, onPick, onClose, onRemov
               <section key={g.category} className="cpick-group" data-category={g.category}>
                 <button type="button" className="cpick-cat" aria-expanded={open}
                   onClick={() => setClosed((s) => { const n = new Set(s); if (n.has(g.category)) n.delete(g.category); else n.add(g.category); return n; })}>
-                  <span aria-hidden="true">{open ? "▾" : "▸"}</span> {g.category} <span className="muted">· {g.rows.length}</span>
+                  <Icon name={open ? "keyboard_arrow_down" : "chevron_right"} size="1.2em" className="icon-inline" /> {g.category} <span className="muted">· {g.rows.length}</span>
                 </button>
                 {open ? (
                   <ul className="cpick-rows">
@@ -76,7 +77,7 @@ export function ChannelPicker({ title, channels, value, onPick, onClose, onRemov
                           </button>
                           <button type="button" className="cpick-pin" aria-pressed={pinnedRow}
                             aria-label={`${pinnedRow ? "Unpin" : "Pin"} ${c.label}`} onClick={() => setPins((p) => togglePin(p, c.name))}>
-                            {pinnedRow ? "★" : "☆"}
+                            <Icon name={pinnedRow ? "star-fill" : "star"} size={20} />
                           </button>
                         </li>
                       );

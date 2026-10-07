@@ -35,6 +35,35 @@ const SERVER_STATE_SENDERS = [
   "src/screens/Inputs.tsx", // start_csv, stop_csv
 ];
 
+// Visual design system spec §9 (V1d): colours and type come from the design tokens, never a
+// raw hex/rgb() value or an inline fontSize in TS/TSX (Canvas and MapLibre read tokens through
+// lib/token.ts). Existing uses are frozen in eslint-suppressions.json until V3 migrates them; a
+// new one fails `npm run lint`. Token files and tests are exempt.
+const RAW_COLOUR = /(^|[\s,(:])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b|\b(?:rgba?|hsla?)\(/;
+const ostler = {
+  rules: {
+    "no-raw-style": {
+      meta: {
+        type: "problem",
+        docs: { description: "Colours and font sizes come from the design tokens" },
+        messages: {
+          colour: "Raw colour: use a token (var(--…) in CSS, token() for Canvas/MapLibre). Visual spec §9.",
+          fontSize: "Inline fontSize: use a type token in CSS (var(--type-…)). Visual spec §9.",
+        },
+        schema: [],
+      },
+      create(context) {
+        const check = (node, text) => { if (typeof text === "string" && RAW_COLOUR.test(text)) context.report({ node, messageId: "colour" }); };
+        return {
+          Literal: (node) => check(node, node.value),
+          TemplateElement: (node) => check(node, node.value.raw),
+          "JSXAttribute[name.name='style'] Property[key.name='fontSize']": (node) => context.report({ node, messageId: "fontSize" }),
+        };
+      },
+    },
+  },
+};
+
 export default tseslint.config(
   { ignores: ["node_modules", "test-results", "playwright-report"] },
   {
@@ -55,6 +84,12 @@ export default tseslint.config(
       "no-restricted-syntax": ["error", ...ACTION_ROUTE],
       "no-restricted-imports": ["error", RAW_COMMAND],
     },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**"],
+    plugins: { ostler },
+    rules: { "ostler/no-raw-style": "error" },
   },
   { files: ["src/api/client.ts"], rules: { "no-restricted-syntax": "off" } },
   { files: SERVER_STATE_SENDERS, rules: { "no-restricted-imports": "off" } },

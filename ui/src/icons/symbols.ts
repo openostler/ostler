@@ -26,6 +26,10 @@ export const SYMBOLS = [
   "fiber_manual_record-fill", "flag", "battery_full", "arrow_back", "settings", "cable", "code",
   "chevron_right", "description", "bedtime", "hourglass_top", "power_settings_new", "swap_horiz",
   "edit_note",
+  // V1d (visual spec §6): the glyphs that were emoji or dingbats
+  "fast_rewind", "fast_forward", "play_arrow", "pause", "check", "priority_high", "keyboard_arrow_down", "chevron_left",
+  "lock", "volume_up", "volume_off", "star", "star-fill", "edit", "close", "arrow_forward", "undo", "info", "circle-fill",
+  "diamond", "arrow_drop_up", "arrow_drop_down", "radio_button_unchecked", "pending", "radio_button_checked", "help",
 ] as const;
 export type SymbolName = (typeof SYMBOLS)[number];
 

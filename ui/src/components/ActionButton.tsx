@@ -9,6 +9,7 @@ import { actionLocked } from "../lib/catalog";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
 import { confirmReady, SAFETY } from "./confirm";
+import { Icon } from "../icons/Icon";
 
 /**
  * One registry action as a button, with the confirm the registry asks for:
@@ -35,7 +36,7 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
     const why = action.safety === "gated" ? "Gated — never sent by this tool" : "Planned — not implemented yet";
     return (
       <span className="locked" title={why} aria-label={`${action.label}: ${why}`} data-action={action.action}>
-        <span aria-hidden="true">🔒</span>{action.safety === "gated" ? "Gated" : "Planned"}
+        <Icon name="lock" size="1.1em" className="icon-inline" />{action.safety === "gated" ? "Gated" : "Planned"}
       </span>
     );
   }
@@ -43,7 +44,7 @@ export function ActionButton({ action, itemName, disabled, onResult }: {
   if (replaying) {
     return (
       <span className="locked replay-lock" title="Replay — read only" aria-label={`${action.label}: replay, read only`} data-action={action.action}>
-        <span aria-hidden="true">🔒</span>{action.label} · replay
+        <Icon name="lock" size="1.1em" className="icon-inline" />{action.label} · replay
       </span>
     );
   }

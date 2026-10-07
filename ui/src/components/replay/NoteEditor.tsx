@@ -8,6 +8,7 @@ import { formatNoteTime } from "../../lib/notes";
 import "../../recording.css";
 import { TagPicker } from "../NoteSheet";
 import { Sheet } from "../Sheet";
+import { Icon } from "../../icons/Icon";
 
 export type NoteDraft = { text: string; tags: string[]; t: number; t_end: number | null };
 
@@ -70,7 +71,7 @@ export function NoteEditor({ note, t, t_end = null, cursor, readOnly, onSave, on
           </>
         ) : null}
       </div>
-      {badRange ? <div className="small" role="alert">⚠ The end must be after the start.</div> : null}
+      {badRange ? <div className="small" role="alert"><Icon name="warning" size="1.1em" className="icon-inline" /> The end must be after the start.</div> : null}
       {note?.capture ? (
         <div className="small muted">Capture: {note.capture.module} LID {note.capture.lid} = {note.capture.value} (raw {note.capture.raw})</div>
       ) : null}

@@ -20,7 +20,9 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - `src/screens/` — today's screens, held by the destinations (`Drive.tsx` also gives Home's
   vehicle card and Drive mode).
 - `src/icons/` — the Material Symbols subset (`material-symbols/*.svg`, Apache-2.0, copied
-  verbatim) and `Icon`; list a new symbol in `symbols.ts` (a test keeps both in step).
+  verbatim) and `Icon`; list a new symbol in `symbols.ts` (a test keeps both in step). The only
+  icon set: never an emoji, dingbat or Unicode arrow in UI text (`glyphs.test.ts`); inline in
+  text use `<Icon size="1.1em" className="icon-inline" />`.
 - `tokens/*.tokens.json` (in `ui/`) — W3C design tokens (visual design system spec §2–§5): colours per
   theme (`color.dark` = Night, the default at `:root`; `color.dim`, `color.oled`, `color.tokens` = Day
   under `data-theme`; same names in every file), `data.tokens.json` (speed ramp, series, chart
@@ -70,6 +72,10 @@ The dashboard: Vite + React + TypeScript. `npm run build` writes to
 - A server response change → `UPDATE_UI_FIXTURES=1 pytest tests/test_ui_contract.py`, then
   update `schemas.ts`.
 - Before committing: `npm run check` (lint, typecheck, test, build) and commit `web/static`.
+- Lint ratchet (visual spec §9): stylelint (`stylelint.config.mjs`, run by `scripts/lint-css.mjs`)
+  and ESLint's `ostler/no-raw-style` ban raw colours and px font sizes. Old violations are frozen in
+  `stylelint-baseline.json` and `eslint-suppressions.json`; never add to them. After fixing some,
+  shrink them: `node scripts/lint-css.mjs --update`, `npx eslint . --prune-suppressions`.
 - Anything that writes to an ECU goes through `components/confirm.ts` (catalog actions via
   `ActionButton`, which applies the registry's `confirm` level). Actions are sent by `useAction`;
   a lint rule forbids naming `/command` outside `api/client.ts` and importing the raw `command()`

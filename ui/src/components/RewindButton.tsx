@@ -7,6 +7,7 @@ import { api } from "../api/client";
 import type { SessionMeta } from "../api/schemas";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
+import { Icon } from "../icons/Icon";
 
 /** Sessions fetched to find the newest finished one. */
 const LOOKUP = 5;
@@ -72,7 +73,7 @@ export function RewindButton() {
       disabled={disabled || busy}
       onClick={rewind}
     >
-      <span aria-hidden="true">⏪</span>
+      <Icon name="history" size="1.25em" />
       <span aria-hidden="true">Rewind</span>
     </button>
   );

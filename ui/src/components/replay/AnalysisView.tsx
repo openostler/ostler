@@ -28,6 +28,7 @@ import {
   speedColors, trackOf, traceSegments, type BBox, type Cursor, type SpeedUnit, type TraceLane,
 } from "./trace";
 import { TraceMap, type MapTrace } from "./TraceMap";
+import { Icon } from "../../icons/Icon";
 
 const MAX_LANES = 3;
 const CLASSIC_KEY = "d2diag.classicRamp";
@@ -215,7 +216,7 @@ export function AnalysisView({ data, meta, cursorT, onSeek, live }: {
         {lanesNames.map((n, i) => (
           <button key={n} type="button" className="rchip" data-channel={n} aria-label={`Chart lane ${i + 1}: ${label(n)} — change channel`}
             onClick={() => setPickFor({ kind: "lane", index: i })}>
-            <span className="replay-swatch" style={{ background: `var(--${toneOf(n, i)})` }} aria-hidden="true" />{label(n)} <span aria-hidden="true">▾</span>
+            <span className="replay-swatch" style={{ background: `var(--${toneOf(n, i)})` }} aria-hidden="true" />{label(n)} <Icon name="keyboard_arrow_down" size="1.2em" className="icon-inline" />
           </button>
         ))}
         {lanesNames.length < MAX_LANES && names.length > lanesNames.length ? (

@@ -13,6 +13,7 @@ import { canonicalModule, moduleName } from "../layout";
 import { normHex, normLid, type LabelCapture } from "../lib/mapping";
 import { useApp } from "../state/app";
 import { readList, writeList } from "../state/prefs";
+import { Icon } from "../icons/Icon";
 
 type LogEntry = { lid: string; raw: string; text: string; t: string };
 type Label = { module: string; lid: string; raw: string; text: string };
@@ -150,8 +151,8 @@ function SniffCapture({ onSaved }: { onSaved: OnSaved }) {
       <SniffBadge sniff={sniff} showActive={false} />
       <div className={`small ${phase === "timeout" ? "" : "muted"}`} style={{ margin: "8px 0", color: phase === "timeout" ? "var(--ic-red)" : undefined }} role="status">{status}</div>
       <div className="btn-row">
-        <button className="btn accent" onClick={arm} disabled={!sniff.configured}>⬤ New capture</button>
-        <button className="btn" onClick={reset}>↺ Cancel</button>
+        <button className="btn accent" onClick={arm} disabled={!sniff.configured}><Icon name="circle-fill" size="1em" className="icon-inline" /> New capture</button>
+        <button className="btn" onClick={reset}><Icon name="undo" size="1.2em" className="icon-inline" /> Cancel</button>
       </div>
       {Object.keys(batch).length ? (
         <div className="stack" style={{ marginTop: 12 }}>
@@ -266,7 +267,7 @@ export function Capture() {
             <div className="label-list" aria-label="Server labels">
               {server.list.map((c, i) => (
                 <div className="item" key={`${c.lid}-${c.raw}-${i}`}>
-                  <span className="lid mono">21 {normLid(c.lid)}</span> <span className="mono dis">{normHex(c.raw)}</span> → {c.value}
+                  <span className="lid mono">21 {normLid(c.lid)}</span> <span className="mono dis">{normHex(c.raw)}</span> = {c.value}
                 </div>
               ))}
             </div>
@@ -282,7 +283,7 @@ export function Capture() {
           <div className="label-list">
             {log.map((r, i) => (
               <div className="item" key={`${r.t}-${r.lid}-${i}`}>
-                <span className="lid mono">21 {r.lid}</span> <span className="mono dis">{r.raw}</span> → {r.text} <span className="dis">{r.t}</span>
+                <span className="lid mono">21 {r.lid}</span> <span className="mono dis">{r.raw}</span> = {r.text} <span className="dis">{r.t}</span>
               </div>
             ))}
           </div>

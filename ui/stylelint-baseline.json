@@ -1,0 +1,58 @@
+{
+  "src/admin.css": {
+    "Disallowed function \"rgba\" (function-disallowed-list)": 1,
+    "Disallowed unit \"px\" for property \"font-size\" (declaration-property-unit-disallowed-list)": 7,
+    "Expected variable, function or keyword for \"12px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2,
+    "Expected variable, function or keyword for \"13px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 4,
+    "Expected variable, function or keyword for \"14px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1
+  },
+  "src/recording.css": {
+    "Disallowed unit \"px\" for property \"font-size\" (declaration-property-unit-disallowed-list)": 6,
+    "Expected variable, function or keyword for \"11px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"12px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"13px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"16px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1
+  },
+  "src/replay.css": {
+    "Disallowed function \"rgba\" (function-disallowed-list)": 5,
+    "Disallowed unit \"px\" for property \"font-size\" (declaration-property-unit-disallowed-list)": 18,
+    "Expected variable, function or keyword for \"10px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"11px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 4,
+    "Expected variable, function or keyword for \"12px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"13px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2,
+    "Expected variable, function or keyword for \"14px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"16px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2,
+    "Expected variable, function or keyword for \"18px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"20px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"9px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1
+  },
+  "src/shell/shell.css": {
+    "Disallowed unit \"px\" for property \"font-size\" (declaration-property-unit-disallowed-list)": 13,
+    "Expected variable, function or keyword for \"12px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"13px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"14px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2,
+    "Expected variable, function or keyword for \"15px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2,
+    "Expected variable, function or keyword for \"16px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"18px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 2
+  },
+  "src/styles.css": {
+    "Disallowed function \"rgba\" (function-disallowed-list)": 2,
+    "Disallowed unit \"px\" for property \"font-size\" (declaration-property-unit-disallowed-list)": 74,
+    "Expected variable, function or keyword for \"10px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"11px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 7,
+    "Expected variable, function or keyword for \"12.5px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"12px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 12,
+    "Expected variable, function or keyword for \"13px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 18,
+    "Expected variable, function or keyword for \"14px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 5,
+    "Expected variable, function or keyword for \"15px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 5,
+    "Expected variable, function or keyword for \"16px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 4,
+    "Expected variable, function or keyword for \"18px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"20px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3,
+    "Expected variable, function or keyword for \"22px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"28px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"30px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"32px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"40px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 1,
+    "Expected variable, function or keyword for \"9px\" of \"font-size\" (scale-unlimited/declaration-strict-value)": 3
+  }
+}

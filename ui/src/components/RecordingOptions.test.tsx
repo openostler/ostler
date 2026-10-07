@@ -39,7 +39,7 @@ describe("RecordingOptions — flags", () => {
   it("is titled Recording & flags and shows three switches, on by default, without counts outside replay", () => {
     renderOptions();
     expect(screen.getByText("Recording & flags")).toBeInTheDocument();
-    for (const name of ["Manual ⚑", "Sensor out of range", "Faults"]) {
+    for (const name of ["Manual marks", "Sensor out of range", "Faults"]) {
       expect(within(flags()).getByRole("switch", { name })).toHaveAttribute("aria-checked", "true");
     }
     expect(within(flags()).queryByText(/·/)).toBeNull();
@@ -50,7 +50,7 @@ describe("RecordingOptions — flags", () => {
     renderOptions({ ...INACTIVE, active: true, id: meta.id, session: meta, notes: NOTES });
     expect(flagsHook).toHaveBeenCalledWith(undefined, meta.modules ?? []);
     const row = (name: string) => within(flags()).getByRole("switch", { name }).parentElement!;
-    expect(row("Manual ⚑")).toHaveTextContent("Manual ⚑ · 2");
+    expect(row("Manual marks")).toHaveTextContent("Manual marks · 2");
     expect(row("Sensor out of range")).toHaveTextContent("Sensor out of range · 3");
     expect(row("Faults")).toHaveTextContent("Faults · 1");
   });

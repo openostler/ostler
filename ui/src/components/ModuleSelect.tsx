@@ -7,6 +7,7 @@ import { moduleName } from "../layout";
 import { useApp } from "../state/app";
 import { useReplay } from "../state/replay";
 import { useSystems } from "../state/systems";
+import { Icon } from "../icons/Icon";
 
 /** The compact "current system" switcher in Diagnose's identity bar (UI spec §4.2; it was the
  * header's module picker before U1): one bordered control (muted "Module" label, the module
@@ -38,7 +39,7 @@ export function ModuleSelect() {
           <span className="modctl-k">Module</span>
           <span className="modctl-v">{current.label}</span>
         </span>
-        <span className="modctl-chev" aria-hidden="true">▾</span>
+        <span className="modctl-chev" aria-hidden="true"><Icon name="keyboard_arrow_down" size="1.2em" /></span>
         <select className="modsel" aria-label="Module" value={module} onChange={(e) => void select(e.target.value)}>
           {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>

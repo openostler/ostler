@@ -142,12 +142,12 @@ describe("live dashboard", () => {
     render(<App path="/" />);
     const chip = await screen.findByRole("button", { name: "1 fault, 1 new" });
     expect(chip).toHaveClass("tone-alarm", "attention"); // a current fault: red, and new
-    expect(screen.queryByText("⚠ 1 fault")).not.toBeInTheDocument(); // no modal by itself (U1)
+    expect(screen.queryByText("1 fault", { selector: ".fault-title span", exact: false })).not.toBeInTheDocument(); // no modal by itself (U1)
     await user.click(chip);
-    expect(await screen.findByText("⚠ 1 fault")).toBeInTheDocument();
+    expect(await screen.findByText("1 fault", { selector: ".fault-title span", exact: false })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Dismiss" }));
     pushSnapshot({ ...connected, faults });
-    expect(screen.queryByText("⚠ 1 fault")).not.toBeInTheDocument();
+    expect(screen.queryByText("1 fault", { selector: ".fault-title span", exact: false })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "1 fault" })).not.toHaveClass("attention");
   });
 
@@ -645,7 +645,7 @@ describe("whole-app replay", () => {
     await screen.findByTestId("global-transport");
     await area(user, "Outputs");
     const card = (await screen.findByText(/A\/C Fan/)).closest("[data-replay-item]") as HTMLElement;
-    expect(within(card).getByLabelText(/replay, read only/)).toHaveTextContent("🔒");
+    expect(within(card).getByLabelText(/replay, read only/).querySelector('[data-icon="lock"]')).not.toBeNull();
     expect(within(card).queryByRole("button", { name: /A\/C Fan/ })).not.toBeInTheDocument();
     await area(user, "Faults");
     await area(user, "Settings");
@@ -666,7 +666,7 @@ describe("whole-app replay", () => {
     expect(item()).not.toHaveTextContent("ran at");
     await seek(21_000);
     expect(item()).toHaveAttribute("data-running", "true");
-    expect(item()).toHaveTextContent(/ran at \d\d:\d\d:\d\d ✓/);
+    expect(item()).toHaveTextContent(/ran at \d\d:\d\d:\d\d ok/);
     await seek(35_000);
     expect(item()).not.toHaveAttribute("data-running");
   });

@@ -61,7 +61,7 @@ describe("FlagSheet", () => {
   it("a range flag shows severity word, span, duration, peak, band and a range bar", () => {
     show(<FlagSheet item={{ flag: RANGE }} onClose={vi.fn()} />, replay());
     expect(screen.getByText("Warning")).toBeInTheDocument();
-    expect(screen.getByText("⚠")).toBeInTheDocument();
+    expect(document.querySelector('.flagsheet-title .si [data-icon="warning"]')).not.toBeNull();
     expect(screen.getByText("Coolant 112 °C (normal 80–105)")).toBeInTheDocument();
     expect(screen.getByText("1:00–2:05")).toBeInTheDocument();
     expect(screen.getByText(/1 min 5 s/)).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("FlagSheet", () => {
   it("a fault flag lists each fault with Current/Logged and an alarm word", () => {
     show(<FlagSheet item={{ flag: FAULT }} onClose={vi.fn()} />, replay());
     expect(screen.getByText("Alarm")).toBeInTheDocument();
-    expect(screen.getByText("⛔", { selector: ".flagsheet-title .si" })).toBeInTheDocument();
+    expect(document.querySelector('.flagsheet-title .si [data-icon="error"]')).not.toBeNull();
     const items = screen.getAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveTextContent("P0380 Glow plug circuit");

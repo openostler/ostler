@@ -123,7 +123,7 @@ describe("MarkButton (header ⚑)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mark this moment" }));
     await screen.findByText("What happened?");
     expect(calls[0]).toEqual({ path: "/notes/live", method: "POST", body: { kind: "mark" } });
-    expect(ctx.toast).toHaveBeenCalledWith("⚑ Marked");
+    expect(ctx.toast).toHaveBeenCalledWith("Marked");
     fireEvent.change(screen.getByRole("textbox", { name: "What happened?" }), { target: { value: " clunk " } });
     fireEvent.click(screen.getByRole("button", { name: "noise" }));
     expect(screen.getByRole("button", { name: "noise" })).toHaveAttribute("aria-pressed", "true");

@@ -58,6 +58,8 @@ body {
   font-variant-numeric: tabular-nums;
 }
 button, input { font: inherit; }
+/* a Material Symbol inside a line of text (Icon size="1.1em"): on the text's centre line */
+.icon-inline { vertical-align: -0.2em; flex-shrink: 0; }
 @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.3; } }
 
 /* The shell's frame (.app, the strip, the rail and bottom bar) is in shell/shell.css. */
@@ -273,7 +275,7 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
   font-size: 11px; font-weight: 800; letter-spacing: 0.4px; white-space: nowrap; color: var(--text-1);
   background: var(--sunken);
 }
-.status .si { font-size: 10px; }
+.status .si { display: inline-flex; }
 .status.hi, .status.lo { background: var(--alarm-bg); }
 .status.hi .si, .status.lo .si { color: var(--alarm); }
 .status.sus { background: var(--warn-bg); }
@@ -411,7 +413,7 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
 .modctl-txt { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .modctl-k { flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--text-3); }
 .modctl-v { min-width: 2ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
-.modctl-chev { flex: 0 0 auto; font-size: 11px; color: var(--text-2); }
+.modctl-chev { flex: 0 0 auto; display: inline-flex; font-size: 16px; color: var(--text-2); }
 .modsel {
   position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0;
   opacity: 0; cursor: pointer; font: inherit; font-size: 16px; /* 16px: no iOS zoom on focus */
@@ -455,7 +457,7 @@ h2 { font-size: 20px; line-height: 28px; font-weight: 700; margin: 0; }
   display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; border-radius: 6px; flex-shrink: 0;
   font-size: 11px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; color: var(--text-2); background: var(--sunken);
 }
-.stag .si { font-size: 10px; }
+.stag .si { display: inline-flex; }
 .stag.verified .si { color: var(--ok); }
 .stag.candidate .si { color: var(--warn); }
 .stag.sniff .si { color: var(--text-3); }
@@ -567,7 +569,7 @@ main.replay-edge { border: 3px solid var(--warn); padding: 13px; }
 
 /* "● Latest": re-pin the cursor to the newest sample of the drive in progress */
 .replay-follow { display: inline-flex; align-items: center; gap: 4px; }
-.replay-follow .replay-follow-dot { color: var(--text-2); font-size: 10px; }
+.replay-follow .replay-follow-dot { display: inline-flex; color: var(--text-2); }
 .replay-follow[aria-pressed="true"] .replay-follow-dot { color: var(--accent); }
 
 /* the flag sheet */

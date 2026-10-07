@@ -5,6 +5,7 @@
 import type { Units } from "../../lib/format";
 import { showValue } from "./labels";
 import { legendGradient, type Range, type TraceLane } from "./trace";
+import { Icon } from "../../icons/Icon";
 
 export type LegendTrace = {
   lane: TraceLane; channel: string; label: string; range: Range | null; unit: string; colors: readonly string[];
@@ -34,7 +35,7 @@ export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic 
           <div key={t.lane} className="replay-legend-row" data-lane={t.lane}>
             <button type="button" className="rchip replay-legend-pick" aria-label={`Trace ${L}: ${t.label} — change channel`} onClick={() => onEdit(t.lane)}
               data-channel={t.channel}>
-              <span className="replay-lane-tag" aria-hidden="true">{L}</span>{t.label} <span aria-hidden="true">▾</span>
+              <span className="replay-lane-tag" aria-hidden="true">{L}</span>{t.label} <Icon name="keyboard_arrow_down" size="1.2em" className="icon-inline" />
             </button>
             <div className="replay-legend-key" role="img"
               aria-label={t.range && lo && hi ? `Trace ${L}, ${t.label} from ${lo.text} to ${hi.text} ${hi.unit}` : `Trace ${L}, ${t.label}: no values`}>
@@ -56,7 +57,7 @@ export function TraceLegend({ traces, units, onEdit, onAddB, classic, onClassic 
       <div className="replay-legend-tools">
         {onAddB ? <button type="button" className="rchip" onClick={onAddB}>+ Add trace</button> : null}
         <button type="button" className="rchip" aria-pressed={classic} onClick={() => onClassic(!classic)}
-          title="Two-colour gradients for channels other than speed: blue → red (trace A), green → purple (trace B)">Classic colours</button>
+          title="Two-colour gradients for channels other than speed: blue to red (trace A), green to purple (trace B)">Classic colours</button>
       </div>
     </div>
   );

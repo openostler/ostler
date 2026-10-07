@@ -124,7 +124,7 @@ test("traces A and B through the channel picker, then the satellite toggle", asy
   await page.screenshot({ path: "test-results/logs-traces.png", fullPage: true });
 });
 
-test("opening a demo log lands on Analysis; the transport follows to another destination; ‹ Sessions returns to Logs", async ({ page }) => {
+test("opening a demo log lands on Analysis; the transport follows to another destination; Back to sessions returns to Logs", async ({ page }) => {
   await returningUser(page);
   await page.goto("/");
   await openDemo(page);
@@ -133,7 +133,7 @@ test("opening a demo log lands on Analysis; the transport follows to another des
   await expect(page.getByTestId("global-transport")).toBeVisible();
   await navButton(page, "Logs").click();
   await navButton(page, "Analysis").click();
-  await page.getByRole("button", { name: "‹ Sessions" }).click();
+  await page.getByRole("button", { name: "Back to sessions" }).click();
   await expect(navButton(page, "Logs")).toHaveAttribute("aria-current", "page");
   await expect(page.locator("button.replay-row").first()).toBeVisible();
   await expect(page.getByTestId("global-transport")).toHaveCount(0);
@@ -224,7 +224,7 @@ test("inline edit of a session's name and description", async ({ page }) => {
   await expect(page.getByText("Written by the e2e test.")).toBeVisible();
 
   // persisted: the browser lists it by its new name
-  await page.getByRole("button", { name: "‹ Sessions" }).click();
+  await page.getByRole("button", { name: "Back to sessions" }).click();
   await expect(page.locator(`button.replay-row[data-session="${id}"]`)).toContainText("E2E test drive");
 });
 

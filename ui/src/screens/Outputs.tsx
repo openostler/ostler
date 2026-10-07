@@ -13,6 +13,7 @@ import { pageOf, STABLE_EMPTY, visibleGroups } from "../lib/catalog";
 import { useApp } from "../state/app";
 import { formatClock } from "../state/playback";
 import { useReplay, type Replay } from "../state/replay";
+import { Icon } from "../icons/Icon";
 
 /** Replay: the item whose action is the latched test at the cursor is highlighted, and each
  * item shows when one of its actions last ran ("ran at HH:MM:SS ✓/✗", from `command` events). */
@@ -26,7 +27,7 @@ function ReplayItem({ item, replay, children }: { item: CatalogItem; replay: Rep
       {running ? <div className="replay-itemnote small"><span className="pdot yellow" aria-hidden="true" /> running at this moment</div> : null}
       {last ? (
         <div className={`replay-itemnote small${last.ok ? "" : " bad"}`}>
-          ran at {formatClock(last.t, replay.offset)} {last.ok ? "✓" : "✗"}
+          ran at {formatClock(last.t, replay.offset)} <Icon name={last.ok ? "check" : "close"} size="1.1em" className="icon-inline" />{last.ok ? "ok" : "failed"}
           {!last.ok && last.error ? <span className="dis"> · {last.error}</span> : null}
         </div>
       ) : null}
