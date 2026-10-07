@@ -2,11 +2,11 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.4
+version: 2.5
 updated: 2026-10-07
 depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals. v2.4 adds a proposed mission restatement (2026-10-07, awaiting the owner; ADR-0042 proposed): Ostler is an ecosystem whose main goal is getting the car's data into apps, with a small core and add-ons as the product, Home Assistant style. The approved text follows unchanged: the tagline ("an open, smart-home-like ecosystem for your car; it reads your car's diagnostics and live data, then grows with add-ons"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
+  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md.
 ---
 
 # Goals
@@ -18,31 +18,28 @@ What Ostler is for and what comes next. The long term is in
 [ADRs](decisions/CLAUDE.md) and the [research](references/research/platform.md). Where they
 disagree with this file, they win. The hard rules are in [CONSTITUTION.md](CONSTITUTION.md).
 
-## 0. Proposed mission (2026-10-07, awaiting the owner)
+## 1. Tagline and mission
 
-*Proposed wording from the owner's ecosystem direction; the approved text below stands until
-the owner accepts [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md).*
+> **Ostler: an open ecosystem that gets your car's data into apps.**
 
-> **Ostler is an ecosystem whose main goal is getting your car's data into apps.** A small
-> core reads and interprets the car and hands its data, safely and privately, to add-ons;
-> **the add-ons are the product.**
+**Ostler is an ecosystem whose main goal is getting your car's data into apps**
+([ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)). A small
+core reads and interprets the car and hands its data, safely and privately, to add-ons;
+**the add-ons are the product.**
 
 - **Home Assistant style:** one core product (one app, one shell) with installable add-ons;
-  no separate apps per feature; thin Android Auto, CarPlay and watch companions maybe later,
-  each within its platform's rules.
+  no separate apps per feature; thin Android Auto, CarPlay and watch companions later, each
+  within its platform's rules (the first, CarPlay Driving Task, only after Trips and Drive
+  mode ship on the head unit).
 - **Small core:** the shell (layouts, status strip, rail, Drive mode, sign-in and invites, the
-  VSS data stream, the gate client, the app registry, the Add-ons catalogue), Diagnose,
-  **Trips** (was Logs), Network, and Security once a node exists.
-- **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, and Decode
-  lab for developers, plus hardware add-on modules. Map: [docs/ecosystem.md](docs/ecosystem.md).
+  VSS data stream, the gate client, the app registry, the Add-ons catalogue at More →
+  Add-ons), Diagnose, **Trips** (was Logs), Network, and Security once a node exists.
+- **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (one
+  add-on per integration), and Decode lab for developers, plus hardware add-on modules.
+  Map: [docs/ecosystem.md](docs/ecosystem.md).
 - **Promises:** the node gate is the only path to the car; every data class starts in ghost
   (shared with no one); Export all, and nothing in core needs an Ostler-run server; no
   driving score in core.
-
-## 1. Tagline and mission
-
-> **Ostler: an open, smart-home-like ecosystem for your car. It reads your car's
-> diagnostics and live data, then grows with add-ons.**
 
 **Ostler is an open, local-first automotive ecosystem: a smart-home-like platform for your
 car.** A diagnostic **node** interfaces with the vehicle you already have and turns its
@@ -70,7 +67,8 @@ interchangeable and integrate with Home Assistant and the wider IoT world.
   them except through the node's transmit gate. "Standard networking everywhere"
   applies to *our* ecosystem. Displays use Wi-Fi or USB.
 - **The core mission stays narrow** ([SCOPE.md](SCOPE.md)): communication with the car and
-  interpretation of its data. Everything else, add-on modules included, builds on that.
+  interpretation of its data. Getting that data into apps is what the ecosystem is for;
+  everything else, add-ons and add-on modules included, builds on the core.
 - It starts with the **Land Rover Discovery 2 Td5**, which talks K-line rather than CAN,
   and grows to any car.
 
@@ -225,6 +223,9 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-07: v2.5, mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042
+  accepted): the proposed §0 is folded into §1 as the real text; the tagline reads "Ostler:
+  an open ecosystem that gets your car's data into apps"; the core mission stays narrow.
 - 2026-10-07: v2.4, proposed §0 (awaiting the owner; ADR-0042 proposed): Ostler as an
   ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the
   product; the rest of the file unchanged.
@@ -247,6 +248,9 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
   add-ons, networking and integrations; Phase 4 becomes add-on modules (ADR-0026, ADR-0027).
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **Adopt §0 as the mission?** Recommend: yes, and fold it into §1 (tagline: "Ostler: an
    open ecosystem that gets your car's data into apps"). Alternative: keep §1's tagline and

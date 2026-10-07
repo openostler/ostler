@@ -2,11 +2,11 @@
 title: "ADR-0034 — Repo boundaries: one platform repo, first-class firmware, packs as data, later hardware and contract repos"
 area: decisions
 status: locked
-version: 1.2
-updated: 2026-10-06
+version: 1.3
+updated: 2026-10-07
 depends_on: [decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, specs/2026-10-06-app-model-design.md, SCOPE.md]
 summary: >
-  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build.
+  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build. Amended 2026-10-07 (ADR-0042, approved by the owner, "approve all"): the add-on repos `ostler-app-social`, `ostler-app-vehicles` and `ostler-app-maintenance`, and later `ostler-app-lubelogger` (none created yet); Trips replaces Logs among the core apps, and Decode lab is a developer add-on whose code stays in `ostler`.
 ---
 
 # ADR-0034 — Repo boundaries
@@ -14,6 +14,9 @@ summary: >
 > **Amended 2026-10-06:** optional UI apps may live in their own `ostler-app-<x>` repos;
 > the shell and core apps stay in `ostler`; the Meshtastic bridge lives in a marked GPL-3
 > repo, `ostler-bridge-meshtastic` (ADR-0038). See [Amendments](#amendments-2026-10-06).
+> **Amended 2026-10-07 (approved by the owner, "approve all"; ADR-0042):** the add-on repos
+> `ostler-app-social`, `ostler-app-vehicles`, `ostler-app-maintenance` and later
+> `ostler-app-lubelogger`. See [Amendment (2026-10-07)](#amendment-2026-10-07).
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). **Amends** the repo tables of
@@ -145,3 +148,32 @@ so the hardware stays open as the code does). GPL-3 reuse stays in marked module
   Core, the C decoder and the node firmware never import or link it; it talks to Ostler only
   over MQTT under its own ACL. It is excluded from the commercial build, and its `reuse lint`
   shows GPL-3.0-or-later.
+
+## Amendment (2026-10-07)
+
+Approved by the owner on 2026-10-07 ("approve all") with
+[ADR-0042](adr-0042-ecosystem-small-core-addons-are-the-product.md) (small core, add-ons are
+the product). The grounds are the 2026-10-06 rule's: **release cadence** and
+**contributors**. The core apps that stay in `ostler` are now Diagnose, **Trips** (was Logs),
+Network and Security; Decode lab becomes a developer add-on whose code stays in `ostler`
+until this ADR's split rule applies. The table gains these add-on repos, **none created
+yet**; each starts from its approved spec:
+
+| Repo | Visibility, licence | Contents | When |
+|---|---|---|---|
+| `ostler-app-social` | public; AGPL-3.0-or-later (ADR-0012) | The Social add-on: messaging, push-to-talk, calls, later camera sharing ([spec](../specs/2026-10-07-social-addon-design.md)) | When Social S1 starts |
+| `ostler-app-vehicles` | public; AGPL-3.0-or-later | The Vehicles & Map add-on: shared vehicles and the built-in map ([spec](../specs/2026-10-07-vehicles-and-map-addon-design.md)) | When Vehicles & Map V1 starts |
+| `ostler-app-maintenance` | public; AGPL-3.0-or-later (files translated from LubeLogger: `AGPL-3.0-or-later AND MIT`) | The Maintenance & Garage add-on ([spec](../specs/2026-10-07-maintenance-garage-addon-design.md)) | When Maintenance M1 starts |
+| `ostler-app-lubelogger` | public; AGPL-3.0-or-later | The optional LubeLogger bridge, one integration add-on | Later, after Maintenance M2 |
+
+The MeshCore bridge, `ostler-bridge-meshcore` (MIT), is named by
+[ADR-0038](adr-0038-mesh-car-to-car-and-off-grid.md#amendment-2026-10-07-approved) item 1 and
+is created after the Meshtastic bridge and the bench test.
+
+## Changelog
+
+- 2026-10-06: v1.0–v1.2, accepted and amended (optional app repos; the Meshtastic bridge repo).
+- 2026-10-07: v1.3, Amendment (2026-10-07): the add-on repos `ostler-app-social`,
+  `ostler-app-vehicles`, `ostler-app-maintenance` and later `ostler-app-lubelogger` (not yet
+  created); Trips among the core apps; Decode lab a developer add-on (ADR-0042, approved by
+  the owner, "approve all").

@@ -1,20 +1,20 @@
 ---
 title: "Social add-on — messaging, push-to-talk, calls and camera sharing over the internet and meshes — design"
 area: specs
-status: draft
-version: 0.1
+status: stable
+version: 0.2
 updated: 2026-10-07
 depends_on: [references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
-  Draft for owner review (2026-10-07). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions.
+  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions.
 ---
 
-# Social add-on — design (draft)
+# Social add-on — design
 
-**Status: draft for owner approval.** Nothing here is built before the app model's UA phase
+**Status: approved by the owner on 2026-10-07 ("approve all"), v0.2.** Nothing here is built before the app model's UA phase
 and the accounts phases it depends on (§11). It is a design for the optional add-on
 `ostler-app-social` (ADR-0034, ADR-0042 "Ecosystem: small core, add-ons are the product",
-Proposed). The research is linked, not repeated:
+accepted). The research is linked, not repeated:
 [social and group-ride apps](../references/research/social_group_drive_apps.md),
 [mesh transports](../references/research/mesh_transports.md),
 [calls, video and cameras](../references/research/calls_video_camera_sharing.md),
@@ -48,7 +48,7 @@ Social is a first-party optional app (app-model §3 row "Social"), bundled into 
 
 | Slot | What | Driving rule |
 |---|---|---|
-| **More → Social** page (a new `more:social` slot, by platform proposal; app-model §4.2) | Tabs: **Chats** (1:1, groups, ride channels), **Calls** (history, local only), **Rides** (live ride panel: members, talk, link badges), **Cameras** (S4) | Parked or passenger only; while Moving the page is replaced by the templates below |
+| **More → Social** page (a new `more:social` slot, added by platform change; app-model §4.2, §14.7) | Tabs: **Chats** (1:1, groups, ride channels), **Calls** (history, local only), **Rides** (live ride panel: members, talk, link badges), **Cameras** (S4) | Parked or passenger only; while Moving the page is replaced by the templates below |
 | **Home card** | active ride (name, members heard, time left), unread count, ongoing call | Moving: hidden; the strip chip carries it |
 | **Strip chip** (one, shown only while a ride or call is active) | "Ride: Peak · PTT" or "Call · 04:12"; tap opens the call/PTT sheet | Always allowed; the sheet is the `call` template while Moving |
 | **Alert cards** | incoming call, new message, peer alert, "being viewed" | `alert_card` / `call` while Moving (§8) |
@@ -61,7 +61,7 @@ folds into the visibility chip core defines is Decision 3.
 
 Social **consumes** the model in the
 [accounts and sharing spec](2026-10-06-accounts-sharing-design.md), including its
-"Proposed amendment (2026-10-07)" (contacts and groups as first-class objects, the one
+§14 "Amendment (2026-10-07), approved" (contacts and groups as first-class objects, the one
 data-class registry with audiences me / person / group / household / public-later, ghost on by
 default, invite links, QR and short codes). It does not redefine any of them. What Social adds:
 
@@ -149,9 +149,9 @@ fallback.
 | `sync` (summaries, photos) | internet, Wi-Fi mesh, HaLow when idle | lowest priority, metered | wait |
 
 Over a mesh, live voice, video and camera streams run **only between members of the same ride**
-(ADR-0038 Proposed amendment of 2026-10-07). The thresholds are estimates for the bench.
+(ADR-0038 amendment of 2026-10-07, approved). The thresholds are estimates for the bench.
 
-**MQTT topics** (module-bus spec §16, ADR-0038 Proposed amendment item 5). The router is a device
+**MQTT topics** (module-bus spec §16, ADR-0038 amendment of 2026-10-07 item 5). The router is a device
 `social` that publishes only under its own prefix; no new topic is a command topic:
 
 | Topic (`ostler/v1/<vid>/…`) | Content |
@@ -262,8 +262,14 @@ the broker; no VIN, `<vid>` or plate in any envelope.
 ## Changelog
 
 - 2026-10-07: v0.1, first draft (Social add-on; reconciles the mesh transports and calls notes).
+- 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all"): every decision
+  answered as recommended (alternatives not chosen); the `more:social` slot is added to
+  app-model §4.2 (§14.7); ADR-0038's mesh amendment approved with it.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **Scope** — is Social messaging, PTT, calls and later cameras, with no feed or map? *Recommend:* yes. *Alternative:* add a group feed of ride summaries now (accounts spec §6).
 2. **Placement** — More → Social page plus Home card, strip chip and alert cards? *Recommend:* yes, with a new `more:social` slot by platform proposal. *Alternative:* make Social a destination in place of one of the five.

@@ -2,11 +2,11 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-07
 depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, specs/2026-10-06-app-model-design.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, references/research/calls_video_camera_sharing.md, references/research/maintenance_trackers.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Proposed amendment (2026-10-07, awaiting the owner, §14): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node.
+  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Amendment (2026-10-07, §14), approved by the owner on 2026-10-07 ("approve all"): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node.
 ---
 
 # Accounts, multi-vehicle garage, sharing and social — design
@@ -16,8 +16,9 @@ summary: >
 categories, phone approval and the remote rule,
 [ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md). Each phase may split
 into its own spec; the questions the owner did not take up (§13) block nothing in P1.
-**Proposed amendment (2026-10-07):** [§14](#14-proposed-amendment-2026-10-07-one-permission-model-and-the-shell-screens),
-awaiting the owner, unifies the permission vocabulary and specifies the shell screens.
+**Amendment (2026-10-07), approved:** [§14](#14-amendment-2026-10-07-approved-one-permission-model-and-the-shell-screens),
+approved by the owner on 2026-10-07 ("approve all") (v0.6), unifies the permission
+vocabulary and specifies the shell screens.
 
 ## 1. Where we are, plainly
 
@@ -342,18 +343,18 @@ Q1, Q2 and Q7 are answered; the rest stay open and block nothing in P1.
 8. Should Ostler Cloud ever hold a Meta app for automatic posts, or only share links and
    the owner's own bots?
 
-## 14. Proposed amendment (2026-10-07): one permission model and the shell screens
+## 14. Amendment (2026-10-07), approved: one permission model and the shell screens
 
-**Status: proposed, awaiting the owner.** Nothing above changes until the owner approves; once
-approved, where this section differs from §2–§10, this section wins. It is the one
+**Status: approved by the owner on 2026-10-07 ("approve all").** Where this section differs
+from §2–§10, this section wins. It is the one
 permission model that **Social** and **Vehicles & Map** (add-ons under
-[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md), Proposed)
+[ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md), accepted)
 consume: they read it through the shell API and store no permissions of their own. Evidence:
 [accounts and sign-in in practice](../references/research/accounts_social_login.md),
 [social and group-drive apps](../references/research/social_group_drive_apps.md) (D1–D9),
 [calls, video and cameras](../references/research/calls_video_camera_sharing.md) §8 (camera
 scope), [maintenance trackers](../references/research/maintenance_trackers.md) §4 (maintenance
-class). ADR text it touches: [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md#proposed-amendment-2026-10-07)
+class). ADR text it touches: [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md#amendment-2026-10-07-approved)
 §1, §2, §4, §7, §8, §9.
 
 ### 14.1 The data-class registry
@@ -642,6 +643,9 @@ earliest.
 
 ### 14.15 Decisions for the owner
 
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen. Ghost mode never blocks messaging or calls.
+
 1. **One data-class registry replacing levels, location levels, token classes and
    `permissions.data`?** Recommend yes, add-on-extensible, levels kept as presets.
    Alternative: keep levels and bolt new classes (video per camera, maintenance) onto them.
@@ -684,3 +688,6 @@ earliest.
 - 2026-10-06 — v0.3: wording only: "Ostler Lite" reads Ostler Diagnostics (ADR-0039).
 - 2026-10-06 — v0.4, product name per the ADR-0039 amendment: "Ostler Hub" is now **Ostler Brain**; "hub" (our compute box) reads "Brain".
 - 2026-10-07 — v0.5 (proposed, awaiting the owner): §14 added: the data-class registry, audiences, ghost mode, the visibility rule, precision limits, contacts, groups and invite codes, the shell screens S1–S10, social login, the Basic Auth end, `auth.db` placement and recovery, "user role", and the research gaps G1–G13 mapped. Sections 1–13 unchanged.
+- 2026-10-07 — v0.6: §14 approved by the owner on 2026-10-07 ("approve all"): renamed
+  "Amendment (2026-10-07), approved"; where it differs from §2–§10 it wins; every §14.15
+  decision answered as recommended (alternatives not chosen); ADR-0042 cited as accepted.

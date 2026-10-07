@@ -2,18 +2,18 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-07
 summary: >
-  v1.4 adds a proposed restatement (2026-10-07, awaiting the owner; ADR-0042 proposed): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. The approved text follows unchanged: the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers.
+  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on.
 ---
 
 # Scope & architecture
 
-## Proposed restatement (2026-10-07, awaiting the owner)
+## Mission
 
-*Proposed wording per [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)
-(proposed); the approved text below stands until the owner accepts it.*
+Per [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (accepted
+2026-10-07):
 
 **Ostler is an ecosystem whose main goal is getting the car's data into apps. The core is
 small; the add-ons are the product.** The core's own job does not widen: it is still
@@ -121,17 +121,26 @@ The hard rule doesn't change: core never imports from vehicle packs or integrati
 - **HEVAC (climate) control** lives in a separate ESP32 project. This repo only talks to
   it, for example over the add-on CAN bus.
 
-- The car's own faults and maintenance history — those belong in the sister project
-  `../Discovery 2/`, not here.
+- The owner's own Discovery 2 fault and maintenance records belong in the sister project
+  `../Discovery 2/`, not here. Maintenance as a feature (services, reminders, fuel, costs)
+  is the [Maintenance & Garage add-on](specs/2026-10-07-maintenance-garage-addon-design.md),
+  in its own repo.
 
 See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack and [CONSTITUTION.md](CONSTITUTION.md) for the hard rules.
 
 ## Changelog
 
+- 2026-10-07: v1.5, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted):
+  the restatement is the mission text at the top; the out-of-scope line narrows "maintenance
+  history" to the owner's own Discovery 2 records, maintenance as a feature being the
+  Maintenance & Garage add-on.
 - 2026-10-07: v1.4, proposed restatement at the top (awaiting the owner; ADR-0042 proposed);
   the rest unchanged.
 
 ## Decisions for the owner
+
+Answered 2026-10-07: approved as recommended ("approve all"). Each recommendation below is
+the decision; each alternative was not chosen.
 
 1. **Adopt the restatement?** Recommend: yes; it keeps the layering and the hard rule and
    names add-ons as the product. Alternative: leave SCOPE as is and state the ecosystem goal
