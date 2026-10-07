@@ -45,4 +45,8 @@ Contract (specs/2026-10-05-session-logbook-design.md):
   ``SessionRecorder(..., vid=None, state_dir=None)`` stamps ``vid`` into every new
   non-synthetic session; ``SessionStore(..., vid=None, state_dir=None)`` reads a session
   without one as the local vid; the index (schema 3) has a ``vid`` column.
+* Trip sharing TS1 (specs/2026-10-07-trip-sharing-design.md): ``share.build_share(session
+  dir, ShareOptions) -> ShareBundle`` (verified ``ostler.share/1`` zip, raises
+  ``ShareRefused`` / ``ShareBlocked``), ``share.write_share``, ``share.verify_bytes`` /
+  ``verify_bundle`` (exit codes 0, 1, 2), ``share.ZoneStore`` (privacy zones).
 """

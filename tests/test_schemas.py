@@ -23,7 +23,8 @@ from openostler.logbook.recorder import SessionRecorder
 from tests.fake_pack import FAKE_PACK
 
 SCHEMAS = Path(__file__).resolve().parents[1] / "schemas"
-NAMES = ("signal-store", "layout", "vehicle", "session-meta", "kline-profile", "can-tx-allowlist")
+NAMES = ("signal-store", "layout", "vehicle", "session-meta", "kline-profile", "can-tx-allowlist",
+         "share")
 
 
 def _schema(name: str) -> dict:

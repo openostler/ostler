@@ -82,7 +82,13 @@ class _Stream:
         self.refused = 0
         self.unlabelled = 0
         self.first_seq_mismatch = 0
-        self.scrub = IdentityScrub()
+        from ..pack import active_identity_table
+
+        buses = (header or {}).get("buses")
+        self.scrub = IdentityScrub(active_identity_table(),
+                                   {b.get("idx"): str(b.get("bus_id")) for b in buses
+                                    if isinstance(b, dict) and b.get("bus_id")}
+                                   if isinstance(buses, list) else None)
         self.mode: "str | None" = None
         self.dirty = False
 
