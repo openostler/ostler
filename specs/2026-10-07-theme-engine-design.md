@@ -2,9 +2,9 @@
 title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
-depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/design/2026-10/claude-design/README.md]
+depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/research/deep_theming_mechanics.md, references/design/2026-10/claude-design/README.md]
 summary: >
   Approved by the owner on 2026-10-07 (decisions 1–4 as recommended; decision 5 open). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Phases TE1–TE6 and open decisions.
 ---
@@ -211,6 +211,12 @@ hero and gauge style. Per-mode files override `base`. A **variation** is a named
 override, such as Walnut or Oxblood, picked in Edit theme; this works like WordPress style
 variations and Spicetify schemes. Every token becomes a CSS variable and an OSML variable.
 
+**Derived defaults and dials.** Most tokens are derived from a few seeds (background,
+surface, text, accent) and three dials: density, roundness and contrast. VS Code, Material
+and libadwaita derive tokens the same way. A five-token skin therefore still looks complete,
+and a skin written before a new token existed gets a sensible value for it. A skin can
+override any derived token.
+
 ### 3.2 Free-form CSS
 
 The skin's CSS files load into cascade layers, so the order is predictable and user tweaks
@@ -226,7 +232,12 @@ always win:
 - **Files are scoped.** `styles/screens/drive.css` applies only to `[data-screen^="drive"]`.
 - **Selectors use the hooks of §6:** `[data-part="tile-value"]`, `[data-tone="alarm"]`,
   `[data-driving="moving"]`.
-- **Live data reaches CSS.** Bound signals become variables on the screen root, such as
+- **No `!important`.** Inside cascade layers, `!important` reverses the layer order, so it
+  would beat the user's tweaks. The importer strips it and says so.
+- **Live data reaches CSS.** Bound signals become variables on the smallest element that
+  shows them (the tile, gauge or hero), not on the screen root, because changing a variable
+  at the root restyles the whole page. A skin that wants a screen-wide effect binds the
+  signal on the screen in OSML (`<screen sig="rpm-ratio">`). Examples are
   `--sig-speed`, `--sig-rpm-ratio` (0–1) and `--sig-coolant`. Band attributes such as
   `data-rpm-band="redline"` are also set. A skin can therefore tint the background with rpm
   or light a shift bar in pure CSS:
@@ -482,9 +493,21 @@ on), and can hide a built-in option only by offering its own replacement.
 
 Above any skin and its options, the user can add small CSS snippets and XML overrides,
 called **My tweaks**. They work like Obsidian snippets and live in the `user` cascade layer.
-My tweaks survive skin updates and can be exported.
+My tweaks and option values are **stored apart from the pack**, as WordPress and Shopify
+store user edits apart from theme files. So:
 
-## 4. Load order and fallback
+- My tweaks survive skin updates, and a value is kept even when an update drops its
+  option;
+- Reset clears them, and "Save into skin" turns them into a duplicate skin;
+- they can be exported.
+
+## 4. Compile on import, load order and fallback
+
+**Compile once.** On import or update, the engine parses, validates, migrates (§6) and
+sanitises a pack once, and stores a compiled form: merged tokens, CSS with layers and scopes
+applied, parsed OSML trees and resized assets. Head units load only the compiled form, so
+start-up stays fast. RealDash and Webamp bake their published files the same way. The source
+pack is kept for editing and Duplicate.
 
 The skin engine resolves a skin in these steps:
 
@@ -531,8 +554,20 @@ in Studio and in More → Theme → Problems. **The UI never goes blank because 
 - Removing or renaming a hook needs one deprecation release, and the changelog lists every
   change, as Home Assistant lists changed theme variables.
 - Internal class names are hashed, so nothing but hooks can be targeted.
-- `api` in the manifest lets the engine warn about outdated skins, and Studio can migrate a
-  skin to the new hook names.
+- **Compatibility floor.** A skin declares `requires: {"hooks": "^1.2"}`. The shell
+  publishes its hook version and the oldest version it still accepts, as Kodi publishes its
+  GUI API version with a floor. Older skins are **migrated automatically** on import: renamed
+  hooks, elements and option ids are rewritten from a migration table shipped with the shell,
+  as WordPress migrates old theme.json files. Skins are never refused for being old; what
+  cannot be migrated falls back to the parent (§4).
+- **One component registry in code.** Each kit component declares:
+  - its view model (the data it receives);
+  - its parts and slots;
+  - its built-in look.
+
+  The published hook list, the OSML schema, editor completion, TypeScript types and the CI
+  check that fails on an undeprecated removal are all generated from that registry, so the
+  documentation cannot drift from the code.
 
 ## 7. Security and performance
 
@@ -544,7 +579,12 @@ in Studio and in More → Theme → Problems. **The UI never goes blank because 
 - **Images** are decoded and re-encoded on import. SVG is sanitised: scripts, event handlers
   and external references are removed.
 - **Performance:** Studio shows the frame time, the pack size and the number of
-  layers on the slowest connected head unit. Budgets warn; they do not block.
+  layers on the slowest connected head unit. Budgets warn on local installs and never
+  block them. A Store or Community **listing** must meet the budget, so users browsing the
+  catalogue get skins that run well.
+- **Browser floor:** the engine uses cascade layers, `@scope` and container queries, so the
+  head unit's browser engine must be Chromium 118 or newer, or equivalent. The research
+  could not confirm which engine Ostler's head units run, so this needs checking in TE1.
 
 ## 8. Distribution
 
@@ -601,8 +641,29 @@ Each is a starting point for Duplicate.
    - *Alternative:* OSML bindings only.
 
    **Decisions 1–4 were answered by the owner on 2026-10-07 ("yes agreed"), as recommended.**
-5. **Safety render check** (visual §13.8 D1): waits for the repo rules audit the owner asked
-   for.
+5. **Safety render check** (visual §13.8 D1): waits for the owner's answer on the repo rules
+   audit.
+6. **Protected surfaces.**
+   - *Recommend:* a few surfaces render where skins cannot reach, styled by tokens only:
+     - car-action confirmations (Tier 1–3);
+     - consent and permission prompts;
+     - safe mode;
+     - Store install and purchase sheets;
+     - other publishers' widget frames' permission badges.
+
+     Free CSS can relabel or swap buttons, so a skin could make "Cancel" read "Confirm" on
+     a clear-codes sheet. GNOME's 2023 open letter about themes breaking apps is the
+     evidence ([mechanics research](../references/research/deep_theming_mechanics.md)).
+   - *Alternative:* skins reach everything.
+7. **Required parts.**
+   - *Recommend:* a template or layout that leaves out a component's required parts falls
+     back to the built-in look for that component. The required parts are the telltale, an
+     alarm alert's word and buttons, and the Drive speed. The parts can be restyled freely;
+     they just have to exist. Shopify's static blocks work this way.
+   - *Alternative:* no required parts.
+8. **Locked skins.**
+   - *Recommend:* every skin can be duplicated; no locked or obfuscated packs.
+   - *Alternative:* authors can lock a skin, as KWGT can.
 
 ## Changelog
 
@@ -619,4 +680,17 @@ Each is a starting point for Duplicate.
   bundles as curated sets. Gauges are widgets with their own options at pack, widget and
   follow-theme levels (Android widget and KWGT model). The background is independent of the
   skin and belongs to the user. §3.5 becomes the shared gauge drawing format. Draft: awaiting
+  the owner's review.
+- 0.4 (2026-10-07): from the [theme mechanics research](../references/research/deep_theming_mechanics.md):
+  - derived default tokens and dials;
+  - no `!important` in skin CSS;
+  - live-signal variables on the smallest element;
+  - user tweaks stored apart from packs;
+  - compile on import;
+  - a compatibility floor with automatic migration;
+  - one component registry that generates the hook list and schema;
+  - listing-only performance budgets;
+  - a browser floor of Chromium 118 or newer.
+
+  New open decisions 6–8: protected surfaces, required parts, locked skins. Draft: awaiting
   the owner's review.
