@@ -2,7 +2,7 @@
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-07
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
@@ -496,9 +496,10 @@ All of them are OFL. Figtree stays the face of Night and the shell's fallback.
 
 T1 builds on V1a; T2 lands with the V2 kit; T3–T5 follow.
 
-### 13.8 Open decisions
+### 13.8 Decisions
 
-These are from the [deep theming research](../references/research/deep_theming.md) §3:
+Answered by the owner on 2026-10-07 ("I agree with your recommendations"): D1–D3 as
+recommended below. These are from the [deep theming research](../references/research/deep_theming.md) §3:
 
 - **D1: A safety render check in Drive mode.** Recommended: no variant, but after a theme
   applies on a head unit in Drive mode, the shell checks that:
@@ -558,3 +559,6 @@ the decision; each alternative was not chosen.
   API, drops the automatic Moving-safe variant (themes look the same while Moving), opens font
   choice to any embeddable licence, and lists open decisions D1–D3 from the deep theming
   research.
+- 0.6 (2026-10-07): §13.8 D1–D3 were answered by the owner as recommended: the Drive-mode
+  render check, glow and blur allowed on moving head units with D1 as the guard, and
+  Community publishing with no review gate, a "custom CSS" label and a preview.

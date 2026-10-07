@@ -2,16 +2,16 @@
 title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/research/deep_theming_mechanics.md, references/design/2026-10/claude-design/README.md]
 summary: >
-  Approved by the owner on 2026-10-07 (decisions 1–4 as recommended; decision 5 open). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Phases TE1–TE6 and open decisions.
+  Approved by the owner on 2026-10-07 (decisions 1–8 as recommended). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Phases TE1–TE6 and open decisions.
 ---
 
 # Theme engine — design
 
-**Status:** approved by the owner on 2026-10-07 ("yes agreed"), v0.2; decision 5 is still open. It answers the owner's direction:
+**Status:** approved by the owner on 2026-10-07 ("yes agreed"), v0.2; decisions 5–8 answered the same day (v0.5). It answers the owner's direction:
 "the themes before were rubbish … basically custom CSS, free-form CSS files, stylesheets,
 textures, backgrounds, and layouts etc, XMLs, think of an extremely powerful way to theme",
 and the decision the same day that themes can change anything and look the same while Moving
@@ -198,6 +198,39 @@ heritage.ostskin
   a child skin can be a single CSS file. This works like WordPress child themes.
 - **`classes`** lists the screen sizes the skin has layouts for. Other sizes use the parent's
   layouts with the child's styles.
+
+### 2.6 Running as an Android launcher
+
+Ostler can also be the **home app (launcher) of an Android phone, tablet or Android head
+unit**, replacing the stock launcher. The theme engine works the same there, with these
+additions:
+
+- **Engine.** The shell runs in Android System WebView, which is Chromium and updates through
+  the Play Store on most devices. Cheap Android head units often ship an old WebView that
+  cannot be updated. TE1 checks the browser floor (§7) and shows "This device's WebView is
+  too old for full skins; using the built-in look" instead of a broken screen.
+- **Android widgets.** Native Android widgets (clock, weather, music, other apps) are hosted
+  next to Ostler widgets on the same pages, through Android's widget host (`AppWidgetHost`).
+  Their *contents* are drawn by their own apps, so a skin styles only their frame, corners and
+  spacing. Placement, resizing and the configure screen follow Android's rules.
+- **Android apps in the drawer and dock.** Installed Android apps appear as entries next to
+  Ostler apps. Skins style them like any drawer item.
+- **Icon packs.** Ostler icon packs also map **Android app icons**. The importer also reads
+  the de-facto Android icon pack format used by Nova, Lawnchair and others (`appfilter.xml`
+  mapping package/activity names to drawables), so existing packs work. Unmapped apps get the
+  pack's mask, shape and back-plate, as Android launchers do.
+- **Background.** There are two choices:
+  - use the **Android system wallpaper** as Ostler's background;
+  - set Ostler's chosen background **as the system wallpaper**, so the lock screen matches
+    and Material You derives its colours from it.
+
+  Either way the background stays the user's (§2.3).
+- **Material You colours.** On Android 12 and later, a skin can choose "seed from system
+  colours". Its derived tokens (§3.1) then take Android's dynamic palette, so Ostler matches
+  the rest of the phone. This is off by default for skins that set their own palette.
+- **The driving rules still apply.** When the launcher is on a driver-facing head unit and
+  the car is moving, the Moving content rules apply as on any Ostler head unit, including to
+  hosted Android widgets: those not mapped to a Moving template are hidden while Moving.
 
 ## 3. The six layers
 
@@ -641,8 +674,12 @@ Each is a starting point for Duplicate.
    - *Alternative:* OSML bindings only.
 
    **Decisions 1–4 were answered by the owner on 2026-10-07 ("yes agreed"), as recommended.**
-5. **Safety render check** (visual §13.8 D1): waits for the owner's answer on the repo rules
-   audit.
+5. **Safety render check** (visual §13.8 D1).
+   - *Recommend:* no Moving variant. After a skin applies on a head unit in Drive mode, the
+     shell checks that the telltale and alarm are visible, Drive digits are at least 56 px and
+     text has at least 4.5:1 contrast. If the check fails, Drive mode only falls back to the
+     built-in look, with a message saying why.
+   - *Alternative:* no check.
 6. **Protected surfaces.**
    - *Recommend:* a few surfaces render where skins cannot reach, styled by tokens only:
      - car-action confirmations (Tier 1–3);
@@ -664,6 +701,9 @@ Each is a starting point for Duplicate.
 8. **Locked skins.**
    - *Recommend:* every skin can be duplicated; no locked or obfuscated packs.
    - *Alternative:* authors can lock a skin, as KWGT can.
+
+   **Decisions 5–8 were answered by the owner on 2026-10-07 ("I agree with your
+   recommendations"), as recommended.**
 
 ## Changelog
 
@@ -694,3 +734,13 @@ Each is a starting point for Duplicate.
 
   New open decisions 6–8: protected surfaces, required parts, locked skins. Draft: awaiting
   the owner's review.
+- 0.5 (2026-10-07): the owner answered decisions 5–8 as recommended: the Drive-mode render
+  check, protected surfaces, required parts, and no locked skins. New §2.6 covers Ostler as an
+  Android launcher ("this can also be a launcher for Android"):
+  - WebView floor with a fallback;
+  - native Android widgets hosted through `AppWidgetHost`, with skins styling their frame;
+  - Android apps in the drawer;
+  - icon packs that map Android apps, reading the Nova/Lawnchair `appfilter.xml` format;
+  - the system wallpaper used or set;
+  - Material You seeding;
+  - the Moving rules applied to hosted widgets.
