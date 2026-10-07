@@ -2,7 +2,7 @@
 title: "Design hand-off, October 2026 — how designs come in, how they are reviewed, and every screen to design"
 area: references
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/visual_design_direction.md]
 summary: >
@@ -10,6 +10,15 @@ summary: >
 ---
 
 # Design hand-off, October 2026
+
+> **Designer brief (v0.4, draft): start at [brief/00-start-here.md](brief/00-start-here.md).**
+> The `brief/` folder holds page-by-page content for every screen of the Android-style Ostler
+> OS and its apps: 551 screens (127 Existing, 209 New, 215 Proposed), each tagged with its
+> owner (`os` or `app:<name>`). The full list is in [brief/99-index-a.md](brief/99-index-a.md),
+> [b](brief/99-index-b.md) and [c](brief/99-index-c.md). The direction it follows (UX first;
+> an empty OS where every app is an add-on; the launcher, app UI model, Store and head-unit
+> apps) is proposed in ADR-0045, ADR-0046 and four draft specs awaiting the owner's approval,
+> so Proposed screens may change. The screen table in §5 below lists only the original 127.
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** Every
 spec this folder cites was approved the same day. This folder receives the designs the owner commissions with
@@ -377,6 +386,13 @@ section numbers change, regenerate both `screens.json` and this table.
   "Amendment (2026-10-07, DMD round), approved" headings (here and in `screens.json` 0.3,
   whose review statuses are unchanged); checklist item 10 shows the approved message card
   and item 18 the approved editable rail.
+
+- **0.4 (2026-10-07, designer brief):** the `brief/` folder (00–99): sitemap, global
+  patterns, components, onboarding, hardware, system Settings, shell and Drive, launcher and
+  widgets, vehicle apps, sub-apps, Store, head-unit apps, Security, app framework, and a
+  generated index; `screens.json` 0.4 grows to 551 screens, each with `owner` and `brief`
+  (and `brief_also` where two areas cover one screen). Draft, following the owner's
+  2026-10-07 direction (Android-style OS, UX first), pending ADR-0045 and ADR-0046.
 
 ## Decisions for the owner
 

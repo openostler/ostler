@@ -1,0 +1,1740 @@
+[
+ {
+  "id": "setup-welcome",
+  "name": "Set up this Ostler (welcome, setup code, QR, restore)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full; 'Set up on this screen' needs Park evidence",
+   "moving": "locked view with the setup code and QR only (unknown speed counts as Moving; owner decision)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.1",
+    "heading": "2.1 Bootstrap",
+    "anchor": "21-bootstrap",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S1"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0021-local-https-on-the-device.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0021"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Card",
+   "QR panel (new component)",
+   "Button",
+   "ListRow",
+   "Sheet"
+  ],
+  "variants": [
+   "unknown speed: locked view + setup code",
+   "phone: I have the code"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-a.md#setup-welcome--set-up-this-ostler--new"
+ },
+ {
+  "id": "setup-prefs",
+  "name": "First run: language and units",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§10.1",
+    "heading": "10.1 Standards per phase",
+    "anchor": "101-standards-per-phase",
+    "label": "UI",
+    "note": "Intl units"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model",
+    "note": "i18n"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "ListRow",
+   "Segmented",
+   "Sheet",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-a.md#setup-prefs--language-and-units--proposed"
+ },
+ {
+  "id": "setup-trust",
+  "name": "Trust this Ostler on this device (certificate, fingerprint)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0021-local-https-on-the-device.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0021"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.2",
+    "heading": "2.2 Passkeys first, passwords always",
+    "anchor": "22-passkeys-first-passwords-always",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S3"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "Card",
+   "Segmented",
+   "ListRow",
+   "Button",
+   "Chip"
+  ],
+  "variants": [
+   "iPhone",
+   "Android",
+   "Computer",
+   "fingerprint mismatch"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#setup-trust--trust-this-ostler-on-this-device--new"
+ },
+ {
+  "id": "setup-app-connect",
+  "name": "Companion app: connect to your Ostler",
+  "area": "os (companion app)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§4",
+    "heading": "4. Multi-vehicle garage",
+    "anchor": "4-multi-vehicle-garage",
+    "label": "Accounts",
+    "note": "nearby devices"
+   },
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0039",
+    "note": "§7 setup mode and helper"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Button",
+   "Card",
+   "QR scanner frame (new component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#setup-app-connect--companion-app-connect-to-your-ostler--new"
+ },
+ {
+  "id": "setup-app-permissions",
+  "name": "Companion app: permissions with reasons",
+  "area": "os (companion app)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Amendment (2026-10-06): the phone build",
+    "anchor": "71-amendment-2026-10-06-the-phone-build",
+    "label": "App model",
+    "note": "item 3 native features"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model",
+    "note": "§14.3 phone boundary"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Card",
+   "Button",
+   "Chip"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#setup-app-permissions--companion-app-what-the-app-may-use--proposed"
+ },
+ {
+  "id": "setup-invite-accept",
+  "name": "Join this Ostler (person invite)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Two kinds of invite",
+    "anchor": "51-two-kinds-of-invite",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Invite payload",
+    "anchor": "52-invite-payload",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Roles",
+    "anchor": "31-roles",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Card",
+   "Chip",
+   "ListRow",
+   "Button",
+   "CodeInput (new component)"
+  ],
+  "variants": [
+   "expired",
+   "fingerprint mismatch"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#setup-invite-accept--join-this-ostler--new"
+ },
+ {
+  "id": "setup-device-code",
+  "name": "Approve a device code (RFC 8628) with scopes",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.4",
+    "heading": "2.4 Tokens",
+    "anchor": "24-tokens",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S2, S6"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "CodeInput (new component)",
+   "Segmented",
+   "Chip",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#setup-device-code--approve-a-device-code--new"
+ },
+ {
+  "id": "setup-vehicle-add",
+  "name": "Add vehicle: choose a pack or detect",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md",
+    "section": "§2.1",
+    "heading": "2.1 Repo placement",
+    "anchor": "21-repo-placement",
+    "label": "Packs"
+   },
+   {
+    "doc": "specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md",
+    "section": "§2.7",
+    "heading": "2.7 Identity and VIN",
+    "anchor": "27-identity-and-vin",
+    "label": "Packs"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§8.2",
+    "heading": "8.2 `generic_obd2` and \"unknown vehicle — help decode it\"",
+    "anchor": "82-generic_obd2-and-unknown-vehicle--help-decode-it",
+    "label": "UI"
+   },
+   {
+    "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0036"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "ListRow",
+   "Chip",
+   "Card",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-vehicle-add--add-vehicle--new"
+ },
+ {
+  "id": "setup-vehicle-name",
+  "name": "Name this car (nickname, driver side, photo, plate)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.1",
+    "heading": "4.1 Garage and active-vehicle switcher",
+    "anchor": "41-garage-and-active-vehicle-switcher",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts",
+    "note": "vehicle_card"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S1 Name this car"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-vehicle-name--name-this-car--new"
+ },
+ {
+  "id": "setup-source",
+  "name": "How Ostler reaches the car (node, adapter, not now)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§3",
+    "heading": "3. Where adapters sit with the node-first rules",
+    "anchor": "3-where-adapters-sit-with-the-node-first-rules",
+    "label": "Adapters"
+   },
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§9",
+    "heading": "9. UI (summary; detail in U-phase specs)",
+    "anchor": "9-ui-summary-detail-in-u-phase-specs",
+    "label": "Adapters"
+   },
+   {
+    "doc": "decisions/adr-0044-adapters-on-the-brain-without-a-node.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0044"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "Card",
+   "Chip",
+   "ListRow"
+  ],
+  "variants": [
+   "node present: adapter disabled",
+   "laptop host",
+   "phone browser"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-source--how-ostler-reaches-the-car--new"
+ },
+ {
+  "id": "setup-node-pair",
+  "name": "Pair an Ostler Diagnostics node (Brain adoption or phone owner)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0039",
+    "note": "§7"
+   },
+   {
+    "doc": "specs/2026-10-06-module-bus-messages-design.md",
+    "section": "§14",
+    "heading": "14. Discovery and mDNS TXT keys (ADR-0027 §6; ADR-0037 §3.3; ADR-0039 §7)",
+    "anchor": "14-discovery-and-mdns-txt-keys-adr-0027-6-adr-0037-33-adr-0039-7",
+    "label": "Module bus"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.7",
+    "heading": "3.7 Network page, peer view and cluster view (accepted 2026-10-06)",
+    "anchor": "37-network-page-peer-view-and-cluster-view-accepted-2026-10-06",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "ListRow",
+   "Button",
+   "Chip",
+   "Card"
+  ],
+  "variants": [
+   "Brain adopts",
+   "phone (Ostler Diagnostics alone)",
+   "Guardian"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-node-pair--pair-an-ostler-diagnostics-node--new"
+ },
+ {
+  "id": "setup-node-uplink",
+  "name": "The node's internet (Wi-Fi, 4G, none)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0039",
+    "note": "§5–§7"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.7",
+    "heading": "3.7 Network page, peer view and cluster view (accepted 2026-10-06)",
+    "anchor": "37-network-page-peer-view-and-cluster-view-accepted-2026-10-06",
+    "label": "UI",
+    "note": "uplinks"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-node-uplink--the-nodes-internet--new"
+ },
+ {
+  "id": "setup-first-contact",
+  "name": "First contact with the car (ladder, identify, first scan)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full (ignition on, engine off)",
+   "idling": "refused: engine must be off",
+   "moving": "refused: 'Park to run the first check'; nothing sent"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Identification and fallbacks",
+    "anchor": "44-identification-and-fallbacks",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-kline-profiles-detection-design.md",
+    "section": "§2",
+    "heading": "2. `kline.detect()` (`src/openostler/kline/detect.py`)",
+    "anchor": "2-klinedetect-srcopenostlerklinedetectpy",
+    "label": "K-line"
+   },
+   {
+    "doc": "specs/2026-10-07-source-adapters-design.md",
+    "section": "§7.2",
+    "heading": "7.2 One tester per bus",
+    "anchor": "72-one-tester-per-bus",
+    "label": "Adapters"
+   },
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0039",
+    "note": "§7 first scan"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "progress rows",
+   "StatTile",
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [
+   "running",
+   "done",
+   "bus busy",
+   "Moving refused"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#setup-first-contact--first-contact-with-the-car--new"
+ },
+ {
+  "id": "setup-display",
+  "name": "This screen: register a display (class, side, driver-facing)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "tablet"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Layout classes",
+    "anchor": "31-layout-classes",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§8",
+    "heading": "8. Bindings and the key test",
+    "anchor": "8-bindings-and-the-key-test",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.9",
+    "heading": "5.9 Defaults and rotation per class",
+    "anchor": "59-defaults-and-rotation-per-class",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "Segmented",
+   "ListRow",
+   "Sheet",
+   "Button"
+  ],
+  "variants": [
+   "rear-seat tablet (passengers only)"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-display--this-screen--proposed"
+ },
+ {
+  "id": "setup-people",
+  "name": "Who uses this car (people, invites, names only)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§5.1",
+    "heading": "5.1 Two kinds of invite",
+    "anchor": "51-two-kinds-of-invite",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Roles",
+    "anchor": "31-roles",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S1, S4, S5"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Chip",
+   "Sheet",
+   "Segmented",
+   "QR panel (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-people--who-uses-this-car--new"
+ },
+ {
+  "id": "setup-car-profile",
+  "name": "The Car profile (kiosk session limits, Lock car layouts)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.3",
+    "heading": "2.3 Sessions",
+    "anchor": "23-sessions",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Roles",
+    "anchor": "31-roles",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts",
+    "note": "S4"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Card",
+   "Chip",
+   "ListRow",
+   "Segmented",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-car-profile--the-car-profile--new"
+ },
+ {
+  "id": "setup-apps",
+  "name": "Choose your apps (product flavour, bundled Store catalogue)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "SetupStepper (new component)",
+   "Card (selectable)",
+   "Chip",
+   "ListRow",
+   "progress rows",
+   "Button"
+  ],
+  "variants": [
+   "Diagnostics",
+   "Guardian",
+   "Head unit",
+   "Custom"
+  ],
+  "notes": "Owner direction 2026-10-07: Ostler is an OS; a flavour is the OS plus a preinstalled app set.",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-apps--choose-your-apps--proposed"
+ },
+ {
+  "id": "setup-app-access",
+  "name": "Review an app's access (needs, data classes, permissions)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.1",
+    "heading": "14.1 The data-class registry",
+    "anchor": "141-the-data-class-registry",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Sheet",
+   "Chip",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [
+   "Maintenance",
+   "Camera",
+   "requirement not met"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-app-access--review-an-apps-access--new"
+ },
+ {
+  "id": "setup-summary",
+  "name": "Everything connected (setup summary)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.5",
+    "heading": "4.5 The connection ladder",
+    "anchor": "45-the-connection-ladder",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§4.3",
+    "heading": "4.3 Scan all and its honest states",
+    "anchor": "43-scan-all-and-its-honest-states",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.7",
+    "heading": "14.7 Shell screens: gap list and short specs",
+    "anchor": "147-shell-screens-gap-list-and-short-specs",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Chip",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-summary--everything-connected--proposed"
+ },
+ {
+  "id": "setup-checklist",
+  "name": "Finish setting up (Home checklist card)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "shown on Home",
+   "idling": "shown on Home",
+   "moving": "never shown on a head unit"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.4",
+    "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+    "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-checklist--finish-setting-up-home-page-card--proposed"
+ },
+ {
+  "id": "setup-backup",
+  "name": "Make a backup",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: allowed; head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0041-brain-ed25519-signing.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0041"
+   },
+   {
+    "doc": "decisions/adr-0036-vin-and-identity-data-in-recordings.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0036"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+    "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+    "label": "App model",
+    "note": "§14.6 exit guarantee"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "Button",
+   "progress rows",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-backup--make-a-backup--proposed"
+ },
+ {
+  "id": "setup-restore",
+  "name": "Restore from a backup",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "as setup-welcome: locked view on head units"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§2.1",
+    "heading": "2.1 Bootstrap",
+    "anchor": "21-bootstrap",
+    "label": "Accounts"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   },
+   {
+    "doc": "decisions/adr-0037-role-holders-and-handover.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0037"
+   },
+   {
+    "doc": "decisions/adr-0041-brain-ed25519-signing.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0041"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "CodeInput (new component)",
+   "ListRow",
+   "Card",
+   "progress rows",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-restore--restore-from-a-backup--proposed"
+ },
+ {
+  "id": "setup-add-brain",
+  "name": "Add a Brain to my node (adopt via the owner phone, import roster)",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "head unit locked; phone approval allowed, node re-checks"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0039-product-family-diagnostics-guardian-hub.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0039",
+    "note": "§7"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   },
+   {
+    "doc": "decisions/adr-0032-one-node-optional-brain.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0032"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "Sheet",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-add-brain--add-a-brain-to-my-node--new"
+ },
+ {
+  "id": "setup-move-brain",
+  "name": "Move to a new Brain",
+  "area": "os (first-run setup)",
+  "group": "Onboarding",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop"
+  ],
+  "themes": [
+   "night",
+   "day"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "phone: open (passenger device, UI §3.5); head unit: n/a"
+  },
+  "spec_refs": [
+   {
+    "doc": "decisions/adr-0037-role-holders-and-handover.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0037"
+   },
+   {
+    "doc": "decisions/adr-0041-brain-ed25519-signing.md",
+    "section": "Decision drivers",
+    "heading": "Decision drivers",
+    "anchor": "decision-drivers",
+    "label": "ADR-0041"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.7",
+    "heading": "3.7 Network page, peer view and cluster view (accepted 2026-10-06)",
+    "anchor": "37-network-page-peer-view-and-cluster-view-accepted-2026-10-06",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-accounts-sharing-design.md",
+    "section": "§14.10",
+    "heading": "14.10 Where `auth.db` lives, and recovery",
+    "anchor": "1410-where-authdb-lives-and-recovery",
+    "label": "Accounts"
+   }
+  ],
+  "tokens": [
+   "surface-1/2/3, text-1/2/3, line",
+   "accent (interactive and live only), accent-soft",
+   "ok/warn/alarm + *-bg, warn-ink (ISO 2575, icon + word)"
+  ],
+  "components": [
+   "ListRow",
+   "Card",
+   "Chip",
+   "Button",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-move-brain--move-to-a-new-brain--proposed"
+ }
+]

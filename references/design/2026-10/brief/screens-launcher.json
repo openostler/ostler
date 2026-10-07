@@ -1,0 +1,2854 @@
+[
+ {
+  "id": "launcher-home-pages",
+  "name": "Home pages carousel",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "full grid over the wallpaper",
+   "idling": "as Parked",
+   "moving": "HU: replaced by the Drive carousel; phone: Moving banner",
+   "passenger": "phone banner"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Grids and minimum sizes per class",
+    "anchor": "44-grids-and-minimum-sizes-per-class",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§15.2",
+    "heading": "15.2 Editing (changes §3.4 and §5.3)",
+    "anchor": "152-editing-changes-34-and-53",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Home built from roles",
+    "anchor": "54-home-built-from-roles",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "StatTile",
+   "HeroStat",
+   "Gauge",
+   "Page dots (new component)",
+   "App icon (new component: 48 px glyph tile on phone, 76 px target on HU, label below)",
+   "Folder icon (new component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-a.md#launcher-home-pages--home-pages-carousel--new"
+ },
+ {
+  "id": "launcher-app-menu",
+  "name": "App menu (long-press an app icon)",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "never shown on HU: 'Park to edit' toast 3 s"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.7",
+    "heading": "7.7 Hide, replace and reachability (v0.2)",
+    "anchor": "77-hide-replace-and-reachability-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§7",
+    "heading": "7. Safety gating tiers",
+    "anchor": "7-safety-gating-tiers",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (popup)",
+   "Sheet",
+   "ListRow (drag handle)",
+   "Button (danger for Uninstall)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-app-menu--app-menu-long-press-an-app-icon--proposed"
+ },
+ {
+  "id": "launcher-folder",
+  "name": "Folder",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "a folder opens; items keep their driving rule; rename Parked only"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Folder icon (new)",
+   "Card",
+   "text field"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-folder--folder--proposed"
+ },
+ {
+  "id": "launcher-shortcut-picker",
+  "name": "App shortcuts on a home page",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "moving": "placing locked; a placed shortcut opens only a driver-safe route, else the locked view"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "App icon with shortcut badge (new variant)",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-shortcut-picker--app-shortcuts-on-a-home-page--proposed"
+ },
+ {
+  "id": "launcher-menu",
+  "name": "Launcher menu (long-press empty space)",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "never shown on HU: 'Park to edit' toast 3 s"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Common states and gestures",
+    "anchor": "71-common-states-and-gestures",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (popup)",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-menu--launcher-menu-long-press-empty-space--proposed"
+ },
+ {
+  "id": "launcher-item-popup",
+  "name": "Item popup (long-press a widget or icon)",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "never shown on HU: 'Park to edit' toast 3 s"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Common states and gestures",
+    "anchor": "71-common-states-and-gestures",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.7",
+    "heading": "7.7 Hide, replace and reachability (v0.2)",
+    "anchor": "77-hide-replace-and-reachability-v02",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (popup)",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-item-popup--item-popup-long-press-a-widget-or-icon--proposed"
+ },
+ {
+  "id": "launcher-widget-resize",
+  "name": "Widget resize frame",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "never shown on HU: 'Park to edit' toast 3 s"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Grids and minimum sizes per class",
+    "anchor": "44-grids-and-minimum-sizes-per-class",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Common states and gestures",
+    "anchor": "71-common-states-and-gestures",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Edit frame (new)",
+   "Button (Size)",
+   "Chip (size word)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-widget-resize--widget-resize-frame--proposed"
+ },
+ {
+  "id": "widget-style-picker",
+  "name": "Look (style picker)",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Widget preview card (new)",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-d.md#widget-style-picker--look-style-picker--new"
+ },
+ {
+  "id": "widget-data-source",
+  "name": "Data (data-source picker)",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.4",
+    "heading": "7.4 Drive modes",
+    "anchor": "74-drive-modes",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "text field (search)",
+   "ListRow (badge)",
+   "Chip (filter)",
+   "Segmented",
+   "stepper (new)",
+   "Gauge (band preview)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-d.md#widget-data-source--data-data-source-picker--new"
+ },
+ {
+  "id": "widget-setup-gauge-analogue",
+  "name": "Analogue gauge",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Gauge",
+   "Segmented",
+   "stepper (new)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-gauge-analogue--analogue-gauge--new"
+ },
+ {
+  "id": "widget-setup-gauge-digital",
+  "name": "Digital gauge",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile",
+   "HeroStat",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-gauge-digital--digital-gauge--new"
+ },
+ {
+  "id": "widget-setup-gauge-bar",
+  "name": "Bar gauge",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Dashboard (RealDash-style cluster)",
+    "anchor": "52-dashboard-realdash-style-cluster",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Gauge (bar variant)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-gauge-bar--bar-gauge--new"
+ },
+ {
+  "id": "widget-setup-gauge-sweep",
+  "name": "Sweep gauge",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Dashboard (RealDash-style cluster)",
+    "anchor": "52-dashboard-realdash-style-cluster",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.3",
+    "heading": "4.3 The Moving section and the template mapping",
+    "anchor": "43-the-moving-section-and-the-template-mapping",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Gauge (sweep variant, new)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-gauge-sweep--sweep-gauge--new"
+ },
+ {
+  "id": "widget-setup-graph",
+  "name": "Graph (sparkline and history)",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sparkline",
+   "Area line",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-graph--graph-sparkline-and-history--new"
+ },
+ {
+  "id": "widget-setup-multi-value",
+  "name": "Multi-value tile",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.7",
+    "heading": "5.7 Minimal / Night",
+    "anchor": "57-minimal--night",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.3",
+    "heading": "4.3 The Moving section and the template mapping",
+    "anchor": "43-the-moving-section-and-the-template-mapping",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile (compact)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-multi-value--multi-value-tile--new"
+ },
+ {
+  "id": "widget-setup-warning-lights",
+  "name": "Warning lights (telltales)",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (tone)",
+   "ListRow",
+   "Chip (status)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-warning-lights--warning-lights-telltales--new"
+ },
+ {
+  "id": "widget-setup-ride-height",
+  "name": "Ride height (SLABS)",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Dashboard (RealDash-style cluster)",
+    "anchor": "52-dashboard-realdash-style-cluster",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Off-road (D2)",
+    "anchor": "55-off-road-d2",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Gauge (bar)",
+   "illustration (new: vehicle rear outline in `text-2`)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-ride-height--ride-height-slabs--new"
+ },
+ {
+  "id": "widget-setup-g-meter",
+  "name": "G-meter",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.2",
+    "heading": "5.2 Dashboard (RealDash-style cluster)",
+    "anchor": "52-dashboard-realdash-style-cluster",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Gauge (g-circle variant, new)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-e.md#widget-setup-g-meter--g-meter--new"
+ },
+ {
+  "id": "widget-setup-map",
+  "name": "Map",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.3",
+    "heading": "5.3 Map",
+    "anchor": "53-map",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§7",
+    "heading": "7. Maps",
+    "anchor": "7-maps",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.5",
+    "heading": "13.5 Map theme independent of the app theme (changes §12.3's map-style sentence)",
+    "anchor": "135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Map",
+   "Segmented",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-map--map--new"
+ },
+ {
+  "id": "widget-setup-compass-incline",
+  "name": "Compass and incline",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Off-road (D2)",
+    "anchor": "55-off-road-d2",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Inclinometer (new)",
+   "Compass (new)",
+   "stepper"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-compass-incline--compass-and-incline--new"
+ },
+ {
+  "id": "widget-setup-trip-computer",
+  "name": "Trip computer",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.2",
+    "heading": "12.2 Logs → Trips (changes §3.2, §3.4, §3.5, §3.6, §3.8, §4.1, §4.3, §6, §10)",
+    "anchor": "122-logs--trips-changes-32-34-35-36-38-41-43-6-10",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-trip-computer--trip-computer--new"
+ },
+ {
+  "id": "widget-setup-fuel-range",
+  "name": "Fuel and range",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§5",
+    "heading": "5. Fuel economy",
+    "anchor": "5-fuel-economy",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§5.4",
+    "heading": "5.4 Home built from roles",
+    "anchor": "54-home-built-from-roles",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-fuel-range--fuel-and-range--proposed"
+ },
+ {
+  "id": "widget-setup-service-due",
+  "name": "Service due",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-maintenance-garage-addon-design.md",
+    "section": "§8",
+    "heading": "8. Reminder delivery",
+    "anchor": "8-reminder-delivery",
+    "label": "Maintenance"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Chip (band)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-service-due--service-due--new"
+ },
+ {
+  "id": "widget-setup-alarm-status",
+  "name": "Alarm status",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.2",
+    "heading": "7.2 Home",
+    "anchor": "72-home",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (tone)",
+   "Chip (status)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-alarm-status--alarm-status--new"
+ },
+ {
+  "id": "widget-setup-camera",
+  "name": "Camera",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "video frame (new component)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-camera--camera--new"
+ },
+ {
+  "id": "widget-setup-clock",
+  "name": "Clock",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§9",
+    "heading": "9. The widget and slot contract (summary)",
+    "anchor": "9-the-widget-and-slot-contract-summary",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "HeroStat",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-clock--clock--new"
+ },
+ {
+  "id": "widget-setup-date",
+  "name": "Date",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.3",
+    "heading": "4.3 The Moving section and the template mapping",
+    "anchor": "43-the-moving-section-and-the-template-mapping",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-date--date--proposed"
+ },
+ {
+  "id": "widget-setup-weather",
+  "name": "Weather",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.3",
+    "heading": "4.3 The Moving section and the template mapping",
+    "anchor": "43-the-moving-section-and-the-template-mapping",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile",
+   "Segmented",
+   "switch"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-weather--weather--proposed"
+ },
+ {
+  "id": "widget-setup-now-playing",
+  "name": "Media now playing",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.6",
+    "heading": "5.6 Split / Media",
+    "anchor": "56-split--media",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Button (icon)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-now-playing--media-now-playing--new"
+ },
+ {
+  "id": "widget-setup-radio",
+  "name": "Radio",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-radio--radio--proposed"
+ },
+ {
+  "id": "widget-setup-phone-favourites",
+  "name": "Phone favourites",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-phone-comms-addon-design.md",
+    "section": "§12",
+    "heading": "12. Widgets and Drive menu (app-model §15 contract)",
+    "anchor": "12-widgets-and-drive-menu-app-model-15-contract",
+    "label": "Phone & Comms"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-phone-favourites--phone-favourites--new"
+ },
+ {
+  "id": "widget-setup-nav-next-turn",
+  "name": "Navigation next turn",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-navigation-addon-design.md",
+    "section": "§5.2",
+    "heading": "5.2 While Moving: the `map` template's next manoeuvre",
+    "anchor": "52-while-moving-the-map-templates-next-manoeuvre",
+    "label": "Navigation"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "StatTile",
+   "Material Symbols turn glyphs"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-nav-next-turn--navigation-next-turn--new"
+ },
+ {
+  "id": "widget-setup-app-shortcut",
+  "name": "App shortcut",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "App icon"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-app-shortcut--app-shortcut--proposed"
+ },
+ {
+  "id": "widget-setup-text-label",
+  "name": "Text label",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "text field",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-text-label--text-label--proposed"
+ },
+ {
+  "id": "widget-setup-image",
+  "name": "Image",
+  "area": "core",
+  "group": "Widgets",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "crop tool (new component)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-image--image--proposed"
+ },
+ {
+  "id": "launcher-presets",
+  "name": "Preset dashboards",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5",
+    "heading": "5. The seven presets",
+    "anchor": "5-the-seven-presets",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.8",
+    "heading": "5.8 Faces per preset",
+    "anchor": "58-faces-per-preset",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Page thumbnail (new)",
+   "Chip (needs)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-h.md#launcher-presets--preset-dashboards--new"
+ },
+ {
+  "id": "launcher-preset-preview",
+  "name": "Preset preview",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Off-road (D2)",
+    "anchor": "55-off-road-d2",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Page dots",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/45-launcher-h.md#launcher-preset-preview--preset-preview--new"
+ },
+ {
+  "id": "launcher-builder-apps",
+  "name": "Builder step 1: car and apps",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.9",
+    "heading": "5.9 Defaults and rotation per class",
+    "anchor": "59-defaults-and-rotation-per-class",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SetupStepper (new)",
+   "Card",
+   "ListRow (tick)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-apps--builder-step-1-car-and-apps--proposed"
+ },
+ {
+  "id": "launcher-builder-display",
+  "name": "Builder step 2: display",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Layout classes",
+    "anchor": "31-layout-classes",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Grids and minimum sizes per class",
+    "anchor": "44-grids-and-minimum-sizes-per-class",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SetupStepper",
+   "Card",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-display--builder-step-2-display--proposed"
+ },
+ {
+  "id": "launcher-builder-templates",
+  "name": "Builder step 3: templates",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5",
+    "heading": "5. The seven presets",
+    "anchor": "5-the-seven-presets",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.9",
+    "heading": "5.9 Defaults and rotation per class",
+    "anchor": "59-defaults-and-rotation-per-class",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SetupStepper",
+   "Card (tick)",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-templates--builder-step-3-templates--proposed"
+ },
+ {
+  "id": "launcher-builder-review",
+  "name": "Builder step 4: review the pages",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.4",
+    "heading": "7.4 Drive modes",
+    "anchor": "74-drive-modes",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.2",
+    "heading": "8.2 Validation",
+    "anchor": "82-validation",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SetupStepper",
+   "Page thumbnail (new)",
+   "switch",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-review--builder-step-4-review-the-pages--proposed"
+ },
+ {
+  "id": "launcher-builder-done",
+  "name": "Builder step 5: applied, with Undo",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.8",
+    "heading": "7.8 Reset layout, always reachable (v0.2)",
+    "anchor": "78-reset-layout-always-reachable-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "SetupStepper",
+   "Page thumbnail",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-done--builder-step-5-applied-with-undo--proposed"
+ },
+ {
+  "id": "launcher-theme",
+  "name": "Wallpaper & style",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.5",
+    "heading": "12.5 Visual design system (changes §2 principle 7)",
+    "anchor": "125-visual-design-system-changes-2-principle-7",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Card (preview)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme--wallpaper--style--proposed"
+ },
+ {
+  "id": "launcher-theme-wallpaper",
+  "name": "Wallpaper and background",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§5",
+    "heading": "5. Space, radius, elevation, glow, motion",
+    "anchor": "5-space-radius-elevation-glow-motion",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.5",
+    "heading": "12.5 Visual design system (changes §2 principle 7)",
+    "anchor": "125-visual-design-system-changes-2-principle-7",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (thumbnail grid)",
+   "crop tool (new component)",
+   "switch",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-wallpaper--wallpaper-and-background--proposed"
+ },
+ {
+  "id": "launcher-theme-colours",
+  "name": "Colours and light or dark",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.3",
+    "heading": "3.3 Data ramps and chart colours (`data.tokens.json`)",
+    "anchor": "33-data-ramps-and-chart-colours-datatokensjson",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.5",
+    "heading": "13.5 Map theme independent of the app theme (changes §12.3's map-style sentence)",
+    "anchor": "135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "switch",
+   "colour swatch (new component)",
+   "Card"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-colours--colours-and-light-or-dark--proposed"
+ },
+ {
+  "id": "launcher-theme-icons",
+  "name": "Icon packs",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§6",
+    "heading": "6. Icons and fonts",
+    "anchor": "6-icons-and-fonts",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "App icon (new)"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-icons--icon-packs--proposed"
+ },
+ {
+  "id": "launcher-theme-gauges",
+  "name": "Gauge style",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§8",
+    "heading": "8. Charts, gauges and the component kit",
+    "anchor": "8-charts-gauges-and-the-component-kit",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Gauge"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-gauges--gauge-style--proposed"
+ },
+ {
+  "id": "launcher-theme-text",
+  "name": "Text size",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§4",
+    "heading": "4. Type",
+    "anchor": "4-type",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§10",
+    "heading": "10. Accessibility",
+    "anchor": "10-accessibility",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented",
+   "ListRow",
+   "StatTile"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-text--text-size--proposed"
+ },
+ {
+  "id": "launcher-theme-preview",
+  "name": "Theme preview and apply",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§1",
+    "heading": "1. Principles",
+    "anchor": "1-principles",
+    "label": "Visual"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§3.1",
+    "heading": "3.1 Surfaces, text, accent and status per theme",
+    "anchor": "31-surfaces-text-accent-and-status-per-theme",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (preview)",
+   "Segmented",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-preview--theme-preview-and-apply--proposed"
+ },
+ {
+  "id": "launcher-home-settings",
+  "name": "Home settings",
+  "area": "core",
+  "group": "Launcher",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.4",
+    "heading": "4.4 Grids and minimum sizes per class",
+    "anchor": "44-grids-and-minimum-sizes-per-class",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.3",
+    "heading": "7.3 Rail",
+    "anchor": "73-rail",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Segmented",
+   "switch",
+   "Sheet"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "proposed": true,
+  "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-home-settings--home-settings--proposed"
+ }
+]

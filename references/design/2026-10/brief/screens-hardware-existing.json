@@ -1,0 +1,7 @@
+{
+ "network": "references/design/2026-10/brief/20-hardware-a-devices.md#network--settings--network-devices-and-power-sections--existing",
+ "network-device": "references/design/2026-10/brief/20-hardware-a-devices.md#network-device--device-page-detail-health-and-actions--existing",
+ "device-local-page": "references/design/2026-10/brief/20-hardware-a-devices.md#device-local-page--the-devices-own-web-page--existing",
+ "shell-buttons": "references/design/2026-10/brief/20-hardware-e-updates-input.md#shell-buttons--display-buttons-bindings-and-sources--existing",
+ "shell-service-mode": "references/design/2026-10/brief/20-hardware-f-security-mesh-service.md#shell-service-mode--service-mode-frame-and-strip-badge--existing"
+}

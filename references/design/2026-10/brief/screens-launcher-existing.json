@@ -1,0 +1,13 @@
+{
+ "drive-switcher": "references/design/2026-10/brief/45-launcher-a.md#drive-switcher--drive-carousel-page-chip-and-flat-page-list--existing",
+ "shell-rail": "references/design/2026-10/brief/45-launcher-a.md#shell-rail--dock--existing",
+ "shell-rail-editor": "references/design/2026-10/brief/45-launcher-a.md#shell-rail-editor--dock-editor--existing",
+ "more": "references/design/2026-10/brief/45-launcher-b.md#more--app-drawer--existing",
+ "shell-home-edit": "references/design/2026-10/brief/45-launcher-c.md#shell-home-edit--edit-mode--existing",
+ "shell-widget-picker": "references/design/2026-10/brief/45-launcher-d.md#shell-widget-picker--widget-picker-gallery--existing",
+ "drive-widget-settings": "references/design/2026-10/brief/45-launcher-d.md#drive-widget-settings--widget-setup-frame-shared-by-every-widget--existing",
+ "drive-modes-list": "references/design/2026-10/brief/45-launcher-h.md#drive-modes-list--home-pages-list--existing",
+ "drive-mode-editor": "references/design/2026-10/brief/45-launcher-h.md#drive-mode-editor--page-editor-moving-section--existing",
+ "drive-mode-preview": "references/design/2026-10/brief/45-launcher-h.md#drive-mode-preview--page-preview-parked-and-moving--existing",
+ "drive-layout-import": "references/design/2026-10/brief/45-launcher-h.md#drive-layout-import--import-and-export-pages--existing"
+}

@@ -1,0 +1,1075 @@
+[
+  {
+    "id": "store-home",
+    "name": "Store home",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14.2",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "search field",
+      "Card",
+      "StoreItemCard (new)",
+      "Chip",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Featured, For your car, New and updated, Browse by kind; queue card for installs waiting for Parked.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-home--store-home--proposed"
+  },
+  {
+    "id": "store-category",
+    "name": "Store category page",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§5",
+        "heading": "5. The seven presets",
+        "anchor": "5-the-seven-presets",
+        "label": "Drive modes"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Chip (filter)",
+      "Segmented",
+      "ListRow",
+      "StoreItemCard (new)",
+      "PreviewTile (new)"
+    ],
+    "variants": [],
+    "notes": "One template for nine kinds.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-category--category-page--proposed"
+  },
+  {
+    "id": "store-search",
+    "name": "Store search and filters",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "search field",
+      "Chip (filter)",
+      "Sheet",
+      "ListRow",
+      "StoreItemCard (new)"
+    ],
+    "variants": [],
+    "notes": "Filters: vehicle, kind, works offline, open source.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-search--search-and-filters--proposed"
+  },
+  {
+    "id": "store-item",
+    "name": "Store item detail",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.1",
+        "heading": "4.1 Shape",
+        "anchor": "41-shape",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§15",
+        "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+        "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.1",
+        "heading": "14.1 The data-class registry",
+        "anchor": "141-the-data-class-registry",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.1",
+        "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+        "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Button",
+      "Chip",
+      "Segmented",
+      "ScreenshotCarousel (new)",
+      "ListRow",
+      "Card",
+      "Sheet"
+    ],
+    "variants": [],
+    "notes": "Screenshots per layout class, what it adds, data classes, where it runs, vehicles, licence, publisher key, Works with Ostler, versions, size.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item--item-detail--proposed"
+  },
+  {
+    "id": "store-item-versions",
+    "name": "Store version history",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "ListRow",
+      "Chip",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Changelogs; flags versions that ask for more or are breaking.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item-versions--version-history--proposed"
+  },
+  {
+    "id": "store-install-sheet",
+    "name": "Store install: review access",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14.2",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-accounts-sharing-design.md",
+        "section": "§14.1",
+        "heading": "14.1 The data-class registry",
+        "anchor": "141-the-data-class-registry",
+        "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "AccessReview (new)",
+      "Chip",
+      "ListRow",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Extends setup-app-access; Runs on the Brain label.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-install-sheet--install-review-access--proposed"
+  },
+  {
+    "id": "store-installing",
+    "name": "Store installing",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§5",
+        "heading": "5. Lifecycle and isolation",
+        "anchor": "5-lifecycle-and-isolation",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "progress bar (new)",
+      "Card",
+      "Button",
+      "ListRow"
+    ],
+    "variants": [],
+    "notes": "Progress, failure and retry, paused while Moving, then Set up now (90-appframe-*).",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-installing--installing--proposed"
+  },
+  {
+    "id": "store-updates",
+    "name": "Store updates",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "ListRow",
+      "Button",
+      "Chip",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "Update all skips updates that ask for more.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-updates--updates--proposed"
+  },
+  {
+    "id": "store-update-settings",
+    "name": "Store auto-update settings",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Segmented",
+      "ListRow",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "'Only when parked' cannot be turned off.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-update-settings--auto-update--proposed"
+  },
+  {
+    "id": "store-rollback",
+    "name": "Store roll back",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§5",
+        "heading": "5. Lifecycle and isolation",
+        "anchor": "5-lifecycle-and-isolation",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "Button",
+      "ListRow"
+    ],
+    "variants": [],
+    "notes": "",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-rollback--roll-back--proposed"
+  },
+  {
+    "id": "store-uninstall",
+    "name": "Store uninstall",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+        "section": "§8.1",
+        "heading": "8.1 Safety rules",
+        "anchor": "81-safety-rules",
+        "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-06-ui-architecture-design.md",
+        "section": "§12.4",
+        "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
+        "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
+        "label": "UI"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§14.2",
+        "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
+        "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "ListRow",
+      "Card",
+      "Button (danger)"
+    ],
+    "variants": [],
+    "notes": "Keep or delete data, Export first; System items never offered.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-uninstall--uninstall--proposed"
+  },
+  {
+    "id": "store-publisher",
+    "name": "Store publisher page",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.1",
+        "heading": "4.1 Shape",
+        "anchor": "41-shape",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Chip",
+      "ListRow",
+      "StoreItemCard (new)",
+      "Card"
+    ],
+    "variants": [],
+    "notes": "Verified key fingerprint; no ratings.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-publisher--publisher-page--proposed"
+  },
+  {
+    "id": "store-report",
+    "name": "Store report an item",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-07-community-hub-design.md",
+        "section": "§14",
+        "heading": "14. Moderation and abuse",
+        "anchor": "14-moderation-and-abuse",
+        "label": "Community hub"
+      },
+      {
+        "doc": "specs/2026-10-07-community-hub-design.md",
+        "section": "§1",
+        "heading": "1. Purpose and non-goals",
+        "anchor": "1-purpose-and-non-goals",
+        "label": "Community hub",
+        "note": "no votes"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "ListRow",
+      "text field",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Never sends the VIN.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-report--report-an-item--proposed"
+  },
+  {
+    "id": "store-sources",
+    "name": "Store catalogues and offline",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§11",
+        "heading": "11. Open questions for the owner",
+        "anchor": "11-open-questions-for-the-owner",
+        "label": "App model",
+        "note": "Q3 signing, Q7 catalogue"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7",
+        "heading": "7. Optional apps from their own repos",
+        "anchor": "7-optional-apps-from-their-own-repos",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Card",
+      "ListRow",
+      "Chip",
+      "Segmented",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Bundled catalogue, online catalogue, added catalogues, refresh from a file.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sources--catalogues-and-offline--proposed"
+  },
+  {
+    "id": "store-sideload",
+    "name": "Store install from a file",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§5",
+        "heading": "5. Lifecycle and isolation",
+        "anchor": "5-lifecycle-and-isolation",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§7.1",
+        "heading": "7.1 Amendment (2026-10-06): the phone build",
+        "anchor": "71-amendment-2026-10-06-the-phone-build",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Card",
+      "ListRow",
+      "Chip",
+      "Button"
+    ],
+    "variants": [],
+    "notes": "Developer mode only; not in the native phone app.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload--install-from-a-file--proposed"
+  },
+  {
+    "id": "store-sideload-warning",
+    "name": "Store unchecked item warning",
+    "area": "os",
+    "group": "Store",
+    "owner": "os",
+    "layout_classes": [
+      "phone",
+      "tablet",
+      "desktop",
+      "hu5",
+      "hu7",
+      "hu9",
+      "huwide"
+    ],
+    "themes": [
+      "night",
+      "day",
+      "night-dim"
+    ],
+    "driving_states": {
+      "parked": "full",
+      "idling": "full with Park evidence, else as Moving",
+      "moving": "head units: locked view 'Available when parked' + Open on phone (UI §12.1); phone: Moving banner, installs wait for Parked",
+      "passenger": "not offered on head units (not reg 109 content); Open on phone"
+    },
+    "spec_refs": [
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§5",
+        "heading": "5. Lifecycle and isolation",
+        "anchor": "5-lifecycle-and-isolation",
+        "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-06-app-model-design.md",
+        "section": "§4.2",
+        "heading": "4.2 Field rules",
+        "anchor": "42-field-rules",
+        "label": "App model"
+      }
+    ],
+    "tokens": [
+      "surface-1/2/3, text-1/2/3, line",
+      "accent (interactive and live only), accent-soft",
+      "ok/warn/alarm + *-bg (status Cards)"
+    ],
+    "components": [
+      "Sheet",
+      "ListRow",
+      "text field",
+      "Button (danger)"
+    ],
+    "variants": [],
+    "notes": "Typed confirm, Parked only.",
+    "deliveries": [],
+    "review": {
+      "status": "awaiting",
+      "differences": []
+    },
+    "proposed": true,
+    "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload-warning--unchecked-item-warning--proposed"
+  }
+]

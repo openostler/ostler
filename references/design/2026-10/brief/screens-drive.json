@@ -1,0 +1,928 @@
+[
+ {
+  "id": "shell-park-to-edit",
+  "name": "'Park to edit' toast and 'Finish editing when parked'",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "moving": "toast 'Park to edit' 3 s, nothing else; editor closes to Drive, draft kept",
+   "parked": "prompt 'Finish editing when parked' (Finish editing / Discard draft)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Common states and gestures",
+    "anchor": "71-common-states-and-gestures",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.1",
+    "heading": "8.1 Safety rules",
+    "anchor": "81-safety-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07, DMD round), approved: editing and the movable switcher",
+    "anchor": "14-amendment-2026-10-07-dmd-round-approved-editing-and-the-movable-switcher",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§15.2",
+    "heading": "15.2 Editing (changes §3.4 and §5.3)",
+    "anchor": "152-editing-changes-34-and-53",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Toast (new component)",
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-b.md#shell-park-to-edit--park-to-edit-toast-and-finish-editing-when-parked--new"
+ },
+ {
+  "id": "shell-item-sheet",
+  "name": "Item sheet: safety and anchor variants",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.1",
+    "heading": "7.1 Common states and gestures",
+    "anchor": "71-common-states-and-gestures",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.7",
+    "heading": "7.7 Hide, replace and reachability (v0.2)",
+    "anchor": "77-hide-replace-and-reachability-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.5",
+    "heading": "4.5 Rail, strip and overrides (v0.2)",
+    "anchor": "45-rail-strip-and-overrides-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Segmented (size)"
+  ],
+  "variants": [
+   "ordinary item",
+   "safety item (move only)",
+   "anchor (More, Back, Drive mode)"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-c.md#shell-item-sheet--item-sheet-safety-and-anchor-variants--new"
+ },
+ {
+  "id": "shell-hidden-pages",
+  "name": "Hidden apps (was More → Hidden pages)",
+  "area": "core",
+  "group": "More",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.7",
+    "heading": "7.7 Hide, replace and reachability (v0.2)",
+    "anchor": "77-hide-replace-and-reachability-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-c.md#shell-hidden-pages--hidden-apps-was-more--hidden-pages--new"
+ },
+ {
+  "id": "shell-widget-picker-by-signal",
+  "name": "Widget picker: By signal tab",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.4",
+    "heading": "7.4 Drive modes",
+    "anchor": "74-drive-modes",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "references/research/ha_integrations_dashboards.md",
+    "section": "Decide 8",
+    "heading": "Decide (recommendations for the owner)",
+    "anchor": "decide-recommendations-for-the-owner",
+    "label": "HA research"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Segmented (tabs)",
+   "ListRow"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker-by-signal--widget-picker-by-signal-tab--proposed"
+ },
+ {
+  "id": "shell-icon-picker",
+  "name": "Icon picker (OS rules)",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-visual-design-system-design.md",
+    "section": "§6",
+    "heading": "6. Icons and fonts",
+    "anchor": "6-icons-and-fonts",
+    "label": "Visual"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "icon grid (new component)",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-icon-picker--icon-picker-os-rules--new"
+ },
+ {
+  "id": "shell-name-edit",
+  "name": "Name editor (OS rules)",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.6",
+    "heading": "7.6 Icons and names (v0.2)",
+    "anchor": "76-icons-and-names-v02",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "text input",
+   "Button"
+  ],
+  "variants": [
+   "refused: 'Too long for this screen: phone'"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-name-edit--name-editor-os-rules--new"
+ },
+ {
+  "id": "shell-strip-editor",
+  "name": "Strip editor (order, Hidden shelf, chip budget)",
+  "area": "core",
+  "group": "Shell",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "'Park to edit' toast, 3 s"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.5",
+    "heading": "7.5 Strip (v0.2)",
+    "anchor": "75-strip-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.5",
+    "heading": "4.5 Rail, strip and overrides (v0.2)",
+    "anchor": "45-rail-strip-and-overrides-v02",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§14",
+    "heading": "14. Amendment (2026-10-07, DMD round), approved: editing and the movable switcher",
+    "anchor": "14-amendment-2026-10-07-dmd-round-approved-editing-and-the-movable-switcher",
+    "label": "Shell input"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Chip (drag handle)",
+   "Segmented",
+   "ListRow"
+  ],
+  "variants": [
+   "Normal context",
+   "Drive context",
+   "budget full: 'The strip is full: hide one first'"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-d.md#shell-strip-editor--strip-editor--new"
+ },
+ {
+  "id": "drive-offroad-open-slabs",
+  "name": "Off-road 'Open SLABS' prompt",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "offered once on entering Off-road with no SLABS session",
+   "moving": "never offered (system switch locked)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.5",
+    "heading": "5.5 Off-road (D2)",
+    "anchor": "55-off-road-d2",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.5",
+    "heading": "3.5 Drive mode, driving states and service mode",
+    "anchor": "35-drive-mode-driving-states-and-service-mode",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "app:diagnostics",
+  "brief": "references/design/2026-10/brief/40-drive-f.md#drive-offroad-open-slabs--off-road-open-slabs-prompt--new"
+ },
+ {
+  "id": "drive-exit-home-moving",
+  "name": "'Exit to Home' while Moving (open owner question)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "row opens Home",
+   "moving": "option A: row hidden; option B: Home as tiles + locked cards"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§6",
+    "heading": "6. Drive mode",
+    "anchor": "6-drive-mode",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-07-shell-input-design.md",
+    "section": "§4",
+    "heading": "4. Focus zones and spatial navigation",
+    "anchor": "4-focus-zones-and-spatial-navigation",
+    "label": "Shell input"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§3.4",
+    "heading": "3.4 Five destinations",
+    "anchor": "34-five-destinations",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "short_list row",
+   "Card",
+   "Button"
+  ],
+  "variants": [
+   "option A",
+   "option B"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "proposed": true,
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--proposed"
+ },
+ {
+  "id": "drive-dusk-suggest",
+  "name": "Minimal / Night suggested once at dusk",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "parked": "alert_card Switch / Not now",
+   "moving": "open question: Parked only recommended"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§6",
+    "heading": "6. The switcher",
+    "anchor": "6-the-switcher",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§5.7",
+    "heading": "5.7 Minimal / Night",
+    "anchor": "57-minimal--night",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "alert_card",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-g.md#drive-dusk-suggest--minimal--night-suggested-at-dusk--new"
+ },
+ {
+  "id": "drive-signal-picker",
+  "name": "Signal picker (VSS, confidence, Not in this session)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§7.4",
+    "heading": "7.4 Drive modes",
+    "anchor": "74-drive-modes",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "ListRow (confidence word)",
+   "Chip (filter)"
+  ],
+  "variants": [
+   "Available on this car on/off",
+   "desktop: type a VSS path"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-signal-picker--signal-picker--new"
+ },
+ {
+  "id": "drive-widget-settings-map",
+  "name": "Widget setup page: map (OS rules)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.3",
+    "heading": "4.3 The Moving section and the template mapping",
+    "anchor": "43-the-moving-section-and-the-template-mapping",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§13.5",
+    "heading": "13.5 Map theme independent of the app theme (changes §12.3's map-style sentence)",
+    "anchor": "135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence",
+    "label": "UI"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "ListRow",
+   "Segmented"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-widget-settings-map--widget-setup-page-map-os-rules--new"
+ },
+ {
+  "id": "drive-widget-settings-addon",
+  "name": "Widget setup page: app widget (OS rules)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-app-model-design.md",
+    "section": "§15",
+    "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
+    "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
+    "label": "App model"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Sheet",
+   "Segmented",
+   "ListRow"
+  ],
+  "variants": [
+   "'Widget stopped'",
+   "add-on disabled"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-widget-settings-addon--widget-setup-page-app-widget-os-rules--new"
+ },
+ {
+  "id": "drive-layout-import-error",
+  "name": "Layout import refused (reasons and warnings)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§4.2",
+    "heading": "4.2 Field rules",
+    "anchor": "42-field-rules",
+    "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.2",
+    "heading": "8.2 Validation",
+    "anchor": "82-validation",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card (tone)",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [
+   "'Made for a newer Ostler'",
+   "Moving rule failed on a class",
+   "guardrail refusal",
+   "warnings only: Add anyway"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-layout-import-error--import-refused--new"
+ },
+ {
+  "id": "drive-update-from-preset",
+  "name": "Update from preset (apply per slot)",
+  "area": "core",
+  "group": "Drive modes",
+  "layout_classes": [
+   "phone",
+   "tablet",
+   "desktop",
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim"
+  ],
+  "driving_states": {
+   "parked": "full",
+   "idling": "full with Park evidence, else as Moving",
+   "moving": "locked view: 'Available when parked' + Open on phone (UI §12.1)"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
+    "section": "§8.3",
+    "heading": "8.3 Storage",
+    "anchor": "83-storage",
+    "label": "Drive modes"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "Card",
+   "ListRow",
+   "Button"
+  ],
+  "variants": [],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-h.md#drive-update-from-preset--update-from-preset--new"
+ },
+ {
+  "id": "alert-voice-reply",
+  "name": "Speak a reply and read-back (Send / Cancel)",
+  "area": "core",
+  "group": "Alerts",
+  "layout_classes": [
+   "hu5",
+   "hu7",
+   "hu9",
+   "huwide",
+   "phone"
+  ],
+  "themes": [
+   "night",
+   "day",
+   "night-dim",
+   "deep-night"
+  ],
+  "driving_states": {
+   "moving": "listening, then Send / Cancel (Cancel focused); no transcript",
+   "parked": "transcript may show"
+  },
+  "spec_refs": [
+   {
+    "doc": "specs/2026-10-06-ui-architecture-design.md",
+    "section": "§12.1",
+    "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
+    "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
+    "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-social-addon-design.md",
+    "section": "§12",
+    "heading": "12. Amendment (2026-10-07, DMD round), approved: message alerts while Moving",
+    "anchor": "12-amendment-2026-10-07-dmd-round-approved-message-alerts-while-moving",
+    "label": "Social"
+   }
+  ],
+  "tokens": [],
+  "components": [
+   "alert_card",
+   "Button"
+  ],
+  "variants": [
+   "'Didn't catch that'"
+  ],
+  "notes": "",
+  "deliveries": [],
+  "review": {
+   "status": "awaiting",
+   "differences": []
+  },
+  "owner": "os",
+  "brief": "references/design/2026-10/brief/40-drive-i.md#alert-voice-reply--speak-a-reply-and-read-back--new"
+ }
+]

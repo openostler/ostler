@@ -1,0 +1,114 @@
+{
+ "diagnose-systems": {
+  "brief": "references/design/2026-10/brief/50-vehicle-a-diagnose.md#diagnose-systems--diagnose-identity-bar-scan-all-systems--existing",
+  "owner": "app:diagnostics"
+ },
+ "diagnose-system": {
+  "brief": "references/design/2026-10/brief/50-vehicle-a-diagnose.md#diagnose-system--system-areas-overview-faults-live-tests-procedures-settings--existing",
+  "owner": "app:diagnostics"
+ },
+ "diagnose-fault": {
+  "brief": "references/design/2026-10/brief/50-vehicle-b-faults.md#diagnose-fault--fault-detail-sheet--get-help-with-this-fault--existing",
+  "owner": "app:diagnostics"
+ },
+ "diagnose-confirm": {
+  "brief": "references/design/2026-10/brief/50-vehicle-b-faults.md#diagnose-confirm--action-confirm-sheets-tier-13-clear-codes--existing",
+  "owner": "os"
+ },
+ "help-flow": {
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#help-flow--help-flow-decode-or-diagnose-recipe-recipient-preview-send--existing",
+  "owner": "app:diagnostics"
+ },
+ "adapter-connect": {
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#adapter-connect--use-an-adapter-transport-pair-detection--existing",
+  "owner": "os"
+ },
+ "adapter-verdict": {
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#adapter-verdict--adapter-verdict-and-capability-chips-clone-chip--existing",
+  "owner": "os"
+ },
+ "adapter-soft-gate": {
+  "brief": "references/design/2026-10/brief/50-vehicle-e-help-adapters.md#adapter-soft-gate--adapter-actions-opt-in-soft-gate-warning-and-badge--existing",
+  "owner": "os"
+ },
+ "trips-list": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-list--trips-list--existing",
+  "owner": "app:trips"
+ },
+ "trips-detail": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-detail--trip-detail-map--sheet--existing",
+  "owner": "app:trips"
+ },
+ "trips-playback": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-playback--trip-playback--existing",
+  "owner": "app:trips"
+ },
+ "trips-statistics": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-statistics--statistics-tab--existing",
+  "owner": "app:trips"
+ },
+ "trips-records": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-records--records-and-sprints--existing",
+  "owner": "app:trips"
+ },
+ "trips-export-all": {
+  "brief": "references/design/2026-10/brief/50-vehicle-f-trips.md#trips-export-all--export-all--existing",
+  "owner": "app:trips"
+ },
+ "trips-share-sheet": {
+  "brief": "references/design/2026-10/brief/50-vehicle-g-share-places.md#trips-share-sheet--trips-share-sheet-audience-level-ladder-options-expiry--existing",
+  "owner": "app:trips"
+ },
+ "trips-share-preview": {
+  "brief": "references/design/2026-10/brief/50-vehicle-g-share-places.md#trips-share-preview--what-they-will-see-preview-and-redaction-report--existing",
+  "owner": "app:trips"
+ },
+ "trips-share-history": {
+  "brief": "references/design/2026-10/brief/50-vehicle-g-share-places.md#trips-share-history--trip-share-history-and-revoke--existing",
+  "owner": "app:trips"
+ },
+ "places": {
+  "brief": "references/design/2026-10/brief/50-vehicle-g-share-places.md#places--places-privacy-zones-ends-trim--existing",
+  "owner": "os"
+ },
+ "decode-lab": {
+  "brief": "references/design/2026-10/brief/50-vehicle-i-decode.md#decode-lab--decode-lab-detect--scan--sniff--correlate--label--verify--contribute--existing",
+  "owner": "app:decode-lab"
+ },
+ "maint-home": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-home--maintenance-home-per-vehicle--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-due": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-due--maintenance-due-tab--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-timeline": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-timeline--maintenance-timeline-tab--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-costs": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-costs--maintenance-costs-tab--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-fuel": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-fuel--maintenance-fuel-tab--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-documents": {
+  "brief": "references/design/2026-10/brief/50-vehicle-j-maint.md#maint-documents--maintenance-documents-tab--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-add-record": {
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-add-record--add-record-service-fuel-expense-document--existing",
+  "owner": "app:maintenance"
+ },
+ "maint-kiosk": {
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#maint-kiosk--parked-head-unit-due-view-kiosk--existing",
+  "owner": "app:maintenance"
+ },
+ "garage": {
+  "brief": "references/design/2026-10/brief/50-vehicle-k-maint.md#garage--garage-vehicles-garage-cards--existing",
+  "owner": "os"
+ }
+}

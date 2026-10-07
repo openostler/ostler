@@ -1,0 +1,22 @@
+{
+ "accounts-s1": {
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#accounts-s1--first-run-owner-creation--existing",
+  "owner": "os"
+ },
+ "accounts-s2": {
+  "brief": "references/design/2026-10/brief/10-onboarding-b.md#accounts-s2--sign-in--existing",
+  "owner": "os"
+ },
+ "adapter-connect": {
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#adapter-connect--use-an-adapter--existing",
+  "owner": "os"
+ },
+ "adapter-verdict": {
+  "brief": "references/design/2026-10/brief/10-onboarding-c.md#adapter-verdict--adapter-verdict--existing",
+  "owner": "os"
+ },
+ "phone-pairing": {
+  "brief": "references/design/2026-10/brief/10-onboarding-d.md#phone-pairing--pair-a-phone--existing",
+  "owner": "app:phone"
+ }
+}
