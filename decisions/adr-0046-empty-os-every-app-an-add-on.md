@@ -2,7 +2,7 @@
 title: "ADR-0046 — The empty OS: the platform is an operating system with no apps; every feature is an app in its own repo"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-07
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0045-ux-first.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, decisions/adr-0044-adapters-on-the-brain-without-a-node.md, GOALS.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_architecture_addons.md, references/research/ha_integrations_dashboards.md, references/research/ha_companion_community.md]
 summary: >
@@ -121,10 +121,10 @@ with its code and system name, and the fault sheet still opens.
 | **Map** | `ostler-app-map` (replaces the uncreated `ostler-app-vehicles`) | the full map page, places, offline regions; friends' vehicles as a layer from the Vehicles & Map spec | — |
 | **Navigation** | `ostler-app-navigation` | as its approved spec | — |
 | **Phone** | `ostler-app-phone` | Phone & Comms, as its approved spec | — |
-| **Radio**, **Audio**, **Media**, **Camera** | `ostler-app-radio`, `-audio`, `-media`, `-cameras` | [head-unit apps](../specs/2026-10-07-head-unit-apps-design.md) | — |
-| **Decode lab** | `ostler-app-decodelab` | capture, auto-mapping, labelling, coverage | `ui/src/screens/` Capture, CoverageMap; `sniff/`; `web/sniffer.py` (the reference decoder and shared vectors stay in the OS) |
+| **Radio**, **Audio**, **Media**, **Camera** | `ostler-app-radio`, `-audio`, `-media`, `-camera` | [head-unit apps](../specs/2026-10-07-head-unit-apps-design.md) | — |
+| **Decode lab** | `ostler-app-decode-lab` | capture, auto-mapping, labelling, coverage | `ui/src/screens/` Capture, CoverageMap; `sniff/`; `web/sniffer.py` (the reference decoder and shared vectors stay in the OS) |
 | **Community** | `ostler-app-hub` | as its approved spec | `community/` (empty package) |
-| **Starter widgets** | `ostler-starter` | the starter widget pack and the preset dashboards | the presets of the Drive-modes spec |
+| **Starter widgets** | `ostler-widgets-starter` | the starter widget pack and the preset dashboards | the presets of the Drive-modes spec |
 | **Default theme** | `ostler-theme-default` | Ostler Night, Day, Dim and Deep night as a theme pack | `ui/tokens/` values (the token names and safety colours stay in the OS) |
 
 The OS keeps the component kit (`ui/src/components/` Gauge, StatTile, Sparkline, Trend,
@@ -187,8 +187,8 @@ app-specific backends move.
 | **Private services** | unchanged | `ostler-cloud`, `ostler-hub` |
 | **Vehicle integrations** | `ostler-pack-<x>` | unchanged |
 | **Other integrations** | `ostler-integration-<x>` | `-mqtt` (Home Assistant discovery, OVMS topics), `-owntracks`, `-traccar`, `-ntfy`, `-realdash`, `-lubelogger` (was `ostler-app-lubelogger`) |
-| **Apps** | `ostler-app-<x>` | `-diagnostics`, `-trips`, `-security`, `-maintenance`, `-social`, `-map`, `-navigation`, `-phone`, `-radio`, `-audio`, `-media`, `-cameras`, `-decodelab`, `-hub`, `-alerts`, `-weather`, `-car`; later `-climate`, `-voice` |
-| **Widget, theme and data packs** | `ostler-starter`, `ostler-theme-<x>`, `ostler-icons-<x>`, `ostler-wallpapers-<x>` | `ostler-starter`, `ostler-theme-default` |
+| **Apps** | `ostler-app-<x>` | `-diagnostics`, `-trips`, `-security`, `-maintenance`, `-social`, `-map`, `-navigation`, `-phone`, `-radio`, `-audio`, `-media`, `-camera`, `-decode-lab`, `-hub`, `-alerts`, `-weather`, `-car`; later `-climate`, `-voice` |
+| **Widget, theme and data packs** | `ostler-widgets-starter`, `ostler-theme-<x>`, `ostler-icons-<x>`, `ostler-wallpapers-<x>` | `ostler-widgets-starter`, `ostler-theme-default` |
 | **Store catalogue** | `ostler-catalogue` | the signed catalogue data (Store spec), when its ADR is accepted |
 
 A repo is created only when its app's work starts, with the owner asked first (ADR-0034's
@@ -427,3 +427,5 @@ ADRs and the four specs.
   decision list items 4–13 and 41–43); every decision answered as recommended; §5 records the
   Guardian set and dock and the Ostler Brain flavour; §10 applied to GOALS; the round's full
   decision list added as the Decisions (OS round) appendix.
+- 2026-10-07 — v1.1: repo names match the repos the owner created (`ostler-app-camera`,
+  `ostler-app-decode-lab`, `ostler-widgets-starter`).

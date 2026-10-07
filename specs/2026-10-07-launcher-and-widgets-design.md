@@ -317,7 +317,7 @@ review level (Store spec).
 
 ## 9. The starter catalogue
 
-The starter pack (`ostler.starter`, repo `ostler-starter`, ADR-0046) holds these 24 widgets.
+The starter pack (`ostler.starter`, repo `ostler-widgets-starter`, ADR-0046) holds these 24 widgets.
 Every one has its Moving template fixed below; options are set on the setup page.
 
 | Widget | Sizes (cells) | Data | Options | Moving |
