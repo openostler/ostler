@@ -833,6 +833,13 @@
     "heading": "6. Add-on devices",
     "anchor": "6-add-on-devices",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [
@@ -855,8 +862,7 @@
    "differences": []
   },
   "owner": "app:security",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-welcome--set-up-security--proposed"
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-welcome--set-up-security--new"
  },
  {
   "id": "security-setup-done",
@@ -888,6 +894,13 @@
     "heading": "8.1 Safety rules",
     "anchor": "81-safety-rules",
     "label": "Drive modes"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§4",
+    "heading": "4. The setup flow",
+    "anchor": "4-the-setup-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [
@@ -910,8 +923,7 @@
    "differences": []
   },
   "owner": "app:security",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-done--security-is-ready--proposed"
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-done--security-is-ready--new"
  },
  {
   "id": "security-channels",
@@ -1029,6 +1041,13 @@
     "heading": "3.4 Five destinations",
     "anchor": "34-five-destinations",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-app-ui-model-design.md",
+    "section": "§5",
+    "heading": "5. The options flow",
+    "anchor": "5-the-options-flow",
+    "label": "App UI model"
    }
   ],
   "tokens": [
@@ -1052,8 +1071,7 @@
    "differences": []
   },
   "owner": "app:security",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-settings--security-settings--proposed"
+  "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-settings--security-settings--new"
  },
  {
   "id": "security-widget-arm",
@@ -1383,6 +1401,20 @@
     "heading": "5.4 Home built from roles",
     "anchor": "54-home-built-from-roles",
     "label": "UI"
+   },
+   {
+    "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+    "section": "§10.1",
+    "heading": "10.1 Presets",
+    "anchor": "101-presets",
+    "label": "Launcher"
+   },
+   {
+    "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+    "section": "§5",
+    "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+    "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+    "label": "ADR-0046"
    }
   ],
   "tokens": [
@@ -1408,13 +1440,12 @@
    "differences": []
   },
   "owner": "os",
-  "proposed": true,
-  "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--proposed"
+  "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--new"
  },
  {
   "id": "security-crash-sos",
   "name": "Crash SOS (later)",
-  "area": "app: Security",
+  "area": "os",
   "group": "Security",
   "layout_classes": [
    "phone",
@@ -1467,13 +1498,13 @@
    "Button"
   ],
   "variants": [],
-  "notes": "",
+  "notes": "Owner decision item 6 (2026-10-07): Crash SOS is a system service in the OS, not part of the Security app.",
   "deliveries": [],
   "review": {
    "status": "awaiting",
    "differences": []
   },
-  "owner": "app:security",
+  "owner": "os",
   "proposed": true,
   "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-crash-sos--crash-sos-later--proposed"
  }

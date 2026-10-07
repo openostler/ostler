@@ -2,7 +2,7 @@
 title: "Designer brief — global patterns (c): long jobs, undo, empty vehicle, updates, service mode, wake and accessibility"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md]
 summary: >
@@ -62,8 +62,8 @@ summary: >
 - **Components:** Banner, StatTile (candidate), ListRow, Button.
 - **Spec refs:** [UI §4.4][ui-4.4], [UI §8.2][ui-8.2], [UI §5.4][ui-5.4].
 
-### ia-update-available — Update available  [Proposed]
-- **Purpose:** say that Ostler, a vehicle pack, an app, a widget or theme pack, or a device's firmware has a newer version. *Why:* the phone app already prefers a newer server shell, and packs and firmware change; no spec says how this is shown.
+### ia-update-available — Update available  [New]
+- **Purpose:** say that Ostler, a vehicle pack, an app, a widget or theme pack, or a device's firmware has a newer version.
 - **Owner:** os
 - **Opens from → goes to:** the Store's Updates tab, the app drawer (a dot on the app icon), Settings → Updates, a device page → the update → `ia-long-job`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:** Night on phone and HU-7; Day on phone.
@@ -71,7 +71,7 @@ summary: >
 - **States:** owner only (others see the row without the button) · remote path: read-only · Moving: no prompts.
 - **Safety and driving rules:** updates are owner operations on local links; nothing updates itself while Moving.
 - **Components:** ListRow, Badge (dot), Button.
-- **Spec refs:** [app model §7.1][am-7.1] item 5. The pages behind it: `settings-updates` in [30-settings-e](30-settings-e.md#settings-updates--updates--proposed), `hw-firmware-update` and `hw-brain-update` in [20-hardware-e](20-hardware-e-updates-input.md#hw-firmware-update--update-device-firmware--proposed).
+- **Spec refs:** [app model §7.1][am-7.1] item 5 · [Store §9][st-9]. The pages behind it: `settings-updates` in [30-settings-e](30-settings-e.md#settings-updates--updates--new), `hw-firmware-update` and `hw-brain-update` in [20-hardware-e](20-hardware-e-updates-input.md#hw-firmware-update--update-device-firmware--proposed).
 
 ### Pattern: the service-mode frame
 - **Screen block:** `shell-service-mode` in [40-drive-b](40-drive-b.md#shell-service-mode--service-mode-frame-and-strip-badge--existing). This section is the rule every page follows; draw the frames from the screen block.
@@ -143,3 +143,4 @@ summary: >
 [ui-12.2]: ../../../../specs/2026-10-06-ui-architecture-design.md#122-logs--trips-changes-32-34-35-36-38-41-43-6-10
 [vds-4]: ../../../../specs/2026-10-07-visual-design-system-design.md#4-type
 [vds-5]: ../../../../specs/2026-10-07-visual-design-system-design.md#5-space-radius-elevation-glow-motion
+[st-9]: ../../../../specs/2026-10-07-store-design.md#9-updates

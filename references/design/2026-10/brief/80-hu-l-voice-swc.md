@@ -2,7 +2,7 @@
 title: "Designer brief 80-l — Voice assistant and steering-wheel controls learning"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, references/research/canbus_headunit.md]
 summary: >
@@ -10,22 +10,22 @@ summary: >
   (wake word or push-to-talk, no transcript while Moving), its setup flow (wake word,
   push-to-talk button, on-device speech download, privacy choices) and settings, with what
   voice may control: media, radio, volume, calls, navigation and Mark, never a car action.
-  Steering-wheel controls learning (OS, input) is a wizard: pick the adapter (a resistor-ladder
-  input on a button node, the CAN-box emulator, or a Bluetooth wheel remote), learn each button
+  Steering-wheel controls learning (OS, input) is a wizard: pick the source (a resistor-ladder
+  input on an I/O module, later, or a Bluetooth or USB wheel remote), learn each button
   by pressing it, then assign short and long presses to intents. It links to the Buttons
   pages in the hardware brief by name.
 ---
 
 # 80-l — Voice and steering-wheel controls
 
-**Why these pages are Proposed:** the owner's direction of 2026-10-07 asks for a voice
-assistant and wheel-control learning. The approved shell input spec makes voice control a
-**non-goal** ([shell input §1][si-1]) and learns no wheel buttons on the D2, which has none
-on its diagnostic K-line ([shell input §3.1][si-3.1]). Both need a spec change first.
+**Spec:** the owner allowed voice on 2026-10-07 (decided, item 54): the shell input spec's
+non-goal ([shell input §1][si-1]) is lifted, and the assistant is local-first and later. The
+approved head-unit apps spec covers the Voice app ([head-unit apps §10][hu-10]) and
+wheel-control learning in the OS ([head-unit apps §9][hu-9]), so these pages are New. The
+D2 has no wheel buttons on its diagnostic K-line ([shell input §3.1][si-3.1]); its buttons
+need a resistor-ladder input on an I/O module, later.
 
-### voice-assistant — Voice assistant (listening)  [Proposed]
-- **Why the app needs it:** hands-free control is the safest way to change media, call or
-  navigate while driving.
+### voice-assistant — Voice assistant (listening)  [New]
 - **Purpose:** listen for one request, confirm it aloud, and do it.
 - **Owner:** app:voice (the listening overlay is drawn by the OS)
 - **Opens from → goes to:** the wake word ("Hey Ostler", as chosen in setup); the
@@ -46,17 +46,16 @@ on its diagnostic K-line ([shell input §3.1][si-3.1]). Both need a spec change 
   commands still work; "Needs the internet" only for an optional online service. Mic busy
   (in a call): voice refused with a tone. No app for the request: "Radio isn't installed".
 - **Safety and driving rules:** no transcript while Moving (as AAOS
-  `NO_VOICE_TRANSCRIPTION`, [UI §12.1][ui-12.1]); voice never runs a car action, a Tier
+  `NO_VOICE_TRANSCRIPTION`, [UI §12.1][ui-12.1]); a spoken "yes" never counts as a
+  confirmation for a gated action; voice never runs a car action, a Tier
   1–3 test or a disarm; reading faults aloud only reads (count and worst fault, "SLABS: right
   front wheel speed sensor, logged"). The card obeys `alert_card` limits.
 - **Components:** `alert_card` template (voice variant, new component), Button, ListRow.
-- **Spec refs:** [UI §12.1][ui-12.1] · [shell input §1][si-1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [shell input §1][si-1] · [head-unit apps §10][hu-10].
 - **Open questions:** a listening overlay is not one of the approved templates; it needs a
   platform proposal, or must fit `alert_card` exactly.
 
-### voice-setup — Voice: first-run setup  [Proposed]
-- **Why the app needs it:** wake word, button and privacy must be chosen before the mic is
-  ever opened.
+### voice-setup — Voice: first-run setup  [New]
 - **Purpose:** turn on voice, local first, with clear privacy choices.
 - **Owner:** app:voice
 - **Opens from → goes to:** first open of Voice; `voice-settings` → Run setup again. Goes to
@@ -80,11 +79,10 @@ on its diagnostic K-line ([shell input §3.1][si-3.1]). Both need a spec change 
   Phone app, [Phone §3][pc-3]); the wake word listens on the Brain only.
 - **Components:** StepProgress (new component), Toggle (new component), ProgressRow (new
   component), ListRow, Button.
-- **Spec refs:** [Phone §3][pc-3] · [shell input §8][si-8].
+- **Spec refs:** [Phone §3][pc-3] · [shell input §8][si-8] · [head-unit apps §10][hu-10].
 - **Open questions:** wake word default off or on? Recommend off (privacy, false wakes).
 
-### voice-settings — Voice settings  [Proposed]
-- **Why the app needs it:** privacy and controls need one home.
+### voice-settings — Voice settings  [New]
 - **Purpose:** the Voice app's options.
 - **Owner:** app:voice
 - **Opens from → goes to:** App info → Settings; `voice-assistant` (Parked) → Settings.
@@ -98,7 +96,7 @@ on its diagnostic K-line ([shell input §3.1][si-3.1]). Both need a spec change 
 - **States:** Moving: locked view.
 - **Safety and driving rules:** Park to edit; no setting lets voice run a car action.
 - **Components:** ListRow, Toggle (new component), Segmented, Button.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §10][hu-10] · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 **Voice widgets:** **Voice button** (a `mic` button; size small; options: icon and name;
@@ -118,9 +116,7 @@ ground; an adapter turns each press into a button event ([head-unit research B4]
 | 3 | `swc-assign` | Gives each button a short and long action | Conflict: swap or keep |
 | 4 | `hw-buttons-key-test` | Proves every button | A miss: back to step 2 for that button |
 
-### swc-adapter — Wheel controls 1: adapter  [Proposed]
-- **Why the app needs it:** the D2 has no wheel buttons on a data bus; a wired adapter is
-  the only way, and there are several kinds.
+### swc-adapter — Wheel controls 1: adapter  [New]
 - **Purpose:** choose how the wheel buttons reach Ostler and check the link.
 - **Owner:** os
 - **Opens from → goes to:** the display's Buttons page → "Add wheel buttons"; first run of
@@ -128,21 +124,22 @@ ground; an adapter turns each press into a button event ([head-unit research B4]
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night.
 - **Content (top to bottom):** 1. StepProgress "1 of 3 · Adapter". 2. Choice list:
-  **Resistor-ladder input on a button node** ("Wire KEY1, KEY2 and ground to the node's
-  analogue input"); **CAN-box emulator** ("Sends wheel keys to Ostler and your head unit");
-  **Bluetooth wheel remote** ("A clip-on remote; pair in this display's Bluetooth
-  settings"). 3. A wiring card for the chosen kind. 4. Live check: "Adapter heard · idle
+  **Resistor-ladder input on an I/O module** (later: "Wire KEY1, KEY2 and ground to the
+  module's analogue input"); **Bluetooth or USB wheel remote** (HID: "A clip-on remote; pair
+  in this display's Bluetooth settings"); **Buttons from the vehicle pack** (read-only;
+  "Not on Discovery 2", greyed). 3. A wiring card for the chosen kind. 4. Live check: "Adapter heard · idle
   4.7 kΩ" in `ok`, or "Nothing heard".
-- **States:** no button node: "Add a button node" (hardware brief by name). Moving: locked
+- **States:** no I/O module: "Add an I/O module" (hardware brief by name). Moving: locked
   view.
 - **Safety and driving rules:** Parked only; button events never reach the gate
   ([shell input §3.1][si-3.1]).
 - **Components:** StepProgress (new component), ListRow, Card, Chip (status), Button.
-- **Spec refs:** [shell input §3.1][si-3.1] · [head-unit research B4][ch-b4].
-- **Open questions:** whether the "button node" is a new hardware add-on or a node input.
+- **Spec refs:** [shell input §3.1][si-3.1] · [head-unit research B4][ch-b4] · [head-unit apps §9][hu-9].
+- **Open questions:** **Decided ([head-unit apps §9][hu-9]):** resistor-ladder buttons are
+  read by an I/O module's ADC (later), not by a separate button node; Ostler never sends
+  button presses to the car.
 
-### swc-learn — Wheel controls 2: learn buttons  [Proposed]
-- **Why the app needs it:** every wheel's resistor values differ; the unit must learn them.
+### swc-learn — Wheel controls 2: learn buttons  [New]
 - **Purpose:** capture each button's reading.
 - **Owner:** os
 - **Opens from → goes to:** `swc-adapter`; the Buttons page → Re-learn. Goes to
@@ -158,11 +155,10 @@ ground; an adapter turns each press into a button event ([head-unit research B4]
 - **Safety and driving rules:** Parked only; a press while learning does nothing else.
 - **Components:** StepProgress (new component), HeroStat, ListRow, TextField (new
   component), Button.
-- **Spec refs:** [shell input §5][si-5] · [shell input §8][si-8].
+- **Spec refs:** [shell input §5][si-5] · [shell input §8][si-8] · [head-unit apps §9][hu-9].
 - **Open questions:** none.
 
-### swc-assign — Wheel controls 3: assign actions  [Proposed]
-- **Why the app needs it:** each learnt button needs a job, with a long-press job too.
+### swc-assign — Wheel controls 3: assign actions  [New]
 - **Purpose:** map buttons to intents and app actions.
 - **Owner:** os
 - **Opens from → goes to:** `swc-learn`; the Buttons page; `voice-setup` (push-to-talk).
@@ -178,7 +174,7 @@ ground; an adapter turns each press into a button event ([head-unit research B4]
 - **Safety and driving rules:** Parked only; no binding can open edit mode while Moving or
   run a car action; the long OK edit-mode binding stays fixed ([shell input §8][si-8]).
 - **Components:** StepProgress (new component), ListRow, Sheet, Button.
-- **Spec refs:** [shell input §2][si-2] · [shell input §8][si-8].
+- **Spec refs:** [shell input §2][si-2] · [shell input §8][si-8] · [head-unit apps §9][hu-9].
 - **Open questions:** none.
 
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
@@ -190,3 +186,6 @@ ground; an adapter turns each press into a button event ([head-unit research B4]
 [si-8]: ../../../../specs/2026-10-07-shell-input-design.md#8-bindings-and-the-key-test
 [pc-3]: ../../../../specs/2026-10-07-phone-comms-addon-design.md#3-architecture
 [ch-b4]: ../../../research/canbus_headunit.md#b4-steering-wheel-reverse-cameras-amplifier
+[hu-10]: ../../../../specs/2026-10-07-head-unit-apps-design.md#10-clock-weather-and-voice
+[hu-9]: ../../../../specs/2026-10-07-head-unit-apps-design.md#9-steering-wheel-control-learning-os
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

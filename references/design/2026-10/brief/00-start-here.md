@@ -2,7 +2,7 @@
 title: "Designer brief, October 2026 — start here"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/design/2026-10/README.md, references/design/2026-10/screens.json, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-shell-input-design.md]
 summary: >
@@ -29,7 +29,7 @@ Settings, the theme engine and first-run setup. **Everything else is an app** in
 repo, installed from the **Store**: Diagnostics, Trips, Security, Maintenance, Social, Map,
 Navigation, Phone, Radio, Audio, Media, Camera, Decode lab, Community and the starter
 widget pack. A **flavour** is the OS plus a preinstalled set of apps (Ostler Diagnostics,
-Ostler Guardian; see [01-sitemap-b](01-sitemap-b.md#3-flavours-preinstalled-sets)).
+Ostler Guardian, Ostler Brain; see [01-sitemap-b](01-sitemap-b.md#3-flavours-preinstalled-sets)).
 Safety stays with the OS, never with an app.
 
 The OS runs on a small computer in the car (the **Brain**) and opens on the car's head
@@ -52,7 +52,7 @@ Every screen, sheet or frame has one block in this shape:
 |---|---|
 | `### <screen-id> — <Name> [tag]` | The ID you use for folders and file names. Keep it exactly. |
 | **Purpose** | One line: why the page exists. |
-| **Owner** | `os`, or `app:<name>` (diagnostics, trips, security, maintenance, social, map, navigation, phone, radio, audio, media, camera, decode-lab, community, store, widgets-starter). |
+| **Owner** | `os`, or `app:<name>` (diagnostics, trips, security, maintenance, social, map, navigation, phone, radio, audio, media, camera, decode-lab, community, widgets-starter, voice; the Store is `os`). |
 | **Opens from → goes to** | Every way in and every way out. |
 | **Layout classes** and **Draw first** | Which sizes exist, and the key frames to deliver in the first pass. |
 | **Content (top to bottom)** | Numbered sections with every label, field, row and action, in order. |
@@ -91,15 +91,17 @@ Condensed from the hand-off [designer prompt checklist](../README.md#3-designer-
    [Drive modes §4.4][dm-4.4])
 3. **Tokens only.** Colour, type, space, radius, elevation and motion come from tokens in
    Night, Night dim, Deep night and Day. No raw colours. ([visual §3.1][vds-3.1])
-4. **One icon set.** Material Symbols, outlined. No emoji, dingbats or Unicode arrows. An icon
-   that carries meaning has a word beside it. ([visual §6][vds-6])
+4. **One icon set.** Material Symbols, outlined, by default; an icon pack maps other glyphs
+   to the same names, and safety icons never change (item 49). No emoji, dingbats or Unicode
+   arrows. An icon that carries meaning has a word beside it. ([visual §6][vds-6])
 5. **No glow on head units at night.** At most one glowing element per screen on phone,
    tablet and desktop. None on head units in Night dim or Deep night, in Drive mode or in a
    Moving template. No blur or gradients on head units. ([visual §5][vds-5])
 6. **Motion** only for sheet open and close, tab change and the alarm pulse. None while
    Moving. ([visual §5][vds-5])
-7. **One accent, calm gauges.** Cyan is for interactive and live things only. Status colours
-   come with an icon and a word, and only out of range. ([visual §1][vds-1])
+7. **One accent, calm gauges.** The accent (cyan by default, or one validated accent set,
+   item 48) is for interactive and live things only. Status colours come with an icon and a
+   word, and only out of range. ([visual §1][vds-1])
 8. **Park to edit.** Edit mode, pickers and editors exist only Parked (or Idling with Park
    evidence) on a driver-facing display. While Moving a long-press shows "Park to edit" and
    nothing else. ([Drive modes §8.1][dm-8.1])
@@ -120,8 +122,9 @@ Condensed from the hand-off [designer prompt checklist](../README.md#3-designer-
     confirm sheets open with Cancel focused. ([shell input §7][si-7], [§9][si-9])
 17. **Driver side.** On head units the dock sits on the driver's side. Draw right-hand drive (the D2); add
     left-hand drive where the layout differs. ([UI §3.3][ui-3.3])
-18. **Five dock slots,** the App drawer button always one of them; home pages in a
-    carousel with page dots. ([Drive modes §7.3][dm-7.3])
+18. **Dock slots per class:** phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7, tablet and
+    desktop 7 (decided, item 17). Home and the App drawer button are anchors, always in
+    the dock; home pages are one flat carousel with page dots. ([launcher §5.1][lw-5.1])
 19. **No score** in Trips. ([UI §12.2][ui-12.2])
 20. **Our names only.** No other brand's marks, fonts or colours. Figtree is the face.
 21. **The node is the only path to the car.** The Brain uses an adapter only when no node is
@@ -185,7 +188,7 @@ Name the design artifact the same way, so the reviewer can match link and file.
 | `50-vehicle-*` | vehicle | the Diagnostics, Trips, Maintenance and Decode lab apps |
 | `60-apps-*` | apps | Social, Phone, Navigation, Map, Community |
 | `70-store-*` | store | the Store app |
-| `80-hu-*` | head-unit apps | Radio, Audio, Media, Camera, Clock, Weather, Voice, steering-wheel controls, projection, climate |
+| `80-hu-*` | head-unit apps | Radio, Audio, Media, Camera, Clock and Weather (starter pack), Voice, steering-wheel controls, projection (not built), climate |
 | `90-appframe-*` | app frame | App info, app setup and options flows |
 | `85-security-*` | Security app | the Security app: the whole Ostler Guardian flavour (arm, events, tracker, geofences, widgets, Guardian home) |
 | [99-index-a](99-index-a.md), [b](99-index-b.md), [c](99-index-c.md) | index | every screen in one generated list, grouped by owner, with its tag and brief link |
@@ -201,7 +204,6 @@ same value as the block's Owner line.
 [adr-44]: ../../../../decisions/adr-0044-adapters-on-the-brain-without-a-node.md
 [dm-4.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#43-the-moving-section-and-the-template-mapping
 [dm-4.4]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#44-grids-and-minimum-sizes-per-class
-[dm-7.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#73-rail
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [si-7]: ../../../../specs/2026-10-07-shell-input-design.md#7-confirms-and-countdowns
 [si-9]: ../../../../specs/2026-10-07-shell-input-design.md#9-focus-visuals
@@ -217,3 +219,4 @@ same value as the block's Owner line.
 [vds-6]: ../../../../specs/2026-10-07-visual-design-system-design.md#6-icons-and-fonts
 [vds-7]: ../../../../specs/2026-10-07-visual-design-system-design.md#7-maps
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock

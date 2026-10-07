@@ -2,14 +2,14 @@
 title: "Designer brief: Settings (part B): alerts, notifications and driving rules"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
   Part B of the Settings brief. It covers how alerts reach the driver and the owner: the
   Existing message alert settings page (canned replies, the opt-in first-line preview that is
   off by default and shows only for messages that arrive while Parked, group alerts, the
-  "I'm driving" auto-reply and the fixed rate limits shown read-only); a Proposed
+  "I'm driving" auto-reply and the fixed rate limits shown read-only); a New
   Notifications page (per-app alert filters for Social and Phone, push to the owner's phone,
   quiet hours, and critical alerts that can never be muted); and a New Driving rules page that
   explains what changes while Moving, shows the Passenger view record, the passenger-only
@@ -58,12 +58,9 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
   [Phone & Comms §8][pc-8].
 - **Open questions:** none beyond the U2 legal check.
 
-### settings-notifications — Notifications, quiet hours and critical alerts  [Proposed]
+### settings-notifications — Notifications, quiet hours and critical alerts  [New]
 - **Owner:** os
 - **Purpose:** which sources may alert, where (car, phone), when, and which never go quiet.
-- **Why proposed:** [Phone & Comms §8][pc-8] puts "a Phone filter per app beside Social's in
-  More → Settings → Alerts" with no page drawn, and the owner's phone needs push settings for
-  alarm, maintenance and convoy alerts; quiet hours are new.
 - **Opens from → goes to:** Settings → Alerts → "Which apps can alert"; Settings root. Back.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night and Day, hu7 Night, hu7 Night dim Moving (the Settings lock).
@@ -71,7 +68,8 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
   1. **Critical alerts** (Card in the `alarm-bg` tone, no controls): "Always on: alarm and
      Security alerts, red warnings from the car, safety contacts' SOS. They sound through
      quiet hours and can't be turned off." Rows list each with its fixed icon and word.
-  2. **In the car**, per source, one row each with a Switch and a meta line: Social (Chats,
+  2. **In the car**, per app, one row per notification channel the app declares, each with
+     a Switch and a meta line (the `alarm` and `critical` channels are the OS's): Social (Chats,
      Rides), Phone & Comms (Messages; then one row per bridged app such as "WhatsApp",
      "Signal" when the bridge is on), Maintenance & Garage ("Service due"), Ostler Community
      ("Replies to your help threads"), Vehicles & Map ("Convoy"). Only installed apps show.
@@ -91,7 +89,7 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
 - **Components:** Card (tone), ListRow, Switch (new), Chip (days), time picker (new
   component: two Segmented wheels, Parked only).
 - **Spec refs:** [Phone & Comms §8][pc-8], [UI §12.1][ui-12.1], [Accounts §14.5][acc-14.5]
-  (SOS), [Drive modes §8.1][dm-8.1].
+  (SOS), [Drive modes §8.1][dm-8.1] · [app UI model §7][ua-7] · [app UI model §8][ua-8].
 - **Open questions:** does Ostler ask for the iOS critical-alert entitlement for the alarm?
   Should quiet hours also hold in-car message cards, or phone push only?
 
@@ -145,3 +143,5 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-14]: ../../../../specs/2026-10-06-ui-architecture-design.md#14-amendment-2026-10-07-dmd-round-approved-message-alerts-amends-121-alert_card-and-the-u2-legal-check
 [ui-3.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#35-drive-mode-driving-states-and-service-mode
+[ua-7]: ../../../../specs/2026-10-07-app-ui-model-design.md#7-notification-channels
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page

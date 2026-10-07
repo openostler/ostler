@@ -14,7 +14,7 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 
 ## os
 
-311 screens.
+315 screens.
 
 | Screen ID | Name | Group | Tag | Layout classes | Brief |
 |---|---|---|---|---|---|
@@ -38,45 +38,45 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `alert-voice-reply` | Speak a reply and read-back (Send / Cancel) | Alerts | New | 579WP | [40-drive-i](40-drive-i.md#alert-voice-reply--speak-a-reply-and-read-back--new) |
 | `call-template` | Call template (incoming, in call, PTT) | Alerts | Existing | 579WP | [40-drive-i](40-drive-i.md#call-template--call-template-incoming-in-call-ptt-call-waiting--existing) |
 | `app-dev-view` | Developer view of an app | App framework | Proposed | TDP9W | [90-appframe-g](90-appframe-g.md#app-dev-view--developer-view-of-an-app--proposed) |
-| `app-discovered` | New device found | App framework | Proposed | PTD579W | [90-appframe-e](90-appframe-e.md#app-discovered--new-device-found--proposed) |
+| `app-discovered` | New device found | App framework | New | PTD579W | [90-appframe-e](90-appframe-e.md#app-discovered--new-device-found--new) |
 | `app-error-incompatible` | Not available on this car | App framework | Proposed | PTD579W | [90-appframe-f](90-appframe-f.md#app-error-incompatible--not-available-on-this-car--proposed) |
 | `app-error-needs-update` | Needs an update | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-error-needs-update--needs-an-update--new) |
 | `app-error-stopped` | App stopped | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-error-stopped--app-stopped--new) |
-| `app-flow-auth` | Sign-in step | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-auth--sign-in-step--proposed) |
-| `app-flow-discovered` | Discovered confirm step | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-discovered--discovered-confirm-step--proposed) |
-| `app-flow-form` | Schema form step | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-form--schema-form-step--proposed) |
-| `app-flow-frame` | Setup flow frame | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-frame--setup-flow-frame--proposed) |
-| `app-flow-hardware` | Hardware detect step | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-hardware--hardware-detect-step--proposed) |
-| `app-flow-success` | Success summary | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-success--success-summary--proposed) |
-| `app-info` | App info | App framework | Proposed | PTD579W | [90-appframe-a](90-appframe-a.md#app-info--app-info--proposed) |
-| `app-info-actions` | Force stop and Disable sheets | App framework | Proposed | PTD579W | [90-appframe-a](90-appframe-a.md#app-info-actions--force-stop-and-disable-sheets--proposed) |
+| `app-flow-auth` | Sign-in step | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-auth--sign-in-step--new) |
+| `app-flow-discovered` | Discovered confirm step | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-discovered--discovered-confirm-step--new) |
+| `app-flow-form` | Schema form step | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-form--schema-form-step--new) |
+| `app-flow-frame` | Setup flow frame | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-frame--setup-flow-frame--new) |
+| `app-flow-hardware` | Hardware detect step | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-hardware--hardware-detect-step--new) |
+| `app-flow-success` | Success summary | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-flow-success--success-summary--new) |
+| `app-info` | App info | App framework | New | PTD579W | [90-appframe-a](90-appframe-a.md#app-info--app-info--new) |
+| `app-info-actions` | Force stop and Disable sheets | App framework | New | PTD579W | [90-appframe-a](90-appframe-a.md#app-info-actions--force-stop-and-disable-sheets--new) |
 | `app-info-defaults` | Open by default | App framework | Proposed | PTD | [90-appframe-b](90-appframe-b.md#app-info-defaults--open-by-default--proposed) |
-| `app-info-logs` | App log | App framework | Proposed | PTD79 | [90-appframe-b](90-appframe-b.md#app-info-logs--app-log--proposed) |
-| `app-info-notifications` | Notifications | App framework | Proposed | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-notifications--notifications--proposed) |
-| `app-info-permissions` | Permissions and data | App framework | Proposed | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-permissions--permissions-and-data--proposed) |
+| `app-info-logs` | App log | App framework | New | PTD79 | [90-appframe-b](90-appframe-b.md#app-info-logs--app-log--new) |
+| `app-info-notifications` | Notifications | App framework | New | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-notifications--notifications--new) |
+| `app-info-permissions` | Permissions and data | App framework | New | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-permissions--permissions-and-data--new) |
 | `app-info-power` | Power use on the Brain | App framework | Proposed | PTD79 | [90-appframe-b](90-appframe-b.md#app-info-power--power-use-on-the-brain--proposed) |
-| `app-info-provides` | Widgets and shortcuts | App framework | Proposed | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-provides--widgets-and-shortcuts--proposed) |
-| `app-info-storage` | Storage and cache | App framework | Proposed | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-storage--storage-and-cache--proposed) |
-| `app-info-version` | Version and source | App framework | Proposed | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-version--version-and-source--proposed) |
-| `app-integration-entry` | Integration entry | App framework | Proposed | PTD579W | [90-appframe-e](90-appframe-e.md#app-integration-entry--integration-entry--proposed) |
-| `app-integrations` | Integrations | App framework | Proposed | PTD579W | [90-appframe-e](90-appframe-e.md#app-integrations--integrations--proposed) |
-| `app-list` | Apps | App framework | Proposed | PTD579W | [90-appframe-a](90-appframe-a.md#app-list--apps--proposed) |
-| `app-options-flow` | Options flow | App framework | Proposed | PTD579W | [90-appframe-c](90-appframe-c.md#app-options-flow--options-flow--proposed) |
-| `app-pack-icons` | Icon pack | App framework | Proposed | PTD79 | [90-appframe-f](90-appframe-f.md#app-pack-icons--icon-pack--proposed) |
-| `app-pack-preset` | Dashboard preset | App framework | Proposed | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-preset--dashboard-preset--proposed) |
-| `app-pack-sound` | Sound or EQ preset | App framework | Proposed | PT79W | [90-appframe-f](90-appframe-f.md#app-pack-sound--sound-or-eq-preset--proposed) |
-| `app-pack-theme` | Theme pack | App framework | Proposed | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-theme--theme-pack--proposed) |
-| `app-pack-wallpaper` | Wallpaper pack | App framework | Proposed | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-wallpaper--wallpaper-pack--proposed) |
-| `app-pack-widgets` | Widget pack | App framework | Proposed | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-widgets--widget-pack--proposed) |
+| `app-info-provides` | Widgets and shortcuts | App framework | New | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-provides--widgets-and-shortcuts--new) |
+| `app-info-storage` | Storage and cache | App framework | New | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-storage--storage-and-cache--new) |
+| `app-info-version` | Version and source | App framework | New | PTD579W | [90-appframe-b](90-appframe-b.md#app-info-version--version-and-source--new) |
+| `app-integration-entry` | Integration entry | App framework | New | PTD579W | [90-appframe-e](90-appframe-e.md#app-integration-entry--integration-entry--new) |
+| `app-integrations` | Integrations | App framework | New | PTD579W | [90-appframe-e](90-appframe-e.md#app-integrations--integrations--new) |
+| `app-list` | Apps | App framework | New | PTD579W | [90-appframe-a](90-appframe-a.md#app-list--apps--new) |
+| `app-options-flow` | Options flow | App framework | New | PTD579W | [90-appframe-c](90-appframe-c.md#app-options-flow--options-flow--new) |
+| `app-pack-icons` | Icon pack | App framework | New | PTD79 | [90-appframe-f](90-appframe-f.md#app-pack-icons--icon-pack--new) |
+| `app-pack-preset` | Dashboard preset | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-preset--dashboard-preset--new) |
+| `app-pack-sound` | Sound or EQ preset | App framework | New | PT79W | [90-appframe-f](90-appframe-f.md#app-pack-sound--sound-or-eq-preset--new) |
+| `app-pack-theme` | Theme pack | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-theme--theme-pack--new) |
+| `app-pack-wallpaper` | Wallpaper pack | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-wallpaper--wallpaper-pack--new) |
+| `app-pack-widgets` | Widget pack | App framework | New | PTD579W | [90-appframe-f](90-appframe-f.md#app-pack-widgets--widget-pack--new) |
 | `app-permission-car` | Allow an app to ask for car actions | App framework | Proposed | PTD579W | [90-appframe-e](90-appframe-e.md#app-permission-car--allow-an-app-to-ask-for-car-actions--proposed) |
 | `app-permission-request` | Permission request sheet | App framework | Proposed | PTD579W | [90-appframe-e](90-appframe-e.md#app-permission-request--permission-request-sheet--proposed) |
-| `app-setup-d2-contact` | First contact on K-line | App framework | Proposed | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-contact--first-contact-on-k-line--proposed) |
-| `app-setup-d2-done` | Discovery 2 set up | App framework | Proposed | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-done--discovery-2-set-up--proposed) |
-| `app-setup-d2-found` | Discovery 2 found | App framework | Proposed | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-found--discovery-2-found--proposed) |
-| `app-setup-d2-modules` | Which systems this car has | App framework | Proposed | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-modules--which-systems-this-car-has--proposed) |
-| `app-setup-lube-server` | LubeLogger server | App framework | Proposed | PTD79 | [90-appframe-d](90-appframe-d.md#app-setup-lube-server--lubelogger-server--proposed) |
-| `app-setup-lube-sync` | Car and what syncs | App framework | Proposed | PTD79 | [90-appframe-d](90-appframe-d.md#app-setup-lube-sync--car-and-what-syncs--proposed) |
-| `app-uninstall` | Uninstall | App framework | Proposed | PTD579W | [90-appframe-g](90-appframe-g.md#app-uninstall--uninstall--proposed) |
+| `app-setup-d2-contact` | First contact on K-line | App framework | New | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-contact--first-contact-on-k-line--new) |
+| `app-setup-d2-done` | Discovery 2 set up | App framework | New | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-done--discovery-2-set-up--new) |
+| `app-setup-d2-found` | Discovery 2 found | App framework | New | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-found--discovery-2-found--new) |
+| `app-setup-d2-modules` | Which systems this car has | App framework | New | PTD579W | [90-appframe-d](90-appframe-d.md#app-setup-d2-modules--which-systems-this-car-has--new) |
+| `app-setup-lube-server` | LubeLogger server | App framework | New | PTD79 | [90-appframe-d](90-appframe-d.md#app-setup-lube-server--lubelogger-server--new) |
+| `app-setup-lube-sync` | Car and what syncs | App framework | New | PTD79 | [90-appframe-d](90-appframe-d.md#app-setup-lube-sync--car-and-what-syncs--new) |
+| `app-uninstall` | Uninstall | App framework | New | PTD579W | [90-appframe-g](90-appframe-g.md#app-uninstall--uninstall--new) |
 | `audio-system-sounds` | System sounds | Audio | Proposed | PTD579W | [80-hu-e-audio-tuning](80-hu-e-audio-tuning.md#audio-system-sounds--system-sounds--proposed) |
 | `climate-panel` | Climate (device page; "not available" on the D2) | Climate | New | PT579W | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#climate-panel--climate-device-page-not-available-on-the-d2--new) |
 | `clock-alarm-ring` | Alarm or timer ringing | Clock | Proposed | PT579W | [80-hu-k-clock-weather](80-hu-k-clock-weather.md#clock-alarm-ring--alarm-or-timer-ringing--proposed) |
@@ -96,7 +96,7 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `drive-dashboard-cluster` | Drive mode: Dashboard · Cluster | Drive modes | Existing | PT579W | [40-drive-e](40-drive-e.md#drive-dashboard-cluster--dashboard--cluster--existing) |
 | `drive-dashboard-map` | Drive mode: Dashboard · Map with speed overlay | Drive modes | Existing | PT579W | [40-drive-e](40-drive-e.md#drive-dashboard-map--dashboard--map-with-speed-overlay--existing) |
 | `drive-dusk-suggest` | Minimal / Night suggested once at dusk | Drive modes | New | 579W | [40-drive-g](40-drive-g.md#drive-dusk-suggest--minimal--night-suggested-at-dusk--new) |
-| `drive-exit-home-moving` | 'Exit to Home' while Moving (open owner question) | Drive modes | Proposed | 579W | [40-drive-g](40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--proposed) |
+| `drive-exit-home-moving` | 'Exit to Home' while Moving (decided: row hidden) | Drive modes | New | 579W | [40-drive-g](40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--new) |
 | `drive-layout-import` | Layout import / export (file, link, QR) | Drive modes | Existing | PT579WD | [45-launcher-h](45-launcher-h.md#drive-layout-import--import-and-export-pages--existing) |
 | `drive-layout-import-error` | Layout import refused (reasons and warnings) | Drive modes | New | PTD579W | [40-drive-h](40-drive-h.md#drive-layout-import-error--import-refused--new) |
 | `drive-menu` | Drive menu | Drive modes | Existing | PT579W | [40-drive-g](40-drive-g.md#drive-menu--drive-menu--existing) |
@@ -116,7 +116,7 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `ia-kit-data` | Kit sheet: data display | Foundation kit | New | PT79 | [03-components-c](03-components-c.md#ia-kit-data--kit-sheet-data-display--new) |
 | `ia-kit-hardware` | Kit sheet: hardware set-up | Foundation kit | Proposed | PT7 | [03-components-c](03-components-c.md#ia-kit-hardware--kit-sheet-hardware-set-up--proposed) |
 | `ia-kit-key-test` | Kit sheet: key-test grid | Foundation kit | New | P579W | [03-components-c](03-components-c.md#ia-kit-key-test--kit-sheet-key-test-grid--new) |
-| `ia-kit-launcher` | Kit sheet: launcher | Foundation kit | Proposed | PT579W | [03-components-c](03-components-c.md#ia-kit-launcher--kit-sheet-launcher--proposed) |
+| `ia-kit-launcher` | Kit sheet: launcher | Foundation kit | New | PT579W | [03-components-c](03-components-c.md#ia-kit-launcher--kit-sheet-launcher--new) |
 | `ia-kit-moving-templates` | Kit sheet: Moving templates | Foundation kit | New | P579W | [03-components-c](03-components-c.md#ia-kit-moving-templates--kit-sheet-moving-templates--new) |
 | `ia-kit-shell` | Kit sheet: the OS frame | Foundation kit | New | P579W | [03-components-c](03-components-c.md#ia-kit-shell--kit-sheet-the-os-frame--new) |
 | `ia-kit-surfaces` | Kit sheet: surfaces and feedback | Foundation kit | New | PT79W | [03-components-c](03-components-c.md#ia-kit-surfaces--kit-sheet-surfaces-and-feedback--new) |
@@ -135,13 +135,13 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `ia-open-on-phone` | Open on phone | Foundation patterns | New | 579WP | [02-global-patterns-b](02-global-patterns-b.md#ia-open-on-phone--open-on-phone--new) |
 | `ia-permission-prompt` | Browser and OS permission prompts | Foundation patterns | New | PTD | [02-global-patterns-b](02-global-patterns-b.md#ia-permission-prompt--browser-and-os-permission-prompts--new) |
 | `ia-toast` | Toasts and snackbars | Foundation patterns | New | PTD579W | [02-global-patterns-b](02-global-patterns-b.md#ia-toast--toasts-and-snackbars--new) |
-| `ia-update-available` | Update available | Foundation patterns | Proposed | PTD579W | [02-global-patterns-c](02-global-patterns-c.md#ia-update-available--update-available--proposed) |
+| `ia-update-available` | Update available | Foundation patterns | New | PTD579W | [02-global-patterns-c](02-global-patterns-c.md#ia-update-available--update-available--new) |
 | `hw-add-device` | Add a device (chooser) | Hardware | New | PT79WD | [20-hardware-a-devices](20-hardware-a-devices.md#hw-add-device--add-a-device--new) |
 | `hw-brain` | Ostler Brain: setup and health (power, storage, temperature, links) | Hardware | New | PT579WD | [20-hardware-c-brain-gps-imu](20-hardware-c-brain-gps-imu.md#hw-brain--ostler-brain-setup-and-health--new) |
 | `hw-brain-update` | Brain system update (A/B slots) | Hardware | Proposed | PT79WD | [20-hardware-e-updates-input](20-hardware-e-updates-input.md#hw-brain-update--brain-system-update-ab--proposed) |
 | `hw-buttons-key-test` | Key test (every intent, long OK, repeat) | Hardware | New | PT579WD | [20-hardware-e-updates-input](20-hardware-e-updates-input.md#hw-buttons-key-test--key-test--new) |
 | `hw-camera` | Camera page: preview, role and home pages | Hardware | New | PT579WD | [20-hardware-d-cameras-power](20-hardware-d-cameras-power.md#hw-camera--camera-page-preview-role-and-home-pages--new) |
-| `hw-camera-add` | Add a camera (find, name, role, preview) | Hardware | Proposed | PT79WD | [20-hardware-d-cameras-power](20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--proposed) |
+| `hw-camera-add` | Add a camera (find, name, role, preview) | Hardware | New | PT79WD | [20-hardware-d-cameras-power](20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--new) |
 | `hw-device-logs` | Device logs (filterable events) | Hardware | Proposed | PT79WD | [20-hardware-a-devices](20-hardware-a-devices.md#hw-device-logs--device-logs--proposed) |
 | `hw-device-restart` | Restart device confirm | Hardware | Proposed | PT579WD | [20-hardware-a-devices](20-hardware-a-devices.md#hw-device-restart--restart-confirm--proposed) |
 | `hw-firmware-update` | Device firmware update (progress and rollback) | Hardware | Proposed | PT579WD | [20-hardware-e-updates-input](20-hardware-e-updates-input.md#hw-firmware-update--update-device-firmware--proposed) |
@@ -159,28 +159,28 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `hw-power` | Network → Power: sleep, wake, battery guard, wake log | Hardware | New | PT579WD | [20-hardware-d-cameras-power](20-hardware-d-cameras-power.md#hw-power--network--power-sleep-wake-and-battery-guard--new) |
 | `hw-power-schedule` | Scheduled wakes and check-ins | Hardware | New | PT79WD | [20-hardware-d-cameras-power](20-hardware-d-cameras-power.md#hw-power-schedule--scheduled-wakes--new) |
 | `home` | Home | Home | Existing | PT579WD | [40-drive-c](40-drive-c.md#home--home--existing) |
-| `launcher-app-menu` | App menu (long-press an app icon) | Launcher | Proposed | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-app-menu--app-menu-long-press-an-app-icon--proposed) |
-| `launcher-builder-apps` | Builder step 1: car and apps | Launcher | Proposed | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-apps--builder-step-1-car-and-apps--proposed) |
-| `launcher-builder-display` | Builder step 2: display | Launcher | Proposed | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-display--builder-step-2-display--proposed) |
-| `launcher-builder-done` | Builder step 5: applied, with Undo | Launcher | Proposed | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-done--builder-step-5-applied-with-undo--proposed) |
-| `launcher-builder-review` | Builder step 4: review the pages | Launcher | Proposed | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-review--builder-step-4-review-the-pages--proposed) |
-| `launcher-builder-templates` | Builder step 3: templates | Launcher | Proposed | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-templates--builder-step-3-templates--proposed) |
-| `launcher-folder` | Folder | Launcher | Proposed | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-folder--folder--proposed) |
+| `launcher-app-menu` | App menu (long-press an app icon) | Launcher | New | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-app-menu--app-menu-long-press-an-app-icon--new) |
+| `launcher-builder-apps` | Builder step 1: car and apps | Launcher | New | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-apps--builder-step-1-car-and-apps--new) |
+| `launcher-builder-display` | Builder step 2: display | Launcher | New | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-display--builder-step-2-display--new) |
+| `launcher-builder-done` | Builder step 5: applied, with Undo | Launcher | New | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-done--builder-step-5-applied-with-undo--new) |
+| `launcher-builder-review` | Builder step 4: review the pages | Launcher | New | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-review--builder-step-4-review-the-pages--new) |
+| `launcher-builder-templates` | Builder step 3: templates | Launcher | New | PTD579W | [45-launcher-i](45-launcher-i.md#launcher-builder-templates--builder-step-3-templates--new) |
+| `launcher-folder` | Folder | Launcher | New | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-folder--folder--new) |
 | `launcher-home-pages` | Home pages carousel | Launcher | New | PTD579W | [45-launcher-a](45-launcher-a.md#launcher-home-pages--home-pages-carousel--new) |
-| `launcher-home-settings` | Home settings | Launcher | Proposed | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-home-settings--home-settings--proposed) |
-| `launcher-item-popup` | Item popup (long-press a widget or icon) | Launcher | Proposed | PTD579W | [45-launcher-c](45-launcher-c.md#launcher-item-popup--item-popup-long-press-a-widget-or-icon--proposed) |
+| `launcher-home-settings` | Home settings | Launcher | New | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-home-settings--home-settings--new) |
+| `launcher-item-popup` | Item popup (long-press a widget or icon) | Launcher | New | PTD579W | [45-launcher-c](45-launcher-c.md#launcher-item-popup--item-popup-long-press-a-widget-or-icon--new) |
 | `launcher-menu` | Launcher menu (long-press empty space) | Launcher | Proposed | PTD579W | [45-launcher-c](45-launcher-c.md#launcher-menu--launcher-menu-long-press-empty-space--proposed) |
 | `launcher-preset-preview` | Preset preview | Launcher | New | PTD579W | [45-launcher-h](45-launcher-h.md#launcher-preset-preview--preset-preview--new) |
 | `launcher-presets` | Preset dashboards | Launcher | New | PTD579W | [45-launcher-h](45-launcher-h.md#launcher-presets--preset-dashboards--new) |
-| `launcher-shortcut-picker` | App shortcuts on a home page | Launcher | Proposed | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-shortcut-picker--app-shortcuts-on-a-home-page--proposed) |
-| `launcher-theme` | Wallpaper & style | Launcher | Proposed | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme--wallpaper--style--proposed) |
-| `launcher-theme-colours` | Colours and light or dark | Launcher | Proposed | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-colours--colours-and-light-or-dark--proposed) |
-| `launcher-theme-gauges` | Gauge style | Launcher | Proposed | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-theme-gauges--gauge-style--proposed) |
-| `launcher-theme-icons` | Icon packs | Launcher | Proposed | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-icons--icon-packs--proposed) |
-| `launcher-theme-preview` | Theme preview and apply | Launcher | Proposed | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-theme-preview--theme-preview-and-apply--proposed) |
+| `launcher-shortcut-picker` | App shortcuts on a home page | Launcher | New | PTD579W | [45-launcher-b](45-launcher-b.md#launcher-shortcut-picker--app-shortcuts-on-a-home-page--new) |
+| `launcher-theme` | Wallpaper & style | Launcher | New | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme--wallpaper--style--new) |
+| `launcher-theme-colours` | Colours and light or dark | Launcher | New | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-colours--colours-and-light-or-dark--new) |
+| `launcher-theme-gauges` | Gauge style | Launcher | New | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-theme-gauges--gauge-style--new) |
+| `launcher-theme-icons` | Icon packs | Launcher | New | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-icons--icon-packs--new) |
+| `launcher-theme-preview` | Theme preview and apply | Launcher | New | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-theme-preview--theme-preview-and-apply--new) |
 | `launcher-theme-text` | Text size | Launcher | Proposed | PTD579W | [45-launcher-k](45-launcher-k.md#launcher-theme-text--text-size--proposed) |
-| `launcher-theme-wallpaper` | Wallpaper and background | Launcher | Proposed | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-wallpaper--wallpaper-and-background--proposed) |
-| `launcher-widget-resize` | Widget resize frame | Launcher | Proposed | PTD579W | [45-launcher-c](45-launcher-c.md#launcher-widget-resize--widget-resize-frame--proposed) |
+| `launcher-theme-wallpaper` | Wallpaper and background | Launcher | New | PTD579W | [45-launcher-j](45-launcher-j.md#launcher-theme-wallpaper--wallpaper-and-background--new) |
+| `launcher-widget-resize` | Widget resize frame | Launcher | New | PTD579W | [45-launcher-c](45-launcher-c.md#launcher-widget-resize--widget-resize-frame--new) |
 | `garage` | More → Garage (vehicles, garage cards) | Maintenance & Garage | Existing | PT579WD | [50-vehicle-k-maint](50-vehicle-k-maint.md#garage--garage-vehicles-garage-cards--existing) |
 | `media-integration-setup` | Streaming integration setup | Media | Proposed | PTD79W | [80-hu-h-media-setup](80-hu-h-media-setup.md#media-integration-setup--streaming-integration-setup--proposed) |
 | `media-moving` | Media template while Moving (Radio, Media, Bluetooth, streaming) | Media | New | P579W | [80-hu-g-media](80-hu-g-media.md#media-moving--media-template-while-moving-radio-media-bluetooth-streaming--new) |
@@ -197,12 +197,12 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `setup-app-access` | Review an app's access (needs, data classes, permissions) | Onboarding | New | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-app-access--review-an-apps-access--new) |
 | `setup-app-connect` | Companion app: connect to your Ostler | Onboarding | New | PT | [10-onboarding-b](10-onboarding-b.md#setup-app-connect--companion-app-connect-to-your-ostler--new) |
 | `setup-app-permissions` | Companion app: permissions with reasons | Onboarding | Proposed | PT | [10-onboarding-b](10-onboarding-b.md#setup-app-permissions--companion-app-what-the-app-may-use--proposed) |
-| `setup-apps` | Choose your apps (product flavour, bundled Store catalogue) | Onboarding | Proposed | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-apps--choose-your-apps--proposed) |
-| `setup-backup` | Make a backup | Onboarding | Proposed | PTD | [10-onboarding-e](10-onboarding-e.md#setup-backup--make-a-backup--proposed) |
+| `setup-apps` | Choose your apps (product flavour, bundled Store catalogue) | Onboarding | New | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-apps--choose-your-apps--new) |
+| `setup-backup` | Make a backup | Onboarding | New | PTD | [10-onboarding-e](10-onboarding-e.md#setup-backup--make-a-backup--new) |
 | `setup-car-profile` | The Car profile (kiosk session limits, Lock car layouts) | Onboarding | New | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-car-profile--the-car-profile--new) |
 | `setup-checklist` | Finish setting up (Home checklist card) | Onboarding | Proposed | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-checklist--finish-setting-up-home-page-card--proposed) |
 | `setup-device-code` | Approve a device code (RFC 8628) with scopes | Onboarding | New | PTD | [10-onboarding-b](10-onboarding-b.md#setup-device-code--approve-a-device-code--new) |
-| `setup-display` | This screen: register a display (class, side, driver-facing) | Onboarding | Proposed | 579WT | [10-onboarding-d](10-onboarding-d.md#setup-display--this-screen--proposed) |
+| `setup-display` | This screen: register a display (class, side, driver-facing) | Onboarding | New | 579WT | [10-onboarding-d](10-onboarding-d.md#setup-display--this-screen--new) |
 | `setup-first-contact` | First contact with the car (ladder, identify, first scan) | Onboarding | New | PTD579W | [10-onboarding-c](10-onboarding-c.md#setup-first-contact--first-contact-with-the-car--new) |
 | `setup-invite-accept` | Join this Ostler (person invite) | Onboarding | New | PTD | [10-onboarding-b](10-onboarding-b.md#setup-invite-accept--join-this-ostler--new) |
 | `setup-move-brain` | Move to a new Brain | Onboarding | Proposed | PTD | [10-onboarding-e](10-onboarding-e.md#setup-move-brain--move-to-a-new-brain--proposed) |
@@ -210,7 +210,7 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `setup-node-uplink` | The node's internet (Wi-Fi, 4G, none) | Onboarding | New | PTD79W | [10-onboarding-c](10-onboarding-c.md#setup-node-uplink--the-nodes-internet--new) |
 | `setup-people` | Who uses this car (people, invites, names only) | Onboarding | New | PTD | [10-onboarding-d](10-onboarding-d.md#setup-people--who-uses-this-car--new) |
 | `setup-prefs` | First run: language and units | Onboarding | Proposed | PTD579W | [10-onboarding-a](10-onboarding-a.md#setup-prefs--language-and-units--proposed) |
-| `setup-restore` | Restore from a backup | Onboarding | Proposed | PTD579W | [10-onboarding-e](10-onboarding-e.md#setup-restore--restore-from-a-backup--proposed) |
+| `setup-restore` | Restore from a backup | Onboarding | New | PTD579W | [10-onboarding-e](10-onboarding-e.md#setup-restore--restore-from-a-backup--new) |
 | `setup-source` | How Ostler reaches the car (node, adapter, not now) | Onboarding | New | PTD579W | [10-onboarding-c](10-onboarding-c.md#setup-source--how-ostler-reaches-the-car--new) |
 | `setup-summary` | Everything connected (setup summary) | Onboarding | Proposed | PTD579W | [10-onboarding-d](10-onboarding-d.md#setup-summary--everything-connected--proposed) |
 | `setup-trust` | Trust this Ostler on this device (certificate, fingerprint) | Onboarding | New | PTD | [10-onboarding-b](10-onboarding-b.md#setup-trust--trust-this-ostler-on-this-device--new) |
@@ -219,16 +219,20 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `setup-welcome` | Set up this Ostler (welcome, setup code, QR, restore) | Onboarding | New | PTD579W | [10-onboarding-a](10-onboarding-a.md#setup-welcome--set-up-this-ostler--new) |
 | `maps-regions` | Settings → Maps: offline regions | Preferences | Existing | PT579WD | [30-settings-f](30-settings-f.md#maps-regions--maps-offline-regions--existing) |
 | `preferences` | Preferences (theme, map theme, units, rail) | Preferences | Existing | PT579WD | [30-settings-a](30-settings-a.md#preferences--display--existing) |
+| `projection-session` | Projection: running session | Projection | Proposed | 579W | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-session--projection-running-session--proposed) |
+| `projection-settings` | Projection settings | Projection | Proposed | 579WP | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-settings--projection-settings--proposed) |
+| `projection-setup` | Projection: not built (information page) | Projection | Proposed | P579W | [80-hu-m-projection-vehicle](80-hu-m-projection-vehicle.md#projection-setup--projection-not-built-information-page--proposed) |
 | `radio-ta-alert` | Traffic announcement interrupt | Radio | Proposed | PT579W | [80-hu-b-radio](80-hu-b-radio.md#radio-ta-alert--traffic-announcement-interrupt--proposed) |
 | `security-alert-card` | Alarm alert card | Security | New | PTD579W | [85-security-b-events](85-security-b-events.md#security-alert-card--alarm-alert-card--new) |
 | `security-arm-sheet` | Arm the alarm | Security | New | PTD579W | [85-security-a-main](85-security-a-main.md#security-arm-sheet--arm-the-alarm--new) |
+| `security-crash-sos` | Crash SOS (later) | Security | Proposed | P579W | [85-security-f-companion-guardian](85-security-f-companion-guardian.md#security-crash-sos--crash-sos-later--proposed) |
 | `security-disarm-sheet` | Disarm (at the car) | Security | New | PTD579W | [85-security-a-main](85-security-a-main.md#security-disarm-sheet--disarm-at-the-car--new) |
-| `security-guardian-home` | Guardian home pages | Security | Proposed | PTD579W | [85-security-f-companion-guardian](85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--proposed) |
+| `security-guardian-home` | Guardian home pages | Security | New | PTD579W | [85-security-f-companion-guardian](85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--new) |
 | `security-remote-disarm` | Disarm remotely | Security | New | PTD | [85-security-a-main](85-security-a-main.md#security-remote-disarm--disarm-remotely--new) |
 | `settings-about` | About | Settings | New | PTD579W | [30-settings-h](30-settings-h.md#settings-about--about--new) |
 | `settings-account` | My account | Settings | New | PTD579W | [30-settings-e](30-settings-e.md#settings-account--my-account--new) |
 | `settings-api-tokens` | API tokens and scripts | Settings | New | PTD579W | [30-settings-g](30-settings-g.md#settings-api-tokens--api-tokens-and-scripts--new) |
-| `settings-backups` | Backups | Settings | Proposed | PTD579W | [30-settings-d](30-settings-d.md#settings-backups--backups--proposed) |
+| `settings-backups` | Backups | Settings | New | PTD579W | [30-settings-d](30-settings-d.md#settings-backups--backups--new) |
 | `settings-connected-apps` | Connected apps and MCP server | Settings | New | PTD579W | [30-settings-g](30-settings-g.md#settings-connected-apps--connected-apps-and-mcp-server--new) |
 | `settings-data-classes` | What can be shared | Settings | Proposed | PTD579W | [30-settings-c](30-settings-c.md#settings-data-classes--what-can-be-shared--proposed) |
 | `settings-delete-data` | Delete my data | Settings | Proposed | PTD579W | [30-settings-c](30-settings-c.md#settings-delete-data--delete-my-data--proposed) |
@@ -240,15 +244,11 @@ Generated from [`screens.json`](../screens.json). Layout classes: P phone, T tab
 | `settings-legal` | Legal and privacy policy | Settings | Proposed | PTD579W | [30-settings-h](30-settings-h.md#settings-legal--legal-and-privacy-policy--proposed) |
 | `settings-licences` | Licences and credits | Settings | Proposed | PTD579W | [30-settings-h](30-settings-h.md#settings-licences--licences-and-credits--proposed) |
 | `settings-location` | Location | Settings | Proposed | PTD579W | [30-settings-c](30-settings-c.md#settings-location--location--proposed) |
-| `settings-notifications` | Notifications, quiet hours and critical alerts | Settings | Proposed | PTD579W | [30-settings-b](30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--proposed) |
+| `settings-notifications` | Notifications, quiet hours and critical alerts | Settings | New | PTD579W | [30-settings-b](30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--new) |
 | `settings-ostler-link` | Ostler Link (cloud subscription) | Settings | Proposed | PTD579W | [30-settings-e](30-settings-e.md#settings-ostler-link--ostler-link-cloud-subscription--proposed) |
 | `settings-platform-logs` | Platform log | Settings | Proposed | PTD79W | [30-settings-g](30-settings-g.md#settings-platform-logs--platform-log--proposed) |
 | `settings-privacy` | Privacy and data | Settings | New | PTD579W | [30-settings-c](30-settings-c.md#settings-privacy--privacy-and-data--new) |
 | `settings-profiles` | Profiles and users | Settings | New | PTD579W | [30-settings-e](30-settings-e.md#settings-profiles--profiles-and-users--new) |
 | `settings-report-problem` | Report a problem | Settings | Proposed | PTD79W | [30-settings-h](30-settings-h.md#settings-report-problem--report-a-problem--proposed) |
 | `settings-reset` | Reset | Settings | New | PTD579W | [30-settings-h](30-settings-h.md#settings-reset--reset--new) |
-| `settings-restore` | Restore from a backup | Settings | Proposed | PTD79W | [30-settings-d](30-settings-d.md#settings-restore--restore-from-a-backup--proposed) |
-| `settings-root` | Settings app | Settings | New | PTD579W | [30-settings-a](30-settings-a.md#settings-root--settings-app--new) |
-| `settings-storage` | Storage | Settings | Proposed | PTD579W | [30-settings-d](30-settings-d.md#settings-storage--storage--proposed) |
-| `settings-token-create` | New token | Settings | New | PTD579W | [30-settings-g](30-settings-g.md#settings-token-create--new-token--new) |
-| `settings-units-region` | Units, language and region | Settings | Proposed | PTD579W | [30-settings-a](30-settings-a.md#settings-units-region--units-language-and-region--proposed) |
+| `settings-restore` | Restore from a backup | Settings | New | PTD79W | [30-settings-d](30-settings-d.md#settings-restore--restore-from-a-backup--new) |

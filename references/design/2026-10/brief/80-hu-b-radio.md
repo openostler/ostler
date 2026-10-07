@@ -2,7 +2,7 @@
 title: "Designer brief 80-b — Radio app: now playing, stations, tuning, presets, DAB slideshow, traffic interrupt"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -18,13 +18,12 @@ summary: >
 # 80-b — Radio app pages
 
 Shared rules (Moving template, Parked-only long lists, no video) are in
-[80-a](80-hu-a-overview.md). **Why the Radio app needs these pages (all Proposed):** the
-owner's direction of 2026-10-07 makes Ostler a full head unit, and an FM/AM/DAB+ tuner is
-the first thing every aftermarket unit offers; no approved spec covers it yet. Examples use
+[80-a](80-hu-a-overview.md). **Spec:** the approved head-unit apps spec covers the Radio
+app ([head-unit apps §3][hu-3]), so these pages are New, except the traffic announcement
+card, which differs from the spec (see its block). Examples use
 UK broadcasts the D2 owner can receive. Every page is driver-facing on head units.
 
-### radio-now-playing — Radio: now playing  [Proposed]
-- **Why the app needs it:** the Radio app's home page; every head unit opens radio here.
+### radio-now-playing — Radio: now playing  [New]
 - **Purpose:** show the station on air and give band, preset, seek and volume in one place.
 - **Owner:** app:radio
 - **Opens from → goes to:** app drawer → Radio; the now-playing widget; `audio-sources` →
@@ -61,12 +60,11 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
   Seek, preset recall and volume are allowed while Moving.
 - **Components:** Segmented, HeroStat (station name variant), Chip (status), Button,
   PresetButton (new component), Card.
-- **Spec refs:** [UI §12.1][ui-12.1] · [App model §4.4][am-4.4] · [visual §4][vds-4].
+- **Spec refs:** [UI §12.1][ui-12.1] · [App model §4.4][am-4.4] · [visual §4][vds-4] · [head-unit apps §3][hu-3].
 - **Open questions:** whether to show the PTY chip while Moving (it is equipment state, but
   it is a third line).
 
-### radio-stations — Station list and DAB service list  [Proposed]
-- **Why the app needs it:** every unit lists receivable stations; DAB+ is service-list only.
+### radio-stations — Station list and DAB service list  [New]
 - **Purpose:** pick a station from what the tuner can hear now, with logos.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-now-playing` → Stations. A row tunes and returns to
@@ -89,12 +87,11 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
   Moving list is the six Favourites or, if none, the six presets ([UI §12.1][ui-12.1]).
 - **Components:** TabBar, Chip (filter), TextField (new component), ListRow, Button,
   `short_list` template.
-- **Spec refs:** [UI §12.1][ui-12.1] · [UI §3.5][ui-3.5] · [visual §8][vds-8].
+- **Spec refs:** [UI §12.1][ui-12.1] · [UI §3.5][ui-3.5] · [visual §8][vds-8] · [head-unit apps §3][hu-3].
 - **Open questions:** logos come from broadcaster metadata (DAB SLS logos, RadioDNS lookups);
   the RadioDNS lookup needs internet and sends the station ID. Off by default?
 
-### radio-tune — Tune, seek and scan  [Proposed]
-- **Why the app needs it:** manual tuning and scan are standard and needed for weak stations.
+### radio-tune — Tune, seek and scan  [New]
 - **Purpose:** move across the band by step, seek or scan.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-now-playing` → Tune. Back to now playing.
@@ -115,11 +112,10 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
   task; the page is Parked only on driver-facing displays ([NHTSA][dd-3.2]); seek up or down
   is allowed while Moving through the template.
 - **Components:** HeroStat, FrequencyScale (new component), Button, locked view.
-- **Spec refs:** [UI §12.1][ui-12.1] · [UI §3.5][ui-3.5].
+- **Spec refs:** [UI §12.1][ui-12.1] · [UI §3.5][ui-3.5] · [head-unit apps §3][hu-3].
 - **Open questions:** none.
 
-### radio-presets — Presets  [Proposed]
-- **Why the app needs it:** presets are the one-touch way to change station while driving.
+### radio-presets — Presets  [New]
 - **Purpose:** see, recall, save, reorder and clear presets across bands.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-now-playing` (preset strip, long-press); the presets
@@ -138,12 +134,10 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
 - **Safety and driving rules:** recall is allowed while Moving; save, rename, reorder and
   clear are Park to edit ([Drive modes §8.1][dm-8.1]).
 - **Components:** PresetButton (new component), ListRow, Button, `short_list` template.
-- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [Drive modes §8.1][dm-8.1] · [head-unit apps §3][hu-3].
 - **Open questions:** presets per user profile or per car? Recommend per car and profile.
 
-### radio-dab-slideshow — DAB slideshow and DLS  [Proposed]
-- **Why the app needs it:** DAB+ stations send pictures (SLS) and text (DLS); good units show
-  them full size when parked.
+### radio-dab-slideshow — DAB slideshow and DLS  [New]
 - **Purpose:** show the station's slideshow and full text when parked.
 - **Owner:** app:radio
 - **Opens from → goes to:** `radio-now-playing` → Slideshow. Back to now playing.
@@ -159,12 +153,14 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
   moving image; Parked only on driver-facing displays; never in Passenger view
   ([UI §12.1][ui-12.1], [reg 109][dd-4.2]).
 - **Components:** Card, Button, locked view.
-- **Spec refs:** [UI §12.1][ui-12.1] · [driver-distraction research §4.2][dd-4.2].
+- **Spec refs:** [UI §12.1][ui-12.1] · [driver-distraction research §4.2][dd-4.2] · [head-unit apps §3][hu-3].
 - **Open questions:** none.
 
 ### radio-ta-alert — Traffic announcement interrupt  [Proposed]
 - **Why the app needs it:** TA (RDS) and DAB announcements interrupt media with local
-  traffic news; drivers expect it on by default in the UK.
+  traffic news. **Why still Proposed:** the approved spec turns TA off by default and shows
+  a small chip, never a card with text ([head-unit apps §3][hu-3]); this card needs the
+  owner's yes or a redraw as the chip.
 - **Purpose:** tell the driver a traffic bulletin is playing and let them skip it.
 - **Owner:** os (the alert pipeline draws it); app:radio raises it
 - **Opens from → goes to:** raised by the tuner when TA is on and a bulletin starts, from any
@@ -194,3 +190,4 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
 [dd-4.2]: ../../../research/driver_distraction_rules.md#42-uk-regulation-109-screens-visible-to-the-driver
 [dd-3.2]: ../../../research/driver_distraction_rules.md#32-numbers-and-lockouts
+[hu-3]: ../../../../specs/2026-10-07-head-unit-apps-design.md#3-radio

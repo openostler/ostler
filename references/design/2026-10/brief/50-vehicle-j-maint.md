@@ -2,7 +2,7 @@
 title: "Designer brief: vehicle and diagnostics (J) — Maintenance & Garage home and its five tabs"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -30,7 +30,7 @@ nothing but the trip start or end alert card ([§7][mg-7], [§8][mg-8]).
 ### maint-home — Maintenance home per vehicle  [Existing]
 - **Purpose:** what this vehicle costs and what is due, at a glance.
 - **Owner:** app:maintenance
-- **Opens from → goes to:** dock or app drawer → Maintenance; Service due widget; garage card; Home card; strip chip at very urgent → maint-due, maint-timeline, maint-costs, maint-fuel, maint-documents, maint-add-record, trips-records.
+- **Opens from → goes to:** dock or app drawer → Maintenance; Service due widget; garage card; Home card (no strip chip: apps add none, item 58) → maint-due, maint-timeline, maint-costs, maint-fuel, maint-documents, maint-add-record, trips-records.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:** phone Night and Day, hu9 Night (Parked), tablet Night.
 - **Content (top to bottom):**
   1. Tabs: **Overview · Due · Timeline · Costs · Fuel · Documents**.
@@ -48,7 +48,7 @@ nothing but the trip start or end alert card ([§7][mg-7], [§8][mg-8]).
 ### maint-due — Maintenance: Due tab  [Existing]
 - **Purpose:** every open task, ordered by how soon, with why.
 - **Owner:** app:maintenance
-- **Opens from → goes to:** maint-home; strip chip (very urgent or past due); alert card → maint-task (a row), maint-add-record (Log service), maint-templates.
+- **Opens from → goes to:** maint-home; the Home card or alert card when very urgent or past due (no strip chip, item 58) → maint-task (a row), maint-add-record (Log service), maint-templates.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:** phone Night, hu9 Night.
 - **Content (top to bottom):**
   1. Groups by band: **Past due**, **Very urgent**, **Urgent**, **Not due**; band pill with icon and word (`alarm`, `warn`, neutral).

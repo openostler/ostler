@@ -2,7 +2,7 @@
 title: "Designer brief — sitemap (a): surfaces and the navigation model"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md, references/design/2026-10/screens.json]
 summary: >
@@ -84,8 +84,10 @@ the D2); sheets open on the passenger side.
 - On a driver-facing head unit, entering Moving switches the launcher to **Drive mode**:
   full screen, the dock hidden, the strip adding **Back** and the **page chip** (the
   current dashboard's name; it was the Drive-mode chip, `drive-switcher`).
-- Swipe or `left`/`right` moves between the dashboards in the rotation (≤ 4); a long press
-  on the page chip lists ≤ 6 as a `short_list`. `ok` opens the **Drive menu** (`drive-menu`).
+- The home pages are **one flat row** (decided, item 45). A long swipe or `left`/`right`
+  moves between the driving pages; a tap on the page chip cycles at most **4**; a long press
+  on the page chip lists at most **6** as a `short_list`. `ok` opens the **Drive menu**
+  (`drive-menu`).
 - Each dashboard shows only its **Moving section** through the OS templates: ≤ 6 tiles,
   map, media and call panes, no animation ([Drive modes §4.3][dm-4.3]). An app cannot draw
   its own view here; the OS draws the template from the app's data.
@@ -93,12 +95,14 @@ the D2); sheets open on the passenger side.
 
 ## 5. The dock
 
-- **Five slots**, a hard cap. Default: **Home · Diagnostics · Trips · Security · App
-  drawer**, or the flavour's own set ([01-sitemap-b §3](01-sitemap-b.md#3-flavours-preinstalled-sets)).
-- Any app or shortcut can take a slot. The **App drawer** button is always one of the five:
-  it can move, be renamed and be re-iconed, never removed ([Drive modes §7.3][dm-7.3]).
+- **Slots per class** (decided, item 17): phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7,
+  tablet and desktop 7, anchors included. Default on a five-slot class: **Home ·
+  Diagnostics · Trips · Security · App drawer**, or the flavour's own set
+  ([01-sitemap-b §3](01-sitemap-b.md#3-flavours-preinstalled-sets)).
+- Any app or shortcut can take a slot. **Home** and the **App drawer** are anchors: they can
+  move, be renamed and be re-iconed, never removed (decided, item 16; [launcher §5.1][lw-5.1]).
 - Labels ≤ 12 characters; the active item wears the `accent-soft` pill.
-- Head units may add a **Drive** button outside the cap; phones have none.
+- The head-unit **Drive** button is retired (item 16): Moving shows Drive mode by itself.
 
 ## 6. The app drawer
 
@@ -147,9 +151,9 @@ Edit mode, widget setup, app setup flows, the Store and Settings are Park to edi
 [dm-4.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#43-the-moving-section-and-the-template-mapping
 [dm-4.4]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#44-grids-and-minimum-sizes-per-class
 [dm-5]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#5-the-seven-presets
-[dm-7.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#73-rail
 [dm-7.8]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#78-reset-layout-always-reachable-v02
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
+[lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock
 [si-4.3]: ../../../../specs/2026-10-07-shell-input-design.md#43-back-and-menu
 [ui-3.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#31-layout-classes
 [ui-3.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#34-five-destinations

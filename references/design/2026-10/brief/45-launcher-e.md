@@ -2,7 +2,7 @@
 title: "Designer brief 45-e — widget setup pages (1 of 3): gauges, graph, multi-value tile, warning lights, ride height and G-meter"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -45,7 +45,8 @@ names the app that ships the widget.
   ([visual §8][vds-8], [Drive modes §4.3][dm-4.3]).
 - **Components:** Gauge, Segmented, stepper (new).
 - **Spec refs:** [Drive modes §4.2][dm-4.2] · [visual §8][vds-8].
-- **Open questions:** is the Needle look allowed, given "calm gauges"?
+- **Open questions:** **Decided ([launcher §9][lw-9]):** the starter Analogue gauge offers
+  needle or fill; a needle is static and stepped at ≤ 4 Hz.
 
 ### widget-setup-gauge-digital — Digital gauge  [New]
 - **Purpose:** a big number with unit and label (the StatTile). Widget from: Starter widgets.
@@ -204,3 +205,4 @@ names the app that ships the widget.
 [vds-3.3]: ../../../../specs/2026-10-07-visual-design-system-design.md#33-data-ramps-and-chart-colours-datatokensjson
 [vds-4]: ../../../../specs/2026-10-07-visual-design-system-design.md#4-type
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[lw-9]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#9-the-starter-catalogue

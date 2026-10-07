@@ -2,7 +2,7 @@
 title: "Designer brief 45-h — launcher: the home pages list, the page editor, preview, import and export, and preset dashboards"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -105,11 +105,13 @@ Moving (40-drive-b; [Drive modes §8.1][dm-8.1] R1).
   ("Needs Social"), warnings, **Add pages**.
 - **States:** refused file: 40-drive-h (`drive-layout-import-error`). Offline: file and QR
   work. Moving: locked view.
-- **Safety and driving rules:** export strips identity (no VIN, places or plates)
+- **Safety and driving rules:** export strips identity (no VIN, places or plates) and
+  never carries images: wallpapers and Image widgets stay on the device (item 50)
   ([Drive modes §8.4][dm-8.4], [Drive modes §8.2][dm-8.2]).
 - **Components:** Sheet, Button, Card (preview).
 - **Spec refs:** [Drive modes §8.4][dm-8.4].
-- **Open questions:** should the Store host shared pages (70-store files)?
+- **Open questions:** **Decided ([Store §4][st-4]):** the Store hosts shared pages as
+  dashboard preset items, checked by the layout validator.
 
 ### launcher-presets — Preset dashboards  [New]
 - **Purpose:** a gallery of the seven presets, each adding ready-made pages.
@@ -159,3 +161,4 @@ Moving (40-drive-b; [Drive modes §8.1][dm-8.1] R1).
 [dm-8.2]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#82-validation
 [dm-8.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#83-storage
 [dm-8.4]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#84-import-and-export
+[st-4]: ../../../../specs/2026-10-07-store-design.md#4-what-the-store-hosts

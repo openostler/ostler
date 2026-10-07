@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part G): uninstall and the developer view"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
@@ -20,11 +20,8 @@ summary: >
 
 Rules and terms: [part A](90-appframe-a.md).
 
-### app-uninstall — Uninstall  [Proposed]
+### app-uninstall — Uninstall  [New]
 - **Owner:** os
-- **Why the app needs it:** apps now hold real data (service records, trips); the exit
-  guarantee says every app that keeps user data exports it in an open format, so uninstall
-  must offer that first and be plain about what goes.
 - **Purpose:** confirm removal, after showing what is deleted and kept and offering export.
 - **Opens from → goes to:** App info **Uninstall**; Storage **Clear data** (same sheet,
   title "Clear Maintenance data?"); an integration entry **Remove** → done → `app-list`
@@ -53,6 +50,10 @@ Rules and terms: [part A](90-appframe-a.md).
   - **System app** (Settings, Store, the launcher): no Uninstall; App info shows "Part of
     the OS".
   - **An app with a running action** (a SLABS test): blocked, "Stop the test first".
+  - **Security while the car is armed:** refused until disarmed, "Disarm first. Security
+    can't be uninstalled while the car is armed." (item 62).
+  - **On the phone** (a bundled app): "Uninstall" disables the app and deletes its data; the
+    code stays in the app until its next build (item 11).
 - **States:** exporting (`ia-long-job`); export failed: Uninstall still possible, with
   "Export failed. Uninstall anyway?"; uninstalling (progress); not owner: never opens;
   remote path: "Local links only"; Moving: the Settings lock.
@@ -62,7 +63,7 @@ Rules and terms: [part A](90-appframe-a.md).
   (`ia-destructive-undo`).
 - **Components:** Sheet, ListRow, Card, Switch (new), Button (danger).
 - **Spec refs:** [App model §14][am-14] (14.6 exit guarantee) · [App model §5][am-5] ·
-  [Drive modes §7.7][dm-7.7] · [UI §12.4][ui-12.4].
+  [Drive modes §7.7][dm-7.7] · [UI §12.4][ui-12.4] · [app UI model §8][ua-8] · [ADR-0046 §5][adr-46-5].
 - **Open questions:** default of **Keep my data on the Brain**: on (Android's "keep app
   data" choice) or off (a clean removal)? The brief draws it off.
 
@@ -110,18 +111,21 @@ Rules and terms: [part A](90-appframe-a.md).
 
 ## Open questions for this area (all parts)
 
-1. **Apps and integrations:** one list with a kind label, or separate tabs (`app-list`,
-   `app-integrations`)? Both are drawn.
-2. **New manifest fields** for these pages, each a platform change: `setup_flow`,
-   `notification_channels`, `shortcuts`, link and file handlers.
+1. **Decided (item 56):** one Apps list with integrations labelled (`app-list`,
+   `app-integrations`); the tabs variant is dropped.
+2. **Decided ([app UI model §10][ua-10]):** manifest schema 2 has `contributes.setup`,
+   `contributes.options`, `contributes.notifications.channels` and
+   `contributes.shortcuts`. Link and file handlers are still open.
 3. **Force stop** for bundled apps: keep as "Stop and reload", or drop it?
 4. **Data classes:** a Switch only for optional classes, or for required ones too?
 5. **Car action permission** at first use per category (`app-permission-car`), or the
    install-time review only?
 6. **Power figures** per app on the Brain: measured, or wakes and holds only?
-7. **Theme and icon packs:** may a theme change the accent hue; may an icon pack ship its
-   own drawings (the brief says no: Material Symbols only)?
-8. **Wallpapers** never behind a Moving template or Drive page: confirm.
+7. **Decided (items 48 and 49):** a theme pack may bring validated accent sets beyond
+   cyan; an icon pack ships its own glyphs mapped to Material Symbols names, safety icons
+   fixed.
+8. **Decided (item 19):** wallpapers never sit behind a Moving section or a Drive page on a
+   driver-facing display; those draw on plain `bg`.
 9. **Uninstall:** "Keep my data on the Brain" on or off by default?
 10. **Owner names** for integrations in the screen index: the D2 pack and the LubeLogger
     bridge have no `app:` name, so their pages are owned by `os`; add names?
@@ -139,3 +143,6 @@ Rules and terms: [part A](90-appframe-a.md).
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
 [ui-3.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#35-drive-mode-driving-states-and-service-mode
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[adr-46-5]: ../../../../decisions/adr-0046-empty-os-every-app-an-add-on.md#5-product-flavours-are-preinstalled-sets-amends-adr-0039
+[ua-10]: ../../../../specs/2026-10-07-app-ui-model-design.md#10-manifest-schema-2

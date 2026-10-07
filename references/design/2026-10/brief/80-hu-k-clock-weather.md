@@ -2,14 +2,15 @@
 title: "Designer brief 80-k — Clock and alarms, Weather: pages, setup, settings and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, references/research/driver_distraction_rules.md]
 summary: >
-  Two small head-unit apps. Clock (app:clock) has the clock page with alarms, timers (a
-  parking timer, a rest-break reminder) and a stopwatch; the alarm or timer ringing, which
-  goes through the OS alert pipeline; and its setup and settings (time source from GPS or the
-  Brain's clock, 12 or 24 hours, time zone). Weather (app:weather) shows now, hourly and
+  Clock and Weather, part of the starter widget pack (app:widgets-starter, owner decision
+  item 53). Clock has the clock page with alarms, timers (a parking timer, a rest-break
+  reminder) and a stopwatch; the alarm or timer ringing, which goes through the OS alert
+  pipeline; and its setup and settings (time source from GPS or the Brain's clock, 12 or 24
+  hours, time zone). Weather shows now, hourly and
   daily forecasts and road-relevant warnings, with a setup flow that asks where the location
   comes from and keeps it on the device unless the owner agrees to send a rounded position.
   Both list their widgets with setup options and Moving behaviour.
@@ -17,17 +18,18 @@ summary: >
 
 # 80-k — Clock and Weather
 
-**Why these pages are Proposed:** the owner's direction of 2026-10-07 asks for the standard
-head-unit apps; no approved spec covers Clock or Weather. The strip already shows the time
-and a core clock widget exists ([Drive modes §9][dm-9]); the Clock app adds alarms and
-timers. Whether these two are their own apps or part of the starter widget pack is open
-([80-a](80-hu-a-overview.md) question 1).
+**Owner (decided, item 53):** Clock and Weather are part of the **starter widget pack**, so
+every page here has the owner `app:widgets-starter`; they are not apps of their own. The
+approved head-unit apps spec covers the OS time service, the Clock widget and Weather's
+rules ([head-unit apps §10][hu-10]), so those pages are New. Alarms, timers and the
+stopwatch are not in any approved spec, so `clock-page` and `clock-alarm-ring` stay
+Proposed. The strip already shows the time.
 
 ### clock-page — Clock, alarms and timers  [Proposed]
 - **Why the app needs it:** parking timers and rest-break reminders are useful in a car;
   every head unit has a clock page.
 - **Purpose:** the time, alarms, timers and a stopwatch.
-- **Owner:** app:clock
+- **Owner:** app:widgets-starter
 - **Opens from → goes to:** app drawer → Clock; the clock widget; the strip clock (long
   press is edit mode, so tap only). Goes to `clock-settings`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -54,7 +56,7 @@ timers. Whether these two are their own apps or part of the starter widget pack 
 ### clock-alarm-ring — Alarm or timer ringing  [Proposed]
 - **Why the app needs it:** a ringing alarm or timer needs a safe, glanceable card.
 - **Purpose:** tell the driver a timer or alarm went off, and stop or snooze it.
-- **Owner:** os (alert pipeline draws it); app:clock raises it
+- **Owner:** os (alert pipeline draws it); app:widgets-starter raises it
 - **Opens from → goes to:** a timer or alarm firing. Ends where the driver was.
 - **Layout classes:** phone · tablet · hu5 · hu7 · hu9 · huwide. **Draw first:** hu7
   Night-dim Moving ("Rest break" card); hu7 Night Parked ("Parking ends in 10 min").
@@ -70,11 +72,9 @@ timers. Whether these two are their own apps or part of the starter widget pack 
 - **Spec refs:** [UI §12.1][ui-12.1].
 - **Open questions:** none.
 
-### clock-settings — Clock setup and settings  [Proposed]
-- **Why the app needs it:** a car clock must pick a trustworthy time source; setup and
-  settings are one short page.
+### clock-settings — Clock setup and settings  [New]
 - **Purpose:** first-run choices (shown once as setup) and later settings.
-- **Owner:** app:clock
+- **Owner:** app:widgets-starter
 - **Opens from → goes to:** first open (as setup, with **Done**); `clock-page` → Settings;
   App info → Settings.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -86,18 +86,17 @@ timers. Whether these two are their own apps or part of the starter widget pack 
 - **States:** no GPS fix: "Using the Brain's clock". Moving: locked view.
 - **Safety and driving rules:** Park to edit.
 - **Components:** ListRow, Segmented, Slider (new component).
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §10][hu-10].
 - **Open questions:** none.
 
-**Clock widgets:** the core **clock** widget stays in the platform ([Drive modes §9][dm-9]).
-Clock adds **Timer** (the next timer with Stop; sizes small, medium; options: which timer,
+**Clock widgets:** the **Clock** widget is the starter pack's ([launcher §9][lw-9]). The pack
+also adds **Timer** (the next timer with Stop; sizes small, medium; options: which timer,
 show seconds; Moving: a `value`) and **Alarm** (the next alarm; size small; options: show the
 day; Moving: a `value`).
 
-### weather-page — Weather  [Proposed]
-- **Why the app needs it:** a standard head-unit page; useful for trips and off-road plans.
+### weather-page — Weather  [New]
 - **Purpose:** weather now, today and the next days, with warnings.
-- **Owner:** app:weather
+- **Owner:** app:widgets-starter
 - **Opens from → goes to:** app drawer → Weather; the weather widget. Goes to
   `weather-settings`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -115,15 +114,13 @@ day; Moving: a `value`).
 - **Safety and driving rules:** no scrolling lists while Moving; warnings may raise one
   `alert_card` per trip at most ("Wind warning ahead"), never animated radar.
 - **Components:** HeroStat, Card, ListRow, Chip (status), `value` template.
-- **Spec refs:** [UI §12.1][ui-12.1] · [App model §4.4][am-4.4].
+- **Spec refs:** [UI §12.1][ui-12.1] · [App model §4.4][am-4.4] · [head-unit apps §10][hu-10].
 - **Open questions:** is weather a driving item under reg 109? Treated as non-driving except
   the single `value` and the warning card ([research §4.2][dd-4.2]).
 
-### weather-setup — Weather: first-run setup  [Proposed]
-- **Why the app needs it:** a forecast needs a location, and Ostler's rule is that location
-  stays on the device unless shared.
+### weather-setup — Weather: first-run setup  [New]
 - **Purpose:** choose where the forecast's place comes from, and agree to what is sent.
-- **Owner:** app:weather
+- **Owner:** app:widgets-starter
 - **Opens from → goes to:** first open of Weather; `weather-settings` → Location. Goes to
   `weather-page`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -137,13 +134,12 @@ day; Moving: a `value`).
 - **Safety and driving rules:** Parked only; location sharing is opt-in and rounded
   ([ADR-0009][adr-9]).
 - **Components:** StepProgress (new component), ListRow, TextField (new component), Button.
-- **Spec refs:** [UI §12.1][ui-12.1].
+- **Spec refs:** [UI §12.1][ui-12.1] · [head-unit apps §10][hu-10].
 - **Open questions:** which provider (one with no account and no key is preferred).
 
-### weather-settings — Weather settings  [Proposed]
-- **Why the app needs it:** units, refresh and warnings need one home.
+### weather-settings — Weather settings  [New]
 - **Purpose:** the Weather app's options.
-- **Owner:** app:weather
+- **Owner:** app:widgets-starter
 - **Opens from → goes to:** `weather-page` → Settings; App info → Settings.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night.
@@ -153,7 +149,7 @@ day; Moving: a `value`).
 - **States:** Moving: locked view.
 - **Safety and driving rules:** Park to edit.
 - **Components:** ListRow, Segmented, Toggle (new component), Button.
-- **Spec refs:** [Drive modes §8.1][dm-8.1].
+- **Spec refs:** [Drive modes §8.1][dm-8.1] · [head-unit apps §10][hu-10].
 - **Open questions:** none.
 
 **Weather widgets:** **Now** (icon, temperature, word; sizes small, medium; options: place
@@ -166,3 +162,5 @@ hero; options: hours or days, how many; Parked home pages only).
 [dm-9]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#9-the-widget-and-slot-contract-summary
 [dd-4.2]: ../../../research/driver_distraction_rules.md#42-uk-regulation-109-screens-visible-to-the-driver
 [adr-9]: ../../../../decisions/adr-0009-session-logbook-and-location.md
+[hu-10]: ../../../../specs/2026-10-07-head-unit-apps-design.md#10-clock-weather-and-voice
+[lw-9]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#9-the-starter-catalogue

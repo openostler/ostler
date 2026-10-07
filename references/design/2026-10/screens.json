@@ -1,7 +1,7 @@
 {
   "format": "ostler.design-index/1",
   "title": "Design hand-off index, October 2026 round",
-  "version": "0.4",
+  "version": "0.5",
   "updated": "2026-10-07",
   "readme": "references/design/2026-10/README.md",
   "naming": {
@@ -8990,6 +8990,13 @@
           "heading": "5. Copy / Avoid / Decide for Ostler",
           "anchor": "5-copy--avoid--decide-for-ostler",
           "label": "HA integrations"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9008,18 +9015,14 @@
         "TabBar (variant B)",
         "Button"
       ],
-      "variants": [
-        "variant A: one list with kind Chips (ADR-0042 item 98)",
-        "variant B: Apps · Integrations tabs (HA split)"
-      ],
-      "notes": "every installed app, integration and vehicle pack, each row opening App info.",
+      "variants": [],
+      "notes": "every installed app, integration and vehicle pack, each row opening App info. One list with integrations labelled (owner decision item 56).",
       "deliveries": [],
       "review": {
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-list--apps--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-list--apps--new"
     },
     {
       "id": "app-info",
@@ -9082,6 +9085,13 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9109,8 +9119,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info--app-info--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info--app-info--new"
     },
     {
       "id": "app-info-actions",
@@ -9159,6 +9168,13 @@
           "heading": "7. Safety gating tiers",
           "anchor": "7-safety-gating-tiers",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9185,8 +9201,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info-actions--force-stop-and-disable-sheets--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-a.md#app-info-actions--force-stop-and-disable-sheets--new"
     },
     {
       "id": "app-info-permissions",
@@ -9249,6 +9264,13 @@
           "heading": "7.1 Action categories, the second axis (ADR-0033)",
           "anchor": "71-action-categories-the-second-axis-adr-0033",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9272,8 +9294,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-permissions--permissions-and-data--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-permissions--permissions-and-data--new"
     },
     {
       "id": "app-info-notifications",
@@ -9322,6 +9343,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§7",
+          "heading": "7. Notification channels",
+          "anchor": "7-notification-channels",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9344,8 +9372,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-notifications--notifications--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-notifications--notifications--new"
     },
     {
       "id": "app-info-storage",
@@ -9387,6 +9414,13 @@
           "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
           "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9409,8 +9443,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-storage--storage-and-cache--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-storage--storage-and-cache--new"
     },
     {
       "id": "app-info-power",
@@ -9587,6 +9620,13 @@
           "heading": "9. The widget and slot contract (summary)",
           "anchor": "9-the-widget-and-slot-contract-summary",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§2",
+          "heading": "2. What an app contributes",
+          "anchor": "2-what-an-app-contributes",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9609,8 +9649,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-provides--widgets-and-shortcuts--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-provides--widgets-and-shortcuts--new"
     },
     {
       "id": "app-info-version",
@@ -9659,6 +9698,13 @@
           "heading": "3.3 Backups, updates, channels",
           "anchor": "33-backups-updates-channels",
           "label": "HA architecture"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9682,8 +9728,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-version--version-and-source--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-version--version-and-source--new"
     },
     {
       "id": "app-info-logs",
@@ -9723,6 +9768,13 @@
           "heading": "6. The shell ↔ app API",
           "anchor": "6-the-shell--app-api",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9744,8 +9796,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-logs--app-log--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-b.md#app-info-logs--app-log--new"
     },
     {
       "id": "app-flow-frame",
@@ -9801,6 +9852,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.1",
+          "heading": "4.1 Shape",
+          "anchor": "41-shape",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.3",
+          "heading": "4.3 Validation and errors",
+          "anchor": "43-validation-and-errors",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9823,8 +9888,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-frame--setup-flow-frame--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-frame--setup-flow-frame--new"
     },
     {
       "id": "app-flow-form",
@@ -9866,6 +9930,20 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.2",
+          "heading": "4.2 Step types",
+          "anchor": "42-step-types",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.3",
+          "heading": "4.3 Validation and errors",
+          "anchor": "43-validation-and-errors",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9890,8 +9968,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-form--schema-form-step--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-form--schema-form-step--new"
     },
     {
       "id": "app-flow-discovered",
@@ -9940,6 +10017,20 @@
           "heading": "4.4 Identification and fallbacks",
           "anchor": "44-identification-and-fallbacks",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.2",
+          "heading": "4.2 Step types",
+          "anchor": "42-step-types",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.4",
+          "heading": "4.4 Rules",
+          "anchor": "44-rules",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -9962,8 +10053,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-discovered--discovered-confirm-step--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-discovered--discovered-confirm-step--new"
     },
     {
       "id": "app-flow-auth",
@@ -10005,6 +10095,13 @@
           "heading": "Decision drivers",
           "anchor": "decision-drivers",
           "label": "ADR-0033"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.2",
+          "heading": "4.2 Step types",
+          "anchor": "42-step-types",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10031,8 +10128,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-auth--sign-in-step--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-auth--sign-in-step--new"
     },
     {
       "id": "app-flow-hardware",
@@ -10081,6 +10177,20 @@
           "heading": "7. Optional apps from their own repos",
           "anchor": "7-optional-apps-from-their-own-repos",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.2",
+          "heading": "4.2 Step types",
+          "anchor": "42-step-types",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10103,8 +10213,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-hardware--hardware-detect-step--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-hardware--hardware-detect-step--new"
     },
     {
       "id": "app-flow-success",
@@ -10146,6 +10255,13 @@
           "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
           "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.2",
+          "heading": "4.2 Step types",
+          "anchor": "42-step-types",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10167,8 +10283,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-success--success-summary--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-flow-success--success-summary--new"
     },
     {
       "id": "app-options-flow",
@@ -10210,6 +10325,13 @@
           "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
           "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10234,8 +10356,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-options-flow--options-flow--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-c.md#app-options-flow--options-flow--new"
     },
     {
       "id": "app-setup-d2-found",
@@ -10284,6 +10405,13 @@
           "heading": "4.1 Entities, devices and areas",
           "anchor": "41-entities-devices-and-areas",
           "label": "HA integrations"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10306,8 +10434,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-found--discovery-2-found--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-found--discovery-2-found--new"
     },
     {
       "id": "app-setup-d2-modules",
@@ -10349,6 +10476,13 @@
           "heading": "5.1 Shape",
           "anchor": "51-shape",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10370,8 +10504,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-modules--which-systems-this-car-has--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-modules--which-systems-this-car-has--new"
     },
     {
       "id": "app-setup-d2-contact",
@@ -10420,6 +10553,13 @@
           "heading": "7. Safety with no hardware gate",
           "anchor": "7-safety-with-no-hardware-gate",
           "label": "Adapters"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10442,8 +10582,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-contact--first-contact-on-k-line--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-contact--first-contact-on-k-line--new"
     },
     {
       "id": "app-setup-d2-done",
@@ -10485,6 +10624,13 @@
           "heading": "5.9 Defaults and rotation per class",
           "anchor": "59-defaults-and-rotation-per-class",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10506,8 +10652,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-done--discovery-2-set-up--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-d2-done--discovery-2-set-up--new"
     },
     {
       "id": "app-setup-lube-server",
@@ -10547,6 +10692,13 @@
           "heading": "5. HTTP API",
           "anchor": "5-http-api",
           "label": "LubeLogger review"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10569,8 +10721,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-server--lubelogger-server--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-server--lubelogger-server--new"
     },
     {
       "id": "app-setup-lube-sync",
@@ -10610,6 +10761,13 @@
           "heading": "14.1 The data-class registry",
           "anchor": "141-the-data-class-registry",
           "label": "Accounts"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10632,8 +10790,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-sync--car-and-what-syncs--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-lube-sync--car-and-what-syncs--new"
     },
     {
       "id": "app-setup-radio-detect",
@@ -10673,6 +10830,20 @@
           "heading": "4.4 Driver-safe templates",
           "anchor": "44-driver-safe-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [
@@ -10692,8 +10863,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-detect--find-the-radio-receiver--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-detect--find-the-radio-receiver--new"
     },
     {
       "id": "app-setup-radio-scan",
@@ -10733,6 +10903,20 @@
           "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
           "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [
@@ -10755,8 +10939,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-scan--region-and-scan--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-d.md#app-setup-radio-scan--region-and-scan--new"
     },
     {
       "id": "app-integrations",
@@ -10819,6 +11002,13 @@
           "heading": "6. Add-on devices",
           "anchor": "6-add-on-devices",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10841,8 +11031,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integrations--integrations--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integrations--integrations--new"
     },
     {
       "id": "app-integration-entry",
@@ -10898,6 +11087,13 @@
           "heading": "5.1 Shape",
           "anchor": "51-shape",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§6",
+          "heading": "6. Backend-only apps (integrations)",
+          "anchor": "6-backend-only-apps-integrations",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -10923,8 +11119,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integration-entry--integration-entry--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-integration-entry--integration-entry--new"
     },
     {
       "id": "app-discovered",
@@ -10980,6 +11175,13 @@
           "heading": "4.4 Identification and fallbacks",
           "anchor": "44-identification-and-fallbacks",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4.4",
+          "heading": "4.4 Rules",
+          "anchor": "44-rules",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -11008,8 +11210,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-discovered--new-device-found--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-e.md#app-discovered--new-device-found--new"
     },
     {
       "id": "app-permission-request",
@@ -11211,6 +11412,20 @@
           "heading": "7.2 Home",
           "anchor": "72-home",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§8",
+          "heading": "8. The widget SDK contract",
+          "anchor": "8-the-widget-sdk-contract",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -11234,8 +11449,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-widgets--widget-pack--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-widgets--widget-pack--new"
     },
     {
       "id": "app-pack-theme",
@@ -11277,6 +11491,20 @@
           "heading": "1. Principles",
           "anchor": "1-principles",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -11298,8 +11526,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-theme--theme-pack--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-theme--theme-pack--new"
     },
     {
       "id": "app-pack-icons",
@@ -11339,6 +11566,20 @@
           "heading": "7.6 Icons and names (v0.2)",
           "anchor": "76-icons-and-names-v02",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -11359,8 +11600,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-icons--icon-pack--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-icons--icon-pack--new"
     },
     {
       "id": "app-pack-wallpaper",
@@ -11402,6 +11642,20 @@
           "heading": "3.1 Surfaces, text, accent and status per theme",
           "anchor": "31-surfaces-text-accent-and-status-per-theme",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -11423,8 +11677,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-wallpaper--wallpaper-pack--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-wallpaper--wallpaper-pack--new"
     },
     {
       "id": "app-pack-preset",
@@ -11466,6 +11719,20 @@
           "heading": "8.4 Import and export",
           "anchor": "84-import-and-export",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.1",
+          "heading": "10.1 Presets",
+          "anchor": "101-presets",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -11487,8 +11754,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-preset--dashboard-preset--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-preset--dashboard-preset--new"
     },
     {
       "id": "app-pack-sound",
@@ -11521,6 +11787,20 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§9",
+          "heading": "9. Object kinds",
+          "anchor": "9-object-kinds",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [
@@ -11541,8 +11821,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-sound--sound-or-eq-preset--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-f.md#app-pack-sound--sound-or-eq-preset--new"
     },
     {
       "id": "app-error-stopped",
@@ -11792,6 +12071,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§5",
+          "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+          "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -11820,8 +12113,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "brief": "references/design/2026-10/brief/90-appframe-g.md#app-uninstall--uninstall--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/90-appframe-g.md#app-uninstall--uninstall--new"
     },
     {
       "id": "app-dev-view",
@@ -15011,6 +15303,13 @@
           "heading": "Decide (recommendations for the owner)",
           "anchor": "decide-recommendations-for-the-owner",
           "label": "HA research"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§7.1",
+          "heading": "7.1 The picker (gallery)",
+          "anchor": "71-the-picker-gallery",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -15025,9 +15324,8 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
       "owner": "os",
-      "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker-by-signal--widget-picker-by-signal-tab--proposed"
+      "brief": "references/design/2026-10/brief/40-drive-d.md#shell-widget-picker-by-signal--widget-picker-by-signal-tab--new"
     },
     {
       "id": "shell-icon-picker",
@@ -15257,7 +15555,7 @@
     },
     {
       "id": "drive-exit-home-moving",
-      "name": "'Exit to Home' while Moving (open owner question)",
+      "name": "'Exit to Home' while Moving (decided: row hidden)",
       "area": "core",
       "group": "Drive modes",
       "layout_classes": [
@@ -15274,7 +15572,7 @@
       ],
       "driving_states": {
         "parked": "row opens Home",
-        "moving": "option A: row hidden; option B: Home as tiles + locked cards"
+        "moving": "row hidden (decided, item 46)"
       },
       "spec_refs": [
         {
@@ -15297,27 +15595,28 @@
           "heading": "3.4 Five destinations",
           "anchor": "34-five-destinations",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§4.3",
+          "heading": "4.3 Drive mode is the carousel while Moving",
+          "anchor": "43-drive-mode-is-the-carousel-while-moving",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
       "components": [
-        "short_list row",
-        "Card",
-        "Button"
+        "short_list row"
       ],
-      "variants": [
-        "option A",
-        "option B"
-      ],
-      "notes": "",
+      "variants": [],
+      "notes": "Owner decision item 46 (2026-10-07): the row is hidden while Moving.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
       "owner": "os",
-      "brief": "references/design/2026-10/brief/40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--proposed"
+      "brief": "references/design/2026-10/brief/40-drive-g.md#drive-exit-home-moving--exit-to-home-while-moving--new"
     },
     {
       "id": "drive-dusk-suggest",
@@ -16581,6 +16880,13 @@
           "heading": "7.1 Amendment (2026-10-06): the phone build",
           "anchor": "71-amendment-2026-10-06-the-phone-build",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [],
@@ -16597,8 +16903,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-update-available--update-available--proposed"
+      "brief": "references/design/2026-10/brief/02-global-patterns-c.md#ia-update-available--update-available--new"
     },
     {
       "id": "ia-kit-controls",
@@ -16854,6 +17159,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.1",
+          "heading": "5.1 The dock",
+          "anchor": "51-the-dock",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§6.2",
+          "heading": "6.2 Edit mode",
+          "anchor": "62-edit-mode",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -16868,8 +17187,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-launcher--kit-sheet-launcher--proposed"
+      "brief": "references/design/2026-10/brief/03-components-c.md#ia-kit-launcher--kit-sheet-launcher--new"
     },
     {
       "id": "ia-kit-moving-templates",
@@ -17948,6 +18266,13 @@
           "heading": "4.4 Driver-safe templates",
           "anchor": "44-driver-safe-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [
@@ -17971,8 +18296,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--proposed"
+      "brief": "references/design/2026-10/brief/20-hardware-d-cameras-power.md#hw-camera-add--add-a-camera--new"
     },
     {
       "id": "hw-camera",
@@ -18799,6 +19123,13 @@
           "heading": "4. Type",
           "anchor": "4-type",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -18817,8 +19148,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-now-playing--radio-now-playing--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-now-playing--radio-now-playing--new"
     },
     {
       "id": "radio-stations",
@@ -18865,6 +19195,13 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -18883,8 +19220,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-stations--station-list-and-dab-service-list--new"
     },
     {
       "id": "radio-tune",
@@ -18924,6 +19260,13 @@
           "heading": "3.5 Drive mode, driving states and service mode",
           "anchor": "35-drive-mode-driving-states-and-service-mode",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -18940,8 +19283,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-tune--tune-seek-and-scan--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-tune--tune-seek-and-scan--new"
     },
     {
       "id": "radio-presets",
@@ -18981,6 +19323,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -18997,8 +19346,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-presets--presets--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-presets--presets--new"
     },
     {
       "id": "radio-dab-slideshow",
@@ -19037,6 +19385,13 @@
           "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
           "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
           "label": "Research: distraction"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19052,8 +19407,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-b-radio.md#radio-dab-slideshow--dab-slideshow-and-dls--new"
     },
     {
       "id": "radio-ta-alert",
@@ -19149,6 +19503,20 @@
           "heading": "Development kit: recommended parts (~£250 plus the Pi)",
           "anchor": "development-kit-recommended-parts-250-plus-the-pi",
           "label": "Research: hardware"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -19166,8 +19534,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-tuner--setup-1-pick-the-tuner--new"
     },
     {
       "id": "radio-setup-antenna",
@@ -19201,6 +19568,20 @@
           "heading": "Development kit: recommended parts (~£250 plus the Pi)",
           "anchor": "development-kit-recommended-parts-250-plus-the-pi",
           "label": "Research: hardware"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -19217,8 +19598,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-antenna--setup-2-antenna-check--new"
     },
     {
       "id": "radio-setup-scan",
@@ -19252,6 +19632,20 @@
           "heading": "3.5 Drive mode, driving states and service mode",
           "anchor": "35-drive-mode-driving-states-and-service-mode",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -19270,8 +19664,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-setup-scan--setup-3-region-and-first-scan--new"
     },
     {
       "id": "radio-settings",
@@ -19312,6 +19705,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -19328,8 +19735,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-settings--radio-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-c-radio-setup.md#radio-settings--radio-settings--new"
     },
     {
       "id": "audio-sources",
@@ -19362,6 +19768,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19376,8 +19789,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sources--sources--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sources--sources--new"
     },
     {
       "id": "audio-sound",
@@ -19418,6 +19830,13 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19435,8 +19854,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sound--sound-loudness-bass-tone--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-sound--sound-loudness-bass-tone--new"
     },
     {
       "id": "audio-eq-graphic",
@@ -19476,6 +19894,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19492,8 +19917,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-graphic--graphic-equaliser--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-graphic--graphic-equaliser--new"
     },
     {
       "id": "audio-eq-parametric",
@@ -19525,6 +19949,13 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19543,8 +19974,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-parametric--parametric-equaliser--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-parametric--parametric-equaliser--new"
     },
     {
       "id": "audio-eq-presets",
@@ -19585,6 +20015,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19601,8 +20038,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-presets--eq-presets--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-eq-presets--eq-presets--new"
     },
     {
       "id": "audio-balance-fade",
@@ -19636,6 +20072,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19652,8 +20095,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-balance-fade--balance-and-fade--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-d-audio.md#audio-balance-fade--balance-and-fade--new"
     },
     {
       "id": "audio-crossover",
@@ -19693,6 +20135,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19710,8 +20159,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-crossover--crossover--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-crossover--crossover--new"
     },
     {
       "id": "audio-time-alignment",
@@ -19744,6 +20192,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19761,8 +20216,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-time-alignment--time-alignment--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-time-alignment--time-alignment--new"
     },
     {
       "id": "audio-subwoofer",
@@ -19796,6 +20250,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19811,8 +20272,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-subwoofer--subwoofer--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-subwoofer--subwoofer--new"
     },
     {
       "id": "audio-volume-rules",
@@ -19860,6 +20320,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19877,8 +20344,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-volume-rules--volume-rules--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-e-audio-tuning.md#audio-volume-rules--volume-rules--new"
     },
     {
       "id": "audio-system-sounds",
@@ -19978,6 +20444,13 @@
           "heading": "1. Context and goals",
           "anchor": "1-context-and-goals",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§1",
+          "heading": "1. Context and the two setups",
+          "anchor": "1-context-and-the-two-setups",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -19993,8 +20466,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-shape--setup-1-install-shape--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-shape--setup-1-install-shape--new"
     },
     {
       "id": "audio-setup-output",
@@ -20035,6 +20507,13 @@
           "heading": "B4. Steering wheel, reverse, cameras, amplifier",
           "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
           "label": "Research: head units"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20051,8 +20530,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-output--setup-2-output-device-dac-or-dsp--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-output--setup-2-output-device-dac-or-dsp--new"
     },
     {
       "id": "audio-setup-channels",
@@ -20085,6 +20563,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20102,8 +20587,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-channels--setup-3-channel-map--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-channels--setup-3-channel-map--new"
     },
     {
       "id": "audio-setup-test",
@@ -20137,6 +20621,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20153,8 +20644,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-test--setup-4-speaker-test-and-levels--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-setup-test--setup-4-speaker-test-and-levels--new"
     },
     {
       "id": "audio-settings",
@@ -20188,6 +20678,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§4",
+          "heading": "4. Audio",
+          "anchor": "4-audio",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -20204,8 +20708,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-settings--audio-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-f-audio-setup.md#audio-settings--audio-settings--new"
     },
     {
       "id": "media-moving",
@@ -20314,6 +20817,13 @@
           "heading": "8. Charts, gauges and the component kit",
           "anchor": "8-charts-gauges-and-the-component-kit",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20331,8 +20841,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-now-playing--media-now-playing--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-now-playing--media-now-playing--new"
     },
     {
       "id": "media-browse",
@@ -20373,6 +20882,13 @@
           "heading": "3.5 Drive mode, driving states and service mode",
           "anchor": "35-drive-mode-driving-states-and-service-mode",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20391,8 +20907,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-browse--browse-local-usb-network-shares--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-browse--browse-local-usb-network-shares--new"
     },
     {
       "id": "media-queue",
@@ -20425,6 +20940,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20440,8 +20962,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-queue--queue--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-queue--queue--new"
     },
     {
       "id": "media-bluetooth",
@@ -20488,6 +21009,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20504,8 +21032,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-bluetooth--bluetooth-audio--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-bluetooth--bluetooth-audio--new"
     },
     {
       "id": "media-video",
@@ -20552,6 +21079,13 @@
           "heading": "4.2 UK: regulation 109 (screens visible to the driver)",
           "anchor": "42-uk-regulation-109-screens-visible-to-the-driver",
           "label": "Research: distraction"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20567,8 +21101,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-video--video-player-parked-only--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-g-media.md#media-video--video-player-parked-only--new"
     },
     {
       "id": "media-setup",
@@ -20609,6 +21142,20 @@
           "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
           "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -20626,8 +21173,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-setup--media-choose-sources--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-setup--media-choose-sources--new"
     },
     {
       "id": "media-share-add",
@@ -20725,6 +21271,13 @@
           "heading": "5.6 Split / Media",
           "anchor": "56-split--media",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20741,8 +21294,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integrations--streaming-integrations--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-integrations--streaming-integrations--new"
     },
     {
       "id": "media-integration-setup",
@@ -20833,6 +21385,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§5",
+          "heading": "5. Media",
+          "anchor": "5-media",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -20849,8 +21415,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-settings--media-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-h-media-setup.md#media-settings--media-settings--new"
     },
     {
       "id": "camera-home",
@@ -20891,6 +21456,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -20907,8 +21479,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-home--cameras--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-home--cameras--new"
     },
     {
       "id": "camera-reverse",
@@ -21080,6 +21651,13 @@
           "heading": "4.4 Driver-safe templates",
           "anchor": "44-driver-safe-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21094,8 +21672,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-multi--all-cameras-multi-view--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-multi--all-cameras-multi-view--new"
     },
     {
       "id": "camera-dashcam",
@@ -21136,6 +21713,13 @@
           "heading": "Displays are thin clients; cameras live on our infrastructure",
           "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
           "label": "Platform direction"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21153,8 +21737,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-dashcam--dashcam-and-recording--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-i-camera.md#camera-dashcam--dashcam-and-recording--new"
     },
     {
       "id": "camera-setup",
@@ -21188,6 +21771,20 @@
           "heading": "6. Add-on devices",
           "anchor": "6-add-on-devices",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -21205,8 +21802,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup--setup-1-cameras-and-roles--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup--setup-1-cameras-and-roles--new"
     },
     {
       "id": "camera-setup-trigger",
@@ -21247,6 +21843,20 @@
           "heading": "B4. Steering wheel, reverse, cameras, amplifier",
           "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
           "label": "Research: head units"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -21264,8 +21874,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-trigger--setup-2-reverse-trigger--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-trigger--setup-2-reverse-trigger--new"
     },
     {
       "id": "camera-setup-guidelines",
@@ -21297,6 +21906,20 @@
           "heading": "6. Add-on devices",
           "anchor": "6-add-on-devices",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -21315,8 +21938,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-guidelines--setup-3-static-guidelines--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-setup-guidelines--setup-3-static-guidelines--new"
     },
     {
       "id": "camera-settings",
@@ -21357,6 +21979,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§6",
+          "heading": "6. Camera",
+          "anchor": "6-camera",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -21373,13 +22009,12 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-settings--camera-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-j-camera-setup.md#camera-settings--camera-settings--new"
     },
     {
       "id": "clock-page",
       "name": "Clock, alarms and timers",
-      "area": "app: Clock",
+      "area": "app: Starter widgets",
       "group": "Clock",
       "layout_classes": [
         "phone",
@@ -21400,7 +22035,7 @@
         "parked": "full page",
         "moving": "a `value` template with the time and the next timer (\"Parking · 47 min\"); setting alarms is Parked only; preset timer Chips stay as a `short_list`"
       },
-      "owner": "app:clock",
+      "owner": "app:widgets-starter",
       "spec_refs": [
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -21476,7 +22111,7 @@
         "Button"
       ],
       "variants": [],
-      "notes": "",
+      "notes": "Raised by the starter widget pack's Clock (app:widgets-starter, item 53); drawn by the OS alert pipeline.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
@@ -21488,7 +22123,7 @@
     {
       "id": "clock-settings",
       "name": "Clock setup and settings",
-      "area": "app: Clock",
+      "area": "app: Starter widgets",
       "group": "Clock",
       "layout_classes": [
         "phone",
@@ -21509,7 +22144,7 @@
         "parked": "full page",
         "moving": "locked view"
       },
-      "owner": "app:clock",
+      "owner": "app:widgets-starter",
       "spec_refs": [
         {
           "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
@@ -21517,6 +22152,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21532,13 +22174,12 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#clock-settings--clock-setup-and-settings--new"
     },
     {
       "id": "weather-page",
       "name": "Weather",
-      "area": "app: Weather",
+      "area": "app: Starter widgets",
       "group": "Weather",
       "layout_classes": [
         "phone",
@@ -21559,7 +22200,7 @@
         "parked": "full page",
         "moving": "a `value` template \"7 °C · Rain\"; forecasts and lists are Parked only"
       },
-      "owner": "app:weather",
+      "owner": "app:widgets-starter",
       "spec_refs": [
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -21574,6 +22215,13 @@
           "heading": "4.4 Driver-safe templates",
           "anchor": "44-driver-safe-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21591,13 +22239,12 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-page--weather--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-page--weather--new"
     },
     {
       "id": "weather-setup",
       "name": "Weather: first-run setup",
-      "area": "app: Weather",
+      "area": "app: Starter widgets",
       "group": "Weather",
       "layout_classes": [
         "phone",
@@ -21618,7 +22265,7 @@
         "parked": "full page",
         "moving": "locked view"
       },
-      "owner": "app:weather",
+      "owner": "app:widgets-starter",
       "spec_refs": [
         {
           "doc": "specs/2026-10-06-ui-architecture-design.md",
@@ -21626,6 +22273,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21642,13 +22296,12 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-setup--weather-first-run-setup--new"
     },
     {
       "id": "weather-settings",
       "name": "Weather settings",
-      "area": "app: Weather",
+      "area": "app: Starter widgets",
       "group": "Weather",
       "layout_classes": [
         "phone",
@@ -21669,7 +22322,7 @@
         "parked": "full page",
         "moving": "locked view"
       },
-      "owner": "app:weather",
+      "owner": "app:widgets-starter",
       "spec_refs": [
         {
           "doc": "specs/2026-10-07-drive-modes-and-editing-design.md",
@@ -21677,6 +22330,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21693,8 +22353,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-settings--weather-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-k-clock-weather.md#weather-settings--weather-settings--new"
     },
     {
       "id": "voice-assistant",
@@ -21734,6 +22393,13 @@
           "heading": "1. Goals and non-goals",
           "anchor": "1-goals-and-non-goals",
           "label": "Shell input"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21750,8 +22416,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-assistant--voice-assistant-listening--new"
     },
     {
       "id": "voice-setup",
@@ -21792,6 +22457,13 @@
           "heading": "8. Bindings and the key test",
           "anchor": "8-bindings-and-the-key-test",
           "label": "Shell input"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21809,8 +22481,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-setup--voice-first-run-setup--new"
     },
     {
       "id": "voice-settings",
@@ -21844,6 +22515,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§10",
+          "heading": "10. Clock, weather and voice",
+          "anchor": "10-clock-weather-and-voice",
+          "label": "Head-unit apps"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -21860,8 +22545,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-settings--voice-settings--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#voice-settings--voice-settings--new"
     },
     {
       "id": "swc-adapter",
@@ -21902,6 +22586,13 @@
           "heading": "B4. Steering wheel, reverse, cameras, amplifier",
           "anchor": "b4-steering-wheel-reverse-cameras-amplifier",
           "label": "Research: head units"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§9",
+          "heading": "9. Steering-wheel control learning (OS)",
+          "anchor": "9-steering-wheel-control-learning-os",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21919,8 +22610,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-adapter--wheel-controls-1-adapter--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-adapter--wheel-controls-1-adapter--new"
     },
     {
       "id": "swc-learn",
@@ -21961,6 +22651,13 @@
           "heading": "8. Bindings and the key test",
           "anchor": "8-bindings-and-the-key-test",
           "label": "Shell input"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§9",
+          "heading": "9. Steering-wheel control learning (OS)",
+          "anchor": "9-steering-wheel-control-learning-os",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -21978,8 +22675,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-learn--wheel-controls-2-learn-buttons--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-learn--wheel-controls-2-learn-buttons--new"
     },
     {
       "id": "swc-assign",
@@ -22020,6 +22716,13 @@
           "heading": "8. Bindings and the key test",
           "anchor": "8-bindings-and-the-key-test",
           "label": "Shell input"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§9",
+          "heading": "9. Steering-wheel control learning (OS)",
+          "anchor": "9-steering-wheel-control-learning-os",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -22036,15 +22739,15 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-assign--wheel-controls-3-assign-actions--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-l-voice-swc.md#swc-assign--wheel-controls-3-assign-actions--new"
     },
     {
       "id": "projection-setup",
-      "name": "Projection: setup",
-      "area": "app: Projection",
+      "name": "Projection: not built (information page)",
+      "area": "os",
       "group": "Projection",
       "layout_classes": [
+        "phone",
         "hu5",
         "hu7",
         "hu9",
@@ -22060,52 +22763,35 @@
         "parked": "full page",
         "moving": "locked view"
       },
-      "owner": "app:projection",
+      "owner": "os",
       "spec_refs": [
         {
-          "doc": "references/research/canbus_headunit.md",
-          "section": "§B5",
-          "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
-          "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
-          "label": "Research: head units"
-        },
-        {
-          "doc": "references/research/canbus_headunit.md",
-          "section": "§B7",
-          "heading": "B7. Open head-unit projects",
-          "anchor": "b7-open-head-unit-projects",
-          "label": "Research: head units"
-        },
-        {
-          "doc": "specs/2026-10-06-platform-direction-design.md",
-          "section": "",
-          "heading": "Displays are thin clients; cameras live on our infrastructure",
-          "anchor": "displays-are-thin-clients-cameras-live-on-our-infrastructure",
-          "label": "Platform direction"
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§11",
+          "heading": "11. Projection (Android Auto, CarPlay): open",
+          "anchor": "11-projection-android-auto-carplay-open",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
       "components": [
-        "StepProgress",
         "Card",
-        "ListRow",
-        "Chip (status)",
-        "Button"
+        "ListRow (link)"
       ],
       "variants": [],
-      "notes": "",
+      "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
         "differences": []
       },
       "proposed": true,
-      "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-setup--projection-setup--proposed"
+      "brief": "references/design/2026-10/brief/80-hu-m-projection-vehicle.md#projection-setup--projection-not-built-information-page--proposed"
     },
     {
       "id": "projection-session",
       "name": "Projection: running session",
-      "area": "app: Projection",
+      "area": "os",
       "group": "Projection",
       "layout_classes": [
         "hu5",
@@ -22120,34 +22806,23 @@
         "deep-night"
       ],
       "driving_states": {
-        "parked": "full page",
-        "moving": "the projected picture is a video stream Ostler cannot inspect; under Ostler's rules that is video on a driver-facing display"
+        "parked": "not built (item 38)",
+        "moving": "not built (item 38)"
       },
-      "owner": "app:projection",
+      "owner": "os",
       "spec_refs": [
         {
-          "doc": "specs/2026-10-06-ui-architecture-design.md",
-          "section": "§12.1",
-          "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
-          "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
-          "label": "UI"
-        },
-        {
-          "doc": "references/research/canbus_headunit.md",
-          "section": "§B5",
-          "heading": "B5. Android Auto and CarPlay: what a third-party app may do",
-          "anchor": "b5-android-auto-and-carplay-what-a-third-party-app-may-do",
-          "label": "Research: head units"
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§11",
+          "heading": "11. Projection (Android Auto, CarPlay): open",
+          "anchor": "11-projection-android-auto-carplay-open",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
-      "components": [
-        "Chip (status)",
-        "Button",
-        "locked view"
-      ],
+      "components": [],
       "variants": [],
-      "notes": "",
+      "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler. Do not draw; the record keeps the ID resolving.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
@@ -22159,7 +22834,7 @@
     {
       "id": "projection-settings",
       "name": "Projection settings",
-      "area": "app: Projection",
+      "area": "os",
       "group": "Projection",
       "layout_classes": [
         "hu5",
@@ -22175,28 +22850,23 @@
         "deep-night"
       ],
       "driving_states": {
-        "parked": "full page",
-        "moving": "locked view"
+        "parked": "not built (item 38)",
+        "moving": "not built (item 38)"
       },
-      "owner": "app:projection",
+      "owner": "os",
       "spec_refs": [
         {
-          "doc": "specs/2026-10-07-phone-comms-addon-design.md",
-          "section": "§3",
-          "heading": "3. Architecture",
-          "anchor": "3-architecture",
-          "label": "Phone & Comms"
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§11",
+          "heading": "11. Projection (Android Auto, CarPlay): open",
+          "anchor": "11-projection-android-auto-carplay-open",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
-      "components": [
-        "ListRow",
-        "Toggle",
-        "Segmented",
-        "Button"
-      ],
+      "components": [],
       "variants": [],
-      "notes": "",
+      "notes": "Not built (owner decision item 38, 2026-10-07): projection stays on a projection-capable head unit beside Ostler. Do not draw; the record keeps the ID resolving.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
@@ -22448,6 +23118,27 @@
           "heading": "7. Safety gating tiers",
           "anchor": "7-safety-gating-tiers",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.2",
+          "heading": "5.2 The drawer",
+          "anchor": "52-the-drawer",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.3",
+          "heading": "5.3 App shortcuts",
+          "anchor": "53-app-shortcuts",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§2",
+          "heading": "2. What an app contributes",
+          "anchor": "2-what-an-app-contributes",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -22465,8 +23156,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-app-menu--app-menu-long-press-an-app-icon--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-app-menu--app-menu-long-press-an-app-icon--new"
     },
     {
       "id": "launcher-folder",
@@ -22505,6 +23195,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.4",
+          "heading": "5.4 Folders",
+          "anchor": "54-folders",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -22521,8 +23218,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-folder--folder--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-folder--folder--new"
     },
     {
       "id": "launcher-shortcut-picker",
@@ -22561,6 +23257,13 @@
           "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
           "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.3",
+          "heading": "5.3 App shortcuts",
+          "anchor": "53-app-shortcuts",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -22577,8 +23280,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-shortcut-picker--app-shortcuts-on-a-home-page--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-b.md#launcher-shortcut-picker--app-shortcuts-on-a-home-page--new"
     },
     {
       "id": "launcher-menu",
@@ -22674,6 +23376,13 @@
           "heading": "7.7 Hide, replace and reachability (v0.2)",
           "anchor": "77-hide-replace-and-reachability-v02",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§6.3",
+          "heading": "6.3 Drag and drop",
+          "anchor": "63-drag-and-drop",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -22689,8 +23398,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-item-popup--item-popup-long-press-a-widget-or-icon--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-item-popup--item-popup-long-press-a-widget-or-icon--new"
     },
     {
       "id": "launcher-widget-resize",
@@ -22737,6 +23445,13 @@
           "heading": "7.1 Common states and gestures",
           "anchor": "71-common-states-and-gestures",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§6.4",
+          "heading": "6.4 Resize",
+          "anchor": "64-resize",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -22753,8 +23468,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-widget-resize--widget-resize-frame--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-c.md#launcher-widget-resize--widget-resize-frame--new"
     },
     {
       "id": "widget-style-picker",
@@ -23587,6 +24301,13 @@
           "heading": "5.4 Home built from roles",
           "anchor": "54-home-built-from-roles",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -23602,8 +24323,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-fuel-range--fuel-and-range--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-f.md#widget-setup-fuel-range--fuel-and-range--new"
     },
     {
       "id": "widget-setup-service-due",
@@ -23905,6 +24625,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -23921,8 +24648,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-weather--weather--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-weather--weather--new"
     },
     {
       "id": "widget-setup-now-playing",
@@ -24017,6 +24743,20 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-head-unit-apps-design.md",
+          "section": "§3",
+          "heading": "3. Radio",
+          "anchor": "3-radio",
+          "label": "Head-unit apps"
         }
       ],
       "tokens": [],
@@ -24032,8 +24772,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-radio--radio--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-radio--radio--new"
     },
     {
       "id": "widget-setup-phone-favourites",
@@ -24169,6 +24908,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.3",
+          "heading": "5.3 App shortcuts",
+          "anchor": "53-app-shortcuts",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24184,8 +24937,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-app-shortcut--app-shortcut--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-app-shortcut--app-shortcut--new"
     },
     {
       "id": "widget-setup-text-label",
@@ -24218,6 +24970,13 @@
           "heading": "7.6 Icons and names (v0.2)",
           "anchor": "76-icons-and-names-v02",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24233,8 +24992,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-text-label--text-label--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-text-label--text-label--new"
     },
     {
       "id": "widget-setup-image",
@@ -24267,6 +25025,13 @@
           "heading": "4.2 Field rules",
           "anchor": "42-field-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§9",
+          "heading": "9. The starter catalogue",
+          "anchor": "9-the-starter-catalogue",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24282,8 +25047,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-image--image--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-g.md#widget-setup-image--image--new"
     },
     {
       "id": "launcher-presets",
@@ -24437,6 +25201,13 @@
           "heading": "15. Amendment (2026-10-07, DMD round), approved: widgets, Drive menu rows, input and new slots",
           "anchor": "15-amendment-2026-10-07-dmd-round-approved-widgets-drive-menu-rows-input-and-new-slots",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24454,8 +25225,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-apps--builder-step-1-car-and-apps--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-apps--builder-step-1-car-and-apps--new"
     },
     {
       "id": "launcher-builder-display",
@@ -24495,6 +25265,13 @@
           "heading": "4.4 Grids and minimum sizes per class",
           "anchor": "44-grids-and-minimum-sizes-per-class",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24511,8 +25288,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-display--builder-step-2-display--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-display--builder-step-2-display--new"
     },
     {
       "id": "launcher-builder-templates",
@@ -24552,6 +25328,13 @@
           "heading": "5.9 Defaults and rotation per class",
           "anchor": "59-defaults-and-rotation-per-class",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24568,8 +25351,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-templates--builder-step-3-templates--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-templates--builder-step-3-templates--new"
     },
     {
       "id": "launcher-builder-review",
@@ -24609,6 +25391,13 @@
           "heading": "8.2 Validation",
           "anchor": "82-validation",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24626,8 +25415,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-review--builder-step-4-review-the-pages--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-review--builder-step-4-review-the-pages--new"
     },
     {
       "id": "launcher-builder-done",
@@ -24667,6 +25455,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24683,8 +25478,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-done--builder-step-5-applied-with-undo--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-i.md#launcher-builder-done--builder-step-5-applied-with-undo--new"
     },
     {
       "id": "launcher-theme",
@@ -24731,6 +25525,13 @@
           "heading": "12.5 Visual design system (changes §2 principle 7)",
           "anchor": "125-visual-design-system-changes-2-principle-7",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24747,8 +25548,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme--wallpaper--style--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme--wallpaper--style--new"
     },
     {
       "id": "launcher-theme-wallpaper",
@@ -24795,6 +25595,13 @@
           "heading": "12.5 Visual design system (changes §2 principle 7)",
           "anchor": "125-visual-design-system-changes-2-principle-7",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24812,8 +25619,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-wallpaper--wallpaper-and-background--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-wallpaper--wallpaper-and-background--new"
     },
     {
       "id": "launcher-theme-colours",
@@ -24860,6 +25666,13 @@
           "heading": "13.5 Map theme independent of the app theme (changes §12.3's map-style sentence)",
           "anchor": "135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24877,8 +25690,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-colours--colours-and-light-or-dark--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-colours--colours-and-light-or-dark--new"
     },
     {
       "id": "launcher-theme-icons",
@@ -24918,6 +25730,13 @@
           "heading": "7.6 Icons and names (v0.2)",
           "anchor": "76-icons-and-names-v02",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24933,8 +25752,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-icons--icon-packs--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-j.md#launcher-theme-icons--icon-packs--new"
     },
     {
       "id": "launcher-theme-gauges",
@@ -24974,6 +25792,13 @@
           "heading": "1. Principles",
           "anchor": "1-principles",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -24989,8 +25814,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-gauges--gauge-style--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-gauges--gauge-style--new"
     },
     {
       "id": "launcher-theme-text",
@@ -25087,6 +25911,13 @@
           "heading": "3.1 Surfaces, text, accent and status per theme",
           "anchor": "31-surfaces-text-accent-and-status-per-theme",
           "label": "Visual"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§11",
+          "heading": "11. The theme wizard",
+          "anchor": "11-the-theme-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -25104,8 +25935,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-preview--theme-preview-and-apply--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-theme-preview--theme-preview-and-apply--new"
     },
     {
       "id": "launcher-home-settings",
@@ -25152,6 +25982,27 @@
           "heading": "8.3 Storage",
           "anchor": "83-storage",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.1",
+          "heading": "5.1 The dock",
+          "anchor": "51-the-dock",
+          "label": "Launcher"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§5.2",
+          "heading": "5.2 The drawer",
+          "anchor": "52-the-drawer",
+          "label": "Launcher"
         }
       ],
       "tokens": [],
@@ -25169,8 +26020,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-home-settings--home-settings--proposed"
+      "brief": "references/design/2026-10/brief/45-launcher-k.md#launcher-home-settings--home-settings--new"
     },
     {
       "id": "setup-welcome",
@@ -26178,6 +27028,13 @@
           "heading": "5.9 Defaults and rotation per class",
           "anchor": "59-defaults-and-rotation-per-class",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.2",
+          "heading": "10.2 The wizard",
+          "anchor": "102-the-wizard",
+          "label": "Launcher"
         }
       ],
       "tokens": [
@@ -26202,8 +27059,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-display--this-screen--proposed"
+      "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-display--this-screen--new"
     },
     {
       "id": "setup-people",
@@ -26385,6 +27241,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§5",
+          "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+          "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+          "label": "ADR-0046"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§7",
+          "heading": "7. The bundled offline catalogue",
+          "anchor": "7-the-bundled-offline-catalogue",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -26413,8 +27283,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-apps--choose-your-apps--proposed"
+      "brief": "references/design/2026-10/brief/10-onboarding-d.md#setup-apps--choose-your-apps--new"
     },
     {
       "id": "setup-app-access",
@@ -26671,6 +27540,20 @@
           "heading": "8.3 Storage",
           "anchor": "83-storage",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§1",
+          "heading": "1. The OS boundary",
+          "anchor": "1-the-os-boundary",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -26693,8 +27576,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-backup--make-a-backup--proposed"
+      "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-backup--make-a-backup--new"
     },
     {
       "id": "setup-restore",
@@ -26747,6 +27629,20 @@
           "heading": "Decision drivers",
           "anchor": "decision-drivers",
           "label": "ADR-0041"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§1",
+          "heading": "1. The OS boundary",
+          "anchor": "1-the-os-boundary",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -26769,8 +27665,7 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-restore--restore-from-a-backup--proposed"
+      "brief": "references/design/2026-10/brief/10-onboarding-e.md#setup-restore--restore-from-a-backup--new"
     },
     {
       "id": "setup-add-brain",
@@ -27744,6 +28639,13 @@
           "heading": "6. Add-on devices",
           "anchor": "6-add-on-devices",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -27766,8 +28668,7 @@
         "differences": []
       },
       "owner": "app:security",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-welcome--set-up-security--proposed"
+      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-welcome--set-up-security--new"
     },
     {
       "id": "security-setup-done",
@@ -27799,6 +28700,13 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -27821,8 +28729,7 @@
         "differences": []
       },
       "owner": "app:security",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-done--security-is-ready--proposed"
+      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-setup-done--security-is-ready--new"
     },
     {
       "id": "security-channels",
@@ -27940,6 +28847,13 @@
           "heading": "3.4 Five destinations",
           "anchor": "34-five-destinations",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -27963,8 +28877,7 @@
         "differences": []
       },
       "owner": "app:security",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-settings--security-settings--proposed"
+      "brief": "references/design/2026-10/brief/85-security-d-setup-settings.md#security-settings--security-settings--new"
     },
     {
       "id": "security-widget-arm",
@@ -28294,6 +29207,20 @@
           "heading": "5.4 Home built from roles",
           "anchor": "54-home-built-from-roles",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-launcher-and-widgets-design.md",
+          "section": "§10.1",
+          "heading": "10.1 Presets",
+          "anchor": "101-presets",
+          "label": "Launcher"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§5",
+          "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+          "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -28319,13 +29246,12 @@
         "differences": []
       },
       "owner": "os",
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--proposed"
+      "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-guardian-home--guardian-home-pages--new"
     },
     {
       "id": "security-crash-sos",
       "name": "Crash SOS (later)",
-      "area": "app: Security",
+      "area": "os",
       "group": "Security",
       "layout_classes": [
         "phone",
@@ -28378,13 +29304,13 @@
         "Button"
       ],
       "variants": [],
-      "notes": "",
+      "notes": "Owner decision item 6 (2026-10-07): Crash SOS is a system service in the OS, not part of the Security app.",
       "deliveries": [],
       "review": {
         "status": "awaiting",
         "differences": []
       },
-      "owner": "app:security",
+      "owner": "os",
       "proposed": true,
       "brief": "references/design/2026-10/brief/85-security-f-companion-guardian.md#security-crash-sos--crash-sos-later--proposed"
     },
@@ -28599,6 +29525,20 @@
           "heading": "8.1 Safety rules",
           "anchor": "81-safety-rules",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§7",
+          "heading": "7. Notification channels",
+          "anchor": "7-notification-channels",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -28619,8 +29559,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--proposed"
+      "brief": "references/design/2026-10/brief/30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--new"
     },
     {
       "id": "settings-driving",
@@ -29424,6 +30363,20 @@
           "heading": "ADR-0041 — The Brain signs transmit grants with Ed25519 through the optional `openostler[signing]` extra",
           "anchor": "",
           "label": "ADR-0041"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§1",
+          "heading": "1. The OS boundary",
+          "anchor": "1-the-os-boundary",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -29445,8 +30398,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/30-settings-d.md#settings-backups--backups--proposed"
+      "brief": "references/design/2026-10/brief/30-settings-d.md#settings-backups--backups--new"
     },
     {
       "id": "settings-restore",
@@ -29487,6 +30439,20 @@
           "heading": "14.10 Where `auth.db` lives, and recovery",
           "anchor": "1410-where-authdb-lives-and-recovery",
           "label": "Accounts"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§1",
+          "heading": "1. The OS boundary",
+          "anchor": "1-the-os-boundary",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -29507,8 +30473,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/30-settings-d.md#settings-restore--restore-from-a-backup--proposed"
+      "brief": "references/design/2026-10/brief/30-settings-d.md#settings-restore--restore-from-a-backup--new"
     },
     {
       "id": "settings-updates",
@@ -29557,6 +30522,20 @@
           "heading": "4.2 Field rules",
           "anchor": "42-field-rules",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -29577,8 +30556,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/30-settings-e.md#settings-updates--updates--proposed"
+      "brief": "references/design/2026-10/brief/30-settings-e.md#settings-updates--updates--new"
     },
     {
       "id": "settings-profiles",
@@ -30664,6 +31642,13 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -30686,8 +31671,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-home--store-home--proposed"
+      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-home--store-home--new"
     },
     {
       "id": "store-category",
@@ -30729,6 +31713,13 @@
           "heading": "5. The seven presets",
           "anchor": "5-the-seven-presets",
           "label": "Drive modes"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -30750,8 +31741,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-category--category-page--proposed"
+      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-category--category-page--new"
     },
     {
       "id": "store-search",
@@ -30793,6 +31783,13 @@
           "heading": "4.2 Field rules",
           "anchor": "42-field-rules",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -30814,8 +31811,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-search--search-and-filters--proposed"
+      "brief": "references/design/2026-10/brief/70-store-a-home-browse.md#store-search--search-and-filters--new"
     },
     {
       "id": "store-item",
@@ -30878,6 +31874,27 @@
           "heading": "12.1 U2 lockouts (changes §3.5, §10 U2, §10.1 U2; app-model §4.4)",
           "anchor": "121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§6.1",
+          "heading": "6.1 Review levels",
+          "anchor": "61-review-levels",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§6.2",
+          "heading": "6.2 Works with Ostler",
+          "anchor": "62-works-with-ostler",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -30901,8 +31918,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item--item-detail--proposed"
+      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item--item-detail--new"
     },
     {
       "id": "store-item-versions",
@@ -30937,6 +31953,20 @@
           "heading": "7. Optional apps from their own repos",
           "anchor": "7-optional-apps-from-their-own-repos",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -30957,8 +31987,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item-versions--version-history--proposed"
+      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-item-versions--version-history--new"
     },
     {
       "id": "store-install-sheet",
@@ -31014,6 +32043,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§10",
+          "heading": "10. Manifest schema 2",
+          "anchor": "10-manifest-schema-2",
+          "label": "App UI model"
         }
       ],
       "tokens": [
@@ -31035,8 +32078,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-install-sheet--install-review-access--proposed"
+      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-install-sheet--install-review-access--new"
     },
     {
       "id": "store-installing",
@@ -31085,6 +32127,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31105,8 +32161,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-installing--installing--proposed"
+      "brief": "references/design/2026-10/brief/70-store-b-item-install.md#store-installing--installing--new"
     },
     {
       "id": "store-updates",
@@ -31148,6 +32203,20 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31168,8 +32237,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-updates--updates--proposed"
+      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-updates--updates--new"
     },
     {
       "id": "store-update-settings",
@@ -31211,6 +32279,13 @@
           "heading": "12.4 Add-ons catalogue placement (changes §3.4's More and Home rows)",
           "anchor": "124-add-ons-catalogue-placement-changes-34s-more-and-home-rows",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§9",
+          "heading": "9. Updates",
+          "anchor": "9-updates",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31230,8 +32305,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-update-settings--auto-update--proposed"
+      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-update-settings--auto-update--new"
     },
     {
       "id": "store-rollback",
@@ -31342,6 +32416,20 @@
           "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
           "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§8",
+          "heading": "8. System Settings and the App info page",
+          "anchor": "8-system-settings-and-the-app-info-page",
+          "label": "App UI model"
+        },
+        {
+          "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+          "section": "§5",
+          "heading": "5. Product flavours are preinstalled sets (amends ADR-0039)",
+          "anchor": "5-product-flavours-are-preinstalled-sets-amends-adr-0039",
+          "label": "ADR-0046"
         }
       ],
       "tokens": [
@@ -31362,8 +32450,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-uninstall--uninstall--proposed"
+      "brief": "references/design/2026-10/brief/70-store-c-updates-library.md#store-uninstall--uninstall--new"
     },
     {
       "id": "store-publisher",
@@ -31405,6 +32492,20 @@
           "heading": "7. Optional apps from their own repos",
           "anchor": "7-optional-apps-from-their-own-repos",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§3",
+          "heading": "3. The Store app",
+          "anchor": "3-the-store-app",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§5",
+          "heading": "5. The catalogue and signing",
+          "anchor": "5-the-catalogue-and-signing",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31425,8 +32526,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-publisher--publisher-page--proposed"
+      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-publisher--publisher-page--new"
     },
     {
       "id": "store-report",
@@ -31533,6 +32633,20 @@
           "heading": "7. Optional apps from their own repos",
           "anchor": "7-optional-apps-from-their-own-repos",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§5",
+          "heading": "5. The catalogue and signing",
+          "anchor": "5-the-catalogue-and-signing",
+          "label": "Store"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§7",
+          "heading": "7. The bundled offline catalogue",
+          "anchor": "7-the-bundled-offline-catalogue",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31554,8 +32668,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sources--catalogues-and-offline--proposed"
+      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sources--catalogues-and-offline--new"
     },
     {
       "id": "store-sideload",
@@ -31604,6 +32717,13 @@
           "heading": "7.1 Amendment (2026-10-06): the phone build",
           "anchor": "71-amendment-2026-10-06-the-phone-build",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§8",
+          "heading": "8. Sideloading for developers",
+          "anchor": "8-sideloading-for-developers",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31624,8 +32744,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload--install-from-a-file--proposed"
+      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload--install-from-a-file--new"
     },
     {
       "id": "store-sideload-warning",
@@ -31667,6 +32786,13 @@
           "heading": "4.2 Field rules",
           "anchor": "42-field-rules",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-store-design.md",
+          "section": "§8",
+          "heading": "8. Sideloading for developers",
+          "anchor": "8-sideloading-for-developers",
+          "label": "Store"
         }
       ],
       "tokens": [
@@ -31687,8 +32813,7 @@
         "status": "awaiting",
         "differences": []
       },
-      "proposed": true,
-      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload-warning--unchecked-item-warning--proposed"
+      "brief": "references/design/2026-10/brief/70-store-d-publisher-sideload.md#store-sideload-warning--unchecked-item-warning--new"
     },
     {
       "id": "diagnose-overview",
@@ -34350,6 +35475,13 @@
           "heading": "14. Amendment (2026-10-07), approved: ecosystem, add-ons, Trips and templates",
           "anchor": "14-amendment-2026-10-07-approved-ecosystem-add-ons-trips-and-templates",
           "label": "App model"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34366,8 +35498,7 @@
         "differences": []
       },
       "owner": "app:diagnostics",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-setup--diagnostics-first-run-setup--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-setup--diagnostics-first-run-setup--new"
     },
     {
       "id": "diagnose-app-settings",
@@ -34406,6 +35537,13 @@
           "heading": "4.3 Scan all and its honest states",
           "anchor": "43-scan-all-and-its-honest-states",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34422,8 +35560,7 @@
         "differences": []
       },
       "owner": "app:diagnostics",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-settings--diagnostics-settings--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#diagnose-app-settings--diagnostics-settings--new"
     },
     {
       "id": "trips-app-setup",
@@ -34462,6 +35599,13 @@
           "heading": "13.4 More → Places (changes §3.4's More row and §12.4's order)",
           "anchor": "134-more--places-changes-34s-more-row-and-124s-order",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34479,8 +35623,7 @@
         "differences": []
       },
       "owner": "app:trips",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-setup--trips-first-run-setup--new"
     },
     {
       "id": "trips-app-settings",
@@ -34519,6 +35662,13 @@
           "heading": "1. Record only while connected",
           "anchor": "1-record-only-while-connected",
           "label": "Logs at scale"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34535,8 +35685,7 @@
         "differences": []
       },
       "owner": "app:trips",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-settings--trips-settings--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#trips-app-settings--trips-settings--new"
     },
     {
       "id": "maint-app-setup",
@@ -34580,6 +35729,13 @@
           "heading": "9. Import and export",
           "anchor": "9-import-and-export",
           "label": "Maintenance"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34596,8 +35752,7 @@
         "differences": []
       },
       "owner": "app:maintenance",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-setup--maintenance-first-run-setup--new"
     },
     {
       "id": "maint-app-settings",
@@ -34634,6 +35789,13 @@
           "heading": "8. Reminder delivery",
           "anchor": "8-reminder-delivery",
           "label": "Maintenance"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34650,8 +35812,7 @@
         "differences": []
       },
       "owner": "app:maintenance",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#maint-app-settings--maintenance-settings--new"
     },
     {
       "id": "decode-app-setup",
@@ -34688,6 +35849,13 @@
           "heading": "13.3 \"Ask for help decoding\" (Decode lab; changes §8.4)",
           "anchor": "133-ask-for-help-decoding-decode-lab-changes-84",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§4",
+          "heading": "4. The setup flow",
+          "anchor": "4-the-setup-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34705,8 +35873,7 @@
         "differences": []
       },
       "owner": "app:decode-lab",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-setup--decode-lab-first-run-setup--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-setup--decode-lab-first-run-setup--new"
     },
     {
       "id": "decode-app-settings",
@@ -34743,6 +35910,13 @@
           "heading": "8.3 Data, evidence, fixtures and scrub",
           "anchor": "83-data-evidence-fixtures-and-scrub",
           "label": "UI"
+        },
+        {
+          "doc": "specs/2026-10-07-app-ui-model-design.md",
+          "section": "§5",
+          "heading": "5. The options flow",
+          "anchor": "5-the-options-flow",
+          "label": "App UI model"
         }
       ],
       "tokens": [],
@@ -34759,8 +35933,7 @@
         "differences": []
       },
       "owner": "app:decode-lab",
-      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-settings--decode-lab-settings--proposed",
-      "proposed": true
+      "brief": "references/design/2026-10/brief/50-vehicle-l-apps.md#decode-app-settings--decode-lab-settings--new"
     }
   ]
 }

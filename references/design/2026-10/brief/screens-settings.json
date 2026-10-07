@@ -210,6 +210,20 @@
         "heading": "8.1 Safety rules",
         "anchor": "81-safety-rules",
         "label": "Drive modes"
+      },
+      {
+        "doc": "specs/2026-10-07-app-ui-model-design.md",
+        "section": "§7",
+        "heading": "7. Notification channels",
+        "anchor": "7-notification-channels",
+        "label": "App UI model"
+      },
+      {
+        "doc": "specs/2026-10-07-app-ui-model-design.md",
+        "section": "§8",
+        "heading": "8. System Settings and the App info page",
+        "anchor": "8-system-settings-and-the-app-info-page",
+        "label": "App UI model"
       }
     ],
     "tokens": [
@@ -230,8 +244,7 @@
       "status": "awaiting",
       "differences": []
     },
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--proposed"
+    "brief": "references/design/2026-10/brief/30-settings-b.md#settings-notifications--notifications-quiet-hours-and-critical-alerts--new"
   },
   {
     "id": "settings-driving",
@@ -1035,6 +1048,20 @@
         "heading": "ADR-0041 — The Brain signs transmit grants with Ed25519 through the optional `openostler[signing]` extra",
         "anchor": "",
         "label": "ADR-0041"
+      },
+      {
+        "doc": "specs/2026-10-07-app-ui-model-design.md",
+        "section": "§8",
+        "heading": "8. System Settings and the App info page",
+        "anchor": "8-system-settings-and-the-app-info-page",
+        "label": "App UI model"
+      },
+      {
+        "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+        "section": "§1",
+        "heading": "1. The OS boundary",
+        "anchor": "1-the-os-boundary",
+        "label": "ADR-0046"
       }
     ],
     "tokens": [
@@ -1056,8 +1083,7 @@
       "status": "awaiting",
       "differences": []
     },
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-backups--backups--proposed"
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-backups--backups--new"
   },
   {
     "id": "settings-restore",
@@ -1098,6 +1124,20 @@
         "heading": "14.10 Where `auth.db` lives, and recovery",
         "anchor": "1410-where-authdb-lives-and-recovery",
         "label": "Accounts"
+      },
+      {
+        "doc": "specs/2026-10-07-app-ui-model-design.md",
+        "section": "§8",
+        "heading": "8. System Settings and the App info page",
+        "anchor": "8-system-settings-and-the-app-info-page",
+        "label": "App UI model"
+      },
+      {
+        "doc": "decisions/adr-0046-empty-os-every-app-an-add-on.md",
+        "section": "§1",
+        "heading": "1. The OS boundary",
+        "anchor": "1-the-os-boundary",
+        "label": "ADR-0046"
       }
     ],
     "tokens": [
@@ -1118,8 +1158,7 @@
       "status": "awaiting",
       "differences": []
     },
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-restore--restore-from-a-backup--proposed"
+    "brief": "references/design/2026-10/brief/30-settings-d.md#settings-restore--restore-from-a-backup--new"
   },
   {
     "id": "settings-updates",
@@ -1168,6 +1207,20 @@
         "heading": "4.2 Field rules",
         "anchor": "42-field-rules",
         "label": "App model"
+      },
+      {
+        "doc": "specs/2026-10-07-app-ui-model-design.md",
+        "section": "§8",
+        "heading": "8. System Settings and the App info page",
+        "anchor": "8-system-settings-and-the-app-info-page",
+        "label": "App UI model"
+      },
+      {
+        "doc": "specs/2026-10-07-store-design.md",
+        "section": "§9",
+        "heading": "9. Updates",
+        "anchor": "9-updates",
+        "label": "Store"
       }
     ],
     "tokens": [
@@ -1188,8 +1241,7 @@
       "status": "awaiting",
       "differences": []
     },
-    "proposed": true,
-    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-updates--updates--proposed"
+    "brief": "references/design/2026-10/brief/30-settings-e.md#settings-updates--updates--new"
   },
   {
     "id": "settings-profiles",

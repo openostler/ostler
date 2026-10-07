@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part D): three worked setup flows"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, references/research/code_review_lubelogger.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -36,10 +36,8 @@ onboarding brief draws steps 2–3 as `setup-vehicle-name` and `setup-source`.
 | 5 | `app-setup-d2-contact` | Hardware detect | parks, ignition on, waits | a module silent → "No response", continue |
 | 6 | `app-setup-d2-done` | Success | reads the summary | partial → **Fix** |
 
-### app-setup-d2-found — Discovery 2 found  [Proposed]
+### app-setup-d2-found — Discovery 2 found  [New]
 - **Owner:** os (content from the `lr_d2` pack)
-- **Why the app needs it:** shows the Discovered step with a real car; identification is
-  approved ([UI §4.4][ui-4.4]), this page is not.
 - **Purpose:** confirm that the car on the node is a Discovery 2 Td5.
 - **Opens from → goes to:** the "New car found" card (`app-discovered`) **Add** → step 2.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -54,13 +52,11 @@ onboarding brief draws steps 2–3 as `setup-vehicle-name` and `setup-source`.
 - **Safety and driving rules:** the identity read is a read, Parked; VIN masked
   ([ADR-0036][adr-36]).
 - **Components:** Card, ListRow, Chip, Button.
-- **Spec refs:** [UI §4.4][ui-4.4] · [UI §4.5][ui-4.5] · [HA integrations §4.1][ha-4.1].
+- **Spec refs:** [UI §4.4][ui-4.4] · [UI §4.5][ui-4.5] · [HA integrations §4.1][ha-4.1] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-setup-d2-modules — Which systems this car has  [Proposed]
+### app-setup-d2-modules — Which systems this car has  [New]
 - **Owner:** os (content from the `lr_d2` pack)
-- **Why the app needs it:** D2s differ (ACE and the automatic gearbox are not on every
-  car); marking a system "Not fitted" up front saves K-line time and false "No response".
 - **Purpose:** pick the fitted systems from the pack's list.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Night.
@@ -75,13 +71,11 @@ onboarding brief draws steps 2–3 as `setup-vehicle-name` and `setup-source`.
   Moving: locked.
 - **Safety and driving rules:** nothing is sent in this step.
 - **Components:** ListRow (tick), Chip, SchemaForm (new).
-- **Spec refs:** [UI §4.2–4.3][ui-4.3] · [UI §5.1][ui-5.1].
+- **Spec refs:** [UI §4.2–4.3][ui-4.3] · [UI §5.1][ui-5.1] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-setup-d2-contact — First contact on K-line  [Proposed]
+### app-setup-d2-contact — First contact on K-line  [New]
 - **Owner:** os (content from the `lr_d2` pack)
-- **Why the app needs it:** the hardware detect step drawn for a car: each ticked system
-  is woken in turn and answers or not.
 - **Purpose:** prove the source reaches each system, honestly.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Night.
@@ -96,12 +90,11 @@ onboarding brief draws steps 2–3 as `setup-vehicle-name` and `setup-source`.
 - **Safety and driving rules:** reads only, Parked, through the node's gate (or the
   adapter's soft gate with no node) ([ADR-0044][adr-44]).
 - **Components:** Checklist (new), ListRow, Chip (status), Button.
-- **Spec refs:** [UI §4.3][ui-4.3] · [UI §4.5][ui-4.5] · [Adapters §7][sa-7].
+- **Spec refs:** [UI §4.3][ui-4.3] · [UI §4.5][ui-4.5] · [Adapters §7][sa-7] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-setup-d2-done — Discovery 2 set up  [Proposed]
+### app-setup-d2-done — Discovery 2 set up  [New]
 - **Owner:** os (content from the `lr_d2` pack)
-- **Why the app needs it:** the Success step for a car, which also leads to a dashboard.
 - **Purpose:** summarise the car, its source and its systems.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Day.
@@ -114,7 +107,7 @@ onboarding brief draws steps 2–3 as `setup-vehicle-name` and `setup-source`.
   Diagnostics app: Card "Install Diagnostics to read faults and live data"; Moving: locked.
 - **Safety and driving rules:** none beyond Parked.
 - **Components:** ListRow, Card, Button.
-- **Spec refs:** [HA integrations §5][ha-5] (C14, push or poll shown) · [Drive modes §5.9][dm-5.9].
+- **Spec refs:** [HA integrations §5][ha-5] (C14, push or poll shown) · [Drive modes §5.9][dm-5.9] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
 ## 2. Backend-only integration: the LubeLogger bridge
@@ -128,9 +121,8 @@ this setup page are all it shows. It needs the Maintenance app ([Maintenance §1
 | 2 | `app-setup-lube-sync` | Form | maps the car, picks what syncs | no vehicles on the server → "Add one in LubeLogger first" |
 | 3 | `app-flow-success` | Success | "LubeLogger bridge is set up · Discovery 2 Td5 ↔ ‹vehicle›" | — |
 
-### app-setup-lube-server — LubeLogger server  [Proposed]
+### app-setup-lube-server — LubeLogger server  [New]
 - **Owner:** os (content from the LubeLogger bridge)
-- **Why the app needs it:** the bridge is approved for later; its only page is this setup.
 - **Purpose:** connect to the owner's own LubeLogger with a key that can edit.
 - **Opens from → goes to:** after install, App info **Configure** → step 2.
 - **Layout classes:** phone · tablet · desktop · hu7 · hu9. **Draw first:** phone Night
@@ -146,13 +138,11 @@ this setup page are all it shows. It needs the Maintenance app ([Maintenance §1
 - **Safety and driving rules:** the key lives in the Brain's secret store and is sent only
   as a header; the bridge never touches the car.
 - **Components:** Text field (secret), Card (tone), Button, SchemaForm (new).
-- **Spec refs:** [Maintenance §11][mg-11] · [LubeLogger review §5][lube-5].
+- **Spec refs:** [Maintenance §11][mg-11] · [LubeLogger review §5][lube-5] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-setup-lube-sync — Car and what syncs  [Proposed]
+### app-setup-lube-sync — Car and what syncs  [New]
 - **Owner:** os (content from the LubeLogger bridge)
-- **Why the app needs it:** maintenance data leaves this Ostler for the owner's server,
-  so the owner chooses exactly what goes.
 - **Purpose:** map each car and choose the directions.
 - **Layout classes:** phone · tablet · desktop · hu7 · hu9. **Draw first:** phone Night.
 - **Content (top to bottom):** 1. Per car: "Discovery 2 Td5 → " a choice of the server's
@@ -165,7 +155,7 @@ this setup page are all it shows. It needs the Maintenance app ([Maintenance §1
 - **Safety and driving rules:** what leaves is named by its data class
   ([Accounts §14.1][acc-14.1]).
 - **Components:** ListRow, Switch (new), Card, Button.
-- **Spec refs:** [Maintenance §11][mg-11] · [Accounts §14.1][acc-14.1].
+- **Spec refs:** [Maintenance §11][mg-11] · [Accounts §14.1][acc-14.1] · [app UI model §6][ua-6].
 - **Open questions:** is sending to the owner's own server a grant to record in Sharing?
 
 ## 3. Feature app first run: Radio finds its DAB receiver
@@ -179,26 +169,25 @@ drawn in `80-hu-*`; this is only its first run.
 | 2 | `app-setup-radio-scan` | Form + progress | picks region, scans | nothing found → antenna tip, **Scan again** |
 | 3 | `app-flow-success` | Success | "Radio is set up · ‹n› stations"; Next: **Add the Radio widget** | — |
 
-### app-setup-radio-detect — Find the radio receiver  [Proposed]
+### app-setup-radio-detect — Find the radio receiver  [New]
 - **Owner:** app:radio
-- **Why the app needs it:** the owner named Radio as an app with its own setup; no spec
-  covers it yet.
 - **Purpose:** find a DAB+ receiver on the Brain.
 - **Layout classes:** hu5 · hu7 · hu9 · huwide · phone. **Draw first:** hu7 Night (found,
   not found), phone Night.
-- **Content (top to bottom):** 1. "Looking for a radio receiver on the Brain's USB ports".
-  2. Found row: `radio` "USB DAB+ receiver · USB port ‹n›", Chip `ok` "Ready". 3. Not
+- **Content (top to bottom):** 1. "Looking for a radio receiver on the Brain".
+  2. Found row: `radio` "Si468x tuner HAT · I²C" (the first tuner path, item 36) or "USB
+  DAB+ receiver · USB port ‹n›", Chip `ok` "Ready". 3. Not
   found: checklist "Plugged into the Brain?", "Aerial connected?"; **Check again**.
 - **States:** Brain asleep: "Needs the Brain" with **Wake**; no Brain (Diagnostics alone):
   abort "Radio needs the Brain"; Moving: locked.
 - **Safety and driving rules:** Parked; the receiver is not a car bus device.
 - **Components:** as `app-flow-hardware`.
-- **Spec refs:** [App model §13][am-13] (`needs_brain`) · [App model §4.4][am-4.4].
-- **Open questions:** which receivers are supported (a hardware list for the Radio app).
+- **Spec refs:** [App model §13][am-13] (`needs_brain`) · [App model §4.4][am-4.4] · [app UI model §4][ua-4] · [head-unit apps §3][hu-3].
+- **Open questions:** **Decided (item 36):** the first supported receiver is an Si468x-based
+  HAT or module (DAB+ decoded in hardware); a USB SDR dongle comes second.
 
-### app-setup-radio-scan — Region and scan  [Proposed]
+### app-setup-radio-scan — Region and scan  [New]
 - **Owner:** app:radio
-- **Why the app needs it:** stations depend on region and band; a first scan fills the list.
 - **Purpose:** choose region, scan Band III, show progress.
 - **Layout classes:** hu5 · hu7 · hu9 · huwide · phone. **Draw first:** hu7 Night scanning.
 - **Content (top to bottom):** 1. **Region** choice (prefilled from Units and region).
@@ -209,7 +198,7 @@ drawn in `80-hu-*`; this is only its first run.
 - **Safety and driving rules:** Parked only; while Moving later, Radio uses only the `media`
   template ([UI §12.1][ui-12.1]).
 - **Components:** Segmented or list (region), Switch (new), progress bar (new), Button.
-- **Spec refs:** [UI §12.1][ui-12.1] · [App model §15][am-15] (widgets).
+- **Spec refs:** [UI §12.1][ui-12.1] · [App model §15][am-15] (widgets) · [app UI model §4][ua-4] · [head-unit apps §3][hu-3].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -230,3 +219,6 @@ drawn in `80-hu-*`; this is only its first run.
 [ui-4.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#44-identification-and-fallbacks
 [ui-4.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#45-the-connection-ladder
 [ui-5.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#51-shape
+[ua-6]: ../../../../specs/2026-10-07-app-ui-model-design.md#6-backend-only-apps-integrations
+[ua-4]: ../../../../specs/2026-10-07-app-ui-model-design.md#4-the-setup-flow
+[hu-3]: ../../../../specs/2026-10-07-head-unit-apps-design.md#3-radio

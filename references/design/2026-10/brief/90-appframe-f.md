@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part F): pack pages and app errors"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -25,10 +25,8 @@ with the kind Chip **Pack**) and from the launcher's wallpaper and style menu
 ([Drive modes §8.1][dm-8.1] R1). No pack can change the safety colours, the fault telltale,
 alarm alerts or the Moving templates (R3).
 
-### app-pack-widgets — Widget pack  [Proposed]
+### app-pack-widgets — Widget pack  [New]
 - **Owner:** os (content: the pack, for example app:widgets-starter)
-- **Why the app needs it:** the starter widget pack is now its own installable thing; its
-  page lists what it brings.
 - **Purpose:** show every widget in the pack and add one to a home page.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night.
@@ -41,13 +39,11 @@ alarm alerts or the Moving templates (R3).
   installed: "Needs Diagnostics" with **Get it**; Moving: locked.
 - **Safety and driving rules:** placing is Park to edit; previews never show fake values.
 - **Components:** Card (preview), Chip, Button, Gauge, StatTile.
-- **Spec refs:** [App model §15][am-15] (15.1, 15.6) · [Drive modes §7.2][dm-7.2].
+- **Spec refs:** [App model §15][am-15] (15.1, 15.6) · [Drive modes §7.2][dm-7.2] · [app UI model §9][ua-9] · [launcher §8][lw-8].
 - **Open questions:** none.
 
-### app-pack-theme — Theme pack  [Proposed]
+### app-pack-theme — Theme pack  [New]
 - **Owner:** os
-- **Why the app needs it:** theme packs are sold in the Store by the owner's direction; the
-  OS must preview them in every theme and keep the safety colours fixed.
 - **Purpose:** preview a theme pack and apply it.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night and Night dim.
@@ -61,16 +57,15 @@ alarm alerts or the Moving templates (R3).
 - **Safety and driving rules:** tokens only, no raw colours; no glow on head units at night
   ([visual §3.1][vds-3.1], [visual §1][vds-1]).
 - **Components:** Segmented, Card (preview), Button.
-- **Spec refs:** [visual §3.1][vds-3.1] · [visual §1][vds-1].
-- **Open questions:** may a theme pack change the accent hue, or only surfaces and gauge
-  style?
+- **Spec refs:** [visual §3.1][vds-3.1] · [visual §1][vds-1] · [app UI model §9][ua-9] · [launcher §11][lw-11].
+- **Open questions:** **Decided (item 48):** a theme pack may bring accents beyond cyan, as
+  validated colour sets that pass contrast in every theme; warning and alarm colours never
+  change.
 
-### app-pack-icons — Icon pack  [Proposed]
+### app-pack-icons — Icon pack  [New]
 - **Owner:** os
-- **Why the app needs it:** the owner lists icon packs in the Store; the icon rule
-  (Material Symbols only) must survive them.
-- **Purpose:** preview and apply an icon pack: a mapping of apps and pages to Material
-  Symbols names and styles.
+- **Purpose:** preview and apply an icon pack: a glyph set mapped to Material Symbols names
+  (item 49); a name the pack lacks falls back to Material outlined.
 - **Layout classes:** phone · tablet · desktop · hu7 · hu9. **Draw first:** phone Night.
 - **Content (top to bottom):** 1. Header, Chip **Icons**. 2. A before and after grid of the
   dock and the app drawer. 3. Style line: "Outlined · weight ‹n› · fill off". 4. **Apply**;
@@ -79,12 +74,12 @@ alarm alerts or the Moving templates (R3).
 - **Safety and driving rules:** safety items keep their icons; user overrides win
   ([App model §15][am-15] 15.8).
 - **Components:** Card, Button.
-- **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6].
-- **Open questions:** may an icon pack ship its own drawings? The brief assumes no.
+- **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6] · [app UI model §9][ua-9] · [launcher §11][lw-11].
+- **Open questions:** **Decided (item 49):** yes, an icon pack ships its own glyphs (SVG, no
+  images or code), each mapped to a Material Symbols name; safety icons never change.
 
-### app-pack-wallpaper — Wallpaper pack  [Proposed]
+### app-pack-wallpaper — Wallpaper pack  [New]
 - **Owner:** os
-- **Why the app needs it:** wallpapers are a Store item and a theme wizard step.
 - **Purpose:** pick a wallpaper from the pack for each screen.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Night.
@@ -94,13 +89,12 @@ alarm alerts or the Moving templates (R3).
 - **Safety and driving rules:** a wallpaper shows on home pages only, dimmed at night, and
   never behind a Moving template or Drive page.
 - **Components:** Card, Segmented, Button.
-- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1].
-- **Open questions:** confirm "never behind a Moving template".
+- **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [app UI model §9][ua-9] · [launcher §11][lw-11].
+- **Open questions:** **Decided (item 19):** on driver-facing displays the Moving sections
+  draw on the plain `bg` surface, never on a wallpaper.
 
-### app-pack-preset — Dashboard preset  [Proposed]
+### app-pack-preset — Dashboard preset  [New]
 - **Owner:** os
-- **Why the app needs it:** presets are approved as layouts; Store presets need a preview
-  and a safe way in.
 - **Purpose:** preview a dashboard preset Parked and Moving, then apply it with the builder.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night, phone Night.
@@ -115,12 +109,11 @@ alarm alerts or the Moving templates (R3).
 - **Safety and driving rules:** the preset passes the layout validator; nothing replaces an
   existing page without the builder's confirm.
 - **Components:** Card, Chip (status), Button.
-- **Spec refs:** [Drive modes §5.9][dm-5.9] · [Drive modes §8.4][dm-8.4].
+- **Spec refs:** [Drive modes §5.9][dm-5.9] · [Drive modes §8.4][dm-8.4] · [app UI model §9][ua-9] · [launcher §10.1][lw-10.1].
 - **Open questions:** none.
 
-### app-pack-sound — Sound or EQ preset  [Proposed]
+### app-pack-sound — Sound or EQ preset  [New]
 - **Owner:** os (applies in app:audio)
-- **Why the app needs it:** EQ presets are a Store item; the Audio app applies them.
 - **Purpose:** show the preset's curve and send it to Audio.
 - **Layout classes:** phone · tablet · hu7 · hu9 · huwide. **Draw first:** hu7 Night.
 - **Content (top to bottom):** 1. Header, Chip **Sound**. 2. The curve (Area line) with
@@ -128,7 +121,7 @@ alarm alerts or the Moving templates (R3).
 - **States:** Audio not installed: **Get Audio**; Moving: locked.
 - **Safety and driving rules:** Parked only; chimes and alarm sounds are not affected.
 - **Components:** Area line, Button.
-- **Spec refs:** [visual §8][vds-8].
+- **Spec refs:** [visual §8][vds-8] · [app UI model §9][ua-9] · [head-unit apps §4][hu-4].
 - **Open questions:** none.
 
 ### app-error-stopped — App stopped  [New]
@@ -196,3 +189,8 @@ alarm alerts or the Moving templates (R3).
 [vds-3.1]: ../../../../specs/2026-10-07-visual-design-system-design.md#31-surfaces-text-accent-and-status-per-theme
 [vds-6]: ../../../../specs/2026-10-07-visual-design-system-design.md#6-icons-and-fonts
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[ua-9]: ../../../../specs/2026-10-07-app-ui-model-design.md#9-object-kinds
+[lw-8]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#8-the-widget-sdk-contract
+[lw-11]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#11-the-theme-wizard
+[lw-10.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#101-presets
+[hu-4]: ../../../../specs/2026-10-07-head-unit-apps-design.md#4-audio

@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part B): the App info pages"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, references/research/ha_architecture_addons.md]
 summary: >
@@ -22,11 +22,8 @@ page: the Settings lock applies while Moving, edits are owner operations on loca
 other roles see read-only rows marked "Owner only". The example app is **Diagnostics**
 unless a block says otherwise. Each page opens from its row on `app-info`; Back returns there.
 
-### app-info-permissions — Permissions and data  [Proposed]
+### app-info-permissions — Permissions and data  [New]
 - **Owner:** os
-- **Why the app needs it:** the data-class registry and the manifest's `permissions` and
-  `actions` are approved, but no page shows them per app after install; it also answers the
-  Settings brief's question whether one class can be switched off without disabling the app.
 - **Purpose:** what this app reads, what it may ask the OS for, and which car actions it
   may request.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -52,7 +49,11 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
      **Coding** · Tier 4: "Listed for honesty. Ostler never runs these."
      A group Switch "Allow asking" (from `app-permission-car`); caption "Your role still
      decides, and every action asks you first."
-  5. **Works on:** Chips Head unit, Phone, Desktop (its `hosts`).
+  5. **Network hosts:** one row per declared host, each an outbound path with a Switch that
+     starts off until the owner allows it (decided, item 25).
+  6. **Hardware:** only for `device` integrations from first-party or verified publishers,
+     naming the device; never a car bus (item 26).
+  7. **Works on:** Chips Head unit, Phone, Desktop (its `hosts`).
 - **States:** no permissions: "This app reads nothing and asks for nothing"; a required
   class switched off by sharing rules: the app's pages say why; not owner: read-only;
   Moving: the Settings lock.
@@ -61,14 +62,12 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
   §3); the VIN is never a class.
 - **Components:** ListRow, Switch (new), Chip, Card (group), Badge "Experimental".
 - **Spec refs:** [App model §4.2][am-4.2] · [App model §14][am-14] (14.4) ·
-  [Accounts §14.1][acc-14.1] · [ADR-0033][adr-33] · [UI §7.1][ui-7.1].
+  [Accounts §14.1][acc-14.1] · [ADR-0033][adr-33] · [UI §7.1][ui-7.1] · [app UI model §8][ua-8].
 - **Open questions:** may a user switch off a required class (the app then stops), or only
   optional ones? The brief draws only optional ones with a Switch.
 
-### app-info-notifications — Notifications  [Proposed]
+### app-info-notifications — Notifications  [New]
 - **Owner:** os
-- **Why the app needs it:** alerts now come from many apps; per-app channels (as Android's)
-  let the owner keep "Service due" and drop "Weekly summary" without silencing the app.
 - **Purpose:** switch an app's notification channels on or off, per place.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night and Day, hu7 Night.
@@ -86,14 +85,13 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
   never shows while Moving, whatever the channel ([UI §12.1][ui-12.1]).
 - **Components:** Switch (new), ListRow, Chip, Card (tone).
 - **Spec refs:** [App model §14][am-14] (14.4 `notify`) ·
-  [Maintenance §8][mg-8] · [UI §12.1][ui-12.1].
-- **Open questions:** channels need a manifest field (`contributes.notification_channels`);
-  add it by platform change?
+  [Maintenance §8][mg-8] · [UI §12.1][ui-12.1] · [app UI model §7][ua-7].
+- **Open questions:** **Decided ([app UI model §7][ua-7]):** apps declare channels in
+  `contributes.notifications.channels`; `alarm` and `critical` are reserved for the OS (item
+  24).
 
-### app-info-storage — Storage and cache  [Proposed]
+### app-info-storage — Storage and cache  [New]
 - **Owner:** os
-- **Why the app needs it:** the Brain's disk is shared by recordings, maps and apps; the
-  owner needs to see and free an app's share.
 - **Purpose:** how much the app keeps, and clearing its cache or data safely.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night.
@@ -106,7 +104,7 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
 - **Safety and driving rules:** Clear data needs the export offer first ([App model §14][am-14]
   14.6, exit guarantee); Cancel focused.
 - **Components:** progress bar (new), ListRow, Button (danger), Sheet.
-- **Spec refs:** [App model §6][am-6] (`storage`) · [App model §14][am-14] (14.6).
+- **Spec refs:** [App model §6][am-6] (`storage`) · [App model §14][am-14] (14.6) · [app UI model §8][ua-8].
 - **Open questions:** none.
 
 ### app-info-power — Power use on the Brain  [Proposed]
@@ -146,10 +144,8 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
 - **Spec refs:** [App model §6][am-6] (`nav`, route names) · [Drive modes §8.4][dm-8.4].
 - **Open questions:** do apps declare link and file handlers in the manifest (new field)?
 
-### app-info-provides — Widgets and shortcuts  [Proposed]
+### app-info-provides — Widgets and shortcuts  [New]
 - **Owner:** os
-- **Why the app needs it:** apps register widgets (approved) and, by the owner's
-  direction, shortcuts; the owner should find and place them from the app itself.
 - **Purpose:** list every widget and shortcut the app offers, with where each is placed.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night.
@@ -165,13 +161,12 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
   R1); a widget whose Moving rule is "Parked only" cannot go in a Moving section.
 - **Components:** Card (preview), Chip, ListRow, Button.
 - **Spec refs:** [App model §15][am-15] (15.1–15.2) · [Drive modes §7.2][dm-7.2] ·
-  [Drive modes §9][dm-9].
-- **Open questions:** shortcuts need a manifest field (`contributes.shortcuts`).
+  [Drive modes §9][dm-9] · [app UI model §2][ua-2].
+- **Open questions:** **Decided ([app UI model §2][ua-2]):** shortcuts are declared in
+  `contributes.shortcuts`, with up to four dynamic ones from the SDK.
 
-### app-info-version — Version and source  [Proposed]
+### app-info-version — Version and source  [New]
 - **Owner:** os
-- **Why the app needs it:** the app model has versions, shell ranges, publishers and
-  licences, and the HA research copies channels and changelogs; nothing shows them.
 - **Purpose:** version, update, changelog, licence, source and publisher.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night, hu7 Night.
@@ -187,13 +182,12 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
   mid-drive ([HA architecture §3.3][haa-3.3] copied).
 - **Components:** ListRow, Card, Button, Segmented, Chip.
 - **Spec refs:** [App model §7][am-7] · [App model §4.2][am-4.2] ·
-  [HA architecture §3.3][haa-3.3].
-- **Open questions:** Beta channel per app, or one channel for the whole OS?
+  [HA architecture §3.3][haa-3.3] · [app UI model §8][ua-8].
+- **Open questions:** **Decided ([app UI model §8][ua-8]):** the channel is set per app, in
+  its App info under Version and updates.
 
-### app-info-logs — App log  [Proposed]
+### app-info-logs — App log  [New]
 - **Owner:** os
-- **Why the app needs it:** apps run in error boundaries and every request carries the
-  app's id in the audit log; owners need both, per app, to report a fault.
 - **Purpose:** the app's errors, stops and the car actions it asked for.
 - **Layout classes:** phone · tablet · desktop · hu7 · hu9. **Draw first:** phone Night.
 - **Content (top to bottom):** 1. Filter Chips **All · Errors · Actions asked**. 2. Rows,
@@ -203,7 +197,7 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
 - **States:** empty "Nothing logged"; offline "Needs the Brain"; Moving: the lock.
 - **Safety and driving rules:** the log is read-only; audit rows cannot be deleted here.
 - **Components:** ListRow (mono time), Chip, Button.
-- **Spec refs:** [App model §5][am-5] · [App model §6][am-6] (`X-Ostler-App`).
+- **Spec refs:** [App model §5][am-5] · [App model §6][am-6] (`X-Ostler-App`) · [app UI model §8][ua-8].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -227,3 +221,6 @@ unless a block says otherwise. Each page opens from its row on `app-info`; Back 
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-3.8]: ../../../../specs/2026-10-06-ui-architecture-design.md#38-asleep-waking-and-queued-actions-accepted-2026-10-06
 [ui-7.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#71-action-categories-the-second-axis-adr-0033
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[ua-7]: ../../../../specs/2026-10-07-app-ui-model-design.md#7-notification-channels
+[ua-2]: ../../../../specs/2026-10-07-app-ui-model-design.md#2-what-an-app-contributes

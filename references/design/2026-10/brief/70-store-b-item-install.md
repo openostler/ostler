@@ -2,7 +2,7 @@
 title: "Designer brief: Store (part B): item detail, versions, install sheet and installing"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, references/research/ha_architecture_addons.md, references/research/ha_companion_community.md]
 summary: >
@@ -23,10 +23,8 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) · **B** (this file) 
 [D: publisher, report, offline, sideload](70-store-d-publisher-sideload.md).
 The Store's shared rules (Moving, owner only, phone limits, no votes) are in part A §3.
 
-### store-item — Item detail  [Proposed]
+### store-item — Item detail  [New]
 - **Owner:** os
-- **Why the app needs it:** before installing anything that reads car data, an owner must
-  see in plain words what it adds, what it reads, where it runs and who signed it.
 - **Purpose:** one item's page: what it is, what it adds, what it reads, who made it, and
   the install button.
 - **Opens from → goes to:** any StoreItemCard or row (`store-home`, `store-category`,
@@ -39,8 +37,9 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
   Discovery 2), desktop Night (Navigation, "Runs on the Brain"), hu7 Night dim Moving (lock).
 - **Content (top to bottom),** example the **Ostler pack for Land Rover Discovery 2**:
   1. **Header:** icon, name, publisher line "openostler" with a `verified` icon and
-     "Verified key", kind Chip "Integration · Vehicle pack", Chips "Open source" and
-     "Works offline". Example App header: "Maintenance & Garage · openostler · App".
+     "Verified key", kind Chip "Integration · Vehicle pack", review level Chip "First
+     party" (System, First party, Verified publisher, Community or Sideloaded, item 30),
+     Chips "Open source" and "Works offline". No stars and no review text (item 33). Example App header: "Maintenance & Garage · openostler · App".
   2. **Main button** (primary, one per screen): **Install** · **Update** · **Open** ·
      **Install when parked** (phone, car Moving) · **Ask the owner** (not owner) ·
      disabled with the reason ("Needs a camera", "Needs Ostler ‹x.y›", "Needs the Brain").
@@ -96,14 +95,14 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
   pattern from Open on phone).
 - **Spec refs:** [app model §4.1–4.2][am-4.2] (manifest: `requires`, `hosts`, `actions`,
   `permissions.data`, `source`), [app model §15][am-15] (widgets), [Accounts §14.1][acc-14.1],
-  [ADR-0013][adr-13] (pack contract and licences), [HA research §3][ha-arch-3].
-- **Open questions:** does "Works with Ostler" mark software items, or only devices as in the
-  research? What does "Verified key" mean (part D, question 4)?
+  [ADR-0013][adr-13] (pack contract and licences), [HA research §3][ha-arch-3] · [Store §3][st-3] · [Store §6.1][st-6.1] · [Store §6.2][st-6.2].
+- **Open questions:** **Decided ([Store §6.2][st-6.2]):** Works with Ostler marks hardware
+  and also apps and integrations, against written criteria, and is free for now (item 35).
+  **Decided ([Store §5][st-5], [§6.1][st-6.1]):** "Verified key" means a Verified publisher:
+  identity checked and a registered key that signs every release.
 
-### store-item-versions — Version history  [Proposed]
+### store-item-versions — Version history  [New]
 - **Owner:** os
-- **Why the app needs it:** owners decide whether to update, or roll back, from the
-  changelog; packs change which signals are proven.
 - **Purpose:** every released version of one item, with its changelog and permission changes.
 - **Opens from → goes to:** `store-item` → Version line or "What's new"; `store-updates`
   row; `addons-catalogue` row menu. Goes to `store-rollback` (installed items only).
@@ -121,13 +120,11 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
   previous one); Moving and locked: as `store-item`.
 - **Safety and driving rules:** as `store-item`.
 - **Components:** Sheet, ListRow (expandable), Chip, Button.
-- **Spec refs:** [app model §7][am-7] (SemVer, releases), [HA research §3.3][ha-arch-3.3].
+- **Spec refs:** [app model §7][am-7] (SemVer, releases), [HA research §3.3][ha-arch-3.3] · [Store §3][st-3] · [Store §9][st-9].
 - **Open questions:** should beta channels exist for all items, or apps and packs only?
 
-### store-install-sheet — Install: review access  [Proposed]
+### store-install-sheet — Install: review access  [New]
 - **Owner:** os
-- **Why the app needs it:** an owner operation that grants data and possible car requests
-  needs one clear review step; it extends the first-run sheet `setup-app-access`.
 - **Purpose:** the last check before installing: access, data classes, where it runs.
 - **Opens from → goes to:** `store-item` **Install**; `store-updates` when an update asks
   for more; `store-sideload`. **Install** → `store-installing`; **Cancel** → back.
@@ -144,7 +141,8 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
      "Head unit and phone: the map and guidance pages". For an integration (D2 pack):
      "Node and Brain: reads the Td5 engine, SLABS, BCU and airbag over the diagnostic
      link". For a theme: "Every display. Contains no code."
-  6. **Internet:** "None after install" or "Talks to ‹host›".
+  6. **Internet:** "None after install", or one row per declared host ("Talks to ‹host›"),
+     each a switch that starts off; the owner turns each one on (item 25).
   7. **Licence:** "Open source · AGPL · View source", or for a closed item "Not open
      source" (`warn` tone, word and icon).
   8. Buttons **Install** (primary) and **Cancel** (focused on head units).
@@ -160,13 +158,11 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
   Chip, ListRow, Button.
 - **Spec refs:** [app model §4.2][am-4.2], [app model §14.4][am-14] (data-class registry),
   [Accounts §14.1][acc-14.1], [HA research §5][ha-arch-5] (container refusals) and §8
-  (readable permission summary, not a score).
+  (readable permission summary, not a score) · [Store §3][st-3] · [app UI model §10][ua-10].
 - **Open questions:** merge this with `setup-app-access` into one screen ID?
 
-### store-installing — Installing  [Proposed]
+### store-installing — Installing  [New]
 - **Owner:** os
-- **Why the app needs it:** downloads, signature checks and container starts can fail on a
-  car's link; the owner needs progress, a clear failure and a retry.
 - **Purpose:** show the install's progress, failure and retry, then hand over to the app's
   setup.
 - **Opens from → goes to:** `store-install-sheet` **Install**; the queue card on
@@ -197,7 +193,7 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
 - **Components:** progress bar (new, shared with `maps-regions`), Card (tone), Button,
   ListRow.
 - **Spec refs:** [app model §5][am-5] (lifecycle), [app model §7][am-7] (signing),
-  [UI §12.4][ui-12.4].
+  [UI §12.4][ui-12.4] · [Store §3][st-3] · [Store §9][st-9].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -218,3 +214,9 @@ The Store's shared rules (Moving, owner only, phone limits, no votes) are in par
 [ui-7.2]: ../../../../specs/2026-10-06-ui-architecture-design.md#72-phone-approval-and-remote-paths-adr-0033
 [ui-12.1]: ../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44
 [ui-12.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#124-add-ons-catalogue-placement-changes-34s-more-and-home-rows
+[st-3]: ../../../../specs/2026-10-07-store-design.md#3-the-store-app
+[st-6.1]: ../../../../specs/2026-10-07-store-design.md#61-review-levels
+[st-6.2]: ../../../../specs/2026-10-07-store-design.md#62-works-with-ostler
+[st-5]: ../../../../specs/2026-10-07-store-design.md#5-the-catalogue-and-signing
+[st-9]: ../../../../specs/2026-10-07-store-design.md#9-updates
+[ua-10]: ../../../../specs/2026-10-07-app-ui-model-design.md#10-manifest-schema-2

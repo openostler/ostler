@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part C): the setup flow and options flow templates"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0033-action-categories-and-approvals.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md]
 summary: >
@@ -44,10 +44,8 @@ Home Assistant does the same with config flows: steps, a stable id that stops du
 Steps may repeat (two forms). The whole flow is **Parked only** on driver-facing displays:
 it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] R1).
 
-### app-flow-frame — Setup flow frame  [Proposed]
+### app-flow-frame — Setup flow frame  [New]
 - **Owner:** os
-- **Why the app needs it:** every app now brings its own setup (owner direction 2026-10-07);
-  one OS frame keeps them consistent, focus-safe and Parked-only.
 - **Purpose:** the shell around every step: who is setting up, where you are, how to leave.
 - **Opens from → goes to:** after an install (Store, first run's app list), App info **Set
   up again**, a Discovered card **Add**, an app's first open → the steps → Success → the
@@ -78,14 +76,13 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
   ([ADR-0033][adr-33]).
 - **Components:** SetupStepper (new), Button, Sheet, Card (tone).
 - **Spec refs:** [App model §8][am-8] · [App model §15][am-15] 15.2 ·
-  [HA integrations §1][ha-1] · [UI §12.4][ui-12.4].
-- **Open questions:** a manifest field for the flow (`contributes.setup_flow`, steps as
-  data) is a platform change; confirm.
+  [HA integrations §1][ha-1] · [UI §12.4][ui-12.4] · [app UI model §4.1][ua-4.1] · [app UI model §4.3][ua-4.3].
+- **Open questions:** **Decided (item 23, [app UI model §4][ua-4.1]):** setup flows are
+  config-flow style, declared as data in `contributes.setup` and drawn by the OS from the
+  app's schemas and handlers.
 
-### app-flow-form — Schema form step  [Proposed]
+### app-flow-form — Schema form step  [New]
 - **Owner:** os
-- **Why the app needs it:** forms are where setup goes wrong; one renderer with one error
-  style replaces every app's own form.
 - **Purpose:** draw fields from the step's schema, check them, explain errors.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night with an error, hu7 Night with the on-screen keyboard.
@@ -108,13 +105,11 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
   store and never appear on screen again.
 - **Components:** Text field, Switch (new), Segmented, ListRow, Card (tone), SchemaForm (new
   component: the OS renderer of the JSON Schema subset above).
-- **Spec refs:** [App model §15][am-15] 15.2 (`settings` subset) · [visual §8][vds-8].
+- **Spec refs:** [App model §15][am-15] 15.2 (`settings` subset) · [visual §8][vds-8] · [app UI model §4.2][ua-4.2] · [app UI model §4.3][ua-4.3].
 - **Open questions:** none.
 
-### app-flow-discovered — Discovered confirm step  [Proposed]
+### app-flow-discovered — Discovered confirm step  [New]
 - **Owner:** os
-- **Why the app needs it:** the OS finds nodes, adapters, cameras and cars; HA's rule, kept
-  here, is that a found thing is always confirmed by a person, never added by itself.
 - **Purpose:** show what was found and why it matches, and ask before adding.
 - **Opens from → goes to:** a Discovered card (`app-discovered`) **Add**, or the first step
   of a flow when the OS already found something → the rest of the flow.
@@ -131,13 +126,11 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
   ([UI §4.4][ui-4.4]); the VIN is read in memory only ([ADR-0036][adr-36]).
 - **Components:** Card, ListRow, Chip, Button.
 - **Spec refs:** [HA integrations §5][ha-5] (C2, C3) · [App model §7][am-7] (device
-  suggestions) · [UI §4.4][ui-4.4].
+  suggestions) · [UI §4.4][ui-4.4] · [app UI model §4.2][ua-4.2] · [app UI model §4.4][ua-4.4].
 - **Open questions:** none.
 
-### app-flow-auth — Sign-in step  [Proposed]
+### app-flow-auth — Sign-in step  [New]
 - **Owner:** os
-- **Why the app needs it:** integrations that reach an outside service need a sign-in, and
-  a head unit is a poor place to type a password.
 - **Purpose:** sign in through a browser (OAuth) or with a code shown here and entered on a
   phone.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -156,14 +149,12 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
   this sign-in's approval ([ADR-0033][adr-33] §6); keys go to the secret store.
 - **Components:** Button, Card, QR (new component: a token-coloured QR on `surface-1`),
   Text field (secret).
-- **Spec refs:** [HA integrations §1][ha-1] (reauth) · [ADR-0033][adr-33] §6.
+- **Spec refs:** [HA integrations §1][ha-1] (reauth) · [ADR-0033][adr-33] §6 · [app UI model §4.2][ua-4.2].
 - **Open questions:** reuse the onboarding brief's `setup-device-code` approval page for the
   phone side?
 
-### app-flow-hardware — Hardware detect step  [Proposed]
+### app-flow-hardware — Hardware detect step  [New]
 - **Owner:** os
-- **Why the app needs it:** apps for radios, cameras and adapters need a device present
-  before setup can finish; one step shape covers them all.
 - **Purpose:** find the device, say what was found, and help when nothing is.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night (searching and found), phone Night (not found).
@@ -179,13 +170,11 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
   through the node or, with no node, the adapter's soft gate ([ADR-0044][adr-44],
   [Adapters §5][sa-5]).
 - **Components:** ListRow, Chip (status), Button, Checklist (new).
-- **Spec refs:** [Adapters §5][sa-5] · [UI §6][ui-6] · [App model §7][am-7].
+- **Spec refs:** [Adapters §5][sa-5] · [UI §6][ui-6] · [App model §7][am-7] · [app UI model §4.2][ua-4.2] · [app UI model §6][ua-6].
 - **Open questions:** none.
 
-### app-flow-success — Success summary  [Proposed]
+### app-flow-success — Success summary  [New]
 - **Owner:** os
-- **Why the app needs it:** HA ends a flow by saying what was created; here it also offers
-  the next useful step, such as a dashboard or a widget.
 - **Purpose:** say what is now set up, what is not, and where to go next.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night and Day, hu7 Night.
@@ -199,13 +188,11 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
 - **Safety and driving rules:** none beyond Parked; Next cards never place widgets by
   themselves ([App model §15][am-15] 15.1).
 - **Components:** ListRow, Card, Button.
-- **Spec refs:** [HA integrations §1][ha-1] · [App model §15][am-15].
+- **Spec refs:** [HA integrations §1][ha-1] · [App model §15][am-15] · [app UI model §4.2][ua-4.2].
 - **Open questions:** none.
 
-### app-options-flow — Options flow  [Proposed]
+### app-options-flow — Options flow  [New]
 - **Owner:** os
-- **Why the app needs it:** settings chosen at setup change later (a new server key, a
-  different source); HA splits this into options, reconfigure and reauth flows.
 - **Purpose:** change an app's or integration's setup without removing it.
 - **Opens from → goes to:** App info **Configure**; an Integrations entry **Configure**; a
   "Sign in again" error card → the frame with prefilled values → Save → back with a toast.
@@ -222,7 +209,7 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
 - **Safety and driving rules:** Parked only; changing a car source never bypasses the node
   ([ADR-0044][adr-44]).
 - **Components:** as `app-flow-form`, plus toast.
-- **Spec refs:** [HA integrations §1][ha-1] · [App model §15][am-15] 15.2.
+- **Spec refs:** [HA integrations §1][ha-1] · [App model §15][am-15] 15.2 · [app UI model §5][ua-5].
 - **Open questions:** none.
 
 <!-- refs -->
@@ -241,3 +228,9 @@ it is editing and text entry ([UI §12.1][ui-12.1], [Drive modes §8.1][dm-8.1] 
 [ui-4.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#44-identification-and-fallbacks
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
+[ua-4.1]: ../../../../specs/2026-10-07-app-ui-model-design.md#41-shape
+[ua-4.3]: ../../../../specs/2026-10-07-app-ui-model-design.md#43-validation-and-errors
+[ua-4.2]: ../../../../specs/2026-10-07-app-ui-model-design.md#42-step-types
+[ua-4.4]: ../../../../specs/2026-10-07-app-ui-model-design.md#44-rules
+[ua-6]: ../../../../specs/2026-10-07-app-ui-model-design.md#6-backend-only-apps-integrations
+[ua-5]: ../../../../specs/2026-10-07-app-ui-model-design.md#5-the-options-flow

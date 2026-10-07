@@ -2,7 +2,7 @@
 title: "Designer brief 45-f — widget setup pages (2 of 3): map, compass and incline, trip computer, fuel and range, service due, alarm status, camera, clock and date"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -74,9 +74,7 @@ Back to [45-a](45-launcher-a.md); shared rules in [45-e](45-launcher-e.md).
 - **Spec refs:** [Drive modes §9][dm-9] · [UI §12.2][ui-12.2].
 - **Open questions:** none.
 
-### widget-setup-fuel-range — Fuel and range  [Proposed]
-- **Why the app needs it:** owners expect a fuel widget; the D2 has no decoded fuel level,
-  so a page that admits it is better than a missing widget.
+### widget-setup-fuel-range — Fuel and range  [New]
 - **Purpose:** what the car and the fuel log can honestly say about fuel. Widget from:
   Starter widgets.
 - **Owner:** os
@@ -92,8 +90,9 @@ Back to [45-a](45-launcher-a.md); shared rules in [45-e](45-launcher-e.md).
   ("Range ≈ 310 km est.").
 - **Safety and driving rules:** estimates always labelled; never a fake gauge.
 - **Components:** StatTile, Card.
-- **Spec refs:** [Maintenance §5][mg-5] · [UI §5.4][ui-5.4].
-- **Open questions:** keep it, or wait until a fuel level is decoded?
+- **Spec refs:** [Maintenance §5][mg-5] · [UI §5.4][ui-5.4] · [launcher §9][lw-9].
+- **Open questions:** **Decided ([launcher §9][lw-9]):** keep it as the starter pack's Fuel
+  widget; it shows only what the pack or the fuel log can honestly say.
 
 ### widget-setup-service-due — Service due  [New]
 - **Purpose:** the next maintenance item for this car. Widget from: Maintenance app.
@@ -176,7 +175,8 @@ Back to [45-a](45-launcher-a.md); shared rules in [45-e](45-launcher-e.md).
 - **Safety and driving rules:** ≤ 30 characters.
 - **Components:** StatTile.
 - **Spec refs:** [Drive modes §4.3][dm-4.3].
-- **Open questions:** merge into the clock as a "Show date" option instead?
+- **Open questions:** the starter catalogue ([launcher §9][lw-9]) gives the Clock widget a
+  date option and has no separate Date widget; keep this block only if the owner wants both.
 
 <!-- links -->
 [dm-4.2]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#42-field-rules
@@ -193,3 +193,4 @@ Back to [45-a](45-launcher-a.md); shared rules in [45-e](45-launcher-e.md).
 [ui-13.5]: ../../../../specs/2026-10-06-ui-architecture-design.md#135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence
 [ui-5.4]: ../../../../specs/2026-10-06-ui-architecture-design.md#54-home-built-from-roles
 [vds-7]: ../../../../specs/2026-10-07-visual-design-system-design.md#7-maps
+[lw-9]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#9-the-starter-catalogue

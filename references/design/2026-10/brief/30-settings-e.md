@@ -2,11 +2,11 @@
 title: "Designer brief: Settings (part E): updates, profiles and users, my account, Ostler Link"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Part E of the Settings brief. It covers a Proposed Updates page (release channel, the
+  Part E of the Settings brief. It covers a New Updates page (release channel, the
   monthly release, app updates, and a link by name to the hardware brief's firmware
   update); a New Profiles and users hub (the head unit's Car kiosk profile, Lock car layouts,
   the head-unit profile switcher, user roles Owner, Driver, Mechanic and Viewer, and a note
@@ -20,12 +20,9 @@ summary: >
 
 Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
 
-### settings-updates — Updates  [Proposed]
+### settings-updates — Updates  [New]
 - **Owner:** os
 - **Purpose:** keep Ostler, the vehicle packs and apps current, on the owner's terms.
-- **Why proposed:** update channels and install flavours wait for their own research note and
-  ADR ([ADR-0042][adr-0042], Home Assistant direction item 8); owners still need one place to
-  see versions and apply the release.
 - **Opens from → goes to:** Settings → Updates; an "Update ready" Home card; About. Goes to
   the hardware brief's **firmware update** page (by name, `20-hardware-*`) for node,
   guardian and module firmware, and to each app's App info (`90-appframe-*`).
@@ -53,7 +50,7 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
   action; owner only; an update never widens an app's permissions without asking again.
 - **Components:** Card, Segmented, ListRow, Button, progress bar (new, part C).
 - **Spec refs:** [ADR-0042][adr-0042], [ADR-0028][adr-0028] (metered budgets),
-  [app model §4.2][am-4.2].
+  [app model §4.2][am-4.2] · [app UI model §8][ua-8] · [Store §9][st-9].
 - **Open questions:** two channels or three (stable, beta, nightly)? Is "monthly" the
   owner's release cadence for the platform, and do packs follow it?
 
@@ -190,3 +187,5 @@ Tree, shared rules and the Settings lock: [part A](30-settings-a.md).
 [adr-0042]: ../../../../decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md
 [am-4.2]: ../../../../specs/2026-10-06-app-model-design.md#42-field-rules
 [dm-8.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#83-storage
+[ua-8]: ../../../../specs/2026-10-07-app-ui-model-design.md#8-system-settings-and-the-app-info-page
+[st-9]: ../../../../specs/2026-10-07-store-design.md#9-updates

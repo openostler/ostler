@@ -2,18 +2,18 @@
 title: "Designer brief: Store (part D): publisher, report, catalogues and offline, developer sideload, open questions"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-community-hub-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0041-brain-ed25519-signing.md, references/research/ha_architecture_addons.md, references/research/ha_companion_community.md, references/research/ha_integrations_dashboards.md]
 summary: >
   Part D of the Store brief. The publisher page lists one publisher's items, verified key
   and source links. The report sheet sends a reason about an item to whoever runs the
   catalogue and can hide the item on this Brain. The catalogues page shows where items come
-  from (the bundled catalogue, the online catalogue, any catalogue the owner adds) and how
+  from (the bundled catalogue, the opt-in online catalogue, publisher keys the owner trusts) and how
   the Store works offline, including refreshing from a file. Developer sideload installs an
   item from a file behind Developer mode, with a warning sheet that names what is unsigned.
-  The file ends with the Store's open questions for the owner: ratings, paid items, review
-  of community uploads and the signing model.
+  The file ends with the owner's decisions of 2026-10-07 on ratings, paid items, review
+  levels, the signing model, the online catalogue and the Store's owner.
 ---
 
 # Store brief, part D: publisher, report, offline, sideload, questions
@@ -22,17 +22,16 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 [B: item detail and install](70-store-b-item-install.md) ·
 [C: updates and My library](70-store-c-updates-library.md) · **D** (this file).
 
-### store-publisher — Publisher page  [Proposed]
+### store-publisher — Publisher page  [New]
 - **Owner:** os
-- **Why the app needs it:** trust in an item rests on who signed it; owners need to see a
-  publisher's key, source and other items in one place.
 - **Purpose:** one publisher: who they are, their key, their items.
 - **Opens from → goes to:** `store-item` publisher row; `store-install-sheet` publisher
   line. Goes to `store-item`, the publisher's source (browser or QR).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   phone Night ("openostler"), desktop Night.
 - **Content (top to bottom):**
-  1. Name ("openostler"), Chip "First party" (or "Community"), `verified` icon with
+  1. Name ("openostler"), review level Chip "First party" (or "Verified publisher",
+     "Community"), `verified` icon with
      "Verified key" and the key fingerprint in mono, short form with **Show full key**.
   2. One line about them; links **Source code** (GitHub organisation) and **Website**.
   3. Facts row: "‹n› items · Open source: ‹n› of ‹n› · On Ostler since ‹date›". No ratings.
@@ -47,8 +46,9 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 - **Components:** Chip, ListRow, StoreItemCard (new), Card (tone), mono key text (visual
   type `type-mono`, as Decode lab).
 - **Spec refs:** [app model §4.1][am-4.1] (`source.publisher`, `ostler.*` reserved),
-  [app model §7][am-7] (publisher keys), [ADR-0041][adr-41].
-- **Open questions:** see question 4 (signing).
+  [app model §7][am-7] (publisher keys), [ADR-0041][adr-41] · [Store §3][st-3] · [Store §5][st-5].
+- **Open questions:** **Decided (item 29):** every release is signed by its publisher's
+  Ed25519 key, delegated by the project's TUF-style targets role; see question 4 below.
 
 ### store-report — Report an item  [Proposed]
 - **Owner:** os
@@ -81,10 +81,8 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 - **Spec refs:** [hub §14][hub-14] (moderation, statement of reasons), [ADR-0036][adr-36].
 - **Open questions:** who reviews reports: the hub's moderators, or a separate Store team?
 
-### store-sources — Catalogues and offline  [Proposed]
+### store-sources — Catalogues and offline  [New]
 - **Owner:** os
-- **Why the app needs it:** the exit guarantee requires the Store to work with no Ostler
-  server; owners need to see where items come from and refresh offline.
 - **Purpose:** show and manage where Store items come from, and the offline state.
 - **Opens from → goes to:** `store-home` overflow menu → "Catalogues"; the offline banner's
   **Details**. Goes to `store-sideload` (Developer mode), the file picker.
@@ -93,10 +91,12 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 - **Content (top to bottom):**
   1. **Bundled with Ostler ‹version›**: "‹n› items · always available · updates with
      Ostler". Line: "Works with no internet."
-  2. **Ostler catalogue** (online, when the owner allows it): status Chip "Up to date ·
-     ‹time›" or "Offline", **Refresh**, toggle **Use the online catalogue** (owner).
-  3. **Added catalogues** (only if the owner may add one, question 4): rows with name,
-     key fingerprint, **Remove**; **Add a catalogue** (Developer mode).
+  2. **Ostler catalogue** (online): toggle **Use the online catalogue** (owner), off by
+     default and offered once at first run (item 32); when on, a status Chip "Up to date ·
+     ‹time›" or "Offline" and **Refresh**.
+  3. **Publisher keys you trust** (item 29): keys the owner added on this Brain, rows with
+     name, key fingerprint and "Trusted by you", **Remove**; **Add a key** (Developer
+     mode).
   4. **Update the catalogue from a file**: "Copy a catalogue file from the Ostler website to a
      USB stick or your phone, then pick it here." Button **Choose file**. The file is
      checked against the catalogue key before use.
@@ -107,8 +107,8 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 - **Safety and driving rules:** owner only for toggles and files; Parked only on head units.
 - **Components:** Card, ListRow, Chip (status), toggle (as Segmented "On · Off"), Button.
 - **Spec refs:** [ADR-0042 §5–7][adr-42] (no remote catalogue yet, exit guarantee),
-  [app model §11 Q7][am-11], [HA research §8 Decide 8][ha-arch-8].
-- **Open questions:** questions 4 and 5.
+  [app model §11 Q7][am-11], [HA research §8 Decide 8][ha-arch-8] · [Store §5][st-5] · [Store §7][st-7].
+- **Open questions:** **Decided (items 29 and 32):** see questions 4 and 5 below.
 
 ## Developer sideload (flow)
 
@@ -120,10 +120,8 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 | 4 | `store-install-sheet` | reviews access as usual | requirements not met → disabled with the reason |
 | 5 | `store-installing` | waits | as part B |
 
-### store-sideload — Install from a file  [Proposed]
+### store-sideload — Install from a file  [New]
 - **Owner:** os
-- **Why the app needs it:** pack authors and app developers must test items on a car
-  before they are published, with no catalogue involved.
 - **Purpose:** pick a package file and inspect it before install.
 - **Opens from → goes to:** `store-home` overflow → **Install from a file** (only in
   Developer mode); `store-sources`. Goes to `store-sideload-warning`.
@@ -147,13 +145,13 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
   catalogue one, and community code still runs only sandboxed on web hosts
   ([app model §5][am-5], [§7.1][am-7.1]).
 - **Components:** Card (`warn`), ListRow, Chip (status), Button.
-- **Spec refs:** [app model §4.2][am-4.2], [§5][am-5], [§7.1][am-7.1].
-- **Open questions:** may an unsigned item install at all, or only one signed by a key the
-  owner added (question 4)?
+- **Spec refs:** [app model §4.2][am-4.2], [§5][am-5], [§7.1][am-7.1] · [Store §8][st-8].
+- **Open questions:** **Decided ([Store §8][st-8]):** a sideloaded item may be unsigned
+  (with this warning) or signed by a developer key; it wears a Sideloaded badge and is
+  disabled when service mode is turned off unless the owner keeps it.
 
-### store-sideload-warning — Unchecked item warning  [Proposed]
+### store-sideload-warning — Unchecked item warning  [New]
 - **Owner:** os
-- **Why the app needs it:** an owner must knowingly accept an item nobody has checked.
 - **Purpose:** state plainly what is not checked, and confirm.
 - **Opens from → goes to:** `store-sideload` **Continue**. Confirm → `store-install-sheet`.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -170,36 +168,29 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 - **Safety and driving rules:** typed confirm, Parked only; the item is labelled
   "Sideloaded" in My library and App info for as long as it is installed.
 - **Components:** Sheet, ListRow, text field, Button (danger).
-- **Spec refs:** [ADR-0033][adr-33], [app model §8][am-8].
+- **Spec refs:** [ADR-0033][adr-33], [app model §8][am-8] · [Store §8][st-8].
 - **Open questions:** none.
 
 ## Open questions for the owner (Store)
 
-1. **Ratings or no ratings.** The hub has a no-votes rule ([hub §1][hub-1]). Recommend: no
-   stars, reviews or download counts; show facts (publisher, verified key, vehicles
-   tested, open source, last update) and, later, "Reported problems: none upheld".
-   Alternative: install counts only, with a "Works on my car" confirmation per vehicle.
-2. **Paid items.** Recommend: none at first; the Store lists free and open items only, and
-   Ostler earns through Ostler Link and hardware. Alternative: paid closed items through a
-   payment provider, with the licence shown on every card ([ADR-0013][adr-13] keeps open
-   core and closed cloud apart; app-model Q4 on closed apps is open).
-3. **Review of community uploads.** Recommend: every catalogue item passes automatic
-   checks (manifest, signature, licence, limits) and a human review for code items;
-   data-only items (themes, wallpapers, dashboards) get automatic checks plus report-driven
-   takedown. Alternative: HACS-style light curation, which the research advises against
-   ([HA companion research §9][ha-comm-9]).
-4. **Signing model** (app-model Q3). Recommend: every item signed with a publisher key; the
-   Ostler catalogue key signs the index; an owner may add a publisher key or a catalogue
-   locally (Developer mode), never remotely ([app model §7][am-7], [ADR-0041][adr-41]).
-   Alternative: the project key only.
-5. **The online catalogue itself.** It is a new outbound path and needs its own ADR
-   ([ADR-0042 §5][adr-42]). Is it a closed Ostler-run service (like the hub) or an open,
-   signed index in a public repo that anyone can mirror? Recommend the open index.
-6. **Owner of the Store.** This brief uses owner `os` (a system app); the settings and
-   sitemap briefs say `app:store`. One label should win.
-7. **Icon packs** against "Material Symbols only": recommend that icon packs choose a
-   Material Symbols style (Outlined, Rounded, Sharp; fill and weight) and per-app symbol
-   choices, never images ([app model §15][am-15] item 15.8).
+All seven were answered on 2026-10-07.
+
+1. **Decided (items 33 and 62):** no ratings: no stars, reviews or download counts. Items
+   show the review level, badges, last update, the publisher's known issues and the
+   item's issue tracker ([Store §11][st-11]).
+2. **Decided (item 34):** no paid items in v1; a publisher may link a donation page.
+3. **Decided (item 30):** review levels System, First party, Verified publisher,
+   Community (data objects and declarative items anywhere; code only as iframes on web
+   hosts) and Sideloaded ([Store §6.1][st-6.1]).
+4. **Decided (item 29):** a signed catalogue in TUF-style roles with Ed25519 keys and a
+   small verifier of our own; every release signed by its publisher's key; an owner may
+   add a publisher key locally, never remotely ([Store §5][st-5]).
+5. **Decided (item 32):** the online catalogue is opt-in, off by default, one switch at
+   first run, and comes after its own ADR; it is a set of signed static files in the
+   `ostler-catalogue` repo that anyone can mirror ([Store §5][st-5], [§7][st-7]).
+6. **Decided (item 28):** the Store is a system app, owner `os`.
+7. **Decided (item 49):** icon packs are glyph sets mapped to Material Symbols names;
+   safety icons never change.
 
 <!-- refs -->
 [adr-13]: ../../../../decisions/adr-0013-repo-split-and-vehicle-pack-contract.md
@@ -219,3 +210,9 @@ Parts: [A: rules, home, browse](70-store-a-home-browse.md) ·
 [ha-comm-9]: ../../../research/ha_companion_community.md#9-copy--avoid--decide-for-ostler
 [hub-1]: ../../../../specs/2026-10-07-community-hub-design.md#1-purpose-and-non-goals
 [hub-14]: ../../../../specs/2026-10-07-community-hub-design.md#14-moderation-and-abuse
+[st-3]: ../../../../specs/2026-10-07-store-design.md#3-the-store-app
+[st-5]: ../../../../specs/2026-10-07-store-design.md#5-the-catalogue-and-signing
+[st-7]: ../../../../specs/2026-10-07-store-design.md#7-the-bundled-offline-catalogue
+[st-8]: ../../../../specs/2026-10-07-store-design.md#8-sideloading-for-developers
+[st-11]: ../../../../specs/2026-10-07-store-design.md#11-ratings-and-paid-items-owner-decisions
+[st-6.1]: ../../../../specs/2026-10-07-store-design.md#61-review-levels
