@@ -2,11 +2,11 @@
 title: "UI architecture — one head-unit-first UI for every vehicle, many vehicles and add-on devices — design"
 area: specs
 status: stable
-version: 0.13
+version: 0.14
 updated: 2026-10-07
-depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md, references/research/driver_distraction_rules.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/ui_audit_current.md, references/research/visual_design_direction.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-logs-at-scale-design.md]
+depends_on: [specs/2026-10-06-platform-direction-design.md, CONSTITUTION.md, references/research/platform.md, references/research/ui/obd_apps.md, references/research/ui/diag_tools.md, references/research/ui/vehicle_data_model.md, references/research/ui/head_unit_ui.md, references/research/ui/generated_ui.md, references/research/ui/ovms_ui.md, references/research/ui/decode_pipeline.md, references/research/standards.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0019-reuse-from-ovms-and-obdb.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0022-kline-protocol-profiles-and-auto-detection.md, decisions/adr-0023-passive-can-bitrate-detection.md, specs/2026-10-06-app-model-design.md, references/research/ui/app_model.md, references/research/driver_distraction_rules.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/ui_audit_current.md, references/research/visual_design_direction.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-logs-at-scale-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, references/research/trip_and_log_sharing.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback. v0.11 (plan notes, 2026-10-06; the module-bus spec's owner answers): the Network page gains the owner action Remove device, the only way to clear a stale transmit-gate claim; an approval is confirmed first and the grant challenged and signed after; a queued action is offered only when the target checks in before it would expire. v0.12–v0.13 (§12, amendment of 2026-10-07, approved by the owner on 2026-10-07 ("approve all"); §12): U2 lockouts (driver-facing means any screen the driver can see or reach, Idling needs Park evidence, a per-trip head-unit Passenger view limited to UK reg 109 content with Open on phone for the rest, six new Moving templates with limits, task depth ≤ 3, a "Using Ostler while driving" page, a legal check before U2 ships); Logs renamed Trips with aliased routes, a two-tier trip summary index over the full recording, trip list, map-first trip detail, playback, Statistics, Records and gated Sprints, End trip now, Exclude from stats, Export all and no score; Drive layouts as data (RealDash model), one-screen Drive mode at every head-unit class with a new HU-5 800×480 class; the Add-ons catalogue at More → Add-ons with an empty-state Home card.
+  Approved by the owner on 2026-10-06 (ADR-0016, ADR-0018). One UI generated from a per-vehicle capability manifest: head-unit-first layout classes with a driver-side rail and a persistent status strip, five destinations with Drive as a mode, Parked/Idling/Moving lockouts, a garage with an active-vehicle switcher, a vehicle → systems → function-areas tree that collapses for one-ECU cars, add-on devices (alarm, climate, cameras, tracker, relay box) that register into slots, five safety tiers with action categories as a second axis (ADR-0033) and an add-on device render class for our own add-ons, VSS canonical signal paths (VSS 6.1), an open-standards plan per phase, a read-only decode pipeline with a generic OBD-II fallback, and a phased migration that starts with cheap seams. Amended for the node/brain direction (ADR-0032, ADR-0033): the landing screen follows the driving state, Security is present with any node, Maintenance runs Parked or Idling, phones approve Tier 2–3 over local links, and cross-vehicle replay switches pack and manifest. Amended (v0.5) with the app model: one shell, features as apps declared by a manifest, core apps in the platform repo, optional apps from their own repos, never separate PWAs, nothing built before U1. Amended (v0.7) with the owner's networking answers: the Network core app absorbs More → Devices (one page for devices, links, role holders, uplinks, remote access and pairing; a read-only peer view on every device's own page; ADR-0037, ADR-0038), and the device manifest gains `board`, `roles`, `transmit` and `items` with `origin` and `status`; the signal's Home Assistant entity category is renamed `ha_category`. Amended (v0.8) with the owner's power-state and product-family answers (ADR-0039, ADR-0040): §3.8 is accepted (one power state per device with honest Asleep, Waking and Kept awake badges, the Brain's state and queued actions in the Link chip, a brain-wake confirmation for remote requests only, queued actions with expiry and Cancel, a Power column and section on the Network page, "Needs the Brain" cards, manifest fields `power`, `runs_on`, `needs_brain`, `queueable`, `expires_max_s`); USB joins "reached via"; "Lite" reads Ostler Diagnostics. Amended (v0.9) with the owner's answers of 2026-10-06 (ADR-0039 and ADR-0037 Amendments): the brain product is Ostler Brain (was Hub), so the cards read "Needs the Brain"; device entries gain `memory` (`psram_kb`) and a `pbroker` role entry may carry `max_clients`, so an always-on add-on module can be the last parked-broker fallback. v0.11 (plan notes, 2026-10-06; the module-bus spec's owner answers): the Network page gains the owner action Remove device, the only way to clear a stale transmit-gate claim; an approval is confirmed first and the grant challenged and signed after; a queued action is offered only when the target checks in before it would expire. v0.12–v0.13 (§12, amendment of 2026-10-07, approved by the owner on 2026-10-07 ("approve all"); §12): U2 lockouts (driver-facing means any screen the driver can see or reach, Idling needs Park evidence, a per-trip head-unit Passenger view limited to UK reg 109 content with Open on phone for the rest, six new Moving templates with limits, task depth ≤ 3, a "Using Ostler while driving" page, a legal check before U2 ships); Logs renamed Trips with aliased routes, a two-tier trip summary index over the full recording, trip list, map-first trip detail, playback, Statistics, Records and gated Sprints, End trip now, Exclude from stats, Export all and no score; Drive layouts as data (RealDash model), one-screen Drive mode at every head-unit class with a new HU-5 800×480 class; the Add-ons catalogue at More → Add-ons with an empty-state Home card. Proposed amendment (2026-10-07, DMD round, §13, v0.14, awaiting the owner): the Trips share sheet (audience first, an L0–L4 level ladder in plain language, a "what they will see" preview rendered from the real output, expiry and link controls, privacy-zone notes), "Get help with this fault" in Diagnose, "Ask for help decoding" in Decode lab, More → Places for privacy zones and the ends trim, and a map-theme setting independent of the app theme.
 ---
 
 # UI architecture — design
@@ -38,6 +38,10 @@ approved.
 (v0.13)** in §12: U2 lockouts and Passenger view, Logs renamed Trips, Drive layouts as data
 with a new HU-5 class, and the Add-ons catalogue. Where §12 differs from §1–§11, §12 wins;
 the spec stays approved.
+**Proposed amendment of 2026-10-07 (DMD round, v0.14), awaiting the owner:**
+[§13](#13-proposed-amendment-2026-10-07-dmd-round-sharing-screens-places-and-map-theme) adds
+the per-trip share sheet, the help entry points in Diagnose and Decode lab, More → Places and a
+map-theme setting. Until the owner answers, §1–§12 stand unchanged.
 
 ## 1. Context and goals
 
@@ -1025,6 +1029,256 @@ a Parked head unit and 24 px in Moving templates (visual spec §4). The visual m
 tokens, font and maps; V2 component kit; V3 pages) lands before U2 build work; the Drive-mode
 fit fix (§12.3) may land first.
 
+## 13. Proposed amendment (2026-10-07, DMD round): sharing screens, Places and map theme
+
+*Proposed on 2026-10-07 (v0.14), awaiting the owner's answers in **Decisions for the owner
+(DMD round, 2026-10-07)** at the end of this spec. Nothing in §1–§12 changes until then; once
+approved, each subsection changes the sections it names. Behaviour, rules and tests are in the
+draft [per-trip sharing spec](2026-10-07-trip-sharing-design.md) and
+[ADR-0043](../decisions/adr-0043-gps-and-logs-in-shared-trips.md) (proposed); evidence in
+[trip and log sharing](../references/research/trip_and_log_sharing.md) §10 (styling) and
+[DMD Hub features](../references/research/dmd_hub_features.md) §2.2 and §3. Tokens only; visual
+values belong to the [visual design system spec](2026-10-07-visual-design-system-design.md).*
+
+### 13.1 The Trips share sheet (changes §12.2's trip detail "share and export")
+
+Opened from the trip detail's share button, a trip row's "…" menu or a marked range in
+playback. A trip still recording offers only **Share live**, which hands over to Vehicles &
+Map (live grant options: trail window, delay, show speed, show values; accounts §15.3). The
+sheet is `surface-glass`, full height on phone; **Parked only on a driver-facing display**
+(§12.1); a phone may share at any time.
+
+1. **Audience first.** Me · a contact · a group (a hub club is a group) · household · anyone
+   with the link · publish to Ostler Community · get help (named helpers, on a hub help thread
+   or directly, or a pack's maintainers). Levels the audience cannot take are greyed with the
+   reason ("Full logs go to named people only", "Telemetry is never public").
+2. **Level ladder.** Five stacked rows, L0 at the top, the entry point's default
+   pre-selected (Trips: L0; Diagnose: L4; Decode lab: L3). Each row has chips for what it adds
+   (map, chart, raw, wrench) and one plain-language line:
+
+   | Row | Plain-language description |
+   |---|---|
+   | **L0 Card** | "A card with the day, the area, distance and time. No map." |
+   | **L1 Route** | "The card plus your route on a map. The first and last 500 m and your private places are hidden. No times on the route." |
+   | **L2 Telemetry** | "Chosen readings (speed, revs, temperatures…) as charts, with times counted from the start. No map unless you add the route." |
+   | **L3 Full log** | "Everything the car's computers said on this trip, so someone can help decode it. Your VIN and serial numbers are removed. Goes to named people only." |
+   | **L4 Diagnostics** | "Fault codes, freeze frames and module information, so someone can help find a fault. Goes to named people only." |
+
+   The L3 and L4 rows use the warning token; L0–L2 do not.
+3. **Options for the chosen level:** signal picker (L2); include the route (L2–L4, refused
+   for public destinations); shareable notes; plate; show max speed (off for link and public);
+   keep real date and time (L3–L4, one named person only, naming them).
+4. **"What they will see."** The preview fills the sheet and is rendered from the produced
+   output through the same filter the recipient gets (S8 View as…), not an imitation: the
+   map in the map theme (§13.5) with hidden ends drawn as a **dashed fade to the `bg` token,
+   never a circle** (a circle shows where a zone is), the recipient's stats, and for L3–L4 the
+   **redaction report** as a chip row ("VIN ×3", "Ends 500 m", "2 zones", "Relative time",
+   "No GPS"); tapping a chip explains the rule; a hex before-and-after view of scrubbed frames
+   on the owner's device only, mono face, scrubbed bytes in the muted token. A verifier fail
+   replaces Send with the rule that failed and what to do next.
+5. **Expiry and link controls.** Durations first (1 h · end of day · 7 days · 30 days · until
+   I stop, where the class allows); **More options**: Locked or Download, available from,
+   access until, number of people, downloads each. The state (Pending, Active, Full, Expired,
+   Revoked) and the expiry show as a countdown chip in the visibility-chip style. On file and
+   public pack-issue paths the sentence **"This can't be taken back once sent"** appears in the
+   warning token, as text, not small print.
+6. **Privacy zones.** A line under the preview: "Hidden: first and last 500 m, 2 private
+   places · Edit in Places", linking to More → Places (§13.4).
+7. **Send** names the path: Share · Copy link · Save file · Send to helper. Afterwards the
+   trip row's "…" shows "Shared 2× · 1 active", which opens the trip's share history; the
+   audit also sits in Settings → Sharing (S8).
+
+### 13.2 "Get help with this fault" (Diagnose; changes §3.4's Diagnose row)
+
+On a fault's detail and on a module page, a secondary action **Get help with this fault**
+opens the help flow (sharing spec §13) with L4 pre-selected, the fault code, module, freeze
+frame and vehicle fields filled in, and a symptoms box. It never clears or changes anything
+on the car; Parked only on a driver-facing display.
+
+### 13.3 "Ask for help decoding" (Decode lab; changes §8.4)
+
+In Sniff and Label, on a signal or a frame, **Ask for help decoding** opens the help flow with
+L3 pre-selected and the time range set to the marked window. **Run a recipe** imports a
+helper's recipe (signals, modules, steps; never actions) and walks the owner through the
+recording with ⚑ marks. The contribution consent (CC BY-SA 4.0 for derived data only, off by
+default) sits in the sheet beside Contribute's JSON preview.
+
+### 13.4 More → Places (changes §3.4's More row and §12.4's order)
+
+A new **Places** entry in More, after Network: saved places that are **privacy zones** (Home,
+Work, others), each with a radius (500 m · 1 km · 1.5 km · 2 km; Home defaults to 1 km), and
+the **ends trim** for every shared trip (a slider from 200 m to 1.5 km, default 500 m, floor
+200 m). The owner's own map shows each zone at its offset centre with a plain note: "Your place
+is somewhere inside this circle, not at its centre. Sharing many routes near one place still
+narrows it down." Trips, Social, Vehicles & Map and `ostler-app-hub` read Places through the
+shell API. More's order becomes Add-ons, Garage, Network, **Places**, Integrations,
+Preferences, Privacy, Developer, About.
+
+### 13.5 Map theme independent of the app theme (changes §12.3's map-style sentence)
+
+**More → Preferences → Map theme: Follow app (default) · Day · Night · High contrast.** Every
+map (Trips, playback, Security, the Vehicles & Map pane, the share preview, navigation) uses
+it; "Follow app" keeps today's rule (§12.3). A head unit in Drive mode at night uses Night
+unless the user chose High contrast. The High-contrast map style is a follow-up for the visual
+design system spec, which defines none today.
+
+## 14. Proposed amendment (2026-10-07, DMD round): message alerts (amends §12.1 `alert_card` and the U2 legal check)
+
+*Proposed, not approved. Changes the approved §12.1 bullet "Add-on alerts never show message
+content", the §12.1 `alert_card` row, §12.1 "Legal check before U2 ships" and the §10 U2 test.
+Until the owner answers Decisions M1–M4 (end of this spec, DMD round list), the approved §12.1 text stands. Evidence:
+[message alerts research](../references/research/message_alerts_android_auto.md) and
+[driver-distraction rules](../references/research/driver_distraction_rules.md) §4.2, §7.1 #10.
+Matching change: [Social add-on spec](2026-10-07-social-addon-design.md), proposed amendment
+to §8 and Decision 5.*
+
+**The change (owner's ask, 2026-10-07).** "Copy Android Auto": while Moving, a message
+`alert_card` on a driver-facing display shows the **sender and the app**, with **Play** (read
+aloud) and **Reply** (voice, or a canned reply), and the owner may opt in to a one-line
+first-line preview, off by default. **Old rule, the alternative:** "Message from *name*" with
+**Play** and **Later**, never content (§12.1, approved 2026-10-07).
+
+**Replace the §12.1 bullet "Add-on alerts never show message content" with:**
+
+> - **Message alerts** (every add-on, not only Social). On a driver-facing display while
+>   Moving, a message `alert_card` shows **line 1: sender name** (the contact's display name,
+>   ≤ 30 characters, cut on a character boundary with "…"; a group or ride message reads
+>   "*name* · *group*" within the same 30) and **line 2: the app** (the raising add-on's
+>   manifest name and icon, for example "Social"; a burst reads "Social · 3 new"). It has two
+>   buttons, **Play** and **Reply**, and no Later button: the card leaves after 8 s, or on
+>   Back or a swipe, and the message stays unread. Never message text, images, avatars,
+>   stickers, link previews or attachments while Moving, the preview setting included.
+>   - **Play** reads the message aloud through the shell's voice, never as text; a message
+>     over 280 characters is announced as "*name* sent a long message" with **Play all** and
+>     **Stop**. Attachments are named, not shown ("a photo", "a voice note", "a location").
+>   - **Reply** opens one `short_list`: row 1 **Speak a reply**, then up to five canned
+>     replies. *Speak a reply* records a voice note (≤ 30 s, PTT-style; Social §5); where the
+>     device has on-device speech-to-text it may send text instead, read back aloud with
+>     **Send** and **Cancel** (Cancel focused) and never shown as a transcript while Moving
+>     (AAOS `NO_VOICE_TRANSCRIPTION`). A canned reply sends on one tap and the card shows
+>     "Sent" for 2 s. The task is ≤ 3 screens (card → list → sent) and ends back in Drive mode.
+>   - **Canned replies:** default set "Driving, will reply later", "On my way", "Running late",
+>     "OK, thanks", "Call you when I stop". At most **five**, each ≤ **30 characters**, plain
+>     text (no links, no placeholders in v1), per user, edited **Parked only** in More →
+>     Settings; an empty list leaves only *Speak a reply*. A canned reply is a normal outbound
+>     message (signed, sealed; Social §4), never an action.
+>   - **First-line preview (owner opt-in, default off).** One setting per user, "Show first
+>     line of messages when parked", changed Parked only. When on, and the message **arrives
+>     while Parked, or Idling with Park evidence** (§12.1 Idling rule), line 2 shows the first
+>     line of the text instead of the app: plain text, ≤ **30 characters** after stripping
+>     line breaks and markup, "…" on overflow, attachments as "Photo", "Voice note",
+>     "Location", links as "Link", never auto-scrolling. The moment the vehicle is Moving the
+>     line reverts to the app name. It never shows on a passenger-only display (a shared rear
+>     screen; the recipient reads on their own phone), never while Moving, and never images.
+>     The phone follows its own OS notification settings, not this one.
+>   - **Rate limits while Moving:** one message card on screen at a time; a newer message in
+>     the same conversation updates the card's count instead of stacking; at most one card per
+>     conversation per 2 minutes and three message cards per 10 minutes overall, beyond which
+>     messages only raise the unread count on the strip chip and the Home card; group
+>     messages other than the active ride channel raise the count only (owner setting "Alert
+>     for group messages", default off). A message card never covers a red telltale, the
+>     reverse camera, the `call` template or a navigation manoeuvre prompt; it waits until
+>     they clear and is dropped to the count if it is more than 2 minutes old. One short chime
+>     per card at most.
+>   - **Legal fallback:** if the U2 opinion objects to names on a driver-visible screen, line
+>     1 reads "New message" and line 2 the app; Play and Reply are unchanged.
+
+**Replace the `alert_card` row of the §12.1 template table with:**
+
+> | `alert_card` | one card, icon + ≤ 2 lines of ≤ 30 characters, ≤ 2 buttons; never message content while Moving (a message alert is sender name + app with **Play** / **Reply**; the opt-in first-line preview appears only for messages that arrive while Parked or Idling with Park evidence); ≤ 3 message cards per 10 minutes, one per conversation per 2 minutes | CarPlay alert; NHTSA reading lockout; Android Auto message card and "show first line" (stopped only) |
+
+**Add to "Legal check before U2 ships", after its first sentence:**
+
+> The same opinion covers message alerts: (i) whether a sender name and app name on a
+> driver-visible screen while moving falls outside reg 109 (fallback: "New message" and the
+> app); (ii) whether the opt-in first-line preview is lawful for a message that arrives while
+> Idling with Park evidence, or only when Parked (until the opinion is recorded, the preview
+> shows only when Parked); and, only if the owner chose Decision M3's alternative, (iii)
+> whether any preview may show while moving (without a clear yes, it never ships).
+
+**Add to the §10 U2 *Test* list:**
+
+> a message `alert_card` carries no message text while Moving with the preview setting on or
+> off; the preview appears only for a message that arrived while Parked (or Idling with Park
+> evidence once cleared) and reverts on Moving; it never renders on a passenger-only display;
+> the Reply list has ≤ 6 rows of ≤ 30 characters and canned replies can't be edited while
+> Moving; the rate limits hold (one per conversation per 2 min, three per 10 min); no
+> transcript text renders while Moving.
+
+## 15. Proposed amendment (2026-10-07, DMD round): Drive modes and editing
+
+*Proposed on 2026-10-07, pending the owner; §1–§13 stand until it is approved. Where approved,
+it changes §3.2 (a new strip chip), §3.4 (rail slots), §5.3 (user-arranged dashboards) and
+§12.3 (one Drive layout becomes several modes); tiers, the gate, the templates and their limits
+(§12.1) and the five-slot cap are unchanged. Design:
+[Drive modes and editing](2026-10-07-drive-modes-and-editing-design.md) (draft); widget
+contract: [app-model §15](2026-10-06-app-model-design.md) (proposed); input:
+[shell input](2026-10-07-shell-input-design.md) (draft). Evidence:
+[OBD and telematics apps](../references/research/obd_telematics_apps.md) (RealDash, AutoZen),
+[DMD2 UI teardown](../references/research/dmd2_ui_teardown.md) §2–§5. Owner's ask: "the
+current Drive mode is too diagnostic", and an Android-style editable UI.*
+
+### 15.1 Drive modes (changes §12.3)
+
+- **Several modes, each a §12.3 Drive layout as data**, in one versioned file format
+  (`ostler.layout/1`), authored per layout class, tiles bound to VSS paths with range,
+  normal/warning/critical levels, units and gauge style, plus `map`, `media` and `ptt` (the
+  `call` template) panes. A mode holds **1–3 faces** per class, switched by D-pad
+  `left`/`right` or a swipe (shell input §6). Each face carries an explicit **Moving
+  section** that is validated strictly against §12.1 (≤ 6 tiles, panes, type floors, no
+  animation); a layout whose Moving section breaks a limit cannot be saved or imported.
+- **Presets** (CC BY-SA 4.0, in the platform): **Diagnostic** (today's pack tiles),
+  **Dashboard** (speed hero, rpm sweep, side gauges; the proposed head-unit default),
+  **Map**, **Convoy / Ride** (needs Social), **Off-road** (D2 hint; tilt needs the node IMU
+  derivation, low range and diff lock need a SLABS session), **Split / Media** (needs a media
+  source add-on; three columns on HU-wide) and **Minimal / Night**.
+- **Switcher (changes §3.2).** A new core chip **Drive mode**, shown only in Drive mode after
+  Back, on every class (phone and HU-5 included): a tap cycles a rotation of ≤ 4 modes, a long
+  press lists ≤ 6 as a `short_list`. Switching is allowed while Moving; the mode is remembered
+  per display, profile and vehicle; nothing switches by itself while Moving.
+- §12.3's "a user edits a per-vehicle diff in a grid editor, Parked only" reads: **a user edits
+  modes in a slot-first grid editor, Parked only on a driver-facing display, stored per vehicle,
+  layout class and profile with a `base` reference to the preset or pack layout it came
+  from**; there is still no pixel editor.
+
+### 15.2 Editing (changes §3.4 and §5.3)
+
+- **Park to edit.** On any driver-facing display, editing Home, the rail and Drive modes needs
+  Parked (or Idling with Park evidence); the server refuses the write otherwise and the UI says
+  "Park to edit". Changes made elsewhere for a display that is Moving apply at its next Parked.
+- **Home** gains an edit mode (long press; drag with swap, small/medium/wide, remove, a widget
+  picker of core and add-on widgets, undo, **Reset to default**). §5.3's "user-arranged
+  dashboards … later" becomes this, over the generated or pack default.
+- **Rail (changes §3.4).** Still five slots: **Home first and More last are locked**; the three
+  middle slots hold core destinations or **pinned add-on pages** (any `more:*` page), in the
+  user's order; the rest appear under More → Pages. A pinned page keeps its driving rule.
+- **Safety items are not removable:** the fault telltale, alarm and Security alerts, the
+  core strip chips (§3.2, including Drive mode), Mark, and the Passenger-view and service-mode
+  frames are shell-drawn outside any layout; Home's warnings and Security alert cards may move,
+  never go.
+- **Files.** Modes, Home and rail layouts export and import as `.ostler-layout.json` (file,
+  link, QR, Web Share), scrubbed of vehicle and user identity.
+
+### 15.3 Tests (adds to §10 U2)
+
+Playwright at 800×480, 1024×600, 1280×720, 1280×480, 1920×720 and 393×852: the Drive-mode
+chip cycles and lists modes and is remembered; with the Moving fixture no edit bar appears and
+the edit routes are refused; for every face of every preset `main` does not scroll, ≤ 6 tiles
+render, digits ≥ 56 px and nothing glows or animates; the safety items survive any edit or
+import.
+
+### 15.4 Decisions for the owner (this amendment)
+
+1. **Several Drive modes with a strip chip?** Recommend: yes, as §15.1, Dashboard the default
+   on head units. Alternative: one Drive layout as §12.3 has it, with Diagnostic as the default.
+2. **Modes and faces as two levels?** Recommend: yes (chip for modes, `left`/`right` for
+   faces). Alternative: one level, `left`/`right` cycling modes.
+3. **Rail pins for add-on pages?** Recommend: yes, within the five slots, Home and More locked.
+   Alternative: core destinations fixed; pins only in a slot left empty.
+4. **Edits stored as a full copy with a `base` reference?** Recommend: yes, with Reset and
+   "Update from preset". Alternative: a JSON Merge Patch over the base, as §12.3's "diff"
+   literally says.
+
 ## Notes on sources
 
 - **python-OBD licence (conflict resolved).** Checked 2026-10-05: PyPI metadata says `GPL-2.0-only`
@@ -1152,6 +1406,16 @@ fit fix (§12.3) may land first.
   OpenFreeMap online fallback, `bg` offline); §12.5 amends §2 principle 7 for the visual
   spec's glow budget and calm gauges. Build order: the Drive-mode fit fix (HU-5 and
   the no-scroll assert), V1 visual, the U2 lockouts, Trips.
+- 2026-10-07: v0.14, proposed amendment (DMD round), awaiting the owner's answers (nothing in
+  §1–§12 is changed): §13 adds the Trips share sheet (audience first, the L0–L4 ladder in plain
+  language, a preview rendered from the real output with a redaction report, expiry and link
+  controls, a privacy-zone line), "Get help with this fault" in Diagnose, "Ask for help
+  decoding" and Run a recipe in Decode lab, More → Places for privacy zones and the ends trim,
+  and a map theme independent of the app theme.
+- 2026-10-07: proposed amendment (DMD round) "message alerts": sender + app with Play /
+  Reply, canned replies, opt-in stopped-only first-line preview, rate limits, legal-check
+  items (Decisions M1–M4); the approved §12.1 rule stands until answered.
+- 2026-10-07: v0.14, **proposed amendment §15 (DMD round), Drive modes and editing**, pending the owner: several Drive modes as layouts with faces and a strict Moving section, seven presets, a Drive-mode strip chip (tap cycles, long press lists), Park to edit enforced by the server, Home edit mode with a widget picker, rail pins for add-on pages within the five slots, non-removable safety items, layout files; decisions 1–4 (drive-modes spec; app-model §15).
 
 ## Decisions for the owner (amendment of 2026-10-07)
 
@@ -1199,3 +1463,43 @@ the decision; each alternative was not chosen.
 15. **Where does the Add-ons catalogue live?** Recommend: More → Add-ons as the top entry of
     More, plus a dismissible empty-state Home card suggesting add-ons. Alternative: a sixth
     rail item or a separate Settings page (breaks the five-destination cap or adds a page).
+
+## Decisions for the owner (DMD round, 2026-10-07)
+
+Proposed; awaiting the owner. Each item is a question, a recommendation and an alternative.
+
+1. **Audience before level in the share sheet?** Recommend: yes, with levels the audience
+   cannot take greyed and explained. Alternative: level first, audience second (Strava's
+   order).
+2. **The five-row ladder with the plain-language lines in §13.1?** Recommend: yes, warning
+   token from L3. Alternative: three simple choices (Card, Route, Help) with L2–L4 behind
+   "More".
+3. **Preview rendered from the real output, with hidden ends as a dashed fade (never a
+   circle) and a redaction report?** Recommend: yes. Alternative: a list of what is removed
+   and no rendered preview (cheaper, but not proof).
+4. **"Get help with this fault" in Diagnose and "Ask for help decoding" in Decode lab?**
+   Recommend: yes, Parked only, never changing anything on the car. Alternative: one help
+   entry in Trips only.
+5. **Privacy zones at More → Places, after Network?** Recommend: yes, one definition read by
+   every app. Alternative: inside More → Privacy (one entry fewer, harder to find).
+6. **A map theme independent of the app theme (Follow app, Day, Night, High contrast)?**
+   Recommend: yes, Follow app by default. Alternative: maps always follow the app theme.
+
+Message alerts (§14):
+
+M1. **Message card while Moving: sender and app with Play / Reply?** Recommend: yes (Android
+    Auto, CarPlay), names under the U2 legal check with "New message" as the fallback.
+    Alternative: the approved rule, "Message from *name*" with Play / Later.
+M2. **Canned replies?** Recommend: Reply opens a `short_list` with Speak a reply plus up to
+    five owner-editable canned replies (≤ 30 characters, edited Parked only, one tap sends).
+    Alternative: voice note and the "I'm driving" auto-reply only, no list (approved Social §8).
+M3. **First-line preview?** Recommend: owner opt-in, default off, one line ≤ 30 characters,
+    only for messages that arrive while Parked or Idling with Park evidence (Parked only
+    until the legal opinion), never while Moving, never on a passenger-only display, never
+    images. Alternative: the owner's literal ask, a preview while Moving, released only if the
+    U2 opinion explicitly clears it.
+M4. **Rate limits?** Recommend: one card at a time, one per conversation per 2 minutes, three
+    per 10 minutes, groups other than the ride as a count only, never over safety surfaces.
+    Alternative: one card per message with no cap.
+
+Drive modes and editing (§15): see §15.4, decisions 1–4.

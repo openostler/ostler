@@ -13,6 +13,9 @@ capability inventories) live in each vehicle pack's repo, not here (ADR-0015).
   Remove device purges.
 - `ecosystem.md` — proposed (ADR-0042): the core/add-on map, how add-ons get car data (VSS
   stream, events, faults, trips, data-class registry) and the safety boundaries.
+- `feature_map_dmd.md` — draft (DMD round): every DMD2 and DMD Hub feature with its Ostler home
+  (core, approved add-on, new add-on repo or not needed), phase and spec status; leave-outs and
+  build order.
 
 ## Editing rules
 
