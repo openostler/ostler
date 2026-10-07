@@ -19,8 +19,13 @@ Every frame any :meth:`CanLink.send` emits passes :meth:`TxGate.check`:
 4. **Everything else** needs all three: a matching **allowlist** entry, the driving state
    in the entry's ``states`` (default Parked; re-read at send time) and a valid
    **TxGrant** for the entry's action and tier, short-lived and single-use. The grant
-   passes the injected ``grant_verifier`` first (``grant_invalid``: bad signature or
-   unknown key; the default accepts only the lab's unsigned in-process grants).
+   passes the injected ``grant_verifier`` first (``grant_invalid``: bad header, signature
+   or unknown key; the default accepts only the lab's unsigned in-process grants). A
+   verifier that checks real tokens (``openostler.signing.jws_grant_verifier``, with the
+   ``[signing]`` extra; module-bus spec v1.3 §10) may also answer ``expired`` (the token's
+   ``boot`` is not this gate's: ``grant_expired`` before the single-use check), ``used``
+   (it answers another challenge: ``grant_used``) or ``mismatch`` (its ``rh``, ``req``,
+   ``origin``, action or tier differ: ``grant_mismatch`` after the expiry check).
 
 The exact order of the checks, and so which refusal code wins, is listed in
 ``tests/vectors/can/README.md``; the node's C port mirrors it.
@@ -38,7 +43,7 @@ import logging
 import os
 import secrets
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from .frame import CanFrame
@@ -59,6 +64,10 @@ FUNC_11, FUNC_29 = 0x7DF, 0x18DB33F1
 FUNCTIONAL = frozenset({(FUNC_11, False), (FUNC_29, True)})
 TESTER_PRESENT = 0x3E
 GRANT_OK, GRANT_INVALID = "ok", "invalid"
+# Further verifier answers for real tokens (module-bus spec v1.3 §10); anything else a
+# verifier returns is read as ``invalid`` (fail closed).
+GRANT_EXPIRED, GRANT_USED, GRANT_MISMATCH = "expired", "used", "mismatch"
+_VERIFIER_CODES = frozenset({GRANT_OK, GRANT_EXPIRED, GRANT_USED, GRANT_MISMATCH})
 
 
 class Tier0:
@@ -90,6 +99,10 @@ class TxGrant:
     nonce: str
     origin: str = "local"           # "local" | "remote"
     token: str = ""                 # the signed token (§7.1); "" = an unsigned lab grant
+    # Recorded at issue with the challenge (module-bus spec v1.3 §10): the request id and
+    # its ``rh``, which a signed token must repeat; "" = not bound (the lab's grants).
+    req: str = ""
+    rh: str = ""
 
 
 def accept_unsigned(grant: TxGrant) -> str:
@@ -215,15 +228,18 @@ class TxGate:
 
     # ---- grants ----------------------------------------------------------- #
     def issue(self, action: str, tier: int, *, origin: str = "local",
-              ttl: "float | None" = None, token: str = "") -> TxGrant:
-        """Mint a grant (the lab stand-in for the server gate). A remote path gets none
-        unless the install override is on; Tier 4 never."""
+              ttl: "float | None" = None, token: str = "", req: str = "",
+              rh: str = "") -> TxGrant:
+        """Mint a grant (the lab stand-in for the server gate; its ``nonce`` is the
+        challenge a signed token answers). A remote path gets none unless the install
+        override is on; Tier 4 never. ``req`` and ``rh`` bind it to one request (spec
+        §10); the token may be attached later (``dataclasses.replace``)."""
         if tier >= 4:
             raise TxRefused("tier4", "Tier 4 needs its own ADR")
         if origin != "local" and not self._remote:  # type: ignore[attr-defined]
             raise TxRefused("remote", "no grant is minted for a remote path")
         g = TxGrant(action, int(tier), self.clock() + (self.grant_ttl if ttl is None else ttl),
-                    secrets.token_hex(8), origin, token)
+                    secrets.token_hex(8), origin, token, req, rh)
         self._issued[g.nonce] = g
         return g
 
@@ -307,14 +323,20 @@ class TxGate:
             return GateDecision(False, "driving_state")
         if not isinstance(grant, TxGrant):
             return GateDecision(False, "no_grant")
-        if not self._grant_valid(grant):
+        verdict = self._grant_verdict(grant)
+        if verdict not in _VERIFIER_CODES:
             return GateDecision(False, "grant_invalid")
+        if verdict == GRANT_EXPIRED:            # another boot's token: before single use
+            return GateDecision(False, "grant_expired")
         mine = self._issued.get(grant.nonce)
-        if mine is None or mine != grant:
+        # The token is the requester's addition to what this gate issued; every other
+        # field must be the issued one.
+        if verdict == GRANT_USED or mine is None or replace(mine, token=grant.token) != grant:
             return GateDecision(False, "grant_used")
         if now > grant.expires:
             return GateDecision(False, "grant_expired")
-        if grant.action != entry.action or grant.tier != entry.tier:
+        if (verdict == GRANT_MISMATCH or grant.action != entry.action
+                or grant.tier != entry.tier):
             return GateDecision(False, "grant_mismatch")
         if entry.max_rate_hz:
             last = self._last_entry.get(id(entry))
@@ -358,12 +380,12 @@ class TxGate:
             self._refused(d.reason, frame, "probe")
         return d
 
-    def _grant_valid(self, grant: TxGrant) -> bool:
+    def _grant_verdict(self, grant: TxGrant) -> str:
         try:
-            return self.grant_verifier(grant) == GRANT_OK
+            return str(self.grant_verifier(grant))
         except Exception:                   # a verifier that fails, refuses (fail closed)
             log.exception("can grant verifier failed")
-            return False
+            return GRANT_INVALID
 
     # ---- the sweep guard -------------------------------------------------- #
     def _sweep(self, key: "Tuple[int, bool]", now: float) -> bool:
@@ -417,4 +439,4 @@ __all__ = ["TxGate", "TxGrant", "ProbeGrant", "Tier0", "TIER0", "AllowEntry",
            "GateDecision", "load_allowlist", "is_diag_request_id", "frame_service",
            "remote_override_from_env", "accept_unsigned", "PARKED", "IDLING", "MOVING",
            "OBD_READS", "UDS_READS", "TIER4_UDS", "FUNC_11", "FUNC_29", "TESTER_PRESENT",
-           "GRANT_OK", "GRANT_INVALID"]
+           "GRANT_OK", "GRANT_INVALID", "GRANT_EXPIRED", "GRANT_USED", "GRANT_MISMATCH"]

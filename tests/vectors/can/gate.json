@@ -1223,6 +1223,254 @@
       ]
     },
     {
+      "id": "T8n",
+      "description": "the signed token (module-bus spec v1.3 \u00a710): a header with another member or another alg, or a token over 640 bytes, is grant_invalid; a token from another boot is grant_expired before the single-use check (even for a grant this gate never minted); a token answering another challenge is grant_used; a token whose rh differs from the request's is grant_mismatch after the expiry check; refusals spend nothing, so the valid grant then passes once",
+      "allowlist": [
+        {
+          "id": "7DF",
+          "data": "01 04",
+          "action": "obd_clear",
+          "tier": 1,
+          "category": "maintenance",
+          "states": [
+            "parked",
+            "idling"
+          ]
+        }
+      ],
+      "grants": {
+        "hdr": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "header": "extra_member"
+          }
+        },
+        "alg": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "header": "other_alg"
+          }
+        },
+        "big": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "size": "over_640"
+          }
+        },
+        "boot": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "boot": "other"
+          }
+        },
+        "fboot": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "forged": true,
+          "token": {
+            "boot": "other"
+          }
+        },
+        "chal": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "challenge": "other"
+          }
+        },
+        "rh": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10,
+          "token": {
+            "rh": "other"
+          }
+        },
+        "rh_exp": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 1,
+          "token": {
+            "rh": "other"
+          }
+        },
+        "ok": {
+          "action": "obd_clear",
+          "tier": 1,
+          "origin": "local",
+          "at": 0,
+          "ttl": 10
+        }
+      },
+      "steps": [
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "hdr",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "alg",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "big",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_invalid"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "boot",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_expired"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "fboot",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_expired"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "chal",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_used"
+          }
+        },
+        {
+          "t": 0,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "rh",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_mismatch"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "rh_exp",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_expired"
+          }
+        },
+        {
+          "t": 2,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "ok",
+          "expect": {
+            "allowed": true,
+            "reason": "allowlist",
+            "action": "obd_clear"
+          }
+        },
+        {
+          "t": 3,
+          "driving_state": "parked",
+          "frame": {
+            "id": "7DF",
+            "ext": false,
+            "data": "01 04 55 55 55 55 55 55"
+          },
+          "grant": "ok",
+          "expect": {
+            "allowed": false,
+            "reason": "grant_used"
+          }
+        }
+      ]
+    },
+    {
       "id": "T5-probe",
       "description": "silent-bus probe grants: not Parked; no one-shot capability; the wrong frame; valid and single-use",
       "probes": {

@@ -36,8 +36,14 @@ info:
     `tap/<session>/data` (P2; never `tap/ctl`), and unsubscribes when the session ends. P3
     adds each device's retained capability `manifest` and its role claims
     `role/<role>[/<scope>]` (ADR-0037 §3), read-only, for `GET /cluster`. The module-bus
-    message spec will own these schemas; they move there when it lands. Wake and request
-    channels arrive with P4.
+    message spec v1.3 (`specs/2026-10-06-module-bus-messages-design.md`) owns these
+    topics; from it the Brain also reads each device's retained whole fault list
+    `faults/<pack>.<module>` (§6.2, into the snapshot's `faults`) and its events
+    `event/<name>` (§6.1, QoS 1, de-duplicated by `id` into `GET /cluster/events` and the
+    `clusterEvents` SSE stream), and the alarm state
+    `vss/Vehicle.Ostler.Security.Alarm.State` at QoS 1 (§6, the one QoS 1 reading). The
+    shapes of `tap/ctl`, `lab/req` and `lab/resp` are documented here for the firmware; the
+    Brain sends and reads them, and the `act/` and `wake/` channels, from P4.
 
     **Coming:** the outbound MQTT exports at U5 (standards research §2 and §8.2).
   license:
@@ -80,6 +86,20 @@ channels:
       snapshot:
         $ref: "#/components/messages/snapshot"
 
+  clusterEvents:
+    address: /cluster/events/stream
+    title: Device events (SSE)
+    description: >
+      `GET /cluster/events/stream` answers `200 text/event-stream`: one `event: node_event`
+      per device event, `id:` the Brain's `seq`, `data:` the `NodeEvent` JSON; a comment
+      line every 15 s while there is none. A reconnect resumes after `Last-Event-ID`.
+      Refused in public mode; 503 without a node source.
+    servers:
+      - $ref: "#/servers/device"
+    messages:
+      nodeEvent:
+        $ref: "#/components/messages/clusterEvent"
+
   nodeStatus:
     address: "ostler/v1/{vid}/{device}/status"
     title: Node liveness
@@ -113,7 +133,12 @@ channels:
     description: >
       Retained, QoS 0, one topic per value. `leaf` is a COVESA VSS path
       (`Vehicle.Speed`) or, for a pack field with no VSS path, `<pack>.<module>.<field>`
-      with the platform's pack id (`lr_d2.td5.air_temp`).
+      with the platform's pack id (`lr_d2.td5.air_temp`). When two modules decode one VSS
+      path, the node publishes the VSS leaf only from the pack's `primary` field and the
+      other under its pack leaf (module-bus spec v1.3 §6); the Brain's selection prefers a
+      usable primary. The alarm state `Vehicle.Ostler.Security.Alarm.State` (`DISARMED`,
+      `ARMING`, `ARMED`, `TRIGGERED`; `value` its index, `state` the label) is published
+      and subscribed at QoS 1, the spec's one exception.
     servers:
       - $ref: "#/servers/brain-broker"
     parameters:
@@ -176,6 +201,94 @@ channels:
     messages:
       claim:
         $ref: "#/components/messages/nodeRoleClaim"
+
+  nodeFaults:
+    address: "ostler/v1/{vid}/{device}/faults/{packModule}"
+    title: Fault list
+    description: >
+      Retained, QoS 1, JSON (module-bus spec v1.3 §6.2): the device's whole current fault
+      list for one module after every read, never a delta. `faults: []` with `status: ok`
+      means read, none; an absent topic means not read; an empty retained payload clears
+      it.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      packModule:
+        description: "`<pack>.<module>` (`lr_d2.td5`; an OBD node `obd.<ecu>`)."
+    messages:
+      faults:
+        $ref: "#/components/messages/nodeFaults"
+  nodeEvent:
+    address: "ostler/v1/{vid}/{device}/event/{name}"
+    title: Device event
+    description: >
+      QoS 1, never retained, Message Expiry 3600 s, JSON (module-bus spec v1.3 §6.1):
+      something happened (`alarm.triggered`, `gate.conflict`, `fault.new`). State stays in
+      retained readings. Consumers de-duplicate by `id`.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+      name:
+        description: "The event name: one topic level, dotted and lower case."
+    messages:
+      event:
+        $ref: "#/components/messages/nodeEvent"
+
+  nodeTapCtl:
+    address: "ostler/v1/{vid}/{device}/tap/ctl"
+    title: Raw-tap control (P4, not sent yet)
+    description: >
+      QoS 1, not retained, JSON (module-bus spec v1.3 §8, owner answer 3), on the node's
+      topic, published by the paired Brain or an owner-role client: `{op: start | stop,
+      session, buses?, filters?}`, `session` the ULID the requester chose (the tap header's
+      name). A repeated `start` for a running session and a `stop` for an unknown one are
+      no-ops. Never bridged. Documented for the node firmware (a65c44d reads it); the Brain
+      sends none until NodeSource P4.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      ctl:
+        $ref: "#/components/messages/nodeTapCtl"
+  nodeLabReq:
+    address: "ostler/v1/{vid}/{device}/lab/req"
+    title: Lab request (P4, not sent yet)
+    description: >
+      QoS 1, not retained, Message Expiry Interval at most 10 s, JSON (spec §8): `{id,
+      bus_id, service, grant?}` with `service` lower-case hex, no separators (`"2110"`).
+      The node answers a repeated `id` with its first `lab/resp` without running it again
+      (the last 16 ids). Lab reads run only in service mode; the node gate decides. Only the
+      paired Brain may publish it; it travels on the Brain's broker and is never bridged.
+      The Brain sends none until NodeSource P4.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      req:
+        $ref: "#/components/messages/nodeLabReq"
+  nodeLabResp:
+    address: "ostler/v1/{vid}/{device}/lab/resp"
+    title: Lab response
+    description: >
+      QoS 1, not retained, JSON (spec §8): `{id, verdict, reply, t_us, reason?}`, `reply`
+      lower-case hex. On the Brain's broker beside the tap; never bridged. Read by the Brain
+      from NodeSource P4.
+    servers:
+      - $ref: "#/servers/brain-broker"
+    parameters:
+      vid: {$ref: "#/components/parameters/vid"}
+      device: {$ref: "#/components/parameters/device"}
+    messages:
+      resp:
+        $ref: "#/components/messages/nodeLabResp"
 
   nodeTapMeta:
     address: "ostler/v1/{vid}/{device}/tap/{session}/meta"
@@ -278,6 +391,65 @@ operations:
     bindings:
       mqtt: {qos: 1}
     x-ostler-consumer: brain
+  receiveNodeFaults:
+    action: receive
+    title: The Brain receives fault lists
+    channel:
+      $ref: "#/channels/nodeFaults"
+    messages:
+      - $ref: "#/channels/nodeFaults/messages/faults"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveNodeEvent:
+    action: receive
+    title: The Brain receives device events
+    channel:
+      $ref: "#/channels/nodeEvent"
+    messages:
+      - $ref: "#/channels/nodeEvent/messages/event"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+  receiveClusterEvents:
+    action: receive
+    title: Receive device events
+    summary: The client receives each de-duplicated device event as it arrives.
+    channel:
+      $ref: "#/channels/clusterEvents"
+    messages:
+      - $ref: "#/channels/clusterEvents/messages/nodeEvent"
+  sendNodeTapCtl:
+    action: send
+    title: Start or stop the node's raw tap (planned, NodeSource P4)
+    channel:
+      $ref: "#/channels/nodeTapCtl"
+    messages:
+      - $ref: "#/channels/nodeTapCtl/messages/ctl"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-status: planned
+  sendNodeLabReq:
+    action: send
+    title: Send a lab request to the node (planned, NodeSource P4)
+    channel:
+      $ref: "#/channels/nodeLabReq"
+    messages:
+      - $ref: "#/channels/nodeLabReq/messages/req"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-status: planned
+  receiveNodeLabResp:
+    action: receive
+    title: The Brain receives lab responses (planned, NodeSource P4)
+    channel:
+      $ref: "#/channels/nodeLabResp"
+    messages:
+      - $ref: "#/channels/nodeLabResp/messages/resp"
+    bindings:
+      mqtt: {qos: 1}
+    x-ostler-consumer: brain
+    x-ostler-status: planned
   receiveNodeTapMeta:
     action: receive
     title: The Brain receives raw-tap headers (while a session records)
@@ -389,6 +561,114 @@ components:
         - name: gate
           payload: {role: gate, scope: kline-diag, term: 1, priority: 10,
                     since: "2026-10-06T10:00:01.000Z", reason: wired}
+
+    nodeFaults:
+      name: nodeFaults
+      title: Fault list
+      contentType: application/json
+      payload:
+        type: object
+        required: [status, faults]
+        properties:
+          module: {type: string}
+          status: {type: string, enum: [ok, faults, error, unimplemented]}
+          faults:
+            type: array
+            items:
+              type: object
+              required: [code]
+              properties:
+                code: {type: string}
+                text: {type: string}
+                state: {type: string}
+                c: {type: string, description: "proven | candidate"}
+              additionalProperties: true
+          note: {type: string}
+          ts: {type: [string, "null"]}
+          t_us: {type: integer, minimum: 0}
+          boot: {type: integer, minimum: 0}
+          source: {type: string}
+        additionalProperties: true
+      examples:
+        - name: none
+          payload: {module: td5, status: ok, faults: [], ts: "2026-10-06T10:00:00.000Z",
+                    t_us: 2490181, boot: 7, source: "kline-diag/td5/18 00"}
+    nodeEvent:
+      name: nodeEvent
+      title: Device event
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, name, severity]
+        properties:
+          id: {type: string, description: "A ULID; consumers de-duplicate by it."}
+          name: {type: string}
+          class: {type: string}
+          severity: {type: string, enum: [info, warning, alarm]}
+          ts: {type: [string, "null"]}
+          t_us: {type: integer, minimum: 0}
+          boot: {type: integer, minimum: 0}
+          source: {type: string}
+          cause: {type: string}
+          text: {type: string}
+        additionalProperties: true
+      examples:
+        - name: alarm
+          payload: {id: 01J9ZK4Y6W8R3V5T7N2M1QXCDE, name: alarm.triggered, class: security,
+                    severity: alarm, ts: "2026-10-06T10:00:00.000Z", t_us: 2490181, boot: 7,
+                    cause: door}
+    nodeTapCtl:
+      name: nodeTapCtl
+      title: Raw-tap control
+      contentType: application/json
+      payload:
+        type: object
+        required: [op, session]
+        properties:
+          op: {type: string, enum: [start, stop]}
+          session: {type: string, description: "A ULID the requester chose."}
+          buses: {type: array, items: {type: string}}
+          filters: {type: array}
+        additionalProperties: true
+      examples:
+        - name: start
+          payload: {op: start, session: 01M48AFR80CDXA0ZQ1XBS3VHSS, buses: [kline-diag]}
+    nodeLabReq:
+      name: nodeLabReq
+      title: Lab request
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, bus_id, service]
+        properties:
+          id: {type: string}
+          bus_id: {type: string}
+          service: {type: string, pattern: "^([0-9a-f]{2})+$", description: "Lower-case hex, no separators."}
+          grant: {type: string, description: "A transmit grant (spec §10), when the request needs one."}
+        additionalProperties: true
+      examples:
+        - name: read
+          payload: {id: 01M48AFZGZDM6TCY0PG02H4EN8, bus_id: kline-diag, service: "2110"}
+    nodeLabResp:
+      name: nodeLabResp
+      title: Lab response
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, verdict]
+        properties:
+          id: {type: string}
+          verdict: {type: string, description: "The node gate's verdict (permitted, or a refusal code)."}
+          reply: {type: [string, "null"], description: "Lower-case hex."}
+          t_us: {type: integer, minimum: 0}
+          reason: {type: string}
+        additionalProperties: true
+    clusterEvent:
+      name: clusterEvent
+      title: Device event (as the Brain received it)
+      contentType: application/json
+      payload:
+        $ref: "./openapi.yaml#/components/schemas/NodeEvent"
 
     nodeTapMeta:
       name: nodeTapMeta

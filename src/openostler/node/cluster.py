@@ -28,7 +28,9 @@ on it until every other claim is released. Its firmware counts *any* claim, a vo
 included, so the Brain may see one live claim where the device sees two. The view shows
 the device's own word too: the gate row reads ``conflict`` with no holder, the device's
 claim is flagged ``conflict``, and a ``gate_conflict`` alert with ``by: "manifest"`` names
-the device and every other claimant (the claim-based alert has ``by: "claims"``). It
+the device and every other claimant (the claim-based alert has ``by: "claims"``; a
+conflict the device saw on the wire, a ``problems`` entry with ``"by": "bus"``, gives an
+alert with ``by: "bus"``, released by the owner's acknowledgement, not Remove device). It
 clears when the device republishes its manifest without the problem. A device that is
 offline or asleep transmits nothing anyway; its retained report is not shown.
 
@@ -142,19 +144,31 @@ def problems(manifest: "dict | None") -> "list[dict]":
             if isinstance(p, dict) and isinstance(p.get("code"), str)]
 
 
-def reported_gate_conflicts(manifest: "dict | None") -> "list[str]":
-    """The buses on which the device reports ``gate_conflict`` (another device claims its
-    gate): the ``bus`` of the item the problem names, else every bus it declares
+def reported_gate_conflict_kinds(manifest: "dict | None") -> "list[tuple[str, str]]":
+    """``(bus, by)`` for each ``gate_conflict`` the device reports: ``by`` is ``bus`` for a
+    conflict seen on the wire (``{"by": "bus", …}``, module-bus spec v1.3 §7.2: a K-line
+    echo mismatch or foreign traffic before an init), else ``manifest`` (another device
+    claims its gate). The bus is the named item's ``bus``, else every bus it declares
     ``transmit`` on (an item without a ``bus`` cannot say which)."""
     items = {i.get("id"): i for i in (manifest or {}).get("items") or [] if isinstance(i, dict)}
-    buses: "list[str]" = []
+    out: "list[tuple[str, str]]" = []
     for p in problems(manifest):
         if p["code"] != "gate_conflict":
             continue
+        by = "bus" if p.get("by") == "bus" else "manifest"
         bus = (items.get(p.get("item")) or {}).get("bus")
         for b in ([bus] if isinstance(bus, str) else _transmit_buses(manifest)):
-            if b not in buses:
-                buses.append(b)
+            if (b, by) not in out:
+                out.append((b, by))
+    return out
+
+
+def reported_gate_conflicts(manifest: "dict | None") -> "list[str]":
+    """The buses on which the device reports ``gate_conflict`` (either kind)."""
+    buses: "list[str]" = []
+    for b, _by in reported_gate_conflict_kinds(manifest):
+        if b not in buses:
+            buses.append(b)
     return buses
 
 
@@ -243,12 +257,13 @@ def build(devices: "list[dict]", *, handovers: "dict | None" = None,
             row["void"] = bool(row["flags"])
             claim_rows.setdefault((role, scope), []).append({"device": dev["id"], "row": row})
             per_device[dev["id"]].append(row)
-    reported: "dict[str, list[str]]" = {}   # bus → devices reporting gate_conflict on it
+    # bus → (device, by) reporting gate_conflict on it
+    reported: "dict[str, list[tuple[str, str]]]" = {}
     for dev in devices:
         if dev.get("status") == "offline" or _asleep(dev):
             continue
-        for bus in reported_gate_conflicts(dev.get("manifest")):
-            reported.setdefault(bus, []).append(dev["id"])
+        for bus, by in reported_gate_conflict_kinds(dev.get("manifest")):
+            reported.setdefault(bus, []).append((dev["id"], by))
     roles = []
     for role, scope in _scopes(devices, [*buses, *reported]):
         claims = claim_rows.get((role, scope), [])
@@ -267,10 +282,21 @@ def build(devices: "list[dict]", *, handovers: "dict | None" = None,
                                       "(ADR-0037 §5)"})
         if reporters:
             conflict = True
+            reporter_ids = {d for d, _by in reporters}
             for c in claims:
-                if c["device"] in reporters and "conflict" not in c["row"]["flags"]:
+                if c["device"] in reporter_ids and "conflict" not in c["row"]["flags"]:
                     c["row"]["flags"].append("conflict")
-            for dev_id in reporters:
+            for dev_id, by in reporters:
+                if by == "bus":
+                    alerts.append({
+                        "code": "gate_conflict", "by": "bus", "role": role, "scope": scope,
+                        "devices": [dev_id], "claimants": [],
+                        "message": f"{dev_id} sees traffic it did not send on {scope} (a "
+                                   "tester that never claims, or a corrupted echo): it "
+                                   "transmits nothing on that bus until the owner "
+                                   "acknowledges or the bus stays quiet (module-bus spec "
+                                   "§7.2)"})
+                    continue
                 others = sorted({c["device"] for c in claims if c["device"] != dev_id})
                 alerts.append({
                     "code": "gate_conflict", "by": "manifest", "role": role, "scope": scope,
@@ -374,4 +400,5 @@ def serial_refusal(cluster: dict) -> "str | None":
 
 __all__ = ["ASLEEP_STATES", "GATE", "ORDER", "PBROKER", "PLCA", "ROLES", "TIME", "UPLINK",
            "VEHICLE_ROLES", "build", "declares", "device_class", "eligibility",
-           "kline_gate_holders", "problems", "reported_gate_conflicts", "serial_refusal"]
+           "kline_gate_holders", "problems", "reported_gate_conflict_kinds",
+           "reported_gate_conflicts", "serial_refusal"]

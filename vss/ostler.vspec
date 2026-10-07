@@ -13,6 +13,11 @@
 #   ha_device_class  Home Assistant device_class
 #   ha_state_class   Home Assistant state_class (measurement, total_increasing)
 #   obdb             OBDb signalset suggestedMetric (OBDb/SAEJ1979, CC BY-SA 4.0)
+#   ha_domain        Home Assistant entity domain when it is not a sensor
+#                    (alarm_control_panel)
+#
+# A string sensor with a fixed set of values lists them under the standard VSS `allowed`;
+# tools/build_metrics.py copies them into metrics.json.
 #
 # Rules:
 #   - Unit keys are verbatim keys of vss/upstream/units.yaml (tests/test_metrics.py).
@@ -257,3 +262,23 @@ Vehicle.Ostler.Chassis.RideHeight.RearRightRaw:
   type: sensor
   datatype: uint16
   description: Rear right ride-height sensor reading in raw counts (uncalibrated, no unit).
+
+Vehicle.Ostler.Security:
+  type: branch
+  description: Ostler security extensions (the alarm), where VSS has no node.
+
+Vehicle.Ostler.Security.Alarm:
+  type: branch
+  description: The vehicle alarm as the Ostler node or guardian runs it.
+
+# ADR-0016 Amendments (alarm state), module-bus spec v1.3 §6 (owner answer 7). The one
+# reading published at QoS 1 on the module bus. Aliases: OVMS v.e.alarm is true only when
+# TRIGGERED; the Home Assistant alarm panel reads DISARMED -> disarmed, ARMING -> arming,
+# ARMED -> armed_away, TRIGGERED -> triggered.
+Vehicle.Ostler.Security.Alarm.State:
+  type: sensor
+  datatype: string
+  allowed: ['DISARMED', 'ARMING', 'ARMED', 'TRIGGERED']
+  description: Alarm state. OVMS v.e.alarm is true only when TRIGGERED; the Home Assistant alarm panel reads disarmed, arming, armed_away and triggered.
+  ovms: v.e.alarm
+  ha_domain: alarm_control_panel

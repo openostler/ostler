@@ -490,7 +490,8 @@ def test_a_short_brain_hiccup_loses_no_tap_batch(rr):
 def test_the_spec_acl_covers_the_tap_and_refuses_tap_ctl(tmp_path):
     acl = {"t-nodesource": {"read": [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
                                      f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
-                                     f"ostler/v1/{VID}/+/role/#"], "write": []},
+                                     f"ostler/v1/{VID}/+/role/#",
+                                     f"ostler/v1/{VID}/+/faults/+", f"ostler/v1/{VID}/+/event/+"], "write": []},
            "t-nodesource-tap": {"read": [f"ostler/v1/{VID}/+/tap/+/meta",
                                          f"ostler/v1/{VID}/+/tap/+/data"], "write": []},
            "node": {"read": [], "write": [f"ostler/v1/{VID}/node/#", "sync/x"]}}

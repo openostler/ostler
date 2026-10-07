@@ -291,6 +291,25 @@
   },
   {
    "aliases": {
+    "ha_domain": "alarm_control_panel",
+    "ovms": "v.e.alarm"
+   },
+   "allowed": [
+    "DISARMED",
+    "ARMING",
+    "ARMED",
+    "TRIGGERED"
+   ],
+   "datatype": "string",
+   "description": "Alarm state. OVMS v.e.alarm is true only when TRIGGERED; the Home Assistant alarm panel reads disarmed, arming, armed_away and triggered.",
+   "extension": true,
+   "ostler_role": null,
+   "path": "Vehicle.Ostler.Security.Alarm.State",
+   "type": "sensor",
+   "unit": null
+  },
+  {
+   "aliases": {
     "ha_device_class": "pressure",
     "ha_state_class": "measurement"
    },

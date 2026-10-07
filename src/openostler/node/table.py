@@ -37,11 +37,13 @@ from __future__ import annotations
 
 import datetime as _dt
 import threading
+from collections import OrderedDict, deque
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from . import cluster as _cluster
-from .messages import (MANIFEST, POWER, ROLE, STATUS, VSS, VssValue, parse_claim, parse_manifest,
+from .messages import (EVENT, FAULTS, MANIFEST, POWER, ROLE, STATUS, VSS, VssValue, feed_states,
+                       parse_claim, parse_event, parse_faults, parse_faults_rest, parse_manifest,
                        parse_power, parse_role_rest, parse_status, parse_topic, parse_vss)
 from .select import select
 
@@ -53,6 +55,13 @@ DEFAULT_INTERVAL_S = 5.0
 EMA_ALPHA = 0.3
 PROVEN, CANDIDATE = "proven", "candidate"
 FAULTS_NOTE = "not read by the node yet"
+# Events (module-bus spec §6.1): the feed keeps the latest EVENTS_KEEP, de-duplicated by
+# ``id`` over the last EVENT_IDS_KEEP ids (a QoS 1 redelivery or a bridge echo).
+EVENTS_KEEP = 200
+EVENT_IDS_KEEP = 2000
+_KINDS = (STATUS, POWER, VSS, MANIFEST, ROLE, FAULTS, EVENT)
+# The kinds a device publishes retained (spec §3): what Remove device purges.
+RETAINED_KINDS = (STATUS, POWER, VSS, MANIFEST, ROLE, FAULTS)
 
 # (module, field name) → (confidence, limits) from the Brain's installed pack store.
 FieldLookup = Callable[[str, str], "Optional[tuple[str, Optional[tuple[float, float]]]]"]
@@ -129,6 +138,11 @@ class Device:
     manifest: "dict | None" = None
     manifest_wall: "float | None" = None          # Brain wall time the manifest arrived
     claims: "dict[tuple[str, str | None], dict]" = field(default_factory=dict)
+    # (pack, module) → the latest whole fault list (spec §6.2) with ``rx``, ``retained``
+    # and ``epoch``; absent = not read.
+    faults: "dict[tuple[str, str], dict]" = field(default_factory=dict)
+    # Every topic of a retained kind seen from this device (Remove device purges them).
+    topics: "set[str]" = field(default_factory=set)
 
 
 class DeviceTable:
@@ -136,8 +150,16 @@ class DeviceTable:
                  lookup: "FieldLookup | None" = None,
                  canonical: "Callable[[str], str | None] | None" = None,
                  is_known: "Callable[[str], bool] | None" = None,
-                 log: "Callable[[str], None] | None" = None) -> None:
+                 log: "Callable[[str], None] | None" = None,
+                 primary: "Callable[[str], Optional[tuple[str, str]]] | None" = None,
+                 allowed: "Callable[[str], Optional[list]] | None" = None) -> None:
         self.vid = vid
+        # VSS path → (module, field) the pack marks primary for it (module-bus spec §6);
+        # None for a path with no marker (the generic selection rule applies).
+        self._primary = primary or (lambda path: None)
+        # VSS path → its allowed values (a labelled enum such as the alarm state), from
+        # metrics.json; the label for a reading that carries only the index.
+        self._allowed = allowed or (lambda path: None)
         self.pack_id = pack_id
         self._lookup = lookup or (lambda module, name: None)
         self._canonical = canonical or (lambda m: m)
@@ -149,6 +171,13 @@ class DeviceTable:
         # (role, scope) → the last holder change seen live: {from, to, term, at_utc, reason}
         self._handovers: "dict[tuple[str, str | None], dict]" = {}
         self.ignored = 0  # messages on topics the table does not read (tap …)
+        self._events: "deque[dict]" = deque(maxlen=EVENTS_KEEP)
+        self._event_ids: "OrderedDict[str, None]" = OrderedDict()
+        self._event_seq = 0
+        self._event_cond = threading.Condition(self._lock)
+        self.duplicate_events = 0
+        # Devices the owner removed (Remove device): their messages are ignored from now on.
+        self._removed: "set[str]" = set()
 
     # ---- reporting ---------------------------------------------------------------- #
     def _note(self, key: str, msg: str) -> None:
@@ -183,6 +212,7 @@ class DeviceTable:
                 dev.anchor = None
                 dev.manifest = dev.manifest_wall = None
                 dev.claims = {}
+                dev.faults = {}  # retained: re-sent; one cleared meanwhile is "not read"
 
     # ---- ingest (MQTT reader thread) ------------------------------------------------ #
     def ingest(self, topic: str, payload: bytes, retain: bool, now: float,
@@ -195,7 +225,7 @@ class DeviceTable:
             return False
         with self._lock:
             dev = self._devices.get(t.device)
-            if t.kind not in (STATUS, POWER, VSS, MANIFEST, ROLE):
+            if t.kind not in _KINDS or t.device in self._removed:
                 self.ignored += 1
                 return False
             if dev is None:
@@ -203,8 +233,14 @@ class DeviceTable:
             dev.last_any_rx = now
             if not retain:
                 dev.last_live_wall = wall
+            if t.kind in RETAINED_KINDS:
+                dev.topics.add(topic)
             if t.kind == VSS:
                 return self._ingest_vss(dev, t.rest, payload, retain, now)
+            if t.kind == FAULTS:
+                return self._ingest_faults(dev, t.rest, payload, retain, now, wall)
+            if t.kind == EVENT:
+                return self._ingest_event(dev, t.rest, payload, retain, wall)
             # Role holders can change with a status, power, manifest or claim message; a
             # live one that changes a holder is a handover (stored copies never are).
             before = None if retain else self._holders()
@@ -283,6 +319,116 @@ class DeviceTable:
             return True, claim.get("reason") or f"{dev.id} claimed"
         dev.claims.pop(rs, None)  # released (ADR-0037 §3: the retained claim is cleared)
         return True, f"{dev.id} released"
+
+    def _ingest_faults(self, dev: Device, rest: str, payload: bytes, retain: bool,
+                       now: float, wall: float) -> bool:
+        """``faults/<pack>.<module>`` (spec §6.2): the whole current list replaces the last;
+        an empty payload clears it (not read again)."""
+        key = parse_faults_rest(rest)
+        if key is None:
+            self._note(f"faults-topic:{dev.id}/{rest}",
+                       f"{dev.id}: faults/{rest} is not faults/<pack>.<module>, ignored")
+            return False
+        if self.pack_id and key[0] != self.pack_id:
+            self._note(f"faults-pack:{key[0]}", f"{dev.id}: faults/{rest} names pack "
+                                                 f"{key[0]!r}, the Brain runs {self.pack_id!r}")
+            return False
+        rec = parse_faults(payload)
+        if rec is None:
+            self._note(f"faults:{dev.id}/{rest}", f"{dev.id}: unreadable fault list faults/{rest}")
+            return False
+        if not rec:
+            dev.faults.pop(key, None)
+            return True
+        stale_boot = (rec["boot"] is not None and dev.boot is not None
+                      and rec["boot"] < dev.boot)
+        dev.faults[key] = {**rec, "rx": now, "rx_wall": wall, "retained": retain,
+                           "epoch": dev.epoch - 1 if stale_boot else dev.epoch}
+        return True
+
+    def _ingest_event(self, dev: Device, name: str, payload: bytes, retain: bool,
+                      wall: float) -> bool:
+        """``event/<name>`` (spec §6.1): de-duplicated by ``id``. Events are never retained;
+        a retained copy (a misbehaving publisher) is still shown, flagged."""
+        ev = parse_event(name, payload)
+        if ev is None:
+            self._note(f"event:{dev.id}/{name}", f"{dev.id}: unreadable event event/{name}")
+            return False
+        if ev["id"] in self._event_ids:
+            self.duplicate_events += 1
+            return True
+        self._event_ids[ev["id"]] = None
+        while len(self._event_ids) > EVENT_IDS_KEEP:
+            self._event_ids.popitem(last=False)
+        self._event_seq += 1
+        ev = {"seq": self._event_seq, "device": dev.id, **ev,
+              "received_utc": utc(wall), "retained": bool(retain)}
+        self._events.append(ev)
+        self._event_cond.notify_all()
+        return True
+
+    # ---- events, faults and removal (module-bus spec v1.3) ------------------------- #
+    def events(self, after: int = 0, limit: int = EVENTS_KEEP) -> "list[dict]":
+        """The events feed, oldest first: those with ``seq`` > ``after`` (at most
+        ``limit``, the newest ones)."""
+        with self._lock:
+            out = [dict(e) for e in self._events if e["seq"] > after]
+        return out[-limit:] if limit else []
+
+    def last_event_seq(self) -> int:
+        with self._lock:
+            return self._event_seq
+
+    def wait_events(self, after: int, timeout: float) -> bool:
+        """Block up to ``timeout`` s until an event with ``seq`` > ``after`` exists."""
+        with self._event_cond:
+            return self._event_cond.wait_for(lambda: self._event_seq > after, timeout)
+
+    def faults_for(self, module: "str | None", prefer: "str | None" = None) -> "dict | None":
+        """The latest fault list for ``module`` (a canonical module id): the one from
+        ``prefer`` (the device serving the module) when it has one, else the most recently
+        received. None when no device has published one (not read)."""
+        if module is None:
+            return None
+        with self._lock:
+            found = []
+            for dev in self._devices.values():
+                for (pack, mod), rec in dev.faults.items():
+                    if self._canonical(mod) == module:
+                        found.append((dev, pack, mod, rec))
+            if not found:
+                return None
+            chosen = next((f for f in found if f[0].id == prefer), None) or \
+                max(found, key=lambda f: (f[3]["rx"], f[0].id))
+            dev, pack, mod, rec = chosen
+            return {"device": dev.id, "topic_module": f"{pack}.{mod}", "status": rec["status"],
+                   "faults": [dict(f) for f in rec["faults"]], "note": rec["note"],
+                   "read_utc": rec["ts"], "source": rec["source"],
+                   "last_known": bool(rec["retained"]),
+                   "before_restart": rec["epoch"] != dev.epoch}
+
+    def remove_device(self, device: str) -> "list[str]":
+        """Owner's Remove device (module-bus spec §7.2): forget ``device`` and ignore its
+        messages from now on; returns the topics of retained kinds seen from it (sorted),
+        for the broker-host purge."""
+        with self._lock:
+            dev = self._devices.pop(device, None)
+            self._removed.add(device)
+            return sorted(dev.topics) if dev is not None else []
+
+    def readmit_device(self, device: str) -> None:
+        """Undo :meth:`remove_device`'s filter (a re-paired device)."""
+        with self._lock:
+            self._removed.discard(device)
+
+    def removed_devices(self) -> "list[str]":
+        with self._lock:
+            return sorted(self._removed)
+
+    def device_topics(self, device: str) -> "list[str]":
+        with self._lock:
+            dev = self._devices.get(device)
+            return sorted(dev.topics) if dev is not None else []
 
     def _reboot(self, dev: Device, why: str) -> None:
         dev.epoch += 1
@@ -379,8 +525,10 @@ class DeviceTable:
         sig = {"v": v.value, "u": v.unit, "s": range_status(v.value, limits), "c": c,
                "ts_utc": v.ts, "age_s": None if age is None else round(age, 3),
                "stale": stale, "src": f"{dev.id}/{v.source}" if v.source else dev.id}
-        if v.state is not None:
-            sig["label"] = v.state
+        label = v.state if v.state is not None else _allowed_label(
+            self._allowed(v.path) if v.path else None, v.value)
+        if label is not None:
+            sig["label"] = label
         if v.raw is not None:
             sig["raw"] = v.raw
         if v.path is not None:
@@ -412,9 +560,12 @@ class DeviceTable:
                             signals[v.name] = sig
                             best_rx[v.name] = dev.id
                     if v.path is not None:
+                        prim = self._primary(v.path)
                         paths.setdefault(v.path, []).append(
                             {"device": dev.id, "src": sig["src"], "stale": sig["stale"],
                              "age_s": sig["age_s"], "pack_decoded": v.pack_decoded,
+                             "primary": bool(prim and v.pack_decoded
+                                             and (rmod, v.name) == tuple(prim)),
                              "sig": sig})
             vss = {}
             for path, cands in sorted(paths.items()):
@@ -424,8 +575,9 @@ class DeviceTable:
                     "sel": chosen["src"], "value": s["v"], "unit": s["u"],
                     "ts_utc": s["ts_utc"], "age_s": s["age_s"], "stale": s["stale"],
                     "c": s["c"],
-                    "sources": {c["src"]: {k: c["sig"][k] for k in
-                                           ("v", "u", "ts_utc", "age_s", "stale", "c")}
+                    "sources": {c["src"]: {**{k: c["sig"][k] for k in
+                                              ("v", "u", "ts_utc", "age_s", "stale", "c")},
+                                           **({"primary": True} if c["primary"] else {})}
                                 for c in cands},
                 }
             if serving:
@@ -442,7 +594,8 @@ class DeviceTable:
             dev = self._devices.get(dev_id) if dev_id else None
             device = None
             if dev is not None:
-                device = {"device": dev.id, "status": dev.status,
+                feed = feed_states({d.id: d.power for d in self._devices.values()}).get(dev.id)
+                device = {"device": dev.id, "status": dev.status, "feed": feed,
                           "power": dict(dev.power) if dev.power else None,
                           "boot": dev.boot,
                           "last_seen_utc": utc(dev.last_live_wall) if dev.last_live_wall else None,
@@ -450,6 +603,16 @@ class DeviceTable:
                           "etag": (dev.manifest or {}).get("etag")}
             return {"signals": signals, "vss": vss, "device": device,
                     "devices": sorted(self._devices)}
+
+
+def _allowed_label(allowed, value: "float | None") -> "str | None":
+    """A labelled enum's label from its index (module-bus spec §6: ``value`` is the index in
+    the path's ``allowed`` list, ``state`` the label) when the node sent no ``state``."""
+    if value is None or value != int(value):
+        return None
+    if isinstance(allowed, list) and 0 <= int(value) < len(allowed):
+        return str(allowed[int(value)])
+    return None
 
 
 _SERVE_RANK = {"node": 0, None: 1, "guardian": 2, "module": 3, "brain": 4}
@@ -470,8 +633,14 @@ def _cluster_view(table: "DeviceTable") -> dict:
                      "manifest": dev.manifest,
                      "manifest_utc": utc(dev.manifest_wall) if dev.manifest_wall else None,
                      "claims": {k: dict(v) for k, v in dev.claims.items()}})
-    return _cluster.build(recs, handovers={k: dict(v) for k, v in table._handovers.items()},
+    view = _cluster.build(recs, handovers={k: dict(v) for k, v in table._handovers.items()},
                           buses=sorted(buses))
+    # The switched supply each device is on, as its feed owner reports it (module-bus spec
+    # v1.3 §5); null when no device reports one.
+    feeds = feed_states({d.id: d.power for d in table._devices.values()})
+    for row in view.get("devices", []):
+        row["feed"] = feeds.get(row.get("id"))
+    return view
 
 
 def _rank(sig: dict, device: str):
@@ -479,5 +648,6 @@ def _rank(sig: dict, device: str):
     return (bool(sig.get("stale")), age is None, age or 0.0, device)
 
 
-__all__ = ["DEFAULT_INTERVAL_S", "FAULTS_NOTE", "Device", "DeviceTable", "Reading",
+__all__ = ["DEFAULT_INTERVAL_S", "EVENTS_KEEP", "FAULTS_NOTE", "RETAINED_KINDS", "Device",
+           "DeviceTable", "Reading",
            "STALE_FLOOR_S", "lower_confidence", "parse_utc", "range_status", "utc"]

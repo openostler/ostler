@@ -154,30 +154,101 @@ def _frame(d: dict) -> CanFrame:
 
 def _token(g: dict) -> str:
     """A grant's stand-in token: the C runner signs with a test key (``bad``: a broken
-    signature; ``unknown_key``: a key outside the trust store)."""
-    return "test:" + g.get("signature", "valid")
+    signature; ``unknown_key``: a key outside the trust store) and applies the ``token``
+    perturbations; here they are spelled into the stand-in."""
+    extra = "".join(f"|{k}={v}" for k, v in sorted((g.get("token") or {}).items()))
+    return "test:" + g.get("signature", "valid") + extra
 
 
 def _test_verifier(grant: TxGrant) -> str:
-    """The fake verifier: only a grant 'signed' by the test key is valid."""
-    return "ok" if grant.token == "test:valid" else "invalid"
+    """The fake verifier: only a grant 'signed' by the test key is valid; the token
+    perturbations answer as ``openostler.signing.jws_grant_verifier`` does."""
+    head, *pert = grant.token.split("|")
+    pert = dict(p.split("=", 1) for p in pert)
+    if head != "test:valid" or "header" in pert or "size" in pert:
+        return "invalid"
+    if "boot" in pert:
+        return "expired"
+    if "challenge" in pert:
+        return "used"
+    if "rh" in pert:
+        return "mismatch"
+    return "ok"
 
 
-@pytest.mark.parametrize("case", _cases("gate"))
-def test_gate_vectors(case):
+# Real tokens (the [signing] extra): the gate's grants are bound to one request; the
+# runner signs the token answering each grant's challenge with a test key in the trust
+# store, as the node's C runner does.
+VEC_NODE, VEC_VID, VEC_BUS, VEC_BOOT = "vec-node", "vec", "obd", 7
+VEC_REQUEST = {"action": "obd_clear", "params": {}, "role": "owner", "target": VEC_NODE,
+               "user": "vector"}
+
+
+class _Signer:
+    def __init__(self) -> None:
+        from openostler import signing
+        from cryptography.hazmat.primitives.asymmetric import ed25519
+
+        self.signing = signing
+        self.key = ed25519.Ed25519PrivateKey.from_private_bytes(bytes(range(32)))
+        self.other = ed25519.Ed25519PrivateKey.from_private_bytes(bytes(range(1, 33)))
+        self.kid = signing.key_id(self.key)
+        self.trust = {self.kid: self.key.public_key()}
+
+    def rh(self, action: str, params: "dict | None" = None) -> str:
+        return self.signing.request_hash({**VEC_REQUEST, "action": action,
+                                          "params": params or {}})
+
+    def token(self, g: dict, nonce: str, req: str) -> str:
+        sg = self.signing
+        pert = g.get("token") or {}
+        claims = {"v": 1, "node": VEC_NODE, "vid": VEC_VID, "bus": VEC_BUS,
+                  "action": g["action"], "tier": g["tier"], "origin": g["origin"],
+                  "challenge": nonce if pert.get("challenge") != "other" else sg.b64url(b"x" * 16),
+                  "ttl_ms": min(int(g.get("ttl", 10) * 1000), sg.MAX_TTL_MS), "req": req,
+                  "boot": VEC_BOOT + (1 if pert.get("boot") == "other" else 0),
+                  "rh": self.rh(g["action"], {"x": 1} if pert.get("rh") == "other" else None)}
+        if pert.get("size") == "over_640":
+            claims["req"] = "r" * 600
+        key = self.other if g.get("signature") == "unknown_key" else self.key
+        header = None
+        if pert.get("header") == "extra_member":
+            header = json.dumps({"alg": "EdDSA", "kid": self.kid, "jwk": sg.public_jwk(key)},
+                                separators=(",", ":")).encode()
+        elif pert.get("header") == "other_alg":
+            header = json.dumps({"alg": "ES256", "kid": self.kid}, separators=(",", ":")).encode()
+        tok = sg.sign_jws(sg.canonical_json(claims), key, self.kid, header=header)
+        if g.get("signature") == "bad":
+            h, pl, sig = tok.split(".")
+            raw = bytearray(sg.b64url_decode(sig))
+            raw[0] ^= 0x01
+            tok = f"{h}.{pl}.{sg.b64url(bytes(raw))}"
+        return tok
+
+
+def _run_gate_case(case, signer: "_Signer | None") -> None:
+    from dataclasses import replace
+
     defaults = _doc("gate")["defaults"]
     clock = {"t": 0.0}
     state = {"v": None}
+    if signer is None:
+        verifier = _test_verifier
+    else:
+        verifier = signer.signing.jws_grant_verifier(signer.trust, node=VEC_NODE, vid=VEC_VID,
+                                                     bus=VEC_BUS, boot=VEC_BOOT)
     gate = TxGate(case.get("allowlist", ()), clock=lambda: clock["t"],
                   driving_state=lambda: state["v"],
                   allow_remote=case.get("allow_remote", defaults["allow_remote"]),
                   tier0_min_gap=defaults["tier0_min_gap"], fc_window=defaults["fc_window"],
-                  sweep_window=defaults["sweep_window"], grant_verifier=_test_verifier)
+                  sweep_window=defaults["sweep_window"], grant_verifier=verifier)
     grants: "dict[str, object]" = {}
     for name, g in case.get("grants", {}).items():
+        req = f"req-{name}"
         if g.get("forged"):
-            grants[name] = TxGrant(g["action"], g["tier"], 1e9, "forged", g["origin"],
-                                   _token(g))
+            tok = signer.token(g, "forged", req) if signer else _token(g)
+            grants[name] = TxGrant(g["action"], g["tier"], 1e9, "forged", g["origin"], tok,
+                                   req, signer.rh(g["action"]) if signer else "")
             continue
         clock["t"] = g["at"]
         if "expect_mint" in g:
@@ -186,8 +257,13 @@ def test_gate_vectors(case):
                            token=_token(g))
             assert ei.value.code == g["expect_mint"]
             continue
-        grants[name] = gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"],
-                                  token=_token(g))
+        if signer is None:
+            grants[name] = gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"],
+                                      token=_token(g))
+        else:  # the challenge first, then the token answering it (spec §10)
+            issued = gate.issue(g["action"], g["tier"], origin=g["origin"], ttl=g["ttl"],
+                                req=req, rh=signer.rh(g["action"]))
+            grants[name] = replace(issued, token=signer.token(g, issued.nonce, req))
     for name, p in case.get("probes", {}).items():
         clock["t"], state["v"] = p["at"], p["driving_state"]
         if "expect_mint" in p:
@@ -213,3 +289,16 @@ def test_gate_vectors(case):
         assert (d.allowed, d.reason) == (e["allowed"], e["reason"]), (case["id"], i)
         if "action" in e:
             assert d.action == e["action"]
+
+
+@pytest.mark.parametrize("case", _cases("gate"))
+def test_gate_vectors(case):
+    _run_gate_case(case, None)
+
+
+@pytest.mark.needs_signing
+@pytest.mark.parametrize("case", _cases("gate"))
+def test_gate_vectors_with_signed_tokens(case):
+    """The same vectors with real Ed25519 JWS tokens and ``jws_grant_verifier`` (ADR-0041
+    Confirmation: the helper's tokens pass the shared grant vectors)."""
+    _run_gate_case(case, _Signer())

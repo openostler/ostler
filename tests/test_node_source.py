@@ -332,7 +332,9 @@ def test_the_brain_subscribes_read_only_and_publishes_nothing(rig):
     filters = [s.topic_filter for p in mine if isinstance(p, codec.Subscribe) for s in p.subscriptions]
     assert filters == [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
                        f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
-                       f"ostler/v1/{VID}/+/role/#"]
+                       f"ostler/v1/{VID}/+/role/#",
+                       f"ostler/v1/{VID}/+/vss/Vehicle.Ostler.Security.Alarm.State",
+                       f"ostler/v1/{VID}/+/faults/+", f"ostler/v1/{VID}/+/event/+"]
     opts = [s for p in mine if isinstance(p, codec.Subscribe) for s in p.subscriptions]
     assert all(s.no_local and not s.retain_as_published and s.retain_handling == 0 for s in opts)
     assert not [p for p in mine if isinstance(p, codec.Publish)]
@@ -349,7 +351,8 @@ def test_the_spec_acl_grants_exactly_the_p1_reads(tmp_path):
 
     acl = {"t-nodesource": {"read": [f"ostler/v1/{VID}/+/status", f"ostler/v1/{VID}/+/power",
                                      f"ostler/v1/{VID}/+/vss/+", f"ostler/v1/{VID}/+/manifest",
-                                     f"ostler/v1/{VID}/+/role/#"],
+                                     f"ostler/v1/{VID}/+/role/#",
+                                     f"ostler/v1/{VID}/+/faults/+", f"ostler/v1/{VID}/+/event/+"],
                             "write": [f"ostler/v1/{VID}/brain/act/+"]},
            "node": {"read": [], "write": [f"ostler/v1/{VID}/node/#", "sync/x"]}}
     with use_pack(FAKE_PACK):

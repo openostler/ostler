@@ -2,15 +2,16 @@
 title: Architecture and key seams
 area: docs
 status: stable
-version: 2.5
-updated: 2026-10-06
+version: 2.6
+updated: 2026-10-07
 depends_on: [SCOPE.md, CONSTITUTION.md]
 summary: >
   Developer map of the platform code: the bottom-up protocol stack, the VehiclePack seam,
   the seams to understand before changing things (frame formats, EcuSession, signal store,
   VSS metrics, vehicle id, schemas, DataSource boundary, the two command paths, the API
   contracts in api/, NodeSource, the MQTT client, node recording with the raw tap, the
-  cluster view and the U1 UI shell) and the dev commands.
+  cluster view, faults, events and Remove device, grant signing and the U1 UI shell) and
+  the dev commands.
 ---
 
 # Architecture and key seams
@@ -23,6 +24,7 @@ broken are in [CONSTITUTION.md](../CONSTITUTION.md). This page is the working ma
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"          # only runtime dep is pyserial; dev adds pytest, jsonschema, vss-tools
+pip install -e ".[dev,signing]"  # + cryptography: the Brain's grant signing (ADR-0041; CI installs it)
 # the Discovery 2 reference pack (integration tests, the dashboard, e2e)
 pip install --no-deps "d2diag @ git+https://github.com/openostler/ostler-pack-lr-d2"
 
@@ -209,11 +211,31 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
     tap has them and the node clock otherwise. A batch's MQTT 5 properties travel with it
     to `logbook/tap.py` (`NodeFeed` → the server's tap sink → the recorder): another
     content type is refused, `first_seq` is cross-checked with the first record.
+  - **Faults, events, alarm (module-bus spec v1.3 §6–§6.2).** The read set adds
+    `faults/+` and `event/+` (QoS 1) and the alarm state at QoS 1. `DeviceTable` keeps each
+    device's whole fault list per `<pack>.<module>` (`faults_for`; absent = not read) and
+    an events feed de-duplicated by `id` (`events`, `wait_events`); `NodeSource` fills the
+    snapshot's `faults`/`faults_read`, the server serves `GET /cluster/events` and its SSE
+    stream. A labelled enum reading gets its label from `metrics.json` `allowed`.
+    `power.feeds` give `node.feed` and cluster rows' `feed`; a manifest `problems` entry
+    with `by: "bus"` is a wire conflict alert. Selection prefers the pack's `primary`
+    field for a shared VSS path (`store_primaries`, `signals.primary_fields`).
+  - **Remove device (spec §7.2, §13).** `POST /cluster/remove` (admin as the owner, local
+    link by `is_local_link`, one confirmation) records the device in
+    `node/removal.py`'s `RemovedRegistry` (the table ignores it), calls the install's
+    `device_revoker`, then `NodeFeed.remove_device` purges its retained tree over a
+    separate broker-host connection (`<id>-host`). Templates: `docs/brain_broker.md`.
   - Fixtures are the firmware host tests' JSONL dumps in `tests/fixtures/node/` (the
     vector runs, `lifecycle.jsonl` and `gate-conflict.jsonl`, with each message's MQTT 5
     properties), plus hand-written lines only for what the node cannot publish yet
     (`cluster.jsonl`, `status-power.jsonl`); `tests/fake_node.py` replays them;
     `needs_broker` tests use a real Mosquitto (CI job).
+- **Grant signing (`signing.py`, ADR-0041, module-bus spec §10).** Stdlib for the canonical
+  JSON, `rh`, the claims and the pinned header; `cryptography` (the `[signing]` extra)
+  imported lazily for Ed25519 sign and verify, the Brain's key (`BrainKey`) and
+  `jws_grant_verifier`, which plugs real tokens into `TxGate`'s verifier seam (answers
+  `ok`, `invalid`, `expired`, `used`, `mismatch`; anything else fails closed). Without the
+  extra the Brain mints nothing. Nothing sends a grant until NodeSource P4.
 - **The UI contract.** `ui/src/api/schemas.ts` (Zod) describes every response.
   `tests/test_ui_contract.py` checks the real server against the fixtures in
   `ui/src/api/fixtures/`, and the UI tests parse the same fixtures. Signal labels,
@@ -344,3 +366,6 @@ UI             ui/: Vite + React + TypeScript app → npm run build → web/stat
 - 2026-10-06 — v2.3, NodeSource P3 (backend): `manifest` and `role/#`, `node/cluster.py`,
   `GET /cluster`, the serial source's refusal beside a gate-holding node, `device_info`.
 - 2026-10-06 — v2.4, UI U1 Shell: `ui/src/shell/`, the destinations, design tokens.
+- 2026-10-07 — v2.6, module-bus v1.3 follow-ups: `signing.py` and the `[signing]` extra,
+  faults and events from the node, the alarm state, the `primary` marker in selection,
+  `power.feeds`, wire conflicts, Remove device (`node/removal.py`, `POST /cluster/remove`).

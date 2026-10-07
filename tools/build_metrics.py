@@ -45,7 +45,7 @@ METRICS = ROOT / "src" / "openostler" / "metrics.json"
 LEAVES = ROOT / "src" / "openostler" / "vss_leaves.json"
 
 # The overlay's extended attributes (ADR-0016). Order is the order they appear in output.
-ALIASES = ("ovms", "ha_device_class", "ha_state_class", "obdb")
+ALIASES = ("ovms", "ha_device_class", "ha_state_class", "obdb", "ha_domain")
 ATTRIBUTES = ("ostler_role", *ALIASES)
 UNIQUE_ALIASES = ("ovms", "obdb")          # names of one meaning; HA classes are shared
 EXTENSION = "Vehicle.Ostler"
@@ -154,6 +154,8 @@ def build_metrics(overlaid: dict, upstream: dict, entries: dict, units: "set[str
             "aliases": {a: node[a] for a in ALIASES if node.get(a)},
             "extension": path.startswith(EXTENSION + "."),
         }
+        if node.get("allowed"):  # a fixed value set (a labelled enum on the module bus)
+            row["allowed"] = list(node["allowed"])
         rows.append(row)
     for a in UNIQUE_ALIASES:
         seen: "dict[str, str]" = {}

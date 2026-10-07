@@ -3,7 +3,7 @@ title: "Changelog"
 area: root
 status: stable
 version: 1.0
-updated: 2026-10-06
+updated: 2026-10-07
 summary: >
   Notable changes to the Ostler platform in Keep a Changelog 1.1.0 form: the Unreleased U0 repo-hygiene work (REUSE, PEP 639, SECURITY.md, supply-chain CI, ruff/mypy/pre-commit) plus a brief history reconstructed from git, and the versioning policy (SemVer 0.y.z, integer PACK_API_VERSION, VSS pin in vss/VERSION).
 ---
@@ -44,6 +44,48 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- **Module-bus v1.3 platform follow-ups** ([spec](specs/2026-10-06-module-bus-messages-design.md)
+  v1.4 as-built notes; backend and API only, the Network page waits):
+  - **`openostler[signing]`** and **`[passkeys]`** extras with one shared `cryptography`
+    requirement (`>=43.0,<50`; Apache-2.0 OR BSD-3-Clause, `THIRD_PARTY_LICENSES.md`;
+    ADR-0041). `openostler.signing` builds the grant (canonical JSON, `rh`, the pinned
+    header `{"alg":"EdDSA","kid":…}`, the 640-byte cap, `boot`), signs and verifies it,
+    makes the Brain's key on first use (`BrainKey`, 0600, `kid` = RFC 7638 thumbprint) and
+    imports `cryptography` lazily; without it minting raises "Signing not installed on the
+    Brain". `jws_grant_verifier` plugs real tokens into the Python reference gate, whose
+    verifier seam now also answers `expired` (another boot), `used` (another challenge)
+    and `mismatch` (`rh`, `req`, origin); `accept_unsigned` stays the default. `TxGrant`
+    gains `req` and `rh`. Shared vector case `T8n` (header, size, boot, challenge, `rh`)
+    and a runner that signs real tokens (`needs_signing`, required in CI with
+    `OSTLER_REQUIRE_SIGNING`); RFC 8032 and RFC 8037 vectors.
+  - **Remove device**: `POST /cluster/remove {device, confirm: true}` (owner/admin, local
+    links only: `not_local` 403 for Tailscale, public addresses and proxied requests;
+    refused in public mode): the Brain's revocation list (`removed_devices.json`), the
+    install's revoke hook, and the broker-host purge of `ostler/v1/<vid>/<device>/#`
+    (empty retained publishes over a separate identity, `--mqtt-host-cert/--mqtt-host-key`,
+    then a re-read); 503 when refused or incomplete. Tested on the fake broker and Mosquitto.
+  - **Faults and events from the node**: NodeSource subscribes to `faults/+` and `event/+`
+    at QoS 1; the snapshot's `faults` come from the node's retained whole list
+    (`faults_read`; `faults_note` only when not read, failed or unimplemented); events are
+    de-duplicated by `id` into `GET /cluster/events` and the SSE stream
+    `GET /cluster/events/stream` (AsyncAPI `clusterEvents`, `nodeFaults`, `nodeEvent`).
+  - **The alarm state** `Vehicle.Ostler.Security.Alarm.State` (string, `allowed`
+    `DISARMED`/`ARMING`/`ARMED`/`TRIGGERED`, OVMS `v.e.alarm`, HA `alarm_control_panel`)
+    in `vss/ostler.vspec`; `metrics.json` rows may carry `allowed`, and the overlay gains
+    the `ha_domain` attribute; NodeSource subscribes to it at QoS 1 and labels its index.
+  - **The pack's `primary` marker**: `Signal.primary`, `primary_fields()` and
+    `primary_problems()`; the signal-store schema allows `"primary": true`; the Brain's
+    selection prefers a usable primary source for a shared VSS path (absent marker: the
+    earlier rule).
+  - **`power.feeds`** parsed (snapshot `node.feed`, cluster rows `feed`; an offline device
+    whose feed is off reads asleep) and the `system` category of the `shutdown` order
+    recorded (`parse_shutdown`, never role-grantable; nothing is sent yet).
+  - **Wire conflicts**: a manifest `problems` entry `{"by":"bus","code":"gate_conflict"}`
+    gives a cluster alert `by: "bus"`.
+  - Firmware fixtures from `ostler-firmware` a65c44d (`wire-conflict.jsonl`, `off.jsonl`,
+    the `event/gate.conflict` line, SLABS battery on its pack leaf); AsyncAPI documents
+    `tap/ctl`, `lab/req` and `lab/resp` (sent from P4); `docs/brain_broker.md` holds the
+    ACL, bridge and parked-set templates.
 - **Module-bus message spec v1.3: the owner's answers** (docs only;
   [spec](specs/2026-10-06-module-bus-messages-design.md) §17, 2026-10-06). Every open
   question is answered and written into the normative text: the grant challenge as a

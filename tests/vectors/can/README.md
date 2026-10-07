@@ -56,9 +56,19 @@ window. File-level `defaults` give `tier0_min_gap` (50 ms), `fc_window` (5.5 s),
   minted (its nonce or challenge is unknown, so it is `grant_used` if no earlier check
   refuses it). `signature` is `valid` (the default), `bad` (a broken signature) or
   `unknown_key` (signed by a key outside the trust store); both of the last two are
-  `grant_invalid`. Runners sign with a test key: the Python runner gives each grant a
-  stand-in `token` and injects a fake verifier (`TxGate(grant_verifier=…)`); the C runner
-  signs real tokens with a test key in its trust store.
+  `grant_invalid`. `token` (optional) perturbs the signed token itself (module-bus spec
+  v1.3 §10): `{"header": "extra_member"}` (a `jwk` beside `alg` and `kid`) or
+  `{"header": "other_alg"}` (`ES256`), and `{"size": "over_640"}`, are `grant_invalid`;
+  `{"boot": "other"}` (another boot's token) is `grant_expired`, checked before single use;
+  `{"challenge": "other"}` (it answers another challenge) is `grant_used`; `{"rh": "other"}`
+  (the request's `params` changed under it) is `grant_mismatch`, after the expiry check.
+  Runners sign with a test key: the Python runner gives each grant a stand-in `token` and
+  injects a fake verifier (`TxGate(grant_verifier=…)`), and, with the `[signing]` extra,
+  also signs real Ed25519 JWS tokens (claims `{v, node: "vec-node", vid: "vec", bus:
+  "obd", action, tier, origin, challenge: the grant's nonce, ttl_ms, req, boot: 7, rh}`,
+  `rh` over `{action, params: {}, role: "owner", target: "vec-node", user: "vector"}`)
+  checked by `openostler.signing.jws_grant_verifier`; the C runner signs real tokens with a
+  test key in its trust store.
 - `probes`: name → `{at, driving_state}`, a silent-bus probe grant minted at `at`;
   `expect_mint` as above (`not_parked`).
 - A send step: `{t, driving_state, frame, grant, rate_ok?, link_kind?, expect}`, where
@@ -95,10 +105,15 @@ or `18DB33F1`; the service byte is that of an ISO-TP SF or FF.
 9. No allowlist entry matches: `not_allowlisted`.
 10. The driving state is not in the entry's `states`: `driving_state`.
 11. No `TxGrant` (none, or the Tier 0 marker): `no_grant`.
-12. The grant's signature or key fails the verifier: `grant_invalid`.
-13. The grant is not outstanding (used, or never minted): `grant_used`.
+12. The grant's token fails the verifier (header, size, signature, unknown key, or a token
+    for another node, vehicle or bus): `grant_invalid`.
+    1. The token is from another boot of the gate: `grant_expired` (before the challenge
+       lookup, spec §10).
+13. The grant is not outstanding (used, or never minted), or its token answers another
+    challenge: `grant_used`.
 14. The grant has expired: `grant_expired`.
-15. The grant's action or tier differs from the entry's: `grant_mismatch`.
+15. The grant's action or tier differs from the entry's, or the token's action, tier,
+    origin, `req` or `rh` differ from the grant's: `grant_mismatch`.
 16. The entry's `max_rate_hz` is exceeded: `entry_rate`.
 17. Else allowed, `allowlist` (the grant is spent).
 

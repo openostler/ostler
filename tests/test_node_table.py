@@ -68,7 +68,9 @@ def test_the_subscription_set_is_read_only():
     subs = subscriptions(VID)
     assert subs == [(f"ostler/v1/{VID}/+/status", 1), (f"ostler/v1/{VID}/+/power", 1),
                     (f"ostler/v1/{VID}/+/vss/+", 0), (f"ostler/v1/{VID}/+/manifest", 1),
-                    (f"ostler/v1/{VID}/+/role/#", 1)]
+                    (f"ostler/v1/{VID}/+/role/#", 1),
+                    (f"ostler/v1/{VID}/+/vss/Vehicle.Ostler.Security.Alarm.State", 1),
+                    (f"ostler/v1/{VID}/+/faults/+", 1), (f"ostler/v1/{VID}/+/event/+", 1)]
     for f, _ in subs:
         # ``#`` only under ``role/`` (spec §4), never on the vehicle; no request topic
         assert "#" not in f.removesuffix("/role/#")

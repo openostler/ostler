@@ -178,14 +178,17 @@ def mosquitto_tls(tmp_path_factory):
              "-days", "1", cwd=d)
     server = _issue(d, "server", "localhost", san="IP:127.0.0.1")
     certs = {"ca": str(d / "ca.crt"), "brain": _issue(d, "brain", "t-nodesource"),
-             "node": _issue(d, "node", "node")}
+             "node": _issue(d, "node", "node"),
+             # the Brain's broker host (Remove device's purge, module-bus spec §13)
+             "host": _issue(d, "host", "t-broker-host")}
     acl = d / "acl"
     acl.write_text(
         "user t-nodesource\n" + "".join(
             f"topic read ostler/v1/{ACL_VID}/+/{t}\n"
             for t in ("status", "power", "vss/+", "manifest", "role/#", "tap/+/meta",
                       "tap/+/data"))
-        + f"\nuser node\ntopic readwrite ostler/v1/{ACL_VID}/node/#\n")
+        + f"\nuser node\ntopic readwrite ostler/v1/{ACL_VID}/node/#\n"
+        + f"\nuser t-broker-host\ntopic readwrite ostler/v1/{ACL_VID}/#\n")
     port = _free_port()
     conf = d / "m.conf"
     # Started as root (a container), Mosquitto drops to the "mosquitto" user, which cannot
@@ -260,3 +263,61 @@ def test_mtls_acl_and_the_tap_subscription(mosquitto_tls):
     anon = StdlibMqttClient("anon", timeout=3, ssl_context=tls_context(certs["ca"]))
     with pytest.raises((OSError, codec.MqttError)):
         anon.connect(host, port)
+
+
+def test_remove_device_purges_the_retained_tree(mosquitto_tls):
+    """Remove device's broker-host purge on a real Mosquitto (module-bus spec §7.2, §13):
+    with the read identity the broker refuses every empty retained publish (and the
+    refusal is reported); with the broker host's identity every retained topic of the
+    device, including ones the Brain never subscribed to, is cleared and a fresh
+    subscriber gets nothing."""
+    from openostler.mqtt import tls_context
+    from openostler.web.node_source import NodeFeed
+
+    host, port, certs = mosquitto_tls
+    base = f"ostler/v1/{ACL_VID}/node"
+    node = StdlibMqttClient("node", timeout=3, ssl_context=tls_context(certs["ca"], *certs["node"]))
+    node.connect(host, port)
+    retained = {f"{base}/status": b"online", f"{base}/power": b'{"state":"awake"}',
+                f"{base}/manifest": b'{"schema":1,"id":"node"}',
+                f"{base}/role/gate/kline-diag": b'{"role":"gate","scope":"kline-diag","term":1}',
+                f"{base}/vss/Vehicle.Speed": b'{"value":1,"unit":"km/h","t_us":1}',
+                f"{base}/faults/lr_d2.td5": b'{"status":"ok","faults":[]}',
+                f"{base}/tap/01M48AFR80CDXA0ZQ1XBS3VHSS/meta": b'{"v":1}'}
+    for t, pl in retained.items():
+        node.publish(t, pl, 1, True)
+    node.disconnect()
+    ca = certs["ca"]
+
+    def feed(host_identity):
+        return NodeFeed(ACL_VID, host, port, client_id="t-nodesource", log=lambda _m: None,
+                        ssl_context=tls_context(ca, *certs["brain"]),
+                        host_ssl_context=tls_context(ca, *certs[host_identity]))
+
+    f = feed("brain")  # the read identity: refused
+    f.start()
+    try:
+        assert _wait(lambda: len(f.table.device_topics("node")) >= 5, 5)
+        res = f.remove_device("node")
+        assert res["purged"] == [] and f"{base}/status" in res["refused"]
+    finally:
+        f.stop()
+    f = feed("host")
+    f.start()
+    try:
+        assert _wait(lambda: f.connected, 5)
+        f.table.readmit_device("node")
+        res = f.remove_device("node")
+        assert res.get("error") is None and res["refused"] == [] and res["remaining"] == []
+        assert set(res["purged"]) == set(retained)  # tap/<ULID>/meta found by the host
+    finally:
+        f.stop()
+    got = []
+    probe = StdlibMqttClient("t-broker-host", timeout=3,
+                             ssl_context=tls_context(ca, *certs["host"]))
+    probe.on_message = got.append
+    probe.connect(host, port)
+    probe.subscribe([SubOptions(f"{base}/#", qos=1)])
+    time.sleep(0.5)
+    probe.disconnect()
+    assert got == []

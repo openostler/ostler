@@ -5,13 +5,18 @@
 """Selection, not fusion, for one VSS path published by several sources (NodeSource spec
 §6.5, the P1 subset).
 
-The rule: a usable (not stale) reading beats a stale one; then the pack-decoded bus value;
-then the freshest; ties go to the lowest device id, then the lowest source tag. With
-nothing usable the freshest stale reading is shown (still marked stale), never a zero.
+The rule: a usable (not stale) reading beats a stale one; then the reading of the pack's
+**primary** field for that path (module-bus spec v1.3 §6, owner answer 9: when two modules
+decode one VSS path, the pack's signal store marks one field ``"primary": true``); then the
+pack-decoded bus value; then the freshest; ties go to the lowest device id, then the lowest
+source tag. With nothing usable the freshest stale reading is shown (still marked stale),
+never a zero. A pack without the marker (or an older Brain store) leaves every candidate
+non-primary, which is the earlier rule. The primary never beats a usable reading with a
+stale one: a primary module that is not polled goes stale and the other source is shown.
 
-Not yet here: the manifest's ``primary`` device and the owner's priority (they arrive with
-the manifest, P3) and the ADR-0032 A4 GNSS algorithm with its shared vectors (TODO.md);
-until then GNSS paths use the same generic rule. A selected value is for display and
+Not yet here: the manifest's ``primary`` device and the owner's priority, and the ADR-0032
+A4 GNSS algorithm with its shared vectors (TODO.md); until then GNSS paths use the same
+generic rule. A selected value is for display and
 recording only: no gate uses it (ADR-0032 A5).
 """
 from __future__ import annotations
@@ -20,11 +25,11 @@ from typing import Iterable, Optional
 
 
 def select(candidates: "Iterable[dict]") -> "Optional[dict]":
-    """Pick one candidate. Each is ``{device, src, stale, age_s, pack_decoded}``
-    (``age_s`` None = unknown)."""
+    """Pick one candidate. Each is ``{device, src, stale, age_s, pack_decoded, primary?}``
+    (``age_s`` None = unknown; ``primary`` absent = not the pack's primary field)."""
     def key(c: dict):
         age = c.get("age_s")
-        return (bool(c.get("stale")), not c.get("pack_decoded"),
+        return (bool(c.get("stale")), not c.get("primary"), not c.get("pack_decoded"),
                 age is None, age if age is not None else 0.0,
                 str(c.get("device")), str(c.get("src")))
 

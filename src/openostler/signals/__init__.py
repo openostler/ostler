@@ -119,6 +119,9 @@ class Signal:
     # The canonical meaning (ADR-0016): an optional COVESA VSS path such as
     # ``Vehicle.Speed``, known to ``openostler.metrics``. Pack-private fields leave it unset.
     metric: "str | None" = None
+    # One primary module per VSS path (module-bus spec v1.3 §6, owner answer 9): when more
+    # than one module maps the same ``metric``, the pack marks one field ``"primary": true``.
+    primary: bool = False
 
     def decode(self, data: bytes) -> float:
         """Numeric value (bit → 0.0/1.0) so the ``dict[str, float]`` contract holds."""
@@ -170,6 +173,7 @@ def _record_to_signal(r: dict) -> Signal:
         normal=tuple(r["normal"]) if r.get("normal") else None,
         length=int(r["length"]) if r.get("length") is not None else None,
         metric=r.get("metric") or None,
+        primary=bool(r.get("primary", False)),
     )
 
 
@@ -218,6 +222,10 @@ def upsert_field(module: str, record: dict) -> None:
     rec = dict(record)
     rec["confidence"] = normalize_confidence(rec.get("confidence"))
     rec["lid"] = _norm_lid(rec["lid"])
+    if not rec.get("primary"):
+        rec.pop("primary", None)  # written only as true (absent = not primary)
+    else:
+        rec["primary"] = True
     if not rec.get("metric"):
         rec.pop("metric", None)
     else:
@@ -278,3 +286,47 @@ def remove_field(module: str, lid, offset: int, bit: "int | None" = None) -> int
             if os.path.exists(tmp):
                 os.remove(tmp)
     return removed
+
+
+# ---- one primary module per VSS path (module-bus spec v1.3 §6) ----------- #
+def primary_fields(modules: "list[str]") -> "dict[str, tuple[str, str]]":
+    """``{VSS path: (module, field)}`` for every path a field of ``modules`` marks
+    ``primary``. With more than one primary for a path the first module (in the order
+    given) wins here; :func:`primary_problems` reports the conflict."""
+    out: "dict[str, tuple[str, str]]" = {}
+    for module in modules:
+        for s in load_signals(module):
+            if s.primary and s.metric and s.metric not in out:
+                out[s.metric] = (module, s.name)
+    return out
+
+
+def primary_problems(modules: "list[str]") -> "list[str]":
+    """What breaks the primary rule across a pack's ``modules`` (module-bus spec v1.3 §6,
+    owner answer 9), as sentences; empty when the store is consistent:
+
+    - a VSS path marked primary by fields of more than one module (or by two fields of one
+      module);
+    - a ``primary`` record with no ``metric``;
+    - a primary field whose length variants are not all marked.
+
+    A path mapped by several modules with no primary is allowed: the Brain then keeps its
+    generic selection rule (NodeSource spec §6.5)."""
+    problems: "list[str]" = []
+    owners: "dict[str, set[tuple[str, str]]]" = {}
+    for module in modules:
+        sigs = load_signals(module)
+        marked = {s.name for s in sigs if s.primary}
+        for s in sigs:
+            if s.primary and not s.metric:
+                problems.append(f"{module}.{s.name}: primary without a metric")
+            if s.primary and s.metric:
+                owners.setdefault(s.metric, set()).add((module, s.name))
+            if s.name in marked and not s.primary:
+                problems.append(f"{module}.{s.name}: primary on some of its records only "
+                                "(mark every length variant)")
+    for path, who in sorted(owners.items()):
+        if len(who) > 1:
+            names = ", ".join(f"{m}.{n}" for m, n in sorted(who))
+            problems.append(f"{path}: more than one primary field ({names})")
+    return sorted(set(problems))

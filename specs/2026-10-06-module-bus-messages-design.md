@@ -2,11 +2,11 @@
 title: "Module-bus messages — the MQTT topic tree, payloads, QoS, ACLs and versioning — design"
 area: specs
 status: stable
-version: 1.3
-updated: 2026-10-06
+version: 1.4
+updated: 2026-10-07
 depends_on: [decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-06-node-source-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0041-brain-ed25519-signing.md, references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, references/research/mesh_networking.md, references/research/grant_flow.md, references/research/mqtt_topic_practice.md, references/research/power_and_roles_practice.md]
 summary: >
-  Approved by the owner on 2026-10-06 ("go with your recommendations"). The module-bus message spec that ADR-0026, ADR-0027, ADR-0028, ADR-0032, ADR-0037, ADR-0038, ADR-0039 and ADR-0040 require before firmware: it gathers, without new decisions, every topic and payload already decided under ostler/v1/<vid>/<device>/: vss/<path> readings with boot and source tags; power (the ADR-0040 record); status with an offline will and asleep; the retained capability manifest (board, roles, transmit, items with origin and status, problems, power, memory.psram_kb, links, tap, actions with runs_on, needs_brain, queueable and expires_max_s) exactly as the NodeSource spec and its cluster fixture drafted it; role/<role>[/<scope>] claims {role, scope, term, priority, since, reason} with release by empty payload and the ADR-0037 timeouts; tap/<ULID>/meta and data, tap/ctl and lab/req and lab/resp (firmware raw-tap spec); requester-owned act/<id> and wake/<id> requests with MQTT 5 expiry and their outcomes; the owner-approved transmit grant (a node-issued challenge and an Ed25519 JWS bound to it, keys enrolled only by pairing or adoption, refusal grant_invalid); every kline* bus is a K-line gate bus; the parked topic set and bridge patterns; per-device ACLs; mDNS TXT keys; mesh bridge topics and the mesh transport value; the CAN fallback rules; timeouts; versioning. Undecided items are listed as open questions. v1.1 (2026-10-06) records the payloads as the node firmware built them (ostler-firmware 0426ea5): manifest items with a bus and the unverified status, priority absent when unset (null in the claim), links without via, power without parked_ma, psram_kb 0, roles [] beside the gate claim; the sleep and shutdown sequences; the tap time event's CBOR keys; power off accepted by the Brain. v1.2 (2026-10-06) records firmware 5971323 as built: the tap batch content type and first_seq user property now set (and checked by the Brain), the tap header's records an array, power.class the same parked class in the manifest and every power record, gate_conflict as a manifest problems code; the firmware's stricter gate rule (any claim on its bus silences it, a void one included) is listed as a pending owner decision, not a spec change. v1.3 (2026-10-06) records the owner's answers to every open question (§17, now "Owner answers"): the grant challenge as a `challenge` outcome on the existing `act/<id>` topic, a pinned JWS header and `boot` and `rh` claims, `grant_locked`; queued requests carry no grant and are signed at delivery (the Brain may sign a Tier 1 request it relayed, ADR-0041); `tap/ctl` and `lab/req` at QoS 1 with hex bytes and de-duplication; wake expiry and the `act` outcome shape; `lab/resp` stays with the tap on the Brain's broker and `act` outcomes bridge inbound; the parked set adds `act`, `event` and `faults`; each device announces its own `off`, the power owner reports `feeds`, shutdown is an `act`; `event/<name>` and the `Vehicle.Ostler.Security.Alarm.State` enum; `faults/<pack>.<module>`; one primary module per VSS path; TXT `txtvers`, `md`, `etag`; the CAN fallback deferred to U5 with three risks; mesh bridge QoS, retain and ACL; gate claims never expire, cleared only by Remove device, and the firmware's any-claim rule plus K-line echo conflicts; the check-in ends when its work is done with a 60 s cap, a 15 s connect cap and back-off.
+  Approved by the owner on 2026-10-06 ("go with your recommendations"). The module-bus message spec that ADR-0026, ADR-0027, ADR-0028, ADR-0032, ADR-0037, ADR-0038, ADR-0039 and ADR-0040 require before firmware: it gathers, without new decisions, every topic and payload already decided under ostler/v1/<vid>/<device>/: vss/<path> readings with boot and source tags; power (the ADR-0040 record); status with an offline will and asleep; the retained capability manifest (board, roles, transmit, items with origin and status, problems, power, memory.psram_kb, links, tap, actions with runs_on, needs_brain, queueable and expires_max_s) exactly as the NodeSource spec and its cluster fixture drafted it; role/<role>[/<scope>] claims {role, scope, term, priority, since, reason} with release by empty payload and the ADR-0037 timeouts; tap/<ULID>/meta and data, tap/ctl and lab/req and lab/resp (firmware raw-tap spec); requester-owned act/<id> and wake/<id> requests with MQTT 5 expiry and their outcomes; the owner-approved transmit grant (a node-issued challenge and an Ed25519 JWS bound to it, keys enrolled only by pairing or adoption, refusal grant_invalid); every kline* bus is a K-line gate bus; the parked topic set and bridge patterns; per-device ACLs; mDNS TXT keys; mesh bridge topics and the mesh transport value; the CAN fallback rules; timeouts; versioning. Undecided items are listed as open questions. v1.1 (2026-10-06) records the payloads as the node firmware built them (ostler-firmware 0426ea5): manifest items with a bus and the unverified status, priority absent when unset (null in the claim), links without via, power without parked_ma, psram_kb 0, roles [] beside the gate claim; the sleep and shutdown sequences; the tap time event's CBOR keys; power off accepted by the Brain. v1.2 (2026-10-06) records firmware 5971323 as built: the tap batch content type and first_seq user property now set (and checked by the Brain), the tap header's records an array, power.class the same parked class in the manifest and every power record, gate_conflict as a manifest problems code; the firmware's stricter gate rule (any claim on its bus silences it, a void one included) is listed as a pending owner decision, not a spec change. v1.3 (2026-10-06) records the owner's answers to every open question (§17, now "Owner answers"): the grant challenge as a `challenge` outcome on the existing `act/<id>` topic, a pinned JWS header and `boot` and `rh` claims, `grant_locked`; queued requests carry no grant and are signed at delivery (the Brain may sign a Tier 1 request it relayed, ADR-0041); `tap/ctl` and `lab/req` at QoS 1 with hex bytes and de-duplication; wake expiry and the `act` outcome shape; `lab/resp` stays with the tap on the Brain's broker and `act` outcomes bridge inbound; the parked set adds `act`, `event` and `faults`; each device announces its own `off`, the power owner reports `feeds`, shutdown is an `act`; `event/<name>` and the `Vehicle.Ostler.Security.Alarm.State` enum; `faults/<pack>.<module>`; one primary module per VSS path; TXT `txtvers`, `md`, `etag`; the CAN fallback deferred to U5 with three risks; mesh bridge QoS, retain and ACL; gate claims never expire, cleared only by Remove device, and the firmware's any-claim rule plus K-line echo conflicts; the check-in ends when its work is done with a 60 s cap, a 15 s connect cap and back-off. v1.4 (2026-10-07) records the Brain's platform build of the answers (§19 As built on the Brain): the signing extra and helper, faults and events read by NodeSource, the alarm state, the primary marker in selection, power feeds and the system category, wire-conflict alerts, Remove device's API and its broker-host purge, with the readings the spec left open; no decision changed.
 ---
 
 # Module-bus messages — design
@@ -774,6 +774,61 @@ wake before the 30 min timer is lengthened (ADR-0040 §3).
 - The conformance kit validates every manifest against the schema in CI (ADR-0027
   Confirmation); the module contract moves to its own repo at v1 (ADR-0034).
 
+## 19. As built on the Brain (v1.4, 2026-10-07)
+
+The platform's build of the owner's answers (openostler, the module-bus v1.3 follow-ups;
+`docs/brain_broker.md` holds the broker templates). No decision changed; where the text
+left a detail open, the reading taken is listed here for the owner.
+
+- **Signing (§10, ADR-0041).** `openostler.signing` with the `[signing]` extra
+  (`cryptography>=43.0,<50`, shared with `[passkeys]`): canonical JSON as the `etag` rules,
+  `rh` over `{action, params, role, target, user}` (a missing field hashes as `null`,
+  `params` as `{}`), the pinned header, the 640-byte cap, `kid` = the key's RFC 7638
+  thumbprint, the Brain's key made on first use (0600). The Python reference gate checks
+  real tokens through `jws_grant_verifier`; its verifier seam answers, in this spec's
+  order, `grant_invalid` (header, size, signature, unknown key, **and a token for another
+  `node`, `vid` or `bus`**, for which §10 names no code), `grant_expired` (another `boot`,
+  before the challenge lookup), `grant_used` (another challenge) and `grant_mismatch`
+  (action, tier, `rh`, `req`, **or `origin`**: the reference gate takes the grant's origin
+  as the link's, so a token claiming another origin is a mismatch rather than "the stricter
+  of the two"). `grant_locked` is not in the reference gate (it has no requester until P4).
+- **Faults (§6.2).** NodeSource reads `faults/+` at QoS 1: the snapshot's `faults` are the
+  serving device's whole list for the module (else the latest from any device),
+  `faults_read` carries it, `faults_note` says "not read by the node yet" when no list
+  exists and the node's note when `error` or `unimplemented`. A list naming another pack id
+  is ignored. `DtcCount` is not derived yet.
+- **Events (§6.1).** `event/+` at QoS 1, de-duplicated by `id` over the last 2000 ids; the
+  latest 200 kept with the Brain's arrival `seq`; `GET /cluster/events` and the SSE stream
+  `GET /cluster/events/stream` (`id:` = `seq`, `Last-Event-ID` resumes). A severity outside
+  the enum reads as `null`. Not yet in the logbook.
+- **Alarm state (§6).** `Vehicle.Ostler.Security.Alarm.State` is in `vss/ostler.vspec` with
+  `allowed` and the aliases OVMS `v.e.alarm` and Home Assistant `ha_domain:
+  alarm_control_panel` (the state map is in its description); NodeSource subscribes to it
+  at QoS 1 besides `vss/+` at QoS 0, and labels a bare index from `allowed`.
+- **Primary (§6).** The Brain reads `"primary": true` from its installed pack store
+  (`signals.primary_fields`; the schema accepts a boolean) and its selection ranks a
+  usable primary reading first for that VSS path, before the pack-decoded and freshness
+  rules; a stale primary loses to a usable source. Pack leaves are not mapped back onto
+  the VSS path (the VSS leaf comes from the topic).
+- **Feeds and shutdown (§5, §11).** `power.feeds` is parsed (`{target, state, since}`,
+  other shapes dropped); the snapshot's `node.feed` and the cluster rows' `feed` show the
+  owner's report, `off` winning when two owners disagree, and an `offline` device whose
+  feed is `off` reads `asleep` (the order of the will and the feed report is not checked).
+  The `shutdown` order is parsed for the record only, `system` never role-grantable;
+  nothing sends it.
+- **Wire conflicts (§7.2).** A `problems` entry with `"by": "bus"` gives a cluster alert
+  `by: "bus"` (no claimants; released by acknowledgement, not Remove device).
+- **Remove device (§7.2, §13).** `POST /cluster/remove {device, confirm: true}`: the owner
+  is the admin password until accounts land; **a local link** is a loopback, RFC 1918,
+  link-local or unique-local peer with no proxy or relay header, Tailscale's ranges and
+  public addresses being remote, and `OSTLER_ALLOW_REMOTE_CONTROL` does **not** open it
+  (UI spec §3.7 says never over a remote path). The Brain records the device in its
+  revocation list and ignores it, calls the install's revoke hook, then, over a separate
+  broker-host identity, publishes an empty retained message to every retained topic it saw
+  from the device or finds under `<device>/#`, and re-reads the tree. A retained topic the
+  host identity may not read and the Brain never saw is not found (Mosquitto has no
+  wildcard delete); the reply says what was purged, refused and left.
+
 ## Differences between sources, and how this spec reads them
 
 - **Topic names:** the ecosystem research's proposal (§3.3) used `state/<VSS path>` and
@@ -868,3 +923,7 @@ v1.3: the owner's answers of 2026-10-06 to the research notes
   gate claims never expire, Remove device, the any-claim rule and wire conflicts (§7.2).
   New: [ADR-0041](../decisions/adr-0041-brain-ed25519-signing.md) (the Brain's signing
   extra). Amended: ADR-0016, ADR-0037, ADR-0038 and ADR-0040.
+- 2026-10-07 — v1.4: §19 "As built on the Brain": the platform's build of the answers
+  (signing extra and reference verifier, faults and events, the alarm state, primary
+  selection, feeds, wire-conflict alerts, Remove device), with the readings taken where the
+  text left a detail open. No decision changed.

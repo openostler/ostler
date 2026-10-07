@@ -11,8 +11,7 @@
       "age_s": 2.102,
       "stale": true,
       "src": "node/kline-diag/slabs/21 44",
-      "raw": 108,
-      "m": "Vehicle.LowVoltageBattery.CurrentVoltage"
+      "raw": 108
     },
     "height_left": {
       "v": 144.0,
@@ -211,25 +210,6 @@
     }
   },
   "vss": {
-    "Vehicle.LowVoltageBattery.CurrentVoltage": {
-      "sel": "node/kline-diag/slabs/21 44",
-      "value": 6.75,
-      "unit": "V",
-      "ts_utc": "2026-10-06T10:00:00.000Z",
-      "age_s": 2.102,
-      "stale": true,
-      "c": "proven",
-      "sources": {
-        "node/kline-diag/slabs/21 44": {
-          "v": 6.75,
-          "u": "V",
-          "ts_utc": "2026-10-06T10:00:00.000Z",
-          "age_s": 2.102,
-          "stale": true,
-          "c": "proven"
-        }
-      }
-    },
     "Vehicle.Ostler.Chassis.RideHeight.RearLeftRaw": {
       "sel": "node/kline-diag/slabs/21 54",
       "value": 144.0,
@@ -289,10 +269,12 @@
     }
   },
   "faults": [],
+  "faults_read": null,
   "faults_note": "not read by the node yet",
   "node": {
     "device": "node",
     "status": "online",
+    "feed": null,
     "power": {
       "state": "awake",
       "since": "2026-10-06T10:00:00.000Z",
