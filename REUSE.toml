@@ -195,3 +195,10 @@ SPDX-License-Identifier = "CC-BY-SA-4.0"
 path = "references/design/2026-10/claude-design/**"
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Core screens design (references/design/2026-10/core-screens/README.md): PNG renders of the
+# owner's design of Home, Drive mode, Trips and Trip detail (2026-10-08).
+[[annotations]]
+path = "references/design/2026-10/core-screens/*.png"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
