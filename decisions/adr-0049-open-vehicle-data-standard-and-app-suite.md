@@ -2,7 +2,7 @@
 title: "ADR-0049 — Ostler is an open diagnostic and logging platform with an open vehicle-data feed (VISS), not an operating system: a gateway app and separate apps"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-08
 depends_on: [references/research/direction_standard_not_os.md, references/research/direction_feed_standards.md, references/research/direction_host_platforms.md, references/research/direction_headunit_ecosystem.md, references/research/direction_repo_audit.md, references/research/direction_positioning.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0048-ostler-as-an-android-launcher.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md]
 summary: >
@@ -64,6 +64,11 @@ summary: >
    - has an **External MQTT** menu that publishes to an outside broker (Home Assistant
      discovery, OVMS topics and others);
    - carries the **normal feed widget**: a standard Android widget at about 1 Hz.
+
+   The Brain's Python service can do the same gateway job. Android straight to a node is
+   the server; Android to a Brain is a client that forwards requests, and the Brain is the
+   server. One permission set, held by the server, is synced to the Android gateways and
+   the cloud view; Brain failover is open (ADR-0051 item 9).
 
    ADR-0046 §2's safety list ("safety is never an app") now lives in the node and the
    gateway app, which cannot be left out.
@@ -158,3 +163,5 @@ own apps (a short brief per app before building).
   gateway app and its permissions controller; the app list with Decode lab in Diagnostics
   and no widget apps; the shared template (ADR-0050); cameras, meshes and output bridges;
   launcher parked.
+- 2026-10-08 — v1.1: item 4 notes the gateway roles and sync (ADR-0051 item 9, direction
+  decisions 38–40).

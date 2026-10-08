@@ -2,7 +2,7 @@
 title: "Direction — Ostler as an open diagnostic and logging platform with an open vehicle-data feed (VISS), not an OS: synthesis of the October 2026 direction round, with the owner's approved decision list"
 area: references
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-08
 depends_on: [references/research/direction_feed_standards.md, references/research/direction_host_platforms.md, references/research/direction_headunit_ecosystem.md, references/research/direction_repo_audit.md, references/research/direction_positioning.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md]
 summary: >
@@ -156,6 +156,31 @@ Signal K is the precedent and the warning: an open data standard plus a referenc
 plus apps worked for boats, but its written spec stalled while the server defined the
 behaviour. So the spec (in `ostler-feed`, decision 29) and the gateway app ship together,
 with conformance tests.
+
+### 3.2 Gateway roles and sync
+
+The gateway job is the same wherever it runs: the node link, the VISS server, the
+permissions controller and External MQTT. Two hosts can do it.
+
+- **On the Brain,** the Python service does the gateway job. Apps on the network make
+  access requests, and its settings live in the Brain's web console.
+- **On Android,** the gateway app does it.
+
+Which one is the server depends on how the device is connected:
+
+| Connection | Server | The Android gateway app |
+|---|---|---|
+| Android straight to a node | the Android gateway app | is the server |
+| Android to a Brain | the Brain | is a client: it forwards requests from apps on that device to the Brain |
+
+- **One server per node.** Only one server owns a node at a time.
+- **One permission set, synced.** The server holds the permissions and enforces them. The
+  Android gateway apps and the cloud view show and edit that same set. Turning a
+  permission off on the Android app turns it off on the Brain, and the same goes for the
+  cloud view.
+- **Open: failover.** What happens when the Brain drops out mid-drive (does the Android
+  gateway take over the node, and how is the permission set handed over and merged back)
+  is open. Feed spec v0.1 records it as an open item.
 
 ## 4. Theming, kept and re-targeted
 
@@ -328,6 +353,15 @@ as history.
     gate.
 37. **The normal feed widget:** a standard Android widget at about 1 Hz, from the gateway
     app; live views stay inside the apps; no widget apps.
+38. **The gateway job runs on the Brain too:** the Brain's Python service does the same job
+    as the Android gateway app (node link, VISS server, permissions, External MQTT); apps
+    on the network make access requests; settings live in the web console (§3.2).
+39. **Who is the server:** Android straight to a node, the Android gateway app is the
+    server; Android to a Brain, the Brain is the server and the Android gateway is a client
+    that forwards requests from apps on that device. One server owns a node at a time.
+40. **Everything is synced:** one permission set, held and enforced by the server and
+    shown and edited the same from the Android gateway apps, the Brain console and the
+    cloud view. Failover when the Brain drops out mid-drive is open, for Feed spec v0.1.
 
 ## Changelog
 
@@ -337,3 +371,6 @@ as history.
   external only, the gateway app and its permissions controller, the app list, no widget
   apps, launcher parked); §4, §5 and §7 updated; decisions 1–30 approved, items 1, 2, 4–6,
   11, 12, 16, 17 and 28 revised; decisions 31–37 added.
+- 2026-10-08 — v1.1: §3.2 gateway roles and sync added (owner, 2026-10-08): the Brain does
+  the same gateway job; Android direct to a node is the server, via a Brain a client; one
+  synced permission set; decisions 38–40; Brain failover open.
