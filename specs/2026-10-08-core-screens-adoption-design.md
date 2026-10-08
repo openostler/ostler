@@ -25,8 +25,7 @@ rail on the driver's side (right on this car); on the phone they are a bottom ba
 the passenger side (left).
 
 It fits [ADR-0049][adr49]: Ostler is a diagnostic and logging platform, not an operating
-system. The app shape it builds towards, recorded as an amendment to ADR-0049 in a parallel
-change, is one Ostler app with Home, Diagnose (with Decode), Logs, Map, More and Drive mode,
+system. The app shape it builds towards, recorded in ADR-0049 v1.2, is one Ostler app with Home, Diagnose (with Decode), Logs, Map, More and Drive mode,
 the same on phone and head unit. The web UI here is that app's reference build: the screens
 and their data contracts carry over to the Android app (ADR-0050) unchanged.
 
