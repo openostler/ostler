@@ -2,15 +2,15 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.8
+version: 2.9
 updated: 2026-10-07
 summary: >
-  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the DMD-round build order approved on 2026-10-07 (approvals and the private `ostler-hub` repo, U2 core with DM1–DM3, ShellInput I1–I2 and the lockouts with Passenger view behind a flag, Trips and V2–V3 after the design review, TS1 then the share sheet, approved add-on phases, Navigation N0–N2 and Phone PH0–PH1, hub H0–H1; NodeSource P4 keeps its place) with its legal gate (reg 109, product liability, hub duties) and bench items (D2 STN session, HaLow, batman-adv, LiveKit, handover, MeshCore, Phone PH0 HFP), data-hub ideas. Vehicle work lives in each pack.
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the DMD-round build order approved on 2026-10-07 (approvals and the private `ostler-hub` repo, U2 core with DM1–DM3, ShellInput I1–I2 and the lockouts with Passenger view behind a flag, Trips and V2–V3 after the design review, TS1 then the share sheet, approved add-on phases, Navigation N0–N2 and Phone PH0–PH1, hub H0–H1; NodeSource P4 keeps its place) with its legal gate (reg 109, product liability, hub duties) and bench items (D2 STN session, HaLow, batman-adv, LiveKit, handover, MeshCore, Phone PH0 HFP), data-hub ideas. Vehicle work lives in each pack. Adds the openness-round code follow-ups (ADR-0047): layout validator warnings, user-sized dock and strip, core-only visual lint, recording Pause and Off, driving settings, own-data privacy overrides, hub URL, Store openness and process tooling.
 ---
 
 # TODO — Ostler platform
 
-Updated 2026-10-07. Check off when done.
+Updated 2026-10-07 (openness round follow-ups added). Check off when done.
 
 > **Scope:** this repo is the platform. Vehicle work (decoding modules, car tests, fault
 > data) lives in the vehicle packs: for the Discovery 2, the
@@ -115,6 +115,48 @@ keeps its place** (below):
       Pixel, a Samsung and an iPhone; head unit + Brain coexistence; the messenger call matrix
       (WhatsApp, Signal, Telegram, Messenger), including whether **caller names** show or
       read "unknown" and whether answering from the car works.
+
+## Openness round code follow-ups ([ADR-0047](decisions/adr-0047-openness-round.md))
+
+Approved by the owner on 2026-10-07 ("apply the loosenings"). The docs are amended; the code
+still enforces some old rules. Each item keeps the safety tests intact (gate, Moving lockouts,
+no video, message text or text entry while Moving, no "always" Passenger view, render check,
+protected surfaces, required parts).
+
+- [ ] **Layout validator** (`src/openostler/layouts.py`, `layout_limits.json`,
+  `ui/src/drive/validate.ts`, `schemas/ostler-layout.schema.json`): long names, URLs in names
+  and files over 256 KB become warnings (size owner-raisable); no rail item cap; More, Back
+  and the Drive-mode chip may be hidden; safety items accept `icon`/`label`; add-on status
+  chips; `theme_hint` may brighten; faces uncapped; any icon (Material, pack glyph, emoji,
+  SVG); update `ui/src/drive/drive.test.ts` and the pytest twins.
+- [ ] **Shell:** drop `MAX_DESTINATIONS` (`ui/src/shell/destinations.ts`) for a per-class
+  default dock size with overflow; dock side flip; widgets in the dock; strip overflow chip and
+  `contributes.strip_chips`; holding Back 10 s offers Reset layout; stop stripping
+  `data-glow` on head units.
+- [ ] **Visual lint and tests:** scope stylelint, ESLint and `ui/src/icons/glyphs.test.ts` to
+  the core kit and shell; drop the `[data-glow]` assertions (`ui/e2e/drive-modes.spec.ts`,
+  visual §9 suite); `text-3` on `surface-3` as a warning; icon picker with the full set, icon
+  packs, emoji and sanitised SVG upload.
+- [ ] **Recording:** Pause and Off with the REC chip state; opt-in GPS-only trips; a developer
+  demo mode badged "Demo".
+- [ ] **Driving settings:** Passenger view timeout 15–60 min; passenger-device phones;
+  canned-reply count; message rate limits; task depth ≤ 5; line length ≤ 120; experimental
+  Moving templates behind a flag and the validator; `camera_live` speed; front and side road
+  cameras while Moving (behind the U2 legal opinion); keypad with Park evidence.
+- [ ] **Privacy and sharing:** long or standing location grants with warnings;
+  visible-to-household at setup; consented cabin-audio shares; full VIN kept locally (opt-in);
+  owner export of identity data; VIN in an L4 bundle to one named person; L2 by `link`;
+  public route delay 0–24 h; ends trim below 200 m and smaller zones with warnings; short trips
+  above L0; real time with a second confirm; public scrubbed L3 through the verifier; opt-in
+  announced call recording; phone-data export; opt-in wallpaper and image export.
+- [ ] **Ecosystem:** user-settable hub URL in `ostler-app-hub` and a stability note for
+  `api/hub.openapi.yaml`; namespaced add-on slots; brand SVG and emoji default icons with SVG
+  sanitising; raw strings in community flows; Store disable switch, opt-in ratings, paid data
+  objects, owner consent for community `device` hardware, sideload warnings for projection and
+  streaming clients, labelled synthetic previews.
+- [ ] **Process tooling:** `check_ux_brief.py` (when built) warns instead of failing; the
+  fixture metadata check accepts labelled synthetic fixtures outside core UI tests; no
+  score-field lint in core Trips.
 
 ## Repo split follow-ups (ADR-0015)
 

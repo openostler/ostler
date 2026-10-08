@@ -2,31 +2,34 @@
 title: "Designer brief 45-j — launcher: the theme wizard (Wallpaper & style), wallpaper, colours and icon packs"
 area: references
 status: draft
-version: 0.2
-updated: 2026-10-07
-depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
+version: 0.3
+updated: 2026-10-08
+depends_on: [specs/2026-10-07-theme-engine-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Seventh launcher brief file: the theme wizard, Android's Wallpaper & style. It gives the
-  step list and the blocks for the hub page, wallpaper and background (built in, from the
-  Store, or the owner's own image, dimmed at night and never behind a Moving template),
-  colours (accent palette within the token rules, and Night, Day, Auto or Deep night) and
-  icon packs (alternative glyph sets that map to Material Symbols names, with fallbacks;
-  safety telltales never change). Gauge styles, text size, the preview and Home settings
-  follow in 45-k.
+  Seventh launcher brief file: the theme wizard, Android's Wallpaper & style. It follows the
+  theme engine spec: the wizard picks the OS skin and its options, widget packs, the icon
+  pack, the background and the sound pack, and the background belongs to the user. It gives
+  the step list and the blocks for the hub page, wallpaper and background (built in, from
+  the Store, or the owner's own image), colours and mode (any accent the skin offers; Night,
+  Day, Auto or Deep night) and icon packs (glyph sets mapped to Material Symbols names, with
+  fallbacks). Safety comes from the engine's Drive-mode render check, protected surfaces and
+  required parts. Gauge styles, text size, the preview and Home settings follow in 45-k. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-j — Theme wizard: hub, wallpaper, colours and icons
 
-Back to [45-a](45-launcher-a.md). The theme engine is part of the OS; the default theme and
-theme packs are apps from the Store (owner direction). Every choice here produces **token
-sets**, never raw colours, and each must pass the visual spec's contrast checks in all four
-themes ([visual §3.1][vds-3.1]). Status colours (ISO 2575) never change. On a driver-facing
-display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
+Back to [45-a](45-launcher-a.md). The [theme engine spec][te] decides what a theme is: an
+OS skin, plus separate widget, icon, wallpaper and sound packs, or a bundle of them. The
+engine is part of the OS; skins and packs come from the Store. Skins can change anything,
+status colours included, and look the same while Moving ([visual §13][vds-13]). Safety comes
+from the engine's Drive-mode render check, protected surfaces and required parts (its
+decisions 5–7). The background belongs to the user: choosing a skin never changes it. On a
+driver-facing display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 
 | # | Screen | The user… | Can fail → recovery |
 |---|---|---|---|
 | 1 | `launcher-theme-wallpaper` | picks a wallpaper | image too large or unreadable → "Pick an image under 8 MB (JPEG or PNG)" |
-| 2 | `launcher-theme-colours` | picks an accent and Night, Day or Auto | a pack's accent fails contrast → not offered, with "Doesn't meet contrast" |
+| 2 | `launcher-theme-colours` | picks the OS skin, its options, an accent and Night, Day or Auto | the skin fails the Drive-mode render check → the Drive page keeps the built-in look, with a note saying why |
 | 3 | `launcher-theme-icons` | picks an icon pack | a pack lacks an icon → that icon falls back to Material Symbols |
 | 4 | `launcher-theme-gauges` | picks a gauge style (45-k) | — |
 | 5 | `launcher-theme-text` | picks a text size (45-k) | a size would clip on this screen → not offered |
@@ -41,13 +44,15 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night; phone Day; phone Night.
 - **Content:** 1. A live **preview strip**: the current home page and the Drive page side by
-  side. 2. Rows with the current value: **Wallpaper** "Contour", **Colours** "Cyan · Auto",
-  **Icons** "Material outlined", **Gauges** "Calm", **Text size** "Default". 3. **Get themes**
-  → Store theme packs. 4. **Use the default theme**.
+  side. 2. Rows with the current value: **OS skin** "Night", **Wallpaper** "Contour",
+  **Colours** "Cyan · Auto", **Icons** "Material outlined", **Gauges** "Calm",
+  **Sounds** "Default", **Text size** "Default". 3. **Get themes** → Store skins, packs and
+  bundles. 4. **Use the default theme**.
 - **States:** a Store pack updating: "Updating theme pack". Offline: Get themes greyed.
   Moving: locked view.
-- **Safety and driving rules:** nothing here changes a Moving template's floors, a status
-  colour or a safety icon ([visual §1][vds-1]).
+- **Safety and driving rules:** a skin may restyle anything, but the Moving content rules
+  stay, and the Drive-mode render check, protected surfaces and required parts apply
+  ([theme engine][te] decisions 5–7).
 - **Components:** ListRow, Card (preview), Button.
 - **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [UI §12.5][ui-12.5] · [launcher §11][lw-11].
 - **Open questions:** should a theme be per display, per profile, or both? This brief says
@@ -67,14 +72,14 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   3. **Your own image:** **Choose image** (Parked; stored on the device only, EXIF stripped,
      never uploaded and never exported in layouts, item 50), then **Crop** for this screen's
      size.
-  4. **Dim at night** (on, and locked on for head units): in Night dim and Deep night the
-     wallpaper sits under the `overlay` scrim at 80 %.
+  4. **Dim at night** (on by default): in Night dim and Deep night the wallpaper sits
+     under the `overlay` scrim. Dim, blur, scrim and position are the user's sliders.
   5. **Apply to:** This screen · All my screens.
 - **States:** image error as in the table. A light image in Night: a note "Dimmed so text stays
   readable". Moving: locked view.
-- **Safety and driving rules:** on head units the Drive carousel and every Moving template
-  draw on plain `bg`, never on a wallpaper; widgets keep their cards, so text contrast never
-  depends on the wallpaper ([visual §1][vds-1], [visual §5][vds-5]).
+- **Safety and driving rules:** the background belongs to the user; choosing a skin never
+  changes it unless "Use this theme's background" is ticked. It shows the same while Moving;
+  the Drive-mode render check guards contrast ([theme engine][te] §2.3, decision 5).
 - **Components:** Card (thumbnail grid), crop tool (new component), switch, Segmented.
 - **Spec refs:** [visual §1][vds-1] · [visual §5][vds-5] · [UI §12.5][ui-12.5] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 50):** wallpaper images are stored on the device only
@@ -89,20 +94,20 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
 - **Content:**
   1. **Theme:** Segmented **Night · Day · Auto**; **Deep night (OLED)** switch; on head
      units a line "After dusk the screen uses Night dim".
-  2. **Accent:** swatches as named, validated accent sets (item 48): **Cyan** (default),
-     the OS's other built-in sets and those from installed theme packs (for example an amber
-     accent). Each swatch has a name and passed every contrast pair in every theme; failing
-     ones are not shown.
-  3. **Map style follows theme** switch (map theme stays independent, [UI §13.5][ui-13.5]).
-  4. A small preview card: a button, a selected chip and a gauge in and out of range.
-- **States:** a pack accent too close to a status colour is refused ("Too close to the
-  warning colour"). Moving: locked view.
-- **Safety and driving rules:** `ok`, `warn`, `alarm` never change; data ramps never use the
-  accent; no glow on head units at night ([visual §3.3][vds-3.3], [visual §5][vds-5]).
+  2. **OS skin:** the 22 built-in skins and installed ones as cards, then **Options** for
+     the skin's own choices (for example Heritage's gauge faces and dial layout).
+  3. **Accent:** any accent the skin offers; **Cyan** is the Night default.
+  4. **Map style follows theme** switch (map theme stays independent, [UI §13.5][ui-13.5]).
+  5. A small preview card: a button, a selected chip and a gauge in and out of range.
+- **States:** a skin that fails the Drive-mode render check: the Drive page keeps the
+  built-in look, with the reason. Moving: locked view.
+- **Safety and driving rules:** skins may restyle status colours, glow and blur; the
+  Drive-mode render check (telltale and alarm visible, Drive digits ≥ 56 px, contrast
+  ≥ 4.5:1) guards them ([theme engine][te] decision 5, [visual §13][vds-13]).
 - **Components:** Segmented, switch, colour swatch (new component), Card.
 - **Spec refs:** [visual §3.1][vds-3.1] · [visual §3.3][vds-3.3] · [UI §13.5][ui-13.5] · [launcher §11][lw-11].
-- **Open questions:** **Decided (item 48):** accents other than cyan are allowed as
-  validated colour sets; status colours never change.
+- **Open questions:** **Decided (item 48), superseded 2026-10-08:** any accent; no locked
+  tokens ([theme engine][te], [visual §13][vds-13]).
 
 ### launcher-theme-icons — Icon packs  [New]
 - **Purpose:** choose the look of app and dock icons.
@@ -117,18 +122,21 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   2. Each pack is an **alternative glyph set that maps to Material Symbols names**: an icon
      a pack lacks falls back to the Material outlined glyph; the card shows "Covers 212 of
      300 icons".
-  3. A note: "Warning lights and alarm icons don't change."
+  3. A note: "Warning lights and alarm icons must stay visible in every pack."
 - **States:** pack missing icons: the fallback line. Moving: locked view.
-- **Safety and driving rules:** the fault telltale, warning lights and alarm glyphs are
-  never replaced; no emoji or images as icons ([visual §6][vds-6], [Drive modes §8.1][dm-8.1]
-  R3).
+- **Safety and driving rules:** packs map to Material Symbols names and may restyle the
+  safety glyphs, but the telltale and alarm are required parts and must pass the Drive-mode
+  render check ([theme engine][te] decisions 5 and 7).
 - **Components:** Card, App icon (new).
 - **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6] · [launcher §11][lw-11] ·
   [app UI model §9][ua-9].
-- **Open questions:** **Decided (item 49):** icon packs are glyph sets mapped to Material
-  Symbols names; safety icons never change.
+- **Open questions:** **Decided (item 49), superseded 2026-10-08:** icon packs map to
+  Material Symbols names; safety glyphs are required parts, not fixed glyphs
+  ([theme engine][te]).
 
 <!-- links -->
+[te]: ../../../../specs/2026-10-07-theme-engine-design.md
+[vds-13]: ../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07
 [dm-7.6]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#76-icons-and-names-v02
 [dm-8.1]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#81-safety-rules
 [dm-8.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#83-storage

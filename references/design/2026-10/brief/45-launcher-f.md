@@ -2,7 +2,7 @@
 title: "Designer brief 45-f — widget setup pages (2 of 3): map, compass and incline, trip computer, fuel and range, service due, alarm status, camera, clock and date"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -11,7 +11,7 @@ summary: >
   (Trips), fuel and range (honest about the D2 having no decoded fuel level), service due
   (Maintenance), alarm status (a safety item drawn by the OS), a camera (Camera app, Parked
   only on driver-facing screens), the clock and the date. Each block gives styles, data,
-  options, a real Discovery 2 example and how the widget renders while Moving.
+  options, a real Discovery 2 example and how the widget renders while Moving. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-f — Widget setup pages: place, trip, car care and time
@@ -122,8 +122,8 @@ Back to [45-a](45-launcher-a.md); shared rules in [45-e](45-launcher-e.md).
 - **States:** "Disarmed", "Armed", "Alerting" in `alarm`; no node: the widget is an
   ordinary one and may be removed. Moving: not in a layout; alarms reach the driver as an
   `alert_card`.
-- **Safety and driving rules:** with a node: cannot be removed, renamed or recoloured
-  ([Drive modes §8.1][dm-8.1] R3).
+- **Safety and driving rules:** with a node: cannot be removed, hidden or covered; a theme may
+  restyle it under the render check ([Drive modes §8.1][dm-8.1] R3).
 - **Components:** Card (tone), Chip (status).
 - **Spec refs:** [Drive modes §7.2][dm-7.2] · [Drive modes §8.1][dm-8.1].
 - **Open questions:** none.

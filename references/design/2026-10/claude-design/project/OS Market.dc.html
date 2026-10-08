@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">A</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Add-ons market</span><span style="font-size:14px;color:#3b4556">More › Add-ons · Installed / Available · no ratings, rankings or ads · tap cards and tabs</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Add-ons (interactive tabs)</div>
+<div data-screen-label="Add-ons list" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px;padding:8px 4px 0"><span class="material-symbols-rounded" style="font-size:24px">arrow_back</span><span style="font-size:28px;font-weight:700;flex:1">Add-ons</span><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">search</span></div>
+<div style="height:48px;border-radius:24px;background:#121a2c;padding:4px;display:grid;grid-template-columns:1fr 1fr"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.pick }}" style="cursor:pointer;border-radius:20px;background:{{ t.bg }};color:{{ t.c }};display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700">{{ t.l }}<span style="font-size:12px;color:#8e9ab0">{{ t.n }}</span></div></sc-for></div>
+<sc-if value="{{ isAvail }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">SUGGESTED BY YOUR DEVICES</span></sc-if>
+<sc-for list="{{ cards }}" as="a" hint-placeholder-count="5"><div onClick="{{ a.open }}" style="cursor:pointer;border-radius:20px;background:#121a2c;box-shadow:{{ a.ring }};padding:12px 14px;display:flex;gap:12px;align-items:flex-start"><div style="width:48px;height:48px;border-radius:14px;background:#243049;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:26px">{{ a.icon }}</span></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700">{{ a.n }}</span><span style="font-size:12px;font-weight:700;padding:2px 7px;border-radius:7px;background:{{ a.kbg }};color:{{ a.kc }}">{{ a.kind }}</span></div><span style="font-size:13px;color:#b0bacb;line-height:1.35">{{ a.d }}</span><div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#8e9ab0;font-variant-numeric:tabular-nums"><span>{{ a.pub }}</span><span>·</span><span>{{ a.v }}</span><sc-if value="{{ a.upd }}" hint-placeholder-val="{{ false }}"><span style="font-weight:800;color:#0a1020;background:#22a6e0;padding:2px 7px;border-radius:7px">Update</span></sc-if><sc-if value="{{ a.sug }}" hint-placeholder-val="{{ false }}"><span style="font-weight:700;color:#b0bacb;display:flex;align-items:center;gap:3px"><span class="material-symbols-rounded" style="font-size:14px">sensors</span>{{ a.sug }}</span></sc-if></div></div></div></sc-for>
+<sc-if value="{{ isAvail }}" hint-placeholder-val="{{ false }}"><div style="min-height:60px;border-radius:18px;background:#0e1526;display:flex;align-items:center;gap:12px;padding:0 14px;opacity:.6"><span class="material-symbols-rounded" style="font-size:24px;color:#8e9ab0">dns</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Repositories</span><span style="font-size:13px;color:#8e9ab0">Coming later · bundled add-ons only for now</span></div></div></sc-if>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Add-on detail ({{ sel.n }})</div>
+<div data-screen-label="Add-on detail" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:14px;padding-top:8px"><div style="width:64px;height:64px;border-radius:18px;background:#243049;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:34px">{{ sel.icon }}</span></div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:24px;font-weight:700">{{ sel.n }}</span><span style="font-size:13px;color:#b0bacb">{{ sel.pub }} · {{ sel.v }} · {{ sel.kind }}</span></div></div>
+<span style="font-size:14px;line-height:1.5;color:#c9d1de">{{ sel.long }}</span>
+<div style="display:flex;gap:8px"><div style="flex:1;height:52px;border-radius:26px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:800">{{ sel.cta }}</div><div style="height:52px;padding:0 16px;border-radius:26px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">push_pin</span>Pin to rail</div></div>
+<div style="display:flex;gap:8px;overflow:hidden"><div style="width:150px;height:200px;border-radius:16px;background:#121a2c;flex:none;display:flex;align-items:center;justify-content:center;color:#5d6879;font-size:12px;text-align:center;padding:10px">Screenshot slot</div><div style="width:150px;height:200px;border-radius:16px;background:#121a2c;flex:none;display:flex;align-items:center;justify-content:center;color:#5d6879;font-size:12px">Screenshot slot</div><div style="width:150px;height:200px;border-radius:16px;background:#121a2c;flex:none"></div></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">WHAT IT READS</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ sel.reads }}" as="r" hint-placeholder-count="3"><span style="height:36px;padding:0 12px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px;color:#b0bacb">{{ r.icon }}</span>{{ r.t }}</span></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">WHAT IT MAY DO</span>
+<sc-for list="{{ sel.does }}" as="r" hint-placeholder-count="2"><div style="display:flex;gap:10px;align-items:center;min-height:36px"><span class="material-symbols-rounded" style="font-size:20px;color:{{ r.c }}">{{ r.icon }}</span><span style="font-size:14px">{{ r.t }}</span></div></sc-for>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">WHERE IT APPEARS</span>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><sc-for list="{{ sel.where }}" as="w" hint-placeholder-count="4"><div style="min-height:48px;border-radius:14px;background:#121a2c;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;font-weight:600;opacity:{{ w.op }}"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">{{ w.icon }}</span>{{ w.t }}</div></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">CHANGELOG</span>
+<div style="background:#121a2c;border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:#b0bacb;line-height:1.45"><span><b style="color:#eef2f9">{{ sel.v }}</b> · Service intervals for Td5 15P</span><span><b style="color:#eef2f9">1.3.0</b> · Fuel log import from CSV</span></div>
+<div style="display:flex;gap:8px"><div style="flex:1;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">Disable</div><div style="flex:1;height:48px;border-radius:24px;background:#1a2439;color:#ef6a7d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">Uninstall</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Install flow (step through)</div>
+<div data-screen-label="Install flow" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:{{ ins.top }}px;background:#121a2c;border-radius:32px 32px 0 0;padding:10px 20px 32px;display:flex;flex-direction:column;gap:12px">
+<div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div>
+<div style="display:flex;gap:6px;justify-content:center"><sc-for list="{{ ins.dots }}" as="d" hint-placeholder-count="3"><span style="width:24px;height:4px;border-radius:2px;background:{{ d }}"></span></sc-for></div>
+<sc-if value="{{ ins.s0 }}" hint-placeholder-val="{{ true }}">
+<span style="font-size:22px;font-weight:700">Install Social?</span>
+<span style="font-size:14px;color:#b0bacb">Review what it can see before it’s turned on.</span>
+<sc-for list="{{ perm }}" as="p" hint-placeholder-count="4"><div style="min-height:60px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:8px 14px"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">{{ p.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ p.t }}</span><span style="font-size:13px;color:#b0bacb">{{ p.d }}</span></div></div></sc-for>
+<div style="min-height:52px;border-radius:16px;background:rgba(191,138,26,.12);display:flex;align-items:center;gap:10px;padding:8px 14px"><span class="material-symbols-rounded" style="font-size:22px;color:#bf8a1a">directions_car</span><span style="font-size:13px;line-height:1.4"><b style="color:#bf8a1a">While Moving:</b> alerts only (alert card, Play / Reply)</span></div>
+</sc-if>
+<sc-if value="{{ ins.s1 }}" hint-placeholder-val="{{ false }}">
+<span style="font-size:22px;font-weight:700">Where Social shows up</span>
+<sc-for list="{{ appears }}" as="p" hint-placeholder-count="4"><div style="min-height:60px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:8px 14px"><span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0">{{ p.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ p.t }}</span><span style="font-size:13px;color:#b0bacb">{{ p.d }}</span></div></div></sc-for>
+<span style="font-size:13px;color:#8e9ab0">Move, rename or hide any of these in edit mode.</span>
+</sc-if>
+<sc-if value="{{ ins.s2 }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center"><span class="material-symbols-rounded" style="font-size:56px;color:#2f9e63;font-variation-settings:'FILL' 1">check_circle</span><span style="font-size:22px;font-weight:700">Social is ready</span><span style="font-size:14px;color:#b0bacb">Installed · enabled</span></div>
+</sc-if>
+<div style="flex:1"></div>
+<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px"><div onClick="{{ insBack }}" style="cursor:pointer;height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">{{ ins.back }}</div><div onClick="{{ insNext }}" style="cursor:pointer;height:52px;border-radius:26px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">{{ ins.next }}</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Empty Home suggestion · loading · error</div>
+<div data-screen-label="Empty home" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Home</span>
+<sc-if value="{{ showSuggest }}" hint-placeholder-val="{{ true }}">
+<div style="border-radius:24px;background:#121a2c;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">MAKE OSTLER YOURS</span><span onClick="{{ dismiss }}" class="material-symbols-rounded" style="cursor:pointer;font-size:22px;color:#b0bacb">close</span></div>
+<sc-for list="{{ suggest }}" as="s" hint-placeholder-count="2"><div style="min-height:60px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:8px 14px"><span class="material-symbols-rounded" style="font-size:24px">{{ s.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ s.t }}</span><span style="font-size:13px;color:#b0bacb">{{ s.d }}</span></div><span style="font-size:14px;font-weight:700;color:#22a6e0">Add</span></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ hideSuggest }}" hint-placeholder-val="{{ false }}"><div onClick="{{ undismiss }}" style="cursor:pointer;font-size:13px;color:#8e9ab0;padding:4px">Suggestion dismissed · tap to show again</div></sc-if>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">AVAILABLE · LOADING</span>
+<div style="border-radius:20px;background:#121a2c;padding:14px;display:flex;gap:12px"><div style="width:48px;height:48px;border-radius:14px;background:#1a2439"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center"><div style="height:12px;width:60%;border-radius:6px;background:#1a2439"></div><div style="height:10px;width:85%;border-radius:5px;background:#1a2439"></div></div></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">UPDATE · ERROR</span>
+<div style="border-radius:20px;background:rgba(239,106,125,.10);padding:14px;display:flex;gap:12px;align-items:center"><span class="material-symbols-rounded" style="font-size:26px;color:#ef6a7d">error</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700"><span style="color:#ef6a7d">Failed</span> · Navigation 0.4.1</span><span style="font-size:13px;color:#b0bacb">Not enough space on the Brain (needs 120 MB)</span></div><span style="font-size:14px;font-weight:700;color:#22a6e0">Retry</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · More › Integrations · PROVISIONAL (HA research)</div>
+<div data-screen-label="Integrations provisional" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px 0"><span style="font-size:28px;font-weight:700">Integrations</span><span style="font-size:12px;font-weight:800;color:#bf8a1a;background:rgba(191,138,26,.16);padding:4px 10px;border-radius:10px">Provisional</span></div>
+<div style="border-radius:20px;background:rgba(34,166,224,.10);padding:12px 14px;display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:26px;color:#22a6e0">radar</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Discovered · OBDLink MX+</span><span style="font-size:13px;color:#b0bacb">Bluetooth · just now</span></div><span style="font-size:14px;font-weight:800;color:#22a6e0">Set up</span></div>
+<sc-for list="{{ integ }}" as="g" hint-placeholder-count="5"><div style="border-radius:20px;background:#121a2c;padding:12px 14px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">{{ g.icon }}</span><span style="flex:1;font-size:15px;font-weight:700">{{ g.n }}</span><span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px;background:#243049;color:#b0bacb">{{ g.tier }}</span></div><div style="display:flex;gap:10px;font-size:13px;color:#b0bacb;font-variant-numeric:tabular-nums;padding-left:34px;flex-wrap:wrap"><span>{{ g.src }}</span><span>·</span><span>{{ g.mode }}</span><span>·</span><span>{{ g.sig }}</span></div></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Tablet 1024×768 · Add-ons · Installed, with detail pane</div>
+<div data-screen-label="Add-ons tablet" style="width:1024px;height:768px;border-radius:28px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="width:88px;flex:none;background:#0d1424;display:flex;flex-direction:column;align-items:center;padding:24px 0;gap:6px"><sc-for list="{{ tRail }}" as="r" hint-placeholder-count="5"><div style="width:64px;height:64px;border-radius:20px;background:{{ r.bg }};color:{{ r.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="material-symbols-rounded" style="font-size:26px">{{ r.icon }}</span><span style="font-size:12px;font-weight:700">{{ r.n }}</span></div></sc-for></div>
+<div style="width:420px;flex:none;padding:28px 20px;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+<span style="font-size:28px;font-weight:700">Add-ons</span>
+<div style="height:48px;border-radius:24px;background:#121a2c;padding:4px;display:grid;grid-template-columns:1fr 1fr"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.pick }}" style="cursor:pointer;border-radius:20px;background:{{ t.bg }};color:{{ t.c }};display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700">{{ t.l }}</div></sc-for></div>
+<sc-for list="{{ cards }}" as="a" hint-placeholder-count="5"><div onClick="{{ a.open }}" style="cursor:pointer;min-height:76px;border-radius:18px;background:{{ a.tbg }};box-shadow:{{ a.ring }};padding:10px 14px;display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:12px;background:#243049;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:24px">{{ a.icon }}</span></div><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ a.n }}</span><span style="font-size:13px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.d }}</span></div><sc-if value="{{ a.upd }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:800;color:#0a1020;background:#22a6e0;padding:2px 7px;border-radius:7px">Update</span></sc-if></div></sc-for>
+</div>
+<div style="flex:1;min-width:0;background:#121a2c;margin:16px 16px 16px 0;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:14px"><div style="width:64px;height:64px;border-radius:18px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px">{{ sel.icon }}</span></div><div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700">{{ sel.n }}</span><span style="font-size:13px;color:#b0bacb">{{ sel.pub }} · {{ sel.v }} · {{ sel.kind }}</span></div></div>
+<span style="font-size:14px;line-height:1.5;color:#c9d1de">{{ sel.long }}</span>
+<div style="display:flex;gap:8px"><div style="height:48px;padding:0 22px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;font-size:14px;font-weight:800">{{ sel.cta }}</div><div style="height:48px;padding:0 16px;border-radius:24px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">push_pin</span>Pin to rail</div></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding-top:6px">WHAT IT READS</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ sel.reads }}" as="r" hint-placeholder-count="3"><span style="height:36px;padding:0 12px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px;color:#b0bacb">{{ r.icon }}</span>{{ r.t }}</span></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding-top:6px">WHERE IT APPEARS</span>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><sc-for list="{{ sel.where }}" as="w" hint-placeholder-count="4"><div style="min-height:48px;border-radius:14px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;font-weight:600;opacity:{{ w.op }}"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">{{ w.icon }}</span>{{ w.t }}</div></sc-for></div>
+<div style="margin-top:auto;border-radius:16px;background:#0e1526;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:.7"><span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">deployed_code</span><span style="font-size:13px;color:#b0bacb;flex:1">Runs on the Brain · placeholder</span><span style="font-size:12px;color:#8e9ab0;font-variant-numeric:tabular-nums">CPU — · RAM — · Disk —</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · Night dim · locked</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Add-ons locked moving" style="width:1024px;height:600px;background:#070b16;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;filter:brightness(.72)">
+<dc-import name="Drive Strip" size="hu7" mode="dash" drive="{{ false }}" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;display:flex;align-items:center;justify-content:center">
+<div style="width:620px;background:#1a2439;border-radius:28px;padding:30px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+<span class="material-symbols-rounded" style="font-size:64px;color:#b0bacb">local_parking</span>
+<span style="font-size:40px;font-weight:700">Park to manage add-ons</span>
+<span style="font-size:24px;color:#b0bacb">Installed add-ons keep working.</span>
+<div style="height:84px;padding:0 40px;border-radius:26px;background:#243049;display:flex;align-items:center;gap:10px;font-size:26px;font-weight:700;box-shadow:0 0 0 2px #1a2439,0 0 0 5px #22a6e0"><span class="material-symbols-rounded" style="font-size:32px">speed</span>Back to Drive</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const KIND={Core:['#243049','#b0bacb'],'Add-on':['rgba(34,166,224,.16)','#22a6e0'],Developer:['rgba(191,138,26,.16)','#bf8a1a']};
+const R=(icon,t)=>({icon,t});
+const ADD=[
+ {id:'maint',icon:'build',n:'Maintenance & Garage',kind:'Add-on',d:'Service intervals, fuel log, parts and receipts.',pub:'Ostler',v:'1.4.0',upd:true,inst:true,long:'Tracks oil, filters and MOT from real mileage. Reminds you before things are due, and keeps receipts with the car.',reads:[R('speed','Odometer'),R('warning','Faults'),R('route','Trips')],does:[{icon:'notifications',t:'Show reminders on Home',c:'#b0bacb'},{icon:'block',t:'Can’t control the car',c:'#2f9e63'}],moving:false},
+ {id:'social',icon:'forum',n:'Social',kind:'Add-on',d:'Friends, rides and messages.',pub:'Ostler',v:'2.1.3',inst:true,long:'Invite friends, start rides, share position with people you choose. Message alerts follow the Moving rules.',reads:[R('location_on','Location'),R('route','Trips')],does:[{icon:'send',t:'Share position when you allow it',c:'#b0bacb'},{icon:'directions_car',t:'Moving: alerts only',c:'#bf8a1a'}],moving:true},
+ {id:'vehicles',icon:'map',n:'Vehicles & Map',kind:'Add-on',d:'Your fleet and friends on one map.',pub:'Ostler',v:'1.9.0',inst:true,long:'All your vehicles and opted-in friends on a dark map, with last-seen and link type.',reads:[R('location_on','Location')],does:[{icon:'block',t:'Can’t control the car',c:'#2f9e63'}],moving:true},
+ {id:'cams',icon:'videocam',n:'Cameras',kind:'Add-on',d:'Reversing and trail cameras.',pub:'Ostler',v:'0.8.2',inst:true,long:'View reversing and trail cameras while Parked or at walking speed in low range.',reads:[R('videocam','Camera'),R('speed','Speed')],does:[{icon:'block',t:'No video while Moving',c:'#bf8a1a'}],moving:false},
+ {id:'decode',icon:'terminal',n:'Decode lab',kind:'Developer',d:'Sniff, label and share unknown frames.',pub:'Ostler',v:'0.3.0',inst:true,upd:true,long:'Raw bus capture, recipes, and help-me-decode threads. Parked only.',reads:[R('memory','Raw bus'),R('warning','Faults')],does:[{icon:'local_parking',t:'Parked only',c:'#bf8a1a'}],moving:false},
+ {id:'nav',icon:'navigation',n:'Navigation',kind:'Add-on',d:'Turn-by-turn, GPX tracks and offline maps.',pub:'Ostler',v:'0.4.1',sug:'Suggested: GPS fix',long:'Offline routing for car, motorcycle and green lanes. Turn card in the Moving map template.',reads:[R('location_on','Location'),R('speed','Speed')],does:[{icon:'directions_car',t:'Moving: map + turn card',c:'#bf8a1a'}],moving:true},
+ {id:'phone',icon:'call',n:'Phone & Comms',kind:'Add-on',d:'Hands-free calls and favourites.',pub:'Ostler',v:'0.2.0',sug:'Suggested: Pixel 8 paired',long:'The Brain as a hands-free kit. Calls in the call template while Moving, no keypad.',reads:[R('contacts','Contacts (on device)')],does:[{icon:'directions_car',t:'Moving: call card only',c:'#bf8a1a'}],moving:true},
+ {id:'comm',icon:'diversity_3',n:'Ostler Community',kind:'Add-on',d:'Get help, share trips, find clubs.',pub:'Ostler',v:'1.0.0',long:'Follow clubs and help threads. No feed for strangers, no points or ranks.',reads:[R('route','Trips you share')],does:[{icon:'block',t:'Nothing leaves without a share',c:'#2f9e63'}],moving:false},
+ {id:'diag',icon:'stethoscope',n:'Diagnose',kind:'Core',d:'Fault codes, live data, freeze frames.',pub:'Ostler',v:'core',inst:true,core:true,long:'Part of Ostler. Can be moved or renamed, not uninstalled.',reads:[R('warning','Faults')],does:[{icon:'shield',t:'Safety item',c:'#b0bacb'}],moving:true}];
+class Component extends DCLogic {
+ state={tab:'Installed',sel:'maint',step:0,dismissed:false};
+ renderVals(){
+  const S=this.state;
+  const list=ADD.filter(a=>S.tab==='Installed'?a.inst:!a.inst);
+  const cards=list.map(a=>({...a,kbg:KIND[a.kind][0],kc:KIND[a.kind][1],upd:!!a.upd,sug:a.sug||'',ring:S.sel===a.id?'inset 0 0 0 2px #22a6e0':'none',tbg:S.sel===a.id?'#1a2439':'#121a2c',open:()=>this.setState({sel:a.id})}));
+  const s=ADD.find(a=>a.id===S.sel)||ADD[0];
+  const W=[['view_sidebar','Rail',1],['more_horiz','More page',1],['dashboard','Home widgets',1],['speed','Drive widgets',s.moving],['list','Drive menu rows',s.moving],['notifications','Alerts',1]];
+  const sel={...s,cta:s.core?'Open':s.inst?(s.upd?'Update to 1.4.1':'Open'):'Install',where:W.map(([icon,t,on])=>({icon,t,op:on?1:.35}))};
+  const tabs=['Installed','Available'].map(l=>({l,n:String(ADD.filter(a=>l==='Installed'?a.inst:!a.inst).length),bg:S.tab===l?'#243049':'transparent',c:S.tab===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({tab:l,sel:ADD.find(a=>l==='Installed'?a.inst:!a.inst).id})}));
+  const st=S.step;
+  const ins={s0:st===0,s1:st===1,s2:st===2,top:st===2?520:200,dots:[0,1,2].map(i=>i<=st?'#22a6e0':'#3b4a6a'),back:st===0?'Cancel':st===2?'Close':'Back',next:st===0?'Allow and install':st===1?'Done':'Open Social'};
+  const perm=[{icon:'location_on',t:'Location',d:'Only while a ride is active, to people you choose'},{icon:'route',t:'Trips',d:'Card level, when you share'},{icon:'contacts',t:'Ostler friends',d:'Invited friends only, no phone contacts'},{icon:'notifications',t:'Notifications',d:'Message and ride alerts'}];
+  const appears=[{icon:'view_sidebar',t:'Rail · slot 4',d:'Replaces nothing · 5 slots max'},{icon:'dashboard',t:'Home widget',d:'“2 unread · Ride active”'},{icon:'speed',t:'Drive · Convoy mode',d:'Push-to-talk and ride status'},{icon:'list',t:'Drive menu',d:'“Start ride” row'}];
+  const suggest=[{icon:'build',t:'Track maintenance',d:'Oil, filters and MOT from real mileage'},{icon:'group',t:'Share drives with friends',d:'Invite people you trust'}];
+  const integ=[{icon:'directions_car',n:'Land Rover Td5 pack',tier:'First party',src:'Vehicle pack',mode:'Poll',sig:'Engine: 24 proven, 9 candidate'},{icon:'memory',n:'Ostler node',tier:'Core',src:'CAN + K-line',mode:'Push',sig:'All buses'},{icon:'bluetooth',n:'ELM327 adapter',tier:'Core',src:'OBD-II',mode:'Poll',sig:'Read-only (clone)'},{icon:'home',n:'Home Assistant bridge',tier:'Community',src:'MQTT',mode:'Push',sig:'12 entities'},{icon:'speed',n:'RealDash',tier:'Community',src:'TCP',mode:'Push',sig:'30 signals out'}];
+  const tRail=[['home','Home'],['speed','Drive'],['route','Trips'],['stethoscope','Diagnose'],['more_horiz','More',1]].map(([icon,n,on])=>({icon,n,bg:on?'rgba(34,166,224,.16)':'transparent',c:on?'#22a6e0':'#b0bacb'}));
+  return {tabs,cards,isAvail:S.tab==='Available',sel,ins,perm,appears,insNext:()=>this.setState(x=>({step:x.step>=2?0:x.step+1})),insBack:()=>this.setState(x=>({step:x.step===0||x.step===2?0:x.step-1})),suggest,showSuggest:!S.dismissed,hideSuggest:S.dismissed,dismiss:()=>this.setState({dismissed:true}),undismiss:()=>this.setState({dismissed:false}),integ,tRail,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

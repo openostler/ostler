@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">1 · 3</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Edit everything · Remote / D-pad · touch lock</span><span style="font-size:14px;color:#3b4556">Focus ring = 3 px cyan, 2 px gap, no glow, no resize · try the arrows on the Test screen</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · Drive menu (OK) · touch lock on</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive menu" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="dash" touchlock="on" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.3"><div style="background:#121a2c;border-radius:24px"></div><div style="grid-row:span 2;background:#121a2c;border-radius:28px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;left:12px;top:60px;width:520px;background:#243049;border-radius:28px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<sc-for list="{{ dmenu }}" as="m" hint-placeholder-count="6"><div style="height:76px;border-radius:20px;background:#1a2439;box-shadow:{{ m.focus }};display:flex;align-items:center;gap:16px;padding:0 18px;font-size:26px;font-weight:700;flex:none"><span class="material-symbols-rounded" style="font-size:32px">{{ m.icon }}</span><span style="flex:1">{{ m.t }}</span><span style="font-size:24px;color:#b0bacb;font-weight:600">{{ m.hint }}</span></div></sc-for>
+</div>
+<div style="position:absolute;right:16px;bottom:16px;height:56px;border-radius:28px;background:#121a2c;display:flex;align-items:center;gap:10px;padding:0 18px;font-size:24px;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:28px">do_not_touch</span>Touch locked · use the remote</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · confirm sheet opens with Cancel focused</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Confirm sheet" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" touchlock="off" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px;opacity:.3"><div style="height:64px;background:#121a2c;border-radius:20px"></div><div style="flex:1;background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:300px;background:#243049;border-radius:32px 32px 0 0;padding:24px 28px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:14px"><span class="material-symbols-rounded" style="font-size:36px;color:#bf8a1a;font-variation-settings:'FILL' 1">warning</span><span style="font-size:30px;font-weight:700">Clear 2 fault codes?</span></div>
+<span style="font-size:20px;color:#b0bacb;line-height:1.4;max-width:820px">P0380 glow plug circuit and P0110 intake air sensor will be cleared from the TD5 engine ECU. Freeze-frame data is saved to this trip first.</span>
+<div style="flex:1"></div>
+<div style="display:flex;gap:12px;justify-content:flex-end">
+<div style="height:76px;padding:0 40px;border-radius:24px;background:#1a2439;box-shadow:0 0 0 2px #243049,0 0 0 5px #22a6e0;display:flex;align-items:center;font-size:22px;font-weight:800">Cancel</div>
+<div style="height:76px;padding:0 32px;border-radius:24px;background:#1a2439;color:#ef6a7d;display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px">delete</span>Clear codes</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · More › Network › Head unit display › Buttons</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Buttons" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" touchlock="off" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex">
+<div style="flex:1;min-width:0;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">arrow_back</span></div><div style="display:flex;flex-direction:column"><span style="font-size:18px;color:#8e9ab0">More › Network › Head unit display</span><span style="font-size:26px;font-weight:700">Buttons</span></div><div style="flex:1"></div><div style="height:60px;border-radius:30px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;align-items:center;gap:8px;padding:0 22px;font-size:20px;font-weight:700;box-shadow:0 0 0 2px #0a1020,0 0 0 5px #22a6e0"><span class="material-symbols-rounded" style="font-size:26px">sports_esports</span>Test buttons</div></div>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start">
+<sc-for list="{{ buttons }}" as="b" hint-placeholder-count="8"><div style="min-height:76px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:14px;padding:0 10px 0 12px"><div style="min-width:56px;height:52px;border-radius:14px;background:#243049;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:18px;font-weight:800"><span class="material-symbols-rounded" style="font-size:26px">{{ b.icon }}</span>{{ b.k }}</div><span style="flex:1;font-size:20px;font-weight:700">{{ b.n }}</span><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 10px 0 16px;font-size:18px;font-weight:700">{{ b.a }}<span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">expand_more</span></div></div></sc-for>
+</div>
+</div>
+<div style="width:96px;flex:none;background:#0d1424;display:flex;flex-direction:column;padding:8px;gap:4px">
+<sc-for list="{{ rail }}" as="r" hint-placeholder-count="5"><div style="flex:1;border-radius:20px;background:{{ r.bg }};color:{{ r.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px;font-variation-settings:'FILL' {{ r.fill }}">{{ r.icon }}</span><span style="font-size:18px;font-weight:700">{{ r.n }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · Test buttons (press arrows / OK / Back)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Test buttons" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" touchlock="off" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div style="background:#121a2c;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+<div style="position:relative;width:300px;height:300px;border-radius:150px;background:#1a2439">
+<sc-for list="{{ pad }}" as="p" hint-placeholder-count="5"><div onClick="{{ p.press }}" style="cursor:pointer;position:absolute;left:{{ p.x }}px;top:{{ p.y }}px;width:{{ p.s }}px;height:{{ p.s }}px;border-radius:{{ p.r }}px;background:{{ p.bg }};color:{{ p.c }};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800"><span class="material-symbols-rounded" style="font-size:40px;font-variation-settings:'FILL' 1">{{ p.icon }}</span>{{ p.t }}</div></sc-for>
+</div>
+<div onClick="{{ pressBack }}" style="cursor:pointer;height:64px;padding:0 28px;border-radius:32px;background:{{ backBg }};color:{{ backC }};display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800"><span class="material-symbols-rounded" style="font-size:28px">undo</span>Back</div>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:26px;font-weight:700">Test buttons</span><span style="font-size:20px;font-weight:700;color:#b0bacb;font-variant-numeric:tabular-nums">{{ done }} of 6</span></div>
+<span style="font-size:18px;color:#b0bacb">Press each button on the remote or steering wheel.</span>
+<sc-for list="{{ checks }}" as="c" hint-placeholder-count="6"><div style="height:56px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:0 16px"><span class="material-symbols-rounded" style="font-size:28px;color:{{ c.ic }};font-variation-settings:'FILL' 1">{{ c.icon }}</span><span style="flex:1;font-size:20px;font-weight:700">{{ c.n }}</span><span style="font-size:18px;font-weight:700;color:{{ c.ic }}">{{ c.w }}</span></div></sc-for>
+<div onClick="{{ resetTest }}" style="cursor:pointer;margin-top:auto;height:60px;border-radius:30px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">restart_alt</span>Start again</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · edit mode: strip order + rename / re-icon any item</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Edit strip and rename" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" moving="{{ false }}" edit="{{ true }}" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex">
+<div style="flex:1;min-width:0;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px;font-weight:700;flex:1">Strip order</span><div style="width:56px;height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px">undo</span></div><div style="width:56px;height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px;color:#5d6879">redo</span></div><div style="height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 16px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">restart_alt</span>Reset</div></div>
+<div style="background:#121a2c;border-radius:24px;padding:12px;display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ stripItems }}" as="s" hint-placeholder-count="9"><div style="height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 14px 0 6px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">drag_indicator</span><span class="material-symbols-rounded" style="font-size:22px">{{ s.icon }}</span>{{ s.n }}<sc-if value="{{ s.lock }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:18px;color:#b0bacb">lock</span></sc-if><sc-if value="{{ s.x }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">visibility_off</span></sc-if></div></sc-for>
+</div>
+<span style="font-size:18px;color:#8e9ab0">Fault telltale, alarm alerts and Drive templates can move but never be removed. More always exists.</span>
+<div style="flex:1"></div>
+<div style="display:flex;gap:10px"><div style="height:60px;border-radius:30px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 20px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">ios_share</span>Share layout</div><div style="height:60px;border-radius:30px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 20px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">file_open</span>Import layout</div></div>
+</div>
+<div style="width:380px;flex:none;padding:4px 0 16px">
+<div style="height:100%;box-sizing:border-box;background:#243049;border-radius:28px 0 0 28px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">RAIL ITEM</span>
+<div style="height:64px;border-radius:18px;background:#121a2c;box-shadow:inset 0 0 0 2px #22a6e0;display:flex;align-items:center;padding:0 16px;font-size:22px;font-weight:700">{{ rn }}<span style="width:2px;height:26px;background:#22a6e0;margin-left:2px"></span></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">ICON</span>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+<sc-for list="{{ icons }}" as="i" hint-placeholder-count="10"><div onClick="{{ i.pick }}" style="cursor:pointer;height:60px;border-radius:16px;background:{{ i.bg }};color:{{ i.c }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:30px">{{ i.icon }}</span></div></sc-for>
+</div>
+<div style="height:64px;border-radius:18px;background:#121a2c;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:20px;font-weight:700">Show on rail<div style="width:56px;height:32px;border-radius:16px;background:#22a6e0;position:relative"><div style="position:absolute;top:4px;left:28px;width:24px;height:24px;border-radius:12px;background:#0a1020"></div></div></div>
+<div style="height:64px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:20px;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">swap_horiz</span>Replace with…</div>
+</div>
+</div>
+<div style="width:96px;flex:none;background:#121a2c;display:flex;flex-direction:column;padding:8px;gap:4px">
+<sc-for list="{{ railE }}" as="r" hint-placeholder-count="5"><div style="flex:1;border-radius:20px;background:{{ r.bg }};box-shadow:{{ r.ring }};color:{{ r.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative"><sc-if value="{{ r.lock }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="position:absolute;right:4px;top:4px;font-size:16px;color:#8e9ab0">lock</span></sc-if><span class="material-symbols-rounded" style="font-size:30px">{{ r.icon }}</span><span style="font-size:18px;font-weight:700">{{ r.n }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ICONS=['route','map','timeline','history','explore','directions_car','analytics','folder','star','flag'];
+class Component extends DCLogic {
+ state={hit:{},icon:'route'};
+ componentDidMount(){this.kd=e=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'back',Backspace:'back'}[e.key];if(m)this.press(m)};window.addEventListener('keydown',this.kd)}
+ componentWillUnmount(){window.removeEventListener('keydown',this.kd)}
+ press(k){this.setState(s=>({hit:{...s.hit,[k]:true}}))}
+ renderVals(){
+  const S=this.state,F='0 0 0 2px #243049,0 0 0 5px #22a6e0';
+  const dmenu=[['speed','Dashboard','current'],['map','Map',''],['groups','Convoy',''],['vertical_split','Split',''],['call','Call Sam','voice'],['bookmark_add','Mark this moment','']].map(([icon,t,hint],i)=>({icon,t,hint,focus:i===1?F:'none'}));
+  const buttons=[['arrow_upward','','Up','Focus up'],['arrow_downward','','Down','Focus down'],['arrow_back','','Left','Previous face'],['arrow_forward','','Right','Next face'],['','OK','OK','Select / Drive menu'],['','OK','Hold OK','Mark'],['undo','','Back','Back'],['volume_up','','Wheel Vol +','Volume up']].map(([icon,k,n,a])=>({icon,k,n,a}));
+  const rail=[['home','Home'],['stethoscope','Diagnose'],['route','Trips'],['shield','Security'],['more_horiz','More',1]].map(([icon,n,on])=>({icon,n,fill:on?1:0,bg:on?'rgba(34,166,224,.16)':'transparent',c:on?'#22a6e0':'#b0bacb'}));
+  const H=S.hit,b=k=>H[k]?'#22a6e0':'#243049',c=k=>H[k]?'#0a1020':'#eef2f9';
+  const pad=[{k:'up',icon:'keyboard_arrow_up',x:110,y:10,s:80,r:24},{k:'down',icon:'keyboard_arrow_down',x:110,y:210,s:80,r:24},{k:'left',icon:'keyboard_arrow_left',x:10,y:110,s:80,r:24},{k:'right',icon:'keyboard_arrow_right',x:210,y:110,s:80,r:24},{k:'ok',icon:'',t:'OK',x:105,y:105,s:90,r:45}].map(p=>({...p,t:p.t||'',bg:b(p.k),c:c(p.k),press:()=>this.press(p.k)}));
+  const names={up:'Up',down:'Down',left:'Left',right:'Right',ok:'OK',back:'Back'};
+  const checks=Object.keys(names).map(k=>({n:names[k],icon:H[k]?'check_circle':'radio_button_unchecked',ic:H[k]?'#2f9e63':'#5d6879',w:H[k]?'OK':'Waiting'}));
+  const stripItems=[['arrow_back','Back'],['speed','Drive mode',0,1],['warning','Faults',1],['circle','TD5'],['fiber_manual_record','REC'],['bolt','12 V'],['visibility_off','Visibility'],['groups','Ride / call'],['do_not_touch','Touch lock',0,0,1],['schedule','Clock'],['bookmark_add','Mark']].map(([icon,n,lock,dm,x])=>({icon,n,lock:!!lock||!!dm,x:!!x}));
+  const icons=ICONS.map(i=>({icon:i,bg:S.icon===i?'rgba(34,166,224,.18)':'#121a2c',c:S.icon===i?'#22a6e0':'#eef2f9',pick:()=>this.setState({icon:i})}));
+  const railE=[['home','Home',1],[S.icon,'Journeys',0,1],['stethoscope','Diagnose'],['forum','Social'],['more_horiz','More',1]].map(([icon,n,lock,sel])=>({icon,n,lock:!!lock,bg:sel?'#2a3757':'#1a2439',ring:sel?'0 0 0 3px #22a6e0':'none',c:'#eef2f9'}));
+  return {dmenu,buttons,rail,pad,checks,done:Object.keys(H).length,backBg:b('back'),backC:c('back'),pressBack:()=>this.press('back'),resetTest:()=>this.setState({hit:{}}),stripItems,icons,railE,rn:'Journeys',faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

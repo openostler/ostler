@@ -2,7 +2,7 @@
 title: "Designer brief, October 2026 — start here"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/design/2026-10/README.md, references/design/2026-10/screens.json, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-shell-input-design.md]
 summary: >
@@ -14,10 +14,18 @@ summary: >
   checklist with citations, sets the draw-first order from decision 92 (Night on every size;
   Night dim and Moving for every driver-facing head-unit frame; Day on phone), gives the
   export file naming, and lists every file of the brief by area: foundation 00–03,
-  onboarding, hardware, settings, drive, launcher, vehicle, apps, store and app frame.
+  onboarding, hardware, settings, drive, launcher, vehicle, apps, store and app frame. Amended 2026-10-07 (openness round, ADR-0047): the style constraints are the default look pointing to visual §13 and the theme engine, labelled placeholder data is allowed in mocks, and the safety constraints are unchanged.
 ---
 
 # Designer brief, October 2026 — start here
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** the style items of the hard
+> constraints (3–7, 16, 17, 18, 20) describe the **default look** you draw first, not rules;
+> themes, add-ons and users may change them within [visual §13][vds-13] and the
+> [theme engine][te-11]. The safety items stay hard. Labelled placeholder data is fine in
+> mocks.
 
 ## Who this is for
 
@@ -73,41 +81,49 @@ and how to recover), then one block per step.
 **Example data.** All examples come from the Discovery 2 Td5 pack: RPM, Boost, Coolant,
 Battery, Fuel temp, the SLABS ride heights (Height left, Height right), and fault codes such
 as P0243 "Turbocharger wastegate diagnostics (logged low)" on the engine and "Right front
-wheel speed sensor — output too low" on SLABS. Never draw a made-up car, person or value
-as if it were real ([ADR-0011][adr-11]).
+wheel speed sensor — output too low" on SLABS. Prefer real values; placeholder data is fine
+in mocks and previews when it is labelled ("Sample data") and never passed off as a live car
+([ADR-0011][adr-11], as amended).
 
 ## Hard constraints (check every frame)
 
 Condensed from the hand-off [designer prompt checklist](../README.md#3-designer-prompt-checklist).
+Items marked **(default)** are the default look to draw first; everything else is a safety
+rule.
 
 1. **Moving uses templates only.** On a head unit while Moving: `telltale_list`, `value`,
    `setpoint`, `camera_live`, `arm`, `map`, `media`, `tiles` (≤ 6), `alert_card` (one card,
    icon + ≤ 2 lines of ≤ 30 characters, ≤ 2 buttons), `short_list` (≤ 6 rows, one level,
-   ≤ 30 characters) and `call` (≤ 3 buttons). Tasks are ≤ 3 screens and end in Drive mode.
+   ≤ 30 characters by default) and `call` (≤ 3 buttons). Tasks are ≤ 3 screens (the default)
+   and end in Drive mode.
    ([UI §12.1][ui-12.1], [Drive modes §4.3][dm-4.3])
 2. **Minimum sizes.** Text ≥ 12 px on phone, tablet and desktop; ≥ 18 px on a Parked head
    unit; ≥ 24 px in a Moving template; Drive digits ≥ 56 px; strip chips ≥ 48 px tall;
-   head-unit targets 76 px. Numbers never clip: drop one type step. ([visual §4][vds-4],
+   head-unit targets 76 px. The 12 and 18 px minimums are user-adjustable defaults; the
+   Moving floors are not. Numbers in Moving templates never clip: drop one type step.
+   ([visual §4][vds-4],
    [Drive modes §4.4][dm-4.4])
-3. **Tokens only.** Colour, type, space, radius, elevation and motion come from tokens in
-   Night, Night dim, Deep night and Day. No raw colours. ([visual §3.1][vds-3.1])
-4. **One icon set.** Material Symbols, outlined, by default; an icon pack maps other glyphs
-   to the same names, and safety icons never change (item 49). No emoji, dingbats or Unicode
-   arrows. An icon that carries meaning has a word beside it. ([visual §6][vds-6])
-5. **No glow on head units at night.** At most one glowing element per screen on phone,
-   tablet and desktop. None on head units in Night dim or Deep night, in Drive mode or in a
-   Moving template. No blur or gradients on head units. ([visual §5][vds-5])
-6. **Motion** only for sheet open and close, tab change and the alarm pulse. None while
-   Moving. ([visual §5][vds-5])
-7. **One accent, calm gauges.** The accent (cyan by default, or one validated accent set,
-   item 48) is for interactive and live things only. Status colours come with an icon and a
-   word, and only out of range. ([visual §1][vds-1])
+3. **Tokens (default).** Draw with the tokens of Night, Night dim, Deep night and Day. Themes
+   and add-ons may use raw values. ([visual §3.1][vds-3.1], [visual §13][vds-13])
+4. **Icons (default).** Material Symbols, outlined; icon packs, emoji and SVG icons are allowed,
+   safety icons included, under the render check. An icon that carries meaning has a word
+   beside it. ([visual §6][vds-6])
+5. **Glow, blur and gradients (default).** The default look uses glow sparingly and none on
+   head units at night; a theme may use them anywhere, guarded by the Drive-mode render check.
+   ([visual §5][vds-5], [visual §13][vds-13])
+6. **Motion.** The default look animates sheets, tab changes and the alarm pulse. **Safety
+   rule:** while Moving, nothing moves except the alarm pulse. ([visual §5][vds-5])
+7. **Accent and calm gauges (default).** Cyan by default (any accent in a theme) for
+   interactive and live things; status colours with an icon and a word, only out of range.
+   **Safety rule:** in Drive mode the telltale and alarm stay visible with ≥ 4.5:1 contrast
+   (the render check). ([visual §1][vds-1], [visual §13][vds-13])
 8. **Park to edit.** Edit mode, pickers and editors exist only Parked (or Idling with Park
    evidence) on a driver-facing display. While Moving a long-press shows "Park to edit" and
    nothing else. ([Drive modes §8.1][dm-8.1])
-9. **Safety items move, never go.** The fault telltale, alarm alerts, safety widgets, the
-   dock's App drawer button, and in Drive mode Back and the page chip are always there.
-   Apps cannot remove, cover or restyle them. ([Drive modes §8.1][dm-8.1])
+9. **Safety items move, never go.** The fault telltale, alarm alerts and safety widgets are
+   always there; a theme or the user may restyle them, and no app can remove, cover or
+   restyle them. The App drawer button, Back and the page chip are default anchors that may
+   be hidden while the recovery path stays. ([Drive modes §8.1][dm-8.1], [visual §13][vds-13])
 10. **No message text while Moving.** A message card shows sender and app, with Play and
     Reply. ([UI §12.1][ui-12.1])
 11. **No video on driver-facing screens** while Idling or Moving; calls are audio only.
@@ -118,18 +134,20 @@ Condensed from the hand-off [designer prompt checklist](../README.md#3-designer-
     `candidate` is marked. ([visual §8][vds-8], [UI §3.8][ui-3.8])
 15. **Map-first.** Full-bleed map, sheets over it; on head units the sheet sits on the
     passenger side. ([visual §7][vds-7])
-16. **D-pad reachable.** Every control has a focus state: a 3 px accent ring with a 2 px gap;
-    confirm sheets open with Cancel focused. ([shell input §7][si-7], [§9][si-9])
-17. **Driver side.** On head units the dock sits on the driver's side. Draw right-hand drive (the D2); add
+16. **D-pad reachable.** Every control has a clearly visible focus state (by default a 3 px
+    accent ring with a 2 px gap; themes may restyle it); confirm sheets open with Cancel
+    focused. ([shell input §7][si-7], [§9][si-9])
+17. **Driver side (default).** On head units the dock sits on the driver's side; the user may flip it. Draw right-hand drive (the D2); add
     left-hand drive where the layout differs. ([UI §3.3][ui-3.3])
-18. **Dock slots per class:** phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7, tablet and
-    desktop 7 (decided, item 17). Home and the App drawer button are anchors, always in
-    the dock; home pages are one flat carousel with page dots. ([launcher §5.1][lw-5.1])
-19. **No score** in Trips. ([UI §12.2][ui-12.2])
-20. **Our names only.** No other brand's marks, fonts or colours. Figtree is the face.
+18. **Dock slots per class (default):** phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7, tablet
+    and desktop 7 (item 17); the user may add slots. Home and the App drawer button are
+    default anchors; home pages are one flat carousel with page dots. ([launcher §5.1][lw-5.1])
+19. **No score** in core Trips; add-ons may offer one, opt-in. ([UI §12.2][ui-12.2])
+20. **Our names only.** No other brand's marks (trademark law). Figtree is the default face;
+    fonts and colours are a theme's choice.
 21. **The node is the only path to the car.** The Brain uses an adapter only when no node is
     fitted ([ADR-0044][adr-44]). Location stays on the device unless shared ([ADR-0009][adr-9]).
-    The VIN never leaves the car ([ADR-0036][adr-36]).
+    The VIN never leaves the car except by the owner's own explicit act ([ADR-0036][adr-36]).
 
 ## Draw first (decision 92)
 
@@ -220,3 +238,5 @@ same value as the block's Owner line.
 [vds-7]: ../../../../specs/2026-10-07-visual-design-system-design.md#7-maps
 [vds-8]: ../../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
 [lw-5.1]: ../../../../specs/2026-10-07-launcher-and-widgets-design.md#51-the-dock
+[vds-13]: ../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07
+[te-11]: ../../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner

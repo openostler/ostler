@@ -2,7 +2,7 @@
 title: "Designer brief — sitemap (a): surfaces and the navigation model"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md, references/design/2026-10/screens.json]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   Ostler Community web, a device's own page) and the navigation model they share: home
   pages in a carousel (dashboards are home pages; Drive mode swipes between them), the dock,
   the app drawer, the status strip, the Connection sheet, Back and the home root, landing
-  rules, deep links and the Moving rules the OS enforces for every app.
+  rules, deep links and the Moving rules the OS enforces for every app. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Sitemap (a): surfaces and the navigation model
@@ -99,9 +99,10 @@ the D2); sheets open on the passenger side.
   tablet and desktop 7, anchors included. Default on a five-slot class: **Home ·
   Diagnostics · Trips · Security · App drawer**, or the flavour's own set
   ([01-sitemap-b §3](01-sitemap-b.md#3-flavours-preinstalled-sets)).
-- Any app or shortcut can take a slot. **Home** and the **App drawer** are anchors: they can
-  move, be renamed and be re-iconed, never removed (decided, item 16; [launcher §5.1][lw-5.1]).
-- Labels ≤ 12 characters; the active item wears the `accent-soft` pill.
+- Any app, shortcut or widget can take a slot, and the user may add slots. **Home** and the
+  **App drawer** are default anchors: they can move, be renamed, re-iconed and hidden while
+  the recovery path stays (item 16 as amended in the openness round; [launcher §5.1][lw-5.1]).
+- Long labels are ellipsised; the active item wears the `accent-soft` pill.
 - The head-unit **Drive** button is retired (item 16): Moving shows Drive mode by itself.
 
 ## 6. The app drawer
@@ -118,9 +119,10 @@ the D2); sheets open on the passenger side.
 
 ## 7. Status strip and Connection sheet (OS)
 
-- The strip is one row that never scrolls; chips ≥ 48 px, icon + word, each opens a sheet
+- The strip is one row with an overflow chip; chips ≥ 48 px, icon + word, each opens a sheet
   (`shell-strip`). OS chips: Vehicle (more than one), Worst telltale, Link, Clock, 12 V,
-  Mark; the profile chip "Car" and the visibility chip. Apps add no chips: the OS itself
+  Mark; the profile chip "Car" and the visibility chip. Apps may add status-only chips
+  (openness round); otherwise the OS itself
   shows REC while the Trips app records, Security when the Security app has a node, and the
   ride or call chip while a call is active.
 - The **Connection sheet** (`shell-connection-sheet`) opens from the Link chip and by itself

@@ -2,10 +2,10 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.6
+version: 1.7
 updated: 2026-10-07
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on. Amended 2026-10-07 (OS round): small core reads as the empty OS of ADR-0046.
+  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on. Amended 2026-10-07 (OS round): small core reads as the empty OS of ADR-0046. Amended 2026-10-07 (openness round, ADR-0047): add-ons are off by default unless a flavour preinstalls them on.
 ---
 
 # Scope & architecture
@@ -26,7 +26,9 @@ small; the add-ons are the product.** The core's own job does not widen: it is s
 **communication with the car and interpretation of its data**, delivered through one contract
 (the snapshot and VSS stream) to the shell and its apps. The shell (with Diagnose, Trips,
 Network and Security) is the first consumer; add-ons (Social, Vehicles & Map, Maintenance &
-Garage, Cameras, Integrations, Decode lab for developers) build on it and are off by default.
+Garage, Cameras, Integrations, Decode lab for developers) build on it and are off by default
+unless a flavour preinstalls them on (ADR-0046 §5; openness round,
+[ADR-0047](decisions/adr-0047-openness-round.md)).
 Map: [docs/ecosystem.md](docs/ecosystem.md).
 
 **The core mission of this project is communication with the car and interpretation of
@@ -136,6 +138,8 @@ See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack an
 
 ## Changelog
 
+- 2026-10-07: v1.7, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): add-ons are off by default unless a flavour preinstalls them on.
 - 2026-10-07: v1.6, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
   small core reads as the empty OS (ADR-0046).
 - 2026-10-07: v1.5, approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted):

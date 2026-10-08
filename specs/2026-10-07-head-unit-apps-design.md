@@ -2,14 +2,24 @@
 title: "Head-unit apps — every standard head-unit page mapped to an Ostler app: Radio, Audio, Media, Camera, Phone, Navigation, vehicle settings, steering-wheel controls, clock and weather, voice, projection and climate, with UX outlines, hardware and open legal points — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, references/research/canbus_headunit.md, references/research/driver_distraction_rules.md, references/research/hardware.md, GOALS.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 36–40, 54 and 55), v0.2; every decision answered as recommended. Maps every page a head unit has to an Ostler app or to the OS, with a UX outline, hardware options, v1 or later, and open legal points. Two setups: the Brain as the head-unit computer (Ostler owns the audio path) or an aftermarket Android head unit used as a display (its own radio and projection stay). Radio (FM, AM, DAB+, RDS and DLS, slideshow, presets, seek and scan, service following, traffic announcements; tuners as device integrations: an Si468x-based HAT or module, or a USB SDR dongle), Audio (EQ, balance and fade, loudness, volume limits, speed-dependent volume, crossover and time alignment Parked and owner-only, a software DSP on the Brain or an external DSP, USB or I2S DACs, source switching through the OS's audio focus), Media (local and USB, Bluetooth A2DP and AVRCP shared with Phone & Comms, internet radio and podcasts later, streaming services an open legal point, video Parked or passenger-only), Camera (reverse trigger from a pack signal or a 12 V input, static and steering-angle guidelines, other views Parked only), Phone and Navigation (their approved specs), a Car app for pack-declared comfort settings, steering-wheel control learning in the OS, clock and weather, an on-device voice assistant later (a spoken yes never confirms a gated action), projection not built, with the certification and licensing limits stated plainly, and climate where a pack or device supports it. Audio focus priorities, phases HU0–HU5, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 36–40, 54 and 55), v0.2; every decision answered as recommended. Maps every page a head unit has to an Ostler app or to the OS, with a UX outline, hardware options, v1 or later, and open legal points. Two setups: the Brain as the head-unit computer (Ostler owns the audio path) or an aftermarket Android head unit used as a display (its own radio and projection stay). Radio (FM, AM, DAB+, RDS and DLS, slideshow, presets, seek and scan, service following, traffic announcements; tuners as device integrations: an Si468x-based HAT or module, or a USB SDR dongle), Audio (EQ, balance and fade, loudness, volume limits, speed-dependent volume, crossover and time alignment Parked and owner-only, a software DSP on the Brain or an external DSP, USB or I2S DACs, source switching through the OS's audio focus), Media (local and USB, Bluetooth A2DP and AVRCP shared with Phone & Comms, internet radio and podcasts later, streaming services an open legal point, video Parked or passenger-only), Camera (reverse trigger from a pack signal or a 12 V input, static and steering-angle guidelines, other views Parked only), Phone and Navigation (their approved specs), a Car app for pack-declared comfort settings, steering-wheel control learning in the OS, clock and weather, an on-device voice assistant later (a spoken yes never confirms a gated action), projection not built, with the certification and licensing limits stated plainly, and climate where a pack or device supports it. Audio focus priorities, phases HU0–HU5, tests and decisions. Amended 2026-10-07 (openness round, ADR-0047): front and side road cameras may show while Moving under an owner speed setting (reg 109(c)), cabin views stay Parked only, and uncertified projection receivers and unofficial streaming clients may be sideloaded as community items.
 ---
 
 # Head-unit apps — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** road-facing front and side camera
+> views may show while Moving (UK reg 109(c) allows a view of the road next to the vehicle),
+> through `camera_live`, whose speed limit is an owner setting (default 10 km/h); cabin views
+> and dashcam playback stay Parked only (§6). Uncertified projection receivers (§11) and
+> unofficial streaming clients (§5) may be sideloaded as community items at the owner's risk;
+> the Store catalogue still does not list them and Ostler does not build them. No video on a
+> driver-facing display while Moving is unchanged.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
 items 36–40, 54 and 55), v0.2. Every app here starts with a UX brief
@@ -129,7 +139,9 @@ settings are Parked and owner-only.
   skip), sharing the adapter and the paired phone with Phone & Comms' hands-free service; one
   pairing covers both.
 - **Streaming (later):** internet radio and podcasts (opt-in outbound paths, app UI model
-  §10); AirPlay and UPnP renderers; streaming services are an open legal point.
+  §10); AirPlay and UPnP renderers; streaming services are an open legal point. Unofficial
+  clients for commercial services are not built or listed, but may be sideloaded as community
+  items with a terms warning (Store §8; *amended 2026-10-07, openness round*).
 - **While Moving:** the `media` template (title and artist ≤ 30 each, static artwork,
   play, pause, skip, volume) and a `short_list` for one level of browsing (recent,
   playlists). No search, no long lists.
@@ -144,13 +156,16 @@ SBC may need licences.
 
 **UX outline.**
 - **Reverse view (system, ADR-0046 §2):** opens on reverse, above everything but a red alarm;
-  `camera_live` while Moving below 10 km/h; closes a set time after leaving reverse.
+  `camera_live` while Moving below the owner's limit (default 10 km/h); closes a set time after
+  leaving reverse.
 - **Reverse trigger:** a pack signal (reverse gear or reverse lamp) from the node, or a 12 V
   reverse wire into a node or I/O-module input. Where the head unit has its own camera input
   (setup B), that fast path stays the reverse view ([research §B4](../references/research/canbus_headunit.md)).
 - **Guidelines:** static lines calibrated at setup (0.5 m, 1 m, 2 m), or dynamic lines from
   the steering angle when the pack provides it.
-- **Other views** (front, side, cabin, later 360 and dashcam clips): Parked only.
+- **Other views:** road-facing **front and side** views may also show while Moving as
+  `camera_live`, below the owner's speed setting (UK reg 109(c); *amended 2026-10-07,
+  openness round*); **cabin** views, 360 and dashcam clips stay Parked only.
 - **Setup flow:** find cameras, pick the reverse camera, calibrate guidelines, test the
   trigger.
 
@@ -216,7 +231,9 @@ Stated plainly:
 **Decision (owner, 2026-10-07):** Ostler does not build projection receivers. Owners who want projection
 keep a projection-capable head unit (setup B) with Ostler beside it. Ostler's own thin
 companions inside Android Auto and CarPlay stay as ADR-0042 decision 2 says. The Store does
-not list uncertified receivers.
+not list uncertified receivers. *Amended 2026-10-07 (openness round):* an uncertified community
+receiver may be sideloaded as a developer item, with a warning that it is uncertified
+(decision 4's alternative, adopted as an option; Store §8).
 
 ## 12. Climate
 
@@ -256,7 +273,10 @@ Media, Bluetooth). Apps request focus through the SDK (`permissions.audio`); the
 - **Camera:** a reverse fixture opens the reverse view within the latency target on the
   bench; the reverse view shows above any page and below a red alarm.
 - **Voice:** a spoken confirm never satisfies a gated action (gate test).
-- **Projection:** nothing in the Store or the OS offers a projection receiver.
+- **Projection:** nothing in the Store catalogue or the OS offers a projection receiver; a
+  sideloaded one carries the Sideloaded badge and the uncertified warning.
+- **Cameras while Moving:** a front or side road view renders as `camera_live` below the owner's
+  speed setting; a cabin view is refused while Moving.
 
 ## 16. Decisions for the owner
 
@@ -283,3 +303,7 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
 - 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
   list items 36–40, 54 and 55): every decision answered as recommended (alternatives not chosen).
+- 2026-10-07: v0.3, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): front and side road
+  cameras while Moving under an owner speed setting; sideloaded community projection receivers
+  and streaming clients (decisions 4–5's alternatives as options).

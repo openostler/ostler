@@ -2,14 +2,27 @@
 title: "Ostler Community — the community hub, forum, vehicle-development workspace and wiki (closed `ostler-hub` service, open `ostler-app-hub` shell add-on) — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/research/community_hub_architecture.md, references/research/dmd_hub_features.md, references/research/dmd_hub_ui_teardown.md, references/research/trip_and_log_sharing.md, references/research/dmd2_features.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 followed the owner's direction that the hub is "our own thing, closed not self hostable", also the forum, the place to develop new vehicles, connected to the wiki, in a new repo. Ostler Community is a closed service run by Ostler: one official instance, not self-hostable, in a new private repo `ostler-hub`, separate from the closed `ostler-cloud`, under ADR-0013's cloud boundary (documented API only, no platform code imported, no third-party copyleft code). The shell add-on `ostler-app-hub` stays open (AGPL) and holds the public API contract and the end-to-end encryption. It does four jobs: publish trips, routes, garage cards and events (L0–L2 grants; L3/L4 only as encrypted hand-overs to named helpers); the project forum (categories per make and model, Q&A with "solved", search, notifications, no direct messages); the vehicle-development workspace (help thread → decode cards → vehicle project → pack PR on GitHub under CC BY-SA, through a GitHub App bridge, never required); and the wiki (none exists today), hosted in the hub, with vehicle pages generated from pack releases. User rights hold: export everything, nothing in core depends on the hub (ADR-0042), a public CC BY-SA community dump, OSA/DSA/GDPR duties on Ostler as sole operator, pre-moderation until trusted, 16+ (18+ for live follow and public profiles). No federation. Never charges for safety, sharing or decode help. Screens, phases H0–H4, tests, and the DMD decision items B 7–19 and 19a–19f, all answered as recommended (the private `ostler-hub` repo is created now, empty, after asking the owner).
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 followed the owner's direction that the hub is "our own thing, closed not self hostable", also the forum, the place to develop new vehicles, connected to the wiki, in a new repo. Ostler Community is a closed service run by Ostler: one official instance, not self-hostable, in a new private repo `ostler-hub`, separate from the closed `ostler-cloud`, under ADR-0013's cloud boundary (documented API only, no platform code imported, no third-party copyleft code). The shell add-on `ostler-app-hub` stays open (AGPL) and holds the public API contract and the end-to-end encryption. It does four jobs: publish trips, routes, garage cards and events (L0–L2 grants; L3/L4 only as encrypted hand-overs to named helpers); the project forum (categories per make and model, Q&A with "solved", search, notifications, no direct messages); the vehicle-development workspace (help thread → decode cards → vehicle project → pack PR on GitHub under CC BY-SA, through a GitHub App bridge, never required); and the wiki (none exists today), hosted in the hub, with vehicle pages generated from pack releases. User rights hold: export everything, nothing in core depends on the hub (ADR-0042), a public CC BY-SA community dump, OSA/DSA/GDPR duties on Ostler as sole operator, pre-moderation until trusted, 16+ (18+ for live follow and public profiles). No federation. Never charges for safety, sharing or decode help. Screens, phases H0–H4, tests, and the DMD decision items B 7–19 and 19a–19f, all answered as recommended (the private `ostler-hub` repo is created now, empty, after asking the owner). Amended 2026-10-07 (openness round, ADR-0047): the hub API becomes a published, stable contract that clubs may implement and the add-on's hub URL is user-settable, while ostler-hub's own code stays closed; the official hub's no-votes and no-points rules are operator policy.
 ---
 
 # Ostler Community — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** the hub is no longer the only hub.
+> The public hub API contract (`api/hub.openapi.yaml` in `ostler-app-hub`) becomes a stable,
+> versioned API that anyone may implement, and the add-on's hub URL is user-settable, so a
+> club can run its own compatible hub (§1, §3.3, §4). The official `ostler-hub` code stays
+> private and closed, and Ostler Community stays the one official instance under Ostler's
+> marks. The official hub's no-points, no-votes and pre-moderation rules are its operator
+> policy, not platform rules: other hubs and add-ons decide their own, and the official hub
+> may add opt-in reactions, badges or answer upvotes later (§1, §9, §14). Public route delay
+> and ends trim follow the trip-sharing defaults (§6). Age limits, operator duties and no
+> DMs on the official hub are unchanged.
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** v0.1 proposed an open,
 self-hostable AGPL hub. The owner then decided: *"I think the ostler hub should be our own thing,
@@ -57,11 +70,15 @@ Everything public is readable from any browser, with no Ostler device needed.
   Social, peer to peer.
 - Not the source of truth for decodes. That stays each pack's signal store and its PR review on
   GitHub; the hub proposes, the pack repo decides.
-- Not self-hostable, and not federated (§3; decision B 18).
+- The official `ostler-hub` code is not offered for self-hosting, and there is no federation
+  in v1 (§3; decision B 18). *Amended 2026-10-07 (openness round):* the hub API is published and
+  stable, so others may run a compatible hub under another name, and a device may point at it.
 - Not part of `ostler-cloud`: a separate closed service in its own repo (§3).
 - Not a sync service for my own devices (Brain and peers already sync).
-- No points, ranks, badges, votes, leaderboards or speed boards; no public feed for strangers;
-  no ads, analytics or third-party scripts; no social-network share buttons.
+- On the official hub, by operator policy: no points, ranks, badges, votes, leaderboards or
+  speed boards; no public feed for strangers; no ads, analytics or third-party scripts; no
+  social-network share buttons. Other hubs and add-ons may choose otherwise, and the official
+  hub may add opt-in reactions or badges later (*amended 2026-10-07, openness round*).
 - No routing or planning: that is `ostler-app-navigation`; the hub only stores and shows
   routes it publishes.
 
@@ -130,8 +147,11 @@ images), the shell's kit and tokens as a package, MapLibre lazy-loaded. The foru
 built in, not a third-party engine (B 19a has the alternative). One deployment, one database,
 staging plus production; CI fails on a disallowed dependency licence.
 
-**Topology.** One official instance at one domain, run by Ostler. No self-hosting, no club
-instances, no hub-to-hub traffic. Clubs live as clubs on it (§12).
+**Topology.** One official instance at one domain, run by Ostler. Clubs live as clubs on it
+(§12). *Amended 2026-10-07 (openness round):* the hub API (`api/hub.openapi.yaml`) is a
+published, versioned contract with the same deprecation rule as the shell's API; a club or
+anyone else may run their own implementation (under another name, TRADEMARKS.md) and devices
+may point at it. No hub-to-hub traffic in v1.
 
 ## 4. Hub accounts and device linking
 
@@ -146,7 +166,9 @@ instances, no hub-to-hub traffic. Clubs live as clubs on it (§12).
   PKCE** from the phone. The hub issues a refresh token **per device per local user**, scopes
   `publish`, `read`, `help` only (no admin scope leaves the web), stored in `auth.db` on the
   Brain (accounts §14.10), revocable from either side, listed in Settings → Sharing. The add-on
-  points at the one official hub; a developer build may set a staging URL.
+  points at the official hub by default; the user may set another hub URL (HTTPS, a compatible
+  API version) in its settings (*amended 2026-10-07, openness round*; was official hub only,
+  staging in developer builds).
 - **Pairwise ids:** the hub sees an opaque id per (device, local user), never the device's
   peer-key fingerprint or any `ostler-cloud` id, so the hub cannot correlate a person with peers
   or with cloud records.
@@ -177,7 +199,7 @@ ADR-0042 decision 7 is a hard rule, and a closed, single-operator hub makes it m
 
 | Object | Comes from | Levels and audiences | Notes |
 |---|---|---|---|
-| **Trip** | core Trips share sheet | **L0 Card**, **L1 Route**: person, group/club, `link`, `public` · **L2 Telemetry**: person, group/club only | grants (trip-sharing spec). Public needs an explicit publish act and, for a route, ≥ 24 h after the trip ends; max speed hidden on public cards; L1 trimmed 500 m (never < 200 m) with privacy zones |
+| **Trip** | core Trips share sheet | **L0 Card**, **L1 Route**: person, group/club, `link`, `public` · **L2 Telemetry**: person, group/club only | grants (trip-sharing spec). Public needs an explicit publish act and, for a route, the owner's delay after the trip ends (default 24 h); max speed hidden on public cards by default; L1 trimmed 500 m by default (the owner may go lower with a warning) with privacy zones |
 | **Route** | `ostler-app-navigation` library or planner | private, group/club, `link`, `public` | a plan, not a recording; the same end-trim check warns when it starts or ends in a privacy zone |
 | **Garage card** | Maintenance & Garage, Vehicles & Map §2.2 | `vehicle_card` basic; optional `maintenance` history (no costs; "for a buyer" preset) | plate hidden unless ticked, EXIF stripped, never a VIN, masked or not |
 | **Event** | a club or a person | group/club, `link`, `public` | ICS, place at the organiser's precision |
@@ -251,8 +273,9 @@ threads in it.
   vehicle chips; threads started from the add-on fill them from the device.
 - **Q&A and solved:** a Question or Help thread has one accepted answer, chosen by the asker
   (or a category moderator after 14 days of silence, with a note), shown under the question with
-  "Solved by @x". Profiles count "helped with N" only. No votes, reactions limited to a private
-  "thanks" the author sees, no reputation score.
+  "Solved by @x". Profiles count "helped with N" only. On the official hub, by operator policy:
+  no votes, reactions limited to a private "thanks" the author sees, no reputation score
+  (optional answer upvotes may come later; *amended 2026-10-07, openness round*).
 - **Search:** one search box over threads, decode cards, wiki pages, routes and events; filters
   for make, model, engine, category, kind, solved or open, has attachment; exact-token matching
   for fault codes (`P0101`, `1192`), hex and service bytes (`21 1B`), part numbers; "similar
@@ -416,7 +439,8 @@ is Ostler's proprietary code; the client is AGPL with the CLA.
 
 - **Pre-moderation until trusted:** an account's public items, first forum posts, comments on
   public items and wiki edits wait in a review queue until it has ≥ 30 days and ≥ 3 approved
-  items with no upheld report (B 14). Trust is a moderation flag only, never shown as a score.
+  items with no upheld report (B 14; the thresholds are operator settings). Trust is a
+  moderation flag only, never shown as a score.
 - **Report** on every object (reason, text, optional map pin; pinned warnings on routes until the
   owner marks them solved); **block** and **mute** (blocked people cannot see my items, reply to
   me or join my rides); rate limits per account and IP, tighter for new accounts; upload caps;
@@ -571,6 +595,11 @@ v0.1's **H5 Federation** is dropped (B 18).
 - 2026-10-07: v0.3, approved by the owner on 2026-10-07 ("approve all", DMD round): every
   decision item (B 7–19, 19a–19f) answered as recommended (alternatives not chosen); the
   ADR-0029, ADR-0034 and ADR-0042 DMD-round amendments approved with it.
+- 2026-10-07: v0.4, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): the hub API is a published,
+  stable contract others may implement; the add-on's hub URL is user-settable; the official
+  hub's no-votes, no-points and moderation thresholds are operator policy; publishing follows
+  the trip-sharing defaults. `ostler-hub` stays private and closed.
 
 ## Decisions for the owner
 

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">5</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Phone &amp; Comms add-on</span><span style="font-size:14px;color:#3b4556">Optional · call template while Moving (no photo, ≤3 buttons, no keypad) · dialer Parked or on phone</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<sc-for list="{{ callBoards }}" as="v" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">{{ v.title }}</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="{{ v.title }}" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="dash" call="{{ v.chip }}" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.3"><div style="background:#121a2c;border-radius:24px"></div><div style="grid-row:span 2;background:#121a2c;border-radius:28px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;left:0;right:0;top:56px;bottom:0;display:flex;align-items:center;justify-content:center">
+<div style="width:620px;background:#243049;border-radius:28px;padding:26px;display:flex;flex-direction:column;gap:20px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:18px"><div style="width:72px;height:72px;border-radius:36px;background:#1a2439;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:40px;font-variation-settings:'FILL' 1">{{ v.icon }}</span></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:44px;font-weight:700;line-height:1.05">Sam Carter</span><div style="display:flex;gap:10px;align-items:center"><span style="font-size:24px;font-weight:700;background:#1a2439;padding:4px 12px;border-radius:12px;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:24px">chat</span>WhatsApp call</span><span style="font-size:24px;color:#b0bacb;font-variant-numeric:tabular-nums">{{ v.sub }}</span></div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<sc-for list="{{ v.btns }}" as="b" hint-placeholder-count="2"><div style="height:88px;border-radius:26px;background:{{ b.bg }};color:{{ b.c }};display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:800"><span class="material-symbols-rounded" style="font-size:36px;font-variation-settings:'FILL' 1">{{ b.icon }}</span>{{ b.t }}</div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · voice dial + favourites (short list, no keypad)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Favourites moving" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="dash" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.3"><div style="background:#121a2c;border-radius:24px"></div><div style="grid-row:span 2;background:#121a2c;border-radius:28px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;left:12px;top:60px;width:540px;background:#243049;border-radius:28px;padding:8px;display:flex;flex-direction:column;gap:4px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="height:80px;border-radius:20px;background:rgba(34,166,224,.18);color:#22a6e0;display:flex;align-items:center;gap:16px;padding:0 18px;font-size:28px;font-weight:800;flex:none"><span class="material-symbols-rounded" style="font-size:36px;font-variation-settings:'FILL' 1">mic</span>Say “Call Sam”</div>
+<sc-for list="{{ favs }}" as="f" hint-placeholder-count="5"><div style="height:76px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:16px;padding:0 18px;flex:none"><span class="material-symbols-rounded" style="font-size:30px">call</span><span style="flex:1;font-size:26px;font-weight:700">{{ f.n }}</span><span style="font-size:24px;color:#b0bacb">{{ f.app }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · full in-call screen</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="In-call parked" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="dash" moving="{{ false }}" call="02:14" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 16px 16px;display:grid;grid-template-columns:1fr 1.2fr;gap:16px">
+<div style="background:#121a2c;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+<div style="width:132px;height:132px;border-radius:66px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700">SC</div>
+<span style="font-size:36px;font-weight:700">Sam Carter</span>
+<div style="display:flex;gap:8px"><span style="font-size:18px;font-weight:700;background:#1a2439;padding:6px 12px;border-radius:12px;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:20px">chat</span>WhatsApp call</span><span style="font-size:18px;font-weight:700;background:#1a2439;padding:6px 12px;border-radius:12px">Ostler · Phone</span></div>
+<span style="font-size:48px;font-weight:700;font-variant-numeric:tabular-nums">02:14</span>
+<span style="font-size:18px;color:#b0bacb">Via your phone · car audio</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr) 96px;gap:12px">
+<sc-for list="{{ callCtl }}" as="c" hint-placeholder-count="6"><div style="border-radius:24px;background:{{ c.bg }};color:{{ c.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:20px;font-weight:700"><span class="material-symbols-rounded" style="font-size:40px">{{ c.icon }}</span>{{ c.t }}</div></sc-for>
+<div style="grid-column:span 3;border-radius:28px;background:#ef6a7d;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:10px;font-size:24px;font-weight:800"><span class="material-symbols-rounded" style="font-size:36px;font-variation-settings:'FILL' 1">call_end</span>End call</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Dialer · keypad</div>
+<div data-screen-label="Dialer keypad" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="padding:4px 20px 0;display:flex;justify-content:space-between;align-items:center;height:56px"><span style="font-size:28px;font-weight:700">Phone</span><span style="font-size:12px;font-weight:700;color:#b0bacb;background:#1a2439;padding:4px 10px;border-radius:10px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:14px">extension</span>Add-on</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 32px 16px;gap:10px">
+<span style="font-size:36px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums;min-height:44px">{{ dialed }}</span>
+<span style="font-size:13px;color:#b0bacb;min-height:16px">{{ dialMatch }}</span>
+<div style="display:grid;grid-template-columns:repeat(3,76px);gap:14px 26px;margin-top:8px">
+<sc-for list="{{ keys }}" as="k" hint-placeholder-count="12"><div onClick="{{ k.tap }}" style="cursor:pointer;width:76px;height:76px;border-radius:38px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:28px;font-weight:600;line-height:1">{{ k.d }}</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">{{ k.l }}</span></div></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:26px;margin-top:6px"><div style="width:76px"></div><div style="width:76px;height:76px;border-radius:38px;background:#2f9e63;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#0a1020;font-variation-settings:'FILL' 1">call</span></div><div onClick="{{ del }}" style="cursor:pointer;width:76px;height:76px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px;color:#b0bacb">backspace</span></div></div>
+</div>
+<div style="height:84px;flex:none;background:#0e1526;display:flex;padding:8px 8px 22px">
+<sc-for list="{{ dTabs }}" as="t" hint-placeholder-count="4"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ t.c }}"><div style="width:56px;height:32px;border-radius:16px;background:{{ t.bg }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">{{ t.icon }}</span></div><span style="font-size:12px;font-weight:700">{{ t.n }}</span></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Recents + favourites (missed = alarm)</div>
+<div data-screen-label="Recents" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Recents</span>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:0 4px">FAVOURITES</span>
+<div style="display:flex;gap:10px"><sc-for list="{{ favs }}" as="f" hint-placeholder-count="5"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0"><div style="width:56px;height:56px;border-radius:28px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">{{ f.i }}</div><span style="font-size:12px;font-weight:600;white-space:nowrap">{{ f.short }}</span></div></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">TODAY</span>
+<sc-for list="{{ recents }}" as="r" hint-placeholder-count="6"><div style="min-height:64px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:0 8px 0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:{{ r.c }}">{{ r.icon }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700;color:{{ r.nc }}">{{ r.n }}</span><span style="font-size:13px;color:#b0bacb">{{ r.sub }}</span></div><span style="font-size:12px;font-weight:700;color:#b0bacb;background:#1a2439;padding:3px 8px;border-radius:8px">{{ r.app }}</span><div style="width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px;color:#22a6e0">call</span></div></div></sc-for>
+</div>
+<div style="height:84px;flex:none;background:#0e1526;display:flex;padding:8px 8px 22px">
+<sc-for list="{{ rTabs }}" as="t" hint-placeholder-count="4"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:{{ t.c }}"><div style="width:56px;height:32px;border-radius:16px;background:{{ t.bg }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">{{ t.icon }}</span></div><span style="font-size:12px;font-weight:700">{{ t.n }}</span></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Contacts · source badges (tap a filter)</div>
+<div data-screen-label="Contacts" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Contacts</span>
+<div style="height:48px;border-radius:24px;background:#121a2c;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:15px;color:#8e9ab0"><span class="material-symbols-rounded" style="font-size:22px">search</span>Search contacts</div>
+<div style="display:flex;gap:8px"><sc-for list="{{ cFilters }}" as="f" hint-placeholder-count="3"><div onClick="{{ f.pick }}" style="cursor:pointer;height:40px;padding:0 16px;border-radius:20px;background:{{ f.bg }};color:{{ f.c }};display:flex;align-items:center;font-size:14px;font-weight:700">{{ f.l }}</div></sc-for></div>
+<sc-for list="{{ contacts }}" as="c" hint-placeholder-count="6"><div style="min-height:64px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:8px 14px"><div style="width:44px;height:44px;border-radius:22px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex:none">{{ c.i }}</div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">{{ c.n }}</span><div style="display:flex;gap:6px"><sc-for list="{{ c.badges }}" as="b" hint-placeholder-count="1"><span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;background:{{ b.bg }};color:{{ b.c }};display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:14px">{{ b.icon }}</span>{{ b.l }}</span></sc-for></div></div></div></sc-for>
+<span style="font-size:12px;color:#8e9ab0;padding:4px;line-height:1.5;display:flex;gap:6px"><span class="material-symbols-rounded" style="font-size:16px">smartphone</span>Phone contacts stay on this device and are never uploaded.</span>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Connect your phone</div>
+<div data-screen-label="Connect phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Connect your phone</span>
+<div style="border-radius:22px;background:rgba(47,158,99,.12);padding:14px 16px;display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:28px;color:#2f9e63;font-variation-settings:'FILL' 1">bluetooth_connected</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700;color:#2f9e63">Hands-free connected</span><span style="font-size:13px;color:#b0bacb">Pixel 8 · calls, SMS and notifications</span></div></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:4px 4px 0">CHOOSE A WAY</span>
+<div style="border-radius:22px;background:#121a2c;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:28px;color:#22a6e0">bluetooth</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700">Brain as hands-free kit</span><span style="font-size:13px;color:#b0bacb">Works with any phone · no app needed</span></div><span style="font-size:12px;font-weight:700;color:#0a1020;background:#22a6e0;padding:3px 8px;border-radius:8px">Selected</span></div>
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:center;min-height:40px"><div style="width:28px;height:28px;border-radius:14px;background:{{ s.bg }};color:{{ s.c }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none"><span class="material-symbols-rounded" style="font-size:18px">{{ s.icon }}</span></div><span style="font-size:14px;line-height:1.35;color:{{ s.tc }}">{{ s.t }}</span></div></sc-for>
+</div>
+<div style="border-radius:22px;background:#121a2c;padding:16px;display:flex;align-items:center;gap:12px;min-height:48px"><span class="material-symbols-rounded" style="font-size:28px;color:#b0bacb">install_mobile</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700">Ostler companion app</span><span style="font-size:13px;color:#b0bacb">Adds notifications and Ostler contacts</span></div><span class="material-symbols-rounded" style="font-size:24px;color:#8e9ab0">chevron_right</span></div>
+<div style="border-radius:18px;background:#1a2439;padding:12px 14px;display:flex;gap:10px"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span><span style="font-size:13px;line-height:1.45;color:#b0bacb">On iPhone: messages from WhatsApp aren’t available on iPhone; calls and SMS work.</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Integrations</div>
+<div data-screen-label="Integrations" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Integrations</span>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:4px 4px 0">NATIVE · OPTIONAL</span>
+<sc-for list="{{ native }}" as="n" hint-placeholder-count="2"><div style="min-height:72px;border-radius:20px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:10px 14px"><span class="material-symbols-rounded" style="font-size:28px;color:#b0bacb">{{ n.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700">{{ n.n }}</span><span style="font-size:13px;color:#b0bacb">{{ n.d }}</span></div><div onClick="{{ n.toggle }}" style="cursor:pointer;width:52px;height:30px;border-radius:15px;background:{{ n.track }};position:relative;flex:none"><div style="position:absolute;top:4px;left:{{ n.knob }}px;width:22px;height:22px;border-radius:11px;background:{{ n.kc }}"></div></div></div></sc-for>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:10px 4px 0">VIA YOUR PHONE</span>
+<sc-for list="{{ viaPhone }}" as="n" hint-placeholder-count="3"><div style="min-height:72px;border-radius:20px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:10px 14px"><span class="material-symbols-rounded" style="font-size:28px;color:#b0bacb">{{ n.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700">{{ n.n }}</span><span style="font-size:13px;color:#b0bacb">Calls and Android notifications only, via your phone</span></div><span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">info</span></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Home widgets: dialer favourites + recent calls</div>
+<div data-screen-label="Phone widgets" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Home</span>
+<div style="border-radius:22px;background:#121a2c;padding:14px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">FAVOURITES</span><div style="display:flex;gap:10px"><sc-for list="{{ favs }}" as="f" hint-placeholder-count="5"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0"><div style="width:52px;height:52px;border-radius:26px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700">{{ f.i }}</div><span style="font-size:12px;font-weight:600;white-space:nowrap">{{ f.short }}</span></div></sc-for></div></div>
+<div style="border-radius:22px;background:#121a2c;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">RECENT CALLS</span>
+<sc-for list="{{ recents3 }}" as="r" hint-placeholder-count="3"><div style="min-height:48px;display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:20px;color:{{ r.c }}">{{ r.icon }}</span><span style="flex:1;font-size:15px;font-weight:700;color:{{ r.nc }}">{{ r.n }}</span><span style="font-size:13px;color:#b0bacb">{{ r.t }}</span></div></sc-for></div>
+<div style="border-radius:22px;background:rgba(239,106,125,.12);padding:14px 16px;display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:24px;color:#ef6a7d">phone_missed</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700;color:#ef6a7d">Missed call · Sam</span><span style="font-size:13px;color:#b0bacb">WhatsApp · 13:58</span></div><div style="height:44px;padding:0 16px;border-radius:22px;background:#1a2439;display:flex;align-items:center;font-size:14px;font-weight:700;color:#22a6e0">Call back</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · Drive favourites tile (short list in a tile)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Favourites tile HU-5" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu5" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,48px"></dc-import>
+<div style="flex:1;min-height:0;padding:6px 12px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px">
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">COOLANT</span><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">88<span style="font-size:24px;color:#b0bacb"> °C</span></span></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">BATTERY</span><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">14.1<span style="font-size:24px;color:#b0bacb"> V</span></span></div>
+<div style="grid-row:span 2;background:#121a2c;border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:6px"><span style="font-size:24px;font-weight:700;color:#b0bacb;padding:4px 6px">FAVOURITES</span>
+<sc-for list="{{ favs4 }}" as="f" hint-placeholder-count="4"><div style="flex:1;min-height:76px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:10px;padding:0 12px"><span class="material-symbols-rounded" style="font-size:28px">call</span><span style="font-size:26px;font-weight:700">{{ f.short }}</span></div></sc-for></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">BOOST</span><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">0.99<span style="font-size:24px;color:#b0bacb"> bar</span></span></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">TRIP</span><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">37<span style="font-size:24px;color:#b0bacb"> km</span></span></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const FAV=[['Sam Carter','SC','Sam','WhatsApp'],['Priya Shah','PS','Priya','Phone'],['Tom Reid','TR','Tom','Signal'],['Home','H','Home','Phone'],['Peak 4x4 garage','P4','Garage','Phone']];
+const CON=[['Sam Carter','SC',['o','p']],['Priya Shah','PS',['o']],['Tom Reid','TR',['p']],['Alex Moore','AM',['o']],['Mum','M',['p']],['Jo Lin','JL',['o','p']],['Peak 4x4 garage','P4',['p']]];
+class Component extends DCLogic {
+ state={dial:'07700 900',filter:'All',tg:true,mx:false};
+ renderVals(){
+  const S=this.state;
+  const favs=FAV.map(([n,i,short,app])=>({n,i,short,app}));
+  const callBoards=[
+   {title:'HU-7 · Moving · incoming call (call template)',chip:'',icon:'ring_volume',sub:'Incoming',btns:[{icon:'call_end',t:'Decline',bg:'#ef6a7d',c:'#0a1020'},{icon:'call',t:'Accept',bg:'#2f9e63',c:'#0a1020'}]},
+   {title:'HU-7 · Moving · in call → Mute / End',chip:'02:14',icon:'call',sub:'02:14',btns:[{icon:'mic_off',t:'Mute',bg:'#1a2439',c:'#eef2f9'},{icon:'call_end',t:'End',bg:'#ef6a7d',c:'#0a1020'}]}];
+  const callCtl=[['mic_off','Mute'],['dialpad','Keypad'],['volume_up','Car audio',1],['person_add','Add'],['pause','Hold'],['swap_calls','To phone']].map(([icon,t,on])=>({icon,t,bg:on?'rgba(34,166,224,.16)':'#121a2c',c:on?'#22a6e0':'#eef2f9'}));
+  const L={1:'',2:'ABC',3:'DEF',4:'GHI',5:'JKL',6:'MNO',7:'PQRS',8:'TUV',9:'WXYZ','*':'','0':'+','#':''};
+  const keys=['1','2','3','4','5','6','7','8','9','*','0','#'].map(d=>({d,l:L[d],tap:()=>this.setState(s=>({dial:(s.dial+d).slice(0,16)}))}));
+  const tabs=a=>[['star','Favourites'],['history','Recents'],['contacts','Contacts'],['dialpad','Keypad']].map(([icon,n])=>({icon,n,bg:n===a?'rgba(34,166,224,.16)':'transparent',c:n===a?'#22a6e0':'#b0bacb'}));
+  const R=[['phone_missed','Sam Carter','Missed · 13:58','WhatsApp',1],['call_received','Priya Shah','Incoming · 12:40 · 4 min','Phone'],['call_made','Peak 4x4 garage','Outgoing · 10:15 · 2 min','Phone'],['phone_missed','Unknown','Missed · 09:02','Phone',1],['call_received','Tom Reid','Incoming · 08:30 · 1 min','Signal'],['call_made','Jo Lin','Outgoing · 07:55','Telegram']];
+  const recents=R.map(([icon,n,sub,app,m])=>({icon,n,sub,app,c:m?'#ef6a7d':'#b0bacb',nc:m?'#ef6a7d':'#eef2f9'}));
+  const recents3=recents.slice(0,3).map(r=>({...r,t:r.sub.split(' · ')[1]}));
+  const B={o:{l:'Ostler',icon:'group',bg:'rgba(34,166,224,.16)',c:'#22a6e0'},p:{l:'Phone',icon:'smartphone',bg:'#243049',c:'#b0bacb'}};
+  const contacts=CON.filter(c=>S.filter==='All'||(S.filter==='Ostler'?c[2].includes('o'):c[2].includes('p'))).map(([n,i,b])=>({n,i,badges:b.map(k=>B[k])}));
+  const cFilters=['All','Ostler','Phone'].map(l=>({l,bg:S.filter===l?'#243049':'#121a2c',c:S.filter===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({filter:l})}));
+  const st=(done,t,cur)=>({t,icon:done?'check':cur?'more_horiz':'radio_button_unchecked',bg:done?'#2f9e63':cur?'#22a6e0':'#243049',c:'#0a1020',tc:done?'#b0bacb':'#eef2f9'});
+  const steps=[st(1,'On your phone, open Bluetooth'),st(1,'Choose “Ostler D2” from the list'),st(1,'Check the code matches 482 913 on the head unit'),st(0,'Allow contacts and call history (optional)',1)];
+  const tog=(on,fn)=>({track:on?'#22a6e0':'#243049',knob:on?26:4,kc:on?'#0a1020':'#8e9ab0',toggle:fn});
+  const native=[{icon:'send',n:'Telegram',d:'Messages, voice notes and calls',...tog(S.tg,()=>this.setState(s=>({tg:!s.tg})))},{icon:'hub',n:'Matrix',d:'Open, self-hostable chat',...tog(S.mx,()=>this.setState(s=>({mx:!s.mx})))}];
+  const viaPhone=[{icon:'chat',n:'WhatsApp'},{icon:'forum',n:'Messenger'},{icon:'lock',n:'Signal'}];
+  const digits=S.dial.replace(/\s/g,'');
+  return {callBoards,favs,favs4:favs.slice(0,4),callCtl,keys,dialed:S.dial,dialMatch:digits.startsWith('07700900')?'Sam Carter · mobile':'',del:()=>this.setState(s=>({dial:s.dial.slice(0,-1)})),dTabs:tabs('Keypad'),rTabs:tabs('Recents'),recents,recents3,contacts,cFilters,steps,native,viaPhone,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

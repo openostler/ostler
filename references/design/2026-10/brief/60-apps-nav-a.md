@@ -2,7 +2,7 @@
 title: "Designer brief — Navigation add-on: turn card, off route, Navigation page, planner, library and roadbook"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-navigation-addon-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-trip-sharing-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   countdown and Reroute focused, the Navigation page (search, destinations, profiles), the
   Parked planner, the GPX library with follow-a-track modes, and the roadbook view. Every
   label, state and driving rule, with components. Search results, the route preview, map
-  regions and saved places are in part b.
+  regions and saved places are in part b. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Navigation, part a: guidance, library and planner
@@ -46,8 +46,8 @@ whole route. It needs a Brain and an installed map region. It declares no car ac
   guidance continues on the cached route · Brain unreachable: "Needs the Brain" for reroute,
   guidance continues · Moving: as above · Parked: same card plus the full Navigation page
   behind it.
-- **Safety and driving rules:** no search, list, pan or text entry while Moving; no glow,
-  gradient or animation; speed-limit state never logged or scored ([Navigation §5.2](../../../../specs/2026-10-07-navigation-addon-design.md#52-while-moving-the-map-templates-next-manoeuvre), [Navigation §5.5](../../../../specs/2026-10-07-navigation-addon-design.md#55-speed-limit-off-by-default),
+- **Safety and driving rules:** no search, list, pan or text entry while Moving; no
+  animation (glow and gradient are the theme's choice, under the render check); speed-limit state never logged or scored ([Navigation §5.2](../../../../specs/2026-10-07-navigation-addon-design.md#52-while-moving-the-map-templates-next-manoeuvre), [Navigation §5.5](../../../../specs/2026-10-07-navigation-addon-design.md#55-speed-limit-off-by-default),
   [UI §12.1](../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44)).
 - **Components:** map template, StatTile (distance to go), Chip (NAV/TRACK), Card.
 - **Spec refs:** [Navigation §5.2](../../../../specs/2026-10-07-navigation-addon-design.md#52-while-moving-the-map-templates-next-manoeuvre) · [Navigation §5.5](../../../../specs/2026-10-07-navigation-addon-design.md#55-speed-limit-off-by-default) · [UI §12.1](../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44) · [UI §13.5](../../../../specs/2026-10-06-ui-architecture-design.md#135-map-theme-independent-of-the-app-theme-changes-123s-map-style-sentence)

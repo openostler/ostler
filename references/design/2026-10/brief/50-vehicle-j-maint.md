@@ -2,7 +2,7 @@
 title: "Designer brief: vehicle and diagnostics (J) — Maintenance & Garage home and its five tabs"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   Insights, Due list and the Records link to Trips) and the five tabs Due, Timeline, Costs,
   Fuel and Documents, with band pills, provenance suffixes (from car, est., you, mechanic)
   and the D2's honest odometer state: the Td5 reports no odometer, so distance is always
-  estimated from trips. Every number says where it came from.
+  estimated from trips. Every number says where it came from. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Vehicle and diagnostics brief (J): Maintenance & Garage
@@ -30,7 +30,7 @@ nothing but the trip start or end alert card ([§7][mg-7], [§8][mg-8]).
 ### maint-home — Maintenance home per vehicle  [Existing]
 - **Purpose:** what this vehicle costs and what is due, at a glance.
 - **Owner:** app:maintenance
-- **Opens from → goes to:** dock or app drawer → Maintenance; Service due widget; garage card; Home card (no strip chip: apps add none, item 58) → maint-due, maint-timeline, maint-costs, maint-fuel, maint-documents, maint-add-record, trips-records.
+- **Opens from → goes to:** dock or app drawer → Maintenance; Service due widget; garage card; Home card (no strip chip by default, item 58; status-only app chips are allowed since the openness round) → maint-due, maint-timeline, maint-costs, maint-fuel, maint-documents, maint-add-record, trips-records.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:** phone Night and Day, hu9 Night (Parked), tablet Night.
 - **Content (top to bottom):**
   1. Tabs: **Overview · Due · Timeline · Costs · Fuel · Documents**.

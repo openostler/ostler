@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.maplibregl-ctrl-attrib.maplibregl-compact{background:rgba(18,26,44,.85)!important;color:#b0bacb;min-height:28px}
+.maplibregl-ctrl-attrib a{color:#b0bacb!important}
+.maplibregl-ctrl-attrib-button{filter:invert(1);opacity:.75}
+[data-live-map="phone"] .maplibregl-ctrl-top-right{top:112px}
+</style>
+</helmet>
+
+<div style="padding:56px;display:flex;flex-direction:column;gap:72px;color:#0e1626">
+
+<div style="max-width:980px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · CORE SCREENS · NIGHT + ONE DAY</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">Home, Drive mode, Trips, Trip detail</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">Reference car: 2002 Discovery 2 Td5, right-hand drive — so the rail sits on the right, map sheets on the left. Maps are live OpenFreeMap vector tiles (dark / positron) with routes snapped to real roads in the Peak District.</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px 28px;font-size:13px;line-height:1.5;color:#3b4556;margin-top:4px">
+<div><b style="color:#0e1626">Assumptions</b> — Speed ramp hexes weren't in the brief, so I used a six-step violet lightness ramp (faster = lighter at night, darker by day). Swap them in once you have §4.3.</div>
+<div><b style="color:#0e1626">Drive mode</b> — the screen shown while Moving. Coolant's band is “below 105 °C”, so a cold 28 °C stays neutral. The Trip tile has no normal range, so it shows time and average speed instead of a bar.</div>
+<div><b style="color:#0e1626">Tweaks</b> — Faults on/off, Ghost/Visible and live data apply to every screen. Time/Distance and the signal picker work in Trip detail.</div>
+</div>
+</div>
+
+<section id="home" style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">01</span><span style="font-size:22px;font-weight:800">Home</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Night · 393×852</div>
+<div data-screen-label="Home phone night" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:18px">wifi</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;min-height:56px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:700;letter-spacing:.12em;color:#8e9ab0">OSTLER</span><span style="font-size:28px;font-weight:700;letter-spacing:-.01em">Home</span></div>
+<div style="display:flex;gap:8px;align-items:center">
+<div style="height:36px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;font-size:14px;font-weight:600"><span style="width:8px;height:8px;border-radius:4px;background:#2f9e63;box-shadow:0 0 10px 2px rgba(47,158,99,.7)"></span>TD5<span style="font-size:12px;background:#243049;color:#b0bacb;padding:3px 8px;border-radius:10px">Asleep</span></div>
+<div style="height:36px;border-radius:18px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:14px;font-weight:600"><span class="material-symbols-rounded" style="font-size:18px">{{ vis.icon }}</span>{{ vis.short }}</div>
+</div>
+</div>
+<div style="min-height:56px;border-radius:16px;background:{{ health.bg }};display:flex;align-items:center;gap:12px;padding:8px 12px 8px 16px">
+<span class="material-symbols-rounded" style="font-size:24px;color:{{ health.color }};font-variation-settings:'FILL' 1">{{ health.icon }}</span>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700;color:{{ health.color }}">{{ health.title }}</span><span style="font-size:13px;color:#b0bacb">{{ health.sub }}</span></div>
+<span class="material-symbols-rounded" style="font-size:24px;color:#8e9ab0">chevron_right</span>
+</div>
+<div style="background:#121a2c;border-radius:24px;overflow:hidden;flex:none">
+<div style="height:168px;background:linear-gradient(160deg,#1f2a42,#141c2e);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8e9ab0"><span class="material-symbols-rounded" style="font-size:40px">directions_car</span><span style="font-size:12px;font-weight:600;letter-spacing:.08em">VEHICLE PHOTO</span></div>
+<div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:700">Discovery 2 Td5</span><span style="font-size:13px;color:#b0bacb">2002 · 2.5 Td5 · Manual · RHD</span></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">ODOMETER</span><span style="font-size:12px;font-weight:600;color:#b0bacb;background:#1a2439;padding:2px 8px;border-radius:8px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:14px">info</span>Estimated</span></div>
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">187,412</span><span style="font-size:22px;font-weight:500;color:#b0bacb">km</span></div>
+</div>
+</div>
+</div>
+<div style="min-height:80px;border-radius:24px;background:rgba(34,166,224,.14);display:flex;align-items:center;gap:14px;padding:0 18px 0 16px;flex:none">
+<div style="width:48px;height:48px;border-radius:24px;background:#22a6e0;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px;color:#0a1020">speed</span></div>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700">Drive</span><span style="font-size:13px;color:#b0bacb">Full-screen gauges · 6 tiles</span></div>
+<span class="material-symbols-rounded" style="font-size:28px;color:#22a6e0">arrow_forward</span>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px;flex:none">
+<sc-for list="{{ homeStats }}" as="s" hint-placeholder-count="9">
+<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;white-space:nowrap">{{ s.l }}</span><span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}<span style="font-size:13px;font-weight:500;color:#b0bacb"> {{ s.u }}</span></span></div>
+</sc-for>
+</div>
+<div style="background:#121a2c;border-radius:24px;overflow:hidden;flex:none">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px 12px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">LAST TRIP</span><span style="font-size:13px;color:#b0bacb">Today · 08:12</span></div>
+<div style="margin:0 12px;height:140px;border-radius:16px;overflow:hidden;background:#0e1422"><img src="{{ minis.home }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<div style="padding:12px 18px 18px;display:flex;flex-direction:column;gap:2px"><span style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px">Buxton<span class="material-symbols-rounded" style="font-size:18px;color:#8e9ab0">arrow_forward</span>Castleton</span><span style="font-size:14px;color:#b0bacb;font-variant-numeric:tabular-nums">37.2 km · 48 min · max 96 km/h</span></div>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px;flex:none">
+<div style="display:flex;gap:12px;align-items:center"><div style="width:44px;height:44px;border-radius:22px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">extension</span></div><div style="display:flex;flex-direction:column"><span style="font-size:17px;font-weight:700">Make Ostler yours</span><span style="font-size:13px;color:#b0bacb">Add only what you need</span></div></div>
+<div style="display:flex;align-items:center;gap:12px;min-height:56px;background:#1a2439;border-radius:16px;padding:0 6px 0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">build</span><span style="flex:1;font-size:15px;font-weight:600">Track maintenance</span><span style="height:48px;display:flex;align-items:center;gap:4px;padding:0 12px;color:#22a6e0;font-size:15px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">add</span>Add</span></div>
+<div style="display:flex;align-items:center;gap:12px;min-height:56px;background:#1a2439;border-radius:16px;padding:0 6px 0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">group</span><span style="flex:1;font-size:15px;font-weight:600">Share drives with friends</span><span style="height:48px;display:flex;align-items:center;gap:4px;padding:0 12px;color:#22a6e0;font-size:15px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">add</span>Add</span></div>
+</div>
+</div>
+<div style="height:84px;flex:none;background:#0e1526;display:flex;padding:8px 8px 22px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#22a6e0"><div style="width:56px;height:32px;border-radius:16px;background:rgba(34,166,224,.16);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">home</span></div><span style="font-size:12px;font-weight:700">Home</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">stethoscope</span></div><span style="font-size:12px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">route</span></div><span style="font-size:12px;font-weight:600">Trips</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">shield</span></div><span style="font-size:12px;font-weight:600">Security</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">more_horiz</span></div><span style="font-size:12px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Night · Parked · 1024×600</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Home HU-7" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px">
+<div style="height:40px;border-radius:20px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.label }}</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 6px 0 14px;font-size:18px;font-weight:600"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>Connected · TD5 (engine)<span style="font-size:18px;background:#243049;color:#b0bacb;padding:3px 10px;border-radius:14px">Asleep</span></div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">bolt</span>12.6 V</div>
+<div style="height:40px;border-radius:20px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600"><span class="material-symbols-rounded" style="font-size:20px">{{ vis.icon }}</span>{{ vis.label }}</div>
+<div style="flex:1"></div>
+<span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">14:32</span>
+</div>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;min-width:0;padding:4px 16px 16px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px">
+<div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+<div style="height:64px;flex:none;border-radius:20px;background:{{ health.bg }};display:flex;align-items:center;gap:12px;padding:0 14px 0 18px"><span class="material-symbols-rounded" style="font-size:28px;color:{{ health.color }};font-variation-settings:'FILL' 1">{{ health.icon }}</span><div style="flex:1;display:flex;flex-direction:column;min-width:0"><span style="font-size:20px;font-weight:700;color:{{ health.color }}">{{ health.title }}</span><span style="font-size:18px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ health.subShort }}</span></div><span class="material-symbols-rounded" style="font-size:28px;color:#8e9ab0">chevron_right</span></div>
+<div style="flex:1;min-height:0;background:#121a2c;border-radius:24px;overflow:hidden;display:flex;flex-direction:column">
+<div style="flex:1;min-height:0;background:linear-gradient(160deg,#1f2a42,#141c2e);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8e9ab0"><span class="material-symbols-rounded" style="font-size:44px">directions_car</span><span style="font-size:18px;font-weight:600;letter-spacing:.06em">VEHICLE PHOTO</span></div>
+<div style="padding:14px 20px 18px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:22px;font-weight:700">Discovery 2 Td5</span>
+<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">ODOMETER</span><span style="font-size:18px;color:#b0bacb">· estimated</span></div>
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">187,412</span><span style="font-size:26px;color:#b0bacb">km</span></div></div>
+</div>
+</div>
+<div style="height:96px;flex:none;border-radius:24px;background:rgba(34,166,224,.14);display:flex;align-items:center;gap:16px;padding:0 22px 0 18px">
+<div style="width:60px;height:60px;border-radius:30px;background:#22a6e0;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#0a1020">speed</span></div>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:28px;font-weight:700">Drive</span><span style="font-size:18px;color:#b0bacb">6 live tiles</span></div>
+<span class="material-symbols-rounded" style="font-size:34px;color:#22a6e0">arrow_forward</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+<div style="background:#121a2c;border-radius:24px;padding:18px 22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 16px;flex:none">
+<sc-for list="{{ homeStats }}" as="s" hint-placeholder-count="9">
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:18px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ s.l }}</span><span style="font-size:32px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}<span style="font-size:18px;font-weight:500;color:#b0bacb"> {{ s.u }}</span></span></div>
+</sc-for>
+</div>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<div style="background:#121a2c;border-radius:24px;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;padding:14px 18px 10px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">LAST TRIP</span><span style="font-size:18px;color:#b0bacb">08:12</span></div>
+<div style="flex:1;min-height:0;margin:0 10px;border-radius:16px;overflow:hidden;background:#0e1422"><img src="{{ minis.home }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<div style="padding:10px 18px 14px;display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700">Buxton → Castleton</span><span style="font-size:18px;color:#b0bacb;font-variant-numeric:tabular-nums">37.2 km · 48 min</span></div>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 4px"><span class="material-symbols-rounded" style="font-size:26px;color:#b0bacb">extension</span><span style="font-size:20px;font-weight:700">Add-ons</span></div>
+<div style="flex:1;display:flex;align-items:center;gap:12px;min-height:76px;background:#1a2439;border-radius:18px;padding:0 16px"><span class="material-symbols-rounded" style="font-size:26px;color:#b0bacb">build</span><span style="flex:1;font-size:20px;font-weight:600;line-height:1.15">Track maintenance</span><span class="material-symbols-rounded" style="font-size:28px;color:#22a6e0">add_circle</span></div>
+<div style="flex:1;display:flex;align-items:center;gap:12px;min-height:76px;background:#1a2439;border-radius:18px;padding:0 16px"><span class="material-symbols-rounded" style="font-size:26px;color:#b0bacb">group</span><span style="flex:1;font-size:20px;font-weight:600;line-height:1.15">Share drives with friends</span><span class="material-symbols-rounded" style="font-size:28px;color:#22a6e0">add_circle</span></div>
+</div>
+</div>
+</div>
+</div>
+<div style="width:96px;flex:none;background:#0d1424;display:flex;flex-direction:column;padding:8px;gap:4px">
+<div style="flex:1;border-radius:20px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px;font-variation-settings:'FILL' 1">home</span><span style="font-size:18px;font-weight:700">Home</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">stethoscope</span><span style="font-size:18px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">route</span><span style="font-size:18px;font-weight:600">Trips</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">shield</span><span style="font-size:18px;font-weight:600">Security</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">more_horiz</span><span style="font-size:18px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Day · 393×852</div>
+<div data-screen-label="Home phone day" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#eef1f6;color:#0e1626;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.2)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:18px">wifi</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;min-height:56px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:700;letter-spacing:.12em;color:#5d6879">OSTLER</span><span style="font-size:28px;font-weight:700;letter-spacing:-.01em">Home</span></div>
+<div style="display:flex;gap:8px;align-items:center">
+<div style="height:36px;border-radius:18px;background:#ffffff;box-shadow:0 1px 2px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.05);display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;font-size:14px;font-weight:600"><span style="width:8px;height:8px;border-radius:4px;background:#2e7d4f"></span>TD5<span style="font-size:12px;background:#eef1f6;color:#4b5568;padding:3px 8px;border-radius:10px">Asleep</span></div>
+<div style="height:36px;border-radius:18px;background:{{ visL.bg }};color:{{ visL.color }};box-shadow:0 1px 2px rgba(15,23,42,.06);display:flex;align-items:center;gap:6px;padding:0 12px;font-size:14px;font-weight:600"><span class="material-symbols-rounded" style="font-size:18px">{{ vis.icon }}</span>{{ vis.short }}</div>
+</div>
+</div>
+<div style="min-height:56px;border-radius:16px;background:{{ healthL.bg }};display:flex;align-items:center;gap:12px;padding:8px 12px 8px 16px">
+<span class="material-symbols-rounded" style="font-size:24px;color:{{ healthL.color }};font-variation-settings:'FILL' 1">{{ health.icon }}</span>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700;color:{{ healthL.color }}">{{ health.title }}</span><span style="font-size:13px;color:#4b5568">{{ health.sub }}</span></div>
+<span class="material-symbols-rounded" style="font-size:24px;color:#5d6879">chevron_right</span>
+</div>
+<div style="background:#ffffff;border-radius:24px;overflow:hidden;flex:none;box-shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)">
+<div style="height:168px;background:linear-gradient(160deg,#e3e8f0,#d5dce8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#5d6879"><span class="material-symbols-rounded" style="font-size:40px">directions_car</span><span style="font-size:12px;font-weight:600;letter-spacing:.08em">VEHICLE PHOTO</span></div>
+<div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:700">Discovery 2 Td5</span><span style="font-size:13px;color:#4b5568">2002 · 2.5 Td5 · Manual · RHD</span></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#5d6879">ODOMETER</span><span style="font-size:12px;font-weight:600;color:#4b5568;background:#eef1f6;padding:2px 8px;border-radius:8px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:14px">info</span>Estimated</span></div>
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">187,412</span><span style="font-size:22px;font-weight:500;color:#4b5568">km</span></div>
+</div>
+</div>
+</div>
+<div style="min-height:80px;border-radius:24px;background:rgba(0,112,184,.10);display:flex;align-items:center;gap:14px;padding:0 18px 0 16px;flex:none">
+<div style="width:48px;height:48px;border-radius:24px;background:#0070b8;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px;color:#ffffff">speed</span></div>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700">Drive</span><span style="font-size:13px;color:#4b5568">Full-screen gauges · 6 tiles</span></div>
+<span class="material-symbols-rounded" style="font-size:28px;color:#0070b8">arrow_forward</span>
+</div>
+<div style="background:#ffffff;border-radius:24px;padding:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px;flex:none;box-shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)">
+<sc-for list="{{ homeStats }}" as="s" hint-placeholder-count="9">
+<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#5d6879;white-space:nowrap">{{ s.l }}</span><span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}<span style="font-size:13px;font-weight:500;color:#4b5568"> {{ s.u }}</span></span></div>
+</sc-for>
+</div>
+<div style="background:#ffffff;border-radius:24px;overflow:hidden;flex:none;box-shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px 12px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#5d6879">LAST TRIP</span><span style="font-size:13px;color:#4b5568">Today · 08:12</span></div>
+<div style="margin:0 12px;height:140px;border-radius:16px;overflow:hidden;background:#e3e8f0"><img src="{{ minis.homeL }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<div style="padding:12px 18px 18px;display:flex;flex-direction:column;gap:2px"><span style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px">Buxton<span class="material-symbols-rounded" style="font-size:18px;color:#5d6879">arrow_forward</span>Castleton</span><span style="font-size:14px;color:#4b5568;font-variant-numeric:tabular-nums">37.2 km · 48 min · max 96 km/h</span></div>
+</div>
+</div>
+<div style="height:84px;flex:none;background:#ffffff;box-shadow:0 -1px 0 rgba(15,23,42,.04),0 -8px 24px rgba(15,23,42,.05);display:flex;padding:8px 8px 22px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#0070b8"><div style="width:56px;height:32px;border-radius:16px;background:rgba(0,112,184,.12);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">home</span></div><span style="font-size:12px;font-weight:700">Home</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#4b5568"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">stethoscope</span></div><span style="font-size:12px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#4b5568"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">route</span></div><span style="font-size:12px;font-weight:600">Trips</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#4b5568"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">shield</span></div><span style="font-size:12px;font-weight:600">Security</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#4b5568"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">more_horiz</span></div><span style="font-size:12px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<section id="drive" style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">02</span><span style="font-size:22px;font-weight:800">Drive mode</span><span style="font-size:14px;color:#3b4556">Moving · strip only · no scrolling · 24 px minimum · no glow</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Moving · 393×852</div>
+<div data-screen-label="Drive phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">08:58</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:18px">wifi</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px">
+<div style="width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">arrow_back</span></div>
+<div style="height:48px;border-radius:24px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:24px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.short }}</div>
+<div style="height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:24px;font-weight:700"><span style="width:12px;height:12px;border-radius:6px;background:#ef6a7d"></span>REC</div>
+<div style="flex:1"></div>
+<div style="width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">bookmark_add</span></div>
+</div>
+<div style="flex:1;min-height:0;padding:8px 12px 34px;display:grid;grid-template-rows:repeat(6,minmax(0,1fr));gap:10px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:10px 14px 10px 16px;display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:10px;align-items:center;min-height:0">
+<div style="display:flex;flex-direction:column;min-width:0">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;line-height:1.15;white-space:nowrap">{{ t.label }}</span>
+<div style="display:flex;align-items:baseline;gap:6px;white-space:nowrap"><span style="font-size:48px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span><sc-if value="{{ t.alarm }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:#ef6a7d;letter-spacing:.04em">{{ t.word }}</span></sc-if></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;justify-content:center">
+<sc-if value="{{ t.isGauge }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 220 100" style="width:136px;height:62px;display:block"><path d="{{ t.gTrack }}" fill="none" stroke="#243049" stroke-width="18" stroke-linecap="round"></path><path d="{{ t.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="18"></path><path d="{{ t.gVal }}" fill="none" stroke="{{ t.color }}" stroke-width="7" stroke-linecap="round"></path><circle cx="{{ t.gx }}" cy="{{ t.gy }}" r="11" fill="{{ t.color }}" stroke="#121a2c" stroke-width="5"></circle></svg></sc-if>
+<sc-if value="{{ t.isBar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:22px"><div style="position:absolute;left:0;right:0;top:6px;height:10px;border-radius:5px;background:#243049"></div><div style="position:absolute;top:6px;height:10px;background:#3b4a6a;left:{{ t.bandL }};width:{{ t.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:22px;border-radius:3px;margin-left:-3px;background:{{ t.color }};left:{{ t.pos }}"></div></div></sc-if>
+<sc-if value="{{ t.isNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;color:#b0bacb;white-space:nowrap;text-align:right">{{ t.sub }}</span></sc-if>
+<sc-if value="{{ t.hasSpark }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:136px;height:20px;display:block"><path d="{{ t.spark }}" fill="none" stroke="{{ t.sparkColor }}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · 800×480 · strip 48</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive HU-5" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<div style="height:48px;flex:none;display:flex;align-items:center;gap:8px;padding:4px 8px 0">
+<div style="width:56px;height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">arrow_back</span></div>
+<div style="height:40px;border-radius:20px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:24px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.label }}</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:24px;font-weight:600"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>TD5</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:24px;font-weight:700"><span style="width:10px;height:10px;border-radius:5px;background:#ef6a7d"></span>REC</div>
+<div style="height:40px;border-radius:20px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:24px;font-weight:600;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:24px">{{ vis.icon }}</span>{{ vis.short }}</div>
+<div style="flex:1"></div>
+<span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">08:58</span>
+<div style="width:56px;height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px">bookmark_add</span></div>
+</div>
+<div style="flex:1;min-height:0;padding:10px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;line-height:28px;white-space:nowrap">{{ t.label }}</span>
+<sc-if value="{{ t.isGauge }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:104px;margin-top:2px"><svg viewBox="0 0 220 100" style="width:100%;height:100px;display:block"><path d="{{ t.gTrack }}" fill="none" stroke="#243049" stroke-width="14" stroke-linecap="round"></path><path d="{{ t.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="14"></path><path d="{{ t.gVal }}" fill="none" stroke="{{ t.color }}" stroke-width="5" stroke-linecap="round"></path><circle cx="{{ t.gx }}" cy="{{ t.gy }}" r="9" fill="{{ t.color }}" stroke="#121a2c" stroke-width="4"></circle></svg><div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:baseline;gap:6px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span></div></div></sc-if>
+<sc-if value="{{ t.isFlat }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;white-space:nowrap"><span style="font-size:56px;font-weight:700;line-height:60px;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span><sc-if value="{{ t.alarm }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:#ef6a7d;letter-spacing:.04em;margin-left:4px">{{ t.word }}</span></sc-if></div></sc-if>
+<sc-if value="{{ t.isBar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:22px;margin-top:10px"><div style="position:absolute;left:0;right:0;top:6px;height:10px;border-radius:5px;background:#243049"></div><div style="position:absolute;top:6px;height:10px;background:#3b4a6a;left:{{ t.bandL }};width:{{ t.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:22px;border-radius:3px;margin-left:-3px;background:{{ t.color }};left:{{ t.pos }}"></div></div></sc-if>
+<sc-if value="{{ t.isNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;color:#b0bacb;margin-top:8px;white-space:nowrap">{{ t.sub }}</span></sc-if>
+<div style="flex:1;min-height:0"></div>
+<sc-if value="{{ t.hasSpark }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:26px;display:block"><path d="{{ t.spark }}" fill="none" stroke="{{ t.sparkColor }}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · message alert (text never shown)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive HU-5 alert" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<div style="height:48px;flex:none;display:flex;align-items:center;gap:8px;padding:4px 8px 0">
+<div style="width:56px;height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">arrow_back</span></div>
+<div style="height:40px;border-radius:20px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:24px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.label }}</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:24px;font-weight:600"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>TD5</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:24px;font-weight:700"><span style="width:10px;height:10px;border-radius:5px;background:#ef6a7d"></span>REC</div>
+<div style="height:40px;border-radius:20px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:24px;font-weight:600;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:24px">{{ vis.icon }}</span>{{ vis.short }}</div>
+<div style="flex:1"></div>
+<span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">08:58</span>
+<div style="width:56px;height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px">bookmark_add</span></div>
+</div>
+<div style="flex:1;min-height:0;padding:10px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;opacity:.35">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;line-height:28px;white-space:nowrap">{{ t.label }}</span>
+<div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;white-space:nowrap"><span style="font-size:56px;font-weight:700;line-height:60px;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span></div>
+</div>
+</sc-for>
+</div>
+<div style="position:absolute;left:0;right:0;top:48px;bottom:0;display:flex;align-items:center;justify-content:center">
+<div style="width:560px;background:#243049;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:20px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:16px"><div style="width:64px;height:64px;border-radius:32px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#eef2f9">chat</span></div><div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:.06em;color:#b0bacb">NEW MESSAGE</span><span style="font-size:36px;font-weight:700;line-height:1.1">Message from Sam</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<div style="height:80px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:800"><span class="material-symbols-rounded" style="font-size:36px;font-variation-settings:'FILL' 1">play_arrow</span>Play</div>
+<div style="height:80px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:700"><span class="material-symbols-rounded" style="font-size:32px">schedule</span>Later</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<section id="trips" style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">03</span><span style="font-size:22px;font-weight:800">Trips</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Night · 393×852</div>
+<div data-screen-label="Trips phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:18px">wifi</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;justify-content:space-between;min-height:56px"><span style="font-size:28px;font-weight:700">Trips</span><div style="width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">filter_list</span></div></div>
+<div style="height:48px;border-radius:24px;background:#121a2c;padding:4px;display:grid;grid-template-columns:1fr 1fr;flex:none"><div style="border-radius:20px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">Trips</div><div style="display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#b0bacb">Statistics</div></div>
+<div style="background:#121a2c;border-radius:24px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;flex:none">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">LAST 14 DAYS</span><span style="font-size:13px;color:#b0bacb;font-variant-numeric:tabular-nums">287 km · 11 trips</span></div>
+<div style="display:flex;gap:3px">
+<sc-for list="{{ heat }}" as="h" hint-placeholder-count="14">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0"><span style="font-size:12px;color:#8e9ab0">{{ h.d }}</span><div style="width:100%;height:28px;border-radius:7px;background:{{ h.bg }};box-shadow:{{ h.ring }}"></div><span style="font-size:12px;font-weight:{{ h.w }};color:{{ h.c }};font-variant-numeric:tabular-nums">{{ h.n }}</span></div>
+</sc-for>
+</div>
+</div>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 4px 0"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">{{ g.day }}</span><span style="font-size:13px;color:#b0bacb;font-variant-numeric:tabular-nums">{{ g.sum }}</span></div>
+<sc-for list="{{ g.trips }}" as="t" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:12px;padding:8px;background:#121a2c;border-radius:20px">
+<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;background:#0e1422;flex:none"><img src="{{ t.mini }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden">{{ t.from }}<span class="material-symbols-rounded" style="font-size:16px;color:#8e9ab0">arrow_forward</span>{{ t.to }}</div><div style="font-size:13px;color:#b0bacb;font-variant-numeric:tabular-nums">{{ t.time }} · {{ t.km }} km · {{ t.dur }}</div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;padding-right:8px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">MAX</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.max }}<span style="font-size:12px;font-weight:500;color:#b0bacb"> km/h</span></span></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="height:84px;flex:none;background:#0e1526;display:flex;padding:8px 8px 22px">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">home</span></div><span style="font-size:12px;font-weight:600">Home</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">stethoscope</span></div><span style="font-size:12px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#22a6e0"><div style="width:56px;height:32px;border-radius:16px;background:rgba(34,166,224,.16);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">route</span></div><span style="font-size:12px;font-weight:700">Trips</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">shield</span></div><span style="font-size:12px;font-weight:600">Security</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:#b0bacb"><div style="width:56px;height:32px;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">more_horiz</span></div><span style="font-size:12px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Night · Parked · 1024×600</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Trips HU-7" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px">
+<div style="height:40px;border-radius:20px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.label }}</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 6px 0 14px;font-size:18px;font-weight:600"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>Connected · TD5 (engine)<span style="font-size:18px;background:#243049;color:#b0bacb;padding:3px 10px;border-radius:14px">Asleep</span></div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">bolt</span>12.6 V</div>
+<div style="height:40px;border-radius:20px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600"><span class="material-symbols-rounded" style="font-size:20px">{{ vis.icon }}</span>{{ vis.label }}</div>
+<div style="flex:1"></div>
+<span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">14:32</span>
+</div>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;min-width:0;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+<div style="display:flex;gap:12px;align-items:stretch;flex:none">
+<div style="width:300px;height:64px;border-radius:32px;background:#121a2c;padding:5px;display:grid;grid-template-columns:1fr 1fr;flex:none"><div style="border-radius:27px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">Trips</div><div style="display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#b0bacb">Statistics</div></div>
+<div style="flex:1;min-width:0;background:#121a2c;border-radius:20px;padding:6px 14px;display:flex;gap:4px;align-items:center">
+<sc-for list="{{ heat }}" as="h" hint-placeholder-count="14">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0"><div style="width:100%;height:30px;border-radius:8px;background:{{ h.bg }};box-shadow:{{ h.ring }}"></div><span style="font-size:18px;font-weight:{{ h.w }};color:{{ h.c }};line-height:1.1;font-variant-numeric:tabular-nums">{{ h.n }}</span></div>
+</sc-for>
+</div>
+</div>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:6px;flex:none">
+<div style="display:flex;gap:12px;align-items:baseline;padding:0 6px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">{{ g.day }}</span><span style="font-size:18px;color:#b0bacb;font-variant-numeric:tabular-nums">{{ g.sum }}</span></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+<sc-for list="{{ g.trips }}" as="t" hint-placeholder-count="2">
+<div style="height:84px;display:flex;align-items:center;gap:12px;padding:0 16px 0 10px;background:#121a2c;border-radius:20px;min-width:0">
+<div style="width:92px;height:64px;border-radius:12px;overflow:hidden;background:#0e1422;flex:none"><img src="{{ t.mini }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.from }} → {{ t.to }}</span><span style="font-size:18px;color:#b0bacb;font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.time }} · {{ t.km }} km · {{ t.dur }}</span></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;flex:none"><span style="font-size:18px;font-weight:700;letter-spacing:.06em;color:#8e9ab0">MAX</span><span style="font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">{{ t.max }}</span></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="width:96px;flex:none;background:#0d1424;display:flex;flex-direction:column;padding:8px;gap:4px">
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">home</span><span style="font-size:18px;font-weight:600">Home</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">stethoscope</span><span style="font-size:18px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;border-radius:20px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px;font-variation-settings:'FILL' 1">route</span><span style="font-size:18px;font-weight:700">Trips</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">shield</span><span style="font-size:18px;font-weight:600">Security</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">more_horiz</span><span style="font-size:18px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<section id="detail" style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">04</span><span style="font-size:22px;font-weight:800">Trip detail</span><span style="font-size:14px;color:#3b4556">Live maps — drag or zoom them · Time/Distance and the signal picker work</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Night · 393×852</div>
+<div data-screen-label="Trip detail phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0e1422;color:#eef2f9;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-live-map="phone" data-theme="dark" data-pad="120,40,440,40" style="position:absolute;inset:0"></div>
+<div style="position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(rgba(10,16,32,.85),rgba(10,16,32,0));pointer-events:none"></div>
+<div style="position:absolute;left:0;right:0;top:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;pointer-events:none"><span style="font-variant-numeric:tabular-nums">14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:18px">wifi</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="position:absolute;left:16px;right:16px;top:58px;display:flex;justify-content:space-between">
+<div style="width:48px;height:48px;border-radius:24px;background:rgba(26,36,57,.92);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">arrow_back</span></div>
+<div style="height:48px;border-radius:24px;background:rgba(26,36,57,.92);display:flex;align-items:center;gap:8px;padding:0 18px 0 14px;font-size:15px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;color:#22a6e0;font-variation-settings:'FILL' 1">play_arrow</span>Play back</div>
+</div>
+<div style="position:absolute;left:16px;bottom:452px;height:32px;border-radius:16px;background:rgba(18,26,44,.9);display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px;color:#b0bacb;font-weight:600"><span>0</span><div style="display:flex;gap:2px"><sc-for list="{{ ramp }}" as="c" hint-placeholder-count="6"><span style="width:18px;height:8px;border-radius:2px;background:{{ c }}"></span></sc-for></div><span>100+ km/h</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:412px;background:rgba(18,26,44,.86);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:32px 32px 0 0;overflow-y:auto;scrollbar-width:none;padding:8px 16px 32px;display:flex;flex-direction:column;gap:14px">
+<div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:2px auto 0;flex:none"></div>
+<div style="display:flex;flex-direction:column;gap:2px;flex:none"><span style="font-size:20px;font-weight:700;display:flex;align-items:center;gap:6px">Buxton<span class="material-symbols-rounded" style="font-size:20px;color:#8e9ab0">arrow_forward</span>Castleton</span><span style="font-size:13px;color:#b0bacb">Today · 08:12 – 09:00</span></div>
+<div style="display:flex;flex-direction:column;gap:2px;flex:none"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">DISTANCE</span><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:72px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">37.2</span><span style="font-size:24px;color:#b0bacb">km</span></div></div>
+<div style="background:rgba(36,48,73,.55);border-radius:24px;padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 10px;flex:none">
+<sc-for list="{{ stats9 }}" as="s" hint-placeholder-count="9">
+<div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;white-space:nowrap">{{ s.l }}</span><span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}<span style="font-size:13px;font-weight:500;color:#b0bacb"> {{ s.u }}</span></span></div>
+</sc-for>
+</div>
+<div style="background:rgba(36,48,73,.55);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:14px;flex:none">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">TIME AT SPEED</span>
+<div style="height:48px;border-radius:24px;background:#121a2c;padding:4px;display:flex"><div onClick="{{ setTime }}" style="cursor:pointer;padding:0 16px;border-radius:20px;display:flex;align-items:center;font-size:14px;font-weight:700;background:{{ segTime.bg }};color:{{ segTime.c }}">Time</div><div onClick="{{ setDist }}" style="cursor:pointer;padding:0 16px;border-radius:20px;display:flex;align-items:center;font-size:14px;font-weight:700;background:{{ segDist.bg }};color:{{ segDist.c }}">Distance</div></div></div>
+<div style="display:flex;gap:18px;align-items:center">
+<div style="position:relative;width:132px;height:132px;flex:none"><svg viewBox="0 0 100 100" style="width:132px;height:132px;transform:rotate(-90deg)"><circle cx="50" cy="50" r="40" fill="none" stroke="#1a2439" stroke-width="14"></circle><sc-for list="{{ donut }}" as="d" hint-placeholder-count="6"><circle cx="50" cy="50" r="40" fill="none" stroke="{{ d.c }}" stroke-width="14" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.off }}"></circle></sc-for></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">{{ donutCenter }}</span><span style="font-size:12px;color:#b0bacb">{{ donutUnit }}</span></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:5px">
+<sc-for list="{{ donut }}" as="d" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="width:10px;height:10px;border-radius:3px;background:{{ d.c }}"></span><span style="flex:1;color:#b0bacb;font-variant-numeric:tabular-nums">{{ d.label }}</span><span style="font-weight:700;font-variant-numeric:tabular-nums">{{ d.pct }}</span></div></sc-for>
+</div>
+</div>
+</div>
+<div style="background:rgba(36,48,73,.55);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;flex:none">
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">{{ chartTitle }}</span>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ sigChips }}" as="c" hint-placeholder-count="4"><div onClick="{{ c.onClick }}" style="cursor:pointer;height:40px;padding:0 14px;border-radius:20px;display:flex;align-items:center;font-size:14px;font-weight:700;background:{{ c.bg }};color:{{ c.c }}">{{ c.label }}</div></sc-for>
+<div style="height:40px;width:40px;border-radius:20px;background:#121a2c;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">add</span></div>
+</div>
+<div style="position:relative;height:130px">
+<svg viewBox="0 0 300 100" preserveAspectRatio="none" style="width:100%;height:130px;display:block;overflow:visible">
+<line x1="0" y1="8" x2="300" y2="8" stroke="#243049" stroke-width="1" vector-effect="non-scaling-stroke"></line><line x1="0" y1="52" x2="300" y2="52" stroke="#243049" stroke-width="1" vector-effect="non-scaling-stroke"></line><line x1="0" y1="96" x2="300" y2="96" stroke="#3b4a6a" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+<sc-if value="{{ isSpeed }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ chartSegs }}" as="p" hint-placeholder-count="0"><path d="{{ p.d }}" stroke="{{ p.c }}" stroke-width="3" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></sc-for></sc-if>
+<sc-if value="{{ notSpeed }}" hint-placeholder-val="{{ false }}"><path d="{{ chartLine }}" stroke="#dfe6f2" stroke-width="2.5" fill="none" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path></sc-if>
+</svg>
+<span style="position:absolute;right:0;top:-6px;font-size:12px;color:#8e9ab0;font-variant-numeric:tabular-nums">{{ chartMax }}</span>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#8e9ab0;font-variant-numeric:tabular-nums"><span>08:12</span><span>08:36</span><span>09:00</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Night · Parked · sheet on passenger side (left)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Trip detail HU-7" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px">
+<div style="height:40px;border-radius:20px;box-shadow:{{ fault.ring }};background:{{ fault.bg }};color:{{ fault.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' 1">{{ fault.icon }}</span>{{ fault.label }}</div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:8px;padding:0 6px 0 14px;font-size:18px;font-weight:600"><span style="width:10px;height:10px;border-radius:5px;background:#2f9e63"></span>Connected · TD5 (engine)<span style="font-size:18px;background:#243049;color:#b0bacb;padding:3px 10px;border-radius:14px">Asleep</span></div>
+<div style="height:40px;border-radius:20px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">bolt</span>12.6 V</div>
+<div style="height:40px;border-radius:20px;background:{{ vis.bg }};color:{{ vis.color }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600"><span class="material-symbols-rounded" style="font-size:20px">{{ vis.icon }}</span>{{ vis.label }}</div>
+<div style="flex:1"></div>
+<span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">14:32</span>
+</div>
+<div style="flex:1;display:flex;min-height:0">
+<div style="flex:1;min-width:0;position:relative;background:#0e1422">
+<div data-live-map="hu" data-theme="dark" data-pad="30,436,226,30" style="position:absolute;inset:0"></div>
+<div style="position:absolute;left:12px;top:12px;bottom:12px;width:404px;background:#121a2c;border-radius:24px;overflow-y:auto;scrollbar-width:none;padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px;flex:none"><div style="width:56px;height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:30px">arrow_back</span></div><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:22px;font-weight:700;white-space:nowrap">Buxton → Castleton</span><span style="font-size:18px;color:#b0bacb">Today · 08:12 – 09:00</span></div></div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;flex:none"><div style="display:flex;flex-direction:column"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">DISTANCE</span><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:72px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">37.2</span><span style="font-size:28px;color:#b0bacb">km</span></div></div><div style="width:76px;height:76px;border-radius:38px;background:rgba(34,166,224,.16);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:40px;color:#22a6e0;font-variation-settings:'FILL' 1">play_arrow</span></div></div>
+<div style="background:#1a2439;border-radius:20px;padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px;flex:none">
+<sc-for list="{{ stats9 }}" as="s" hint-placeholder-count="9">
+<div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:18px;font-weight:700;letter-spacing:.04em;color:#8e9ab0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.l }}</span><span style="font-size:28px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.v }}<span style="font-size:18px;font-weight:500;color:#b0bacb"> {{ s.u }}</span></span></div>
+</sc-for>
+</div>
+<div style="background:#1a2439;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px;flex:none">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:18px;font-weight:700;letter-spacing:.06em;color:#8e9ab0">AT SPEED</span>
+<div style="height:60px;border-radius:30px;background:#121a2c;padding:4px;display:flex"><div onClick="{{ setTime }}" style="cursor:pointer;padding:0 18px;border-radius:26px;display:flex;align-items:center;font-size:18px;font-weight:700;background:{{ segTime.bg }};color:{{ segTime.c }}">Time</div><div onClick="{{ setDist }}" style="cursor:pointer;padding:0 18px;border-radius:26px;display:flex;align-items:center;font-size:18px;font-weight:700;background:{{ segDist.bg }};color:{{ segDist.c }}">Distance</div></div></div>
+<div style="display:flex;gap:16px;align-items:center">
+<div style="position:relative;width:140px;height:140px;flex:none"><svg viewBox="0 0 100 100" style="width:140px;height:140px;transform:rotate(-90deg)"><circle cx="50" cy="50" r="40" fill="none" stroke="#121a2c" stroke-width="14"></circle><sc-for list="{{ donut }}" as="d" hint-placeholder-count="6"><circle cx="50" cy="50" r="40" fill="none" stroke="{{ d.c }}" stroke-width="14" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.off }}"></circle></sc-for></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">{{ donutCenter }}</span><span style="font-size:18px;color:#b0bacb">{{ donutUnit }}</span></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ donut }}" as="d" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:8px;font-size:18px"><span style="width:12px;height:12px;border-radius:3px;background:{{ d.c }}"></span><span style="flex:1;color:#b0bacb;font-variant-numeric:tabular-nums;white-space:nowrap">{{ d.label }}</span><span style="font-weight:700;font-variant-numeric:tabular-nums">{{ d.pct }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:428px;right:12px;bottom:12px;height:200px;background:#121a2c;border-radius:24px;padding:12px 18px 12px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:6px"><span style="flex:1;font-size:18px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ chartTitleShort }}</span>
+<sc-for list="{{ sigChips }}" as="c" hint-placeholder-count="4"><div onClick="{{ c.onClick }}" style="cursor:pointer;height:52px;padding:0 12px;border-radius:26px;display:flex;align-items:center;font-size:18px;font-weight:700;background:{{ c.bg }};color:{{ c.c }}">{{ c.label }}</div></sc-for>
+</div>
+<div style="position:relative;flex:1;min-height:0">
+<svg viewBox="0 0 300 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible">
+<line x1="0" y1="8" x2="300" y2="8" stroke="#243049" stroke-width="1" vector-effect="non-scaling-stroke"></line><line x1="0" y1="96" x2="300" y2="96" stroke="#3b4a6a" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+<sc-if value="{{ isSpeed }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ chartSegs }}" as="p" hint-placeholder-count="0"><path d="{{ p.d }}" stroke="{{ p.c }}" stroke-width="3.5" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></sc-for></sc-if>
+<sc-if value="{{ notSpeed }}" hint-placeholder-val="{{ false }}"><path d="{{ chartLine }}" stroke="#dfe6f2" stroke-width="3" fill="none" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path></sc-if>
+</svg>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:18px;color:#8e9ab0;font-variant-numeric:tabular-nums"><span>08:12</span><span>max {{ chartMax }}</span><span>09:00</span></div>
+</div>
+</div>
+<div style="width:96px;flex:none;background:#0d1424;display:flex;flex-direction:column;padding:8px;gap:4px">
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">home</span><span style="font-size:18px;font-weight:600">Home</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">stethoscope</span><span style="font-size:18px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;border-radius:20px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px;font-variation-settings:'FILL' 1">route</span><span style="font-size:18px;font-weight:700">Trips</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">shield</span><span style="font-size:18px;font-weight:600">Security</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">more_horiz</span><span style="font-size:18px;font-weight:600">More</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;faults&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vehicle state&quot;},&quot;visibility&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Ghost&quot;,&quot;Visible&quot;],&quot;default&quot;:&quot;Ghost&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Vehicle state&quot;},&quot;live&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vehicle state&quot;}}">
+const RAMP_D=['#5a4ab0','#7559cf','#9370e3','#ae8ff0','#c9b0f7','#e4d4fc'];
+const RAMP_L=['#c9b8f2','#a88ce6','#8a66d6','#6d45c0','#5430a3','#3d1f80'];
+const BINS=['0–20','20–40','40–60','60–80','80–100','100+'];
+const binOf=v=>Math.max(0,Math.min(5,Math.floor(v/20)));
+const STYLE={dark:'https://tiles.openfreemap.org/styles/dark',light:'https://tiles.openfreemap.org/styles/positron'};
+const TRIPS=[
+ {id:'t1',day:0,time:'08:12',from:'Buxton',to:'Castleton',km:'37.2',dur:'48 min',max:96,seed:11,wp:[[-1.9118,53.2591],[-1.7720,53.2790],[-1.7779,53.3439]]},
+ {id:'t2',day:0,time:'06:55',from:'Bakewell',to:'Buxton',km:'24.6',dur:'34 min',max:88,seed:23,wp:[[-1.6756,53.2130],[-1.7620,53.2350],[-1.9118,53.2591]]},
+ {id:'t3',day:1,time:'17:05',from:'Matlock',to:'Bakewell',km:'14.1',dur:'22 min',max:77,seed:37,wp:[[-1.5560,53.1380],[-1.6756,53.2130]]},
+ {id:'t4',day:1,time:'09:20',from:'Buxton',to:'Matlock',km:'33.8',dur:'41 min',max:92,seed:41,wp:[[-1.9118,53.2591],[-1.7300,53.1950],[-1.5560,53.1380]]},
+ {id:'t5',day:2,time:'11:02',from:'Leek',to:'Buxton',km:'19.5',dur:'27 min',max:104,seed:53,wp:[[-2.0230,53.1050],[-1.9118,53.2591]]}
+];
+const DAYS=[{day:'TODAY',sum:'61.8 km · 2 trips'},{day:'YESTERDAY · TUE 6 OCT',sum:'47.9 km · 2 trips'},{day:'SAT 3 OCT',sum:'19.5 km · 1 trip'}];
+const HEAT={d:'TFSSMTWTFSSMTW'.split(''),n:[24,25,26,27,28,29,30,1,2,3,4,5,6,7],km:[12,0,48,0,22,30,18,0,26,19.5,0,0,47.9,61.8]};
+function rng(seed){let s=seed*9301+49297;return()=>{s=(s*16807)%2147483647;return s/2147483647}}
+function profile(t,n){const r=rng(t.seed);const ph=r()*6,ph2=r()*6,stop=0.3+r()*0.4;const a=[];
+ for(let i=0;i<n;i++){const f=n>1?i/(n-1):0;const ramp=Math.min(1,f*10,(1-f)*10);let v=0.6+0.22*Math.sin(f*8+ph)+0.12*Math.sin(f*21+ph2)+(r()-.5)*0.06;v*=1-0.85*Math.exp(-Math.pow((f-stop)/0.025,2));a.push(Math.max(0,v*ramp));}
+ let m=0;a.forEach(v=>{if(v>m)m=v});return a.map(v=>v/(m||1)*t.max);}
+function densify(wp){const out=[];for(let i=0;i<wp.length-1;i++){for(let k=0;k<40;k++){const f=k/40;out.push([wp[i][0]+(wp[i+1][0]-wp[i][0])*f,wp[i][1]+(wp[i+1][1]-wp[i][1])*f])}}out.push(wp[wp.length-1]);return out}
+function bbox(c){let a=[180,90,-180,-90];c.forEach(p=>{a[0]=Math.min(a[0],p[0]);a[1]=Math.min(a[1],p[1]);a[2]=Math.max(a[2],p[0]);a[3]=Math.max(a[3],p[1])});return [[a[0],a[1]],[a[2],a[3]]]}
+function routeFC(coords,trip,ramp){const sp=profile(trip,coords.length);const feats=[];let cur=[coords[0]],b=binOf(sp[0]);
+ for(let i=1;i<coords.length;i++){const nb=binOf(sp[i]);cur.push(coords[i]);if(nb!==b||i===coords.length-1){feats.push({type:'Feature',properties:{c:ramp[b]},geometry:{type:'LineString',coordinates:cur}});cur=[coords[i]];b=nb;}}
+ return {type:'FeatureCollection',features:feats}}
+function pinsFC(c){return {type:'FeatureCollection',features:[{type:'Feature',properties:{k:'s'},geometry:{type:'Point',coordinates:c[0]}},{type:'Feature',properties:{k:'e'},geometry:{type:'Point',coordinates:c[c.length-1]}}]}}
+function setRoute(m,coords,trip,theme,w){const dark=theme==='dark';const fc=routeFC(coords,trip,dark?RAMP_D:RAMP_L),pins=pinsFC(coords);
+ if(m.getSource('r')){m.getSource('r').setData(fc);m.getSource('p').setData(pins);return}
+ m.addSource('r',{type:'geojson',data:fc});m.addSource('p',{type:'geojson',data:pins});
+ m.addLayer({id:'r-case',type:'line',source:'r',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':dark?'#05080f':'#ffffff','line-width':w+4}});
+ m.addLayer({id:'r-line',type:'line',source:'r',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':['get','c'],'line-width':w}});
+ m.addLayer({id:'p-s',type:'circle',source:'p',filter:['==','k','s'],paint:{'circle-radius':w+1,'circle-color':dark?'#0a1020':'#ffffff','circle-stroke-color':dark?'#eef2f9':'#0e1626','circle-stroke-width':3}});
+ m.addLayer({id:'p-e',type:'circle',source:'p',filter:['==','k','e'],paint:{'circle-radius':w+2,'circle-color':dark?'#eef2f9':'#0e1626','circle-stroke-color':dark?'#0a1020':'#ffffff','circle-stroke-width':3}});}
+const GA=t=>{const a=(155-130*t)*Math.PI/180;return [110+118*Math.cos(a),130-118*Math.sin(a)]};
+const arc=(t0,t1)=>{const p=GA(t0),q=GA(Math.max(t0+0.0001,t1));return `M${p[0].toFixed(1)} ${p[1].toFixed(1)} A118 118 0 0 1 ${q[0].toFixed(1)} ${q[1].toFixed(1)}`};
+const spark=h=>{const mn=Math.min(...h),mx=Math.max(...h),r=(mx-mn)||1;return h.map((v,i)=>`${i?'L':'M'}${(i/(h.length-1)*100).toFixed(1)} ${(21-(v-mn)/r*18).toFixed(1)}`).join(' ')};
+const walk=(n,base,amp)=>{const a=[];let v=base;for(let i=0;i<n;i++){v+= (Math.random()-.5)*amp;v=base+(v-base)*0.85;a.push(v)}return a};
+const SPEED60=profile(TRIPS[0],61);
+
+class Component extends DCLogic {
+ state={mode:'time',sig:'speed',minis:{},live:{boost:0.99,cool:28,batt:14.1,iat:120,fuel:9.8,trip:36.9},
+  hist:{boost:walk(30,0.95,.2),cool:Array.from({length:30},(_,i)=>20+i*0.27),batt:walk(30,14.1,.08),iat:Array.from({length:30},(_,i)=>70+i*1.7+Math.random()*2),fuel:walk(30,9.8,1.4),trip:[]}};
+ componentDidMount(){this.tick=setInterval(()=>this.step(),1000);this.boot();}
+ componentWillUnmount(){clearInterval(this.tick);this.dead=true;(this.maps||[]).forEach(m=>{try{m.remove()}catch(e){}});}
+ step(){if(this.props.live===false)return;this.setState(s=>{const L=s.live,n={
+  boost:Math.min(1.35,Math.max(0.6,L.boost+(Math.random()-.5)*0.08)),cool:Math.min(29.5,L.cool+0.05),batt:Math.min(14.25,Math.max(13.95,L.batt+(Math.random()-.5)*0.04)),
+  iat:Math.min(123,Math.max(118,L.iat+(Math.random()-.5)*1.2)),fuel:Math.min(13,Math.max(7,L.fuel+(Math.random()-.5)*0.8)),trip:Math.min(37.4,L.trip+0.01)};
+  const h={};Object.keys(s.hist).forEach(k=>{h[k]=k==='trip'?[]:[...s.hist[k].slice(1),n[k]]});return {live:n,hist:h}});}
+ async boot(){
+  const ml=await new Promise(res=>{const f=()=>window.maplibregl?res(window.maplibregl):setTimeout(f,120);f()});
+  this.routes=await Promise.all(TRIPS.map(t=>this.route(t)));if(this.dead)return;
+  this.maps=[];document.querySelectorAll('[data-live-map]').forEach(el=>this.live(ml,el));
+  this.capture(ml);
+ }
+ async route(t){try{const ctl=new AbortController();setTimeout(()=>ctl.abort(),7000);
+  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${t.wp.map(p=>p.join(',')).join(';')}?overview=full&geometries=geojson`,{signal:ctl.signal});
+  const j=await r.json();const c=j.routes[0].geometry.coordinates;if(c.length>1)return c;throw 0}catch(e){return densify(t.wp)}}
+ live(ml,el){if(el.dataset.inited)return;el.dataset.inited='1';const theme=el.dataset.theme,coords=this.routes[0];const p=el.dataset.pad.split(',').map(Number);
+  const m=new ml.Map({container:el,style:STYLE[theme],attributionControl:false,bounds:bbox(coords),fitBoundsOptions:{padding:{top:p[0],left:p[1],bottom:p[2],right:p[3]}},dragRotate:false});
+  m.addControl(new ml.AttributionControl({compact:true}),'top-right');this.maps.push(m);
+  m.on('load',()=>{setRoute(m,coords,TRIPS[0],theme,5);const a=el.querySelector('.maplibregl-ctrl-attrib');if(a)a.classList.remove('maplibregl-compact-show');});}
+ async capture(ml){
+  const jobs={dark:[...TRIPS.map((t,i)=>({key:t.id,i,w:184,h:128})),{key:'home',i:0,w:720,h:300}],light:[{key:'homeL',i:0,w:720,h:300}]};
+  for(const theme of ['dark','light']){
+   const host=document.createElement('div');host.style.cssText='position:fixed;left:-4000px;top:0;width:184px;height:128px;pointer-events:none';document.body.appendChild(host);
+   let m;try{m=new ml.Map({container:host,style:STYLE[theme],attributionControl:false,interactive:false,preserveDrawingBuffer:true,fadeDuration:0,pixelRatio:2});
+   await new Promise(r=>m.once('load',r));
+   for(const j of jobs[theme]){if(this.dead)break;host.style.width=j.w+'px';host.style.height=j.h+'px';m.resize();
+    const c=this.routes[j.i];setRoute(m,c,TRIPS[j.i],theme,j.w>300?5:3.5);m.fitBounds(bbox(c),{padding:j.w>300?36:16,duration:0});
+    await Promise.race([new Promise(r=>m.once('idle',r)),new Promise(r=>setTimeout(r,5000))]);
+    const url=m.getCanvas().toDataURL('image/jpeg',0.86);this.setState(s=>({minis:{...s.minis,[j.key]:url}}));}
+   }catch(e){console.warn('mini map',e)}
+   try{m&&m.remove()}catch(e){};host.remove();}
+ }
+ renderVals(){
+  const P=this.props,S=this.state,L=S.live,faults=P.faults!==false,visible=P.visibility==='Visible';
+  const mk=(o)=>{const t=Math.max(0,Math.min(1,(o.v-o.min)/(o.max-o.min))),tl=(o.lo-o.min)/(o.max-o.min),th=(o.hi-o.min)/(o.max-o.min);
+   const out=o.v<o.lo?'LOW':o.v>o.hi?'HIGH':null;const color=out?'#ef6a7d':'#dfe6f2';const g=GA(t);
+   return {label:o.label,val:o.v.toFixed(o.dec),unit:o.unit,alarm:!!out,word:out||'',color,vcolor:out?'#ef6a7d':'#eef2f9',
+    bg:out?'#2a1a2a':'#121a2c',ring:out?'inset 0 0 0 2px #ef6a7d':'none',
+    isGauge:o.kind==='gauge',isBar:o.kind==='bar',isNone:o.kind==='none',isFlat:o.kind!=='gauge',hasSpark:o.kind!=='none',sub:o.sub||'',
+    gTrack:arc(0,1),gBand:arc(Math.max(0,tl),Math.min(1,th)),gVal:arc(0,t),gx:g[0].toFixed(1),gy:g[1].toFixed(1),
+    bandL:(tl*100)+'%',bandW:((th-tl)*100)+'%',pos:(t*100)+'%',spark:o.h&&o.h.length?spark(o.h):'',sparkColor:out?'#ef6a7d':'#8e9ab0'}};
+  const H=S.hist;
+  const tiles=[
+   mk({label:'BOOST',v:L.boost,dec:2,unit:'bar',min:0,max:1.6,lo:0,hi:1.4,kind:'gauge',h:H.boost}),
+   mk({label:'COOLANT',v:L.cool,dec:0,unit:'°C',min:0,max:130,lo:0,hi:105,kind:'gauge',h:H.cool}),
+   mk({label:'BATTERY',v:L.batt,dec:1,unit:'V',min:11,max:15.5,lo:12.4,hi:14.8,kind:'bar',h:H.batt}),
+   mk({label:'INTAKE AIR',v:L.iat,dec:0,unit:'°C',min:0,max:140,lo:0,hi:60,kind:'bar',h:H.iat}),
+   mk({label:'FUEL NOW',v:L.fuel,dec:1,unit:'L/100',min:0,max:25,lo:6,hi:14,kind:'bar',h:H.fuel}),
+   mk({label:'TRIP',v:L.trip,dec:0,unit:'km',min:0,max:1,lo:0,hi:1e9,kind:'none',sub:'48 min'})];
+  const fault=faults?{label:'2 faults',short:'2',icon:'warning',color:'#ef6a7d',bg:'rgba(239,106,125,.12)',ring:'inset 0 0 0 2px #ef6a7d'}:{label:'No faults',short:'OK',icon:'check_circle',color:'#2f9e63',bg:'#1a2439',ring:'none'};
+  const health=faults?{title:'2 faults',sub:'Intake air temp high · EGR sensor',subShort:'Intake air temp high · 1 more',icon:'warning',color:'#ef6a7d',bg:'rgba(239,106,125,.12)'}:{title:'All systems OK',sub:'Last checked today 09:00',subShort:'Last checked 09:00',icon:'check_circle',color:'#2f9e63',bg:'rgba(47,158,99,.12)'};
+  const healthL=faults?{color:'#d0263b',bg:'rgba(208,38,59,.08)'}:{color:'#2e7d4f',bg:'rgba(46,125,79,.10)'};
+  const vis=visible?{label:'Visible · 47 min',short:'47 min',icon:'visibility',color:'#e0a93a',bg:'rgba(191,138,26,.16)'}:{label:'Ghost',short:'Ghost',icon:'visibility_off',color:'#b0bacb',bg:'#1a2439'};
+  const visL=visible?{color:'#8a6600',bg:'rgba(176,130,0,.12)'}:{color:'#4b5568',bg:'#ffffff'};
+  const homeStats=[{l:'BATTERY',v:'12.6',u:'V'},{l:'FUEL AVG',v:'10.4',u:'L/100'},{l:'COOLANT',v:'14',u:'°C'},{l:'7 DAYS',v:'155',u:'km'},{l:'TRIPS · 7D',v:'6',u:''},{l:'DRIVE TIME',v:'3:02',u:'h'},{l:'AVG SPEED',v:'41',u:'km/h'},{l:'MAX SPEED',v:'104',u:'km/h'},{l:'IDLE',v:'9',u:'%'}];
+  const stats9=[{l:'DISTANCE',v:'37.2',u:'km'},{l:'AVG SPEED',v:'46',u:'km/h'},{l:'MAX SPEED',v:'96',u:'km/h'},{l:'DURATION',v:'48',u:'min'},{l:'IDLE',v:'4',u:'min'},{l:'MOVING',v:'44',u:'min'},{l:'ELEV. GAIN',v:'412',u:'m'},{l:'STOPS',v:'3',u:''},{l:'AVG MOVING',v:'51',u:'km/h'}];
+  const trip=t=>({...t,mini:S.minis[t.id]});
+  const groups=DAYS.map((d,i)=>({...d,trips:TRIPS.filter(t=>t.day===i).map(trip)}));
+  const lv=k=>k<=0?'#1a2439':k<25?'rgba(106,125,230,.35)':k<45?'rgba(106,125,230,.6)':k<60?'rgba(106,125,230,.82)':'#6a7de6';
+  const heat=HEAT.d.map((d,i)=>({d,n:HEAT.n[i],bg:lv(HEAT.km[i]),ring:i===13?'0 0 0 2px #0a1020, 0 0 0 4px #22a6e0':'none',w:i===13?800:500,c:i===13?'#eef2f9':'#8e9ab0'}));
+  const isTime=S.mode==='time';
+  const pcts=isTime?[8,12,22,31,27,0]:[2,6,17,33,42,0];const C=2*Math.PI*40;let acc=0;
+  const donut=pcts.map((p,i)=>{const len=p/100*C;const seg={c:RAMP_D[i],label:BINS[i]+' km/h',pct:p+'%',dash:`${Math.max(0,len-1.5).toFixed(2)} ${C.toFixed(2)}`,off:(-acc).toFixed(2)};acc+=len;return seg}).filter(d=>d.pct!=='0%');
+  const on={bg:'#243049',c:'#eef2f9'},off={bg:'transparent',c:'#b0bacb'};
+  const SIG={speed:{t:'SPEED OVER TIME',s:'SPEED',u:'km/h'},coolant:{t:'COOLANT OVER TIME',s:'COOLANT',u:'°C'},boost:{t:'BOOST OVER TIME',s:'BOOST',u:'bar'},battery:{t:'BATTERY OVER TIME',s:'BATTERY',u:'V'}};
+  const sig=S.sig;const N=61;
+  const series=sig==='speed'?SPEED60:sig==='coolant'?Array.from({length:N},(_,i)=>20+66*(1-Math.exp(-i/N*4))):sig==='boost'?SPEED60.map((v,i)=>Math.max(0,v/96*1.25+Math.sin(i*1.7)*0.08)):SPEED60.map((v,i)=>14.05+Math.sin(i*0.9)*0.05+(v>10?0.08:0));
+  const lo=sig==='battery'?13.8:0,hi=sig==='speed'?100:sig==='coolant'?110:sig==='boost'?1.6:14.4;
+  const Y=v=>(96-(v-lo)/(hi-lo)*88).toFixed(1),X=i=>(i/(N-1)*300).toFixed(1);
+  const chartSegs=sig==='speed'?SPEED60.slice(0,-1).map((v,i)=>({d:`M${X(i)} ${Y(v)} L${X(i+1)} ${Y(SPEED60[i+1])}`,c:RAMP_D[binOf((v+SPEED60[i+1])/2)]})):[];
+  const chartLine=series.map((v,i)=>`${i?'L':'M'}${X(i)} ${Y(v)}`).join(' ');
+  const mx=Math.max(...series);
+  const chartMax=(sig==='boost'?mx.toFixed(2):sig==='battery'?mx.toFixed(1):Math.round(mx))+' '+SIG[sig].u;
+  const sigChips=Object.keys(SIG).map(k=>({label:k[0].toUpperCase()+k.slice(1),onClick:()=>this.setState({sig:k}),bg:k===sig?'rgba(34,166,224,.18)':'#121a2c',c:k===sig?'#22a6e0':'#b0bacb'}));
+  return {tiles,fault,health,healthL,vis,visL,homeStats,stats9,groups,heat,minis:S.minis,ramp:RAMP_D,
+   donut,donutCenter:isTime?'48':'37.2',donutUnit:isTime?'min':'km',segTime:isTime?on:off,segDist:isTime?off:on,
+   setTime:()=>this.setState({mode:'time'}),setDist:()=>this.setState({mode:'dist'}),
+   sigChips,isSpeed:sig==='speed',notSpeed:sig!=='speed',chartSegs,chartLine,chartMax,chartTitle:SIG[sig].t,chartTitleShort:SIG[sig].s};
+ }
+}
+</script>
+</body>
+</html>

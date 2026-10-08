@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&amp;display=block">
+<script src="os-tokens.js"></script>
+</helmet>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+<div style="padding:{{ bz }}px;background:#000;border-radius:{{ bzR }}px;box-shadow:0 30px 60px rgba(10,16,32,.3);width:max-content">
+<div data-screen-label="{{ label }}" style="width:{{ W }}px;height:{{ H }}px;background-color:{{ c.bg }};color:{{ c.tx }};font-family:Figtree,system-ui,sans-serif;font-variant-numeric:tabular-nums;position:relative;overflow:hidden;border-radius:{{ sR }}px;display:flex;flex-direction:column;box-shadow:{{ pvFrame }}">
+
+<sc-if value="{{ ph }}" hint-placeholder-val="{{ false }}"><div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 34px;font-size:15px;font-weight:700"><span>14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-outlined" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-outlined" style="font-size:18px">battery_full</span></div></div></sc-if>
+
+<sc-if value="{{ showStrip }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;padding:{{ stripPad }};position:relative;z-index:4">
+<div style="display:flex;align-items:center;gap:6px;padding:4px;background-color:{{ c.s1 }};border-radius:999px;min-width:0">
+<sc-for list="{{ chips }}" as="k" hint-placeholder-count="7"><div style="flex:{{ k.flex }};height:{{ chH }}px;min-width:{{ chH }}px;box-sizing:border-box;border-radius:999px;background-color:{{ k.bg }};color:{{ k.col }};display:flex;align-items:center;justify-content:center;gap:6px;padding:{{ k.pad }};font-size:{{ sfs }}px;font-weight:{{ k.w }};white-space:nowrap;box-shadow:{{ k.ring }}"><sc-if value="{{ k.icon }}" hint-placeholder-val="{{ true }}"><span class="material-symbols-outlined" style="font-size:{{ sis }}px;font-variation-settings:'FILL' {{ k.fill }};color:{{ k.icol }}">{{ k.icon }}</span></sc-if><sc-if value="{{ k.label }}" hint-placeholder-val="{{ true }}"><span>{{ k.label }}</span></sc-if></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ bodyDir }};position:relative">
+<div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;position:relative;opacity:{{ dimMain }}">
+
+<sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;padding:{{ gridPad }};display:grid;grid-template-columns:repeat({{ cols }},minmax(0,1fr));grid-template-rows:repeat({{ rows }},minmax(0,1fr));gap:{{ gap }}px">
+<sc-for list="{{ widgets }}" as="w" hint-placeholder-count="8">
+<div style="grid-area:{{ w.area }};min-width:0;min-height:0;display:flex;flex-direction:column;position:relative">
+<sc-if value="{{ w.card }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;background-color:{{ w.bg }};border-radius:20px;padding:{{ cp }}px;box-sizing:border-box;display:flex;flex-direction:column;gap:{{ cg }}px;overflow:hidden;position:relative;box-shadow:{{ w.edge }}">
+<sc-if value="{{ w.kicker }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ w.kcol }}">{{ w.kicon }}</span><span style="font-size:{{ kfs }}px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ c.t2 }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.kicker }}</span></div><sc-if value="{{ w.tag }}" hint-placeholder-val="{{ false }}"><span style="flex:none;height:{{ tagH }}px;padding:0 10px;border-radius:999px;background-color:{{ w.tagBg }};color:{{ w.tagCol }};display:flex;align-items:center;gap:4px;font-size:{{ kfs }}px;font-weight:800"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;font-variation-settings:'FILL' 1">{{ w.tagIcon }}</span>{{ w.tag }}</span></sc-if></div></sc-if>
+<sc-if value="{{ w.isWarn }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px;min-height:0"><span style="font-size:{{ hfs }}px;font-weight:800;line-height:1.15">1 fault · Engine</span><span style="font-size:{{ bfs }}px;color:{{ c.t2 }};line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">P0243 · Turbocharger wastegate diagnostics (logged low)</span></div><div style="flex:1"></div><div style="display:flex;align-items:center;gap:6px;font-size:{{ bfs }}px;font-weight:700;color:{{ c.accTx }}">Open Diagnostics<span class="material-symbols-outlined" style="font-size:{{ kis }}px">chevron_right</span></div></sc-if>
+<sc-if value="{{ w.isVeh }}" hint-placeholder-val="{{ false }}"><span style="font-size:{{ hfs }}px;font-weight:800;line-height:1.15">Discovery 2 · Td5</span><span style="font-size:{{ bfs }}px;color:{{ c.t2 }}">Last seen 14:02 · Parked</span><div style="flex:1"></div><div style="display:flex;gap:{{ gap }}px;flex-wrap:wrap"><div style="display:flex;flex-direction:column"><span style="font-size:{{ kfs }}px;color:{{ c.t2 }}">Battery</span><span style="font-size:{{ mfs }}px;font-weight:700">12.6 V</span></div><div style="display:flex;flex-direction:column"><span style="font-size:{{ kfs }}px;color:{{ c.t2 }}">Brain</span><span style="font-size:{{ mfs }}px;font-weight:700;display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:5px;background:{{ c.ok }}"></span>Online</span></div></div></sc-if>
+<sc-if value="{{ w.isTrip }}" hint-placeholder-val="{{ false }}"><span style="font-size:{{ nfs }}px;font-weight:700;line-height:1">37.2<span style="font-size:{{ ufs }}px;color:{{ c.t2 }};font-weight:600"> km</span></span><span style="font-size:{{ bfs }}px;color:{{ c.t2 }}">Today 13:14–14:02 · 0:48</span><div style="flex:1"></div><div style="display:flex;align-items:center;gap:6px;font-size:{{ bfs }}px;font-weight:700;color:{{ c.accTx }}">Open in Trips<span class="material-symbols-outlined" style="font-size:{{ kis }}px">chevron_right</span></div></sc-if>
+<sc-if value="{{ w.isClock }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;flex-direction:column;justify-content:center"><span style="font-size:{{ nfs }}px;font-weight:700;line-height:1">14:32</span><span style="font-size:{{ bfs }}px;color:{{ c.t2 }}">Wed 7 Oct</span></div></sc-if>
+<sc-if value="{{ w.isStat }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:0"><span style="font-size:{{ w.vfs }}px;font-weight:700;line-height:1;color:{{ w.vcol }};white-space:nowrap">{{ w.v }}<span style="font-size:{{ w.ufs }}px;color:{{ c.t2 }};font-weight:600"> {{ w.u }}</span></span><sc-if value="{{ w.sub }}" hint-placeholder-val="{{ false }}"><span style="font-size:{{ bfs }}px;color:{{ c.t2 }}">{{ w.sub }}</span></sc-if></div><sc-if value="{{ w.g }}" hint-placeholder-val="{{ true }}"><div style="flex:none">{{ w.g }}</div></sc-if></sc-if>
+<sc-if value="{{ w.isMap }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background-color:{{ c.s2 }};background-image:linear-gradient(115deg,transparent 46%,{{ c.s3 }} 46%,{{ c.s3 }} 49%,transparent 49%),linear-gradient(20deg,transparent 60%,{{ c.s3 }} 60%,{{ c.s3 }} 62%,transparent 62%),repeating-linear-gradient(0deg,{{ c.s1 }} 0 1px,transparent 1px 44px),repeating-linear-gradient(90deg,{{ c.s1 }} 0 1px,transparent 1px 44px)"></div><div style="position:absolute;left:50%;top:48%;width:22px;height:22px;margin:-11px;border-radius:11px;background:{{ c.acc }};box-shadow:0 0 0 5px {{ c.accSoft }}"></div><div style="position:absolute;left:{{ cp }}px;bottom:{{ cp }}px;right:{{ cp }}px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;background-color:{{ c.s1 }}"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.t2 }}">map</span><span style="font-size:{{ bfs }}px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Map · Castleton</span></div></sc-if>
+<sc-if value="{{ w.isMedia }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:6px"><span style="font-size:{{ hfs }}px;font-weight:800">Nothing playing</span><span style="font-size:{{ bfs }}px;color:{{ c.t2 }}">Pick a source in Media</span></div><div style="height:{{ btnH }}px;padding:0 18px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:8px;font-size:{{ bfs }}px;font-weight:700;align-self:flex-start"><span class="material-symbols-outlined" style="font-size:{{ kis }}px">play_circle</span>Open Media</div></sc-if>
+<sc-if value="{{ w.isLights }}" hint-placeholder-val="{{ false }}"><div style="flex:1;display:flex;align-items:center;justify-content:space-around;gap:6px;min-width:0"><sc-for list="{{ lights }}" as="l" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0"><span class="material-symbols-outlined" style="font-size:{{ lis }}px;color:{{ l.col }};font-variation-settings:'FILL' {{ l.fill }}">{{ l.icon }}</span><span style="font-size:{{ kfs }}px;color:{{ l.tcol }};font-weight:{{ l.w }};white-space:nowrap">{{ l.n }}</span></div></sc-for></div></sc-if>
+</div>
+<sc-if value="{{ w.edit }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:-6px;right:-6px;width:32px;height:32px;border-radius:16px;background-color:{{ c.s3 }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:18px">{{ w.editIcon }}</span></div></sc-if>
+</sc-if>
+<sc-if value="{{ w.app }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0"><div style="width:{{ ics }}px;height:{{ ics }}px;border-radius:{{ icr }}px;background-color:{{ c.s2 }};display:flex;align-items:center;justify-content:center;position:relative"><sc-if value="{{ w.folder }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px"><sc-for list="{{ w.mini }}" as="m" hint-placeholder-count="4"><span class="material-symbols-outlined" style="font-size:{{ mis }}px;color:{{ c.t2 }}">{{ m }}</span></sc-for></div></sc-if><sc-if value="{{ w.glyph }}" hint-placeholder-val="{{ true }}"><span class="material-symbols-outlined" style="font-size:{{ gis }}px">{{ w.glyph }}</span></sc-if><sc-if value="{{ w.badge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:{{ c.warn }};color:#1a1204;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ w.badge }}</span></sc-if></div><span style="font-size:{{ alfs }}px;font-weight:600;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</span></div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ showDots }}" hint-placeholder-val="{{ true }}"><div style="height:{{ dotH }}px;flex:none;display:flex;align-items:center;justify-content:{{ dotJ }};gap:10px;padding:0 20px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="5"><span class="material-symbols-outlined" style="font-size:{{ d.s }}px;color:{{ d.col }};font-variation-settings:'FILL' 1">{{ d.icon }}</span></sc-for></div></sc-if>
+</sc-if>
+
+<sc-if value="{{ isCluster }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:{{ gap }}px;padding:{{ gridPad }}">
+<div style="flex:1;min-height:0;display:flex;gap:{{ gap }}px">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:{{ gap }}px"><sc-for list="{{ tilesL }}" as="t" hint-placeholder-count="2"><div style="flex:1;min-height:0;background-color:{{ c.s1 }};border-radius:20px;padding:{{ tp }}px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:{{ tlfs }}px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ c.t2 }}">{{ t.l }}</span><span style="font-size:{{ tlfs }}px;font-weight:800;color:{{ t.wc }};margin-left:auto">{{ t.w }}</span></div><span style="font-size:{{ tvfs }}px;font-weight:700;line-height:1;white-space:nowrap">{{ t.v }}<span style="font-size:{{ tufs }}px;color:{{ c.t2 }};font-weight:600"> {{ t.u }}</span></span><div>{{ t.g }}</div></div></sc-for></div>
+<div style="width:{{ heroS }}px;flex:none;display:flex;align-items:center;justify-content:center"><div style="position:relative;width:{{ heroS }}px;height:{{ heroS }}px;border-radius:50%;background-color:{{ c.s1 }}">{{ heroG }}<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:{{ spfs }}px;font-weight:800;line-height:.9;color:{{ c.spd }};letter-spacing:-.02em">64</span><span style="font-size:{{ tlfs }}px;font-weight:700;color:{{ c.t2 }}">km/h</span><span style="font-size:{{ tlfs }}px;font-weight:700;color:{{ c.t2 }};margin-top:6px;white-space:nowrap">1 850 rpm</span></div></div></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:{{ gap }}px"><sc-for list="{{ tilesR }}" as="t" hint-placeholder-count="2"><div style="flex:1;min-height:0;background-color:{{ c.s1 }};border-radius:20px;padding:{{ tp }}px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:{{ tlfs }}px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{{ c.t2 }}">{{ t.l }}</span><span style="font-size:{{ tlfs }}px;font-weight:800;color:{{ t.wc }};margin-left:auto">{{ t.w }}</span></div><span style="font-size:{{ tvfs }}px;font-weight:700;line-height:1;white-space:nowrap">{{ t.v }}<span style="font-size:{{ tufs }}px;color:{{ c.t2 }};font-weight:600"> {{ t.u }}</span></span><div>{{ t.g }}</div></div></sc-for></div>
+</div>
+<sc-if value="{{ showLights }}" hint-placeholder-val="{{ false }}"><div style="height:{{ lightH }}px;flex:none;background-color:{{ c.s1 }};border-radius:20px;display:flex;align-items:center;justify-content:space-around;padding:0 12px"><sc-for list="{{ lights }}" as="l" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:{{ lis }}px;color:{{ l.col }};font-variation-settings:'FILL' {{ l.fill }}">{{ l.icon }}</span><span style="font-size:{{ kfs }}px;color:{{ l.tcol }};font-weight:{{ l.w }};white-space:nowrap">{{ l.n }}</span></div></sc-for></div></sc-if>
+<sc-if value="{{ showDots }}" hint-placeholder-val="{{ false }}"><div style="height:20px;flex:none;display:flex;align-items:center;justify-content:{{ dotJ }};gap:10px;padding:0 8px"><sc-for list="{{ dots }}" as="d" hint-placeholder-count="5"><span class="material-symbols-outlined" style="font-size:{{ d.s }}px;color:{{ d.col }};font-variation-settings:'FILL' 1">{{ d.icon }}</span></sc-for></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDrawer }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;padding:{{ gridPad }};display:flex;flex-direction:column;gap:{{ gap }}px">
+<div style="height:{{ fieldH }}px;flex:none;border-radius:999px;background-color:{{ c.s2 }};display:flex;align-items:center;gap:10px;padding:0 20px;font-size:{{ bfs }}px;color:{{ c.t2 }}"><span class="material-symbols-outlined" style="font-size:{{ kis }}px">search</span>Search apps</div>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat({{ drawCols }},minmax(0,1fr));grid-auto-rows:{{ drawRow }}px;gap:{{ gap }}px;align-content:start">
+<sc-for list="{{ apps }}" as="w" hint-placeholder-count="10"><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;border-radius:18px;box-shadow:{{ w.ring }}"><div style="width:{{ ics }}px;height:{{ ics }}px;border-radius:{{ icr }}px;background-color:{{ w.tile }};display:flex;align-items:center;justify-content:center;position:relative"><span class="material-symbols-outlined" style="font-size:{{ gis }}px">{{ w.glyph }}</span><sc-if value="{{ w.badge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:{{ c.warn }};color:#1a1204;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ w.badge }}</span></sc-if><sc-if value="{{ w.lock }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="position:absolute;bottom:-4px;right:-4px;font-size:18px;background-color:{{ c.s3 }};border-radius:10px;padding:2px">lock</span></sc-if></div><span style="font-size:{{ alfs }}px;font-weight:600;white-space:nowrap">{{ w.name }}</span></div></sc-for>
+</div>
+<div style="height:{{ rowH }}px;flex:none;border-radius:18px;background-color:{{ c.s1 }};display:flex;align-items:center;gap:12px;padding:0 18px;font-size:{{ bfs }}px;font-weight:600"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.t2 }}">visibility_off</span><span style="flex:1">Hidden apps · 1</span><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.t2 }}">chevron_right</span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLocked }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:16px">
+<div style="width:{{ lockW }};background-color:{{ c.s1 }};border-radius:24px;padding:{{ lockP }}px;display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+<span class="material-symbols-outlined" style="font-size:48px;color:{{ c.t2 }}">lock</span>
+<span style="font-size:{{ lockT }}px;font-weight:800;line-height:1.15">Available when parked</span>
+<span style="font-size:{{ lockB }}px;color:{{ c.t2 }};line-height:1.35">Trips is locked while the car moves.</span>
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+<div style="height:76px;padding:0 26px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:10px;font-size:{{ lockB }}px;font-weight:700;box-shadow:0 0 0 2px {{ c.s1 }},0 0 0 5px {{ c.acc }}"><span class="material-symbols-outlined" style="font-size:28px">phone_iphone</span>Open on phone</div>
+<div style="height:76px;padding:0 26px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:10px;font-size:{{ lockB }}px;font-weight:700"><span class="material-symbols-outlined" style="font-size:28px">airline_seat_recline_normal</span>I’m a passenger</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPV }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;padding:{{ gridPad }};display:flex;flex-direction:column;gap:10px">
+<span style="font-size:{{ hfs }}px;font-weight:800">Trips</span>
+<sc-for list="{{ trips }}" as="r" hint-placeholder-count="3"><div style="min-height:{{ rowH }}px;border-radius:18px;background-color:{{ c.s1 }};display:flex;align-items:center;gap:14px;padding:0 18px"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.t2 }}">route</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:{{ bfs }}px;font-weight:700">{{ r.t }}</span><span style="font-size:{{ kfs }}px;color:{{ c.t2 }}">{{ r.m }}</span></div><span style="font-size:{{ bfs }}px;font-weight:700">{{ r.v }}</span></div></sc-for>
+<span style="font-size:{{ kfs }}px;color:{{ c.t2 }};line-height:1.4">Driving-related content only. Video, messages and search stay locked.</span>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ dockOn }}" hint-placeholder-val="{{ true }}">
+<div style="{{ dockOuter }}">
+<div style="{{ dockInner }}">
+<sc-for list="{{ dock }}" as="d" hint-placeholder-count="5"><div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{ d.col }};border-radius:18px;background-color:{{ d.slotBg }};box-shadow:{{ d.slotSh }};position:relative"><div style="width:{{ d.pw }}px;height:{{ d.ph }}px;border-radius:999px;background-color:{{ d.pill }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:{{ dis }}px;font-variation-settings:'FILL' {{ d.fill }}">{{ d.icon }}</span></div><span style="font-size:{{ dfs }}px;font-weight:700;white-space:nowrap">{{ d.n }}</span><sc-if value="{{ d.lock }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="position:absolute;top:6px;right:8px;font-size:16px;color:{{ c.t2 }}">lock</span></sc-if><sc-if value="{{ d.handle }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="position:absolute;top:4px;left:6px;font-size:18px;color:{{ c.t3 }}">drag_indicator</span></sc-if></div></sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ isDockEdit }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;top:0;height:{{ editBarH }}px;background-color:{{ c.s1 }};display:flex;align-items:center;gap:12px;padding:0 14px;z-index:6">
+<span style="font-size:{{ hfs }}px;font-weight:800;flex:1">Edit dock</span>
+<div style="height:{{ btnH }}px;min-width:{{ btnH }}px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined" style="font-size:{{ kis }}px">undo</span></div>
+<div style="height:{{ btnH }}px;padding:0 24px;border-radius:999px;background-color:{{ c.acc }};color:{{ c.on }};display:flex;align-items:center;font-size:{{ bfs }}px;font-weight:800">Done</div>
+</div>
+<div style="{{ trayStyle }}">
+<span style="font-size:{{ kfs }}px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ c.t2 }}">Apps you can pin</span>
+<sc-for list="{{ tray }}" as="r" hint-placeholder-count="4"><div style="min-height:{{ rowH }}px;border-radius:16px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:12px;padding:0 14px;opacity:{{ r.op }}"><span class="material-symbols-outlined" style="font-size:20px;color:{{ c.t3 }}">drag_indicator</span><span class="material-symbols-outlined" style="font-size:{{ kis }}px">{{ r.icon }}</span><span style="font-size:{{ bfs }}px;font-weight:700">{{ r.n }}</span></div></sc-for>
+<span style="font-size:{{ kfs }}px;color:{{ c.t2 }};line-height:1.35">Drag onto a slot to pin. Home and Apps always stay.</span>
+</div>
+<div style="{{ dragStyle }}"><span class="material-symbols-outlined" style="font-size:{{ dis }}px">map</span><span style="font-size:{{ dfs }}px;font-weight:700">Map</span></div>
+</sc-if>
+
+<sc-if value="{{ isConn }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background-color:{{ c.scrim }};z-index:5"></div>
+<div style="{{ sheetStyle }}">
+<div style="display:flex;align-items:center;gap:10px;min-height:{{ rowH }}px"><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:{{ hfs }}px;font-weight:800">Connection</span><span style="font-size:{{ kfs }}px;color:{{ c.okT }};font-weight:700">All links OK</span></div><span style="height:{{ tagH }}px;padding:0 12px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:6px;font-size:{{ rfs }}px;font-weight:700"><span class="material-symbols-outlined" style="font-size:{{ kis }}px">battery_charging_full</span>12.6 V</span></div>
+<sc-for list="{{ ladder }}" as="r" hint-placeholder-count="5"><div style="min-height:{{ ladH }}px;display:flex;align-items:center;gap:14px;box-shadow:inset 0 -1px 0 {{ c.line }}"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.okT }};font-variation-settings:'FILL' 1">check_circle</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:{{ rfs }}px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.n }}</span><sc-if value="{{ showMeta }}" hint-placeholder-val="{{ true }}"><span style="font-size:{{ kfs }}px;color:{{ c.t2 }}">{{ r.m }}</span></sc-if></div><span style="font-size:{{ rfs }}px;font-weight:700;color:{{ c.okT }}">OK</span></div></sc-for>
+<sc-if value="{{ showQueued }}" hint-placeholder-val="{{ true }}"><div style="min-height:{{ rowH }}px;border-radius:18px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:12px;padding:0 8px 0 16px;margin-top:4px"><span class="material-symbols-outlined" style="font-size:{{ kis }}px;color:{{ c.t2 }}">schedule</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:{{ bfs }}px;font-weight:700">Read faults · Queued</span><span style="font-size:{{ kfs }}px;color:{{ c.t2 }}">Expires 14:35</span></div><div style="height:{{ btnH }}px;padding:0 18px;border-radius:999px;background-color:{{ c.s2 }};display:flex;align-items:center;font-size:{{ bfs }}px;font-weight:700">Cancel</div></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSwitch }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background-color:{{ c.scrim }};z-index:5"></div>
+<div style="{{ swStyle }}">
+<sc-for list="{{ pages }}" as="p" hint-placeholder-count="6"><div style="height:76px;border-radius:18px;background-color:{{ p.bg }};display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:{{ p.ring }};grid-column:{{ p.gc }}"><span class="material-symbols-outlined" style="font-size:30px;color:{{ p.icol }}">{{ p.icon }}</span><span style="flex:1;font-size:{{ swfs }}px;font-weight:700;white-space:nowrap">{{ p.n }}</span><sc-if value="{{ p.on }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-outlined" style="font-size:30px;color:{{ c.accTx }}">check</span></sc-if></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPrompt }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background-color:{{ c.scrim }};z-index:5"></div>
+<div style="{{ promptStyle }}">
+<span style="font-size:{{ lockT }}px;font-weight:800">Are you a passenger?</span>
+<span style="font-size:{{ lockB }}px;color:{{ c.t2 }};line-height:1.35">Trips and maps unlock on this screen until the trip ends. The driver must not use it.</span>
+<div style="display:flex;gap:12px;margin-top:6px">
+<div style="flex:1;height:76px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;justify-content:center;font-size:{{ lockB }}px;font-weight:700;box-shadow:0 0 0 2px {{ c.s2 }},0 0 0 5px {{ c.acc }}">Cancel</div>
+<div style="flex:1;height:76px;border-radius:999px;background-color:{{ c.acc }};color:{{ c.on }};display:flex;align-items:center;justify-content:center;font-size:{{ lockB }}px;font-weight:800">I’m a passenger</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;bottom:24px;transform:translateX(-50%);height:76px;padding:0 30px;border-radius:999px;background-color:{{ c.s3 }};display:flex;align-items:center;gap:12px;font-size:24px;font-weight:800;z-index:6;white-space:nowrap"><span class="material-symbols-outlined" style="font-size:30px">lock</span>Park to edit</div>
+</sc-if>
+
+<sc-if value="{{ ph }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:3px;background-color:{{ c.tx }};opacity:.5;z-index:7"></div></sc-if>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;cluster&quot;,&quot;switcher&quot;,&quot;drawer&quot;,&quot;dockedit&quot;,&quot;connection&quot;,&quot;locked&quot;,&quot;passenger&quot;,&quot;pv&quot;,&quot;toast&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cls&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;phone&quot;,&quot;hu5&quot;,&quot;hu7&quot;,&quot;hu9&quot;,&quot;huwide&quot;],&quot;default&quot;:&quot;hu7&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;night&quot;,&quot;nightdim&quot;,&quot;day&quot;],&quot;default&quot;:&quot;night&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;moving&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;sid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OS)return setTimeout(go,80);this.forceUpdate()};go()}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const O=window.OS;if(!O)return {ready:false};
+  const p=this.props,h=React.createElement,scr=p.screen||'home',L=O.CL[p.cls||'hu7'],c=O.TH[p.theme||'night'],mv=!!p.moving,ph=!L.hu,id=L.id;
+  const drive=mv&&L.hu&&(scr==='cluster'||scr==='switcher'||scr==='locked'||scr==='passenger'||scr==='pv'||scr==='toast'||scr==='connection');
+  const k5=id==='hu5',k9=id==='hu9'||id==='huwide';
+  // strip
+  const sfs=mv?24:(ph?13:18),chH=ph?32:L.chip;
+  const C=(o)=>Object.assign({flex:'none',bg:c.s2,col:c.tx,icol:'inherit',fill:0,w:700,pad:'0 14px',ring:'none',icon:'',label:''},o);
+  const fault=C({icon:'warning',label:ph?'1 fault':'1 FAULT',bg:c.warn,col:'#1a1204',fill:1,w:800,pad:'0 16px 0 12px'});
+  const link=C({icon:'link',label:'Connected',icol:c.okT});
+  const td5=C({icon:'directions_car',label:'TD5'});
+  const v12=C({icon:'battery_charging_full',label:'12.6 V'});
+  const rec=C({icon:'fiber_manual_record',label:'REC',icol:c.alarmT,fill:1});
+  const ghost=C({icon:'visibility_off',label:'Ghost'});
+  const sp=C({flex:'1 1 auto',bg:'transparent',pad:'0',label:'',icon:''});
+  const clk=C({bg:'transparent',label:'14:32',pad:'0 8px'});
+  const mark=C({icon:'bookmark_add',label:'Mark'});
+  const back=C({icon:'arrow_back',pad:'0'});
+  const page=C({icon:'dashboard',label:'Cluster',bg:c.s3,ring:scr==='switcher'?'0 0 0 2px '+c.s1+',0 0 0 5px '+c.acc:'none'});
+  const pvb=C({icon:'airline_seat_recline_normal',label:'Passenger view',bg:c.accSoft,col:c.accTx});
+  let chips;
+  if(ph)chips=[fault,C({icon:'link',label:'',icol:c.okT,pad:'0'}),C({icon:'directions_car',label:'TD5',pad:'0 10px'}),C({icon:'visibility_off',label:'Ghost',pad:'0 10px'}),sp,C({icon:'bookmark_add',pad:'0'})];
+  else if(scr==='pv')chips=[back,pvb,fault,sp,clk,mark];
+  else if(drive)chips=k5?[back,page,fault,sp,clk,mark]:k9?[back,page,fault,link,td5,v12,rec,ghost,sp,clk,mark]:[back,page,fault,link,td5,sp,clk,mark];
+  else chips=k5?[fault,link,td5,v12,sp,clk,mark]:k9?[fault,link,td5,v12,rec,ghost,sp,clk,mark]:[fault,link,td5,v12,ghost,sp,clk,mark];
+  if(mv&&!ph)chips=chips.map(k=>k.icon==='arrow_back'||k.icon==='bookmark_add'?Object.assign({},k,k.icon==='bookmark_add'?{label:k5?'':'Mark',pad:k5?'0':'0 14px'}:{}):k);
+  // sizing
+  const N={phone:[28,12,13,16,19],hu5:[34,18,18,20,22],hu7:[40,18,18,22,24],hu9:[44,18,20,22,26],huwide:[44,18,20,22,26]}[id];
+  const nfs=N[0],kfs=N[1],bfs=N[2],mfs=N[3],hfs=N[4];
+  const dockOn=!drive&&!(ph&&scr==='pv');
+  // widgets
+  const a=(c0,cs,r0,rs)=>r0+' / '+c0+' / span '+rs+' / span '+cs;
+  const W=(k,area,o)=>Object.assign({area,card:true,app:false,bg:c.s1,edge:'none',kicker:'',kicon:'',kcol:c.t2,tag:'',isWarn:k==='warn',isVeh:k==='veh',isTrip:k==='trip',isClock:k==='clock',isStat:k==='stat',isMap:k==='map',isMedia:k==='media',isLights:k==='lights',g:null,edit:false},o||{});
+  const A=(name,glyph,area,o)=>Object.assign({area,card:false,app:true,name,glyph,folder:false,badge:''},o||{});
+  const warn=area=>W('warn',area,{kicker:'Warnings',kicon:'warning',kcol:c.warnT,tag:'WARN',tagIcon:'warning',tagBg:c.warn,tagCol:'#1a1204',edge:'inset 0 4px 0 '+c.warn});
+  const veh=area=>W('veh',area,{kicker:'Vehicle',kicon:'directions_car'});
+  const trip=area=>W('trip',area,{kicker:'Last trip',kicon:'route'});
+  const clock=area=>W('clock',area,{});
+  const batt=area=>W('stat',area,{kicker:'Battery',kicon:'battery_charging_full',v:'12.6',u:'V',vfs:nfs,ufs:Math.round(nfs*.45),vcol:c.tx,sub:'',g:O.bar(h,c,{f:.55,band:[.42,.78]})});
+  const map=area=>W('map',area,{});
+  const media=area=>W('media',area,{kicker:'Media',kicon:'music_note'});
+  const rf=area=>A('Read faults','stethoscope',area,{badge:'1'}),mp=area=>A('Map','map',area),md=area=>A('Media','music_note',area),fd=area=>A('Car','',area,{folder:true,glyph:'',mini:['stethoscope','route','shield','build']});
+  let widgets=[];
+  if(id==='phone')widgets=[warn(a(1,4,1,2)),veh(a(1,2,3,2)),trip(a(3,2,3,2)),rf(a(1,1,5,1)),mp(a(2,1,5,1)),md(a(3,1,5,1)),fd(a(4,1,5,1)),clock(a(1,2,6,1)),batt(a(3,2,6,1))];
+  else if(id==='huwide')widgets=[warn(a(1,3,1,2)),veh(a(4,3,1,2)),trip(a(1,3,3,2)),rf(a(4,1,3,1)),mp(a(5,1,3,1)),md(a(6,1,3,1)),fd(a(4,1,4,1)),clock(a(5,2,4,1)),map(a(7,3,1,4)),media(a(10,3,1,4))];
+  else{widgets=[warn(a(1,2,1,2)),veh(a(3,2,1,2)),trip(a(5,2,1,2)),rf(a(1,1,3,1)),mp(a(2,1,3,1)),md(a(1,1,4,1)),fd(a(2,1,4,1)),clock(a(3,2,3,2)),batt(a(5,2,3,2))];if(id==='hu9')widgets.push(map(a(7,2,1,4)))}
+  // dock
+  const DK=[['home','Home'],['stethoscope','Diagnostics'],['history','Trips'],['shield','Security'],['map','Map'],['music_note','Media'],['apps','Apps']];
+  let dk=DK.slice(0,4);if(L.slots>=6)dk.push(DK[4]);if(L.slots>=7)dk.push(DK[5]);dk.push(DK[6]);
+  const active=scr==='drawer'?'Apps':'Home',de=scr==='dockedit';
+  const dock=dk.map(([icon,n],i)=>{const on=n===active&&!de,emp=de&&n==='Security';return {icon:emp?'add':icon,n:emp?'Drop here':(n.length>11?'Diagnose':n),fill:on?1:0,pill:on?c.accSoft:'transparent',col:on?c.accTx:(emp?c.accTx:c.t2),pw:ph?56:Math.min(64,L.dock-24),ph:ph?32:44,lock:de&&(n==='Home'||n==='Apps'),handle:de&&!emp&&n!=='Home'&&n!=='Apps',slotBg:de?(emp?c.accSoft:c.s2):'transparent',slotSh:de?(emp?'inset 0 0 0 2px '+c.acc:'none'):'none'}});
+  const dockOuter=ph?'position:absolute;left:12px;right:12px;bottom:22px;height:72px;z-index:3':'width:'+L.dock+'px;flex:none;padding:8px 8px 8px 0;box-sizing:border-box';
+  const dockInner=(ph?'height:100%;border-radius:999px;padding:6px;flex-direction:row;':'height:100%;border-radius:24px;padding:6px;flex-direction:column;')+'display:flex;gap:4px;box-sizing:border-box;background-color:'+c.s1;
+  // dots
+  const npg=5,cur=scr==='cluster'?1:0;
+  const dots=Array.from({length:npg},(_,i)=>({icon:i===0?'home':'circle',s:i===0?(ph?16:20):(ph?9:11),col:i===cur?c.acc:c.t3}));
+  // cluster tiles
+  const T=(l,v,u,f,band,o)=>Object.assign({l,v,u,w:'OK',wc:c.okT,g:mv?null:O.bar(h,c,{f,band})},o||{});
+  const tilesL=[T('Coolant','88','°C',.55,[.4,.75]),T('Turbo','1.2','bar',.48,[.25,.7])],tilesR=[T('Battery','13.9','V',.62,[.45,.8]),T('Fuel temp','41','°C',.35,[.2,.7])];
+  const lights=[['oil_barrel','Oil',0],['battery_alert','Charge',0],['warning','Engine',1],['tire_repair','ABS',0],['local_parking','Brake',0],['device_thermostat','Coolant',0]].map(([icon,n,on])=>({icon,n:on?'ENGINE':n,col:on?c.warnT:c.t3,tcol:on?c.warnT:c.t3,fill:on?1:0,w:on?800:600}));
+  const areaH=L.H-(ph?44:0)-(L.hu?L.chip+16:48)-(drive?0:28)-(mv?0:(L.hu?72:0));
+  const heroS=Math.round(Math.min(ph?340:areaH-16,(L.W-(dockOn?L.dock||0:0))*.42));
+  const heroG=O.gauge(h,c,{size:heroS,f:.37,red:.8,steps:24,w:Math.max(12,Math.round(heroS*.055)),col:c.t2});
+  // drawer
+  const AP=[['Settings','settings'],['Store','storefront'],['Audio','tune'],['Diagnostics','stethoscope'],['Map','map'],['Media','music_note'],['Security','shield'],['Trips','history'],['Camera','videocam'],['Clock','schedule']];
+  const apps=AP.map(([name,glyph],i)=>({name:name==='Diagnostics'&&ph?'Diagnose':name,glyph,tile:i<2?c.s3:c.s2,badge:name==='Diagnostics'?'1':'',lock:name==='Settings'||name==='Store',ring:i===3&&!ph?'0 0 0 2px '+c.bg+',0 0 0 5px '+c.acc:'none'}));
+  // overlays
+  const top=(ph?44:0)+(L.hu?L.chip+16:48);
+  const sheetW=ph?L.W:Math.min(520,Math.round(L.W*.5));
+  const sheetStyle=(ph?'position:absolute;left:0;right:0;bottom:0;border-radius:28px 28px 0 0;padding:18px 20px 34px;':'position:absolute;left:8px;top:'+(top+0)+'px;bottom:8px;width:'+sheetW+'px;border-radius:24px;padding:12px 20px;')+'background-color:'+c.s2+';z-index:6;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden';
+  const ladder=[['This screen → Brain','Wi-Fi · 4 ms'],['Brain → node','USB'],['Node → K-line','10.4 kbaud'],['Engine ECU · Td5','Awake'],['Live data','12 signals · 4 Hz']].map(([n,m])=>({n,m}));
+  const pages=[['dashboard','Cluster'],['map','Map'],['grid_view','Tiles'],['speed','Minimal'],['terrain','Tilt'],['timeline','Trail']].map(([icon,n],i)=>({icon,n,on:i===0,bg:i===0?c.accSoft:c.s3,icol:i===0?c.accTx:c.t2,ring:i===0?'0 0 0 2px '+c.s2+',0 0 0 5px '+c.acc:'none',gc:'auto'}));
+  if(!mv)pages.push({icon:'edit',n:'Edit pages…',on:false,bg:c.s3,icol:c.t2,ring:'none',gc:'1 / -1'});
+  const swW=ph?L.W-24:Math.min(k5?L.W-16:680,L.W-16);
+  const swStyle=(ph?'position:absolute;left:12px;right:12px;bottom:24px;':'position:absolute;left:8px;top:'+top+'px;width:'+swW+'px;')+'z-index:6;background-color:'+c.s2+';border-radius:24px;padding:12px;box-sizing:border-box;display:grid;grid-template-columns:'+(ph?'1fr':'1fr 1fr')+';gap:10px';
+  const promptStyle=(ph?'position:absolute;left:0;right:0;bottom:0;border-radius:28px 28px 0 0;padding:24px 20px 40px;':'position:absolute;left:8px;bottom:8px;width:'+Math.min(600,L.W-16)+'px;border-radius:24px;padding:24px;')+'background-color:'+c.s2+';z-index:6;display:flex;flex-direction:column;gap:10px;box-sizing:border-box';
+  const trayStyle='position:absolute;left:8px;top:'+(top+L.chip+8)+'px;bottom:8px;width:'+(ph?L.W-16:300)+'px;'+(ph?'top:auto;height:300px;bottom:110px;':'')+'background-color:'+c.s2+';border-radius:24px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;z-index:6';
+  const dragStyle=(ph?'position:absolute;left:236px;bottom:118px;':'position:absolute;right:'+(L.dock+18)+'px;top:'+Math.round(L.H*.52)+'px;')+'width:'+(ph?72:L.dock-12)+'px;height:'+(ph?72:L.dock-12)+'px;border-radius:20px;background-color:'+c.s3+';color:'+c.tx+';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 18px 30px rgba(0,0,0,.45);transform:rotate(-4deg);z-index:7';
+  const tray=[['map','Map',.35],['music_note','Media',1],['tune','Audio',1],['build','Maintenance',1]].map(([icon,n,op])=>({icon,n,op}));
+  const trips=[{t:'Buxton → Castleton',m:'Today 13:14 · 0:48',v:'37.2 km'},{t:'Castleton → Hope',m:'Yesterday 17:40 · 0:12',v:'6.1 km'},{t:'Bakewell loop',m:'Mon 09:02 · 1:05',v:'48.9 km'}];
+  const isGrid=scr==='home'||scr==='dockedit'||scr==='connection'&&!drive;
+  const isCluster=scr==='cluster'||scr==='switcher'||scr==='toast'||scr==='connection'&&drive;
+  const cls=L.name,st=mv?'Moving':'Parked',thn=c.name;
+  const icsz=ph?L.icon:Math.min(L.icon,64);
+  return {ready:true,c,W:L.W,H:L.H,ph,bz:ph?10:14,bzR:ph?56:24,sR:ph?46:6,label:[p.sid||scr,cls,thn,st].join(' · '),
+   pvFrame:scr==='pv'?'inset 0 0 0 4px '+c.acc:'none',
+   showStrip:true,stripPad:ph?'0 10px 6px':'8px 8px 8px',chips,chH,sfs,sis:mv?28:(ph?18:22),
+   bodyDir:ph?'column':'row',dimMain:de?.4:1,
+   isGrid,widgets,cols:L.cols,rows:L.rows,gap:L.gap,gridPad:ph?'4px 14px 0':(dockOn?'0 8px 8px 8px':'0 8px 8px'),cp:ph?12:16,cg:ph?4:6,kfs,bfs,mfs,hfs,nfs,ufs:Math.round(nfs*.45),kis:ph?18:22,tagH:ph?24:32,btnH:ph?40:56,
+   ics:icsz,icr:ph?16:20,gis:Math.round(icsz*.5),mis:Math.round(icsz*.28),alfs:ph?12:18,lis:ph?22:28,
+   showDots:!mv&&scr!=='drawer',dotH:ph?110:28,dotJ:ph?'center':'flex-start',dots,
+   isCluster,tilesL,tilesR,heroS,heroG,spfs:Math.round(heroS*.3),tp:ph?12:(k5?12:16),tlfs:mv?24:(ph?13:18),tvfs:mv?(k5?56:k9?80:64):(ph?30:k5?40:48),tufs:mv?24:(ph?14:20),showLights:!mv,lightH:ph?56:64,lights,
+   isDrawer:scr==='drawer',fieldH:ph?48:64,drawCols:ph?4:(k5?5:k9?8:6),drawRow:ph?92:(k5?100:120),apps,rowH:ph?52:64,
+   isLocked:scr==='locked'||scr==='passenger',lockW:ph?'100%':'min(640px,90%)',lockP:ph?20:28,lockT:ph?22:32,lockB:ph?15:24,
+   isPV:scr==='pv',trips,
+   dockOn,dock,dockOuter,dockInner,dis:ph?24:(k5?26:30),dfs:ph?12:(k5?14:16),
+   isDockEdit:de,editBarH:(ph?44:0)+(L.hu?L.chip+16:48),trayStyle,dragStyle,tray,
+   isConn:scr==='connection',sheetStyle,ladder,ladH:mv?72:(ph?56:64),rfs:mv?24:(ph?15:18),showMeta:!mv,showQueued:!mv,
+   isSwitch:scr==='switcher',swStyle,pages,swfs:mv?24:(ph?16:20),
+   isPrompt:scr==='passenger',promptStyle,isToast:scr==='toast'};
+ }
+}
+</script>
+</body>
+</html>

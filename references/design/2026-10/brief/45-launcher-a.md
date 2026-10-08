@@ -2,7 +2,7 @@
 title: "Designer brief 45-a — launcher: the model, home pages, the Drive carousel, the dock and the dock editor"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   (grid per layout class, page dots, default page, wallpaper layer), the Drive carousel of
   home pages on a head unit with its page chip and flat page list (re-expressing
   drive-switcher), the dock (re-expressing shell-rail: bottom on phones, driver side on head
-  units) and the dock editor (shell-rail-editor). Examples use the Discovery 2 Td5 pack.
+  units) and the dock editor (shell-rail-editor). Examples use the Discovery 2 Td5 pack. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-a — The launcher model, home pages, Drive carousel and dock
@@ -167,8 +167,8 @@ two-level chip (sets, then pages); the manager reconciles 40-drive-g with this f
 - **States:** Parked: full. Moving (HU): a slot whose target has no Moving view is not drawn
   and its place stays empty, so nothing shifts; the drawer opens its driving-apps list. Bare OS: Home and
   App drawer only.
-- **Safety and driving rules:** Home and the app drawer are each in the dock exactly once,
-  never removed ([launcher §5.1][lw-5.1]; [Drive modes §8.1][dm-8.1] R9); a pinned app keeps its own driving rule.
+- **Safety and driving rules:** Home and the app drawer are default anchors, at most once each
+  in the dock, hideable while the recovery path stays ([launcher §5.1][lw-5.1]; [Drive modes §8.1][dm-8.1] R9); a pinned app keeps its own driving rule.
 - **Components:** TabBar (dock), App icon (new component), Folder icon (new component).
 - **Spec refs:** [UI §3.3][ui-3.3] · [UI §3.4][ui-3.4] · [Drive modes §7.3][dm-7.3] ·
   [visual §8][vds-8] · [launcher §5.1][lw-5.1].

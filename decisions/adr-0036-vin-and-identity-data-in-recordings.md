@@ -2,14 +2,16 @@
 title: "ADR-0036 — VIN and identity data in recordings: off by default, never leaves the device"
 area: decisions
 status: locked
-version: 1.2
-updated: 2026-10-06
+version: 1.3
+updated: 2026-10-07
 depends_on: [decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0032-one-node-optional-brain.md]
 summary: >
-  Owner answer of 2026-10-06. Recording the VIN and other identity replies (OBD Mode 09, ECU identification reads) in raw recordings becomes an install-level option for security decoding work, off by default. When off, identity replies are scrubbed at write time to a fixed placeholder and every other raw byte is kept. When on, identity data still never leaves the device: never uploaded, shared, contributed, put in fixtures or committed. The hard line changes from "the VIN is never logged or recorded" to "never recorded by default; never leaves the device". Amends ADR-0010's identity-read line and the matching CONSTITUTION and GOALS hard lines; ADR-0018 Q7 (garage keeps an HMAC fingerprint and masked VIN only) is unchanged.
+  Owner answer of 2026-10-06. Recording the VIN and other identity replies (OBD Mode 09, ECU identification reads) in raw recordings becomes an install-level option for security decoding work, off by default. When off, identity replies are scrubbed at write time to a fixed placeholder and every other raw byte is kept. When on, identity data still never leaves the device: never uploaded, shared, contributed, put in fixtures or committed. The hard line changes from "the VIN is never logged or recorded" to "never recorded by default; never leaves the device". Amends ADR-0010's identity-read line and the matching CONSTITUTION and GOALS hard lines; ADR-0018 Q7 (garage keeps an HMAC fingerprint and masked VIN only) is unchanged. Amended 2026-10-07 (openness round, ADR-0047): the owner may explicitly export identity data to their own storage and include the VIN in an L4 bundle to one named person; it is still never in fixtures, commits, contributions or public shares.
 ---
 
 # ADR-0036 — VIN and identity data in recordings
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):** "never leaves the device" gains two owner-only exits: an explicit export to the owner's own storage, and the VIN in an L4 bundle to one named person. See [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** the Diagnostics node scrubs identity data in its raw tap too, before it leaves the node. See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
@@ -107,3 +109,19 @@ unchanged; where this entry differs, it wins.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md) (loosening 8). The decision
+stands (off by default; scrubbed at write when off) except that, when the option is on, the
+owner may take identity data off the device in two explicit, owner-only ways:
+
+- **Export to their own storage** (a file or a backup target they choose), with a warning that
+  it identifies the car; never automatic, never to Ostler Cloud, a relay, the hub, a share
+  link or a contribution.
+- **The VIN in an L4 bundle to one named person** (for example a dealer or mechanic), with a
+  cloning-risk warning ([trip-sharing spec](../specs/2026-10-07-trip-sharing-design.md) §2).
+
+Unchanged: identity data is never put in fixtures, never committed, never contributed and never
+in a public or multi-recipient share; raw captures are never committed (CONSTITUTION).

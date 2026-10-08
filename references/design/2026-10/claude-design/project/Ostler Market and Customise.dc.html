@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#0070b8}a:hover{color:#005a94}</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:80px;color:#0e1626">
+<div style="max-width:1040px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · ADD-ONS, CUSTOMISATION, THEMES</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">Make Ostler yours — safely</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">Add-ons work like a store with Installed and Available tabs, but have no ratings, ranks or ads. Every item can be renamed, re-iconed, moved and resized. Safety items can move but never be removed. While Moving, both the market and edit mode are locked. Integrations and “Runs on the Brain” are marked <b style="color:#bf8a1a">provisional</b> until the HA research round lands.</div>
+</div>
+<dc-import name="OS Market" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,2400px"></dc-import>
+<dc-import name="OS Customise" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,2600px"></dc-import>
+<dc-import name="OS Themes" hint-size="100%,1000px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;faults&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vehicle state&quot;},&quot;visibility&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Ghost&quot;,&quot;Visible&quot;],&quot;default&quot;:&quot;Ghost&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Vehicle state&quot;}}">
+class Component extends DCLogic {
+ renderVals(){return {faults:this.props.faults!==false,visibility:this.props.visibility||'Ghost'};}
+}
+</script>
+</body>
+</html>

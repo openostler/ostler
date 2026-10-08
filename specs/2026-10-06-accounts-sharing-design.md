@@ -2,14 +2,28 @@
 title: "Accounts, multi-vehicle garage, sharing and social — design"
 area: specs
 status: stable
-version: 0.8
+version: 0.9
 updated: 2026-10-07
 depends_on: [decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, CONSTITUTION.md, GOALS.md, decisions/adr-0037-role-holders-and-handover.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, specs/2026-10-06-app-model-design.md, references/research/accounts_social_login.md, references/research/social_group_drive_apps.md, references/research/calls_video_camera_sharing.md, references/research/maintenance_trackers.md, specs/2026-10-07-trip-sharing-design.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, references/research/dmd_hub_features.md]
 summary: >
-  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Amendment (2026-10-07, §14), approved by the owner on 2026-10-07 ("approve all"): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node. Amendment (2026-10-07, DMD round, §15, v0.7), approved by the owner on 2026-10-07 ("approve all", DMD round) (v0.8): a `route` detail on the `location` ladder (finished, trimmed, simplified, no timestamps; may be indefinite; public only by explicit publish ≥ 24 h after the trip); a `link` audience for L0–L1 trips, `faults` and `vehicle_card` only; `public` brought forward for Ostler Community by explicit publish only; live-trip grant options trail_window, delay (0–6 h), show_speed and show_values; DMD-style link controls (Locked or Download, available-from, expiry, access-until, collection and download limits, states); L3–L4 stay hand-overs, never grants; hub accounts are hub-owned and never sign into a device, and later (P5 at the earliest) the §14.8 link-only broker becomes the hub's identity service, the one Ostler account `ostler-cloud` trusts (§15.5a).
+  Approved by the owner on 2026-10-06 (ADR-0029, with roles and approvals from ADR-0033). Local users on each device with an owner bootstrapped by a physical setup code (phone pairing on Ostler Diagnostics alone); passkeys through the optional extra openostler[passkeys], scrypt passwords always available, cookie sessions and scoped, revocable tokens (also for AI/MCP clients, RFC 8628 device flow). Roles (Owner, Driver, Viewer, Mechanic) grant action categories, each capped by its tier; the gate takes the intersection of role, share and token categories at the minimum tier, then the transport rule (local links; remote read-only unless the install-level OSTLER_ALLOW_REMOTE_CONTROL override is set) and the driving state. The head-unit kiosk session gets Read and Comfort only. A garage that defaults to the car the node is on, with friends' cars added by invite (link or QR, pinned device key, expiry, revocation, audit) over LAN, Tailscale or the future relay; data stays on each car's device. Per-share privacy: location opt-in; no VIN, HMAC, raw capture or audio ever. Later: groups, rides and convoys for bikers and off-roaders, and outbound share intents, webhooks and bots. Bikes use a guardian-variant or Ostler Diagnostics node with the phone as the screen. Phases P1–P5, data model, routes, tests, threats and the remaining open questions. Amendment (2026-10-07, §14), approved by the owner on 2026-10-07 ("approve all"): one add-on-extensible data-class registry (presence, vehicle card, location, live signals, trips, faults, notes, maintenance, video as per-camera grants, audio) with audiences me, person, group, household and public-later; ghost mode on by default for every user and add-on with one master toggle; precise location always expires within 24 h and nobody raises another's precision except one's own SOS to safety contacts; contacts, groups and rides (ride-scoped grants end at ride end) and 8-character invite codes; the shell screens (first run, sign-in, passkeys, head-unit profiles, users, devices, sharing with View as, ghost chip, safety contacts); social login later as a link-only OIDC broker; a hard Basic Auth end; auth.db on the Brain with a signed roster on the node. Amendment (2026-10-07, DMD round, §15, v0.7), approved by the owner on 2026-10-07 ("approve all", DMD round) (v0.8): a `route` detail on the `location` ladder (finished, trimmed, simplified, no timestamps; may be indefinite; public only by explicit publish ≥ 24 h after the trip); a `link` audience for L0–L1 trips, `faults` and `vehicle_card` only; `public` brought forward for Ostler Community by explicit publish only; live-trip grant options trail_window, delay (0–6 h), show_speed and show_values; DMD-style link controls (Locked or Download, available-from, expiry, access-until, collection and download limits, states); L3–L4 stay hand-overs, never grants; hub accounts are hub-owned and never sign into a device, and later (P5 at the earliest) the §14.8 link-only broker becomes the hub's identity service, the one Ostler account `ostler-cloud` trusts (§15.5a). Amended 2026-10-07 (openness round, ADR-0047): privacy floors on the owner's own data become defaults with an informed override (location beyond 24 h or standing family sharing, visible to household at setup, consented cabin audio shares, the VIN in a named L4 bundle, telemetry by link, the public route delay); rules protecting other people stay hard.
 ---
 
 # Accounts, multi-vehicle garage, sharing and social — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** privacy floors on the owner's
+> **own** data become defaults with an informed override and a warning: precise and live
+> location may be granted beyond 24 h or as standing family sharing (§14.1, §14.5); ghost
+> stays on by default, but a user may pick "visible to household by default" at setup
+> (§14.3); cabin audio may be shared per share when every occupant consents (§14.1); the VIN
+> may go in an L4 bundle to one named person (§5.3); `link` may carry telemetry with an expiry
+> (§15.2); the publish delay for a public route is the owner's (0–24 h, §15.1); social login
+> may be an optional primary credential for cloud-only users (§14.8); the in-house group feed
+> stays minimal while other add-ons may add likes or feeds (§6). Rules that protect **other
+> people** stay hard: nobody can raise another person's precision, the registry's default
+> audience for add-on classes stays `me`, and friend discovery never uses social login.
 
 **Status:** approved by the owner on 2026-10-06 (v0.2). The decisions are
 [ADR-0029](../decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md) and, for
@@ -191,7 +205,9 @@ public CA). Unredeemed invites expire (default 48 h). The owner can revoke them.
   read-only, ADR-0033 §6).
 - **Location**, per share, off by default: `none` · `place names` · `precise history` ·
   `live during a ride`. Sessions shared without location have traces removed server-side.
-- **Never shared:** the VIN and its HMAC (a masked VIN at most, ADR-0018 Q7), raw captures
+- **Never shared by default:** the VIN and its HMAC (a masked VIN at most, ADR-0018 Q7; the
+  owner may include the full VIN in an L4 bundle to one named person, with a cloning-risk
+  warning, *amended 2026-10-07, openness round*), raw captures
   (`logs/`, `captures/`), audio (ADR-0010), Decode evidence, private notes, other vehicles.
 - Each share has an expiry (optional for `view`), a revoke button and an **audit log**:
   created, redeemed, each pull (time, peer, data class, coarse size), revoked.
@@ -218,7 +234,9 @@ public CA). Unredeemed invites expire (default 48 h). The owner can revoke them.
   peaks, low-range time). **Privacy zones** trim the ends near saved places, as fitness
   apps do. GPX export exists.
 - **In-house, minimal:** a group feed of ride summaries and comments, member list, ride
-  invites. No likes economy, no algorithmic feed, no ads, no tracking, no analytics.
+  invites. No likes economy, no algorithmic feed, no ads, no tracking, no analytics in the
+  in-house feed; another add-on may offer likes or feeds, opt-in (*amended 2026-10-07,
+  openness round*).
 - **Federation:** ActivityPub (W3C) is public by default, deletion is best-effort, and it
   needs a server per group. Reference only; a candidate later for **public** club pages.
 
@@ -392,14 +410,14 @@ ADR-0036; nor are raw captures or Decode evidence).
 |---|---|---|---|---|
 | `presence` | online, driving, parked, "in a ride" | yes | on | any |
 | `vehicle_card` | make, model, year, nickname, photo (EXIF stripped); plate hidden unless ticked | no | basic · with plate | any |
-| `location` | position and traces | yes | none · coarse · place · precise · live | precise and live **≤ 24 h, always**; others may be indefinite |
+| `location` | position and traces | yes | none · coarse · place · precise · live | precise and live **≤ 24 h by default**; the owner may grant longer or standing sharing with a warning (§14.5); others may be indefinite |
 | `live` | live signals from the VSS stream | yes | on (a signal subset may be named) | any |
 | `trips` | trip summaries, stats, records; full recordings and replay | no | summary · full | any; traces follow `location` |
 | `faults` | fault codes, freeze frames, readiness | no | on | any |
 | `notes` | notes the author marked shareable (private notes are never a class) | no | on | any |
 | `maintenance` | service records, reminders, fuel; costs at the top level (Maintenance & Garage) | no | history · with costs | any; "for a buyer" preset has no locations |
 | `video` | live view of one named camera, granted per camera (`video:<camera>`); a **camera grant** is this class at per-camera granularity (Cameras add-on) | yes | live only (no recording, no scrub-back) | default "this ride" or 1 h; interior never indefinite and needs occupant consent at the head unit; "being viewed by N" badge; every view audited |
-| `audio` | cabin audio, voice notes, camera audio (off by default; a camera grant never implies it) | — | — | `max_audience: me` (ADR-0010); call audio is a Social call, consented per call, not a share |
+| `audio` | cabin audio, voice notes, camera audio (off by default; a camera grant never implies it) | — | — | `max_audience: me` by default (ADR-0010); a per-share grant is allowed when every occupant consents at the head unit (*amended 2026-10-07, openness round*); call audio is a Social call, consented per call, not a share |
 
 **Presets** map the old words: `view` = vehicle_card + live + faults; `view+logs` = that + trips
 (full); location levels = `location` at that detail; a token's `data` scope is a list of
@@ -426,7 +444,8 @@ would be its own class.
 ### 14.3 Ghost mode
 
 - **Default on** for every new user, and for every class an add-on registers when it is
-  installed. A grant made while ghosted exists but sends nothing that ghost hides.
+  installed. *Amended 2026-10-07 (openness round):* at setup a user may choose **visible to
+  household by default** instead; add-on classes still start in ghost. A grant made while ghosted exists but sends nothing that ghost hides.
 - **One master toggle** per user. Going ghost is one tap, anywhere, always allowed, and ends
   every live share, live ride position, camera grant and mesh position at once. Becoming
   visible offers **1 h · 24 h · until I go ghost**, and first shows a one-screen summary of
@@ -459,8 +478,11 @@ visible(viewer, vid, class) =
 
 - **Location ladder:** none · coarse (about ±3 km) · place (town or a named place) · precise ·
   live (precise, streamed). Privacy zones trim trip ends at saved places at every level.
-- **Precise and live always expire within 24 h** (timer, arrival, trip or ride end). Renewing
-  is a new act by the data owner; nothing auto-renews.
+- **Precise and live expire within 24 h by default** (timer, arrival, trip or ride end).
+  Renewing is a new act by the data owner. *Amended 2026-10-07 (openness round):* the data
+  owner may instead grant a longer window or **standing sharing** (for example to family), after
+  a warning that names who will see their position and until when; it shows in the ghost
+  summary and ends on ghost or revoke.
 - **Nobody can raise another person's precision**: not the device owner, a group admin or a
   ride leader. A group admin manages members, never members' grants.
 - **The one exception is my own SOS or crash alert**, from my own device, to my **safety
@@ -560,7 +582,9 @@ All are core shell (ADR-0042). Today none exists except the Basic Auth prompt.
 Out of P1–P4. Later (P5 at the earliest), an optional **Ostler Cloud OIDC broker**
 (authorisation code with PKCE, a pairwise subject per device) that **links** a Google, Apple
 or Facebook identity to an existing local user, as a convenience on a new phone; the local
-passkey or password always works offline; never the only credential, never friend discovery.
+passkey or password always works offline; never friend discovery. *Amended 2026-10-07
+(openness round):* for a cloud-only user (no local device) social login may be the primary
+credential, with a recovery passkey offered.
 Beside it, a **generic OIDC client** (issuer, client id, secret) for self-hosters (Pocket ID,
 Authentik, Tailscale's tsidp). Never Facebook first; Apple only with an iOS companion.
 
@@ -702,8 +726,9 @@ Telemetry as grants; L3 Full log and L4 Diagnostics bundle as hand-overs).
   never live and never a position "now".
 - `max_window` for `route` is **null** (may be indefinite): the 24 h cap stays for `precise`
   and `live` only, which are present-tense or unprocessed.
-- `route` reaches `public` only by an **explicit publish act** at least **24 h after the trip
-  ended** (ADR-0043 §3); a preset never includes it.
+- `route` reaches `public` only by an **explicit publish act**, by default at least **24 h
+  after the trip ended** (ADR-0043 §3); the owner may set the delay from 0 to 24 h (*amended
+  2026-10-07, openness round*); a preset never includes it.
 - `trips` traces follow `location` as before; a `trips` grant at `summary` with `location`
   `route` is the L1 level.
 
@@ -713,7 +738,10 @@ Telemetry as grants; L3 Full log and L4 Diagnostics bundle as hand-overs).
   only for `trips` at L0–L1 (`summary`, `location` at most `route`), `faults` and
   `vehicle_card` (plate only if ticked). **Refused** for `live` location beyond a ride's
   window, `presence`, `live`, `trips` `full` (so L2 never goes to `link`), `notes`,
-  `maintenance`, `audio`, `video` and any raw log. Every `link` grant has an expiry.
+  `maintenance`, `audio`, `video` and any raw log **by default**. *Amended 2026-10-07 (openness
+  round):* the owner may share their own `trips` `full` (L2) or `live` telemetry by `link`
+  with an expiry and a warning that anyone holding the link sees it; `presence`, `audio`,
+  `video` and raw logs stay refused. Every `link` grant has an expiry.
 - **`public`** — brought forward from "after P4" for **Ostler Community** (`ostler-app-hub`), by
   **explicit publish only**: never a default, never through a preset, never by an add-on on
   its own. Allowed for `trips` L0–L1 and `vehicle_card`; L2 Telemetry goes to a person, a group
@@ -834,3 +862,10 @@ below is the decision; each alternative was not chosen.
   §15.5a approved (hub identity hub-owned; later the hub's identity is the one Ostler account
   `ostler-cloud` trusts); every §15.7 decision answered as recommended (alternatives not
   chosen); the trip-sharing spec and ADR-0043 cited as approved and accepted.
+- 2026-10-07 — v0.9: amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): own-data privacy floors
+  become defaults with warnings (location beyond 24 h or standing, visible-to-household at
+  setup, consented cabin audio shares, VIN in a named L4 bundle, telemetry by `link`, public
+  route delay 0–24 h, social login as a primary credential for cloud-only users); the
+  in-house feed stays minimal while add-ons may add feeds. Rules protecting other people
+  unchanged.

@@ -2,14 +2,25 @@
 title: "Store — the system app that finds, installs and updates apps, integrations, widget packs, themes, icons, wallpapers, dashboards and sound presets: signed catalogue, publisher keys and review, Works with Ostler, bundled offline catalogue, sideloading — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0017-open-standards-first.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-community-hub-design.md, references/research/ha_architecture_addons.md, references/research/ha_companion_community.md, references/research/ha_integrations_dashboards.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 28–35 and 62), v0.2; every decision answered as recommended. The Store is a system app (ADR-0046), like Google Play on Android: home, categories, search, detail pages, an install sheet that shows permissions and outbound hosts in plain words, updates, a library and publisher pages; Parked only on driver-facing displays. It hosts every object kind of the app UI model. The catalogue is static, signed data in TUF-style roles with Ed25519 keys (root, targets, snapshot, timestamp), with delegated publisher keys; packages are pinned by hash and fetched from their repos' releases. Review levels: System, First party, Verified publisher, Community, Sideloaded; revocation disables an item with a notice. "Works with Ostler" badges certify hardware, apps and integrations against written, testable criteria, separate from review. A bundled offline catalogue ships in the OS image and the phone binary, so flavours install with no internet; browsing online is an opt-in outbound path that needs its own ADR. Sideloading is for developers in service mode, on web hosts and the Brain; the phone installs only data objects and declarative apps. No ratings, keeping the hub's no-votes rule, and no paid items in v1 (owner decisions). Updates, privacy, phases S0–S4, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 28–35 and 62), v0.2; every decision answered as recommended. The Store is a system app (ADR-0046), like Google Play on Android: home, categories, search, detail pages, an install sheet that shows permissions and outbound hosts in plain words, updates, a library and publisher pages; Parked only on driver-facing displays. It hosts every object kind of the app UI model. The catalogue is static, signed data in TUF-style roles with Ed25519 keys (root, targets, snapshot, timestamp), with delegated publisher keys; packages are pinned by hash and fetched from their repos' releases. Review levels: System, First party, Verified publisher, Community, Sideloaded; revocation disables an item with a notice. "Works with Ostler" badges certify hardware, apps and integrations against written, testable criteria, separate from review. A bundled offline catalogue ships in the OS image and the phone binary, so flavours install with no internet; browsing online is an opt-in outbound path that needs its own ADR. Sideloading is for developers in service mode, on web hosts and the Brain; the phone installs only data objects and declarative apps. No ratings, keeping the hub's no-votes rule, and no paid items in v1 (owner decisions). Updates, privacy, phases S0–S4, tests and decisions. Amended 2026-10-07 (openness round, ADR-0047): the owner may disable the Store, previews may be labelled synthetic fixtures, uncertified projection and unofficial streaming clients may be sideloaded as community items, and opt-in ratings and paid data objects on web hosts are allowed; safety, decoding and input are never sold.
 ---
 
 # Store — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** the owner may disable the Store
+> (installs then come only by sideloading, §3); previews may be labelled synthetic fixtures
+> (§6.1); sideloading may carry community items the catalogue does not list, such as
+> uncertified projection receivers and unofficial streaming clients, at the owner's risk
+> (§8); opt-in ratings and short reviews from signed-in Community accounts and paid data
+> objects on web hosts are allowed (§11). Safety, decoding and input are never sold; the
+> validator, permissions sheet, gate, Moving rules and install refusal while Moving are
+> unchanged.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
 items 28–35 and 62), v0.2. Nothing is built before its UX briefs are approved
@@ -43,7 +54,9 @@ votes; advertising; items that define car actions.
 
 ## 3. The Store app
 
-The Store is system UI (ADR-0046 §1): it cannot be uninstalled. On a driver-facing display it
+The Store is system UI (ADR-0046 §1): it cannot be uninstalled, but the owner may **disable**
+it (Settings → Apps → Store; *amended 2026-10-07, openness round*), after which installs and
+updates come only by sideloading and the bundled catalogue stays on disk. On a driver-facing display it
 is **Parked only**, like the rest of the drawer's non-driving apps.
 
 | Screen | Content |
@@ -108,7 +121,8 @@ Every object kind of the [app UI model §9](2026-10-07-app-ui-model-design.md):
 | **Sideloaded** | a developer, outside the catalogue | nothing | §8 |
 
 **Automated checks** for every item: the manifest validates (app UI model §10); data objects
-carry no code, URLs or scripts; widgets declare `moving`; previews are recorded fixtures;
+carry no code, URLs or scripts; widgets declare `moving`; previews are recorded fixtures or synthetic ones labelled
+"Sample data" (*amended 2026-10-07, openness round*);
 declared network hosts match the hosts the bundle calls (a static scan); no item defines a
 car action, tier or category; the licence is compatible with the host it ships to (ADR-0012;
 app-model Q4 stays open for iframe apps).
@@ -150,6 +164,10 @@ Badges are listed on the detail page with the version tested. A fee is an owner 
   mode").
 - Sideloading never bypasses the manifest validator, the permissions sheet, the gate or the
   Moving rules.
+- **Community items outside the catalogue** (*amended 2026-10-07, openness round*): an
+  uncertified projection receiver or an unofficial client for a commercial streaming service
+  may be sideloaded as a community item, with a warning that it is uncertified or may breach
+  the service's terms; the catalogue still does not list them ([head-unit apps](2026-10-07-head-unit-apps-design.md) §5, §11).
 
 ## 9. Updates
 
@@ -171,6 +189,13 @@ Badges are listed on the detail page with the version tested. A fee is an owner 
   not part of the Store.
 
 ## 11. Ratings and paid items (owner decisions)
+
+*Amended 2026-10-07 (openness round): the alternatives below are adopted as options. Ratings
+and short reviews from signed-in Community accounts are an **opt-in** Store feature (off by
+default per device; the official hub's own no-votes policy is its operator choice), and
+publishers may sell **paid data objects** (themes, wallpapers, icon packs) through an external
+checkout on web hosts. Safety, decoding and input are never sold. The original
+recommendations follow as history.*
 
 - **Ratings.** The Community hub has **no points, ranks or votes**. Recommend: **no stars and
   no review text** in the Store; show the review level, Works with badges, last update, the
@@ -234,3 +259,8 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
 - 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
   list items 28–35 and 62): every decision answered as recommended (alternatives not chosen).
+- 2026-10-07: v0.3, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): the Store can be
+  disabled; labelled synthetic previews; sideloaded community projection and streaming
+  clients; opt-in ratings and reviews; paid data objects on web hosts (decisions 6–7's
+  alternatives adopted as options).

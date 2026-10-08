@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part G): uninstall and the developer view"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, decisions/adr-0033-action-categories-and-approvals.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   shows its manifest as read-only JSON with the registry's checks beside it, its
   contributions (slots, widgets, actions with category and tier, views with driving rules),
   a Reload button and a live log, in service mode and Parked only. It ends with the area's
-  open questions.
+  open questions. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # App framework brief, part G: uninstall and developer view
@@ -125,7 +125,8 @@ Rules and terms: [part A](90-appframe-a.md).
    cyan; an icon pack ships its own glyphs mapped to Material Symbols names, safety icons
    fixed.
 8. **Decided (item 19):** wallpapers never sit behind a Moving section or a Drive page on a
-   driver-facing display; those draw on plain `bg`.
+   driver-facing display; those draw on plain `bg`. *Superseded (openness round): the theme
+   decides, under the Drive-mode render check.*
 9. **Uninstall:** "Keep my data on the Brain" on or off by default?
 10. **Owner names** for integrations in the screen index: the D2 pack and the LubeLogger
     bridge have no `app:` name, so their pages are owned by `os`; add names?

@@ -2,14 +2,19 @@
 title: "Session logbook — always-on recording, GPS, and a Logs tab with map replay — design"
 area: specs
 status: stable
-version: 1.0
-updated: 2026-10-05
+version: 1.1
+updated: 2026-10-07
 depends_on: [specs/2026-10-05-ui-overhaul-design.md, decisions/adr-0009-session-logbook-and-location.md, specs/2026-10-02-gps-tracker-alarm-design.md]
 summary: >
-  Every connected period is recorded on the device as a session (RaceCapture-style CSV + meta.json), GPS comes from a USB NMEA receiver (mock/replay sources for development), and a new Logs tab browses sessions and replays them on a MapLibre map with a channel-coloured trace, synced chart cursor and a bottom transport bar. Exports VBO/GPX/CSV. Also: header label + % mapped pill, connection notice on every module page, 60 s re-prompt.
+  Every connected period is recorded on the device as a session (RaceCapture-style CSV + meta.json), GPS comes from a USB NMEA receiver (mock/replay sources for development), and a new Logs tab browses sessions and replays them on a MapLibre map with a channel-coloured trace, synced chart cursor and a bottom transport bar. Exports VBO/GPX/CSV. Also: header label + % mapped pill, connection notice on every module page, 60 s re-prompt. Amended 2026-10-07 (openness round, ADR-0047): always-on recording is the default and the owner may Pause it or turn it Off.
 ---
 
 # Session logbook — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../decisions/adr-0047-openness-round.md)):** always-on is the
+> default; the owner may Pause recording or turn it Off (ADR-0009 amendment;
+> [UI spec](2026-10-06-ui-architecture-design.md) §12.2).
 
 ## Context
 
@@ -81,7 +86,8 @@ Each session is a directory `logs/sessions/<id>/`, where `<id>` is `YYYYMMDDTHHM
 - **End:**
   - after 300 s (`IDLE_S`) with no `connected` poll **and** GPS speed below 3 km/h (or no GPS), or
   - when the server shuts down.
-- **Always on.** There is no setting in v1. Manual "Log CSV" keeps working on its own.
+- **Always on by default.** The owner may Pause or turn recording Off (amended 2026-10-07,
+  openness round; was "no setting in v1"). Manual "Log CSV" keeps working on its own.
 - **Never recorded:** the VIN or identity reads. Only `signals`, `faults`, `module` and GPS go into a session.
 - **Rotation:** when free space under `logs/` falls below 200 MB, the oldest non-synthetic sessions are deleted.
 
@@ -196,3 +202,5 @@ Each session is a directory `logs/sessions/<id>/`, where `<id>` is `YYYYMMDDTHHM
 ## Changelog
 
 - 2026-10-05: v1.0, approved.
+- 2026-10-07: v1.1, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): always-on becomes the default, with Pause and Off.

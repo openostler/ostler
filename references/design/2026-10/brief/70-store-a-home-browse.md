@@ -2,7 +2,7 @@
 title: "Designer brief: Store (part A): rules, item kinds, Store home, categories and search"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, references/research/ha_architecture_addons.md, references/research/ha_integrations_dashboards.md, references/research/ha_companion_community.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   dashboard presets, gauge styles and sound and EQ presets. This part gives the shared rules
   (Parked-only browsing on head units, no installs while Moving, owner-only installs on local
   links, what the native phone app may install, the bundled catalogue, no ratings), the item kinds table, the main install flow as a step list, and the blocks for the
-  Store home, a category page and search with filters (vehicle, kind, works offline, open source).
+  Store home, a category page and search with filters (vehicle, kind, works offline, open source). Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Store brief, part A: rules, item kinds, home, categories, search
@@ -81,8 +81,8 @@ Process and the constraints checklist: [design hand-off README][readme].
    still decides ([ADR-0033][adr-33]); the Store never shows an item as able to "control"
    the car, only "may ask to" with the action's category.
 6. **Safety stays with the OS.** No item can remove the fault telltale, alarm alerts, the
-   Moving templates or Park to edit ([Drive modes §8.1][dm-8.1]). Themes must pass the
-   contrast checks and have no glow on head units at night ([visual §3][vds-3]); wallpapers
+   Moving templates or Park to edit ([Drive modes §8.1][dm-8.1]). Themes pass the
+   Drive-mode render check; glow is the theme's choice ([visual §3][vds-3], visual §13); wallpapers
    are still images only (no video or animation on driver-facing displays); icon packs map
    to Material Symbols names and never change safety icons (item 49; [visual §6][vds-6]).
 7. **Honest data.** Every item lists its data classes in words from the registry

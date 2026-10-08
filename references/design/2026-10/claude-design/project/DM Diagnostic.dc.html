@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">B</span><span style="font-size:22px;font-weight:800;color:#0e1626">Diagnostic</span><span style="font-size:14px;color:#3b4556">Reference · tiles template · 6 tiles · Moving</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · 1024×600</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Diagnostic HU-7" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;height:28px"><span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;white-space:nowrap">{{ t.label }}</span><sc-if value="{{ t.alarm }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;letter-spacing:.04em;color:#ef6a7d">{{ t.word }}</span></sc-if></div>
+<sc-if value="{{ t.isGauge }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:136px;margin-top:6px"><svg viewBox="0 0 220 100" style="width:100%;height:126px;display:block"><path d="{{ t.gTrack }}" fill="none" stroke="#243049" stroke-width="14" stroke-linecap="round"></path><path d="{{ t.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="14"></path><path d="{{ t.gVal }}" fill="none" stroke="{{ t.color }}" stroke-width="5" stroke-linecap="round"></path><circle cx="{{ t.gx }}" cy="{{ t.gy }}" r="9" fill="{{ t.color }}" stroke="#121a2c" stroke-width="4"></circle></svg><div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:baseline;gap:6px"><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:26px;color:#b0bacb">{{ t.unit }}</span></div></div></sc-if>
+<sc-if value="{{ t.isFlat }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:baseline;gap:6px;margin-top:8px;white-space:nowrap"><span style="font-size:64px;font-weight:700;line-height:68px;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:26px;color:#b0bacb">{{ t.unit }}</span></div></sc-if>
+<sc-if value="{{ t.isBar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:24px;margin-top:10px"><div style="position:absolute;left:0;right:0;top:7px;height:10px;border-radius:5px;background:#243049"></div><div style="position:absolute;top:7px;height:10px;background:#3b4a6a;left:{{ t.bandL }};width:{{ t.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:24px;border-radius:3px;margin-left:-3px;background:{{ t.color }};left:{{ t.pos }}"></div></div><span style="font-size:24px;color:#8e9ab0;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.normal }}</span></sc-if>
+<sc-if value="{{ t.isNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;color:#b0bacb;margin-top:8px">{{ t.sub }}</span></sc-if>
+<div style="flex:1;min-height:4px"></div>
+<sc-if value="{{ t.hasSpark }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:34px;display:block"><path d="{{ t.spark }}" fill="none" stroke="{{ t.sparkColor }}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · 800×480</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Diagnostic HU-5" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu5" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,48px"></dc-import>
+<div style="flex:1;min-height:0;padding:6px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:12px 16px;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;line-height:28px;white-space:nowrap">{{ t.label }}</span>
+<sc-if value="{{ t.isGauge }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:104px;margin-top:2px"><svg viewBox="0 0 220 100" style="width:100%;height:100px;display:block"><path d="{{ t.gTrack }}" fill="none" stroke="#243049" stroke-width="14" stroke-linecap="round"></path><path d="{{ t.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="14"></path><path d="{{ t.gVal }}" fill="none" stroke="{{ t.color }}" stroke-width="5" stroke-linecap="round"></path><circle cx="{{ t.gx }}" cy="{{ t.gy }}" r="9" fill="{{ t.color }}" stroke="#121a2c" stroke-width="4"></circle></svg><div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:baseline;gap:6px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span></div></div></sc-if>
+<sc-if value="{{ t.isFlat }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;white-space:nowrap"><span style="font-size:56px;font-weight:700;line-height:60px;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span><sc-if value="{{ t.alarm }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:#ef6a7d;letter-spacing:.04em;margin-left:4px">{{ t.word }}</span></sc-if></div></sc-if>
+<sc-if value="{{ t.isBar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:22px;margin-top:10px"><div style="position:absolute;left:0;right:0;top:6px;height:10px;border-radius:5px;background:#243049"></div><div style="position:absolute;top:6px;height:10px;background:#3b4a6a;left:{{ t.bandL }};width:{{ t.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:22px;border-radius:3px;margin-left:-3px;background:{{ t.color }};left:{{ t.pos }}"></div></div></sc-if>
+<sc-if value="{{ t.isNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;color:#b0bacb;margin-top:8px;white-space:nowrap">{{ t.subS }}</span></sc-if>
+<div style="flex:1;min-height:0"></div>
+<sc-if value="{{ t.hasSpark }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:100%;height:26px;display:block"><path d="{{ t.spark }}" fill="none" stroke="{{ t.sparkColor }}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Moving · 393×852</div>
+<div data-screen-label="Diagnostic phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">08:58</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<dc-import name="Drive Strip" size="phone" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,112px"></dc-import>
+<div style="flex:1;min-height:0;padding:0 12px 34px;display:grid;grid-template-rows:repeat(6,minmax(0,1fr));gap:8px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+<div style="background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;padding:8px 14px 8px 16px;display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;min-height:0">
+<div style="display:flex;flex-direction:column;min-width:0">
+<span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb;line-height:1.1;white-space:nowrap">{{ t.label }}</span>
+<div style="display:flex;align-items:baseline;gap:6px;white-space:nowrap"><span style="font-size:44px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums;color:{{ t.vcolor }}">{{ t.val }}</span><span style="font-size:24px;color:#b0bacb">{{ t.unit }}</span><sc-if value="{{ t.alarm }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;font-weight:800;color:#ef6a7d;letter-spacing:.04em">{{ t.word }}</span></sc-if></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;justify-content:center">
+<sc-if value="{{ t.isGauge }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 220 100" style="width:128px;height:58px;display:block"><path d="{{ t.gTrack }}" fill="none" stroke="#243049" stroke-width="18" stroke-linecap="round"></path><path d="{{ t.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="18"></path><path d="{{ t.gVal }}" fill="none" stroke="{{ t.color }}" stroke-width="7" stroke-linecap="round"></path><circle cx="{{ t.gx }}" cy="{{ t.gy }}" r="11" fill="{{ t.color }}" stroke="#121a2c" stroke-width="5"></circle></svg></sc-if>
+<sc-if value="{{ t.isBar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:22px"><div style="position:absolute;left:0;right:0;top:6px;height:10px;border-radius:5px;background:#243049"></div><div style="position:absolute;top:6px;height:10px;background:#3b4a6a;left:{{ t.bandL }};width:{{ t.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:22px;border-radius:3px;margin-left:-3px;background:{{ t.color }};left:{{ t.pos }}"></div></div></sc-if>
+<sc-if value="{{ t.isNone }}" hint-placeholder-val="{{ false }}"><span style="font-size:24px;color:#b0bacb;white-space:nowrap;text-align:right">{{ t.subP }}</span></sc-if>
+<sc-if value="{{ t.hasSpark }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 100 24" preserveAspectRatio="none" style="width:128px;height:20px;display:block"><path d="{{ t.spark }}" fill="none" stroke="{{ t.sparkColor }}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const GA=t=>{const a=(155-130*t)*Math.PI/180;return [110+118*Math.cos(a),130-118*Math.sin(a)]};
+const arc=(t0,t1)=>{const p=GA(t0),q=GA(Math.max(t0+0.0001,t1));return `M${p[0].toFixed(1)} ${p[1].toFixed(1)} A118 118 0 0 1 ${q[0].toFixed(1)} ${q[1].toFixed(1)}`};
+const spark=h=>{const mn=Math.min(...h),mx=Math.max(...h),r=(mx-mn)||1;return h.map((v,i)=>`${i?'L':'M'}${(i/(h.length-1)*100).toFixed(1)} ${(21-(v-mn)/r*18).toFixed(1)}`).join(' ')};
+const walk=(n,b,a)=>{const o=[];let v=b;for(let i=0;i<n;i++){v+=(Math.random()-.5)*a;v=b+(v-b)*.85;o.push(v)}return o};
+const rn=()=>Math.random()-.5,cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+class Component extends DCLogic {
+ state={L:{boost:.99,cool:88,batt:14.1,iat:120,fuel:9.8,trip:36.9},H:{boost:walk(30,.95,.2),cool:walk(30,88,1),batt:walk(30,14.1,.08),iat:Array.from({length:30},(_,i)=>70+i*1.7),fuel:walk(30,9.8,1.4)}};
+ componentDidMount(){this.t=setInterval(()=>this.setState(s=>{const L=s.L;const n={boost:cl(L.boost+rn()*.08,.6,1.35),cool:cl(L.cool+rn()*.4,86,90),batt:cl(L.batt+rn()*.04,13.95,14.25),iat:cl(L.iat+rn()*1.2,118,123),fuel:cl(L.fuel+rn()*.8,7,13),trip:Math.min(37.4,L.trip+.01)};const H={};Object.keys(s.H).forEach(k=>H[k]=[...s.H[k].slice(1),n[k]]);return {L:n,H}}),1000)}
+ componentWillUnmount(){clearInterval(this.t)}
+ renderVals(){
+  const {L,H}=this.state;
+  const mk=o=>{const t=cl((o.v-o.min)/(o.max-o.min),0,1),tl=(o.lo-o.min)/(o.max-o.min),th=Math.min(1,(o.hi-o.min)/(o.max-o.min));const out=o.v<o.lo?'LOW':o.v>o.hi?'HIGH':null;const color=out?'#ef6a7d':'#dfe6f2';const g=GA(t);
+   return {label:o.label,val:o.v.toFixed(o.dec),unit:o.unit,alarm:!!out,word:out||'',color,vcolor:out?'#ef6a7d':'#eef2f9',bg:out?'#2a1a2a':'#121a2c',ring:out?'inset 0 0 0 2px #ef6a7d':'none',
+    isGauge:o.kind==='gauge',isBar:o.kind==='bar',isNone:o.kind==='none',isFlat:o.kind!=='gauge',hasSpark:o.kind!=='none',sub:o.sub||'',subS:o.subS||'',subP:o.subP||'',normal:o.normal||'',
+    gTrack:arc(0,1),gBand:arc(Math.max(0,tl),th),gVal:arc(0,t),gx:g[0].toFixed(1),gy:g[1].toFixed(1),bandL:(tl*100)+'%',bandW:((th-tl)*100)+'%',pos:(t*100)+'%',spark:o.h?spark(o.h):'',sparkColor:out?'#ef6a7d':'#8e9ab0'}};
+  const tiles=[
+   mk({label:'BOOST',v:L.boost,dec:2,unit:'bar',min:0,max:1.6,lo:0,hi:1.4,kind:'gauge',h:H.boost}),
+   mk({label:'COOLANT',v:L.cool,dec:0,unit:'°C',min:0,max:130,lo:70,hi:105,kind:'gauge',h:H.cool}),
+   mk({label:'BATTERY',v:L.batt,dec:1,unit:'V',min:11,max:15.5,lo:12.4,hi:14.8,kind:'bar',h:H.batt,normal:'normal 12.4–14.8 V'}),
+   mk({label:'INTAKE AIR',v:L.iat,dec:0,unit:'°C',min:0,max:140,lo:0,hi:60,kind:'bar',h:H.iat,normal:'normal below 60 °C'}),
+   mk({label:'FUEL',v:L.fuel,dec:1,unit:'L/100 km',min:0,max:25,lo:6,hi:14,kind:'bar',h:H.fuel,normal:'typical 6–14'}),
+   mk({label:'TRIP',v:L.trip,dec:0,unit:'km',min:0,max:1,lo:0,hi:1e9,kind:'none',sub:'48 min · avg 46 km/h',subS:'48 min · 46 avg',subP:'48 min'})];
+  tiles[4].unitS='L/100';
+  return {tiles,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

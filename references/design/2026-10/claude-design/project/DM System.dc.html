@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="drive-maps.js"></script>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">A</span><span style="font-size:22px;font-weight:800;color:#0e1626">Switcher, passenger view, settings</span><span style="font-size:14px;color:#3b4556">Switcher = short list (6 rows) · one tap while Moving · editing locked until Parked · tap a row to switch</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · switcher open</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Switcher moving" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="{{ cur }}" open="{{ true }}" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative">
+<div style="position:absolute;inset:0;padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.28"><div style="background:#121a2c;border-radius:24px"></div><div style="grid-row:1 / span 2;background:#121a2c;border-radius:28px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;right:116px;top:4px;width:440px;background:#243049;border-radius:28px;padding:8px;display:flex;flex-direction:column;gap:2px;box-shadow:0 24px 60px rgba(0,0,0,.6)">
+<sc-for list="{{ modes }}" as="m" hint-placeholder-count="6"><div onClick="{{ m.pick }}" style="cursor:pointer;height:76px;border-radius:20px;background:{{ m.bg }};color:{{ m.c }};display:flex;align-items:center;gap:16px;padding:0 18px"><span class="material-symbols-rounded" style="font-size:34px">{{ m.icon }}</span><span style="flex:1;font-size:28px;font-weight:700">{{ m.name }}</span><sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:32px">check</span></sc-if></div></sc-for>
+<div style="height:64px;border-radius:20px;display:flex;align-items:center;gap:14px;padding:0 18px;color:#8e9ab0;font-size:24px;font-weight:600;margin-top:2px"><span class="material-symbols-rounded" style="font-size:30px">lock</span>Edit (park to edit)</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · switcher with editing</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Switcher parked" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="{{ cur }}" open="{{ true }}" moving="{{ false }}" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative">
+<div style="position:absolute;inset:0;padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1.9fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.28"><div style="background:#121a2c;border-radius:24px"></div><div style="grid-row:1 / span 2;background:#121a2c;border-radius:28px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div>
+<div style="position:absolute;right:100px;top:4px;width:440px;background:#243049;border-radius:28px;padding:8px;display:flex;flex-direction:column;gap:2px;box-shadow:0 24px 60px rgba(0,0,0,.6)">
+<sc-for list="{{ modes }}" as="m" hint-placeholder-count="6"><div onClick="{{ m.pick }}" style="cursor:pointer;height:68px;border-radius:20px;background:{{ m.bg }};color:{{ m.c }};display:flex;align-items:center;gap:14px;padding:0 18px"><span class="material-symbols-rounded" style="font-size:28px">{{ m.icon }}</span><span style="flex:1;font-size:22px;font-weight:700">{{ m.name }}</span><sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:28px">check</span></sc-if></div></sc-for>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px"><div style="height:68px;border-radius:20px;background:#1a2439;color:#22a6e0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:20px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px">edit</span>Edit layouts</div><div style="height:68px;border-radius:20px;background:#1a2439;color:#22a6e0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:20px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px">add</span>Add layout</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · passenger prompt (once per trip)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Passenger prompt" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="map" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ m7.url }}" hint-placeholder-val="{{ false }}"><img src="{{ m7.url }}" alt="" style="position:absolute;left:0;top:0;width:1024px;height:544px;display:block"></sc-if>
+<div style="position:absolute;left:{{ m7.car.x }}px;top:{{ m7.car.y }}px;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:28px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ m7.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:12px;top:12px;bottom:12px;width:480px;background:#243049;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="width:64px;height:64px;border-radius:32px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:36px">airline_seat_recline_normal</span></div>
+<span style="font-size:36px;font-weight:700;line-height:1.1">Passenger on board?</span>
+<span style="font-size:24px;line-height:1.35;color:#b0bacb;text-wrap:pretty">Unlocks route search, stops and trip details on this screen for this trip only. Anything else opens on the phone.</span>
+<div style="flex:1"></div>
+<div style="height:80px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:800"><span class="material-symbols-rounded" style="font-size:32px">person</span>I'm a passenger</div>
+<div style="height:80px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700">Not now</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · passenger view → “Open on phone”</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Open on phone" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="map" passenger="{{ true }}" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ m7.url }}" hint-placeholder-val="{{ false }}"><img src="{{ m7.url }}" alt="" style="position:absolute;left:0;top:0;width:1024px;height:544px;display:block"></sc-if>
+<div style="position:absolute;left:{{ m7.car.x }}px;top:{{ m7.car.y }}px;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:28px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ m7.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:12px;top:12px;bottom:12px;width:480px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#121a2c;border-radius:24px;padding:8px;display:flex;flex-direction:column;gap:4px">
+<div style="height:76px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:14px;padding:0 18px;font-size:26px;font-weight:700"><span class="material-symbols-rounded" style="font-size:32px">search</span>Search along route</div>
+<div style="height:76px;border-radius:18px;display:flex;align-items:center;gap:14px;padding:0 18px;font-size:26px;font-weight:700;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:32px">local_gas_station</span>Fuel stops</div>
+<div style="height:76px;border-radius:18px;display:flex;align-items:center;gap:14px;padding:0 18px;font-size:26px;font-weight:700;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:32px">chat</span>Messages</div>
+</div>
+<div style="flex:1;background:#243049;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:14px"><span class="material-symbols-rounded" style="font-size:40px">smartphone</span><span style="font-size:32px;font-weight:700">Open on phone</span></div>
+<span style="font-size:24px;line-height:1.35;color:#b0bacb;text-wrap:pretty">Messages aren't driving-related, so they stay off this screen while moving.</span>
+<div style="flex:1"></div>
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:10px"><div style="height:80px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:8px;font-size:26px;font-weight:800"><span class="material-symbols-rounded" style="font-size:30px">send_to_mobile</span>Send to phone</div><div style="height:80px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700">Back</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked only · More › Drive modes</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive mode settings" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" volts="12.6" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex">
+<div style="flex:1;min-width:0;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;min-height:0">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">arrow_back</span></div><span style="font-size:28px;font-weight:700">Drive modes</span><span style="font-size:18px;font-weight:700;color:#b0bacb;background:#1a2439;padding:6px 12px;border-radius:12px;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:20px">local_parking</span>Parked only</span></div>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px">
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:6px;min-height:0;overflow-y:auto;scrollbar-width:none">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 4px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">ORDER &amp; SWITCHER</span><span style="font-size:18px;color:#b0bacb">6 of 6 shown</span></div>
+<sc-for list="{{ order }}" as="o" hint-placeholder-count="7"><div style="min-height:76px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:0 14px 0 8px;flex:none"><span class="material-symbols-rounded" style="font-size:28px;color:#8e9ab0">drag_indicator</span><span class="material-symbols-rounded" style="font-size:28px;color:#b0bacb">{{ o.icon }}</span><span style="flex:1;font-size:20px;font-weight:700">{{ o.name }}</span><div style="width:56px;height:32px;border-radius:16px;background:{{ o.track }};position:relative"><div style="position:absolute;top:4px;left:{{ o.knob }}px;width:24px;height:24px;border-radius:12px;background:{{ o.kc }}"></div></div></div></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;padding:0 4px 4px">DEFAULT MODE</span>
+<sc-for list="{{ defaults }}" as="d" hint-placeholder-count="4"><div style="height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 4px"><div style="display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700">{{ d.k }}</span><span style="font-size:18px;color:#8e9ab0">{{ d.s }}</span></div><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 10px 0 16px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">{{ d.icon }}</span>{{ d.v }}<span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">expand_more</span></div></div></sc-for>
+</div>
+<div style="flex:1;background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;padding:0 4px">IMPORT COMMUNITY LAYOUT</span>
+<div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div style="border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700;min-height:76px"><span class="material-symbols-rounded" style="font-size:30px;color:#22a6e0">file_open</span>From file</div>
+<div style="border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700;min-height:76px"><span class="material-symbols-rounded" style="font-size:30px;color:#22a6e0">qr_code_scanner</span>Scan QR</div>
+<div style="border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700;min-height:76px"><span class="material-symbols-rounded" style="font-size:30px;color:#22a6e0">travel_explore</span>Browse</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div style="width:96px;flex:none;background:#0d1424;display:flex;flex-direction:column;padding:8px;gap:4px">
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">home</span><span style="font-size:18px;font-weight:600">Home</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">stethoscope</span><span style="font-size:18px;font-weight:600">Diagnose</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">route</span><span style="font-size:18px;font-weight:600">Trips</span></div>
+<div style="flex:1;border-radius:20px;color:#b0bacb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px">shield</span><span style="font-size:18px;font-weight:600">Security</span></div>
+<div style="flex:1;border-radius:20px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span class="material-symbols-rounded" style="font-size:32px;font-variation-settings:'FILL' 1">more_horiz</span><span style="font-size:18px;font-weight:700">More</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const LIST=[['dash','speed','Dashboard'],['map','map','Map'],['convoy','groups','Convoy'],['split','vertical_split','Split'],['offroad','landslide','Off-road'],['minimal','dark_mode','Minimal']];
+const EMPTY={url:'',car:{x:-200,y:-200,rot:0}};
+class Component extends DCLogic {
+ state={cur:'dash',mp:{}};
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerMaps)return setTimeout(go,150);window.OstlerMaps.get('hu7').then(r=>{if(r&&!this.dead)this.setState(s=>({mp:{...s.mp,hu7:r}}))})};go();}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const cur=this.state.cur,r=this.state.mp.hu7;
+  const modes=LIST.map(([k,icon,name])=>({icon,name,on:k===cur,bg:k===cur?'rgba(34,166,224,.18)':'transparent',c:k===cur?'#22a6e0':'#eef2f9',pick:()=>this.setState({cur:k})}));
+  const order=[...LIST.map(l=>({icon:l[1],name:l[2],on:true})),{icon:'monitor_heart',name:'Diagnostic',on:false}].map(o=>({...o,track:o.on?'#22a6e0':'#243049',knob:o.on?28:4,kc:o.on?'#0a1020':'#8e9ab0'}));
+  const defaults=[{k:'HU-5',s:'800×480',icon:'monitor_heart',v:'Diagnostic'},{k:'HU-7',s:'1024×600',icon:'speed',v:'Dashboard'},{k:'HU-wide',s:'1920×720',icon:'vertical_split',v:'Split'},{k:'Phone',s:'mounted',icon:'dark_mode',v:'Minimal'}];
+  return {cur,modes,order,defaults,m7:r?{url:r.url,car:r.pts.car}:EMPTY,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

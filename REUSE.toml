@@ -187,3 +187,11 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = "ui/src/drive/presets/*.json"
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Claude Design bundle (references/design/2026-10/claude-design/README.md): the owner's
+# exported design project: the HTML/CSS/JS prototypes and the README. The design tool's
+# runtime, the transcript and the uploads are not in the repo.
+[[annotations]]
+path = "references/design/2026-10/claude-design/**"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

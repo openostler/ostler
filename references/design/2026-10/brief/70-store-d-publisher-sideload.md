@@ -2,7 +2,7 @@
 title: "Designer brief: Store (part D): publisher, report, catalogues and offline, developer sideload, open questions"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-community-hub-design.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0041-brain-ed25519-signing.md, references/research/ha_architecture_addons.md, references/research/ha_companion_community.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   the Store works offline, including refreshing from a file. Developer sideload installs an
   item from a file behind Developer mode, with a warning sheet that names what is unsigned.
   The file ends with the owner's decisions of 2026-10-07 on ratings, paid items, review
-  levels, the signing model, the online catalogue and the Store's owner.
+  levels, the signing model, the online catalogue and the Store's owner. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Store brief, part D: publisher, report, offline, sideload, questions
@@ -190,7 +190,8 @@ All seven were answered on 2026-10-07.
    `ostler-catalogue` repo that anyone can mirror ([Store §5][st-5], [§7][st-7]).
 6. **Decided (item 28):** the Store is a system app, owner `os`.
 7. **Decided (item 49):** icon packs are glyph sets mapped to Material Symbols names;
-   safety icons never change.
+   safety icons never change. *Amended (openness round): safety icons may be restyled under
+   the render check.*
 
 <!-- refs -->
 [adr-13]: ../../../../decisions/adr-0013-repo-split-and-vehicle-pack-contract.md

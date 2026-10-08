@@ -2,11 +2,11 @@
 title: "Design hand-off, October 2026 — how designs come in, how they are reviewed, and every screen to design"
 area: references
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/visual_design_direction.md]
 summary: >
-  The hand-off folder for the owner's one combined designer prompt (DMD round, October 2026). It says how designs arrive (claude.ai design artifact links read by the manager, plus exported PNG and HTML saved here as `<screen-id>/<layout-class>-<theme>.png` and `.html`, with optional state and variant suffixes), what is recorded per screen (link, date, designer prompt version, status awaiting · received · reviewed · matches-spec · differs, and each difference), and how each screen is reviewed against its spec section before the V2 component kit and V3 page work. It holds a designer prompt checklist of the hard constraints (Moving templates and their limits, minimum sizes, tokens only, one icon set, no glow on head units at night or in Drive mode, Park to edit, non-removable safety items, no message text while Moving, no video on driver-facing screens) with citations, and the full screen index: 127 screens and sheets across the shell, Home, Drive modes and their faces, alerts and calls, Trips and sharing, Places, Diagnose and the help flow, Decode lab, Vehicles & Map, Social, Phone & Comms (linked to its spec), Navigation, Ostler Community (the closed, Ostler-run hub: web P1–P14 including Forum, Thread, Vehicle project, Decode card and Wiki page, and More → Community), adapters, Maintenance & Garage, Network, More, Preferences, accounts S1–S10 and the Add-ons catalogue, each with layout classes, themes, driving states, spec sections and tokens. The machine-readable copy is `screens.json` in this folder. Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 92–96): key frames first, design files under the CLA annotated like the docs, PNG plus HTML per frame (≤ 2 MB each), the approved message card (sender and app with Play / Reply), and every spec of the round now approved, so no screen is provisional.
+  The hand-off folder for the owner's one combined designer prompt (DMD round, October 2026). It says how designs arrive (claude.ai design artifact links read by the manager, plus exported PNG and HTML saved here as `<screen-id>/<layout-class>-<theme>.png` and `.html`, with optional state and variant suffixes), what is recorded per screen (link, date, designer prompt version, status awaiting · received · reviewed · matches-spec · differs, and each difference), and how each screen is reviewed against its spec section before the V2 component kit and V3 page work. It holds a designer prompt checklist of the hard constraints (Moving templates and their limits, minimum sizes, tokens only, one icon set, no glow on head units at night or in Drive mode, Park to edit, non-removable safety items, no message text while Moving, no video on driver-facing screens) with citations, and the full screen index: 127 screens and sheets across the shell, Home, Drive modes and their faces, alerts and calls, Trips and sharing, Places, Diagnose and the help flow, Decode lab, Vehicles & Map, Social, Phone & Comms (linked to its spec), Navigation, Ostler Community (the closed, Ostler-run hub: web P1–P14 including Forum, Thread, Vehicle project, Decode card and Wiki page, and More → Community), adapters, Maintenance & Garage, Network, More, Preferences, accounts S1–S10 and the Add-ons catalogue, each with layout classes, themes, driving states, spec sections and tokens. The machine-readable copy is `screens.json` in this folder. Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 92–96): key frames first, design files under the CLA annotated like the docs, PNG plus HTML per frame (≤ 2 MB each), the approved message card (sender and app with Play / Reply), and every spec of the round now approved, so no screen is provisional. Amended 2026-10-07 (openness round, ADR-0047): the checklist's style items are the default look, pointing to visual §13 and the theme engine, review fails a design on safety rules only, and the safety items are unchanged.
 ---
 
 # Design hand-off, October 2026
@@ -20,6 +20,17 @@ summary: >
 > ADR-0046 (an empty OS where every app is an add-on) and the launcher, app UI model, Store
 > and head-unit apps specs. Open questions the 65 decisions settled now read "Decided (item
 > N)". The screen table in §5 below lists only the original 127.
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../../../decisions/adr-0047-openness-round.md)):** the checklist's style items
+> (3–7, 16, 20) describe the **default look**, not rules: themes, add-ons and users may change
+> them under [visual §13][vds-13] and the [theme engine][te-11]. Review (§2) fails a design
+> only on the safety rules; a different style is a note, not a difference. The safety items
+> (Moving templates and floors, Park to edit, safety items that move but never go, no message
+> text, video or text entry while Moving, no "always" Passenger view) are unchanged. Items 9,
+> 17, 18 and 19 now match the launcher spec (dock, not rail; hideable anchors with one
+> recovery path) and allow scores in add-ons. Labelled placeholder data is fine in mocks.
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** Every
 spec this folder cites was approved the same day. This folder receives the designs the owner commissions with
@@ -97,61 +108,70 @@ the **visual design system** ([visual spec][vds-1]) and the **designer prompt ch
 
 1. **Received.** Files saved, record written, nothing judged yet.
 2. **Reviewed.** For each layout class, theme and state delivered: the content matches the
-   spec's elements and order; the driving-state renders obey the template limits; tokens,
-   type sizes, targets and icons are the visual spec's; nothing on the checklist is broken.
-   A missing class, theme or state required by the index is a difference.
+   spec's elements and order; the driving-state renders obey the template limits, type
+   floors and targets; nothing on the checklist's safety items is broken. Style (tokens,
+   icons, fonts, accent, glow, motion) is compared with the visual spec's default look as a
+   note only, never a difference (*amended 2026-10-07, openness round*). A missing class,
+   theme or state required by the index is a difference.
 3. **Matches spec** when nothing differs. **Differs** otherwise: each difference is listed for
    the owner in `differences`, with a proposal: **update the spec** (the design is better and
    no rule is broken), **update the design** (it breaks a rule or a spec's content), or
    **owner decides**. A design never relaxes a safety rule by itself: anything touching UI
-   §12.1, §14, Drive modes §8.1 or the visual spec's glow and type floors goes to the owner.
+   §12.1, §14, Drive modes §8.1, the Moving type floors or the theme engine's render check,
+   protected surfaces and required parts goes to the owner.
 4. **Before the V2 component kit and V3 pages are built** ([visual §11][vds-11]), every
-   screen in that slice is `matches-spec`, or its differences are resolved by a spec
-   amendment (in a dated "Proposed amendment" section of the spec, approved by the owner) or a
-   revised design. A
-   spec changed this way names the design file it followed.
+   screen in that slice has no open **safety** difference (style notes do not block); its
+   other differences are resolved by a spec amendment (in a dated "Proposed amendment"
+   section of the spec, approved by the owner) or a revised design, or left as notes. A spec
+   changed this way names the design file it followed.
 5. A design for a **proposed** (not yet approved) spec section is reviewed against the
    proposal and marked as such; it is re-checked once the owner answers.
 
 ## 3. Designer prompt checklist
 
 Constraints the designer must honour on every screen. Paste this list into the prompt.
+Items marked **(default)** describe the default look (Night and the core kit) to draw first;
+themes, add-ons and users may change them within [visual §13][vds-13] and the
+[theme engine][te-11] (*amended 2026-10-07, openness round*). The other items are safety
+rules and stay hard.
 
 1. **Moving uses templates only.** On a head unit while Moving, only `telltale_list`,
    `value`, `setpoint`, `camera_live`, `arm`, `map`, `media`, `tiles`, `alert_card`,
    `short_list` and `call`, within their limits: ≤ 6 tiles; `short_list` ≤ 6 rows, one level,
    ≤ 30 characters a row; `alert_card` one card, icon + ≤ 2 lines of ≤ 30 characters, ≤ 2
    buttons; `call` ≤ 3 buttons; `map` own position, route, next manoeuvre, no free panning
-   or search; task depth ≤ 3 screens ending back in Drive mode. ([UI §12.1][ui-12.1],
+   or search; task depth ≤ 3 screens (the default) ending back in Drive mode. ([UI §12.1][ui-12.1],
    [Drive modes §4.3][dm-4.3])
 2. **Minimum sizes.** Text ≥ 12 px on phone, tablet and desktop; ≥ 18 px on a Parked head
    unit; ≥ 24 px in any Moving template; Drive digits ≥ 56 px; strip chips ≥ 48 px tall;
-   head-unit targets 76 px; Moving tile and pane minimums per class. Numbers never clip:
-   drop one type step. ([visual §4][vds-4], [visual §8][vds-8], [UI §3.2][ui-3.2],
+   head-unit targets 76 px; Moving tile and pane minimums per class. The 12 and 18 px
+   minimums are user-adjustable defaults; the Moving floors are not. Numbers in Moving
+   templates never clip: drop one type step (elsewhere an ellipsis is fine). ([visual §4][vds-4], [visual §8][vds-8], [UI §3.2][ui-3.2],
    [Drive modes §4.4][dm-4.4])
-3. **Tokens only.** Colours, type, space, radius, elevation and motion come from the visual
-   spec's tokens in all four themes (Night, Night dim, Deep night, Day); no raw colours.
-   ([visual §2][vds-2], [visual §3.1][vds-3.1], [visual §9][vds-9])
-4. **One icon set.** Material Symbols, outlined; never an emoji, dingbat or Unicode arrow in
-   UI text; every icon paired with a word where it carries meaning. ([visual §6][vds-6])
-5. **No glow on head units at night.** At most one glowing element per screen on phone,
-   tablet and desktop; none on head units in Night dim or Deep night, in Drive mode or in
-   any Moving template; no blur or gradients on head units. ([visual §1][vds-1],
-   [visual §5][vds-5], [UI §12.5][ui-12.5])
-6. **Motion** only for sheet open and close, tab change and the alarm pulse; none while
-   Moving (an rpm sweep steps, it does not glide). ([visual §5][vds-5],
-   [Drive modes §4.3][dm-4.3])
-7. **One accent, calm gauges.** Cyan accent for interactive and live things only; status
-   colours (ISO 2575) with icon and word, only out of range; data ramps never use the
-   accent; at most three categorical series. ([visual §1][vds-1], [visual §3.3][vds-3.3])
+3. **Tokens (default).** Draw with the visual spec's tokens in all four themes (Night, Night
+   dim, Deep night, Day). Themes and add-ons may use raw values. ([visual §3.1][vds-3.1],
+   [visual §13][vds-13])
+4. **Icons (default).** Material Symbols, outlined; icon packs, emoji and SVG icons are allowed
+   in themes and add-ons. Every icon that carries meaning has a word beside it. ([visual §6][vds-6])
+5. **Glow, blur and gradients (default).** The default look uses glow sparingly and none on
+   head units at night; a theme may use glow, blur and gradients anywhere, guarded by the
+   Drive-mode render check. ([visual §5][vds-5], [visual §13.8][vds-13])
+6. **Motion.** The default look animates only sheets, tab changes and the alarm pulse; themes
+   may add more Parked. **Safety rule:** while Moving no motion except the alarm pulse (an rpm
+   sweep steps, it does not glide). ([visual §5][vds-5], [Drive modes §4.3][dm-4.3])
+7. **Accent and calm gauges (default).** Cyan accent for interactive and live things, status
+   colours with icon and word only out of range, three categorical series. **Safety rule:** in
+   Drive mode the telltale and alarm stay visible with ≥ 4.5:1 text contrast (the render
+   check). ([visual §1][vds-1], [visual §3.3][vds-3.3], [visual §13.9][vds-13])
 8. **Park to edit.** Edit mode, the widget picker, the rail editor and the Drive editor exist
    only Parked (or Idling with Park evidence) on a driver-facing display; while Moving a
    long-press shows "Park to edit" and nothing else. ([Drive modes §8.1][dm-8.1],
    [UI §15.2][ui-15.2])
-9. **Safety items are not removable.** The fault telltale, alarm and Security alerts, the
-   core strip chips (including Drive mode), Mark, and the Passenger-view and service-mode
-   frames are drawn by the shell outside any layout; Home's warnings and Security cards may
-   move, never go. ([Drive modes §8.1][dm-8.1], [UI §15.2][ui-15.2])
+9. **Safety items move, never go.** The fault telltale, alarm and Security alerts and the
+   Passenger-view and service-mode frames are drawn by the shell outside any layout; Home's
+   warnings and Security cards may move and be restyled, never removed or covered. Other
+   strip chips (Mark included) and anchors may be hidden while the recovery path stays.
+   ([Drive modes §8.1][dm-8.1], [UI §15.2][ui-15.2], [visual §13.9][vds-13])
 10. **No message text while Moving.** A message alert shows the sender and the app with Play
     and Reply (approved 2026-10-07; the earlier "Message from *name*" with Play and Later was
     not chosen); never text, images, avatars or previews while Moving; the opt-in first-line
@@ -171,19 +191,21 @@ Constraints the designer must honour on every screen. Paste this list into the p
     sheet sits on the passenger side; attribution as a collapsed control; hidden trip ends
     drawn as a dashed fade, never a circle. ([visual §7][vds-7], [UI §12.3][ui-12.3],
     [UI §13.1][ui-13.1])
-16. **D-pad reachable.** Every interactive element has a focus state: a 3 px accent ring with
-    a 2 px gap, no glow, shadow or size change; confirm sheets open with Cancel focused.
+16. **D-pad reachable.** Every interactive element has a clearly visible focus state (by
+    default a 3 px accent ring with a 2 px gap; a theme may restyle it), with no size change
+    in Moving templates; confirm sheets open with Cancel focused.
     ([Shell input §7][si-7], [Shell input §9][si-9])
-17. **Driver side.** The rail sits on the driver's side; draw right-hand drive (the D2) and
-    left-hand drive where the layout differs. ([UI §3.3][ui-3.3])
-18. **Rail and destinations.** Five slots; More is always one of them (movable, renamable,
-    re-iconable, never removed); any core destination, Home included, or add-on page may sit
-    in any slot (default: Home first, More last); Home stays the landing page and the root
-    of Back; everything else is under More → Pages. ([Drive modes §7.3][dm-7.3])
-19. **No score.** Trips shows neutral facts only: no driving score, speed ranking or
-    speed-limit history. ([UI §12.2][ui-12.2])
-20. **Our names only.** No other brand's marks, fonts or signature colours; Figtree is the
-    face. ([visual §4][vds-4], [visual §7][vds-7])
+17. **Driver side (default).** The dock sits on the driver's side by default (the user may flip
+    it); draw right-hand drive (the D2) and left-hand drive where the layout differs.
+    ([UI §3.3][ui-3.3])
+18. **Dock (default).** Per-class default slot counts (launcher §5.1), which the user may
+    change; Home and Apps are default anchors that may be hidden while long-press edit, the
+    Connection sheet's Reset and holding Back still recover; Home stays the landing page and
+    the root of Back. (Superseded the five-slot rail, openness round; [Drive modes §7.3][dm-7.3])
+19. **No score in core Trips.** Trips shows neutral facts only: no driving score, speed ranking
+    or speed-limit history. Add-ons may offer scores, opt-in. ([UI §12.2][ui-12.2])
+20. **Our names only.** No other brand's marks (trademark law). Figtree is the default face;
+    other fonts and colours are a theme's choice. ([visual §4][vds-4], [visual §7][vds-7])
 
 ## 4. Reading the index
 
@@ -399,6 +421,12 @@ section numbers change, regenerate both `screens.json` and this table.
   starter widget pack; Guardian dock, flat carousel caps, dock caps per class, one Apps list,
   the Settings app, the Store as a system app); screens covered by the newly approved specs
   move from Proposed to New; `screens.json` 0.5 (127 Existing, 354 New, 70 Proposed).
+- **0.6 (2026-10-07, openness round):** amended (approved by the owner on 2026-10-07, "apply
+  the loosenings", [ADR-0047](../../../decisions/adr-0047-openness-round.md)): checklist
+  style items 3–7, 16, 17, 18 and 20 rewritten as defaults pointing to visual §13 and the
+  theme engine; item 9 lets anchors and ordinary chips hide while safety items move and
+  restyle but never go; item 19 allows scores in add-ons; review fails a design on safety
+  rules only. The safety items are unchanged.
 
 ## Decisions for the owner
 
@@ -581,6 +609,8 @@ approved, so its screens are no longer provisional.
 [vds-7]: ../../../specs/2026-10-07-visual-design-system-design.md#7-maps
 [vds-8]: ../../../specs/2026-10-07-visual-design-system-design.md#8-charts-gauges-and-the-component-kit
 [vds-9]: ../../../specs/2026-10-07-visual-design-system-design.md#9-enforcement
+[vds-13]: ../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07
+[te-11]: ../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner
 [vm-2.1]: ../../../specs/2026-10-07-vehicles-and-map-addon-design.md#21-vehicles-list
 [vm-2.2]: ../../../specs/2026-10-07-vehicles-and-map-addon-design.md#22-garage-card-the-face-of-a-shared-vehicle
 [vm-3]: ../../../specs/2026-10-07-vehicles-and-map-addon-design.md#3-the-map-built-into-vehicles

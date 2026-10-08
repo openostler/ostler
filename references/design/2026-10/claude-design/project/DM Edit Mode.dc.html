@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">NEW</span><span style="font-size:22px;font-weight:800;color:#0e1626">Edit mode + message alerts</span><span style="font-size:14px;color:#3b4556">Long-press to edit · safety items locked (no ✕) · Parked only on head units · try it: tap a widget, change its size, ✕ it, + Add widget, Reset</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Home edit mode (interactive)</div>
+<div data-screen-label="Home edit phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">14:32</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<div style="height:60px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 20px"><div style="display:flex;flex-direction:column"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">EDITING</span><span style="font-size:22px;font-weight:700">Home</span></div><div style="height:48px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;padding:0 22px;font-size:16px;font-weight:800">Done</div></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:6px 16px 12px">
+<div style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:112px;grid-auto-flow:dense;gap:12px">
+<sc-for list="{{ widgets }}" as="w" hint-placeholder-count="5">
+<div onClick="{{ w.select }}" style="cursor:pointer;grid-column:span {{ w.cs }};grid-row:span {{ w.rs }};position:relative;background:{{ w.bg }};border-radius:20px;padding:12px 14px 12px 44px;display:flex;flex-direction:column;gap:2px;box-shadow:{{ w.ring }};opacity:{{ w.op }};min-width:0">
+<div style="position:absolute;left:8px;top:10px;width:30px;height:30px;border-radius:15px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">drag_indicator</span></div>
+<sc-if value="{{ w.locked }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:8px;top:8px;height:28px;border-radius:14px;background:#243049;display:flex;align-items:center;gap:4px;padding:0 10px 0 8px;font-size:12px;font-weight:700;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:16px">lock</span>Safety</div></sc-if>
+<sc-if value="{{ w.removable }}" hint-placeholder-val="{{ true }}"><div onClick="{{ w.remove }}" style="cursor:pointer;position:absolute;right:-6px;top:-6px;width:32px;height:32px;border-radius:16px;background:#3b4a6a;box-shadow:0 0 0 3px #060a14;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px">close</span></div></sc-if>
+<span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:16px;color:{{ w.ic }}">{{ w.icon }}</span>{{ w.title }}</span>
+<span style="font-size:{{ w.vs }}px;font-weight:700;line-height:1.1;color:{{ w.vc }};font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.value }}<span style="font-size:14px;font-weight:500;color:#b0bacb"> {{ w.unit }}</span></span>
+<span style="font-size:13px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.sub }}</span>
+<sc-if value="{{ w.sel }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:-3px;top:-3px;width:16px;height:16px;border-left:4px solid #22a6e0;border-top:4px solid #22a6e0;border-radius:6px 0 0 0"></div><div style="position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-right:4px solid #22a6e0;border-bottom:4px solid #22a6e0;border-radius:0 0 6px 0"></div><div style="position:absolute;left:-3px;bottom:-3px;width:16px;height:16px;border-left:4px solid #22a6e0;border-bottom:4px solid #22a6e0;border-radius:0 0 0 6px"></div>
+<div style="position:absolute;right:8px;bottom:8px;height:32px;border-radius:16px;background:#0a1020;padding:2px;display:flex;gap:2px"><sc-for list="{{ w.sizes }}" as="z" hint-placeholder-count="3"><div onClick="{{ z.pick }}" style="cursor:pointer;min-width:30px;height:28px;border-radius:14px;padding:0 8px;background:{{ z.bg }};color:{{ z.c }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">{{ z.l }}</div></sc-for></div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="flex:none;padding:10px 16px 30px;display:flex;flex-direction:column;gap:8px;background:#0a1020">
+<div onClick="{{ openPicker }}" style="cursor:pointer;height:52px;border-radius:26px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">add</span>Add widget</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div onClick="{{ reset }}" style="cursor:pointer;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px">restart_alt</span>Reset</div>
+<div style="height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px">ios_share</span>Share</div>
+<div style="height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px">file_open</span>Import</div>
+</div>
+</div>
+<sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closePicker }}" style="position:absolute;inset:0;background:rgba(3,6,12,.6)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:150px;background:#121a2c;border-radius:32px 32px 0 0;display:flex;flex-direction:column">
+<div style="padding:8px 20px 8px;display:flex;flex-direction:column;gap:10px;flex:none"><div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:22px;font-weight:700">Add widget</span><div onClick="{{ closePicker }}" style="cursor:pointer;width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px">close</span></div></div></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:0 16px 30px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ picker }}" as="g" hint-placeholder-count="2">
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">{{ g.name }}</span>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<sc-for list="{{ g.items }}" as="p" hint-placeholder-count="3">
+<div style="background:#1a2439;border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:8px">
+<div style="background:#0f1626;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-height:84px"><span style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:15px;color:{{ p.ic }}">{{ p.icon }}</span>{{ p.title }}</span><span style="font-size:22px;font-weight:700;color:{{ p.vc }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.value }}<span style="font-size:13px;font-weight:500;color:#b0bacb"> {{ p.unit }}</span></span><span style="font-size:12px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.sub }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#b0bacb;background:#243049;padding:3px 8px;border-radius:8px">{{ p.tag }}</span><div onClick="{{ p.add }}" style="cursor:pointer;width:44px;height:44px;border-radius:22px;background:{{ p.addBg }};color:{{ p.addC }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px">{{ p.addIcon }}</span></div></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · widget picker sheet (Core / Add-ons, live previews)</div>
+<div data-screen-label="Widget picker" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="position:absolute;inset:54px 16px 0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:112px;gap:12px;opacity:.25"><div style="grid-column:span 2;background:#121a2c;border-radius:20px"></div><div style="grid-column:span 2;background:#121a2c;border-radius:20px"></div><div style="grid-row:span 2;background:#121a2c;border-radius:20px"></div><div style="background:#121a2c;border-radius:20px"></div></div>
+<div style="position:absolute;inset:0;background:rgba(3,6,12,.5)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:120px;background:#121a2c;border-radius:32px 32px 0 0;display:flex;flex-direction:column">
+<div style="padding:8px 20px;display:flex;flex-direction:column;gap:10px;flex:none"><div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:22px;font-weight:700">Add widget</span><div style="width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px">close</span></div></div>
+<div style="height:48px;border-radius:24px;background:#0a1020;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:15px;color:#8e9ab0"><span class="material-symbols-rounded" style="font-size:22px">search</span>Search widgets</div></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:0 16px 30px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ picker }}" as="g" hint-placeholder-count="2">
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">{{ g.name }}</span>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<sc-for list="{{ g.items }}" as="p" hint-placeholder-count="3">
+<div style="background:#1a2439;border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:8px">
+<div style="background:#0f1626;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-height:84px"><span style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:15px;color:{{ p.ic }}">{{ p.icon }}</span>{{ p.title }}</span><span style="font-size:22px;font-weight:700;color:{{ p.vc }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.value }}<span style="font-size:13px;font-weight:500;color:#b0bacb"> {{ p.unit }}</span></span><span style="font-size:12px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.sub }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#b0bacb;background:#243049;padding:3px 8px;border-radius:8px">{{ p.tag }}</span><div onClick="{{ p.add }}" style="cursor:pointer;width:44px;height:44px;border-radius:22px;background:{{ p.addBg }};color:{{ p.addC }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px">{{ p.addIcon }}</span></div></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · rail edit (driver side) · 5 slots max</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Rail edit" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" moving="{{ false }}" edit="{{ true }}" volts="12.6" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex">
+<div style="width:420px;flex:none;padding:4px 12px 12px 16px">
+<div style="height:100%;box-sizing:border-box;background:#121a2c;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:700">Pin add-on pages</span><span style="font-size:18px;font-weight:700;color:#b0bacb;font-variant-numeric:tabular-nums">{{ railCount }} of 5 slots</span></div>
+<div style="height:10px;border-radius:5px;background:#243049;display:flex;gap:3px;overflow:hidden"><sc-for list="{{ slotBar }}" as="s" hint-placeholder-count="5"><div style="flex:1;background:{{ s }}"></div></sc-for></div>
+<sc-for list="{{ pins }}" as="p" hint-placeholder-count="4"><div style="min-height:76px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:14px;padding:0 10px 0 16px"><span class="material-symbols-rounded" style="font-size:30px;color:#b0bacb">{{ p.icon }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700">{{ p.name }}</span><span style="font-size:18px;color:#8e9ab0">Add-on</span></div><div onClick="{{ p.toggle }}" style="cursor:pointer;height:56px;border-radius:28px;padding:0 16px;background:{{ p.bg }};color:{{ p.c }};display:flex;align-items:center;gap:6px;font-size:18px;font-weight:700;opacity:{{ p.op }}"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' {{ p.fill }}">push_pin</span>{{ p.label }}</div></div></sc-for>
+<span style="font-size:18px;color:#8e9ab0;margin-top:auto">Home and More always stay. Drag to reorder on the rail.</span>
+</div>
+</div>
+<div style="flex:1;min-width:0;padding:4px 12px 12px 0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;opacity:.3"><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div><div style="grid-column:span 2;background:#121a2c;border-radius:24px"></div></div>
+<div style="width:120px;flex:none;background:#121a2c;display:flex;flex-direction:column;padding:8px;gap:6px">
+<sc-for list="{{ rail }}" as="r" hint-placeholder-count="5"><div style="flex:1;border-radius:20px;background:{{ r.bg }};box-shadow:{{ r.sh }};transform:{{ r.tf }};color:{{ r.c }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative"><span class="material-symbols-rounded" style="position:absolute;left:4px;top:6px;font-size:20px;color:#8e9ab0;opacity:{{ r.dragOp }}">drag_indicator</span><sc-if value="{{ r.locked }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="position:absolute;right:6px;top:6px;font-size:18px;color:#8e9ab0">lock</span></sc-if><sc-if value="{{ r.unpin }}" hint-placeholder-val="{{ false }}"><div onClick="{{ r.unpinFn }}" style="cursor:pointer;position:absolute;right:-2px;top:-2px;width:28px;height:28px;border-radius:14px;background:#3b4a6a;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:18px">close</span></div></sc-if><span class="material-symbols-rounded" style="font-size:30px">{{ r.icon }}</span><span style="font-size:18px;font-weight:700">{{ r.name }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · Drive tile edit (interactive: style, unit, thresholds)</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive tile edit" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="diag" moving="{{ false }}" edit="{{ true }}" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex;gap:12px;padding:4px 12px 12px">
+<div style="width:440px;flex:none;background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;scrollbar-width:none">
+<div style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-size:22px;font-weight:700">Edit tile</span><div onClick="{{ resetTile }}" style="cursor:pointer;height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">restart_alt</span>Reset to default</div></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">BIND TO SIGNAL</span>
+<div style="height:56px;border-radius:16px;background:#0a1020;box-shadow:inset 0 0 0 2px #22a6e0;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:20px"><span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0">search</span>coolant<span style="width:2px;height:24px;background:#22a6e0"></span></div>
+<sc-for list="{{ vss }}" as="s" hint-placeholder-count="3"><div onClick="{{ s.pick }}" style="cursor:pointer;min-height:64px;border-radius:16px;background:{{ s.bg }};display:flex;align-items:center;gap:10px;padding:6px 14px"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.path }}</span><span style="font-size:18px;color:#b0bacb">{{ s.desc }}</span></div><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ s.v }}</span></div></sc-for>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;margin-top:4px">GAUGE STYLE</span>
+<div style="height:60px;border-radius:30px;background:#0a1020;padding:4px;display:grid;grid-template-columns:repeat(3,1fr)"><sc-for list="{{ styles }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.pick }}" style="cursor:pointer;border-radius:26px;background:{{ o.bg }};color:{{ o.c }};display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">{{ o.icon }}</span>{{ o.l }}</div></sc-for></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;margin-top:4px">UNIT</span>
+<div style="display:flex;gap:8px"><sc-for list="{{ units }}" as="u" hint-placeholder-count="2"><div onClick="{{ u.pick }}" style="cursor:pointer;height:56px;min-width:88px;border-radius:28px;background:{{ u.bg }};color:{{ u.c }};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">{{ u.l }}</div></sc-for></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;margin-top:4px">THRESHOLDS</span>
+<div style="height:14px;border-radius:7px;overflow:hidden;display:flex"><div style="width:{{ bar.n }};background:#3b4a6a"></div><div style="width:{{ bar.w }};background:#bf8a1a"></div><div style="flex:1;background:#ef6a7d"></div></div>
+<sc-for list="{{ thr }}" as="t" hint-placeholder-count="3"><div style="min-height:64px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:10px;padding:0 6px 0 14px"><span style="width:14px;height:14px;border-radius:4px;background:{{ t.sw }}"></span><span style="flex:1;font-size:18px;font-weight:700;color:{{ t.tc }}">{{ t.w }}</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ t.v }}</span><div onClick="{{ t.dec }}" style="cursor:pointer;width:52px;height:52px;border-radius:14px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">remove</span></div><div onClick="{{ t.inc }}" style="cursor:pointer;width:52px;height:52px;border-radius:14px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">add</span></div></div></sc-for>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px"><div style="height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">ios_share</span>Share layout</div><div style="height:56px;border-radius:28px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">file_open</span>Import layout</div></div>
+</div>
+<div style="flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ grid }}" as="g" hint-placeholder-count="6"><div style="position:relative;background:{{ g.bg }};border-radius:20px;box-shadow:{{ g.ring }};padding:10px 14px 10px 44px;display:flex;flex-direction:column;justify-content:center;min-height:0;opacity:{{ g.op }}">
+<div style="position:absolute;left:8px;top:10px;width:30px;height:30px;border-radius:15px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">drag_indicator</span></div>
+<sc-if value="{{ g.locked }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:8px;top:8px;height:30px;border-radius:15px;background:#243049;display:flex;align-items:center;gap:4px;padding:0 10px 0 8px;font-size:18px;font-weight:700;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:18px">lock</span>Alarm</div></sc-if>
+<sc-if value="{{ g.removable }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;right:-6px;top:-6px;width:34px;height:34px;border-radius:17px;background:#3b4a6a;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px">close</span></div></sc-if>
+<span style="font-size:18px;font-weight:700;letter-spacing:.06em;color:#b0bacb">{{ g.label }}</span>
+<sc-if value="{{ g.isPrev }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ pv.round }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:flex-end;gap:10px"><svg viewBox="0 0 220 100" style="height:48px;width:106px;flex:none;display:block"><path d="{{ pv.gTrack }}" fill="none" stroke="#243049" stroke-width="16" stroke-linecap="round"></path><path d="{{ pv.gBand }}" fill="none" stroke="#3b4a6a" stroke-width="16"></path><path d="{{ pv.gVal }}" fill="none" stroke="{{ pv.color }}" stroke-width="6" stroke-linecap="round"></path></svg><span style="font-size:40px;font-weight:700;line-height:1;color:{{ pv.vc }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ pv.val }}<span style="font-size:18px;color:#b0bacb"> {{ pv.unit }}</span></span></div></sc-if>
+<sc-if value="{{ pv.notRound }}" hint-placeholder-val="{{ false }}"><span style="font-size:44px;font-weight:700;line-height:1.05;color:{{ pv.vc }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ pv.val }}<span style="font-size:20px;color:#b0bacb"> {{ pv.unit }}</span><sc-if value="{{ pv.word }}" hint-placeholder-val="{{ false }}"><span style="font-size:18px;font-weight:800;color:{{ pv.vc }}"> {{ pv.word }}</span></sc-if></span></sc-if>
+<sc-if value="{{ pv.bar }}" hint-placeholder-val="{{ false }}"><div style="position:relative;height:18px;margin-top:6px"><div style="position:absolute;left:0;right:0;top:5px;height:8px;border-radius:4px;background:#243049"></div><div style="position:absolute;top:5px;height:8px;background:#3b4a6a;left:0;width:{{ pv.bandW }}"></div><div style="position:absolute;top:0;width:6px;height:18px;border-radius:3px;margin-left:-3px;background:{{ pv.color }};left:{{ pv.pos }}"></div></div></sc-if>
+</sc-if>
+<sc-if value="{{ g.notPrev }}" hint-placeholder-val="{{ true }}"><span style="font-size:40px;font-weight:700;line-height:1.05;color:{{ g.vc }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ g.val }}<span style="font-size:18px;color:#b0bacb"> {{ g.unit }}</span></span></sc-if>
+</div></sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · long-press → locked “Park to edit”</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Park to edit" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;opacity:.35">
+<sc-for list="{{ grid }}" as="g" hint-placeholder-count="6"><div style="background:{{ g.bgM }};border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:24px;font-weight:700;color:#b0bacb">{{ g.label }}</span><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ g.vc }}">{{ g.val }}<span style="font-size:26px;color:#b0bacb"> {{ g.unit }}</span></span></div></sc-for>
+</div>
+<div style="position:absolute;left:0;right:0;top:56px;bottom:0;display:flex;align-items:center;justify-content:center">
+<div style="width:560px;background:#243049;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:16px"><div style="width:64px;height:64px;border-radius:32px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:36px;font-variation-settings:'FILL' 1">lock</span></div><div style="display:flex;flex-direction:column"><span style="font-size:36px;font-weight:700;line-height:1.1">Park to edit</span><span style="font-size:24px;color:#b0bacb">Layouts unlock when you stop</span></div></div>
+<div style="height:80px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700">OK</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<sc-for list="{{ msgs }}" as="m" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">{{ m.title }}</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="{{ m.title }}" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="diag" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;padding:4px 12px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;opacity:.35">
+<sc-for list="{{ grid }}" as="g" hint-placeholder-count="6"><div style="background:{{ g.bgM }};border-radius:24px;padding:16px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:24px;font-weight:700;color:#b0bacb">{{ g.label }}</span><span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ g.vc }}">{{ g.val }}<span style="font-size:26px;color:#b0bacb"> {{ g.unit }}</span></span></div></sc-for>
+</div>
+<div style="position:absolute;left:0;right:0;top:56px;bottom:0;display:flex;align-items:center;justify-content:center">
+<div style="width:640px;background:#243049;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:16px;min-width:0"><div style="width:64px;height:64px;border-radius:32px;background:#1a2439;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:34px">chat</span></div><div style="display:flex;flex-direction:column;min-width:0;flex:1"><span style="font-size:36px;font-weight:700;line-height:1.15">Message from Sam · WhatsApp</span><sc-if value="{{ m.preview }}" hint-placeholder-val="{{ false }}"><span style="font-size:26px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px">{{ m.preview }}</span></sc-if></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div style="height:84px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:800"><span class="material-symbols-rounded" style="font-size:38px;font-variation-settings:'FILL' 1">play_arrow</span>Play</div>
+<div style="height:84px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:700"><span class="material-symbols-rounded" style="font-size:34px;font-variation-settings:'FILL' 1">mic</span>Reply</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const GA=t=>{const a=(155-130*t)*Math.PI/180;return [110+118*Math.cos(a),130-118*Math.sin(a)]};
+const arc=(t0,t1)=>{const p=GA(t0),q=GA(Math.max(t0+0.0001,Math.min(1,t1)));return `M${p[0].toFixed(1)} ${p[1].toFixed(1)} A118 118 0 0 1 ${q[0].toFixed(1)} ${q[1].toFixed(1)}`};
+const CAT={
+ health:{icon:'health_and_safety',title:'HEALTH',tag:'Core',locked:true},
+ vehicle:{icon:'directions_car',title:'DISCOVERY 2 TD5',value:'187,412',unit:'km',sub:'Odometer · estimated',tag:'Core'},
+ lasttrip:{icon:'route',title:'LAST TRIP',value:'37.2',unit:'km',sub:'Buxton → Castleton · 48 min',tag:'Core'},
+ battery:{icon:'bolt',title:'BATTERY',value:'12.6',unit:'V',sub:'Resting · good',tag:'Core'},
+ maint:{icon:'build',title:'MAINTENANCE',value:'800',unit:'km',sub:'Oil due in 800 km',tag:'Add-on'},
+ social:{icon:'forum',title:'SOCIAL',value:'2',unit:'unread',sub:'Ride active',tag:'Add-on'},
+ vehicles:{icon:'location_on',title:'VEHICLES',value:'3',unit:'friends',sub:'3 friends nearby',tag:'Add-on'},
+ weather:{icon:'rainy',title:'WEATHER',value:'11',unit:'°C',sub:'Light rain · Buxton',tag:'Add-on'}};
+const DEF=[['health','w'],['vehicle','w'],['lasttrip','m'],['battery','s'],['maint','s']];
+const SZ={s:[1,1],m:[1,2],w:[2,1]};
+let uid=10;
+class Component extends DCLogic {
+ state={ws:DEF.map(([k,s],i)=>({id:i,k,s})),sel:2,picker:false,pinned:['social'],style:'round',unit:'C',warn:105,crit:115,sig:0};
+ renderVals(){
+  const S=this.state,f=this.props.faults!==false;
+  const fill=k=>{const c={...CAT[k]};if(k==='health'){c.value=f?'2 faults':'All OK';c.unit='';c.sub=f?'Intake air temp high':'Last check 09:00';c.vc=f?'#ef6a7d':'#2f9e63';c.ic=c.vc}return {vc:'#eef2f9',ic:'#b0bacb',...c}};
+  const widgets=S.ws.map(w=>{const c=fill(w.k),z=SZ[w.s],sel=S.sel===w.id;return {...c,cs:z[0],rs:z[1],vs:w.s==='s'?24:30,sel,locked:!!c.locked,removable:!c.locked,
+   bg:w.k==='health'?(f?'#2a1a2a':'#14261f'):'#121a2c',ring:sel?'0 0 0 2px #22a6e0':'none',op:1,
+   select:()=>this.setState({sel:w.id}),remove:e=>{e&&e.stopPropagation&&e.stopPropagation();this.setState(s=>({ws:s.ws.filter(x=>x.id!==w.id)}))},
+   sizes:[['s','S'],['m','M'],['w','Wide']].map(([v,l])=>({l,bg:w.s===v?'#22a6e0':'transparent',c:w.s===v?'#0a1020':'#b0bacb',pick:e=>{e&&e.stopPropagation&&e.stopPropagation();this.setState(s=>({ws:s.ws.map(x=>x.id===w.id?{...x,s:v}:x)}))}}))}});
+  const have=new Set(S.ws.map(w=>w.k));
+  const item=k=>{const c=fill(k),on=have.has(k);return {...c,addIcon:on?'check':'add',addBg:on?'#243049':'rgba(34,166,224,.18)',addC:on?'#8e9ab0':'#22a6e0',add:()=>{if(on)return;const id=uid++;this.setState(s=>({ws:[...s.ws,{id,k,s:'s'}],sel:id,picker:false}))}}};
+  const picker=[{name:'CORE',items:['lasttrip','health','battery'].map(item)},{name:'ADD-ONS',items:['maint','social','vehicles','weather'].map(item)}];
+  const ADD=[['maint','build','Maintenance'],['social','forum','Social'],['vehicles','location_on','Vehicles & Map'],['weather','rainy','Weather']];
+  const core=[{icon:'home',name:'Home',locked:true},{icon:'stethoscope',name:'Diagnose'},{icon:'route',name:'Trips',lifted:true}];
+  const pinnedItems=S.pinned.map(k=>{const a=ADD.find(x=>x[0]===k);return {icon:a[1],name:a[2].split(' ')[0],unpin:true,unpinFn:()=>this.setState(s=>({pinned:s.pinned.filter(x=>x!==k)}))}});
+  const railItems=[...core,...pinnedItems,{icon:'more_horiz',name:'More',locked:true}];
+  const count=railItems.length;
+  const rail=railItems.map(r=>({...r,locked:!!r.locked,unpin:!!r.unpin,unpinFn:r.unpinFn||null,bg:r.lifted?'#2a3757':'#1a2439',sh:r.lifted?'0 12px 30px rgba(0,0,0,.55)':'none',tf:r.lifted?'translateX(-10px) scale(1.04)':'none',c:r.locked?'#b0bacb':'#eef2f9',dragOp:r.locked?0:1}));
+  while(rail.length<5)rail.splice(rail.length-1,0,{icon:'add',name:'Empty',locked:false,unpin:false,bg:'#0d1424',sh:'none',tf:'none',c:'#5d6879',dragOp:0});
+  const full=count>=5;
+  const pins=ADD.map(([k,icon,name])=>{const on=S.pinned.includes(k);return {icon,name,label:on?'Pinned':'Pin',fill:on?1:0,bg:on?'rgba(34,166,224,.16)':'#243049',c:on?'#22a6e0':'#eef2f9',op:!on&&full?.45:1,toggle:()=>this.setState(s=>on?{pinned:s.pinned.filter(x=>x!==k)}:(full?{}:{pinned:[...s.pinned,k]}))}});
+  const slotBar=[0,1,2,3,4].map(i=>i<count?'#22a6e0':'#243049');
+  const vssList=[{path:'Vehicle.Powertrain.CombustionEngine.ECT',desc:'Coolant temperature',v:'88 °C'},{path:'Vehicle.Powertrain.CombustionEngine.EOT',desc:'Oil temperature',v:'92 °C'},{path:'Vehicle.OBD.CoolantTemperature',desc:'OBD coolant (PID 05)',v:'87 °C'}];
+  const vss=vssList.map((s,i)=>({...s,bg:S.sig===i?'rgba(34,166,224,.16)':'#1a2439',pick:()=>this.setState({sig:i})}));
+  const styles=[['round','Round','progress_activity'],['bar','Bar','linear_scale'],['number','Number','pin']].map(([k,l,icon])=>({l,icon,bg:S.style===k?'#243049':'transparent',c:S.style===k?'#eef2f9':'#b0bacb',pick:()=>this.setState({style:k})}));
+  const units=[['C','°C'],['F','°F']].map(([k,l])=>({l,bg:S.unit===k?'#243049':'#1a2439',c:S.unit===k?'#eef2f9':'#b0bacb',pick:()=>this.setState({unit:k})}));
+  const cv=c=>S.unit==='F'?Math.round(c*9/5+32):c,U=S.unit==='F'?'°F':'°C';
+  const raw=[88,92,87][S.sig],max=130;
+  const thr=[{sw:'#3b4a6a',w:'Normal',tc:'#eef2f9',v:`≤ ${cv(S.warn)} ${U}`,dec:()=>this.setState(s=>({warn:Math.max(60,s.warn-5)})),inc:()=>this.setState(s=>({warn:Math.min(s.crit-5,s.warn+5)}))},
+   {sw:'#bf8a1a',w:'Warning',tc:'#bf8a1a',v:`> ${cv(S.warn)} ${U}`,dec:()=>this.setState(s=>({warn:Math.max(60,s.warn-5)})),inc:()=>this.setState(s=>({warn:Math.min(s.crit-5,s.warn+5)}))},
+   {sw:'#ef6a7d',w:'Critical',tc:'#ef6a7d',v:`> ${cv(S.crit)} ${U}`,dec:()=>this.setState(s=>({crit:Math.max(s.warn+5,s.crit-5)})),inc:()=>this.setState(s=>({crit:Math.min(130,s.crit+5)}))}];
+  const bar={n:(S.warn/max*100)+'%',w:((S.crit-S.warn)/max*100)+'%'};
+  const lvl=raw>S.crit?'crit':raw>S.warn?'warn':'ok';
+  const color=lvl==='crit'?'#ef6a7d':lvl==='warn'?'#bf8a1a':'#dfe6f2',t=raw/max;
+  const pv={round:S.style==='round',notRound:S.style!=='round',bar:S.style==='bar',val:String(cv(raw)),unit:U,color,vc:lvl==='ok'?'#eef2f9':color,word:lvl==='crit'?'HIGH':lvl==='warn'?'WARM':'',
+   gTrack:arc(0,1),gBand:arc(0,S.warn/max),gVal:arc(0,t),bandW:(S.warn/max*100)+'%',pos:(t*100)+'%'};
+  const base={op:1,removable:true,locked:false,isPrev:false,notPrev:true,ring:'none',bg:'#121a2c',bgM:'#121a2c',vc:'#eef2f9'};
+  const grid=[{...base,label:'BOOST',val:'0.99',unit:'bar'},{...base,label:'COOLANT',val:'88',unit:'°C',isPrev:true,notPrev:false,ring:'0 0 0 3px #22a6e0'},{...base,label:'BATTERY',val:'14.1',unit:'V'},
+   f?{...base,label:'INTAKE AIR',val:'120',unit:'°C HIGH',locked:true,removable:false,bg:'#2a1a2a',bgM:'#2a1a2a',vc:'#ef6a7d'}:{...base,label:'INTAKE AIR',val:'41',unit:'°C'},
+   {...base,label:'FUEL',val:'9.8',unit:'L/100'},{...base,label:'TRIP',val:'37',unit:'km'}];
+  const msgs=[{title:'HU-7 · Moving · message alert (default: no text)',preview:''},{title:'HU-7 · Moving · message alert (owner opt-in: first line, one line)',preview:'“Running 10 min late, start the climb without me and I’ll catch up at the top”'}];
+  return {widgets,picker,pickerOpen:S.picker,openPicker:()=>this.setState({picker:true}),closePicker:()=>this.setState({picker:false}),reset:()=>this.setState({ws:DEF.map(([k,s],i)=>({id:i,k,s})),sel:2}),
+   pins,rail,railCount:count,slotBar,vss,styles,units,thr,bar,pv,grid,resetTile:()=>this.setState({style:'round',unit:'C',warn:105,crit:115,sig:0}),msgs,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">9</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Adapters (data sources)</span><span style="font-size:14px;color:#3b4556">Add a source → detect → honest capability card · actuator tests opt-in, Parked, local only · one tester per bus</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Add a data source</div>
+<div data-screen-label="Add data source" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Add a data source</span>
+<span style="font-size:13px;color:#b0bacb;padding:0 4px">How Ostler talks to the Discovery 2.</span>
+<sc-for list="{{ sources }}" as="s" hint-placeholder-count="5"><div onClick="{{ s.pick }}" style="cursor:pointer;min-height:76px;border-radius:20px;background:{{ s.bg }};box-shadow:{{ s.ring }};display:flex;align-items:center;gap:14px;padding:10px 14px"><div style="width:48px;height:48px;border-radius:14px;background:#243049;display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:26px">{{ s.icon }}</span></div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:16px;font-weight:700">{{ s.n }}</span><sc-if value="{{ s.rec }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:800;color:#0a1020;background:#22a6e0;padding:2px 8px;border-radius:8px">Recommended</span></sc-if></div><span style="font-size:13px;color:#b0bacb">{{ s.d }}</span></div></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Detection → verdict (tap to re-check)</div>
+<div data-screen-label="Detection" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">ELM327 · Bluetooth</span>
+<div onClick="{{ recheck }}" style="cursor:pointer;background:#121a2c;border-radius:24px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+<span class="material-symbols-rounded" style="font-size:52px;color:{{ det.c }};font-variation-settings:'FILL' 1">{{ det.icon }}</span>
+<span style="font-size:22px;font-weight:700">{{ det.t }}</span>
+<span style="font-size:13px;color:#b0bacb">{{ det.d }}</span>
+<sc-if value="{{ det.chip }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:800;color:{{ det.c }};background:{{ det.cbg }};padding:5px 12px;border-radius:10px;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:16px">{{ det.cicon }}</span>{{ det.chip }}</span></sc-if>
+</div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:4px 4px 0">VERSUS OSTLER NODE</span>
+<div style="background:#121a2c;border-radius:22px;padding:6px 16px">
+<div style="display:grid;grid-template-columns:1fr 64px 64px;gap:4px;padding:8px 0;font-size:12px;font-weight:700;letter-spacing:.06em;color:#8e9ab0"><span>CAPABILITY</span><span style="text-align:center">THIS</span><span style="text-align:center">NODE</span></div>
+<sc-for list="{{ caps }}" as="c" hint-placeholder-count="7"><div style="display:grid;grid-template-columns:1fr 64px 64px;gap:4px;align-items:center;min-height:48px"><span style="font-size:14px;font-weight:600;line-height:1.25">{{ c.n }}</span><span style="font-size:12px;font-weight:800;text-align:center;color:{{ c.ac }}">{{ c.a }}</span><span style="font-size:12px;font-weight:800;text-align:center;color:#2f9e63">{{ c.node }}</span></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Per-vehicle opt-in for actuator tests</div>
+<div data-screen-label="Actuator opt-in" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Actuator tests</span>
+<div style="background:rgba(191,138,26,.12);border-radius:22px;padding:16px;display:flex;gap:12px"><span class="material-symbols-rounded" style="font-size:28px;color:#bf8a1a;font-variation-settings:'FILL' 1">warning</span><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:800;color:#bf8a1a">WARNING</span><span style="font-size:14px;line-height:1.45">Tests move real parts — injectors, EGR, fuel pump. Only run them with the engine off and the car secured.</span></div></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:4px 4px 0">ALWAYS ENFORCED</span>
+<sc-for list="{{ rules }}" as="r" hint-placeholder-count="4"><div style="min-height:52px;border-radius:16px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">{{ r.icon }}</span><span style="flex:1;font-size:14px;font-weight:600">{{ r.t }}</span><span class="material-symbols-rounded" style="font-size:18px;color:#8e9ab0">lock</span></div></sc-for>
+<div style="min-height:72px;border-radius:20px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:10px 14px;margin-top:4px"><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Allow on Discovery 2 Td5</span><span style="font-size:13px;color:#b0bacb">Via OBDLink MX+ · genuine</span></div><div onClick="{{ toggleAct }}" style="cursor:pointer;width:52px;height:30px;border-radius:15px;background:{{ act.track }};position:relative;flex:none"><div style="position:absolute;top:4px;left:{{ act.knob }}px;width:22px;height:22px;border-radius:11px;background:{{ act.kc }}"></div></div></div>
+<div style="min-height:60px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:0 14px;opacity:.55"><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">ELM327 (Bluetooth)</span><span style="font-size:13px;color:#bf8a1a">Clone · read-only — tests unavailable</span></div><span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">block</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · one tester per bus</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="One tester per bus" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px;opacity:.3"><div style="height:64px;background:#121a2c;border-radius:20px"></div><div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="background:#121a2c;border-radius:24px"></div><div style="background:#121a2c;border-radius:24px"></div></div></div>
+<div style="position:absolute;left:0;right:0;top:56px;bottom:0;display:flex;align-items:center;justify-content:center">
+<div style="width:640px;background:#243049;border-radius:28px;padding:26px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 50px rgba(0,0,0,.5)">
+<div style="display:flex;align-items:center;gap:16px"><div style="width:64px;height:64px;border-radius:32px;background:rgba(191,138,26,.2);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:36px;color:#bf8a1a">cable</span></div><div style="display:flex;flex-direction:column"><span style="font-size:20px;font-weight:800;letter-spacing:.06em;color:#bf8a1a">BUS BUSY</span><span style="font-size:28px;font-weight:700;line-height:1.15">Another tool is active on the K-line; Ostler won’t send</span></div></div>
+<span style="font-size:20px;color:#b0bacb;line-height:1.4">Live data keeps reading. Unplug the other tester or finish its session, then try again.</span>
+<div style="display:flex;gap:12px;justify-content:flex-end"><div style="height:76px;padding:0 32px;border-radius:24px;background:#1a2439;box-shadow:0 0 0 2px #243049,0 0 0 5px #22a6e0;display:flex;align-items:center;font-size:22px;font-weight:800">OK</div><div style="height:76px;padding:0 28px;border-radius:24px;background:#1a2439;display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px">refresh</span>Try again</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SRC=[['memory','Ostler node','Always-on, parked alarm, every bus',1],['usb','OBDLink / STN','Fast, genuine chip, K-line capable'],['bluetooth','ELM327','Bluetooth · BLE · Wi-Fi · USB'],['cable','KKL K-line cable','Td5 engine, SLABS, BeCM'],['settings_input_component','USB CAN','CANable · PCAN']];
+const DET=[{icon:'progress_activity',c:'#22a6e0',t:'Checking adapter…',d:'Asking for firmware and timing replies',chip:''},
+ {icon:'verified',c:'#2f9e63',t:'Genuine',d:'ELM327 v2.3 · full command set',chip:'Read + clear',cicon:'check',cbg:'rgba(47,158,99,.16)'},
+ {icon:'check_circle',c:'#2f9e63',t:'Compatible',d:'Clone with good timing · some commands missing',chip:'Read + clear',cicon:'check',cbg:'rgba(47,158,99,.16)'},
+ {icon:'report',c:'#bf8a1a',t:'Clone detected',d:'Claims v2.1, answers like v1.5',chip:'Clone: read-only',cicon:'lock',cbg:'rgba(191,138,26,.18)'}];
+class Component extends DCLogic {
+ state={src:0,det:3,act:true};
+ renderVals(){
+  const S=this.state;
+  const sources=SRC.map(([icon,n,d,rec],i)=>({icon,n,d,rec:!!rec,bg:S.src===i?'rgba(34,166,224,.12)':'#121a2c',ring:S.src===i?'inset 0 0 0 2px #22a6e0':'none',pick:()=>this.setState({src:i})}));
+  const clone=S.det===3;
+  const C=(n,a,ac,node='✓')=>({n,a,ac,node});
+  const caps=[C('Live data','✓','#2f9e63'),C('Fault read / clear',clone?'Read':'✓',clone?'#bf8a1a':'#2f9e63'),C('Raw CAN sniff','Limited','#bf8a1a'),C('K-line Td5 / SLABS','✗','#ef6a7d'),C('Actions (opt-in only)',clone?'✗':'Opt-in',clone?'#ef6a7d':'#bf8a1a'),C('Parked alarm','✗','#ef6a7d'),C('Always-on','✗','#ef6a7d')];
+  const rules=[{icon:'local_parking',t:'Parked only — engine off, handbrake on'},{icon:'home_pin',t:'Local only — never from the cloud'},{icon:'wifi_off',t:'Never over Wi-Fi adapters'},{icon:'block',t:'Never on a clone adapter'}];
+  return {sources,det:DET[S.det],recheck:()=>this.setState(s=>({det:(s.det+1)%4})),caps,rules,act:{track:S.act?'#22a6e0':'#243049',knob:S.act?26:4,kc:S.act?'#0a1020':'#8e9ab0'},toggleAct:()=>this.setState(s=>({act:!s.act})),faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

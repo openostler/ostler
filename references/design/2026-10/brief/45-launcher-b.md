@@ -2,7 +2,7 @@
 title: "Designer brief 45-b — launcher: the app drawer, the app menu, folders and app shortcuts"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   Hide, Uninstall), folders on home pages and in the dock, and the app shortcut picker that
   puts an app's shortcut, such as Diagnostics "Read faults" or Trips "Last trip", on a home
   page. Shortcuts open Parked views only and never act on the car by themselves. Examples
-  use the apps of a full Discovery 2 install.
+  use the apps of a full Discovery 2 install. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-b — App drawer, app menu, folders and app shortcuts
@@ -50,8 +50,8 @@ look and the gestures.
   Parked: full. Moving (HU): a `short_list` of up to six driving apps (default Media, Radio,
   Phone, Navigation, Map, Diagnostics), each opening its Moving view; nothing else, no greyed
   rows ([launcher §5.2][lw-5.2]). Passenger: phone shows the Moving banner over the drawer.
-- **Safety and driving rules:** the drawer is an anchor: movable, renamable, re-iconable,
-  never removed ([Drive modes §8.1][dm-8.1] R9–R11). An app locked by the driving state
+- **Safety and driving rules:** the drawer is a default anchor: movable, renamable,
+  re-iconable, hideable while the recovery path stays ([Drive modes §8.1][dm-8.1] R9–R11). An app locked by the driving state
   still shows and opens its locked view. Settings and Store are system apps, always in the drawer
   and never hidden (item 57). No text entry while Moving.
 - **Components:** Sheet (phone full height), App icon (new), Segmented (tabs), text field

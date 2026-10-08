@@ -2,14 +2,25 @@
 title: "Phone & Comms add-on — dialer, contacts, Bluetooth hands-free on the Brain, companion bridge and phone notifications — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [references/research/phone_comms.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/calls_video_camera_sharing.md, docs/feature_map_dmd.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0040-power-states-and-wake.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; every decision answered as recommended. Widens the named `ostler-app-phone` (phone mirroring) into one Phone & Comms add-on rather than a separate `ostler-app-dialer`: dialer (keypad Parked only; while Moving voice dial, a favourites `short_list` of at most six and the audio-only `call` template), one contacts view combining Ostler contacts and phone contacts badged by source, recents, and phone notifications. Calls run mainly through the Brain acting as a Bluetooth hands-free unit (HFP HF via PipeWire's native backend and its telephony D-Bus API on Raspberry Pi OS Trixie, behind an adapter for BlueZ's coming call control; PBAP for the phonebook and call history, MAP for SMS and iMessage), which works the same for Android and iPhone and puts call audio in the car; the companion phone app adds the Contact Picker for favourites and, on Android only, an opt-in notification bridge (NotificationListenerService, MessagingStyle, the messenger's own RemoteInput for replies) whose alerts share the shell's one alert pipeline and rate limits with Social. WhatsApp, Signal, Telegram and Messenger calls ring through only where the app hands them to the phone's calling stack; no unofficial messenger libraries; Telegram native only via TDLib later, Matrix through Social. Phone contacts and bridged messages never leave the user's in-car devices and are not persisted by default. Phases PH0–PH4, tests and owner decisions; the matching Social spec amendment §13 (approved) settles the shared call session, alert pipeline, favourites and call log.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2; every decision answered as recommended. Widens the named `ostler-app-phone` (phone mirroring) into one Phone & Comms add-on rather than a separate `ostler-app-dialer`: dialer (keypad Parked only; while Moving voice dial, a favourites `short_list` of at most six and the audio-only `call` template), one contacts view combining Ostler contacts and phone contacts badged by source, recents, and phone notifications. Calls run mainly through the Brain acting as a Bluetooth hands-free unit (HFP HF via PipeWire's native backend and its telephony D-Bus API on Raspberry Pi OS Trixie, behind an adapter for BlueZ's coming call control; PBAP for the phonebook and call history, MAP for SMS and iMessage), which works the same for Android and iPhone and puts call audio in the car; the companion phone app adds the Contact Picker for favourites and, on Android only, an opt-in notification bridge (NotificationListenerService, MessagingStyle, the messenger's own RemoteInput for replies) whose alerts share the shell's one alert pipeline and rate limits with Social. WhatsApp, Signal, Telegram and Messenger calls ring through only where the app hands them to the phone's calling stack; no unofficial messenger libraries; Telegram native only via TDLib later, Matrix through Social. Phone contacts and bridged messages never leave the user's in-car devices and are not persisted by default. Phases PH0–PH4, tests and owner decisions; the matching Social spec amendment §13 (approved) settles the shared call session, alert pipeline, favourites and call log. Amended 2026-10-07 (openness round, ADR-0047): the keypad also works Idling with Park evidence, the user may back up or export their own phone data, call recording is an opt-in with an announced consent prompt, and community add-ons may offer messenger clients at the user's risk.
 ---
 
 # Phone & Comms add-on — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** the keypad also works while Idling
+> with Park evidence, as other text entry does (§4, §15; Decision 9's alternative); the user
+> may back up or export their own phone contacts, call history and messages to a place they
+> choose (§9); call recording is an opt-in with an announced consent prompt that every party
+> hears (§9); the first-party add-on still ships no native WhatsApp, Signal or Messenger
+> client, but community add-ons may offer one at the user's risk (§7.4). No keypad, no
+> message text and no video on a driver-facing display while Moving are unchanged; the rate
+> limits are owner-tunable as UI spec §12.1 says.
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.2.** Nothing is built. Evidence:
 [phone and comms research](../references/research/phone_comms.md) (cited as *research §n*),
@@ -146,7 +157,7 @@ the store build (research §3.1; Decision 6).
 
 | View | Parked | Idling | Moving (driver-facing display) |
 |---|---|---|---|
-| **Keypad** | yes | **no**, as asked (Decision 9 offers Idling with Park evidence) | **no** (AAOS "no dialpad"; NHTSA text-entry lockout) |
+| **Keypad** | yes | **with Park evidence only** (the UI §12.1 text-entry rule; *amended 2026-10-07, openness round*, was "no") | **no** (AAOS "no dialpad"; NHTSA text-entry lockout) |
 | **Favourites** | grid/list, edit, reorder | read and call | **`short_list` ≤ 6** rows, name ≤ 30 characters, source badge as a glyph; tap → confirm-free call (the call itself is the feedback) |
 | **Recents** | full list, filter, call back | read and call | **not shown** as a list; the Drive menu offers **Call back last** (one row) |
 | **Contacts** (§5) | search, browse, call | browse, no search text | **no**; voice dial instead |
@@ -273,7 +284,9 @@ other apps' messages stay on your phone." Decision 8.
   compliance with the Telegram API Terms, user login on the phone, no actions without consent)
   is a possible separate integration add-on later, not in Phone. The Bot API stays Social's
   "notify via" route. Decision 10.
-- **WhatsApp, Signal, Messenger:** bridge and HFP only; never a native client.
+- **WhatsApp, Signal, Messenger:** bridge and HFP only in this add-on; it ships no native
+  client, since their terms forbid unofficial ones. A community add-on may offer one at the
+  user's risk, with a terms warning (*amended 2026-10-07, openness round*).
 
 ## 8. Alerts and rate limits (shared)
 
@@ -290,13 +303,20 @@ Alerts. Missed calls while Moving become one "Missed calls (2)" card at the next
 ## 9. Data and privacy
 
 In the style of ADR-0009 ("stays on the device") and ADR-0036 ("never leaves the device"):
-- **Phone contacts, phone call history and message bodies never leave the user's in-car
-  devices** (the phone and the Brain); never Ostler Cloud, a relay, a mesh, MQTT, a share, a
-  trip, a session log, a bundle, an MCP tool reply or analytics. Held in memory; wiped on
+- **Phone contacts, phone call history and message bodies stay on the user's in-car devices
+  by default** (the phone and the Brain); never Ostler Cloud, a relay, a mesh, MQTT, a share, a
+  trip, a session log, a bundle, an MCP tool reply or analytics. *Amended 2026-10-07 (openness
+  round):* the user may **back up or export their own** contacts, call history and messages
+  to a file or a backup target they choose (an explicit act, owner of that data only). Held in memory; wiped on
   disconnect (contacts) or after 10 minutes (bodies).
 - **Persisted, local, per user:** favourites, the hands-free choice per phone, contact links,
   the app allow list, the Ostler call log (§6.5; 90 days). All exportable and deletable.
-- **Never:** call audio or voicemail recorded (ADR-0010); phone numbers attached to Ostler
+- **Call recording is off by default** (ADR-0010). *Amended 2026-10-07 (openness round):* the
+  user may turn on recording per call; the add-on then plays a spoken announcement every party
+  hears ("This call is being recorded") before recording starts, keeps the file on the device,
+  and warns that consent laws vary (two-party consent in some places). Voicemail is not
+  recorded.
+- **Never:** phone numbers attached to Ostler
   contacts or sent to peers (accounts §14.6); VIN, `<vid>` or plate in any Phone record
   (ADR-0036).
 - **Trips and logs:** a call adds no event to a trip unless the user marks one; the session
@@ -308,7 +328,7 @@ In the style of ADR-0009 ("stays on the device") and ADR-0036 ("never leaves the
 
 | Surface | Parked | Idling | Moving |
 |---|---|---|---|
-| Head unit (driver-facing) | **More → Phone** page (`more:phone`): Favourites, Recents, Contacts, Keypad, Messages (sender + app; first line opt-in), Settings | as Parked, but no keypad; contact search only with Park evidence | Drive mode only; `call` template; message `alert_card`; Favourites `short_list` via widget or Drive menu; voice dial |
+| Head unit (driver-facing) | **More → Phone** page (`more:phone`): Favourites, Recents, Contacts, Keypad, Messages (sender + app; first line opt-in), Settings | as Parked; keypad and contact search only with Park evidence | Drive mode only; `call` template; message `alert_card`; Favourites `short_list` via widget or Drive menu; voice dial |
 | Head unit passenger view | — | — | nothing beyond the templates (Phone is not reg 109 content); **Open on phone** |
 | Phone (companion) | Phone settings, bridge, pairing, consent; the phone's own dialer for calls | same | Moving banner; the phone's own UI |
 | Rear / passenger-only display | full Phone page for the **signed-in user of that display only**; never the driver's phonebook unless the driver signs in there | same | same |
@@ -388,7 +408,8 @@ Task depth ≤ 3 ending in Drive mode: Favourites → call (2); card → Reply �
 - While Moving on a driver-facing display: no keypad, no contacts list, no recents list; the
   favourites `short_list` has ≤ 6 rows of ≤ 30 characters; no message text; the `call`
   template has ≤ 3 buttons and no photo.
-- Idling: keypad locked (with or without Park evidence, unless Decision 9's alternative is chosen).
+- Idling: keypad locked without Park evidence and open with it (Decision 9's alternative,
+  adopted in the openness round).
 - Rate limits hold across Social and Phone sources together (three per 10 minutes total).
 - Bridged reply fires the messenger's own `RemoteInput`; no reply is offered without one; no
   auto-reply is ever sent into a third-party app.
@@ -416,6 +437,10 @@ Task depth ≤ 3 ending in Drive mode: Favourites → call (2); card → Reply �
   list items 71–85): every decision answered as recommended (alternatives not chosen); the
   repo `ostler-app-phone` is created at PH0, after asking the owner; the PH0 bench includes
   messenger-call caller names.
+- 2026-10-07: v0.3, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): keypad with Park
+  evidence; user backup and export of their own phone data; opt-in announced call recording;
+  community messenger clients at the user's risk.
 
 ## Decisions for the owner
 

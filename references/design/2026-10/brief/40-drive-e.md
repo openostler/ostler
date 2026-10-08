@@ -2,7 +2,7 @@
 title: "Designer brief 40-e — Drive home pages, part 1: Diagnostic, Dashboard, Map and Minimal"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   and the Parked System view (Diagnostic preset), Cluster and Map (Dashboard preset), Map
   (Map preset) and Minimal (Minimal / Night preset). Each block lists the widgets and
   bindings per class as the shipped preset files hold them, the Moving grid and placement,
-  and the Parked extras the spec allows.
+  and the Parked extras the spec allows. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-e — Drive home pages, part 1
@@ -43,7 +43,7 @@ The telltale chip appears only while a fault is active (as the live strip does).
 counts as one; a `value` line counts as two), panes ≤ 2 on HU-5, HU-7 and phone and ≤ 3 on
 HU-9/10 and HU-wide, one of each kind (`map`, `media`, `call`). Digits ≥ 56 px
 (`type-num-xl`: 64 px HU-5/7, 72 px HU-9/10 and HU-wide), labels ≥ 24 px, refresh ≤ 4 Hz,
-no tween (an rpm bar steps), no sparkline, no glow, no animation except the red alarm pulse.
+no tween (an rpm bar steps), no sparkline, no animation except the red alarm pulse (glow is the theme's choice, under the render check).
 Minimum tile and pane: HU-5 208 × 176 and 340 × 300; HU-7 280 × 240 and 440 × 360; HU-9/10
 260 × 290 and 540 × 420; HU-wide 280 × 290 and 560 × 560; phone 170 × 200 and 361 × 300.
 Overlay tiles on a map pane hug its corners on `surface-glass`
