@@ -3,6 +3,18 @@
 The export of the owner's Claude Design project "Ostler Screens Mobile Design", saved
 as delivered (less the files listed under "Changes on import") so the builder can work from it.
 
+> **Direction change, 2026-10-08
+> ([ADR-0049](../../../../decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)).**
+> Ostler is now a diagnostic and logging platform with an open VISS feed. It is made of a
+> gateway app and separate apps (Diagnostics, Trips, Security, Maintenance), built from one
+> shared Android template, plus the Brain's web console and the cloud view. It is not an OS.
+> From this bundle, build **the 22 themes as token packs, the gauge styles and the page
+> skins**, as the re-scoped
+> [theme engine spec](../../../../specs/2026-10-07-theme-engine-design.md) v0.8 describes.
+> Screens about the launcher, dock, drawer, Store, widget packs, Drive-mode pages and the OS
+> frames are **reference only**. The prototype's Home, rail and strip layouts are parked
+> with the launcher.
+
 **Owner, 2026-10-07: this bundle is the latest iteration, and its themes become the
 project's design-language themes.** Where older design references in this repo differ (for
 example the single Night/Day/Night dim/Deep night theme set in the visual design system
@@ -64,12 +76,13 @@ theme engine exploration. The owner chose this scope on 2026-10-07: **the engine
 - Textures are image assets in the pack. The prototypes' CSS gradients are placeholders.
 - The background belongs to the user, not the theme.
 - The approved engine is the
-  [theme engine spec](../../../../specs/2026-10-07-theme-engine-design.md): `ostler.skin/1`
-  with six layers, separate packs (OS skin, widgets, icons, wallpapers, sounds) and theme
-  options.
-- Safety is carried by protected surfaces, required parts and the Drive-mode render check
-  (engine spec decisions 5–7).
-- The build order is the engine spec's phases TE1–TE6.
+  [theme engine spec](../../../../specs/2026-10-07-theme-engine-design.md) v0.8:
+  `ostler.skin/1` with token packs (exported to CSS, Compose and Glance), gauge styles bound
+  to VSS paths, page skins for the React pages, assets and theme options.
+- Safety is carried by protected surfaces (the gateway app's permission, write, alarm and
+  pairing screens), required parts and the render check for driver-visible screens while
+  Moving (engine spec §8).
+- The build order is the engine spec's phases TE1–TE5.
 
 ## Read first
 
@@ -79,7 +92,8 @@ theme engine exploration. The owner chose this scope on 2026-10-07: **the engine
 
 ## What else is in `project/`
 
-Other canvases from the same session, kept for reference. They are not in this build's scope:
+Other canvases from the same session, kept for reference only. They are not in this build's
+scope, and most of them show the OS direction that ADR-0049 replaced:
 
 | Canvas | Component files | Content |
 |---|---|---|
