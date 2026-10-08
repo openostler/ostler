@@ -2,7 +2,7 @@
 title: "Designer brief — components (b): the kit, data display, maps, Moving templates and widgets"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md]
 summary: >
@@ -11,10 +11,15 @@ summary: >
   skeleton, checklist), the data components (Value, StatTile, HeroStat, calm Gauge, RangeBar,
   Sparkline, Donut, DistributionBars, area line, chart lanes, Scrubber, map and trace,
   connection ladder, status tag), the eleven Moving templates with their limits, the starter
-  widgets, and the mapping from today's ui/src files. Sizes per class, states and tokens.
+  widgets, and the mapping from today's ui/src files. Sizes per class, states and tokens. Amended 2026-10-07 (openness round, ADR-0047): style values are the default look under visual §13 and the theme engine; safety rules unchanged.
 ---
 
 # Components (b): kit, data, maps, Moving templates, widgets
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** Toast length and the card's hover behaviour are defaults. Style values here are the default look;
+> themes, add-ons and users may change them within [visual §13](../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07) and the
+> [theme engine](../../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner). Safety rules are unchanged.
 
 Size steps P, T, H7 and H9 are defined in [03-components-a](03-components-a.md#how-to-read-the-inventory).
 Owner of every component: **os**.
@@ -27,12 +32,12 @@ Owner of every component: **os**.
 | **Segmented** | 2–4 exclusive options | text, icon + text | P 40 drawn / 48 hit; H 76 | selected `accent-soft` + `accent` text (the only selected style) | `surface-3`, `accent-soft` | `.seg`, `RadioOpt.tsx` |
 | **Chip** | filter, choice or status | filter, choice, status (tone + icon + word), capability ("Clone: read-only"), countdown | P 32 drawn / 48 hit; H 48 / 76 | selected as Segmented; status tones | `*-bg`, `ok/warn/alarm` | `.chip`, `StatusChip.tsx` |
 | **ListRow** | one row in a list | icon, title, meta, trailing value, chevron, switch or button; `short_list` row ≤ 30 characters | P 56; H 76 | pressed tint, focused `accent-soft`, disabled with reason | `line` between rows | `.morerow`, `.sysrow` |
-| **Card** | a group on `surface-1` | plain, tappable (chevron, no hover scale), tone (`*-bg` + 4 px edge) | padding P 16, H 24; `radius-md` | — | `surface-1`, `*-bg` | `ItemCard.tsx`, `HealthStrip.tsx` |
+| **Card** | a group on `surface-1` | plain, tappable (chevron; no hover scale by default), tone (`*-bg` + 4 px edge) | padding P 16, H 24; `radius-md` | — | `surface-1`, `*-bg` | `ItemCard.tsx`, `HealthStrip.tsx` |
 | **Text field** (new in kit) | typed input, Parked only on head units | single line, search, multi-line, typed confirm | P 48; H 76; placeholder in `text-2` | focus ring, error line in `alarm`, locked while Moving | `surface-3`, `line-strong` | `InlineEdit.tsx` |
 | **Toggle** (new in kit) | on/off setting | with label and one-line help | P 48 row; H 76 row | on (`accent`), off, disabled with reason | `accent`, `surface-3`, `radius-pill` | — |
 | **Sheet** | a panel over the page; the only focus trap | bottom (phone), side on the passenger side (H, 520 px), full height (share, confirm) | grab handle; `radius-xl` top | open/close is the allowed motion; scrim `overlay` | `surface-2`, `overlay`, `elev-3` | `Sheet.tsx`, `ConfirmSheet.tsx` |
 | **Sheet over map** | stats and controls over a full-bleed map | peek 25 %, half, full | as Sheet; no blur on H | `surface-glass` | `surface-glass` | `AnalysisView.tsx` |
-| **Toast** (new) | short note with optional Undo | info, with action, queued, "Park to edit", "Sent" | ≤ 60 characters (P), ≤ 30 (H) | one at a time; 4 s or 8 s | `surface-2`, `radius-sm` | toast in `state/` |
+| **Toast** (new) | short note with optional Undo | info, with action, queued, "Park to edit", "Sent" | ≤ 60 characters (P), ≤ 30 (H) recommended | one at a time; 4 s or 8 s | `surface-2`, `radius-sm` | toast in `state/` |
 | **Inline notice** (new) | why a control cannot act | role, kiosk, remote, refused by the gate | `type-caption` under the control | — | `text-2`, `warn-ink` | — |
 | **Empty state** (new) | nothing to show and why | a–f in `ia-empty-state` | icon 24 / 40, title, line, one Button | — | `text-2` | `Security.tsx` text |
 | **Skeleton** (new) | the page's shape while loading | row, stat grid, map, chart | as the final layout | static, no shimmer | `surface-3`, `bg` | — |
@@ -62,7 +67,7 @@ Owner of every component: **os**.
 ## 3. Moving templates (OS only)
 
 While Moving on a driver-facing display, only these render ([UI §12.1][ui-12.1],
-[Drive modes §4.3][dm-4.3]). Text ≥ 24 px, targets 76 px, no glow, gradient or animation.
+[Drive modes §4.3][dm-4.3]). Text ≥ 24 px, targets 76 px, no animation (glow and gradient are the theme's choice, under the render check).
 
 | Template | Limit | Example (D2) |
 |---|---|---|

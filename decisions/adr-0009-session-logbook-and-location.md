@@ -2,11 +2,11 @@
 title: "ADR-0009 — Always-on session logbook; location stays on the device"
 area: decisions
 status: locked
-version: 1.2
+version: 1.3
 updated: 2026-10-07
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0004-react-typescript-ui.md, specs/2026-10-07-visual-design-system-design.md]
 summary: >
-  Every connected period is recorded on the device as a session in a RaceCapture-style CSV with a meta.json; VBO, GPX and AiM-named CSV are the interop exports; GPS comes from an NMEA receiver parsed by our own stdlib code; location never leaves the device by default and the public server serves only synthetic sessions. Amended 2026-10-07 (approved by the owner, "approve all"): the basemap is Ostler's own Night/Day styles on regional PMTiles the Brain serves, with OpenFreeMap dark/positron as the online fallback and the `--bg` token offline. Pointer (2026-10-07, DMD round): ADR-0043, accepted the same day, is the later ADR the community-upload GPS rule asks for; the default here is unchanged.
+  Every connected period is recorded on the device as a session in a RaceCapture-style CSV with a meta.json; VBO, GPX and AiM-named CSV are the interop exports; GPS comes from an NMEA receiver parsed by our own stdlib code; location never leaves the device by default and the public server serves only synthetic sessions. Amended 2026-10-07 (approved by the owner, "approve all"): the basemap is Ostler's own Night/Day styles on regional PMTiles the Brain serves, with OpenFreeMap dark/positron as the online fallback and the `--bg` token offline. Pointer (2026-10-07, DMD round): ADR-0043, accepted the same day, is the later ADR the community-upload GPS rule asks for; the default here is unchanged. Amended 2026-10-07 (openness round, ADR-0047): recording stays on by default, but the owner may Pause it or turn it Off.
 ---
 
 # ADR-0009 — Always-on session logbook; location stays on the device
@@ -22,6 +22,11 @@ summary: >
 > approved by the owner on 2026-10-07 ("approve all", DMD round), is the later ADR the
 > community-uploads bullet asks for (L1 routes after trimming, with a preview; full logs only
 > as verified hand-overs). This ADR's default is unchanged.
+>
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](adr-0047-openness-round.md)):** always-on stays the default, but the
+> owner may **Pause** or turn recording **Off**. See
+> [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 ## Context
 
@@ -84,6 +89,16 @@ bullet above stands except for the tiles:
 - Unchanged: MapLibre GL, lazy-loaded and bundled; no prefetching from openstreetmap.org;
   location stays on the device.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md) (loosening 7). The
+**Always-on** bullet now reads: recording is on by default and starts as before; the owner may
+**Pause** it (until the next trip or for a chosen time) or turn it **Off** in Settings, and the
+REC chip shows the state ([UI spec](../specs/2026-10-06-ui-architecture-design.md) §12.2).
+GPS-only trips are an opt-in ([ADR-0011](adr-0011-no-demo-mode-live-only-recording-place-names.md)
+amendment). Location still stays on the device by default.
+
 ## Changelog
 
 - 2026-10-05: v1.0, accepted.
@@ -92,3 +107,5 @@ bullet above stands except for the tiles:
   "approve all"; visual design system spec §7).
 - 2026-10-07: v1.2, pointer to ADR-0043 (accepted, DMD round), which fulfils the
   community-uploads condition; the decision text is unchanged.
+- 2026-10-07: v1.3, Amendment (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): Pause and Off for recording; always-on stays the default.

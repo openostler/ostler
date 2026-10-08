@@ -2,14 +2,16 @@
 title: "ADR-0038 — Mesh: car-to-car and off-grid"
 area: decisions
 status: locked
-version: 1.5
+version: 1.6
 updated: 2026-10-07
 depends_on: [references/research/mesh_networking.md, references/research/addons_catalogue.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, specs/2026-10-07-social-addon-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry. Amendment 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): MeshCore as the second LoRa bridge; batman-adv over 802.11s allowed inside a convoy Wi-Fi mesh, routed at each brain with Babel at the edge; UK/EU HaLow is a car-to-camp uplink, not a mesh; live voice, video and camera streams only over a Wi-Fi IP mesh between ride members, never over HaLow, LoRa or MQTT; router topics and payload fields; ghost and camera consent; inbound mesh positions kept only as expiring retained state, never written to the logbook (narrows §2); bench additions (UK/EU HaLow pair, two-car batman-adv pair, LiveKit on a Pi 5, handover, MeshCore beside Meshtastic).
+  Accepted by the owner on 2026-10-06. No mesh inside the car: the in-car network stays routed T1S/Ethernet. A mesh only links car to car, to a base or camp, or off-grid, as its own subnet or non-IP network joined at the brain or a gateway, and it is always a remote path: Read and alerts go out, messages and peer positions come in as data, and nothing from a mesh ever commands the car. First a Meshtastic-compatible LoRa add-on (any owner radio, then our own board on stock Meshtastic firmware) behind a thin GPL-3 VSS bridge with no actions, strict broker ACLs, rate limits and privacy defaults (position sharing opt-in, coarse by default, private channel, no VIN or vehicle id). Mesh identities stay separate from Ostler device keys, pairing keys and passkeys. A richer car-to-car mesh (MeshCore, Reticulum/LXMF, Styrene, Ratspeak) is a later goal or add-on, bench-tested then; until then all four are references only, Reticulum included; Babel, not batman-adv, if a Wi-Fi IP mesh is ever wanted. Amended 2026-10-06 (owner, module-bus answers): the bridge's broker ACL also covers its own status (with its will), power and manifest, like any device; over the radio nothing is retained or retried; its in-car topics get per-topic QoS, retain and expiry. Amendment 2026-10-07, approved by the owner on 2026-10-07 ("approve all"): MeshCore as the second LoRa bridge; batman-adv over 802.11s allowed inside a convoy Wi-Fi mesh, routed at each brain with Babel at the edge; UK/EU HaLow is a car-to-camp uplink, not a mesh; live voice, video and camera streams only over a Wi-Fi IP mesh between ride members, never over HaLow, LoRa or MQTT; router topics and payload fields; ghost and camera consent; inbound mesh positions kept only as expiring retained state, never written to the logbook (narrows §2); bench additions (UK/EU HaLow pair, two-car batman-adv pair, LiveKit on a Pi 5, handover, MeshCore beside Meshtastic). Amended 2026-10-07 (openness round, ADR-0047): calls are not recorded by default, and a user may opt in per call with an announced consent prompt.
 ---
 
 # ADR-0038 — Mesh: car-to-car and off-grid
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):** "calls are never recorded" becomes "not recorded by default"; a user may opt in per call with an announced consent prompt. Nothing above Read over any mesh is unchanged. See [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
 > **Amended 2026-10-06 (Brain rename, [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)):** read "Ostler Hub" and "Hub" (the product, also "hub" for the box) as "Ostler Brain" and "Brain". See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
@@ -202,6 +204,16 @@ they win.
   `Vehicle.Ostler.Security.Alarm.State` (ADR-0016 Amendments) and alerts are `event/<name>`
   messages chosen by an owner allowlist of class and severity.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md) (loosening 8). In the
+approved amendment's item 4, "**Calls are never recorded**" reads: calls are not recorded by
+default; a user may turn on recording for a call, after a spoken announcement every party
+hears, and the file stays on the device
+([Phone & Comms](../specs/2026-10-07-phone-comms-addon-design.md) §9). Nothing from a call
+enters a session log, and nothing above Read crosses any mesh (unchanged).
+
 ## Changelog
 
 - 2026-10-07: v1.4, adds the Proposed amendment (2026-10-07, mesh transports) below for owner
@@ -211,6 +223,9 @@ they win.
   narrows §2 so inbound mesh positions are kept only as expiring retained state and never
   written to the logbook (Vehicles & Map spec decision 6); the bench additions join the
   bench-test plan, before Social phase S3.
+- 2026-10-07: v1.6, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): calls are not recorded by default; opt-in recording with an
+  announced consent prompt.
 
 ## Amendment (2026-10-07), approved
 

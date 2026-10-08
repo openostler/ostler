@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part A): rules, the Apps list and App info"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   Moving, owner-only operations on local links, the OS keeps safety), and the file map for
   parts A to G. It briefs the Apps list in system Settings, one list with integrations
   labelled (owner decision item 56); the App info page per app (open, disable, uninstall, force stop, and rows into every sub-page);
-  and the force stop and disable sheets.
+  and the force stop and disable sheets. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # App framework brief, part A: rules, Apps list, App info
@@ -66,7 +66,7 @@ dashboard and sound presets). An app's own settings pages live in that app's are
   ([ADR-0033][adr-33] §3).
 - **Honest states and real data.** Example rows use the Discovery 2 Td5 pack. Live values
   are written ‹like this›; draw them with neutral sample text, never a fake reading.
-- **Look.** Lists of ListRow on `surface-1` Cards; one primary Button per screen; head units
+- **Look (default).** Lists of ListRow on `surface-1` Cards; one primary Button per screen; head units
   use 76 px rows and ≥ 18 px type; no glow on head units ([visual §1][vds-1],
   [visual §8][vds-8]). Shared new components: **Switch** (from the Settings brief) and
   **SetupStepper** (from the onboarding brief).

@@ -2,14 +2,26 @@
 title: "Social add-on — messaging, push-to-talk, calls and camera sharing over the internet and meshes — design"
 area: specs
 status: stable
-version: 0.5
+version: 0.6
 updated: 2026-10-07
 depends_on: [references/research/phone_comms.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/social_group_drive_apps.md, references/research/mesh_transports.md, references/research/calls_video_camera_sharing.md, references/research/accounts_social_login.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/mesh_networking.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-module-bus-messages-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 added and v0.5 approves (owner, 2026-10-07, "approve all", DMD round) an amendment (§12): message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the earlier "Message from name" with Play / Later (§8 and Decision 5 replaced). v0.4 added and v0.5 approves a second amendment (§13, DMD round): the comms overlap with the Phone & Comms add-on (approved) — one shell-owned call session and comms chip (phone calls pause PTT, call waiting instead of stacked cards), one alert pipeline whose message rate limits count across Social, SMS and bridged messengers, one favourites list, one local call log, auto-reply only for Ostler messages, and Social as the only Ostler messenger, linking out to Ostler Community.
+  Approved by the owner on 2026-10-07 ("approve all"). The Social add-on (`ostler-app-social`, its own repo) gives people in cars and on bikes 1:1, group and ride-channel messaging, push-to-talk first, then voice and video calls, and later live camera sharing. It reads contacts, groups, rides and the data-class permission registry from core accounts and sharing and stores no permissions of its own. One Social link router sends each message class over the best allowed link (internet, Wi-Fi mesh, HaLow, LoRa; alerts on every link) with one envelope and de-duplication; live media run as WebRTC through a self-hosted LiveKit room (relay or a brain) with our own token issuer, never through MQTT. Driver rules: audio only on head units while Moving through the `call` template, video only Parked or on passenger devices, no message content on a driver screen. Cameras get their own time-boxed, live-only, audited `camera` grant. WhatsApp and Facebook only through share links and the share sheet; Matrix only as later interop. Phases S1–S4 and owner decisions. v0.3 added and v0.5 approves (owner, 2026-10-07, "approve all", DMD round) an amendment (§12): message alerts on driver screens show sender and app with Play and Reply (voice or up to five canned replies), an opt-in first-line preview only for messages that arrive while parked, and rate limits, replacing the earlier "Message from name" with Play / Later (§8 and Decision 5 replaced). v0.4 added and v0.5 approves a second amendment (§13, DMD round): the comms overlap with the Phone & Comms add-on (approved) — one shell-owned call session and comms chip (phone calls pause PTT, call waiting instead of stacked cards), one alert pipeline whose message rate limits count across Social, SMS and bridged messengers, one favourites list, one local call log, auto-reply only for Ostler messages, and Social as the only Ostler messenger, linking out to Ostler Community. Amended 2026-10-07 (openness round, ADR-0047): Social's no-feed, no-likes scope is this add-on's own choice and other add-ons may offer feeds or leaderboards; call recording is an opt-in with an announced consent prompt; community messenger clients and social login as a primary credential for cloud-only users are allowed.
 ---
 
 # Social add-on — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** Social itself stays minimal (no
+> feed, likes, followers, directory, ads or tracking), but these are this add-on's design
+> choices, not platform rules: a third-party social add-on may offer feeds, followers,
+> scores or leaderboards, opt-in (§1). Unofficial WhatsApp or Facebook clients stay out of
+> this add-on, while a community add-on may offer one at the user's risk (§1, §9). Calls are
+> not recorded by default; recording is an opt-in with an announced consent prompt (§8, C4;
+> Phone & Comms §9). Task depth while Moving follows UI spec §12.1 (default 3, owner
+> setting). Social login may be an optional primary credential for cloud-only users (§9;
+> accounts spec). No message content, photos or avatars while Moving are unchanged.
 
 **Status: approved by the owner on 2026-10-07 ("approve all"), v0.2; the amendments §12 and §13 (v0.3, v0.4) approved by the owner on 2026-10-07 ("approve all", DMD round), v0.5.** Nothing here is built before the app model's UA phase
 and the accounts phases it depends on (§11). It is a design for the optional add-on
@@ -31,13 +43,16 @@ It must be useful with **two people and no server** (research: social apps that 
 network die).
 
 **Non-goals.**
-- No feed, likes, followers, public directory, ads, tracking or analytics (ADR-0029 §9).
+- No feed, likes, followers, public directory, ads, tracking or analytics (ADR-0029 §9). This
+  is Social's own scope; other add-ons may offer feeds, followers or leaderboards, opt-in
+  (*amended 2026-10-07, openness round*).
 - No permissions of its own: who sees what is core accounts and sharing (§3).
 - No map: other people's vehicles on a map are **Vehicles & Map** (`ostler-app-vehicles`);
   Social only links to it.
 - No vehicle actions. Social declares none in its manifest; no message, call or camera request
   ever commands the car (ADR-0033 §6, ADR-0038 §2).
-- No scraping of, or login to, WhatsApp or Facebook; no contact upload (§9).
+- No scraping of, or login to, WhatsApp or Facebook in this add-on; no contact upload (§9). A
+  community add-on may offer such a client at the user's risk, with a terms warning.
 - No live voice over LoRa, no continuous calls or video over UK/EU HaLow (§6).
 - Not a replacement for helmet intercoms: audio routes to them over the phone's Bluetooth.
 
@@ -195,14 +210,16 @@ SFU; only call **state** reaches the car broker.
   (approved, DMD round)**: while Moving a message alert is an `alert_card` with the sender and
   the app, **Play** and **Reply** (speak a reply or one of up to five canned replies), an
   opt-in first-line preview only for messages that arrived while Parked, and the rate limits;
-  never message content, photos or avatars while Moving. Task depth ≤ 3, ending back in Drive
-  mode. Unknown speed counts as Moving. *History:* the rule approved earlier on 2026-10-07 read
+  never message content, photos or avatars while Moving. Task depth as UI spec §12.1 (default
+  3, an owner setting), ending back in Drive mode. Unknown speed counts as Moving. *History:* the rule approved earlier on 2026-10-07 read
   "Message from Sam" with **Play** and **Later**, reply by PTT voice note or the "I'm driving"
   auto-reply, no keyboard and no canned list.
 - **ADR-0009:** location stays on the device unless a share grants it; Social sends positions
   only through the router under the registry's rules, time-limited when precise (≤ 24 h).
-- **ADR-0010:** calls are **never recorded** by Ostler and nothing from a call enters a session
-  log; a live call is not a cabin recording, and the two rules don't collide.
+- **ADR-0010:** calls are **not recorded** by default and nothing from a call enters a session
+  log; a live call is not a cabin recording, and the two rules don't collide. *Amended
+  2026-10-07 (openness round):* the user may opt in to recording a call; every party first
+  hears a spoken announcement, and the file stays on the device (Phone & Comms §9).
 - **ADR-0033:** no actions; mesh and relay are remote paths; camera control stays local.
 - **ADR-0036:** no VIN, its HMAC or a plate in any message, card, envelope or mesh field.
 - **Audit (local):** camera views, share grants used by Social, the call log (who, when,
@@ -234,8 +251,9 @@ SFU; only call **state** reaches the car broker.
   ride start, end and alerts, per-destination opt-in.
 - **Not done:** reading WhatsApp or Facebook chats, groups or friends; contact upload; the
   WhatsApp Business API or posting to pages (only ever via Ostler Cloud, if at all).
-- **Social login** is core's (accounts spec): at most an optional Ostler Cloud OIDC broker that
-  links to a local user; never friend discovery.
+- **Social login** is core's (accounts spec): an optional Ostler Cloud OIDC broker that links to
+  a local user, or, for cloud-only users, an optional primary credential (*amended 2026-10-07,
+  openness round*); never friend discovery (it would expose other people's graphs).
 - **Matrix** is later interop only: a separate bridge service mapping a group to a Matrix room,
   and Element Call (AGPL, Element's) as a separate service, never in the add-on. Mumble or SIP
   bridges only if a club asks.
@@ -386,8 +404,8 @@ because the handset rings in-band whatever the car shows.
 **C4 — One local call log.** The shell's call session writes one local log entry per call it
 hosts (direction, source, label, contact ref or number, start, duration, link), per user,
 90 days, never uploaded, exportable. §2's **Calls** tab is the Ostler-source view of it and
-Phone's Recents the merged view; §8's audit "the call log" now means this log. Audio is never
-recorded (ADR-0010).
+Phone's Recents the merged view; §8's audit "the call log" now means this log. Audio is not
+recorded unless the user opts in with the announced consent prompt (Phone & Comms §9).
 
 **C5 — Auto-reply stays inside Ostler.** §4's "I'm driving" auto-reply (and §12's scoped
 version) answers **Ostler messages only**. Canned replies (UI §14) are one shared list used by
@@ -435,6 +453,11 @@ attachment for a recipient who is not a named helper.
   answered as recommended (alternatives not chosen); the new Decision 5 replaces the old one;
   §8's "Driver screens" bullet and the §10 test now carry §12's rule, the earlier rule kept
   as history.
+- 2026-10-07: v0.6, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): Social's no-feed scope is
+  its own, not a platform rule; community messenger clients at the user's risk; opt-in
+  announced call recording; task depth per UI §12.1; social login as an optional primary
+  credential for cloud-only users.
 
 ## Decisions for the owner
 

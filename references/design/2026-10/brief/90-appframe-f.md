@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part F): pack pages and app errors"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   preset previews Parked and Moving and applies through the dashboard builder; a sound or
   EQ preset applies in the Audio app. The errors are an app that stopped and an app that
   needs an update for this OS version (both New, named by the app model), and an app that
-  is not available on this car.
+  is not available on this car. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # App framework brief, part F: pack pages and app errors
@@ -54,8 +54,8 @@ alarm alerts or the Moving templates (R3).
   (`45-launcher-*`) on the colours step; **Apply as is**.
 - **States:** a theme failing a contrast check: **Apply** disabled, "Fails contrast in
   Night dim"; applied: Chip "In use"; Moving: locked.
-- **Safety and driving rules:** tokens only, no raw colours; no glow on head units at night
-  ([visual §3.1][vds-3.1], [visual §1][vds-1]).
+- **Safety and driving rules:** themes may set any values (visual §13); the Drive-mode render
+  check applies ([visual §3.1][vds-3.1], [visual §1][vds-1]).
 - **Components:** Segmented, Card (preview), Button.
 - **Spec refs:** [visual §3.1][vds-3.1] · [visual §1][vds-1] · [app UI model §9][ua-9] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 48):** a theme pack may bring accents beyond cyan, as
@@ -77,6 +77,7 @@ alarm alerts or the Moving templates (R3).
 - **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6] · [app UI model §9][ua-9] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 49):** yes, an icon pack ships its own glyphs (SVG, no
   images or code), each mapped to a Material Symbols name; safety icons never change.
+  *Amended (openness round): safety icons may be restyled under the render check.*
 
 ### app-pack-wallpaper — Wallpaper pack  [New]
 - **Owner:** os
@@ -91,7 +92,8 @@ alarm alerts or the Moving templates (R3).
 - **Components:** Card, Segmented, Button.
 - **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [app UI model §9][ua-9] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 19):** on driver-facing displays the Moving sections
-  draw on the plain `bg` surface, never on a wallpaper.
+  draw on the plain `bg` surface, never on a wallpaper. *Superseded (openness round): the
+  theme decides, under the render check.*
 
 ### app-pack-preset — Dashboard preset  [New]
 - **Owner:** os

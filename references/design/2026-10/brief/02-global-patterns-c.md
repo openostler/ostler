@@ -2,7 +2,7 @@
 title: "Designer brief — global patterns (c): long jobs, undo, empty vehicle, updates, service mode, wake and accessibility"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md]
 summary: >
@@ -12,10 +12,15 @@ summary: >
   remove device, delete trip); the empty vehicle when no pack matches (unknown vehicle,
   generic OBD-II, choose your vehicle); the update-available state; the service-mode frame;
   the Brain wake, queued and Needs the Brain states; and accessibility: the D-pad focus ring,
-  focus zones, target and text sizes per class, contrast, reduced motion and names.
+  focus zones, target and text sizes per class, contrast, reduced motion and names. Amended 2026-10-07 (openness round, ADR-0047): style values are the default look under visual §13 and the theme engine; safety rules unchanged.
 ---
 
 # Global patterns (c): long jobs, undo, empty vehicle, updates, frames, accessibility
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** The focus ring's look is a default a theme may restyle. Style values here are the default look;
+> themes, add-ons and users may change them within [visual §13](../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07) and the
+> [theme engine](../../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner). Safety rules are unchanged.
 
 ### ia-long-job — Long-running jobs  [Proposed]
 - **Purpose:** one way to show work that takes seconds to minutes, and what happens if you leave. *Why:* Scan all, Export all, capture, procedures and firmware updates each need progress, and no spec gives them one shared look.
@@ -101,7 +106,7 @@ summary: >
 - **Purpose:** every control works from a D-pad, keyboard or remote, and reads well for everyone.
 - **Opens from → goes to:** any non-pointer input; a tap clears the ring.
 - **Content:**
-  1. **Ring:** 3 px `focus-ring-color` (accent) outside the element with a 2 px `bg` gap; no glow, shadow, size change or animation; a focused ListRow also takes `accent-soft`.
+  1. **Ring:** by default 3 px `focus-ring-color` (accent) outside the element with a 2 px `bg` gap, no glow or shadow; a theme may restyle it but focus must stay clearly visible, with no size change or animation in Moving templates; a focused ListRow also takes `accent-soft`.
   2. **Zones:** strip, dock, page, sheet; a sheet traps focus until `back`.
   3. **Engaged** controls (slider, setpoint, scrubber, map) show an engaged state; arrows adjust; map shows a centre target.
   4. **Touch and D-pad together:** first tap focuses a Drive menu row, second activates.

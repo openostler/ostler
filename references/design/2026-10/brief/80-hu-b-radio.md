@@ -2,7 +2,7 @@
 title: "Designer brief 80-b — Radio app: now playing, stations, tuning, presets, DAB slideshow, traffic interrupt"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   frequency scale; presets with recall and save; the DAB slideshow (Parked only); and the
   traffic announcement interrupt, which goes through the OS alert pipeline. Each block says
   what the Moving `media` template keeps and what becomes Parked only. Setup, settings and
-  widgets are in 80-c.
+  widgets are in 80-c. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 80-b — Radio app pages
@@ -100,7 +100,7 @@ UK broadcasts the D2 owner can receive. Every page is driver-facing on head unit
 - **Content (top to bottom):**
   1. Big frequency in `type-hero` "97.6" with unit "MHz" (AM "1089 kHz"; DAB "Block 12B").
   2. **FrequencyScale** (new component): a horizontal band 87.5–108.0 MHz with ticks; found
-     stations as small markers; a draggable needle (Parked); no glow.
+     stations as small markers; a draggable needle (Parked); no glow in the default look.
   3. Buttons: `chevron_left` "Step down", `chevron_right` "Step up" (0.1 MHz FM, 9 kHz AM,
      one block DAB), `fast_rewind` "Seek down", `fast_forward` "Seek up".
   4. **Scan** Button: plays 5 s of each found station; **Stop scan** while it runs.

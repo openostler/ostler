@@ -12,7 +12,7 @@ summary: >
   never below the floors, refused where a number would clip) and the preview of a theme on
   a home page and the Drive page before applying. It then gives Home settings: grid size,
   dock size and position, labels, screen rotation, the default page and the Drive rotation.
-  Examples use the Discovery 2 Td5 Cluster page.
+  Examples use the Discovery 2 Td5 Cluster page. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-k — Gauge styles, text size, theme preview and Home settings

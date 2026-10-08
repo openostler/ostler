@@ -2,11 +2,11 @@
 title: "Maintenance & Garage add-on — services, reminders, fuel, costs and documents fed by the car — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-api-consistency-design.md, specs/2026-10-06-u0-seams-design.md, decisions/adr-0006-english-confidence-vocabulary.md, decisions/adr-0008-unified-status-vocabulary.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0041-brain-ed25519-signing.md, references/research/maintenance_trackers.md, references/research/code_review_lubelogger.md, references/research/code_review_tracktor.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). Maintenance & Garage (`ostler-app-maintenance`, optional first-party add-on) tracks services, reminders, fuel, costs and documents per vehicle, fed by the car where it can be. Own schema (SI units, ISO 8601, `vid`, `source`, confidence) with records for meter readings, task templates, tasks, services, fuel, expenses, generic compliance documents (MOT, insurance, tax as kinds) and attachments. A reminder engine over distance, engine hours, time and "fault seen", whichever first, with four urgency bands and fixed or rolling intervals, translated from LubeLogger with its defects fixed (MIT notice, `AGPL-3.0-or-later AND MIT` REUSE header). Fuel economy full-to-full as total distance over total fuel. An odometer and engine-hours ladder (car value, else user anchor plus Trips distance, labelled estimated). Fault-triggered task suggestions that close after N clean drives and reopen if the code returns. Manufacturer schedules as vehicle-pack data (`maintenance.json`). Garage screens in the Speedometer style; reminders on a Home card, strip chip, notifications and VSS `Vehicle.Service.*`, in the car only at trip start or end. Fuelly and LubeLogger CSV import/export and an export bundle; a `maintenance` data class off by default, a time-boxed buyer share and mechanic records; an optional LubeLogger bridge later; signed history deferred. Phases, tests and decisions.
+  Approved by the owner on 2026-10-07 ("approve all"). Maintenance & Garage (`ostler-app-maintenance`, optional first-party add-on) tracks services, reminders, fuel, costs and documents per vehicle, fed by the car where it can be. Own schema (SI units, ISO 8601, `vid`, `source`, confidence) with records for meter readings, task templates, tasks, services, fuel, expenses, generic compliance documents (MOT, insurance, tax as kinds) and attachments. A reminder engine over distance, engine hours, time and "fault seen", whichever first, with four urgency bands and fixed or rolling intervals, translated from LubeLogger with its defects fixed (MIT notice, `AGPL-3.0-or-later AND MIT` REUSE header). Fuel economy full-to-full as total distance over total fuel. An odometer and engine-hours ladder (car value, else user anchor plus Trips distance, labelled estimated). Fault-triggered task suggestions that close after N clean drives and reopen if the code returns. Manufacturer schedules as vehicle-pack data (`maintenance.json`). Garage screens in the Speedometer style; reminders on a Home card, strip chip, notifications and VSS `Vehicle.Service.*`, in the car only at trip start or end. Fuelly and LubeLogger CSV import/export and an export bundle; a `maintenance` data class off by default, a time-boxed buyer share and mechanic records; an optional LubeLogger bridge later; signed history deferred. Phases, tests and decisions. Amended 2026-10-07 (openness round, ADR-0047): the visual tokens are the default look and the add-on may style its own pages.
 ---
 
 # Maintenance & Garage add-on — design
@@ -146,7 +146,7 @@ D2 Td5 intervals wait for sourcing **(U)**. User edits override pack templates p
 
 ## 7. Garage screens
 
-Speedometer Garage style (teardown §3.6); colours, ramps and type from the visual design system's tokens only (2026-10-07 visual design spec).
+Speedometer Garage style (teardown §3.6); colours, ramps and type from the visual design system's tokens by default (2026-10-07 visual design spec); as an add-on it may style its own pages freely (visual §11 and §13, amended 2026-10-07, openness round, [ADR-0047](../decisions/adr-0047-openness-round.md)).
 
 - **Garage card** (shell garage, new slot): next due item with its band pill, cost this
   month.
@@ -240,6 +240,9 @@ Speedometer Garage style (teardown §3.6); colours, ramps and type from the visu
   answered as recommended (alternatives not chosen); `maintenance.json` is added to the
   vehicle-pack contract (ADR-0013 amendment, 2026-10-07); the LubeLogger bridge add-on
   `ostler-app-lubelogger` is listed in ADR-0034, not yet created.
+- 2026-10-07: v0.3, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): §7's tokens are the default look; the add-on may style its own
+  pages.
 
 ## 14. Decisions for the owner
 

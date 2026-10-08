@@ -2,14 +2,25 @@
 title: "App UI model — what an app contributes to the empty OS: drawer entry, pages, shortcuts, widgets, setup and options flows, notification channels, themes and data classes; object kinds; App info; manifest schema 2 — design"
 area: specs
 status: stable
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-store-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 22–27 and 56–58), v0.2; every decision answered as recommended. Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 22–27 and 56–58), v0.2; every decision answered as recommended. Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions. Amended 2026-10-07 (openness round, ADR-0047): no dynamic-shortcut cap, raw strings in community flows, non-car USB hardware for any publisher with owner consent, a Store client the owner can disable, and theme and icon packs under visual §13 and the theme engine.
 ---
 
 # App UI model — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** dynamic shortcuts have no cap
+> (§2); community apps may use raw strings in their flows (§4.3); `device` integrations from
+> any publisher may get non-car USB hardware with the owner's consent, never a car bus, the
+> node link or the module bus (§6, §9); the owner may disable the Store client (§8); theme
+> and icon packs follow [visual §13](2026-10-07-visual-design-system-design.md) and the
+> [theme engine](2026-10-07-theme-engine-design.md) instead of "allowed token values" and
+> "no safety glyphs" (§9). Reserved `alarm` and `critical` channels, OS-assigned trust and
+> sandboxed community code are unchanged.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all", OS round; decision list
 items 22–27 and 56–58), v0.2. It **amends** the
@@ -36,12 +47,12 @@ info page is the model for permissions, storage and notifications.
 |---|---|---|---|
 | **Drawer entry** | `contributes.drawer` | OS | the drawer, Settings → Apps, the Store |
 | **Pages** | `contributes.pages` | OS (schema) or app (custom) | opened from the drawer, a shortcut, a deep link, a notification |
-| **Shortcuts** | `contributes.shortcuts`; SDK `shortcuts.setDynamic` (≤ 4) | OS | long press in the drawer; placed on pages and the dock |
+| **Shortcuts** | `contributes.shortcuts`; SDK `shortcuts.setDynamic` (no cap) | OS | long press in the drawer; placed on pages and the dock |
 | **Widgets** | `contributes.widgets` | OS frame; OS view or app view | the widget picker ([launcher §8](2026-10-07-launcher-and-widgets-design.md)) |
 | **Setup flow** | `contributes.setup` | OS (forms) | first open, the Store's install sheet, Settings → Vehicles and integrations |
 | **Options flow** | `contributes.options` | OS (forms) | App info → App settings; the app's own settings page |
 | **Notification channels** | `contributes.notifications.channels` | OS | Settings → Notifications; App info |
-| **Themes** | `contributes.themes` | OS (tokens) | the theme wizard |
+| **Themes** | `contributes.themes` | OS (skin packs, visual §13) | the theme wizard |
 | **Data classes** | `contributes.data_classes` | OS | Settings → Privacy (accounts spec §14.1; each starts in ghost) |
 | **Dashboard presets** | `contributes.dashboards` | OS | the dashboard builder, the pages overview |
 | **Drive menu rows** | `contributes.drive_menu` | OS | ShellInput's Drive menu (app-model §15.3, unchanged) |
@@ -118,7 +129,8 @@ when it has a backend, a handler that validates input and decides the next step.
 - The OS checks each form against its schema before sending it. The handler then returns
   `{ "next": "<step id>" }` or `{ "errors": { "<field>": "<i18n key>" }, "base": "<i18n
   key>" }`. Field errors sit under their fields; a base error sits at the top. Text is i18n
-  keys only; the OS refuses raw strings over 120 characters.
+  keys for first-party apps; a community app may return raw strings (no length cap; long text
+  wraps) (*amended 2026-10-07, openness round*).
 - A declarative integration with no backend has schema validation only.
 - Each finished flow has a stable **`unique_id`** (a serial or a device id, never an address,
   HA research C3), so a second setup of the same thing is refused as "Already set up".
@@ -158,9 +170,11 @@ offers the options flow in App info so every app has one place for its settings.
 - **Vehicle packs** keep the `VehiclePack` contract and entry point (ADR-0013); they add an
   `ostler-app.json` with `kind: integration` and `integration.type: vehicle`. The car buses
   stay the OS's: no integration gets bus access beyond the contract and the gate.
-- **Hardware access** (`permissions.hardware`) is only for `device` integrations from first
-  party or verified publishers, names the device by USB class or ids, and never covers a car
-  bus, the node link or the module bus. Apps use such a device through the SDK `devices`
+- **Hardware access** (`permissions.hardware`) is for `device` integrations; from first party
+  or verified publishers it is granted at install, and from any other publisher only with the
+  owner's explicit consent on the permissions sheet (*amended 2026-10-07, openness round*). It
+  names the device by USB class or ids, and **never** covers a car bus, the node link or the
+  module bus. Apps use such a device through the SDK `devices`
   service, never directly.
 
 ## 7. Notification channels
@@ -199,17 +213,19 @@ channel) · Developer (service mode, sideloading) · About.
 | **Disable** | keeps data, removes every contribution |
 | **Uninstall** | offers Export data first; removes contributions, data and (where the host allows) code |
 
-System services and system UI show an App info page with no Disable or Uninstall.
+System services and system UI show an App info page with no Disable or Uninstall, except the
+**Store client**, which the owner may disable (installs then come only by sideloading;
+*amended 2026-10-07, openness round*). Safety services are never disabled.
 
 ## 9. Object kinds
 
 | Kind | Holds | Code? | Phone binary | Review |
 |---|---|---|---|---|
 | **app** | drawer entry, pages, shortcuts, widgets, flows, channels, optional backend | yes, or declarative | bundled or Brain-served only; declarative apps install | per publisher (Store) |
-| **integration** | setup and options flows, a backend; types vehicle, data_source, bridge, device | yes (backend), or declarative | as app; vehicle packs as JSON data | as app; `device` first party or verified only |
+| **integration** | setup and options flows, a backend; types vehicle, data_source, bridge, device | yes (backend), or declarative | as app; vehicle packs as JSON data | as app; `device` from other publishers needs owner consent (§6) |
 | **widget pack** | widgets only | declarative, or code as an app | declarative packs install | as app |
-| **theme pack** | token values within the allowed set, accents, default gauge style | no | installs | automatic checks (contrast, safety tokens untouched) |
-| **icon pack** | SVG glyphs mapped to the catalogue names | no | installs | automatic checks (names, size, no safety glyphs) |
+| **theme pack** | a skin pack as the [theme engine spec](2026-10-07-theme-engine-design.md) defines it (visual §13) | no code | installs | the theme engine's checks (packaging, render check, protected surfaces, required parts) |
+| **icon pack** | SVG glyphs mapped to Material Symbols names (any glyphs, safety ones included) | no | installs | automatic checks (names, size, sanitised SVG); safety glyphs pass the Drive-mode render check |
 | **wallpaper pack** | images (≤ 2 MB each, EXIF stripped) | no | installs | automatic checks, then review |
 | **dashboard preset** | `ostler.layout/2` pages | no | installs | the layout validator |
 | **sound or EQ preset** | EQ curves, balance and fade, crossover and delay values for the Audio app | no | installs | range checks |
@@ -272,7 +288,8 @@ mapped to pages and the drawer).
 
 - **Schema:** each object kind's example validates; a data object with a script, URL or code
   entry is refused; `alarm` or `critical` channels from an app are refused; `hardware` on a
-  non-`device` kind or a community publisher is refused; schema 1 manifests upgrade.
+  non-`device` kind or naming a car bus, the node link or the module bus is refused, and from a
+  community publisher it waits for the owner's consent; schema 1 manifests upgrade.
 - **Flows:** a form step refuses input that breaks its schema before the handler runs; field
   and base errors render under the right field; a second setup with the same `unique_id` is
   refused; a discovered item never completes without `confirm`; every flow is refused on a
@@ -316,3 +333,8 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
 - 2026-10-07: v0.1, first draft from the owner's direction of 2026-10-07, for ADR-0046.
 - 2026-10-07: v0.2, approved by the owner on 2026-10-07 ("approve all", OS round; decision
   list items 22–27 and 56–58): every decision answered as recommended (alternatives not chosen).
+- 2026-10-07: v0.3, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): no cap on dynamic
+  shortcuts; raw strings allowed in community flows; non-car USB hardware for any publisher's
+  `device` integration with owner consent; the Store client can be disabled; theme and icon
+  packs defer to visual §13 and the theme engine.

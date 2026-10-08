@@ -415,6 +415,16 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **Openness round, approved by the owner on 2026-10-07 ("apply the loosenings"; docs only,
+  no code).** [ADR-0047](decisions/adr-0047-openness-round.md) applies the
+  [rules audit](references/research/rules_audit_2026-10-07.md)'s 15 loosenings: style is a
+  default (themes per visual §13 and the theme engine), caps become defaults with warnings,
+  the dock and strip are user-sized, the hub API is published with a user-settable hub URL,
+  recording gains Pause and Off, own-data privacy floors become defaults with warnings, Moving
+  lockouts follow the law cited, UX first and spec first bind the core repo only, and the
+  [CONSTITUTION](CONSTITUTION.md) (v1.9) holds invariants only, with process moved to
+  [CONTRIBUTING.md](CONTRIBUTING.md). The safety core is unchanged. Code follow-ups are in
+  [TODO.md](TODO.md).
 - **The Android-style OS direction, approved by the owner on 2026-10-07 ("approve all", OS
   round; docs only, no code).** [ADR-0045](decisions/adr-0045-ux-first.md) (UX first) and
   [ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md) (the empty OS; the round's

@@ -13,7 +13,7 @@ summary: >
   the Store, or the owner's own image), colours and mode (any accent the skin offers; Night,
   Day, Auto or Deep night) and icon packs (glyph sets mapped to Material Symbols names, with
   fallbacks). Safety comes from the engine's Drive-mode render check, protected surfaces and
-  required parts. Gauge styles, text size, the preview and Home settings follow in 45-k.
+  required parts. Gauge styles, text size, the preview and Home settings follow in 45-k. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-j — Theme wizard: hub, wallpaper, colours and icons

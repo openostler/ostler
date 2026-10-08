@@ -2,7 +2,7 @@
 title: "Designer brief — Apps in this area as Store items: what each listing and App info page must say"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md]
 summary: >
@@ -11,7 +11,7 @@ summary: >
   the five apps in this area: for Social, Map, Phone, Navigation and Community, the words a
   Store listing and an App info page must show (needs, data classes read, permissions, hosts),
   the app's setup flow screen and its settings page, and what turning each app off removes and
-  keeps. No new screens are defined here.
+  keeps. No new screens are defined here. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Apps in this area as Store items
@@ -43,7 +43,7 @@ the new wave (70-store and 90-appframe files). This file gives them the per-app 
 
 | App (owner) | Needs | Reads (data classes) | Asks for | Hosts | Setup flow | Settings page |
 |---|---|---|---|---|---|---|
-| **Social** (app:social) | Ostler accounts; internet, LAN or a mesh | presence, location (as shared), audio (calls; never recorded), video (camera grants, S4) | notifications, calls (the OS call session), microphone, camera (S2, S4) | head unit, phone, desktop | social-setup | social-settings |
+| **Social** (app:social) | Ostler accounts; internet, LAN or a mesh | presence, location (as shared), audio (calls; not recorded unless the user opts in), video (camera grants, S4) | notifications, calls (the OS call session), microphone, camera (S2, S4) | head unit, phone, desktop | social-setup | social-settings |
 | **Vehicles & Map** (app:map) | Ostler accounts; shares or a ride | presence, location, vehicle_card, live, trips, faults | notifications; stores peer data in memory only | head unit, phone, desktop, cloud | vehicles-setup | vehicles-settings |
 | **Phone** (app:phone) | a Brain with Bluetooth | phone_contacts, call_history (both "me" only, never shared) | Bluetooth pairing, calls, notification bridge on Android (opt-in) | head unit, phone (bridge), desktop (settings) | phone setup flow (phone-b) | phone-settings |
 | **Navigation** (app:navigation) | a Brain, a map region | location, trips | storage on the Brain (regions), voice | head unit, phone, desktop | nav-setup | nav-settings |

@@ -2,30 +2,34 @@
 title: Constitution
 area: root
 status: stable
-version: 1.8
+version: 1.9
 updated: 2026-10-07
 summary: >
-  Hard rules for every agent and contributor: the five Vibes as Code operating
-  principles plus this project's protocol, layering, safety and data-honesty invariants.
-  Load in full; never summarize.
+  The project's hard invariants only: layering and data, protocol, safety and data-honesty
+  rules that prevent a damaged car, a stolen car, an injured driver or dishonest data.
+  Load in full; never summarize. Since v1.9 (openness round, ADR-0047) the Vibes as Code
+  operating principles and the authoring rules (frontmatter, index rebuild, spec-first,
+  UX first) are contributor guidelines in CONTRIBUTING.md, binding the core repo only.
 ---
 
 # Constitution
 
-> Hard rules. Loaded by every agent. Never summarized away. Append-only in
+> Hard invariants only. Loaded by every agent. Never summarized away. Append-only in
 > spirit: amend deliberately, record the amendment in the changelog.
+>
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("the repo has
+> too many rules that limit freedom and flexibility, this should be an open system … it's
+> got way too nanny like", then "apply the loosenings";
+> [ADR-0047](decisions/adr-0047-openness-round.md)):** this file now holds only the rules
+> that guard against real harm or dishonest data. The Vibes as Code operating principles,
+> the authoring rules (frontmatter, index rebuild, spec-first, UX first), the `upsert_field`
+> tooling rule, the open-standards preference and the English rule moved to
+> [CONTRIBUTING.md](CONTRIBUTING.md) as contributor guidelines for the core repo; community
+> and third-party authors are not bound by them. The VIN rule gains an owner-only export.
+> Every safety rule below is unchanged.
 
-## The five operating principles
-
-1. **Progressive disclosure is the architecture.** ~100-token discovery; load
-   bodies on demand; every directory has a small CLAUDE.md; every
-   manifest-eligible file has frontmatter; the root stays minimal.
-2. **One topic per file, ~300 lines max.** Split monoliths along their seams.
-3. **Single source of truth, no duplication.** A fact lives in one file;
-   everything else links.
-4. **Decisions are immutable ADRs (append-only); specs are living documents**
-   (versioned, with changelogs).
-5. **Hard rules live in non-compressible places**, which means this file.
+Hard rules live here, in a non-compressible place. Process and taste live in
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Project invariants
 
@@ -39,8 +43,7 @@ summary: >
   (`openostler.pack.active_pack()`, entry-point group `openostler.vehicle`). Platform code
   names no pack, module id or alias. `tests/test_layering.py` enforces both rules.
 - **A pack's `signals/*.json` is the single source of truth for its LID field mappings**
-  (for the Discovery 2 pack, `src/d2diag/signals/` in its repo).
-  Write it only via `upsert_field`; never hand-paste `Signal(...)` rows. It stays the
+  (for the Discovery 2 pack, `src/d2diag/signals/` in its repo). It stays the
   single source of truth on every tier: the native C decoder consumes the pack JSON as
   data, never a generated header or a hand-copied table
   ([ADR-0032](decisions/adr-0032-one-node-optional-brain.md)).
@@ -100,7 +103,9 @@ summary: >
 - **VIN and identity data are never recorded by default**
   ([ADR-0036](decisions/adr-0036-vin-and-identity-data-in-recordings.md)). Recording them
   is an opt-in for security decoding work; even then they never leave the device (never
-  uploaded, shared, contributed, put in fixtures or committed).
+  uploaded, shared, contributed, put in fixtures or committed), except by the owner's own
+  explicit act: an export to their own storage, or the VIN in an L4 bundle to one named
+  person, each with a warning (ADR-0036 amendment, openness round).
 - **Raw car captures (`logs/`, `captures/`) are never committed:** they may contain VIN
   or EKA data.
 
@@ -110,34 +115,25 @@ summary: >
   `[passkeys]`, `[signing]`, `[mcp]` and `[can]` (`[passkeys]` and `[signing]` share one
   `cryptography` requirement, [ADR-0041](decisions/adr-0041-brain-ed25519-signing.md)); the native C decoder loads through stdlib `ctypes`,
   with the Python reference decoder as the fallback. A new runtime dependency or language
-  still needs an ADR. The React/TS UI is built ahead of time and shipped as static files
+  still needs an ADR (the core only; add-ons choose their own dependencies). The React/TS UI is built ahead of time and shipped as static files
   (ADR-0004), so a Pi install stays Node-free.
 - **Tests run without hardware** against `tests/fakes.py::FakeKLineEcu`. Platform tests run
   against `tests/fake_pack.py`; tests that need the Discovery 2 pack are marked
   `needs_pack`, and CI installs the pack so they never skip there.
 - **Shared test vectors** (bytes in → VSS out, plus init and gate cases), seeded from the
   golden tests, run in CI against both the C and the Python decoder (ADR-0032).
-- **Prefer open standards** ([ADR-0017](decisions/adr-0017-open-standards-first.md)); the
-  canonical signal namespace is **COVESA VSS**
+- **The canonical signal namespace is COVESA VSS**
   ([ADR-0016](decisions/adr-0016-covesa-vss-canonical-signal-namespace.md)).
-- **English everywhere** for new content: code, comments, docs and commits. When you
-  touch Swedish text, translate it.
 
-## Authoring rules
+## Guidelines that moved
 
-- Frontmatter is required on every manifest-eligible `.md` (not README.md, CLAUDE.md,
-  INDEX.md). Areas: `root|docs|references|hardware|decisions|specs`.
-- After editing docs, run `python3 skill/scripts/validate_frontmatter.py`, then
-  `python3 skill/scripts/build_index.py`. `INDEX.md` is generated. Never hand-edit it.
-- No code, scaffolding or implementation until a design is approved (a spec in
-  `specs/`). Car findings route per the pack's
-  [test plan](https://github.com/openostler/ostler-pack-lr-d2/blob/main/references/test_plan.md).
-- **UX first** ([ADR-0045](decisions/adr-0045-ux-first.md)). Every user-facing feature goes:
-  UX brief in `references/design/briefs/` → owner approval → UI built against recorded
-  fixtures (never demo data, ADR-0011) → wiring to real services. No backend work for a
-  user-facing feature starts before its brief is approved. A backend-only integration needs
-  only its setup-page design. Safety and security fixes are exempt and update the brief
-  after.
+Moved on 2026-10-07 (openness round, ADR-0047) to [CONTRIBUTING.md](CONTRIBUTING.md) §
+"Core-repo guidelines", where they bind work in this repo and the `openostler` organisation's
+repos, not community or third-party authors: the five Vibes as Code operating principles
+(progressive disclosure, ~300 lines per file, single source of truth, immutable ADRs and
+living specs); frontmatter and the index rebuild (automated by pre-commit and CI); spec before
+code; UX first (ADR-0045 as amended); writing pack signal JSON through `upsert_field`;
+preferring open standards (ADR-0017); English for new content.
 
 ## Changelog
 
@@ -168,3 +164,10 @@ summary: >
   the soft gate under the adapter rules, one tester per bus, local only.
 - 2026-10-07 — v1.8: UX first (ADR-0045): brief, approval, UI on recorded fixtures, then
   wiring.
+- 2026-10-07 — v1.9: trimmed to invariants (openness round, approved by the owner on
+  2026-10-07, "apply the loosenings", ADR-0047). The five operating principles, the authoring
+  rules (frontmatter, index rebuild, spec-first, UX first), `upsert_field`, the
+  open-standards preference and the English rule move to CONTRIBUTING.md as core-repo
+  guidelines; the core-only scope of the dependency rule is stated; the VIN rule gains the
+  owner's explicit export and the named L4 bundle (ADR-0036 amendment). Layering, protocol,
+  safety, data-honesty and test invariants are unchanged.
