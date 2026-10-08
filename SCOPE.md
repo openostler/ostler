@@ -2,13 +2,21 @@
 title: "Scope & architecture"
 area: root
 status: stable
-version: 1.7
-updated: 2026-10-07
+version: 1.8
+updated: 2026-10-08
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on. Amended 2026-10-07 (OS round): small core reads as the empty OS of ADR-0046. Amended 2026-10-07 (openness round, ADR-0047): add-ons are off by default unless a flavour preinstalls them on.
+  Approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an ecosystem whose main goal is getting the car's data into apps; small core, add-ons are the product; the core's own job stays comms and interpretation. Then the core mission (communication with the car and interpretation of its data) and the layering boundary that keeps storage and UI as consumers. Out of scope: HEVAC control, and the owner's own Discovery 2 fault and maintenance records (the sister project); maintenance as a feature is the Maintenance & Garage add-on. Amended 2026-10-07 (OS round): small core reads as the empty OS of ADR-0046. Amended 2026-10-07 (openness round, ADR-0047): add-ons are off by default unless a flavour preinstalls them on. Amended 2026-10-08 (direction round, ADR-0049): Ostler is an open diagnostic and logging platform with an open vehicle-data feed (VISS); the empty OS is replaced by a gateway app and separate apps; the contract is the VISS v3 feed (ADR-0051).
 ---
 
 # Scope & architecture
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved by
+> the owner on 2026-10-08 ("I agree with everything"):** Ostler is **an open diagnostic and
+> logging platform with an open vehicle-data feed (VISS)**, not an OS. The empty OS of the
+> note below is replaced by a required gateway app and separate apps, and the one contract
+> is the VISS v3 feed ([ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)).
+> The core mission (comms and interpretation) is unchanged.
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round):** "small core" now reads as the **empty OS** of
@@ -18,17 +26,17 @@ summary: >
 
 ## Mission
 
-Per [ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md) (accepted
-2026-10-07):
+Per [ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md) (accepted
+2026-10-08):
 
-**Ostler is an ecosystem whose main goal is getting the car's data into apps. The core is
-small; the add-ons are the product.** The core's own job does not widen: it is still
-**communication with the car and interpretation of its data**, delivered through one contract
-(the snapshot and VSS stream) to the shell and its apps. The shell (with Diagnose, Trips,
-Network and Security) is the first consumer; add-ons (Social, Vehicles & Map, Maintenance &
-Garage, Cameras, Integrations, Decode lab for developers) build on it and are off by default
-unless a flavour preinstalls them on (ADR-0046 §5; openness round,
-[ADR-0047](decisions/adr-0047-openness-round.md)).
+**Ostler is an open diagnostic and logging platform with an open vehicle-data feed (VISS).**
+The core's own job does not widen: it is still **communication with the car and
+interpretation of its data**, delivered through one contract, the VISS v3 feed over VSS
+([ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)). The gateway
+app serves that feed on each Android device, behind its permissions controller; the apps
+(Diagnostics with Decode lab, Trips, Security, Maintenance and add-ons) and third-party apps
+read it the same way. Output bridges (RealDash, ELM327 and CAN-box emulation, Home Assistant
+and OVMS through External MQTT) are read-only views of it.
 Map: [docs/ecosystem.md](docs/ecosystem.md).
 
 **The core mission of this project is communication with the car and interpretation of
@@ -138,6 +146,10 @@ See [docs/architecture.md](docs/architecture.md) for the layer-by-layer stack an
 
 ## Changelog
 
+- 2026-10-08: v1.8, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0049): the mission is an open diagnostic and logging platform with an open
+  vehicle-data feed (VISS); the gateway app and separate apps replace the empty OS; the
+  contract is the VISS v3 feed.
 - 2026-10-07: v1.7, amended (openness round, approved by the owner on 2026-10-07, "apply the
   loosenings", ADR-0047): add-ons are off by default unless a flavour preinstalls them on.
 - 2026-10-07: v1.6, amended (OS round, approved by the owner on 2026-10-07, "approve all"):

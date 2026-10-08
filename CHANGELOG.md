@@ -3,7 +3,7 @@ title: "Changelog"
 area: root
 status: stable
 version: 1.0
-updated: 2026-10-07
+updated: 2026-10-08
 summary: >
   Notable changes to the Ostler platform in Keep a Changelog 1.1.0 form: the Unreleased U0 repo-hygiene work (REUSE, PEP 639, SECURITY.md, supply-chain CI, ruff/mypy/pre-commit) plus a brief history reconstructed from git, and the versioning policy (SemVer 0.y.z, integer PACK_API_VERSION, VSS pin in vss/VERSION).
 ---
@@ -415,6 +415,21 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **The direction round, approved by the owner on 2026-10-08 ("I agree with everything", with
+  changes; docs only, no code).** Ostler is an open diagnostic and logging platform with an
+  open vehicle-data feed (VISS), not an OS
+  ([direction note](references/research/direction_standard_not_os.md), decisions 1–37).
+  [ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md) is accepted: a
+  required gateway app with a permissions controller, separate apps (Diagnostics with Decode
+  lab, Trips, Security, Maintenance, add-ons), no widget apps, read-only output bridges, the
+  launcher parked. [ADR-0050](decisions/adr-0050-kotlin-for-the-android-app-tier.md) adds
+  Kotlin for the Android app tier, and
+  [ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md) makes VISS v3
+  the core protocol on every signal hop, with the MQTT module bus and SSE `/events` legacy and
+  MQTT external only. Amendment notes on ADR-0026, ADR-0027, ADR-0034, ADR-0035, ADR-0039,
+  ADR-0042 and ADR-0046; ADR-0048 parked; the app-model, app UI model, Store, launcher,
+  head-unit apps, theme engine and module-bus specs amended; GOALS v2.9, SCOPE v1.8 and
+  README carry the new mission.
 - **Openness round, approved by the owner on 2026-10-07 ("apply the loosenings"; docs only,
   no code).** [ADR-0047](decisions/adr-0047-openness-round.md) applies the
   [rules audit](references/research/rules_audit_2026-10-07.md)'s 15 loosenings: style is a

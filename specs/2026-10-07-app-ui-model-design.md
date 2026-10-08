@@ -2,14 +2,23 @@
 title: "App UI model — what an app contributes to the empty OS: drawer entry, pages, shortcuts, widgets, setup and options flows, notification channels, themes and data classes; object kinds; App info; manifest schema 2 — design"
 area: specs
 status: stable
-version: 0.3
-updated: 2026-10-07
+version: 0.4
+updated: 2026-10-08
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-store-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, references/research/ha_integrations_dashboards.md, references/research/ha_architecture_addons.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 22–27 and 56–58), v0.2; every decision answered as recommended. Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions. Amended 2026-10-07 (openness round, ADR-0047): no dynamic-shortcut cap, raw strings in community flows, non-car USB hardware for any publisher with owner consent, a Store client the owner can disable, and theme and icon packs under visual §13 and the theme engine.
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 22–27 and 56–58), v0.2; every decision answered as recommended. Amends the app-model spec for the empty OS (ADR-0046). An app contributes a drawer entry, pages (schema-rendered by the OS from data, or custom views), static and dynamic shortcuts, widgets (the launcher spec's contract), a setup flow in the Home Assistant config-flow style (steps of OS-drawn schema forms with validation, per-field and base errors, discovery confirmation, progress, external sign-in, reauth and reconfigure), an options flow, notification channels (alarm and critical reserved for the OS), themes, data classes, dashboard presets and Drive menu rows. Backend-only apps (integrations: vehicle packs, data sources, bridges) have a setup page and App info only; hardware access is for first-party or verified integrations and never for car buses. System Settings and the App info page (permissions, data, storage, notifications, version, logs, disable, uninstall with export first). Eight object kinds: app, integration, widget pack, theme pack, icon pack, wallpaper pack, dashboard preset, sound or EQ preset, with what each may hold and where it installs (data objects install on the phone; code apps stay bundled or Brain-served). The manifest `ostler-app.json` goes to schema 2: `kind`, `backend`, `permissions.network` and `hardware`, and `contributes` drawer, pages, shortcuts, setup, options, notifications, themes, dashboards. Tests, phases UA1–UA4 and owner decisions. Amended 2026-10-07 (openness round, ADR-0047): no dynamic-shortcut cap, raw strings in community flows, non-car USB hardware for any publisher with owner consent, a Store client the owner can disable, and theme and icon packs under visual §13 and the theme engine. Amended 2026-10-08 (direction round, ADR-0049): superseded in part; the Store becomes a catalogue of packs and themes as data.
 ---
 
 # App UI model — design
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0049](../decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved
+> by the owner on 2026-10-08 ("I agree with everything"):** superseded in part. The empty OS
+> this spec serves (drawer, app runtime, Store installs) is gone; each app is a separate
+> Android app built from the shared template
+> ([ADR-0050](../decisions/adr-0050-kotlin-for-the-android-app-tier.md)). Data classes,
+> setup flows and notification channels carry over. The Store becomes a catalogue of packs
+> and themes as data (direction decision 26).
 
 > **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
 > be an open system", then "apply the loosenings";
@@ -338,3 +347,5 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
   shortcuts; raw strings allowed in community flows; non-car USB hardware for any publisher's
   `device` integration with owner consent; the Store client can be disabled; theme and icon
   packs defer to visual §13 and the theme engine.
+- 2026-10-08: v0.4, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0049): superseded in part.

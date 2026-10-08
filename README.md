@@ -1,14 +1,17 @@
-# Ostler — an open ecosystem that gets your car's data into apps
+# Ostler — an open diagnostic and logging platform with an open vehicle-data feed
 
-> **Ostler: an open ecosystem that gets your car's data into apps**
-> ([ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md)). Ostler is an empty
-> OS, like an Android phone with no apps: system services and system UI (the launcher, the
-> status strip, the safety lockouts, Settings and the Store) read and interpret the car;
-> **every feature is an app** in its own repo (Diagnostics, Trips, Security, Maintenance,
-> Social, Map, Navigation, Phone, Radio, Audio, Media, Camera), installed from the Store,
-> Home Assistant style. Each product comes with its own set of apps preinstalled. Safety is
-> never an app; every data class starts in ghost; Export all, and nothing in the OS needs an
-> Ostler-run server. Map: [docs/ecosystem.md](docs/ecosystem.md).
+> **Ostler: an open diagnostic and logging platform with an open vehicle-data feed (VISS)**
+> ([ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)). Ostler
+> reads, diagnoses and logs your car, and hands its data to any app through one open feed:
+> COVESA VISS v3 over VSS on every hop
+> ([ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)). On each
+> Android phone or head unit a **gateway app** holds the connections, the gate client,
+> driving state, alerts and a permissions controller, and serves the feed. The other apps
+> are separate: Diagnostics (with Decode lab), Trips, Security, Maintenance and add-ons.
+> Output bridges (RealDash, ELM327 and CAN-box emulation, Home Assistant and OVMS) are
+> read-only views. The node gate is the only path to the car; every data class starts in
+> ghost; Export all, and nothing needs an Ostler-run server. Map:
+> [docs/ecosystem.md](docs/ecosystem.md).
 
 **Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
@@ -18,9 +21,9 @@ your phone; **Ostler Brain** adds an optional Linux compute box for the full loc
 cameras, replay and analysis; **Ostler Guardian** is the hidden, battery-backed node variant.
 Add-on modules join either over standard networking, the way devices join a smart home:
 sensor nodes, cameras, I/O and relay modules, displays. Every device speaks IP
-(10BASE-T1S for modules, faster Ethernet for cameras), and they all use the same
-VSS-named, MQTT-style messages, so modules are interchangeable and integrate with Home
-Assistant and the wider IoT world.
+(10BASE-T1S for modules, faster Ethernet for cameras), and they all speak the same VISS
+feed over VSS names, so modules are interchangeable and integrate with Home Assistant and
+the wider IoT world.
 
 This repository is the **platform** (the OpenOstler code). Vehicle knowledge ships
 separately, as **vehicle packs**.

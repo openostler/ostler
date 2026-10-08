@@ -2,14 +2,23 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.8
-updated: 2026-10-07
-depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-head-unit-apps-design.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
+version: 2.9
+updated: 2026-10-08
+depends_on: [SCOPE.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-head-unit-apps-design.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md. Amended 2026-10-07 (OS round; ADR-0046 accepted): the small core becomes an empty OS (system services and system UI only; every feature is an app), the dock's per-class cap replaces the five-destination cap, media is no longer a non-goal and projection receivers are. Amended 2026-10-07 (openness round, ADR-0047): the anti-bloat guardrails bind the core repo only (ADR-first for outbound paths and core dependencies, not destinations; idea tags are labels; the dock size is a default), scores may live in add-ons, and community projection receivers may be sideloaded.
+  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md. Amended 2026-10-07 (OS round; ADR-0046 accepted): the small core becomes an empty OS (system services and system UI only; every feature is an app), the dock's per-class cap replaces the five-destination cap, media is no longer a non-goal and projection receivers are. Amended 2026-10-07 (openness round, ADR-0047): the anti-bloat guardrails bind the core repo only (ADR-first for outbound paths and core dependencies, not destinations; idea tags are labels; the dock size is a default), scores may live in add-ons, and community projection receivers may be sideloaded. Amended 2026-10-08 (direction round, ADR-0049): the mission becomes "an open diagnostic and logging platform with an open vehicle-data feed (VISS)"; the empty OS is replaced by a required gateway app and separate apps; VISS v3 is the message model and MQTT is an external output only.
 ---
 
 # Goals
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved by
+> the owner on 2026-10-08 ("I agree with everything"):** the mission becomes **an open
+> diagnostic and logging platform with an open vehicle-data feed (VISS)**. The empty OS is
+> replaced by a required gateway app and separate apps; VISS v3 is the message model on
+> every signal hop and MQTT is an external output only
+> ([ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)). The OS-round
+> note below is superseded where it differs.
 
 > **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
 > be an open system", then "apply the loosenings";
@@ -37,22 +46,22 @@ disagree with this file, they win. The hard rules are in [CONSTITUTION.md](CONST
 
 ## 1. Tagline and mission
 
-> **Ostler: an open ecosystem that gets your car's data into apps.**
+> **Ostler: an open diagnostic and logging platform with an open vehicle-data feed (VISS).**
 
-**Ostler is an ecosystem whose main goal is getting your car's data into apps**
-([ADR-0042](decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md)). A small
-core reads and interprets the car and hands its data, safely and privately, to add-ons;
-**the add-ons are the product.**
+**Ostler reads, diagnoses and logs your car, and hands its data to any app through one open
+feed** ([ADR-0049](decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)). It is
+not an operating system. The feed is COVESA VISS v3 over VSS on every hop
+([ADR-0051](decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)); MQTT is an
+external output only.
 
-- **Home Assistant style:** one core product (one app, one shell) with installable add-ons;
-  no separate apps per feature; thin Android Auto, CarPlay and watch companions later, each
-  within its platform's rules (the first, CarPlay Driving Task, only after Trips and Drive
-  mode ship on the head unit).
-- **Empty OS:** system services and system UI only; every feature is an app
-  ([ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md)).
-- **Add-ons:** Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (one
-  add-on per integration), and Decode lab for developers, plus hardware add-on modules.
-  Map: [docs/ecosystem.md](docs/ecosystem.md).
+- **The gateway app** (required on each Android phone or head unit): connections, the gate
+  client, driving state, alerts, the permissions controller, the feed, External MQTT and a
+  normal feed widget.
+- **The apps,** each separate: Diagnostics (with Decode lab), Trips, Security, Maintenance,
+  and add-ons such as friends' live map, Social and the Meshtastic/MeshCore mesh. No widget
+  apps; live views stay inside the apps; no launcher for now.
+- **Output bridges,** read-only: RealDash, ELM327 emulation, CAN-box emulation, Home
+  Assistant and OVMS. Map: [docs/ecosystem.md](docs/ecosystem.md).
 - **Promises:** the node gate is the only path to the car (one exception: with no node fitted, the Brain may host a third-party adapter under ADR-0044's software gate); every data class starts in ghost
   (shared with no one) by default; Export all, and nothing in core needs an Ostler-run server; no
   driving score in core (add-ons may offer one, opt-in).
@@ -70,7 +79,7 @@ routing, cameras, big logbooks, replay, analysis and the decode lab; upgrading i
 in a Brain, and the car side is unchanged. **Ostler Guardian** is the hidden node variant. Add-on
 modules join either tier the way devices join a smart home: cameras, sensor nodes, I/O
 and relay modules, displays. Every device speaks IP (10BASE-T1S for modules, faster
-Ethernet for cameras) and the same VSS-named, MQTT-style messages, so modules are
+Ethernet for cameras) and the same VISS messages over VSS names, so modules are
 interchangeable and integrate with Home Assistant and the wider IoT world.
 
 - **We are making a Home Assistant for cars, not reinventing the wheel.** "Smart-home-like"
@@ -126,9 +135,7 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
    - *Core only shrinks:* new features land as packs or integrations.
    - *An ADR first* for a new outbound data path, or a new runtime dependency or language in
      core ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). A new destination is an app
-     and needs none. The dock's slot count is a per-class default the user changes
-     ([launcher](specs/2026-10-07-launcher-and-widgets-design.md) §5.1); every app stays
-     reachable from the drawer.
+     and needs none.
    - *The D2 pack's coverage is protected:* CI fails if it regresses.
    - Ideas carry a lightweight label, **core**, **add-on** or **moonshot**
      ([feature backlog](references/research/features_backlog.md)), for planning only.
@@ -136,9 +143,10 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
      touches the car, an outbound path or core needs an ADR.
 7. **Off-the-shelf hardware now, our own later**, behind hardware-abstraction layers.
 8. **IP everywhere, one message model** ([ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md)).
-   Every Ostler device is an IP host. It is found by mDNS/DNS-SD, speaks VSS-named MQTT 5,
-   and declares its signals and safety-tiered actions in one module manifest. Firmware and
-   server code name topics, never physical layers. The car's buses stay at the edge.
+   Every Ostler device is an IP host. It is found by mDNS/DNS-SD, speaks VISS v3 over VSS
+   names (ADR-0051; MQTT is an external output only), and declares its signals and
+   safety-tiered actions in one module manifest. Firmware and server code name signals,
+   never physical layers. The car's buses stay at the edge.
 9. **Every module stands on its own.** Like an IP camera or an ESP32 project, each module
    hosts a small web page with its basic controls and works independently; joined to
    Ostler, it appears in the main UI and in Home Assistant.
@@ -179,6 +187,8 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
   certification and licences an open project cannot hold
   ([head-unit apps](specs/2026-10-07-head-unit-apps-design.md) §11). A community receiver may
   be sideloaded at the owner's risk.
+- **An operating system or launcher of our own** (ADR-0049; the launcher is parked), and
+  our own Radio, Media, Phone and Navigation apps: Android and the head unit already do them.
 - HEVAC control inside the platform (a separate project).
 - A remote layout server, or runtime- or model-composed screens.
 
@@ -245,6 +255,11 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-08: v2.9, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0049): the mission is an open diagnostic and logging platform with an open
+  vehicle-data feed (VISS); the gateway app and separate apps replace the empty OS; VISS v3
+  is the message model and MQTT external only; an OS, launcher and own media apps join the
+  non-goals; the dock guardrail goes.
 - 2026-10-07: v2.8, amended (openness round, approved by the owner on 2026-10-07, "apply the
   loosenings", ADR-0047): the guardrails bind the core repo; ADR-first for outbound paths and
   core dependencies only, not destinations; the dock size is a default; idea tags are labels;
