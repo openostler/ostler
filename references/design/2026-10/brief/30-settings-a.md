@@ -2,7 +2,7 @@
 title: "Designer brief: Settings (part A): tree, rules, Settings app, Display, Units and region"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/design/2026-10/README.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   wizard; the rules every Settings page shares (the Settings lock while Moving, Park to edit,
   honest states, owner-only rows); and the page blocks for the Settings root, Display (the
   Existing `preferences` screen: themes Night, Day, Night dim, Deep night, Auto, map theme,
-  brightness, text size, dock and Lock car layouts) and Units, language and region.
+  brightness, text size, dock and Lock car layouts) and Units, language and region. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Settings brief, part A: tree, shared rules, Settings app, Display, Units
@@ -122,7 +122,7 @@ wizard** (`45-launcher-*`), and **Trips → Export all** (`trips-export-all`).
   ([visual §8][vds-8]). One new component is shared by all parts: **Switch** (new component:
   a pill toggle on `surface-3`, on = `accent` thumb with the word "On"; 48 px hit on phone,
   76 px on head units; focus ring as every control). Head units use 76 px rows and 18 px type
-  at least; no glow on head units ([visual §1][vds-1]).
+  at least; no glow on head units in the default look ([visual §1][vds-1]).
 
 ### settings-root — Settings app  [New]
 - **Owner:** os
@@ -199,7 +199,7 @@ wizard** (`45-launcher-*`), and **Trips → Export all** (`trips-export-all`).
   locked (Car profile): Theme and Text size editable, Lock car layouts read-only.
 - **Safety and driving rules:** no theme change while Moving except Auto's own switching,
   which never animates ([visual §5][vds-5]); Drive mode at night uses Night or Night dim, never
-  Day; no glow in Night dim or Deep night ([visual §1][vds-1]).
+  Day; the default themes draw no glow in Night dim or Deep night ([visual §1][vds-1]).
 - **Components:** Segmented, ListRow, Switch (new), slider (new component: 4 px track, accent
   thumb, 76 px target on head units), Card.
 - **Spec refs:** [visual §1][vds-1], [visual §3.1][vds-3.1], [visual §4][vds-4],

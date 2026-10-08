@@ -2,14 +2,20 @@
 title: "ADR-0046 — The empty OS: the platform is an operating system with no apps; every feature is an app in its own repo"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-07
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0045-ux-first.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, decisions/adr-0044-adapters-on-the-brain-without-a-node.md, GOALS.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_architecture_addons.md, references/research/ha_integrations_dashboards.md, references/research/ha_companion_community.md]
 summary: >
-  Accepted 2026-10-07 ("approve all", OS round; decision list items 4–13 and 41–43): approved by the owner on 2026-10-07, every item as recommended; the round's full decision list (items 1–65) is the Decisions appendix here. The platform repo `ostler` becomes an empty operating system, like an Android phone with no apps. The OS holds system services (the gate client and node link, the module bus, the VSS stream, the integration loader where vehicle packs become integrations, the app runtime, permissions and data classes, users, accounts and roles, driving state and the Moving lockouts, the alert and notification pipeline, audio focus and the call session, input, recording and export, backups, updates, network) and the system UI (launcher with home pages, dock, drawer, widget host and edit mode; status strip; Connection sheet; system Settings; the Store client; the theme engine; first-run setup). Safety is never an app. Everything else is an app in its own repo: Diagnostics, Trips, Security, Maintenance, Social, Map, Navigation, Phone, Radio, Audio, Media, Camera, Decode lab, Community, the starter widgets and the default theme. Product flavours become preinstalled sets (amends ADR-0039): Ostler Diagnostics, Ostler Guardian (Security only; dock Security · Settings · App drawer) and Ostler Brain, a third named flavour; any non-system app can be uninstalled (on the phone, bundled apps are disabled, not deleted). Code in core today moves only after each app's UX brief is approved (ADR-0045); the ADR maps today's modules to target repos and gives the repo list (amends ADR-0034). Supersedes ADR-0042 §4's core list and §5's catalogue placement; reverses GOALS' "rebuilding media" non-goal. Risks: a bare OS shows nothing, so flavours, the bundled catalogue and first run matter; safety stays in the OS.
+  Accepted 2026-10-07 ("approve all", OS round; decision list items 4–13 and 41–43): approved by the owner on 2026-10-07, every item as recommended; the round's full decision list (items 1–65) is the Decisions appendix here. The platform repo `ostler` becomes an empty operating system, like an Android phone with no apps. The OS holds system services (the gate client and node link, the module bus, the VSS stream, the integration loader where vehicle packs become integrations, the app runtime, permissions and data classes, users, accounts and roles, driving state and the Moving lockouts, the alert and notification pipeline, audio focus and the call session, input, recording and export, backups, updates, network) and the system UI (launcher with home pages, dock, drawer, widget host and edit mode; status strip; Connection sheet; system Settings; the Store client; the theme engine; first-run setup). Safety is never an app. Everything else is an app in its own repo: Diagnostics, Trips, Security, Maintenance, Social, Map, Navigation, Phone, Radio, Audio, Media, Camera, Decode lab, Community, the starter widgets and the default theme. Product flavours become preinstalled sets (amends ADR-0039): Ostler Diagnostics, Ostler Guardian (Security only; dock Security · Settings · App drawer) and Ostler Brain, a third named flavour; any non-system app can be uninstalled (on the phone, bundled apps are disabled, not deleted). Code in core today moves only after each app's UX brief is approved (ADR-0045); the ADR maps today's modules to target repos and gives the repo list (amends ADR-0034). Supersedes ADR-0042 §4's core list and §5's catalogue placement; reverses GOALS' "rebuilding media" non-goal. Risks: a bare OS shows nothing, so flavours, the bundled catalogue and first run matter; safety stays in the OS. Amended 2026-10-07 (openness round, ADR-0047): dock size and side, page caps, anchors, wallpaper, hardware access, Store disabling, ratings and paid items, sideloaded projection and streaming clients, icon packs, image export and app strip chips become defaults or options; safety is still never an app.
 ---
 
 # ADR-0046 — The empty OS: every app is an add-on
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):**
+> several OS-round items become defaults the user, owner or author can change; §2 (safety is
+> never an app) and §9's safety lines are unchanged. See
+> [Amendment](#amendment-2026-10-07-openness-round).
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all", OS round;
@@ -420,6 +426,46 @@ ADRs and the four specs.
 64. **Backups:** encrypted with a passphrase; include app data; never the VIN or the Brain's keys. *alt:* unencrypted local backups.
 65. **First car checks before the copy is final:** the D2's diagnostic socket location and fuse, the reverse lamp wire for the camera trigger, BCU wires for door, bonnet and siren, and the original aerial and amplifier feed.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("the repo has too many rules that limit freedom and
+flexibility, this should be an open system", then "apply the loosenings"); recorded in
+[ADR-0047](adr-0047-openness-round.md). The decision above stands except:
+
+- **§1, Theme engine row** ("safety colours fixed"): themes follow
+  [visual §13](../specs/2026-10-07-visual-design-system-design.md) and the
+  [theme engine](../specs/2026-10-07-theme-engine-design.md). Safety items may be restyled,
+  guarded by the Drive-mode render check, protected surfaces and required parts; they are never
+  removed or covered (§2 unchanged).
+- **§7, repo creation:** "created only when its work starts, with the owner asked first"
+  applies to repos under the `openostler` organisation. Community authors create their own app
+  repos freely.
+- **§9:** "every data class starts in ghost" stays the default; a user may choose visible to
+  household by default at setup (accounts spec §14.3). "No driving score in the OS" stays;
+  apps may offer scores, opt-in.
+- **Decision items amended:**
+  - 1–3 (UX first): scoped to the project's own repos; a contributor guideline in
+    CONTRIBUTING.md, not the CONSTITUTION; labelled synthetic fixtures allowed (ADR-0045
+    amendment).
+  - 13, 16, 17, 44 (dock): the per-class slot counts and the driver side are defaults; the
+    user may change the count (overflow scrolls) and the side; Home and Apps anchors may be
+    hidden while the recovery path stays (launcher §6.6).
+  - 15, 45 (caps): at most 6 driving pages, 4 in the one-tap cycle and 6 in the page list are
+    defaults the user may raise; the `short_list` row limit still applies while Moving.
+  - 19 (wallpaper while Moving): superseded; the theme decides (visual §13).
+  - 26 (hardware access): any publisher's `device` integration with the owner's consent, never
+    car buses, the node link or the module bus.
+  - 28 (Store): still not uninstallable, but the owner may disable it.
+  - 33, 34, 62 (ratings, paid items): opt-in ratings and paid data objects on web hosts are
+    allowed (Store §11); safety, decoding and input are never sold.
+  - 38, 39 (projection, streaming): not built or listed, but sideloadable as community items.
+  - 48, 49 (accent, icon packs): any accent; icon packs may restyle safety glyphs under the
+    render check.
+  - 50 (images): an opt-in export of wallpaper and image widgets with layouts.
+  - 58 (strip chips): apps may add status-only chips the shell draws.
+- **Unchanged:** §2 in full; items 24 (reserved channels), 30 (code only as iframes for
+  community items), 59–60 (disarm rules), 64 (backups never hold the VIN or the Brain's keys).
+
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed: drafted from the owner's direction of 2026-10-07.
@@ -429,3 +475,7 @@ ADRs and the four specs.
   decision list added as the Decisions (OS round) appendix.
 - 2026-10-07 — v1.1: repo names match the repos the owner created (`ostler-app-camera`,
   `ostler-app-decode-lab`, `ostler-widgets-starter`).
+- 2026-10-07 — v1.2, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): theme engine row, §7 repo creation, §9 ghost default and decision
+  items 1–3, 13, 15–17, 19, 26, 28, 33–34, 38–39, 44–45, 48–50, 58 and 62 become defaults or
+  options; §2 unchanged.

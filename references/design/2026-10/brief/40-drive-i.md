@@ -2,7 +2,7 @@
 title: "Designer brief 40-i — alerts and calls: message card, reply list, voice reply, other alert cards, alert settings and the call template"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, references/research/message_alerts_android_auto.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   arrive while Parked), the reply short list with canned replies, the new voice-reply
   read-back screen with Send and Cancel, the other alert cards (alarm, maintenance due at trip
   start or end, convoy, navigation off route, missed calls, community), the alert settings
-  page, and the shared call template: incoming, in call, push-to-talk, group and call waiting.
+  page, and the shared call template: incoming, in call, push-to-talk, group and call waiting. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-i — Alerts and calls
@@ -59,7 +59,7 @@ Back to [40-a](40-drive-a.md) for the file list. One OS alert pipeline serves ev
   buttons; takes focus on its safest button; shell-drawn and never removable
   ([UI §12.1][ui-12.1], [UI §14][ui-14]).
 - **Components:** `alert_card`, Button (Play, Reply). Tokens `type-body` (≥ 24 px), focus
-  ring, no glow.
+  ring, no glow (default look).
 - **Spec refs:** [UI §12.1][ui-12.1] · [UI §14][ui-14] · [Social §12][soc-12] ·
   [Phone & Comms §8][pc-8] · [research §2][r-ma-2].
 - **Open questions:** none (approved 2026-10-07).

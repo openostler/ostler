@@ -2,7 +2,7 @@
 title: "Designer brief 45-k — launcher: gauge styles, text size, the theme preview and Home settings"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -11,7 +11,7 @@ summary: >
   never below the floors, refused where a number would clip) and the preview of a theme on
   a home page and the Drive page before applying. It then gives Home settings: grid size,
   dock size and position, labels, screen rotation, the default page and the Drive rotation.
-  Examples use the Discovery 2 Td5 Cluster page.
+  Examples use the Discovery 2 Td5 Cluster page. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-k — Gauge styles, text size, theme preview and Home settings
@@ -70,8 +70,8 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
   each. 3. A summary list of the choices. 4. **Apply** (primary), **Back**.
 - **States:** saving: "Saving…"; error: "Couldn't apply. Your old theme is kept." Moving:
   locked view.
-- **Safety and driving rules:** the Drive page preview shows no wallpaper, no glow and the
-  fixed status colours ([visual §1][vds-1]).
+- **Safety and driving rules:** the Drive page preview shows the theme as it will render
+  while Moving and the result of the Drive-mode render check ([visual §1][vds-1], visual §13).
 - **Components:** Card (preview), Segmented, ListRow, Button.
 - **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [launcher §11][lw-11].
 - **Open questions:** none.

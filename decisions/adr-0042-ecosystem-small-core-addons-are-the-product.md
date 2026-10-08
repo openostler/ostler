@@ -2,11 +2,11 @@
 title: "ADR-0042 — Ecosystem: small core, add-ons are the product"
 area: decisions
 status: locked
-version: 1.4
+version: 1.5
 updated: 2026-10-07
 depends_on: [docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, references/research/dmd2_features.md, references/research/dmd_hub_features.md, GOALS.md, SCOPE.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, references/research/ui/app_model.md, references/research/app_teardown_speedometer.md, references/research/obd_telematics_apps.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): four add-ons from the DMD2 and DMD Hub research, `ostler-app-hub` (open) with its closed, Ostler-run `ostler-hub` service (Ostler Community: publishing, forum, vehicle development, wiki), `ostler-app-navigation` and `ostler-app-phone` (Phone & Comms) specced now, `ostler-app-alerts` named for later; the `ShellInput` D-pad model, per-trip sharing and third-party adapter support in core, and Crash SOS in core Security later. Accepted direction, pending a Home Assistant research round: dashboards follow Home Assistant's views, sections, cards and badges; integrations (packs, data sources) and add-ons (feature apps) on one page; container add-ons on the Brain later with an ADR; install flavours (OS image, container, VM later, Python for developers); Home Assistant compatibility investigated, not promised. Amended 2026-10-07 (OS round): decision 4's core list and decision 5's catalogue are superseded by ADR-0046 (the empty OS).
+  Approved by the owner on 2026-10-07 ("approve all"). Ostler is an ecosystem whose main goal is getting the car's data into apps: a small core and installable add-ons, Home Assistant style. One core product (one app per store, one shell), no separate Android apps; thin Android Auto, CarPlay and watch companions only later, each specced against that platform's category first (CarPlay Driving Task allows no live gauges and no maintenance). The phone app's background location, push and pairing are native and fixed; add-ons on the phone are bundled into a shell build or declarative, never fetched code. Core is the shell (layouts, strip, rail, Drive mode, login/users/invites, the VSS stream, the gate client, the app registry, the Add-ons catalogue), Diagnose, Trips (was Logs), Network and Security (once a node exists). Add-ons in their own repos: Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations (RealDash CAN out, LubeLogger bridge, social integrations) and Decode lab as a developer add-on. More → Add-ons lists Installed and Available with Core / Add-on / Developer labels, no remote catalogue yet; an empty Home suggests add-ons. One add-on per integration. Exit guarantee: Export all, and nothing in core depends on an Ostler-run server. No driving score in core. Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): four add-ons from the DMD2 and DMD Hub research, `ostler-app-hub` (open) with its closed, Ostler-run `ostler-hub` service (Ostler Community: publishing, forum, vehicle development, wiki), `ostler-app-navigation` and `ostler-app-phone` (Phone & Comms) specced now, `ostler-app-alerts` named for later; the `ShellInput` D-pad model, per-trip sharing and third-party adapter support in core, and Crash SOS in core Security later. Accepted direction, pending a Home Assistant research round: dashboards follow Home Assistant's views, sections, cards and badges; integrations (packs, data sources) and add-ons (feature apps) on one page; container add-ons on the Brain later with an ADR; install flavours (OS image, container, VM later, Python for developers); Home Assistant compatibility investigated, not promised. Amended 2026-10-07 (OS round): decision 4's core list and decision 5's catalogue are superseded by ADR-0046 (the empty OS). Amended 2026-10-07 (openness round, ADR-0047): no driving score in core stays a default while any add-on may offer scores and insurer export needs explicit consent; the score-field lint is dropped; the hub's no-points rules are operator policy and its API is a published contract.
 ---
 
 # ADR-0042 — Ecosystem: small core, add-ons are the product
@@ -21,6 +21,13 @@ summary: >
 > superseded by [ADR-0046](adr-0046-empty-os-every-app-an-add-on.md) (the empty OS: Diagnose,
 > Trips and Security become apps; the drawer, Settings → Apps and the Store replace the
 > catalogue). Decisions 1–3 and 6–9 stand.
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):**
+> decision 8 keeps "no driving score in core" as a core default while any add-on may offer
+> scores and the user may export to an insurer by explicit consent; the score-field lint is
+> dropped; the hub's no-points and no-share-buttons rules are the official hub's operator
+> policy; the hub API is a published contract others may implement. See
+> [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all"), drafted from
@@ -314,6 +321,26 @@ for later.
    the one safety exception to ghost and must never be optional or paid. Alternative: a separate
    `ostler-app-sos` add-on.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("the repo has too many rules that limit freedom and
+flexibility, this should be an open system", then "apply the loosenings"); recorded in
+[ADR-0047](adr-0047-openness-round.md) (loosenings 5 and 6). The decision above stands except:
+
+- **Decision 8 (no driving score in core).** Core stays neutral by default: Trips ships no
+  score field and no ranking. Any add-on, first or third party, may offer scores,
+  leaderboards or speed rankings, opt-in by the user. Export of a score to an insurer happens
+  only on the user's explicit consent naming the recipient.
+- **Confirmation:** the lint that forbids a score or ranking field in core's Trips schema is
+  dropped (a code follow-up in ADR-0047); core simply ships without one.
+- **DMD-round amendment, Ostler Community:** "no points, ranks or votes … never social-network
+  buttons" is the official hub's operator policy, not a platform rule; other hubs and add-ons
+  choose their own, and the official hub may add opt-in reactions or badges later. "One
+  official instance, not self-hostable" now means the `ostler-hub` code stays closed; the hub
+  API (`api/hub.openapi.yaml`) is a published, stable contract that a club may implement, and
+  the add-on's hub URL is user-settable ([community hub spec](../specs/2026-10-07-community-hub-design.md)
+  v0.4). Decision 7's exit guarantee is unchanged.
+
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed: drafted from the owner's ecosystem direction.
@@ -337,3 +364,6 @@ for later.
   direction (decision list items 97–101) recorded, 99–101 pending the research round.
 - 2026-10-07 — v1.4, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
   decision 4's core list and decision 5's catalogue superseded by ADR-0046.
+- 2026-10-07 — v1.5, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): scores in any add-on, insurer export by consent, the score-field
+  lint dropped, hub rules as operator policy and a published hub API.

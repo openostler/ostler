@@ -2,7 +2,7 @@
 title: "Designer brief — Social add-on: rides, push-to-talk, calls, video and camera sharing"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-social-addon-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, references/research/calls_video_camera_sharing.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   driver-facing screen), the camera grant sheet, the live camera viewer, the "being viewed"
   badge and sheet, the interior-camera occupant consent on the head unit, and Social settings
   (who may reach me, auto-reply scope, waking for calls, notify-via). Each block lists content,
-  states, driving rules and components.
+  states, driving rules and components. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Social add-on, part b: rides, talk, calls and cameras
@@ -95,7 +95,7 @@ template itself (incoming, in call, waiting) is drawn by the shell and indexed a
 - **States:** loading: "Calling…" · error: "Call failed · Try again" · offline: "No link for
   calls · Send a voice note instead" · Parked: full · Idling and Moving (head unit): `call`
   template (Mute, End, PTT) · Passenger (phone): full.
-- **Safety and driving rules:** calls never recorded ([ADR-0010](../../../../decisions/adr-0010-replay-notes-audio-motion.md)); audio only on driver-facing
+- **Safety and driving rules:** calls not recorded unless the user turns on recording, with an announced consent prompt ([Phone & Comms §9](../../../../specs/2026-10-07-phone-comms-addon-design.md#9-data-and-privacy)); audio only on driver-facing
   displays; only ride members and favourites ring while Moving ([Social §5](../../../../specs/2026-10-07-social-addon-design.md#5-push-to-talk-voice-calls-and-video-calls)).
 - **Components:** call template, Button, Chip (link badge).
 - **Spec refs:** [Social §5](../../../../specs/2026-10-07-social-addon-design.md#5-push-to-talk-voice-calls-and-video-calls) · [Social §6](../../../../specs/2026-10-07-social-addon-design.md#6-the-link-router-and-per-class-rules) · [Social §13](../../../../specs/2026-10-07-social-addon-design.md#13-amendment-2026-10-07-dmd-round-approved-comms-overlap) · [UI §12.1](../../../../specs/2026-10-06-ui-architecture-design.md#121-u2-lockouts-changes-35-10-u2-101-u2-app-model-44)

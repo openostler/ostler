@@ -2,14 +2,23 @@
 title: "ADR-0045 — UX first: design the UX, then build the UI against recorded fixtures, then wire it"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-07
 depends_on: [CONSTITUTION.md, CLAUDE.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, references/design/2026-10/README.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md]
 summary: >
-  Accepted 2026-10-07 ("approve all", OS round; decision list items 1–3): approved by the owner on 2026-10-07, every item as recommended. Makes the owner's fixed rule a hard rule: every user-facing feature goes UX brief (one file in references/design/briefs/) → owner approval → UI built against recorded fixtures (real captures or real service replies, scrubbed per ADR-0036, served only by the test-only fixture server, never a demo mode, ADR-0011) → wiring to real services. No backend work for a user-facing feature starts before its brief is approved; a backend-only integration needs only its setup-page design. Exempt: safety and security fixes, bug fixes that change no screen, protocol, firmware, decoder and pack-data work, research and bench captures. Gives the brief's required sections, the approval record, the order of work per phase, the text applied to CONSTITUTION.md (Authoring rules, v1.8) and the CLAUDE.md working rules, the matching line for every pack and app repo, and a CI check on spec frontmatter (`ux_brief`).
+  Accepted 2026-10-07 ("approve all", OS round; decision list items 1–3): approved by the owner on 2026-10-07, every item as recommended. Makes the owner's fixed rule a hard rule: every user-facing feature goes UX brief (one file in references/design/briefs/) → owner approval → UI built against recorded fixtures (real captures or real service replies, scrubbed per ADR-0036, served only by the test-only fixture server, never a demo mode, ADR-0011) → wiring to real services. No backend work for a user-facing feature starts before its brief is approved; a backend-only integration needs only its setup-page design. Exempt: safety and security fixes, bug fixes that change no screen, protocol, firmware, decoder and pack-data work, research and bench captures. Gives the brief's required sections, the approval record, the order of work per phase, the text applied to CONSTITUTION.md (Authoring rules, v1.8) and the CLAUDE.md working rules, the matching line for every pack and app repo, and a CI check on spec frontmatter (`ux_brief`). Amended 2026-10-07 (openness round, ADR-0047): UX first binds the project's own repos only (community authors exempt), the built-screen review covers core safety surfaces only, experimental backends may merge behind a flag, the CI check warns, labelled synthetic fixtures are allowed, and the rule moves to CONTRIBUTING.md.
 ---
 
 # ADR-0045 — UX first
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):**
+> UX first binds the repos the project owns, not community or third-party authors; the
+> step-2 built-screen review applies to core safety surfaces only; merged experimental
+> backends behind a flag are allowed; the brief template is a guide, not a gate; the CI
+> `ux_brief` check warns instead of failing; labelled synthetic fixtures are allowed in tests,
+> previews and design mocks. See [Amendment](#amendment-2026-10-07-openness-round). The
+> decision text below is kept as accepted.
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all", OS round;
@@ -233,9 +242,42 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
 4. **Approval of built screens (step 2) as a second gate?** Recommend: yes, a short review
    against the brief's acceptance list. Alternative: approve the brief only.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("the repo has too many rules that limit freedom and
+flexibility, this should be an open system … it's got way too nanny like", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md) (loosenings 11 and 12). The
+decision above stands except:
+
+- **Scope (decision 9, "one rule in every repo").** UX first is a **working rule for the
+  repos the project owns** (`ostler` and the `openostler` org's pack and app repos).
+  Community and third-party authors are exempt: they need no platform-approved brief, and
+  their briefs, if any, live where they like.
+- **Step 2's review of built screens** is required only for **core safety surfaces** (Drive
+  mode, telltales and alarm alerts, car-action confirmations, consent prompts, Passenger view
+  and service mode). For other screens the brief's approval is enough.
+- **No backend first (decision 3).** Spikes may be merged as **experimental** code behind a
+  flag that is off by default, with an `experimental` label; they stay out of release builds
+  until the brief is approved.
+- **The brief's sections (decision 7)** are a template and checklist, not a gate; a short
+  brief that covers the Moving rules, states and copy is enough.
+- **Fixtures (decision 6).** Recorded fixtures stay the default for core UI tests. **Labelled
+  synthetic fixtures** (`synthetic: true`, shown as "Sample data" where a person sees them)
+  are allowed freely in tests, widget and Store previews and design mocks. Fixtures still
+  never ship as a demo mode in a release build ([ADR-0011](adr-0011-no-demo-mode-live-only-recording-place-names.md) as amended).
+- **Confirmation.** `check_ux_brief.py` **warns** instead of failing CI.
+- **Unchanged:** safety and security fixes stay exempt; identity scrub of fixtures
+  (ADR-0036); the constitution keeps no process rules (they move to CONTRIBUTING.md,
+  ADR-0047).
+
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed: drafted from the owner's direction of 2026-10-07.
 - 2026-10-07 — v1.0, accepted: approved by the owner on 2026-10-07 ("approve all", OS round;
   decision list items 1–3); every decision answered as recommended; the text applied to
   CONSTITUTION.md (v1.8) and CLAUDE.md.
+- 2026-10-07 — v1.1, amended (openness round, approved by the owner on 2026-10-07, "apply
+  the loosenings", ADR-0047): scoped to the project's own repos; built-screen review for core
+  safety surfaces only; experimental backends behind a flag; brief template not a gate; CI
+  check warns; labelled synthetic fixtures allowed. The rule moves from CONSTITUTION.md to
+  CONTRIBUTING.md (constitution v1.9).

@@ -14,5 +14,5 @@ for this repo.
 ## Editing rules
 
 - Keep these stdlib-only.
-- Changes to the area enum must be mirrored in `CONSTITUTION.md` (Authoring rules).
+- Changes to the area enum must be mirrored in `CONTRIBUTING.md` (Core-repo guidelines, docs tooling; moved from the CONSTITUTION by ADR-0047).
 - Run them from the repo root. CI runs both.

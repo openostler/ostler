@@ -2,7 +2,7 @@
 title: "Designer brief: App framework (part E): Integrations, discovery and permission sheets"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   proven and candidate counts, with Configure, Reload, Disable and Remove. The New device
   found notice says what the OS found and never adds it by itself. The runtime permission
   sheets ask at the moment of use for location, phone, microphone and camera, and for the
-  right to ask for car actions by ADR-0033 category and tier.
+  right to ask for car actions by ADR-0033 category and tier. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # App framework brief, part E: Integrations, discovery, permission sheets
@@ -112,7 +112,7 @@ Rules and terms: [part A](90-appframe-a.md); the setup flows these pages start:
 - **Spec refs:** [App model §7][am-7] · [App model §14][am-14] (14.7 `home:card`) ·
   [Adapters §5][sa-5] · [UI §4.4][ui-4.4] · [app UI model §4.4][ua-4.4].
 - **Open questions:** should the OS also show a strip chip for finds? The brief says no
-  (apps add no chips; finds are not urgent).
+  (apps may add status-only chips since the openness round; finds are not urgent).
 
 ### app-permission-request — Permission request sheet  [Proposed]
 - **Owner:** os

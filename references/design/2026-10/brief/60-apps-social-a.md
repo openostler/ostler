@@ -2,7 +2,7 @@
 title: "Designer brief — Social add-on: Chats, conversation, Calls, Rides and Cameras"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-social-addon-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   is Parked or passenger only; while Moving it is replaced by the `alert_card` and `call`
   templates), ghost mode's effect (none on messaging), link badges for internet, Wi-Fi mesh,
   HaLow and LoRa, the hub link card and the components to use. Calls, video, the PTT sheet,
-  ride creation and camera grants are in part b.
+  ride creation and camera grants are in part b. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # Social add-on, part a: the page and its tabs
@@ -114,7 +114,7 @@ Shared rules for every block here:
   2. Rows (ListRow): direction icon (`call_received`, `call_made`, `call_missed`), name, kind
      ("Voice", "Video", "Ride PTT"), duration "04:12", time, link badge ("Wi-Fi mesh"),
      trailing call-back icon Button.
-  3. Footer caption: "Calls are never recorded. This log stays on this car for 90 days."
+  3. Footer caption: "Calls aren't recorded unless you turn recording on. This log stays on this car for 90 days."
 - **States:** empty: "No calls yet" · loading: skeleton rows · offline: log still shows (it is
   local) · Parked: full · Idling: read and call back · Moving: locked view; missed calls wait as
   one "Missed calls (2)" card at the next Parked · Passenger (phone): full.

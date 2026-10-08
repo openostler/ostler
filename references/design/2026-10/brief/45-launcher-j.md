@@ -2,7 +2,7 @@
 title: "Designer brief 45-j — launcher: the theme wizard (Wallpaper & style), wallpaper, colours and icon packs"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   colours (accent palette within the token rules, and Night, Day, Auto or Deep night) and
   icon packs (alternative glyph sets that map to Material Symbols names, with fallbacks;
   safety telltales never change). Gauge styles, text size, the preview and Home settings
-  follow in 45-k.
+  follow in 45-k. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-j — Theme wizard: hub, wallpaper, colours and icons
@@ -72,9 +72,10 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   5. **Apply to:** This screen · All my screens.
 - **States:** image error as in the table. A light image in Night: a note "Dimmed so text stays
   readable". Moving: locked view.
-- **Safety and driving rules:** on head units the Drive carousel and every Moving template
-  draw on plain `bg`, never on a wallpaper; widgets keep their cards, so text contrast never
-  depends on the wallpaper ([visual §1][vds-1], [visual §5][vds-5]).
+- **Safety and driving rules:** by default the Drive carousel and Moving templates draw on
+  plain `bg`; a theme may show the wallpaper while Moving, guarded by the Drive-mode render
+  check (contrast ≥ 4.5:1); widgets keep their cards ([visual §1][vds-1], [visual §5][vds-5];
+  openness round).
 - **Components:** Card (thumbnail grid), crop tool (new component), switch, Segmented.
 - **Spec refs:** [visual §1][vds-1] · [visual §5][vds-5] · [UI §12.5][ui-12.5] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 50):** wallpaper images are stored on the device only
@@ -97,8 +98,9 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   4. A small preview card: a button, a selected chip and a gauge in and out of range.
 - **States:** a pack accent too close to a status colour is refused ("Too close to the
   warning colour"). Moving: locked view.
-- **Safety and driving rules:** `ok`, `warn`, `alarm` never change; data ramps never use the
-  accent; no glow on head units at night ([visual §3.3][vds-3.3], [visual §5][vds-5]).
+- **Safety and driving rules:** the default theme keeps `ok`, `warn`, `alarm` and keeps data
+  ramps off the accent; a theme may restyle them under the Drive-mode render check
+  ([visual §3.3][vds-3.3], [visual §5][vds-5]; openness round).
 - **Components:** Segmented, switch, colour swatch (new component), Card.
 - **Spec refs:** [visual §3.1][vds-3.1] · [visual §3.3][vds-3.3] · [UI §13.5][ui-13.5] · [launcher §11][lw-11].
 - **Open questions:** **Decided (item 48):** accents other than cyan are allowed as
@@ -117,16 +119,17 @@ display the wizard is Park to edit ([Drive modes §8.1][dm-8.1] R1).
   2. Each pack is an **alternative glyph set that maps to Material Symbols names**: an icon
      a pack lacks falls back to the Material outlined glyph; the card shows "Covers 212 of
      300 icons".
-  3. A note: "Warning lights and alarm icons don't change."
+  3. A note: "Warning lights and alarm icons must stay recognisable in Drive mode."
 - **States:** pack missing icons: the fallback line. Moving: locked view.
-- **Safety and driving rules:** the fault telltale, warning lights and alarm glyphs are
-  never replaced; no emoji or images as icons ([visual §6][vds-6], [Drive modes §8.1][dm-8.1]
-  R3).
+- **Safety and driving rules:** an icon pack may restyle the fault telltale, warning lights
+  and alarm glyphs, but they always exist and pass the Drive-mode render check; emoji and SVG
+  icons are allowed ([visual §6][vds-6], [Drive modes §8.1][dm-8.1] R3; openness round).
 - **Components:** Card, App icon (new).
 - **Spec refs:** [visual §6][vds-6] · [Drive modes §7.6][dm-7.6] · [launcher §11][lw-11] ·
   [app UI model §9][ua-9].
 - **Open questions:** **Decided (item 49):** icon packs are glyph sets mapped to Material
-  Symbols names; safety icons never change.
+  Symbols names; safety icons never change. *Amended (openness round): safety icons may be
+  restyled under the render check.*
 
 <!-- links -->
 [dm-7.6]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#76-icons-and-names-v02

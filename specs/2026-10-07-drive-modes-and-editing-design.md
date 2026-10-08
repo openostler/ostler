@@ -2,14 +2,32 @@
 title: "Drive modes and the editable UI — mode switcher, seven presets, Android-style editing of everything (rail, strip, Home, Drive, pages) with safety guardrails — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-shell-input-design.md, references/research/obd_telematics_apps.md, references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/node_sensors.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, ui/src/screens/Drive.tsx, ui/src/shell/strip.ts, ui/src/shell/layoutClass.ts, ui/src/shell/destinations.ts, ui/src/icons/symbols.ts, ui/tokens/size.tokens.json, schemas/layout.schema.json]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 was revised for the owner's "the entire UI is editable, with no fixed icons". Drive mode gains several modes, each a Drive layout as data (UI spec §12.3) in a versioned JSON format, `ostler.layout/1`, authored per layout class, with tiles bound to VSS paths (range, normal/warning/critical levels, units, gauge style) and map, media and push-to-talk panes, plus an explicit, strictly validated Moving section that maps onto the shell templates. Seven presets: Diagnostic (today's six tiles), Dashboard (speed hero, rpm sweep, side gauges), Map, Convoy / Ride, Off-road (D2), Split / Media and Minimal / Night, each with per-class wireframes and its data and add-on needs (D2 gaps marked). A Drive-mode chip in the strip switches with one tap while Moving (tap cycles a rotation of up to four modes, long-press lists up to six). Everything the user sees is editable: rail items including Home (move, replace, re-icon, rename, hide), strip chip order and visibility, Home widgets, Drive tiles and add-on pages, with an icon picker over the one icon set (Material Symbols), length-limited, i18n-aware custom names and a hidden-items list so nothing becomes unreachable. Guardrails: More may be moved, renamed or re-iconed but never removed; long-press on the strip or any empty area always opens edit mode; Reset layout is always reachable from More and from the Connection sheet; safety items (fault telltale, alarm alerts, the Moving templates and their limits) may move but never go; on a head unit while Moving it is "Park to edit", enforced by the server. Layout kinds `rail`, `strip`, `home` and `drive_mode` with icon, label and hidden overrides; one validator refuses any write that removes a safety item or More. Layouts are stored per vehicle, layout class and user profile on the Brain (on the device without one) and travel as files. Add-ons register widgets and supply only default icons and labels (app-model §15). ShellInput focus zones and the switcher chip work in any strip order. Tests, phases DM1–DM5, and decisions, all answered as recommended, including the revised items 51–52 of the DMD decision list. Amended 2026-10-07 (OS round): §4.5, §6 and §7 are superseded by the launcher and widgets spec.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3; v0.2 was revised for the owner's "the entire UI is editable, with no fixed icons". Drive mode gains several modes, each a Drive layout as data (UI spec §12.3) in a versioned JSON format, `ostler.layout/1`, authored per layout class, with tiles bound to VSS paths (range, normal/warning/critical levels, units, gauge style) and map, media and push-to-talk panes, plus an explicit, strictly validated Moving section that maps onto the shell templates. Seven presets: Diagnostic (today's six tiles), Dashboard (speed hero, rpm sweep, side gauges), Map, Convoy / Ride, Off-road (D2), Split / Media and Minimal / Night, each with per-class wireframes and its data and add-on needs (D2 gaps marked). A Drive-mode chip in the strip switches with one tap while Moving (tap cycles a rotation of up to four modes, long-press lists up to six). Everything the user sees is editable: rail items including Home (move, replace, re-icon, rename, hide), strip chip order and visibility, Home widgets, Drive tiles and add-on pages, with an icon picker over the one icon set (Material Symbols), length-limited, i18n-aware custom names and a hidden-items list so nothing becomes unreachable. Guardrails: More may be moved, renamed or re-iconed but never removed; long-press on the strip or any empty area always opens edit mode; Reset layout is always reachable from More and from the Connection sheet; safety items (fault telltale, alarm alerts, the Moving templates and their limits) may move but never go; on a head unit while Moving it is "Park to edit", enforced by the server. Layout kinds `rail`, `strip`, `home` and `drive_mode` with icon, label and hidden overrides; one validator refuses any write that removes a safety item or More. Layouts are stored per vehicle, layout class and user profile on the Brain (on the device without one) and travel as files. Add-ons register widgets and supply only default icons and labels (app-model §15). ShellInput focus zones and the switcher chip work in any strip order. Tests, phases DM1–DM5, and decisions, all answered as recommended, including the revised items 51–52 of the DMD decision list. Amended 2026-10-07 (OS round): §4.5, §6 and §7 are superseded by the launcher and widgets spec. Amended 2026-10-07 (openness round, ADR-0047): counts, caps and the one icon set become defaults with warnings (any icon, ellipsised names, no rail cap, add-on status chips with a strip overflow), anchors and the More Reset row are hideable while one recovery path stays, and safety items may be restyled under the Drive-mode render check but never removed or covered.
 ---
 
 # Drive modes and the editable UI — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** taste and count rules become
+> defaults. Changed in place: §2 non-goals (an optional free-form mode, any icon, add-on
+> status chips); §3 terms; §4.1–§4.2 (name and description lengths and the 256 KB size are
+> soft limits with warnings; `theme_hint` may darken or brighten; faces have no cap; icons
+> may be any Material Symbol, an icon pack glyph, an emoji or the user's SVG); §4.5 and §8.2
+> step 7 (no five-item rail cap; More hideable; add-on strip chips allowed); §6 (rotation and
+> list sizes are defaults); §7.3 (no five-slot cap); §7.5 (the chip budget is a default with
+> an overflow chip; add-ons may add status chips); §7.6 (any icon; names ellipsised with a
+> warning, not refused); §7.8 (the More row may be hidden; the Connection sheet, the edit
+> gesture and holding Back keep Reset reachable); §8.1 R3, R4, R5, R9 (safety items may be
+> restyled, never removed or covered; anchors hideable while one recovery path stays); §8.4
+> (social share buttons optional); §10 tests follow. The Moving section rules (§4.3, R2),
+> Park to edit (R1), no actions in layouts (R6) and other people's data (R8) are unchanged.
+> Theme rules point to [visual §13](2026-10-07-visual-design-system-design.md) and the
+> [theme engine](2026-10-07-theme-engine-design.md).
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round):** §4.5 (rail), §6 (the switcher) and §7 (editing) are superseded by the
@@ -85,30 +103,32 @@ strands the user (More, edit mode and Reset are always reachable); layouts that 
 person and the car and travel as files; add-ons that contribute widgets without new shell code
 per add-on.
 
-**Non-goals.** A pixel or free-drag editor (§12.3; DMD's own docs concede dragged positions do
-not travel, teardown Avoid 1); RealDash-style triggers or actions in layouts (layouts are Read
-only, ADR-0033); animated needles, glow or video while Moving; a second "profile" concept
-beside users and vehicles (DMD2 features Decide 2); user-drawn or uploaded icons, emoji or
-images as icons (one icon set, visual spec §6); add-on chips in the strip (Decision 14);
-removing a safety item; a seventh template; a sixth rail slot.
+**Non-goals.** RealDash-style triggers or actions in layouts (layouts are Read only,
+ADR-0033); animated needles or video while Moving; a second "profile" concept beside users and
+vehicles (DMD2 features Decide 2); removing or covering a safety item. *Amended 2026-10-07
+(openness round): a free-form placement mode is optional (Parked only, never in a Moving
+section; dragged positions may not travel between classes, teardown Avoid 1); user SVG, emoji
+and icon-pack icons are allowed; add-ons may contribute status-only strip chips; glow is a
+theme choice (visual §13.8 D2); new Moving templates follow UI spec §12.1; there is no rail
+slot cap.*
 
 ## 3. Terms
 
 | Term | Meaning |
 |---|---|
 | **Drive mode** | One named Drive layout the driver can switch to with the strip chip (Dashboard, Map …); replaces §12.3's single layout |
-| **Face** | One screen inside a mode (for example the cluster and a map); a mode has 1–3 faces per class, switched by D-pad `left`/`right` or a swipe ([ShellInput](2026-10-07-shell-input-design.md) §6); each face has its own Moving section |
+| **Face** | One screen inside a mode (for example the cluster and a map); a mode has one or more faces per class (was 1–3; superseded by launcher pages), switched by D-pad `left`/`right` or a swipe ([ShellInput](2026-10-07-shell-input-design.md) §6); each face has its own Moving section |
 | **Layout** | A document in the `ostler.layout/1` format (§4): kind `drive_mode`, `home`, `rail` or `strip` |
 | **Item** | Anything the user can edit: a rail item, a strip chip, a Home widget, a Drive widget, an add-on page |
 | **Override** | A user's `icon`, `label` or `hidden` on an item, stored in the layout; the default comes from the platform or the add-on (§4.5) |
-| **Safety item** | Movable, never removable or hideable (§8.1 R3): the fault telltale (strip chip and Home warnings card), alarm alerts (the Security chip while a node is present, the Security alert card, `alert_card`), the Moving templates and their limits |
-| **Anchor item** | Movable, renamable and re-iconable, never removable, for reachability rather than safety: **More**; in Drive mode **Back** and the **Drive-mode chip** (§8.1 R9) |
+| **Safety item** | Movable and restylable, never removable, hideable or covered (§8.1 R3): the fault telltale (strip chip and Home warnings card), alarm alerts (the Security chip while a node is present, the Security alert card, `alert_card`), the Moving templates and their limits |
+| **Anchor item** | A default for reachability rather than safety, movable, renamable, re-iconable and hideable while one recovery path stays (§8.1 R9, R10): **More**; in Drive mode **Back** and the **Drive-mode chip** |
 | **Grid** | Per layout class: columns × rows of cells, rows sized by remaining height (`grid-auto-rows: 1fr`, §12.3) |
 | **Widget** | A placed item: a core widget (signal tile, gauge, hero, map …) or one an add-on registers (§9) |
 | **Pane** | A large widget that maps to a non-tile template: `map`, `media` or `ptt` (the `call` template) |
 | **Moving section** | The part of a Drive layout shown while Moving on a driver-facing display; validated strictly (§4.3) |
 | **Profile** | The signed-in user on that display (accounts spec §14.7 S4), or **Car** (the head unit's kiosk session) |
-| **Rotation** | The ordered modes the switcher chip cycles through with one tap (≤ 4) |
+| **Rotation** | The ordered modes the switcher chip cycles through with one tap (default ≤ 4; the user may extend it) |
 
 ## 4. The layout format, `ostler.layout/1`
 
@@ -122,15 +142,15 @@ extension `.ostler-layout.json`.
 { "format": "ostler.layout/1",                 // format and major version; minor additions are additive
   "kind": "drive_mode",                        // drive_mode | home | rail | strip
   "id": "community.d2-greenlane",              // preset ids are "ostler.<name>"; user ids are minted locally
-  "name": "Green lane", "icon": "terrain",     // name ≤ 30 characters, Material Symbols name
-  "description": "Low range, tilt and the breadcrumb trail",   // ≤ 120 characters
+  "name": "Green lane", "icon": "terrain",     // name ≤ 30 characters recommended (longer is ellipsised); any icon (§7.6)
+  "description": "Low range, tilt and the breadcrumb trail",   // ≤ 120 characters recommended
   "base": { "preset": "ostler.offroad", "version": 3 },        // what it was made from (Reset target)
   "license": "CC-BY-SA-4.0", "author": "optional display name",
   "vehicle_hint": { "pack": "lr_d2" },         // optional discovery hint; never a vid, VIN or plate
   "requires": { "addons": [], "signals_any": ["Vehicle.Speed"] },
-  "theme_hint": null,                          // null | "night_dim": may darken, never brighten
+  "theme_hint": null,                          // null | a mode hint such as "night_dim" (darken or brighten)
   "classes": {
-    "hu7": [ {                                 // authored per class, never scaled (§12.3); 1–3 faces
+    "hu7": [ {                                 // authored per class, never scaled (§12.3); one or more faces
       "face": "cluster", "name": "Cluster",    // the first face is the default
       "grid": { "cols": 6, "rows": 4 },
       "widgets": [
@@ -156,7 +176,7 @@ extension `.ostler-layout.json`.
 
 - **`format`** is checked first; an unknown major version is refused with "Made for a newer
   Ostler". Unknown fields in a known major version are ignored and kept on export.
-- **Faces.** Each class holds an array of **1–3 faces** (`face` id, `name` ≤ 30 characters,
+- **Faces.** Each class holds an array of **one or more faces** (`face` id, `name`,
   `grid`, `widgets`, `moving`); the first is the default. A face is validated like a whole
   layout, so every face is drivable. Home, rail and strip layouts have one face and no
   `moving` section (their Moving behaviour is fixed by the shell, §4.5).
@@ -178,10 +198,13 @@ extension `.ostler-layout.json`.
   `chip` (binary), `text` (enum), `sparkline` (Parked only), `inclinometer`, `compass`.
 - **`size`**: `small` (1 × 1 Moving cell), `medium` (2 × 1), `wide` (full row on phone, 3 × 1
   on HU), `hero` (2 × 2). The Parked `grid` uses finer cells; each class's minimums are in §4.4.
-- **No code, no URLs, no images** in v1: labels are plain text (limits per item kind, §7.6)
-  with control and bidi-override characters stripped; icons are Material Symbols names from
-  the shipped catalogue (§7.6); `config` values are validated against the widget's
-  declared settings schema (§9). Size ≤ 256 KB.
+- **No code** in v1: labels are plain text (recommended lengths per item kind, §7.6) with
+  control and bidi-override characters stripped; a URL in a name is a warning on import; icons
+  are any Material Symbols name, an icon-pack glyph, an emoji or a pack-relative SVG (§7.6);
+  `config` values are validated against the widget's declared settings schema (§9). The
+  default size limit is 256 KB; the owner may raise it (a warning above it, not a refusal).
+  *(Amended 2026-10-07, openness round: was no URLs, no images, catalogue icons only, a hard
+  256 KB cap.)*
 - **Nothing identifying**: no `vid`, VIN, plate, user id or place. Export strips them (§8).
 
 ### 4.3 The Moving section and the template mapping
@@ -229,8 +252,8 @@ means "use the default", so a language or add-on update still reaches an item th
 renamed:
 
 ```jsonc
-{ "icon": "garage_home",     // a Material Symbols name in the shipped catalogue (§7.6), else ignored with a warning
-  "label": "Workshop",        // user text, plain, per-kind length limit (§7.6); no i18n key
+{ "icon": "garage_home",     // a Material Symbols name, icon-pack glyph, emoji or SVG (§7.6); unknown → default with a warning
+  "label": "Workshop",        // user text, plain, ellipsised if too wide (§7.6); no i18n key
   "hidden": true }            // hide (rail item → More → Pages; strip chip, widget, page → Hidden, §7.7)
 ```
 
@@ -239,7 +262,7 @@ renamed:
 ```jsonc
 { "format": "ostler.layout/1", "kind": "rail", "id": "user.rail", "name": "My rail",
   "classes": { "hu7": [ { "face": "rail",
-    "items": [                                              // 1–5 entries, in order; exactly one is "destination:more"
+    "items": [                                              // one or more entries, in order; "destination:more" by default
       { "item": "destination:home" },
       { "item": "more:social", "icon": "groups", "label": "Ride" },   // a pinned add-on page
       { "item": "destination:trips" },
@@ -266,11 +289,13 @@ renamed:
 (`{ "slot": "b", "widget": "ostler.gauge", "label": "Water", "icon": "thermostat", ... }`);
 a removed Home or Drive widget is simply absent (or `hidden` to keep its settings for later).
 
-**Rules the schema and the validator add (§8.2):** a rail has 1–5 items and **exactly one
-`destination:more`**, never `hidden`; a strip lists only core chip ids (`strip.ts`
-`ChipDescriptor["id"]` plus `security`, `vehicle`, `device`), each at most once; a **safety
-item** (§3) may be reordered but never `hidden` or omitted, and its `icon` and `label` are
-refused (Decision 13); an anchor item may carry `icon` and `label`, never `hidden`; items
+**Rules the schema and the validator add (§8.2):** a rail has one or more items and holds
+`destination:more` by default (it may be `hidden`); a strip lists core chip ids (`strip.ts`
+`ChipDescriptor["id"]` plus `security`, `vehicle`, `device`) and add-on status chips
+(`addon:<app>/<chip>`), each at most once; a **safety item** (§3) may be reordered and
+restyled (`icon`, `label`) but never `hidden` or omitted; an anchor item may carry `icon`,
+`label` and `hidden`; *(amended 2026-10-07, openness round: was 1–5 items, More never hidden,
+no `icon` or `label` on a safety item, core chips only)* items
 unknown to this shell are kept on export and ignored on render. A stored layout that predates a
 newer required item (for example the Security chip after a node is paired) gets it **inserted
 at its default position** on load, logged once; a **write** that drops one is refused.
@@ -513,10 +538,11 @@ mode lands on `drive_mode` the first time (then on the chip last focused there, 
 telltale or Security chip changes only where they sit: `alert_card` still takes focus by itself
 (ShellInput §6).
 
-**One tap while Moving.** *Tap* cycles to the next mode in the rotation (≤ 4 modes); the chip
+**One tap while Moving.** *Tap* cycles to the next mode in the rotation (default ≤ 4 modes; the user may extend it); the chip
 word changes and the new layout appears; no toast, no animation. *Long-press* (600 ms,
 ShellInput) or a long `ok` on the focused chip opens the **mode list** as a `short_list`: up to
-six modes, one level, names ≤ 30 characters, the current one ticked; one tap picks; a short
+six modes (the `short_list` limit), one level, names within the template line length, the
+current one ticked; one tap picks; a short
 `ok` on the focused chip cycles like a tap.
 
 **Modes and faces are two levels, as ShellInput defines them:** the chip switches **modes**;
@@ -615,8 +641,9 @@ widget.
 
 ### 7.3 Rail
 
-**Shape (v0.2).** Still **five slots**, a hard cap (§3.4; Decision 12 argues for keeping it).
-**No slot is locked.** The user chooses what each slot holds and in what order: any core
+**Shape (v0.2).** *Superseded by the launcher's dock and amended 2026-10-07 (openness round):
+there is no five-slot cap; the slot count is a per-class default the user may change, and
+More may be hidden while the recovery path (§7.8) stays.* **No slot is locked.** The user chooses what each slot holds and in what order: any core
 destination (**Home**, Diagnose, Trips, Security) or any **pinned add-on page** (any `more:*`
 page, for example Social, Vehicles & Map, Community), and **More**, which must be in the rail
 exactly once but may sit in any slot. So at most four slots are the user's free choice. Every
@@ -636,7 +663,7 @@ the rail item of the current page **or, if that page is not in the rail, to More
 jumps to the same item; `back` reaches Home or Drive mode in ≤ 3 presses because Home is the
 stack root, not because it is a rail slot.
 
-**The head-unit Drive button** (§3.3) stays outside the five-slot cap. It may be moved to the
+**The head-unit Drive button** (§3.3) is retired by the launcher spec (§5.1). It may be moved to the
 start or end of the rail, re-iconed, renamed or hidden (Drive mode opens by itself on Moving,
 and from Home's Drive widget and More → Pages). On phone it does not exist (the bottom bar
 holds only the five items).
@@ -697,20 +724,22 @@ whichever chip it applies to.
 
 | Chip | Kind | User may |
 |---|---|---|
-| **Worst telltale** | safety item | move only (never hidden, icon and word fixed: they are the ISO telltale) |
-| **Security** (while a node is present) | safety item (alarm alerts) | move only |
-| **Back** (Drive strip) | anchor | move, re-icon, rename; never hidden (the touch way out of Drive mode) |
-| **Drive mode** (Drive strip) | anchor | move, re-icon; never hidden; word = mode name (§6) |
+| **Worst telltale** | safety item | move and restyle (theme or icon pack, under the Drive-mode render check); never hidden or covered |
+| **Security** (while a node is present) | safety item (alarm alerts) | move and restyle; never hidden or covered |
+| **Back** (Drive strip) | anchor | move, re-icon, rename; hideable while D-pad `back` and the recovery path stay (the touch way out of Drive mode) |
+| **Drive mode** (Drive strip) | anchor | move, re-icon; hideable while D-pad `back` still reaches the mode list; word = mode name (§6) |
 | Vehicle, Link, REC, device slot, 12 V, Clock, Mark | ordinary | move, re-icon, rename, hide, show |
 | Service-mode and replay badges, the admin badge | shell-drawn badges (R3) | nothing: they are not chips in the layout and always show while their mode is on |
 
-**Capacity.** The strip never scrolls (§3.2), so each class has a chip budget measured at the
-class width with the longest default words: starting budgets **phone 5, HU-5 6, HU-7 7, HU-9/10 8,
+**Capacity.** The strip stays one row (§3.2), so each class has a default chip budget measured at
+the class width with the longest default words; chips beyond it fold into an overflow chip
+that opens a sheet (*amended 2026-10-07, openness round*): starting budgets **phone 5, HU-5 6, HU-7 7, HU-9/10 8,
 HU-wide 10, tablet and desktop 10** (tuned in DM3 by a no-overflow test). Safety and anchor
-items count first; showing a chip over budget asks which to hide ("The strip is full: hide one
-first"). Hidden chips are listed in the strip editor's **Hidden** shelf and can be shown again
-from there. Replacing a chip means swapping it for one from that shelf in place. No add-on
-contributes strip chips (app-model §5; Decision 14).
+items count first and never fold into the overflow. Hidden chips are listed in the strip
+editor's **Hidden** shelf and can be shown again from there. Replacing a chip means swapping it
+for one from that shelf in place. Add-ons may contribute **status-only** strip chips
+(`contributes.strip_chips`: one value and a word, opening the add-on's sheet; no actions) that
+the user adds from the shelf (Decision 14's alternative, adopted in the openness round).
 
 **Gestures.** Long-press anywhere on the strip opens the strip editor (§7.1): chips get drag
 handles and an item sheet; dropping on another chip swaps; D-pad `ok` picks a chip, `left`/
@@ -724,14 +753,16 @@ events, not from the chip's position.
 
 ### 7.6 Icons and names (v0.2)
 
-**One icon set.** The icon picker offers only **Material Symbols** (outlined, visual spec §6),
-from a **curated catalogue** shipped with the shell: about 300 names grouped by theme (vehicle,
+**Any icon** (*amended 2026-10-07, openness round*; was "one icon set"). The icon picker opens
+on **Material Symbols** (outlined, visual spec §6), from a **curated catalogue** shipped with
+the shell, and also offers the full Material Symbols set, installed icon packs, emoji and the
+user's own SVG (chosen Parked, stored on the device, sanitised: no scripts or external
+references). The catalogue: about 300 names grouped by theme (vehicle,
 engine and fluids, electrical, navigation and places, people and social, media, security,
 weather and terrain, tools, general), searchable by name and by translated keywords. The
 vendored subset in `ui/src/icons/` grows to the catalogue in DM3 (outlined SVG path data,
-about 300 × 0.5 KB); the full set of several thousand is not shipped (Decision 11). No emoji,
-dingbats, uploaded images, URLs or colours: icons sit in text colour, and a status icon wears
-its status hue as today. An icon name not in the catalogue (a file from a newer shell) renders
+about 300 × 0.5 KB); the full set is fetched on demand. Icons sit in text colour by default,
+and a status icon wears its status hue as today; a theme may restyle them. An icon name not in the catalogue (a file from a newer shell) renders
 the item's default icon and is kept on export.
 
 **Picker.** A sheet (bottom on phone, passenger side on head units) with search, the theme
@@ -748,11 +779,11 @@ bidi-override characters stripped, leading and trailing space trimmed, empty mea
 | Strip chip word | **12** | chips stay one row (§7.5 capacity) |
 | Home or Drive widget label, page title, mode name, face name | **30** | the template rule (≤ 30 characters a line) |
 
+The limits above are **recommended** (*amended 2026-10-07, openness round*; were refusals).
 Beyond the count, the editor measures the rendered name at the class's type step: a name that
-still does not fit drops one type step, then the editor refuses it ("Too long for this
-screen") rather than clipping (visual spec §4). A name is checked against **every class it
-applies to**, so a rail name that fits HU-wide but not the phone is refused with the class
-named.
+still does not fit drops one type step, then is **ellipsised** with a warning naming the class
+("Too long for the phone: it will be shortened"). In a Moving template the line length of UI
+spec §12.1 still applies.
 
 **Languages (i18n).** Defaults are i18n keys (`nav.home`, `strip.link`, an add-on's
 `title` key), so they follow the language setting. An override is **literal text in whatever
@@ -776,20 +807,21 @@ text) and drop nothing else; the identity scrub (§8.2 step 7) still applies to 
   a chip with a hidden chip, a widget with a widget at the nearest size it supports, a Drive
   tile with any widget the Moving rules allow there (the Moving counter updates live).
 - **Never unreachable (R11).** Every page stays reachable from More (Pages or Hidden pages);
-  More, edit mode (§7.1) and Reset layout (§7.8) are always reachable; safety items cannot be
-  hidden (R3). A test walks every page from More after a randomised edit sequence (§10).
+  edit mode (§7.1) and Reset layout (§7.8) are always reachable, and More through them if
+  hidden; safety items cannot be hidden (R3). A test walks every page from More after a randomised edit sequence (§10).
 - **Add-on items** follow the same rules with the add-on's default icon and name; uninstalling
   or disabling an add-on removes its items and frees their slots (a freed rail slot shows the
   next page from More → Pages; the user's overrides for it are kept for when it comes back).
 
 ### 7.8 Reset layout, always reachable (v0.2)
 
-**Where.** (1) **More → Reset layout**, a row at the bottom of More that cannot be hidden,
-moved out of More or renamed; (2) the **Connection sheet** (the Link chip's sheet, which the
+**Where.** (1) **More → Reset layout**, a row at the bottom of More (*amended 2026-10-07,
+openness round*: the user may hide it, since (2)–(4) remain); (2) the **Connection sheet** (the Link chip's sheet, which the
 shell also opens by itself when the link is lost, so it is reachable with a hidden Link chip),
 under its other rows; (3) the edit bar's **Reset** (§7.1), reached by long-press on the strip
-or any empty area. With the D-pad, More → Reset layout and the Connection sheet are both
-reachable by `menu` → More, whatever the rail holds, because More is always in it.
+or any empty area; (4) the **hardware-key fallback**: holding Back for 10 s (the
+[theme engine](2026-10-07-theme-engine-design.md) §4 safe-mode trigger) offers Reset layout.
+With the D-pad, the Connection sheet and (4) are reachable whatever the rail holds.
 
 **What.** One sheet, **Cancel focused** (ShellInput §7): **This surface** (the rail, the strip,
 Home or the current Drive mode), **Everything on this screen** (rail, strip, Home, all modes'
@@ -817,17 +849,21 @@ row ("Undo reset"), so a mistaken reset loses nothing.
   Worst-telltale strip chip, its fault sheet, Home's warnings card), **alarm alerts** (the
   Security strip chip while a node is present, Home's Security alert card, every `alert_card`)
   and **the Moving templates and their limits** (§4.3, R2). The user may move them (and resize
-  the cards); no edit, file, pack or add-on can remove, hide, cover, re-icon or rename them, or
-  change their colours (Decision 13). `alert_card`, the fault sheet, the Passenger-view badge
+  the cards); no edit, file, pack or add-on can remove, hide or cover them. *Amended
+  2026-10-07 (openness round; supersedes Decision 13):* their icons, words and colours may be
+  restyled by a theme, icon pack or the user, guarded by the Drive-mode render check and the
+  required parts of the [theme engine](2026-10-07-theme-engine-design.md) §11 (decisions 5
+  and 7; [visual §13.9](2026-10-07-visual-design-system-design.md)). `alert_card`, the fault sheet, the Passenger-view badge
   and frame, and the service-mode and replay frames and badges stay **shell-drawn outside any
   layout**; a layout cannot contain, place or cover them.
 - **R4 The strip is the user's, within the guardrails (v0.2; replaces "core strip chips are
   fixed").** Chip order and visibility, icons and words are editable (§7.5); safety chips (R3)
-  and anchor chips (R9) are always present in their context; the strip never scrolls (chip
-  budget per class); add-ons add no chips.
+  are always present in their context, anchor chips (R9) by default; the strip stays one row
+  with an overflow chip (default chip budget per class); add-ons may add status-only chips
+  (*amended 2026-10-07, openness round*).
 - **R5 Size minimums.** Moving tiles and panes keep §4.4's minimums and the type floors; a
-  widget that cannot fit drops one type step, then refuses (clipping is a test failure, visual
-  spec §4).
+  widget that cannot fit drops one type step, then refuses in a Moving section; in a Parked
+  grid it is ellipsised with a warning (visual spec §4, amended).
 - **R6 No actions in layouts.** Widgets read; the only controls in a Moving layout are those
   the templates already allow (media play/pause/skip/volume, PTT hold/mute/end, a `setpoint`
   ±), routed through the shell; anything that reaches the gate keeps its confirm sheet with
@@ -837,13 +873,15 @@ row ("Undo reset"), so a mistaken reset loses nothing.
 - **R8 Other people's data.** No layout can show other vehicles while Moving except the `map`
   template's opted-in convoy markers; no names, avatars or photos; the data-class registry
   decides what a widget can read at all.
-- **R9 Anchors (v0.2).** **More** is in the rail exactly once on every class and is never
-  hidden or removed; it may move to any slot and take any icon and name. In Drive mode **Back**
-  and the **Drive-mode chip** are always in the strip. More's own **Edit layout** and **Reset
-  layout** rows cannot be hidden.
+- **R9 Anchors (v0.2; amended 2026-10-07, openness round).** **More** is in the rail by
+  default; it may move to any slot, take any icon and name, and be hidden. In Drive mode
+  **Back** and the **Drive-mode chip** are in the strip by default and may be hidden while
+  D-pad `back` still reaches the mode list. Hiding an anchor never removes the recovery path
+  of R10.
 - **R10 Edit mode and Reset are always reachable (v0.2).** Long-press on the strip or any
-  empty area always opens edit mode (or "Park to edit"); Reset layout is in More, in the
-  Connection sheet and in the edit bar (§7.8). No layout field can disable them.
+  empty area always opens edit mode (or "Park to edit"); Reset layout is in the Connection
+  sheet, the edit bar and the hardware-key fallback, and in More unless hidden (§7.8). No
+  layout field can disable them. This is the one recovery path the openness round keeps.
 - **R11 Nothing unreachable (v0.2).** Every core destination and every enabled add-on page is
   reachable from More (Pages or Hidden pages) whatever the rail holds; landing rules and deep
   links do not depend on the rail (§7.3).
@@ -853,10 +891,11 @@ row ("Undo reset"), so a mistaken reset loses nothing.
 One validator (TypeScript in the shell, the same rules mirrored in a Python check on the
 server for writes and imports), run on save, import and preset build:
 
-1. JSON Schema (`ostler-layout.schema.json`), size ≤ 256 KB, known `format` major.
-2. Text hygiene: names within the per-kind limits of §7.6 (rail and strip 12, the rest 30
-   grapheme clusters; description ≤ 120), control and bidi overrides stripped, no URLs; icons
-   are catalogue names (unknown names are **warnings** and render the default).
+1. JSON Schema (`ostler-layout.schema.json`), size within the limit (default 256 KB; over it
+   is a **warning**), known `format` major.
+2. Text hygiene: names over the recommended lengths of §7.6 or containing a URL are
+   **warnings**; control and bidi overrides stripped; unknown icons are **warnings** and render
+   the default.
 3. Bindings: each path exists in VSS 6.1 or the overlay (`vss_leaves.json`, `metrics.json`);
    unknown paths are **warnings** (the tile reads "Not available on this car").
 4. Widgets: each id is a core widget or one declared by an enabled add-on; a missing add-on is
@@ -867,12 +906,12 @@ server for writes and imports), run on save, import and preset build:
    animation, at most one of each pane kind. Any failure **rejects** the file or the save,
    naming the class and the rule.
 7. **Guardrails, for `rail`, `strip` and `home` layouts and every write: strict** (§4.5,
-   R3, R9): exactly one `destination:more` in each rail, never hidden; the safety chips
-   (telltale; Security while a node is present) and, in the Drive strip, Back and Drive mode
-   present and not hidden; Home's warnings card (and the Security alert card while a node is
-   present) present and not hidden; no `icon` or `label` on a safety item; no strip chip that
-   is not a core chip; at most five rail items. A write or import that removes or hides a
-   safety item or More is **refused** with the item named ("The fault telltale can move but
+   R3): the safety chips (telltale; Security while a node is present) present and not hidden;
+   Home's warnings card (and the Security alert card while a node is present) present and not
+   hidden or covered; add-on strip chips status-only. *(Amended 2026-10-07, openness round:
+   More, Back and the Drive-mode chip may be hidden; safety items may carry `icon` and `label`;
+   no five-item rail cap.)* A write or import that removes or hides a safety item is
+   **refused** with the item named ("The fault telltale can move but
    can't be removed"); a stored layout that predates a newer required item gets it inserted on
    load (§4.5). The server runs the same check on `PUT`, so a client that skips it cannot store
    such a layout.
@@ -907,7 +946,8 @@ layouts are editable Parked from the head unit unless the owner sets **Lock car 
 
 - **Export:** from the modes list, Home, Rail or Strip editor: **Save as file** (`.ostler-layout.json`),
   **Copy link** and **QR** (a link carries the file inline when ≤ 2 KB compressed, else a
-  relay or hub link), and **Share** through Web Share. No social-network buttons. Licence
+  relay or hub link), and **Share** through Web Share. Social-network share buttons are
+  optional (off by default; *amended 2026-10-07, openness round*). Licence
   CC BY-SA 4.0 by default (ADR-0012), author optional.
 - **Import:** open a file, paste a link or scan a QR, on any host; a preview shows the mode at
   the current class (Parked and Moving), its warnings and the add-ons it wants; **Add** puts it
@@ -956,14 +996,14 @@ source), service due (Maintenance & Garage), camera live (Cameras, `camera_live`
 
 - **Unit** (Vitest, no React): the schema; the validator on good and bad fixtures (7 tiles,
   sparkline in Moving, pane too small on HU-5, unknown widget, unknown path, levels out of
-  order, VIN-pattern label; rail without More, two Mores, six items, hidden More, hidden or
-  omitted telltale or Security chip, renamed telltale, add-on strip chip, 13-grapheme rail
-  name); the required-item insertion on load; the Moving reduction per class; the resolution order (user → Car
+  order, VIN-pattern label; hidden or omitted telltale or Security chip, an add-on strip chip
+  with an action; warnings for a long name, a URL in a name, an unknown icon, a file over
+  256 KB); the required-item insertion on load; the Moving reduction per class; the resolution order (user → Car
   → pack → generated); export scrub; preset files validate for every class.
 - **Server** (pytest): `PUT` of layouts and rail refused while the display is Moving (R1);
   held changes apply at Parked (R7); a mode switch accepted while Moving; import refusal
   envelopes name the class and rule; a `PUT` of a rail, strip or Home layout that removes or
-  hides a safety item or More is refused whatever the driving state (R3, R9); Reset is refused
+  hides a safety item is refused whatever the driving state (R3); Reset is refused
   while Moving and restores from the snapshot on Undo.
 - **Playwright**, at 800×480, 1024×600, 1280×720, 1280×480, 1920×720 and 393×852:
   - **Switcher:** the `drive_mode` chip is present only in Drive mode, after Back, ≥ 48 px;
@@ -976,29 +1016,29 @@ source), service due (Maintenance & Garage), camera live (Cameras, `camera_live`
     refused; switching Parked → Moving while editing closes the editor and keeps the draft.
   - **No scroll per face per mode per class:** for each face of each of the seven presets (with fixtures for ride,
     media source and SLABS session), `main` does not scroll, every Moving element is inside the
-    viewport, ≤ 6 tiles render, digits ≥ 56 px, no element carries `data-glow`, and no
-    animation runs (computed `animation-name: none`).
+    viewport, ≤ 6 tiles render, digits ≥ 56 px, and no animation runs beyond the alarm pulse
+    (computed `animation-name: none` elsewhere). (The `data-glow` assert is dropped, openness
+    round.)
   - **Safety items and anchors (v0.2):** the item sheets of the warnings card, the Security
-    alert card, the telltale chip and the Security chip offer Move (and Size for cards) and no
-    Remove, Hide, Icon or Name; More's sheet has no Remove or Hide; dragging the telltale chip to
-    any position keeps it visible and opening the fault sheet from it; a `PUT` or import that
-    omits or hides the telltale, the Security chip, the warnings card or More is refused with
-    the item named (server and client); a stored layout missing a newer required chip renders
+    alert card, the telltale chip and the Security chip offer Move, Size for cards and restyle,
+    and no Remove or Hide; dragging the telltale chip to any position keeps it visible and
+    opening the fault sheet from it; a `PUT` or import that omits or hides the telltale, the
+    Security chip or the warnings card is refused with the item named (server and client); a stored layout missing a newer required chip renders
     it at its default position.
   - **Reorder and focus (v0.2):** for a set of shuffled strip orders on every class, the strip
-    does not overflow or scroll; in Drive mode the first `ArrowUp`/`back` into the strip lands
+    stays one row and extra chips fold into the overflow chip; in Drive mode the first `ArrowUp`/`back` into the strip lands
     on `drive_mode` wherever it sits, a short `Enter` there cycles the mode, a long `Enter` lists;
     `ArrowLeft`/`ArrowRight` inside the strip follow the rendered order; an `alert_card` raised
     with the Security chip at either end of the strip takes focus by itself.
   - **Always reachable (v0.2):** after a randomised sequence of edits (hide every hideable item,
-    move More to each slot, rename everything to 12-character names in Arabic and Latin
-    scripts), long-press on the strip and on an empty area opens edit mode; More → Reset layout
-    and the Connection sheet's Reset are present; every core destination and enabled add-on
+    More and the anchors included, move More to each slot, rename everything to long names in
+    Arabic and Latin scripts), long-press on the strip and on an empty area opens edit mode; the
+    Connection sheet's Reset and the hardware-key fallback are present; every core destination and enabled add-on
     page opens from More; `back` reaches Home in ≤ 3 presses; with the Moving fixture the same
     long-presses show "Park to edit" and the Reset sheets refuse.
-  - **Icons and names (v0.2):** the picker offers only catalogue names; a file with an unknown
-    icon renders the default; a name over its grapheme limit or too wide for any class it
-    applies to is refused with the class named; "Use default name" restores the translated
+  - **Icons and names (v0.2):** the picker offers the catalogue, the full set, icon packs, emoji
+    and a sanitised SVG; a file with an unknown icon renders the default; a name too wide for a
+    class is ellipsised with a warning naming the class; "Use default name" restores the translated
     default after a language switch; the accessible name contains the visible custom name and
     the description the default name.
   - **Reset (v0.2):** each scope (this surface, this screen, all sizes) restores the defaults
@@ -1042,6 +1082,14 @@ source), service due (Maintenance & Garage), camera live (Cameras, `camera_live`
   ShellInput additions of Decision 15 are approved as ShellInput §14.
 - 2026-10-07: v0.4, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
   §4.5, §6 and §7 superseded by the launcher and widgets spec; §4, §5 and §8 refined there.
+- 2026-10-07: v0.5, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): non-goals trimmed; faces,
+  rotation, rail items, names, descriptions and file size become defaults with warnings; any
+  icon (full Material set, icon packs, emoji, SVG); `theme_hint` may brighten; More, Back, the
+  Drive-mode chip and the More Reset row hideable while R10's recovery path stays (with a
+  hardware-key fallback); add-on status chips and a strip overflow chip; safety items
+  restylable under the render check, never removed or covered (supersedes Decision 13);
+  optional social share buttons; tests follow. Decisions 11–14 stay as history.
 
 ## Decisions for the owner
 

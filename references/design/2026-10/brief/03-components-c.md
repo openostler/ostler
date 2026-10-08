@@ -2,7 +2,7 @@
 title: "Designer brief — components (c): new components and the kit sheets"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -11,10 +11,15 @@ summary: >
   job progress, and the key-test grid. Then the kit sheets to draw first, one frame each:
   controls, data display, surfaces and feedback, the OS frame, the launcher (home grid, dock,
   app drawer, folder, page dots, widget frame, picker card, wallpaper), the Moving
-  templates, the wizard frame, the key-test grid and the hardware set (Proposed).
+  templates, the wizard frame, the key-test grid and the hardware set (Proposed). Amended 2026-10-07 (openness round, ADR-0047): style values are the default look under visual §13 and the theme engine; safety rules unchanged.
 ---
 
 # Components (c): new components and kit sheets
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** Blur on head units is a theme choice. Style values here are the default look;
+> themes, add-ons and users may change them within [visual §13](../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07) and the
+> [theme engine](../../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner). Safety rules are unchanged.
 
 ## 1. New components other areas need
 
@@ -38,7 +43,7 @@ checks the kit once before pages use it ([visual §11][vds-11]: V2 kit before V3
 - **Layout classes:** phone · tablet · hu7 · hu9. **Draw first:** Night on phone and HU-7; Night dim on HU-7; Day on phone.
 - **Content:** Button (4 variants × default, pressed, focus, disabled with reason, loading, queued) · Segmented (2, 3, 4 options) · Chip (filter, choice, status ok/warn/alarm, capability, countdown) · ListRow (icon, meta, trailing value, chevron, switch, `short_list` row) · Card (plain, tappable, tone) · Text field (empty, filled, error, typed confirm) · Toggle.
 - **States:** focus ring on each; disabled with its reason line.
-- **Safety and driving rules:** head-unit column at 76 px targets; no glow in Night dim.
+- **Safety and driving rules:** head-unit column at 76 px targets; no glow in Night dim (default look).
 - **Components:** Button, Segmented, Chip, ListRow, Card, Text field, Toggle.
 - **Spec refs:** [visual §8][vds-8], [shell input §9][si-9].
 
@@ -60,7 +65,7 @@ checks the kit once before pages use it ([visual §11][vds-11]: V2 kit before V3
 - **Layout classes:** phone · tablet · hu7 · hu9 · huwide. **Draw first:** Night on phone and HU-7; Day on phone.
 - **Content:** Sheet (bottom, passenger-side, full height) · Sheet over map (peek, half, full) · confirm sheet with Cancel focused · Toast (four variants) · Banner (offline, remote, Moving) · Inline notice · Empty state · Skeleton · Checklist · ActiveTestBanner · App stopped card.
 - **States:** scrim, focus trap, open and close (the only motion).
-- **Safety and driving rules:** no blur on head units.
+- **Safety and driving rules:** no blur on head units in the default look; a theme may add it, guarded by the Drive-mode render check.
 - **Components:** as listed.
 - **Spec refs:** [visual §5][vds-5], [visual §8][vds-8].
 
@@ -95,7 +100,7 @@ checks the kit once before pages use it ([visual §11][vds-11]: V2 kit before V3
 - **Layout classes:** phone · hu5 · hu7 · hu9 · huwide. **Draw first:** Night dim + Moving on HU-5 and HU-7; Night on HU-9 and HU-wide.
 - **Content:** one example of each template at its limit (six tiles; six-row `short_list` with 30-character rows; `alert_card` with sender, app, Play, Reply; `call` with three buttons; `map` with route and next manoeuvre; `media`; `value`; `setpoint`; `arm`; `camera_live`; `telltale_list`).
 - **States:** focus on the safest button; stale tile.
-- **Safety and driving rules:** text ≥ 24 px, targets 76 px, no glow, gradient or animation.
+- **Safety and driving rules:** text ≥ 24 px, targets 76 px, no animation (glow and gradient are the theme's choice, under the render check).
 - **Components:** the templates in [03-components-b §3](03-components-b.md#3-moving-templates-os-only).
 - **Spec refs:** [UI §12.1][ui-12.1], [Drive modes §4.3][dm-4.3].
 

@@ -2,7 +2,7 @@
 title: "Designer brief 40-c — Home, the app drawer, Hidden apps, edit-mode safety rules and the item sheet"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   cards and the empty-state card that points to the Store), the app drawer (was More: every
   app not in the dock, Settings, and the Edit layout and Reset layout rows that cannot be
   hidden), Hidden apps, the OS rules for Home edit mode (the launcher brief, 45-launcher,
-  draws edit mode itself) and the item sheet's safety-item and anchor variants.
+  draws edit mode itself) and the item sheet's safety-item and anchor variants. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-c — Home, app drawer and edit-mode rules
@@ -52,8 +52,8 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
   values grey with age. No vehicle: "Add a vehicle". Brain asleep: drawn from the node's
   retained data. Parked, Idling: full. Moving: head units land on the Drive home pages; the
   phone shows the Moving banner.
-- **Safety and driving rules:** the warnings card and the Security alert card may move and
-  resize but never be removed, renamed or re-iconed ([Drive modes §7.2][dm-7.2]); the
+- **Safety and driving rules:** the warnings card and the Security alert card may move,
+  resize and be restyled, never removed, hidden or covered ([Drive modes §7.2][dm-7.2]); the
   empty-state card never shows on a head unit while Moving ([UI §12.4][ui-12.4]).
 - **Components:** Card, Card (tone), HeroStat, StatTile.
 - **Spec refs:** [UI §3.4][ui-3.4] · [UI §5.4][ui-5.4] · [UI §12.4][ui-12.4] ·
@@ -81,8 +81,8 @@ Back to [40-a](40-drive-a.md) for the terms and the file list.
 - **States:** bare OS: only Settings, Store, Edit layout and Reset layout. Parked: full.
   Moving on a head unit: a `short_list` of ≤ 6 driving apps ([launcher §5.2][lw-5.2]);
   Edit and Reset say "Park to edit".
-- **Safety and driving rules:** the drawer is an anchor: it can be moved, renamed and
-  re-iconed, never removed ([Drive modes §8.1][dm-8.1] R9–R11).
+- **Safety and driving rules:** the drawer is a default anchor: it can be moved, renamed,
+  re-iconed and hidden while the recovery path stays ([Drive modes §8.1][dm-8.1] R9–R11).
 - **Components:** ListRow or app-icon grid (45-launcher decides). Material Symbols.
 - **Spec refs:** [UI §3.4][ui-3.4] · [UI §12.4][ui-12.4] · [UI §13.4][ui-13.4] ·
   [Drive modes §7.3][dm-7.3] · [Drive modes §7.8][dm-7.8].

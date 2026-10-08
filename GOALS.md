@@ -2,14 +2,25 @@
 title: "Goals — what Ostler is for and where it is going next"
 area: root
 status: stable
-version: 2.7
+version: 2.8
 updated: 2026-10-07
 depends_on: [SCOPE.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-head-unit-apps-design.md, docs/ecosystem.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, references/vision.md]
 summary: >
-  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md. Amended 2026-10-07 (OS round; ADR-0046 accepted): the small core becomes an empty OS (system services and system UI only; every feature is an app), the dock's per-class cap replaces the five-destination cap, media is no longer a non-goal and projection receivers are.
+  The short, canonical statement of Ostler's goals. Mission approved by the owner on 2026-10-07 ("approve all"; ADR-0042 accepted): Ostler is an open ecosystem whose main goal is getting your car's data into apps, with a small core (the shell, Diagnose, Trips, Network, Security once a node exists) and add-ons as the product (Social, Vehicles & Map, Maintenance & Garage, Cameras, Integrations, Decode lab for developers), Home Assistant style; ghost by default, Export all, nothing in core needs an Ostler-run server, no driving score in core. Then the tagline ("Ostler: an open ecosystem that gets your car's data into apps"), the mission and product family (Ostler Diagnostics, a diagnostic node that works alone and offline with a phone; Ostler Brain, the brain it plugs into; Ostler Guardian, the hidden node variant; add-on modules on either, joining over IP with one VSS-named, MQTT-style message model; Home Assistant and the wider IoT world), the principles (the node gate is the only path to the car), the hard lines and non-goals, the product line table (Ostler Diagnostics, Ostler Brain, Ostler Guardian, sensor nodes, add-on modules), and the near-term vehicle and phase roadmap. The long-term picture is in references/vision.md. Amended 2026-10-07 (OS round; ADR-0046 accepted): the small core becomes an empty OS (system services and system UI only; every feature is an app), the dock's per-class cap replaces the five-destination cap, media is no longer a non-goal and projection receivers are. Amended 2026-10-07 (openness round, ADR-0047): the anti-bloat guardrails bind the core repo only (ADR-first for outbound paths and core dependencies, not destinations; idea tags are labels; the dock size is a default), scores may live in add-ons, and community projection receivers may be sideloaded.
 ---
 
 # Goals
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](decisions/adr-0047-openness-round.md)):** §2 principle 6's guardrails bind the
+> core repo, not the ecosystem: an ADR is needed for a new outbound path or a core
+> dependency or language, not for a destination; the dock size is a per-class default; the
+> core/add-on/moonshot tags are lightweight labels; flavours may preinstall apps that are on.
+> "No driving score in core" stays a core default while add-ons may offer scores. The VIN
+> hard line gains the owner's explicit export. Projection receivers are not built, but may
+> be sideloaded as community items. "Features without a spec" leaves the non-goals (a
+> core-repo guideline in CONTRIBUTING.md).
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round; [ADR-0046](decisions/adr-0046-empty-os-every-app-an-add-on.md) §10, decision list
@@ -43,8 +54,8 @@ core reads and interprets the car and hands its data, safely and privately, to a
   add-on per integration), and Decode lab for developers, plus hardware add-on modules.
   Map: [docs/ecosystem.md](docs/ecosystem.md).
 - **Promises:** the node gate is the only path to the car (one exception: with no node fitted, the Brain may host a third-party adapter under ADR-0044's software gate); every data class starts in ghost
-  (shared with no one); Export all, and nothing in core needs an Ostler-run server; no
-  driving score in core.
+  (shared with no one) by default; Export all, and nothing in core needs an Ostler-run server; no
+  driving score in core (add-ons may offer one, opt-in).
 
 **Ostler is an open, local-first automotive ecosystem: a smart-home-like platform for your
 car.** A diagnostic **node** interfaces with the vehicle you already have and turns its
@@ -109,18 +120,20 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
 5. **Three layers, enforced.** Core (comms + interpretation), vehicle packs (declarative
    data + small code hooks), integrations (opt-in consumers and add-ons). The platform
    never imports a pack; import tests enforce it.
-6. **Anti-bloat guardrails** ([direction spec](specs/2026-10-06-platform-direction-design.md#guardrails)):
+6. **Anti-bloat guardrails for the core repo** ([direction spec](specs/2026-10-06-platform-direction-design.md#guardrails);
+   they do not bind add-on or community authors, openness round):
    - *Rule of two:* no new abstraction until a second pack (or device, or vehicle) needs it.
    - *Core only shrinks:* new features land as packs or integrations.
-   - *An ADR first* for a new top-level destination, a new outbound data path, a new
-     runtime dependency or a new language
-     ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). The dock holds at most its layout
-     class's slots ([launcher](specs/2026-10-07-launcher-and-widgets-design.md) §5.1); every
-     app stays reachable from the drawer.
+   - *An ADR first* for a new outbound data path, or a new runtime dependency or language in
+     core ([ADR-0035](decisions/adr-0035-languages-by-tier.md)). A new destination is an app
+     and needs none. The dock's slot count is a per-class default the user changes
+     ([launcher](specs/2026-10-07-launcher-and-widgets-design.md) §5.1); every app stays
+     reachable from the drawer.
    - *The D2 pack's coverage is protected:* CI fails if it regresses.
-   - Every idea is tagged **core**, **add-on** or **moonshot**
-     ([feature backlog](references/research/features_backlog.md)); add-ons are off by
-     default, moonshots each need their own ADR and gate.
+   - Ideas carry a lightweight label, **core**, **add-on** or **moonshot**
+     ([feature backlog](references/research/features_backlog.md)), for planning only.
+     Add-ons are off unless a flavour preinstalls them on (ADR-0046 §5); a moonshot that
+     touches the car, an outbound path or core needs an ADR.
 7. **Off-the-shelf hardware now, our own later**, behind hardware-abstraction layers.
 8. **IP everywhere, one message model** ([ADR-0027](decisions/adr-0027-ip-everywhere-ecosystem-architecture.md)).
    Every Ostler device is an IP host. It is found by mDNS/DNS-SD, speaks VSS-named MQTT 5,
@@ -149,7 +162,8 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
 - **VIN and identity data are never recorded by default and never leave the device**
   ([ADR-0036](decisions/adr-0036-vin-and-identity-data-in-recordings.md)): recording is an
   opt-in for security decoding; never uploaded, shared, contributed, put in fixtures or
-  committed. Raw captures are never committed.
+  committed, except the owner's own explicit export or a VIN in an L4 bundle to one named
+  person (ADR-0036 amendment). Raw captures are never committed.
 - **Local-first and private by default.** No cloud dependency; every outbound path is
   opt-in.
 - **Alarm paths never depend on the brain or the internet** (tested). Not Thatcham-rated;
@@ -163,10 +177,10 @@ fills and its peers: [vision §1](references/vision.md#1-why-ostler-exists).
 
 - **Projection receivers** (Android Auto, CarPlay) are not built by the project: they need
   certification and licences an open project cannot hold
-  ([head-unit apps](specs/2026-10-07-head-unit-apps-design.md) §11).
+  ([head-unit apps](specs/2026-10-07-head-unit-apps-design.md) §11). A community receiver may
+  be sideloaded at the owner's risk.
 - HEVAC control inside the platform (a separate project).
 - A remote layout server, or runtime- or model-composed screens.
-- Features without a spec, or add-ons that are on by default.
 
 ## 4. Product line and add-ons
 
@@ -231,6 +245,12 @@ combined: U0–U3 in Phase 0, U5 in Phase 2, U4 in Phase 3. Each step gets its o
 
 ## Changelog
 
+- 2026-10-07: v2.8, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): the guardrails bind the core repo; ADR-first for outbound paths and
+  core dependencies only, not destinations; the dock size is a default; idea tags are labels;
+  flavours may preinstall apps on; scores in add-ons; the VIN line gains the owner's export;
+  sideloaded projection receivers; the "features without a spec, add-ons on by default"
+  non-goal is dropped (spec-first is a core-repo guideline in CONTRIBUTING.md).
 - 2026-10-07: v2.7, amended (OS round; ADR-0046 accepted, decision list item 13): "Small
   core" reads "Empty OS"; the dock's per-class cap replaces the five-destination cap; the
   "rebuilding media" and "user-arranged dashboards" non-goals go; projection receivers become
