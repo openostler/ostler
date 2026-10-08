@@ -2,14 +2,21 @@
 title: "ADR-0027 — IP everywhere: the ecosystem architecture (base pack, add-on modules, automotive-Ethernet backbone)"
 area: decisions
 status: locked
-version: 1.6
-updated: 2026-10-06
+version: 1.7
+updated: 2026-10-08
 depends_on: [references/research/ecosystem_architecture.md, references/research/connectivity_uplink.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0020-can-links-listen-only-by-default.md, decisions/adr-0021-local-https-on-the-device.md, decisions/adr-0024-body-bus-links-passive-by-default.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS device certificates, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; ADR-0026 as amended) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules (a long-term goal). Amended by the owner on 2026-10-06 (ADR-0028): the base is the Pi plus an always-on ESP32 buddy and the guardian is an add-on; uplinks are existing in-car Wi-Fi, hotspots or any USB dongle, with selection, failover and metering; a parked broker on the buddy bridged to the Pi's Mosquitto; security is standard practice (TLS/mTLS, MQTT auth and ACLs, passkeys or passwords for people) rather than a custom envelope; modules host their own web pages. Amended again on 2026-10-06 (networking answers, ADR-0037/0038): Matter via Home Assistant and Matterbridge until at scale, with alarm disarm allowed and Comfort switches only with the install override; NTP runs on the time-role holder; PLCA IDs live in each device's install configuration; mesh and Matter are remote paths.
+  Builds on ADR-0026. Ostler is a smart-home-like ecosystem: a base hardware pack interfaces with the car and add-on modules join over standard networking. Every Ostler device speaks IP on an automotive-Ethernet backbone: 10BASE-T1S for modules, standard Ethernet (12 V or PoE) for cameras now and 100BASE-T1 only for our own camera hardware, Wi-Fi or USB for displays. The Pi routes between segments. One message model (VSS-named MQTT 5, ADR-0016/0017), mDNS/DNS-SD discovery, dual-stack addressing, NTP from GNSS (PTP later), a security baseline (per-node identity, mTLS device certificates, MQTT 5 authentication with per-device ACLs, no trust from bus membership, no default passwords; ADR-0026 as amended) and one module contract (a manifest with VSS signals and safety-tiered actions; DevicePack adapters for foreign devices). The car's buses stay at the edge. CAN and the wake wire stay as the fallback. Matter is reached through a bridge, never inside modules (a long-term goal). Amended by the owner on 2026-10-06 (ADR-0028): the base is the Pi plus an always-on ESP32 buddy and the guardian is an add-on; uplinks are existing in-car Wi-Fi, hotspots or any USB dongle, with selection, failover and metering; a parked broker on the buddy bridged to the Pi's Mosquitto; security is standard practice (TLS/mTLS, MQTT auth and ACLs, passkeys or passwords for people) rather than a custom envelope; modules host their own web pages. Amended again on 2026-10-06 (networking answers, ADR-0037/0038): Matter via Home Assistant and Matterbridge until at scale, with alarm disarm allowed and Comfort switches only with the install override; NTP runs on the time-role holder; PLCA IDs live in each device's install configuration; mesh and Matter are remote paths. Amended 2026-10-08 (direction round, ADR-0051): §5's message model is VISS v3; MQTT is external only.
 ---
 
 # ADR-0027 — IP everywhere: the ecosystem architecture
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0051](adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)), approved by the owner
+> on 2026-10-08 ("I agree with everything"):** §5's one message model is VISS v3 over VSS.
+> The MQTT 5 topics become legacy, and MQTT is external only: Home Assistant, OVMS and
+> others through the gateway app's External MQTT menu. The backbone, discovery and security
+> stand.
 
 > **Superseded in part by [ADR-0032](adr-0032-one-node-optional-brain.md) (§1–§2, §5), 2026-10-06:** the Amendments' "Base and guardian" entry (node replaces the buddy; the guardian is a node variant) and §9's "one server gate" wording for car-touching actions (that gate is on the node).
 > **Superseded in part by [ADR-0033](adr-0033-action-categories-and-approvals.md) (§6–§7), 2026-10-06:** the "notify-only alarm" line and "Tier ≥ 2 not reachable from any remote path" (phone approval over local links; install override).
@@ -347,3 +354,8 @@ unchanged; where these entries differ, they win.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Changelog
+
+- 2026-10-08 — v1.7, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0051): §5 message model is VISS v3.

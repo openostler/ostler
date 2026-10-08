@@ -2,14 +2,22 @@
 title: "Launcher and widgets — the Android-model home screen: pages in a carousel, dock, drawer, widget host, widget setup, starter widgets, dashboard builder and theme wizard — design"
 area: specs
 status: stable
-version: 0.4
-updated: 2026-10-07
+version: 0.5
+updated: 2026-10-08
 depends_on: [decisions/adr-0045-ux-first.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_integrations_dashboards.md, references/research/driver_distraction_rules.md, references/research/obd_telematics_apps.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, schemas/ostler-layout.schema.json, src/openostler/layouts.py, ui/src/drive/DriveFace.tsx]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 14–21 and 44–53), v0.2; every decision answered as recommended, under ADR-0045 (UX first) and ADR-0046 (the empty OS). The OS launcher follows Android. Home pages are dashboards in a carousel; on a head unit while Moving the carousel is Drive mode, showing each driving page's Moving section, switched by swipe, D-pad or the page chip. The rail becomes the dock (bottom on phones, driver's side on head units) with two anchors, Home and Apps; More becomes the app drawer, always reachable (a short list of driving apps while Moving). App shortcuts and folders go on pages and the dock. Each class has a cell grid; drag, drop with reflow, edge resize and page add, remove and reorder work as on Android, Parked only on driver-facing displays. A widget gallery (By app, By signal) and a widget setup page (a schema form drawn by the OS with live Parked and Moving previews, or an app's own Parked setup view) configure look and data source. The widget SDK contract: manifest, config schema, VSS data bindings, cell sizes, and a required, explicit Moving template. The starter pack lists 24 widgets with their options. Preset dashboards and a dashboard builder wizard run at first run and at any time; a theme wizard sets background, accent, icon pack and gauge style under visual §13. Safety mapping, migration from ostler.layout/1 to ostler.layout/2, phases LW0–LW5, tests and owner decisions. Supersedes the Drive-modes spec's rail (§4.5, §7.3), switcher (§6) and editing (§7) sections. Amended 2026-10-07 (openness round, ADR-0047): caps become defaults with ellipsis and warnings, the dock size is user-set and may hold widgets, anchors are hideable with one recovery path, synthetic widget previews are allowed, and theme rules defer to visual §13 and the theme engine (safety looks restylable under the render check).
+  Approved by the owner on 2026-10-07 ("approve all", OS round; decision list items 14–21 and 44–53), v0.2; every decision answered as recommended, under ADR-0045 (UX first) and ADR-0046 (the empty OS). The OS launcher follows Android. Home pages are dashboards in a carousel; on a head unit while Moving the carousel is Drive mode, showing each driving page's Moving section, switched by swipe, D-pad or the page chip. The rail becomes the dock (bottom on phones, driver's side on head units) with two anchors, Home and Apps; More becomes the app drawer, always reachable (a short list of driving apps while Moving). App shortcuts and folders go on pages and the dock. Each class has a cell grid; drag, drop with reflow, edge resize and page add, remove and reorder work as on Android, Parked only on driver-facing displays. A widget gallery (By app, By signal) and a widget setup page (a schema form drawn by the OS with live Parked and Moving previews, or an app's own Parked setup view) configure look and data source. The widget SDK contract: manifest, config schema, VSS data bindings, cell sizes, and a required, explicit Moving template. The starter pack lists 24 widgets with their options. Preset dashboards and a dashboard builder wizard run at first run and at any time; a theme wizard sets background, accent, icon pack and gauge style under visual §13. Safety mapping, migration from ostler.layout/1 to ostler.layout/2, phases LW0–LW5, tests and owner decisions. Supersedes the Drive-modes spec's rail (§4.5, §7.3), switcher (§6) and editing (§7) sections. Amended 2026-10-07 (openness round, ADR-0047): caps become defaults with ellipsis and warnings, the dock size is user-set and may hold widgets, anchors are hideable with one recovery path, synthetic widget previews are allowed, and theme rules defer to visual §13 and the theme engine (safety looks restylable under the render check). Parked 2026-10-08 (direction round, ADR-0049): no launcher until the bench test; one normal feed widget; no widget apps.
 ---
 
 # Launcher and widgets — design
+
+> **Parked 2026-10-08 (direction round,
+> [ADR-0049](../decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved
+> by the owner on 2026-10-08 ("I agree with everything"):** the launcher is optional and
+> parked until the two-head-unit bench test (direction decision 23;
+> [ADR-0048](../decisions/adr-0048-ostler-as-an-android-launcher.md) parked). There are no
+> widget apps: the gateway app carries one normal feed widget at about 1 Hz, and live views
+> stay inside the apps.
 
 > **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
 > be an open system", then "apply the loosenings";
@@ -570,3 +578,4 @@ Answered 2026-10-07: approved as recommended ("approve all", OS round; decision 
   synthetic widget previews allowed, labelled; §11's rules point to visual §13 and the theme
   engine; safety looks restylable under the render check; the wallpaper shows while Moving.
   The decision list stays as history.
+- 2026-10-08: v0.5, parked (direction round, approved by the owner on 2026-10-08, ADR-0049).

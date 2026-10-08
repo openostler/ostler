@@ -2,14 +2,22 @@
 title: "ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub (raw tap, USB-IP link, setup mode, uplinks, hub-only wake, u-blox placement)"
 area: decisions
 status: locked
-version: 1.2
-updated: 2026-10-07
+version: 1.3
+updated: 2026-10-08
 depends_on: [references/research/product_family.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0026-module-bus-10base-t1s.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, decisions/adr-0028-base-hardware-connectivity-and-remote-access.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0037-role-holders-and-handover.md, references/research/hardware.md, references/research/connectivity_uplink.md, references/research/power_states.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
-  Accepted by the owner on 2026-10-06 (all recommendations); amended the same day: the public name of the brain product is now Ostler Brain (was Hub). Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms ("brain" also an informal synonym for the Hub); the app-model `product` value `lite` becomes `diagnostics`; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5 (100 ms / 8 kB; a TLS TCP stream only if the bench fails), scrubbed on the node, recorded on the hub, unframed bytes dropped from exports, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM (data-only by default) near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module (a fitted option), Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node, closing ADR-0032's GPS placement and ranking first in ADR-0037's best-clock-first order. Records the "Lite" wording sweep, bench tests and the owner's answers. Amended 2026-10-06: "Ostler Hub" is renamed Ostler Brain (the optional compute box; modules work without it); read "Hub" as "Brain" throughout; a Brain-only box may get its parked broker from an eligible always-on add-on module (ADR-0037 Amendments). Amended 2026-10-07 (OS round, ADR-0046 §5): the flavours are preinstalled sets of apps.
+  Accepted by the owner on 2026-10-06 (all recommendations); amended the same day: the public name of the brain product is now Ostler Brain (was Hub). Renames ADR-0032's tiers: "Ostler Lite" becomes Ostler Diagnostics (the OBD-port node, standalone with a phone or plugged into a hub), and the brain product becomes Ostler Hub; with Ostler Guardian they form the family; "node" and "brain" stay the internal terms ("brain" also an informal synonym for the Hub); the app-model `product` value `lite` becomes `diagnostics`; the architecture of ADR-0032 stands. Records: hardware-agnostic boards (WiCAN Pro as a CAN-only board profile, since its K-line sits behind an interpreter IC; a discrete K-line transceiver for K-line cars); two node outputs, decoded VSS and an MCU-timestamped raw tap batched over MQTT 5 (100 ms / 8 kB; a TLS TCP stream only if the bench fails), scrubbed on the node, recorded on the hub, unframed bytes dropped from exports, with lab send-requests through the node gate; raw serial over the network rejected; the node-to-hub link is USB-NCM (data-only by default) near the hub or 10BASE-T1S elsewhere, same IP and topics; standalone uplink is the official 4G module (a fitted option), Wi-Fi or a USB dongle from a tested list; with a hub the hub is uplink manager; setup mode is a Wi-Fi AP plus BLE Improv with a helper (pair and owner, uplink, pack, first scan) and hub adoption; a hub-only box wakes from its power board, with no separate buddy; the 10 Hz u-blox sits on the Diagnostics node, closing ADR-0032's GPS placement and ranking first in ADR-0037's best-clock-first order. Records the "Lite" wording sweep, bench tests and the owner's answers. Amended 2026-10-06: "Ostler Hub" is renamed Ostler Brain (the optional compute box; modules work without it); read "Hub" as "Brain" throughout; a Brain-only box may get its parked broker from an eligible always-on add-on module (ADR-0037 Amendments). Amended 2026-10-07 (OS round, ADR-0046 §5): the flavours are preinstalled sets of apps. Amended 2026-10-08 (direction round, ADR-0049): a USB serial link from the node to a head unit (BLE for phones, Wi-Fi as fallback).
 ---
 
 # ADR-0039 — Product family: Ostler Diagnostics, Guardian and Hub
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0049](adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved by the owner
+> on 2026-10-08 ("I agree with everything"):** the node also links to an Android head unit:
+> USB serial first, BLE for phones, Wi-Fi as fallback (direction decision 22). The link
+> carries VISS messages ([ADR-0051](adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md)),
+> not raw bus bytes, so the rejection of raw serial over the network stands. With no Brain,
+> the gateway app is the node's peer.
 
 > **Amended 2026-10-06 (owner, Brain rename):** the public name "Ostler Hub" is now **Ostler Brain**; read "Ostler Hub" and "Hub" (the product) below as "Ostler Brain" and "Brain". This file's name keeps the old word so links stay stable. See [Amendments (Brain rename)](#amendments-2026-10-06-brain-rename).
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS round; [ADR-0046](adr-0046-empty-os-every-app-an-add-on.md) §5):** the product flavours are preinstalled sets of apps: Ostler Diagnostics, Ostler Guardian (Security only) and Ostler Brain (the full install). The names are unchanged. See [Amendment (2026-10-07, OS round)](#amendment-2026-10-07-os-round).
@@ -278,3 +286,8 @@ Trips, Security, the starter widgets and the default theme; Ostler Guardian gets
 its widgets only, with the dock Security · Settings · App drawer; **Ostler Brain** is a third
 named flavour, the full install. Any non-system app can be uninstalled. The hardware
 decisions above are unchanged.
+
+## Changelog
+
+- 2026-10-08 — v1.3, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0049): USB serial head-unit link.

@@ -2,14 +2,20 @@
 title: "ADR-0035 — Languages by tier: C/C++ on the node, Python on the brain and lab, TypeScript for the UI"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-10-06
+version: 1.1
+updated: 2026-10-08
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0017-open-standards-first.md, SCOPE.md]
 summary: >
-  Supersedes in part ADR-0002 ("the production core stays Python") and amends ADR-0004. C/C++ on ESP-IDF for node firmware and the one shared decoder; Python for the lab, tools, brain services and MCP, with a core that stays stdlib + pyserial plus optional extras [passkeys], [mcp] and [can], and the native decoder loaded through stdlib ctypes with the Python reference decoder as the fallback when the library is missing; TypeScript for the UI, with types generated from OpenAPI/AsyncAPI and the phone app packaged with Capacitor. Rust only later, for a measured hot path. Revisit only when a measurement forces it.
+  Supersedes in part ADR-0002 ("the production core stays Python") and amends ADR-0004. C/C++ on ESP-IDF for node firmware and the one shared decoder; Python for the lab, tools, brain services and MCP, with a core that stays stdlib + pyserial plus optional extras [passkeys], [mcp] and [can], and the native decoder loaded through stdlib ctypes with the Python reference decoder as the fallback when the library is missing; TypeScript for the UI, with types generated from OpenAPI/AsyncAPI and the phone app packaged with Capacitor. Rust only later, for a measured hot path. Revisit only when a measurement forces it. Amended 2026-10-08 (direction round, ADR-0050): Kotlin for the Android app tier, replacing the Capacitor wrapper.
 ---
 
 # ADR-0035 — Languages by tier
+
+> **Amended 2026-10-08 (direction round,
+> [ADR-0050](adr-0050-kotlin-for-the-android-app-tier.md)), approved by the owner on
+> 2026-10-08 ("I agree with everything"):** Kotlin joins the table for the Android app tier:
+> one shared hybrid shell around the React pages, Jetpack, Glance for the feed widget,
+> minimum SDK 29. It replaces the UI row's Capacitor wrapper. The other rows are unchanged.
 
 - **Date:** 2026-10-06
 - **Status:** accepted (owner direction, 2026-10-06). **Supersedes in part**
@@ -97,3 +103,8 @@ memory limit hit, a profile showing a hot path.
   would throw away the Python lab.
 - **A compiled CPython extension instead of ctypes.** Rejected: it needs a compiler or
   per-version wheels on every install; ctypes needs neither.
+
+## Changelog
+
+- 2026-10-08 — v1.1, amended (direction round, approved by the owner on 2026-10-08,
+  ADR-0050): Kotlin for Android apps.
