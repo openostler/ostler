@@ -2,7 +2,7 @@
 title: "Direction — Ostler as an open diagnostic and logging platform with an open vehicle-data feed (VISS), not an OS: synthesis of the October 2026 direction round, with the owner's approved decision list"
 area: references
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-08
 depends_on: [references/research/direction_feed_standards.md, references/research/direction_host_platforms.md, references/research/direction_headunit_ecosystem.md, references/research/direction_repo_audit.md, references/research/direction_positioning.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md]
 summary: >
@@ -181,6 +181,38 @@ Which one is the server depends on how the device is connected:
 - **Open: failover.** What happens when the Brain drops out mid-drive (does the Android
   gateway take over the node, and how is the permission set handed over and merged back)
   is open. Feed spec v0.1 records it as an open item.
+
+### 3.3 Android Auto, Tesla and Android Automotive
+
+Added 2026-10-08 after the owner looked at the Dudu7 and asked where Ostler sits.
+
+| | Android Auto | Tesla | Android Automotive (AAOS) | Ostler |
+|---|---|---|---|---|
+| What it is | Phone apps projected onto the car screen | The maker's own Linux system | Android built in as the car's own OS | An app on ordinary Android (phone or head unit) plus the node |
+| Who draws the screen | Google's templates | Tesla | The car maker; third parties use templates | Ostler, in its own app |
+| Car data | Very little | Everything, in house | VHAL properties with car permissions | The node and the VISS feed |
+| Third-party apps | Approved categories only | None; Tesla partners | Approved categories (Google built in) or sideloaded (no Google) | Any Android app, side by side |
+
+- **The Dudu7 runs ordinary Android**, not Android Automotive: FYT's launcher on top of an
+  Android build. Ostler runs there as a normal app.
+- **Android Automotive is the reference architecture.** Its parts map onto ours: VHAL ≈
+  node + VISS feed; car permissions ≈ the permissions controller; driving restrictions ≈
+  the Drive mode rules; the maker's privileged apps ≈ the Ostler app. VHAL is an in-device
+  interface with about 200 properties, so it is a target, not our protocol. COVESA's
+  Android Automotive group maps VSS onto VHAL the same way
+  ([binding of VSS to Android properties](https://wiki.covesa.global/x/LA65)).
+- **Parked track (after the bench test):**
+  - a **VISS→VHAL bridge**, an output like the ELM327 one, so an AAOS build sees the car's
+    data through Android's own car API;
+  - an **Ostler AAOS reference build on a Raspberry Pi** with Ostler as the privileged
+    built-in app. There is no ready-made image; community guides cover the Pi 4
+    ([Grape Up, AAOS 13](https://grapeup.com/blog/android-automotive-os-13-on-raspberry-pi-4b),
+    [Classmethod, Android 15](https://dev.classmethod.jp/articles/android-automotive-os-raspberry-pi-4/)).
+    It means owning an OS image, so it waits until the app works.
+- **Apps on that build:** Google's car apps (Maps, Assistant, Play Store) are licensed to
+  car makers only and are never bundled. Owners can sideload, use F-Droid or Aurora Store,
+  and optionally microG. Flashing phone GApps is an unsupported hack: the device is not
+  Play-certified and integrity checks fail.
 
 ## 4. Theming, kept and re-targeted
 
@@ -362,6 +394,14 @@ as history.
 40. **Everything is synced:** one permission set, held and enforced by the server and
     shown and edited the same from the Android gateway apps, the Brain console and the
     cloud view. Failover when the Brain drops out mid-drive is open, for Feed spec v0.1.
+41. **One Ostler app:** Home, Diagnose (with Decode lab), Logs, Map, More and Drive mode,
+    the same on phone and head unit, with the gateway job running inside it (amends 12,
+    16, 17 and ADR-0049 item 6).
+42. **The screen line:** "Ostler arranges, Android runs": own screens, split screen,
+    picture-in-picture, a floating gauge and later a home-screen mode; never our own media,
+    radio, navigation or phone, audio focus, hosted apps or app store.
+43. **Android Automotive** is the reference architecture; a VISS→VHAL bridge and a Pi
+    reference build are a parked track after the bench test (§3.3).
 
 ## Changelog
 
@@ -374,3 +414,5 @@ as history.
 - 2026-10-08 — v1.1: §3.2 gateway roles and sync added (owner, 2026-10-08): the Brain does
   the same gateway job; Android direct to a node is the server, via a Brain a client; one
   synced permission set; decisions 38–40; Brain failover open.
+- 2026-10-08 — v1.2: §3.3 Android Auto, Tesla and Android Automotive added; decisions
+  41–43 (one Ostler app, the screen line, Android Automotive parked track).

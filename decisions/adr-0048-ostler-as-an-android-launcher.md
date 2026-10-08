@@ -2,7 +2,7 @@
 title: "ADR-0048 — Ostler as an Android launcher: the same single Android app can be the home app of a phone, tablet or Android head unit"
 area: decisions
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-08
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-store-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -17,6 +17,11 @@ summary: >
 > two-head-unit bench test (direction decision 23). Its premise, one Ostler app (ADR-0042),
 > is superseded by ADR-0049; if the launcher returns, this ADR is rewritten against
 > ADR-0049.
+>
+> **Update 2026-10-08 (ADR-0049 v1.2):** one Ostler app is back (ADR-0049 amendment), so if
+> the launcher returns it is a **home-screen mode inside the Ostler app**, never a separate
+> launcher app, inside the screen line ("Ostler arranges, Android runs"). Still parked until
+> the two-head-unit bench test.
 
 - **Date:** 2026-10-08
 - **Status:** proposed (draft). Basis: the owner's "this can also be a launcher for Android"
@@ -125,3 +130,5 @@ summary: >
   of the theme branch.
 - 2026-10-08 — v0.2, parked (direction round, approved by the owner on 2026-10-08, ADR-0049)
   until the bench test.
+- 2026-10-08 — v0.3: still parked; if it returns, a home-screen mode inside the one Ostler
+  app (ADR-0049 v1.2), within the screen line.
