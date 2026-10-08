@@ -2,8 +2,8 @@
 title: "ADR-0046 — The empty OS: the platform is an operating system with no apps; every feature is an app in its own repo"
 area: decisions
 status: locked
-version: 1.1
-updated: 2026-10-07
+version: 1.2
+updated: 2026-10-08
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0045-ux-first.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0032-one-node-optional-brain.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, decisions/adr-0044-adapters-on-the-brain-without-a-node.md, GOALS.md, CONSTITUTION.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, specs/2026-10-07-head-unit-apps-design.md, references/research/ha_architecture_addons.md, references/research/ha_integrations_dashboards.md, references/research/ha_companion_community.md]
 summary: >
   Accepted 2026-10-07 ("approve all", OS round; decision list items 4–13 and 41–43): approved by the owner on 2026-10-07, every item as recommended; the round's full decision list (items 1–65) is the Decisions appendix here. The platform repo `ostler` becomes an empty operating system, like an Android phone with no apps. The OS holds system services (the gate client and node link, the module bus, the VSS stream, the integration loader where vehicle packs become integrations, the app runtime, permissions and data classes, users, accounts and roles, driving state and the Moving lockouts, the alert and notification pipeline, audio focus and the call session, input, recording and export, backups, updates, network) and the system UI (launcher with home pages, dock, drawer, widget host and edit mode; status strip; Connection sheet; system Settings; the Store client; the theme engine; first-run setup). Safety is never an app. Everything else is an app in its own repo: Diagnostics, Trips, Security, Maintenance, Social, Map, Navigation, Phone, Radio, Audio, Media, Camera, Decode lab, Community, the starter widgets and the default theme. Product flavours become preinstalled sets (amends ADR-0039): Ostler Diagnostics, Ostler Guardian (Security only; dock Security · Settings · App drawer) and Ostler Brain, a third named flavour; any non-system app can be uninstalled (on the phone, bundled apps are disabled, not deleted). Code in core today moves only after each app's UX brief is approved (ADR-0045); the ADR maps today's modules to target repos and gives the repo list (amends ADR-0034). Supersedes ADR-0042 §4's core list and §5's catalogue placement; reverses GOALS' "rebuilding media" non-goal. Risks: a bare OS shows nothing, so flavours, the bundled catalogue and first run matter; safety stays in the OS.
@@ -403,6 +403,15 @@ ADRs and the four specs.
 47. **"By signal" widget picker tab:** yes. *alt:* "By widget" only.
 48. **Accent colours:** allow validated colour sets beyond cyan. *alt:* keep the one-accent rule.
 49. **Icon packs:** glyph sets mapped to Material Symbols names, safety icons never change. *alt:* Material Symbols styles only.
+
+    > **Amended 2026-10-08:** items 48–49 are superseded by
+    > [visual spec §13](../specs/2026-10-07-visual-design-system-design.md) and the
+    > [theme engine spec](../specs/2026-10-07-theme-engine-design.md), approved by the owner
+    > on 2026-10-07 and confirmed in the owner's review on 2026-10-08: no locked tokens, and
+    > themes can change anything. Safety is carried by the engine's protected surfaces,
+    > required parts and Drive-mode render check (its decisions 5–7). Icon packs still map to
+    > Material Symbols names (engine spec §2).
+
 50. **Images (wallpaper, image widget):** stored on the device only, never exported in layouts. *alt:* export them with layouts.
 51. **Widget setup pages:** the OS draws them from the widget's schema; an app may add one custom page behind "More settings". *alt:* schema only.
 52. **Who ships data widgets:** each app ships its own (Now playing from Media, Radio from Radio). *alt:* all in the starter pack.
@@ -429,3 +438,5 @@ ADRs and the four specs.
   decision list added as the Decisions (OS round) appendix.
 - 2026-10-07 — v1.1: repo names match the repos the owner created (`ostler-app-camera`,
   `ostler-app-decode-lab`, `ostler-widgets-starter`).
+- 2026-10-08 — v1.2: items 48–49 marked superseded by visual spec §13 and the theme engine
+  spec (owner review of the theme branch).

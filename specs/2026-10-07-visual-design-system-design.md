@@ -2,8 +2,8 @@
 title: "Visual design system — dark, map-first tokens, type, maps, charts and one component kit — design"
 area: specs
 status: stable
-version: 0.6
-updated: 2026-10-07
+version: 0.7
+updated: 2026-10-08
 depends_on: [references/research/visual_design_direction.md, references/research/ui_audit_current.md, references/research/app_teardown_speedometer.md, references/research/driver_distraction_rules.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md, decisions/adr-0017-open-standards-first.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0025-reuse-and-licences-pragmatic.md, ui/tokens/color.dark.tokens.json]
 summary: >
   Approved by the owner on 2026-10-07 ("approve all"), answering "our styling is pretty terrible". Ostler becomes dark by default and
@@ -31,6 +31,11 @@ summary: >
 > icon packs are glyph sets mapped to Material Symbols names, with the safety icons fixed
 > (item 49). The theme wizard is in the
 > [launcher spec](2026-10-07-launcher-and-widgets-design.md) §11.
+>
+> **Superseded 2026-10-08 (items 48–49):** §13 and the
+> [theme engine spec](2026-10-07-theme-engine-design.md) allow any accent and no locked
+> tokens; safety is carried by the engine's protected surfaces, required parts and Drive-mode
+> render check (its decisions 5–7). Icon packs still map to Material Symbols names.
 
 **Status:** approved by the owner on 2026-10-07 ("approve all"), v0.2. The evidence is
 [visual design direction](../references/research/visual_design_direction.md) (values, references) and
@@ -364,28 +369,13 @@ Add-on authoring ([ADR-0042](../decisions/adr-0042-ecosystem-small-core-addons-a
 
 ### 13.1 What a theme is
 
-> The full engine design is the [theme engine spec](2026-10-07-theme-engine-design.md)
-> (draft): skin packs with tokens, free-form CSS, XML screen layouts and component templates,
-> SVG gauges and assets. It supersedes this subsection's three-layer pack once approved.
-
-A **theme pack** (`ostler.theme/1`) is a data object (app UI model §5, launcher spec §11)
-with three layers. Each layer is optional, and a pack may use any mix of them.
-
-| Layer | Holds | For |
-|---|---|---|
-| **1. Tokens** | every token of §3–§8 (palette, status colours, ramps, type, space, radius, elevation, glow, motion), plus the structural options from the theme exploration: card, chip and tile corners (per corner allowed); label style; heading and numeral style; Home layout (`grid`, `mapL`, `center`, `stack`, `stackMap`); rail, strip and speed-hero style; gauge style; map style; theme settings (§13.4) | most themes; no CSS needed |
-| **2. `theme.css`** | **any CSS**: layout, positions, sizes, shapes, borders, shadows, filters, blur, gradients, animation, pseudo-elements, hiding or moving anything | full design languages |
-| **3. Assets** | images (textures, backgrounds, card fills, gauge faces), fonts, icon packs, map styles | material looks; §13.5 |
-
-There are **no locked tokens**: a theme may change status colours, telltale styling, sizes,
-glow and blur too.
-
-The few fixed rules are about packaging, not looks:
-
-- **No code.** No JS. No `@import` or `url()` that points outside the pack.
-- **Pack files only.** Fonts and images load from the pack's own files, never a remote host.
-- **Scoped CSS.** The shell wraps `theme.css` in `@layer theme` and scopes it to the app root,
-  so it cannot style the browser chrome, other origins or the iframes of community widgets.
+The approved [theme engine spec](2026-10-07-theme-engine-design.md) is the source of truth
+for what a theme is: an OS skin pack (`ostler.skin/1`, `.ostskin`) with six optional layers
+(tokens, free-form CSS, XML screen layouts, XML component templates, SVG gauges and assets),
+alongside separate widget, icon, wallpaper and sound packs and curated bundles. It also owns
+the packaging rules (no JavaScript, pack files only, scoped CSS) and the safety checks
+(protected surfaces, required parts and the Drive-mode render check, its decisions 5–7).
+The rest of §13 adds the built-ins, modes, images and fonts.
 
 ### 13.2 Stable hooks (the CSS API)
 
@@ -444,7 +434,8 @@ How themes relate to modes and driving:
 ### 13.4 Theme settings and editing
 
 A theme declares its own knobs, such as accent, texture on or off, density, gauge style,
-background dim and corner scale. "Edit theme" in More → Preferences → Theme shows them as
+background dim and corner scale. "Edit theme" in Settings → Display → **Wallpaper & style** (the theme wizard, launcher
+spec §11) shows them as
 controls, with no CSS needed. A knob sets a variable or toggles a `data-option` attribute
 that `theme.css` reads.
 
@@ -486,15 +477,9 @@ All of them are OFL. Figtree stays the face of Night and the shell's fallback.
 
 ### 13.7 Build order
 
-| PR | Ships | Test |
-|---|---|---|
-| **T1** schema and loader | `ostler.theme/1` JSON Schema in `schemas/`; the loader (tokens, scoped `@layer theme` CSS, pack-relative assets, no remote fetches); hashed internal classes | schema tests; a CSS `url()` to a remote host or an `@import` is refused; theme CSS cannot reach outside the app root |
-| **T2** hooks | `data-part` and state attributes on the shell and kit; the hook list as versioned JSON plus the authoring guide | a test fails if a documented hook disappears without deprecation |
-| **T3** built-ins | the 22 themes as packs (tokens + `theme.css` + fonts) | screenshots of the five demo screens at phone, HU-7 and HU-5 per theme |
-| **T4** images | texture and background assets, the user background picker | images load from the pack only |
-| **T5** picker and editor | More → Preferences → Theme: preview cards, theme settings, the CSS editor with live preview, Duplicate, Import / Export | Playwright, keyboard-only |
-
-T1 builds on V1a; T2 lands with the V2 kit; T3–T5 follow.
+The build order is the theme engine spec's phases TE1–TE6
+([§10](2026-10-07-theme-engine-design.md#10-phases)). TE1 builds on V1a; the hook API (TE2)
+lands with the V2 kit.
 
 ### 13.8 Decisions
 
@@ -562,3 +547,7 @@ the decision; each alternative was not chosen.
 - 0.6 (2026-10-07): §13.8 D1–D3 were answered by the owner as recommended: the Drive-mode
   render check, glow and blur allowed on moving head units with D1 as the guard, and
   Community publishing with no review gate, a "custom CSS" label and a preview.
+- 0.7 (2026-10-08): owner review of the theme branch: §13.1 defers to the approved theme
+  engine spec (`ostler.skin/1`, six layers) and drops the three-layer `ostler.theme/1` pack;
+  §13.7 points to the engine's phases TE1–TE6; the theme path is Settings → Display →
+  Wallpaper & style; the OS-round items 48–49 are marked superseded.

@@ -2,8 +2,8 @@
 title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
 status: stable
-version: 0.5
-updated: 2026-10-07
+version: 0.6
+updated: 2026-10-08
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/research/deep_theming_mechanics.md, references/design/2026-10/claude-design/README.md]
 summary: >
   Approved by the owner on 2026-10-07 (decisions 1–8 as recommended). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Theming is split into separate packs (OS skin, widget pack with per-widget gauge options, icon pack, wallpaper pack, sound pack) mixed freely or applied as bundles; the background belongs to the user. Works the same when Ostler is an Android launcher (hosted Android widgets, appfilter icon packs, system wallpaper, Material You). Compile on import, automatic migration, protected surfaces, required parts and a Drive-mode render check. Phases TE1–TE6.
@@ -55,7 +55,7 @@ the object kinds of the [app UI model](2026-10-07-app-ui-model-design.md) §9:
 | **Sound pack** | UI sounds and chimes | `.ostsounds` |
 
 Every kind is installed, updated and removed on its own, and each is chosen separately under
-More → Preferences → Theme:
+Settings → Display → **Wallpaper & style** (the theme wizard, launcher spec §11):
 
 | Row | Picks |
 |---|---|
@@ -200,6 +200,9 @@ heritage.ostskin
   layouts with the child's styles.
 
 ### 2.6 Running as an Android launcher
+
+> The platform decision is [ADR-0047](../decisions/adr-0047-ostler-as-an-android-launcher.md)
+> (proposed); this section is its theming detail.
 
 Ostler can also be the **home app (launcher) of an Android phone, tablet or Android head
 unit**, replacing the stock launcher. The theme engine works the same there, with these
@@ -427,7 +430,7 @@ visibility are bound to values. This works like RealDash gizmos and KLWP element
 ### 3.8 Theme options
 
 Every skin can offer **options**: anything its designer wants the user to be able to choose.
-Options appear in **More → Preferences → Theme → Options**, grouped as the designer lays them
+Options appear in **Settings → Display → **Wallpaper & style** → OS skin → Options**, grouped as the designer lays them
 out, each with a thumbnail or live preview. The idea follows Shopify's settings schema and
 Obsidian's Style Settings, but an option can switch *anything*, not just a variable.
 
@@ -617,7 +620,12 @@ in Studio and in More → Theme → Problems. **The UI never goes blank because 
   catalogue get skins that run well.
 - **Browser floor:** the engine uses cascade layers, `@scope` and container queries, so the
   head unit's browser engine must be Chromium 118 or newer, or equivalent. The research
-  could not confirm which engine Ostler's head units run, so this needs checking in TE1.
+  could not confirm which engine Ostler's head units run, so TE1 measures the browser or
+  WebView version on each real head-unit class. Below the floor the shell shows the built-in
+  look with "This device's browser is too old for full skins".
+- **Night glare:** glow, blur and bright backgrounds are allowed (visual spec §13.8 D2), so
+  TE1 measures them in Night dim on a real head unit. If they cause glare, the Drive-mode
+  render check (decision 5) also caps luminance in Night dim.
 
 ## 8. Distribution
 
@@ -650,7 +658,7 @@ Each is a starting point for Duplicate.
 
 | Phase | Ships | Test |
 |---|---|---|
-| **TE1** | pack format, manifest schema, token layer, CSS layers with scoping and the filter, `extends`, variations, fallback and safe mode | schema tests; a remote `url()` is refused; a broken file falls back; safe mode from any state |
+| **TE1** | pack format, manifest schema, token layer, CSS layers with scoping and the filter, `extends`, variations, fallback and safe mode; the browser-engine check per head-unit class; the Night-dim glare check | schema tests; a remote `url()` is refused; a broken file falls back; safe mode from any state; (a) the browser or WebView version measured on each real head-unit class against Chromium 118, with the fallback shown below it; (b) glow, blur and bright backgrounds measured in Night dim on a head unit, and if glare is found the render check caps luminance in Night dim |
 | **TE2** | hook API v1 on the shell and kit, hashed internals, `--sig-*` variables, hook list JSON | a removed hook fails CI unless deprecated |
 | **TE3** | OSML screen layouts and `shell.xml`, slots, includes, conditions, the expression language | parser fuzzing; a user's tile is never lost; screenshots per screen size |
 | **TE4** | component templates, SVG gauges, assets (textures, backgrounds, fonts, icons, map, sounds), theme options menu | screenshot matrix across the 22 built-ins |
@@ -744,3 +752,7 @@ Each is a starting point for Duplicate.
   - the system wallpaper used or set;
   - Material You seeding;
   - the Moving rules applied to hosted widgets.
+- 0.6 (2026-10-08): owner review of the branch: the theme path is Settings → Display →
+  Wallpaper & style (launcher spec §11); §2.6 points to the proposed
+  [ADR-0047](../decisions/adr-0047-ostler-as-an-android-launcher.md); §7 and TE1 add the
+  head-unit browser-engine check and the Night-dim glare check.

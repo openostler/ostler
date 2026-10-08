@@ -1,7 +1,7 @@
 # Claude Design bundle: Ostler Screens Mobile Design (2026-10-07)
 
-The full export of the owner's Claude Design project "Ostler Screens Mobile Design", saved
-as delivered so the builder can work from it.
+The export of the owner's Claude Design project "Ostler Screens Mobile Design", saved
+as delivered (less the files listed under "Changes on import") so the builder can work from it.
 
 **Owner, 2026-10-07: this bundle is the latest iteration, and its themes become the
 project's design-language themes.** Where older design references in this repo differ (for
@@ -53,18 +53,29 @@ theme engine exploration. The owner chose this scope on 2026-10-07: **the engine
   - `TH Sheet`, the theme sheet: swatches, contrast ratios computed by
     `OstlerThemes.contrast`, fonts and licences, settings.
 
-The transcript said the next step was a visual-design-system amendment and a theme schema.
-That amendment is now §13 of the spec, with build order T1–T5 and the open decisions D1–D3.
+## Where the design conversation landed
+
+- The 22 themes, built in four rounds, become the project's design-language themes. Night
+  stays the default.
+- Themes can change anything, with custom CSS written against the documented `data-part`
+  hooks. No tokens are locked.
+- Themes look the same Parked and Moving. There is no Moving-safe variant; the Moving
+  content rules still apply.
+- Textures are image assets in the pack. The prototypes' CSS gradients are placeholders.
+- The background belongs to the user, not the theme.
+- The approved engine is the
+  [theme engine spec](../../../../specs/2026-10-07-theme-engine-design.md): `ostler.skin/1`
+  with six layers, separate packs (OS skin, widgets, icons, wallpapers, sounds) and theme
+  options.
+- Safety is carried by protected surfaces, required parts and the Drive-mode render check
+  (engine spec decisions 5–7).
+- The build order is the engine spec's phases TE1–TE6.
 
 ## Read first
 
-1. [`chats/chat1.md`](chats/chat1.md): the whole conversation with the designer. Theme
-   work starts at "Ostler is 'the automotive version of Home Assistant'…" (the eight-theme
-   brief) and runs to round 4 ("now do that to the original themes").
-2. `project/Ostler Themes.dc.html`, then what it imports: `project/ostler-themes.js`,
+1. `project/Ostler Themes.dc.html`, then what it imports: `project/ostler-themes.js`,
    `project/TH *.dc.html`, and `project/drive-maps.js` where it is used.
-3. [`HANDOFF.txt`](HANDOFF.txt): Claude Design's own README for coding agents, kept as
-   delivered.
+2. The [theme engine spec](../../../../specs/2026-10-07-theme-engine-design.md).
 
 ## What else is in `project/`
 
@@ -75,24 +86,22 @@ Other canvases from the same session, kept for reference. They are not in this b
 | `Ostler Screens.dc.html` | none | First screens: Home, Drive, Trips, Trip detail |
 | `Ostler Drive Modes.dc.html` | `DM *.dc.html`, `Drive Strip.dc.html` | Seven Drive modes, switcher, editor, edit mode, message alerts |
 | `Ostler Platform.dc.html` | `OS *.dc.html` | Edit and remote, messages, Phone & Comms, sharing, Navigation, adapters |
-| `Ostler Market and Customise.dc.html` | `OS Market`, `OS Customise`, `OS Themes` | Add-ons market, full customisation, themes in Preferences |
+| `Ostler Market and Customise.dc.html` | `OS Market`, `OS Customise`, `OS Themes` | Add-ons market, full customisation, themes (now the Wallpaper & style wizard) |
 | `OS Frame.dc.html` and `os-tokens.js` | none | Wave 1-2 launcher frames (unfinished: the designer stopped at a usage limit) |
 
 `Ostler.dc.html`, `Theme Screen.dc.html` and `OS Test.dc.html` are stubs or scratch files.
 
 ## Opening the prototypes
 
-`*.dc.html` files are Claude Design documents. `project/support.js` is the Claude Design
-runtime (generated; React from the page). Serve `project/` over HTTP (for example
-`python3 -m http.server`) and open a `.dc.html` file. Fonts load from Google Fonts and map
-tiles from public services, so a browser offline shows fallbacks.
+`*.dc.html` files are Claude Design documents. They ran on the design tool's own runtime,
+which is not redistributed here, so they are reference source only: read the HTML, CSS and
+JS directly.
 
 ## Changes on import
 
-- Frontmatter added to `chats/chat1.md` and the two `project/uploads/*.md` files so the
-  docs validator accepts them. The bodies are unchanged.
-- `project/uploads/pasted-1791409253531-0.png` is **not included**. It is the owner's mood
-  reference for the Air theme: a third-party phone mockup with photos of people, which
-  this repo has no licence to publish.
-- Claude Design's own README is saved as `HANDOFF.txt`, so that this file can be the
-  folder's README.
+- The design conversation transcript, the design tool's own README and its runtime
+  (`support.js`) are not included. "Where the design conversation landed" above records
+  the outcome.
+- The owner's uploads are not included: copies of repo docs, and a mood image for the Air
+  theme (a third-party phone mockup with photos of people) that this repo has no licence to
+  publish.

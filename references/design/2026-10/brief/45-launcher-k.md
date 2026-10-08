@@ -2,12 +2,13 @@
 title: "Designer brief 45-k — launcher: gauge styles, text size, the theme preview and Home settings"
 area: references
 status: draft
-version: 0.2
-updated: 2026-10-07
-depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
+version: 0.3
+updated: 2026-10-08
+depends_on: [specs/2026-10-07-theme-engine-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Last launcher brief file. It finishes the theme wizard with gauge style packs (calm by
-  default, never glowing or using the accent for a value), text size (larger steps only,
+  Last launcher brief file. It finishes the theme wizard with gauge styles (gauges are
+  widgets in widget packs with their own Look options, calm by default, per the theme engine
+  spec), text size (larger steps only,
   never below the floors, refused where a number would clip) and the preview of a theme on
   a home page and the Drive page before applying. It then gives Home settings: grid size,
   dock size and position, labels, screen rotation, the default page and the Drive rotation.
@@ -21,7 +22,8 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 ([Drive modes §8.1][dm-8.1] R1).
 
 ### launcher-theme-gauges — Gauge style  [New]
-- **Purpose:** restyle every gauge at once.
+- **Purpose:** restyle every gauge at once. Gauges are widgets in widget packs, with pack
+  options, per-widget options and "follow theme" ([theme engine][te] §2.2).
 - **Owner:** os
 - **Opens from → goes to:** the theme hub or step 4; the line in the style picker (45-d).
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
@@ -30,10 +32,11 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
   Warning: **Calm** (default: 240° arc, `band` normal range, `text-2` value arc), **Classic**
   (ticks and numerals), **Bold** (12 px track on phone, 16 px on HU), packs from the Store.
   2. A **While driving** sample beside each.
-- **States:** a Store pack that breaks a rule (glow, accent value, animation) is refused at
-  install, never listed. Moving: locked view.
-- **Safety and driving rules:** calm gauges: status colour and word only out of range; no
-  glow; ≤ 4 Hz stepped while Moving ([visual §8][vds-8], [Drive modes §4.3][dm-4.3]).
+- **States:** a pack that fails the Drive-mode render check on this head unit: the Drive
+  page keeps the built-in gauges, with the reason. Moving: locked view.
+- **Safety and driving rules:** packs may use glow and animation; the Moving content rules
+  (≤ 4 Hz stepped values, [Drive modes §4.3][dm-4.3]) and the Drive-mode render check
+  ([theme engine][te] decision 5) still apply.
 - **Components:** Card, Gauge.
 - **Spec refs:** [visual §8][vds-8] · [visual §1][vds-1] · [launcher §11][lw-11].
 - **Open questions:** none.
@@ -66,12 +69,12 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night; hu7 Night-dim; phone Day.
 - **Content:** 1. Two previews at this screen's size: **Home** (with the wallpaper) and the
-  **Drive page** (Cluster, on plain `bg`). 2. Segmented **Night · Night dim · Day** to check
+  **Drive page** (Cluster). 2. Segmented **Night · Night dim · Day** to check
   each. 3. A summary list of the choices. 4. **Apply** (primary), **Back**.
 - **States:** saving: "Saving…"; error: "Couldn't apply. Your old theme is kept." Moving:
   locked view.
-- **Safety and driving rules:** the Drive page preview shows no wallpaper, no glow and the
-  fixed status colours ([visual §1][vds-1]).
+- **Safety and driving rules:** the Drive page preview shows the theme as it will look while
+  Moving, and the result of the Drive-mode render check ([theme engine][te] decision 5).
 - **Components:** Card (preview), Segmented, ListRow, Button.
 - **Spec refs:** [visual §1][vds-1] · [visual §3.1][vds-3.1] · [launcher §11][lw-11].
 - **Open questions:** none.
@@ -109,6 +112,7 @@ Back to [45-a](45-launcher-a.md); the theme wizard's step list is in
   the dock sits on the driver's side.
 
 <!-- links -->
+[te]: ../../../../specs/2026-10-07-theme-engine-design.md
 [dm-4.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#43-the-moving-section-and-the-template-mapping
 [dm-4.4]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#44-grids-and-minimum-sizes-per-class
 [dm-7.3]: ../../../../specs/2026-10-07-drive-modes-and-editing-design.md#73-rail
