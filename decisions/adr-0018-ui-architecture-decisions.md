@@ -2,14 +2,16 @@
 title: "ADR-0018 — UI architecture decisions"
 area: decisions
 status: locked
-version: 1.3
-updated: 2026-10-06
+version: 1.4
+updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, references/research/ui/ovms_ui.md, references/research/ui/head_unit_ui.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md]
 summary: >
-  Records the owner's answers to UI spec §11 Q2–Q11 (Q1 is ADR-0016): canonical function areas with pack labels, a driver-side rail, a comfort class only for our own add-ons that never write to a vehicle ECU, unknown speed counts as Moving on head units, three rendering tiers with user-arranged dashboards deferred, an HMAC fingerprint and masked VIN only, service mode by long-press plus password, reverse pre-emption only after the fast path, guardian before generic_obd2, and a non-runnable write tier. Also the OVMS lessons (capabilities as data, no vehicle-type checks) and 360 cameras as a future item.
+  Records the owner's answers to UI spec §11 Q2–Q11 (Q1 is ADR-0016): canonical function areas with pack labels, a driver-side rail, a comfort class only for our own add-ons that never write to a vehicle ECU, unknown speed counts as Moving on head units, three rendering tiers with user-arranged dashboards deferred, an HMAC fingerprint and masked VIN only, service mode by long-press plus password, reverse pre-emption only after the fast path, guardian before generic_obd2, and a non-runnable write tier. Also the OVMS lessons (capabilities as data, no vehicle-type checks) and 360 cameras as a future item. Amended 2026-10-07 (openness round, ADR-0047): the driver-side dock and the masked-VIN-only garage become defaults (the user may flip the dock; the owner may keep the full VIN locally).
 ---
 
 # ADR-0018 — UI architecture decisions
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):** Q3 (driver-side rail) and Q7 (masked VIN only) become defaults. See [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 > **Amended by [ADR-0033](adr-0033-action-categories-and-approvals.md) and [ADR-0032](adr-0032-one-node-optional-brain.md), 2026-10-06:** the `comfort` render class is renamed `add-on device`, phones may approve Tier 2–3 over local links, and the guardian is a node variant (see Amendments).
 > **Amended by [ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md), 2026-10-06:** read "Ostler Lite" or "Lite" as "Ostler Diagnostics" (the family is Ostler Diagnostics, Ostler Guardian and Ostler Hub). See [Amendments (product family)](#amendments-2026-10-06-product-family).
@@ -122,3 +124,17 @@ Amendments above are unchanged.
 - **Names.** Read "Ostler Hub" and "Hub" above (and "hub" where it means our compute box) as
   "Ostler Brain" and "Brain" ([ADR-0039](adr-0039-product-family-diagnostics-guardian-hub.md#amendments-2026-10-06-brain-rename)). The decision text and the Amendments above are
   unchanged.
+
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md). The answers above stand
+except:
+
+- **Q3.** The driver's side is the default for the dock (the rail's successor); the user may
+  flip it ([UI spec](../specs/2026-10-06-ui-architecture-design.md) §3.3).
+- **Q7.** The garage stores the HMAC fingerprint and a masked VIN **by default**. The owner may
+  opt in to keeping the full VIN locally on their own device (Settings → Garage, with a
+  warning); it still never leaves the device except as ADR-0036 (as amended) allows.
+- **Unchanged:** Q4–Q5, Q8 and Q11 (comfort class, unknown speed as Moving, service mode
+  refused while Moving, Tier 4 never runnable).

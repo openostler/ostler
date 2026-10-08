@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">B</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Full customisation</span><span style="font-size:14px;color:#3b4556">Long-press anything → edit · item sheet for every item · safety items move but never go · Moving: “Park to edit”</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Item sheet (type a name, search icons)</div>
+<div data-screen-label="Item sheet" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:110px;background:#121a2c;border-radius:32px 32px 0 0;padding:10px 16px 28px;display:flex;flex-direction:column;gap:10px">
+<div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div>
+<div style="display:flex;align-items:center;gap:12px;padding:4px"><div style="width:52px;height:52px;border-radius:16px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:28px">{{ icon }}</span></div><div style="display:flex;flex-direction:column"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">RAIL ITEM · SLOT 3</span><span style="font-size:20px;font-weight:700">{{ nameShown }}</span></div></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:0 4px"><span>NAME</span><span style="color:{{ cntC }};font-variant-numeric:tabular-nums">{{ cnt }}/12</span></div><input value="{{ name }}" onChange="{{ setName }}" maxlength="12" style="height:52px;border-radius:16px;background:#0a1020;border:none;outline:none;box-shadow:inset 0 0 0 2px #22a6e0;color:#eef2f9;font:600 16px Figtree,sans-serif;padding:0 14px"><span onClick="{{ defName }}" style="cursor:pointer;font-size:13px;font-weight:700;color:#22a6e0;padding:2px 4px">Use default name (Trips)</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:0 4px">SIZE</span><div style="height:44px;border-radius:22px;background:#0a1020;padding:4px;display:grid;grid-template-columns:repeat(3,1fr)"><sc-for list="{{ sizes }}" as="s" hint-placeholder-count="3"><div onClick="{{ s.pick }}" style="cursor:pointer;border-radius:18px;background:{{ s.bg }};color:{{ s.c }};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">{{ s.l }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;min-height:0;flex:1"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:0 4px">ICON · {{ iconCount }}</span>
+<div style="height:44px;border-radius:22px;background:#0a1020;display:flex;align-items:center;gap:8px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:20px;color:#8e9ab0">search</span><input value="{{ q }}" onChange="{{ setQ }}" placeholder="Search 300 icons" style="flex:1;background:none;border:none;outline:none;color:#eef2f9;font:500 14px Figtree,sans-serif"></div>
+<div style="display:flex;gap:6px"><sc-for list="{{ groups }}" as="g" hint-placeholder-count="4"><div onClick="{{ g.pick }}" style="cursor:pointer;height:32px;padding:0 12px;border-radius:16px;background:{{ g.bg }};color:{{ g.c }};display:flex;align-items:center;font-size:12px;font-weight:700">{{ g.l }}</div></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;overflow:hidden;align-content:start;flex:1;min-height:0"><sc-for list="{{ icons }}" as="i" hint-placeholder-count="18"><div onClick="{{ i.pick }}" style="cursor:pointer;height:50px;border-radius:14px;background:{{ i.bg }};color:{{ i.c }};display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px">{{ i.icon }}</span></div></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><sc-for list="{{ itemActs }}" as="a" hint-placeholder-count="3"><div style="height:52px;border-radius:16px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;gap:2px"><span class="material-symbols-rounded" style="font-size:20px">{{ a.icon }}</span>{{ a.t }}</div></sc-for></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Rail · 5 slots, none locked · More can’t be deleted</div>
+<div data-screen-label="Rail editor" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="height:60px;flex:none;display:flex;align-items:center;gap:4px;padding:0 10px;background:#121a2c"><sc-for list="{{ editBar }}" as="b" hint-placeholder-count="5"><div style="width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;color:{{ b.c }}"><span class="material-symbols-rounded" style="font-size:24px">{{ b.icon }}</span></div></sc-for><div style="flex:1"></div><div style="height:44px;padding:0 18px;border-radius:22px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;font-size:15px;font-weight:800">Done</div></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;padding:0 4px"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">RAIL</span><span style="font-size:12px;font-weight:700;color:#bf8a1a">5 of 5 · Full</span></div>
+<sc-for list="{{ railRows }}" as="r" hint-placeholder-count="5"><div style="min-height:60px;border-radius:18px;background:{{ r.bg }};box-shadow:{{ r.ring }};display:flex;align-items:center;gap:10px;padding:0 6px 0 4px"><span class="material-symbols-rounded" style="font-size:24px;color:#8e9ab0">drag_indicator</span><span class="material-symbols-rounded" style="font-size:24px">{{ r.icon }}</span><span style="flex:1;font-size:15px;font-weight:700">{{ r.n }}</span><div style="width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;opacity:{{ r.xop }}"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">{{ r.x }}</span></div></div></sc-for>
+<div style="border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;gap:10px;align-items:flex-start"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span><span style="font-size:13px;line-height:1.45;color:#c9d1de">More is always on the rail exactly once — move, rename or re-icon it. Edit and Reset layout live inside it.</span></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:10px 4px 0">MORE › PAGES</span>
+<sc-for list="{{ pages }}" as="p" hint-placeholder-count="4"><div style="min-height:56px;border-radius:16px;background:#121a2c;display:flex;align-items:center;gap:10px;padding:0 12px"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">{{ p.icon }}</span><span style="flex:1;font-size:15px;font-weight:600">{{ p.n }}</span><span style="font-size:13px;font-weight:700;color:#5d6879">Rail full</span></div></sc-for>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:10px 4px 0">HIDDEN PAGES</span>
+<div style="min-height:56px;border-radius:16px;background:#121a2c;display:flex;align-items:center;gap:10px;padding:0 12px;opacity:.6"><span class="material-symbols-rounded" style="font-size:22px">videocam</span><span style="flex:1;font-size:15px;font-weight:600">Cameras</span><span style="font-size:13px;font-weight:700;color:#22a6e0">Show</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Home widget picker · By widget / By signal (proposed)</div>
+<div data-screen-label="Widget picker" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:120px;background:#121a2c;border-radius:32px 32px 0 0;padding:10px 16px 0;display:flex;flex-direction:column;gap:10px">
+<div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div>
+<span style="font-size:22px;font-weight:700;padding:0 4px">Add widget</span>
+<div style="height:44px;border-radius:22px;background:#0a1020;padding:4px;display:grid;grid-template-columns:1fr 1fr"><sc-for list="{{ wTabs }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.pick }}" style="cursor:pointer;border-radius:18px;background:{{ t.bg }};color:{{ t.c }};display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700">{{ t.l }}</div></sc-for></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:8px;padding-bottom:24px">
+<sc-for list="{{ wGroups }}" as="g" hint-placeholder-count="2"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:6px 4px 0">{{ g.h }}</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{ g.items }}" as="w" hint-placeholder-count="4"><div style="border-radius:18px;background:#1a2439;padding:12px;display:flex;flex-direction:column;gap:6px;min-height:92px"><div style="display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:18px;color:#b0bacb">{{ w.icon }}</span><span style="font-size:12px;font-weight:700;letter-spacing:.06em;color:#b0bacb">{{ w.l }}</span></div><span style="font-size:15px;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums">{{ w.v }}</span><span style="font-size:12px;color:#8e9ab0;margin-top:auto">{{ w.src }}</span></div></sc-for></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · strip edit · budget full · safety item sheet</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Strip edit" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative">
+<dc-import name="Drive Strip" size="hu7" mode="dash" moving="{{ false }}" edit="{{ true }}" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="height:76px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;background:#121a2c"><sc-for list="{{ editBarHU }}" as="b" hint-placeholder-count="5"><div style="height:60px;padding:0 16px;border-radius:30px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:18px;font-weight:700;color:{{ b.c }}"><span class="material-symbols-rounded" style="font-size:24px">{{ b.icon }}</span>{{ b.t }}</div></sc-for><div style="flex:1"></div><div style="height:60px;padding:0 28px;border-radius:30px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;font-size:20px;font-weight:800">Done</div></div>
+<div style="flex:1;min-height:0;display:flex;gap:16px;padding:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<div style="border-radius:18px;background:rgba(191,138,26,.12);padding:12px 16px;display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:26px;color:#bf8a1a">width_full</span><span style="font-size:18px;font-weight:700"><span style="color:#bf8a1a">Budget full</span> · HU-7 strip fits 11 chips. Hide one to add another.</span></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">HIDDEN SHELF</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ shelf }}" as="s" hint-placeholder-count="3"><div style="height:60px;border-radius:30px;background:#121a2c;display:flex;align-items:center;gap:8px;padding:0 18px;font-size:18px;font-weight:700;color:#b0bacb"><span class="material-symbols-rounded" style="font-size:22px">{{ s.icon }}</span>{{ s.n }}<span class="material-symbols-rounded" style="font-size:20px;color:#5d6879">add_circle</span></div></sc-for></div>
+<span style="font-size:18px;color:#8e9ab0;margin-top:auto">Long-press on the strip or any empty area always opens this. Remote: hold OK.</span>
+</div>
+<div style="width:400px;flex:none;background:#243049;border-radius:28px;padding:16px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:56px;height:56px;border-radius:16px;background:rgba(239,106,125,.18);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:30px;color:#ef6a7d;font-variation-settings:'FILL' 1">warning</span></div><div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700">Fault telltale</span><span style="font-size:18px;color:#b0bacb;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:18px">lock</span>Safety item</span></div></div>
+<sc-for list="{{ safetyRows }}" as="r" hint-placeholder-count="5"><div style="min-height:48px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:0 14px;opacity:{{ r.op }}"><span class="material-symbols-rounded" style="font-size:24px">{{ r.icon }}</span><span style="flex:1;font-size:18px;font-weight:700">{{ r.t }}</span><span style="font-size:18px;color:#b0bacb">{{ r.s }}</span></div></sc-for>
+<span style="font-size:18px;color:#b0bacb;line-height:1.3">Icon, words and colour stay fixed.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · Drive editor, slot first · try “Add tile” to break the Moving limit</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Drive editor" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="diag" moving="{{ false }}" edit="{{ true }}" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:flex;gap:12px;padding:8px 16px 16px">
+<div style="width:330px;flex:none;background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">SLOT 2 · SIGNAL</span>
+<div style="height:60px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:10px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0">sensors</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:18px;font-weight:700">Coolant temp</span><span style="font-size:14px;color:#8e9ab0">Vehicle.Powertrain.Engine.ECT</span></div></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">STYLE</span>
+<div style="height:56px;border-radius:28px;background:#0a1020;padding:4px;display:grid;grid-template-columns:repeat(3,1fr)"><sc-for list="{{ gStyles }}" as="s" hint-placeholder-count="3"><div onClick="{{ s.pick }}" style="cursor:pointer;border-radius:24px;background:{{ s.bg }};color:{{ s.c }};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">{{ s.l }}</div></sc-for></div>
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">THRESHOLDS · °C</span>
+<sc-for list="{{ thr }}" as="t" hint-placeholder-count="3"><div style="min-height:56px;border-radius:16px;background:#1a2439;display:flex;align-items:center;gap:10px;padding:0 14px"><span style="width:12px;height:12px;border-radius:6px;background:{{ t.c }}"></span><span style="flex:1;font-size:18px;font-weight:700">{{ t.l }}</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ t.v }}</span></div></sc-for>
+</div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="background:#121a2c;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">PARKED PREVIEW</span><div style="flex:1;border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><span style="font-size:18px;font-weight:700;color:#b0bacb">COOLANT</span><span style="font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1">88<span style="font-size:22px;color:#b0bacb"> °C</span></span><div style="width:80%;height:10px;border-radius:5px;background:#0a1020;position:relative"><div style="position:absolute;left:35%;width:35%;top:0;bottom:0;background:#243049;border-radius:5px"></div><div style="position:absolute;left:58%;top:-4px;width:4px;height:18px;border-radius:2px;background:#eef2f9"></div></div><span style="font-size:14px;color:#8e9ab0">{{ styleName }} · sparkline on</span></div></div>
+<div style="background:#121a2c;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">MOVING PREVIEW</span><div style="flex:1;border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><span style="font-size:24px;font-weight:700;color:#b0bacb">COOLANT</span><span style="font-size:72px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1">88<span style="font-size:24px;color:#b0bacb"> °C</span></span><span style="font-size:14px;color:#8e9ab0">No animation · 56 px+ digits</span></div></div>
+</div>
+<div style="min-height:72px;border-radius:20px;background:{{ val.bg }};display:flex;align-items:center;gap:12px;padding:0 16px"><span class="material-symbols-rounded" style="font-size:28px;color:{{ val.c }};font-variation-settings:'FILL' 1">{{ val.icon }}</span><span style="flex:1;font-size:18px;font-weight:700"><span style="color:{{ val.c }}">{{ val.w }}</span> · {{ val.t }}</span><div onClick="{{ addTile }}" style="cursor:pointer;height:56px;padding:0 18px;border-radius:28px;background:#1a2439;display:flex;align-items:center;gap:6px;font-size:18px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px">{{ val.bi }}</span>{{ val.bt }}</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · Night dim · long-press → “Park to edit” toast</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Park to edit HU-5" style="width:800px;height:480px;background:#070b16;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px;position:relative;filter:brightness(.72)">
+<dc-import name="Drive Strip" size="hu5" mode="dash" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,48px"></dc-import>
+<div style="flex:1;padding:6px 12px 12px;display:grid;grid-template-columns:1fr 1.6fr 1fr;grid-template-rows:1fr 1fr;gap:10px"><div style="background:#121a2c;border-radius:20px"></div><div style="grid-row:span 2;background:#121a2c;border-radius:24px;display:flex;align-items:center;justify-content:center"><span style="font-size:120px;font-weight:700;font-variant-numeric:tabular-nums;color:#c9b0f7">72</span></div><div style="background:#121a2c;border-radius:20px"></div><div style="background:#121a2c;border-radius:20px"></div><div style="background:#121a2c;border-radius:20px"></div></div>
+<div style="position:absolute;left:50%;bottom:24px;transform:translateX(-50%);height:80px;border-radius:40px;background:#243049;display:flex;align-items:center;gap:12px;padding:0 30px;font-size:28px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:34px">local_parking</span>Park to edit</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Reset layout · 3 scopes · Cancel focused · undo for 7 days</div>
+<div data-screen-label="Reset layout" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="margin:16px;border-radius:20px;background:#121a2c;padding:14px;display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">history</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Layout reset 2 days ago</span><span style="font-size:13px;color:#b0bacb">Undo available for 5 more days</span></div><span style="font-size:14px;font-weight:800;color:#22a6e0">Undo reset</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:330px;background:#121a2c;border-radius:32px 32px 0 0;padding:10px 16px 30px;display:flex;flex-direction:column;gap:10px">
+<div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div>
+<span style="font-size:22px;font-weight:700;padding:0 4px">Reset layout</span>
+<sc-for list="{{ scopes }}" as="s" hint-placeholder-count="3"><div onClick="{{ s.pick }}" style="cursor:pointer;min-height:64px;border-radius:18px;background:{{ s.bg }};box-shadow:{{ s.ring }};display:flex;align-items:center;gap:12px;padding:8px 14px"><span class="material-symbols-rounded" style="font-size:24px;color:{{ s.ic }}">{{ s.r }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ s.t }}</span><span style="font-size:13px;color:#b0bacb">{{ s.d }}</span></div></div></sc-for>
+<div style="flex:1"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="height:56px;border-radius:28px;background:#1a2439;box-shadow:0 0 0 2px #121a2c,0 0 0 5px #22a6e0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">Cancel</div><div style="height:56px;border-radius:28px;background:#1a2439;color:#ef6a7d;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">Reset</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Layout files · import result · Lock car layouts</div>
+<div data-screen-label="Layout files" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Layouts</span>
+<div style="border-radius:22px;background:#121a2c;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:26px;color:#bf8a1a">rule</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">greenlane-dash.ostler-layout</span><span style="font-size:13px;color:#b0bacb">by peakrover · CC BY-SA 4.0</span></div></div>
+<sc-for list="{{ checks }}" as="c" hint-placeholder-count="5"><div style="display:flex;gap:10px;align-items:flex-start;min-height:28px"><span class="material-symbols-rounded" style="font-size:20px;color:{{ c.c }};font-variation-settings:'FILL' 1">{{ c.icon }}</span><span style="font-size:13px;line-height:1.4"><b style="color:{{ c.c }}">{{ c.w }}</b> · {{ c.t }}</span></div></sc-for>
+<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:4px"><div style="height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">Cancel</div><div style="height:48px;border-radius:24px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800">Import with fixes</div></div>
+</div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">SAVED FOR</span>
+<sc-for list="{{ savedFor }}" as="s" hint-placeholder-count="3"><div style="min-height:56px;border-radius:16px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:22px;color:#b0bacb">{{ s.icon }}</span><span style="flex:1;font-size:14px;color:#b0bacb">{{ s.l }}</span><span style="font-size:14px;font-weight:700">{{ s.v }}</span></div></sc-for>
+<div style="min-height:68px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:8px 14px"><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Lock car layouts</span><span style="font-size:13px;color:#b0bacb">Shared Car profile · only you can edit</span></div><div onClick="{{ toggleLock }}" style="cursor:pointer;width:52px;height:30px;border-radius:15px;background:{{ lk.track }};position:relative;flex:none"><div style="position:absolute;top:4px;left:{{ lk.knob }}px;width:22px;height:22px;border-radius:11px;background:{{ lk.kc }}"></div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">ios_share</span>Export</div><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">file_open</span>Import</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · profile switcher · PIN or phone approval</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Profile switcher" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" drive="{{ false }}" moving="{{ false }}" clock="14:32" volts="12.6" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:8px 16px 16px">
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.08em;color:#b0bacb">WHO’S DRIVING</span>
+<sc-for list="{{ profiles }}" as="p" hint-placeholder-count="3"><div onClick="{{ p.pick }}" style="cursor:pointer;min-height:84px;border-radius:20px;background:{{ p.bg }};box-shadow:{{ p.ring }};display:flex;align-items:center;gap:14px;padding:0 16px"><div style="width:56px;height:56px;border-radius:28px;background:#243049;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">{{ p.i }}</div><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:22px;font-weight:700">{{ p.n }}</span><span style="font-size:18px;color:#b0bacb">{{ p.d }}</span></div></div></sc-for>
+</div>
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+<span style="font-size:22px;font-weight:700">Enter Jamie’s PIN</span>
+<div style="display:flex;gap:10px"><sc-for list="{{ pinDots }}" as="d" hint-placeholder-count="6"><span style="width:18px;height:18px;border-radius:9px;background:{{ d }}"></span></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(3,96px);gap:8px"><sc-for list="{{ pinKeys }}" as="k" hint-placeholder-count="12"><div onClick="{{ k.tap }}" style="cursor:pointer;height:76px;border-radius:20px;background:{{ k.bg }};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700"><span class="material-symbols-rounded" style="font-size:28px">{{ k.icon }}</span>{{ k.d }}</div></sc-for></div>
+<span style="font-size:18px;color:#22a6e0;font-weight:700;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:22px">smartphone</span>Approve on phone instead</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ICONS={Travel:['route','map','explore','navigation','flag','directions_car','landslide','terrain','signpost','alt_route','near_me','pin_drop','commute','local_gas_station','ev_station','two_wheeler','airport_shuttle','hiking'],Vehicle:['speed','build','oil_barrel','tire_repair','car_repair','battery_full','thermostat','electric_bolt','settings','memory','sensors','key','car_crash','handyman','engineering','construction','minor_crash','garage'],Data:['timeline','analytics','monitoring','history','bar_chart','query_stats','insights','show_chart','data_usage','table_chart','donut_large','stacked_line_chart','trending_up','schedule','calendar_month','event','today','av_timer'],People:['group','forum','person','groups','diversity_3','chat','call','contacts','handshake','support','favorite','star','mail','notifications','campaign','record_voice_over','mic','share']};
+class Component extends DCLogic {
+ state={name:'Journeys',icon:'route',size:'Medium',q:'',grp:'Travel',wTab:'By widget',gs:'Bar',tiles:6,lock:true,scope:0,prof:0,pin:3};
+ renderVals(){
+  const S=this.state;
+  const all=Object.values(ICONS).flat();
+  const pool=S.q?all.filter(i=>i.includes(S.q.toLowerCase().replace(/\s/g,'_'))):ICONS[S.grp];
+  const icons=pool.slice(0,18).map(i=>({icon:i,bg:S.icon===i?'rgba(34,166,224,.18)':'#1a2439',c:S.icon===i?'#22a6e0':'#eef2f9',pick:()=>this.setState({icon:i})}));
+  const groups=Object.keys(ICONS).map(l=>({l,bg:!S.q&&S.grp===l?'#243049':'#0a1020',c:!S.q&&S.grp===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({grp:l,q:''})}));
+  const sizes=['Small','Medium','Wide'].map(l=>({l,bg:S.size===l?'#243049':'transparent',c:S.size===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({size:l})}));
+  const itemActs=[['visibility_off','Hide'],['swap_horiz','Replace with…'],['restart_alt','Use defaults']].map(([icon,t])=>({icon,t}));
+  const editBar=[['undo','#eef2f9'],['redo','#5d6879'],['add','#eef2f9'],['restart_alt','#eef2f9'],['preview','#eef2f9']].map(([icon,c])=>({icon,c}));
+  const railRows=[['route',S.name||'Trips',1],['home','Home'],['stethoscope','Diagnose'],['forum','Social'],['more_horiz','More',0,1]].map(([icon,n,sel,more])=>({icon,n,bg:sel?'#1a2439':'#121a2c',ring:sel?'inset 0 0 0 2px #22a6e0':'none',x:more?'lock':'close',xop:more?.5:1}));
+  railRows[0].icon=S.icon;
+  const pages=[['build','Maintenance'],['map','Vehicles & Map'],['shield','Security'],['lan','Network']].map(([icon,n])=>({icon,n}));
+  const wTabs=['By widget','By signal'].map(l=>({l:l==='By signal'?'By signal · proposed':l,bg:S.wTab===l?'#243049':'transparent',c:S.wTab===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({wTab:l})}));
+  const W=(icon,l,v,src)=>({icon,l,v,src});
+  const wGroups=S.wTab==='By widget'?[{h:'CORE',items:[W('route','LAST TRIP','37 km · 48 min','Trips'),W('monitor_heart','HEALTH','All OK','Diagnose'),W('battery_full','BATTERY','12.6 V · good','Vehicle'),W('shield','SECURITY','Armed · Ghost','Security')]},{h:'ADD-ONS',items:[W('build','MAINTENANCE','Oil due in 800 km','Maintenance'),W('forum','SOCIAL','2 unread · Ride active','Social'),W('map','VEHICLES','3 friends nearby','Vehicles & Map'),W('navigation','NAVIGATION','Next turn · 400 m','Navigation'),W('diversity_3','COMMUNITY','1 reply on your help thread','Community'),W('star','PHONE','Favourites','Phone & Comms'),W('phone_missed','PHONE','Missed call · Sam','Phone & Comms')]}]:[{h:'ENGINE · TD5',items:[W('thermostat','COOLANT','88 °C','Gauge · number · spark'),W('air','BOOST','0.99 bar','Gauge · arc'),W('local_gas_station','FUEL','9.8 L/100 km','Number'),W('device_thermostat','INTAKE AIR','120 °C','Number')]},{h:'BODY · BeCM',items:[W('battery_full','BATTERY','14.1 V','Gauge · bar'),W('door_front','DOORS','All closed','Status')]}];
+  const editBarHU=[['undo','Undo','#eef2f9'],['redo','Redo','#5d6879'],['add','Add','#eef2f9'],['restart_alt','Reset','#eef2f9'],['preview','Preview','#eef2f9']].map(([icon,t,c])=>({icon,t,c}));
+  const shelf=[['wifi','Link'],['thermostat','Outside temp'],['do_not_touch','Touch lock']].map(([icon,n])=>({icon,n}));
+  const safetyRows=[['open_with','Move','Allowed',1],['edit','Rename','Locked',.4],['palette','Icon / colour','Locked',.4],['visibility_off','Hide','Locked',.4],['delete','Remove','Never',.4]].map(([icon,t,s,op])=>({icon,t,s,op}));
+  const gStyles=['Round','Bar','Number'].map(l=>({l,bg:S.gs===l?'#243049':'transparent',c:S.gs===l?'#eef2f9':'#b0bacb',pick:()=>this.setState({gs:l})}));
+  const thr=[['#2f9e63','Normal','75 – 100'],['#bf8a1a','Warning','> 105'],['#ef6a7d','Critical','> 112']].map(([c,l,v])=>({c,l,v}));
+  const bad=S.tiles>6;
+  const val=bad?{bg:'rgba(239,106,125,.12)',c:'#ef6a7d',icon:'error',w:'Too many',t:S.tiles+' tiles — Moving allows 6. Extra tiles show Parked only.',bi:'remove',bt:'Remove tile'}:{bg:'rgba(47,158,99,.12)',c:'#2f9e63',icon:'check_circle',w:'Moving OK',t:S.tiles+' of 6 tiles · 56 px digits · no animation',bi:'add',bt:'Add tile'};
+  const scopes=[['This screen','Drive on HU-7 only'],['This vehicle','All screens for the Discovery 2'],['Everything','All vehicles, profiles and screens']].map(([t,d],i)=>({t,d,r:S.scope===i?'radio_button_checked':'radio_button_unchecked',ic:S.scope===i?'#22a6e0':'#8e9ab0',bg:S.scope===i?'rgba(34,166,224,.12)':'#1a2439',ring:'none',pick:()=>this.setState({scope:i})}));
+  const C=(ok,w,t)=>({icon:ok===1?'check_circle':ok===0?'warning':'error',c:ok===1?'#2f9e63':ok===0?'#bf8a1a':'#ef6a7d',w,t});
+  const checks=[C(1,'Valid','ostler.layout/1 schema'),C(1,'Signals','14 of 14 found on this car'),C(0,'Moving','Face 2 has 8 tiles → trimmed to 6'),C(0,'Size','Made for HU-9 · re-flowed for HU-7'),C(1,'Safety','Fault telltale kept')];
+  const savedFor=[['directions_car','Vehicle','Discovery 2 Td5'],['person','Profile','Jamie'],['aspect_ratio','Screen size','Phone 393']].map(([icon,l,v])=>({icon,l,v}));
+  const profiles=[['JM','Jamie','Owner · PIN'],['PS','Priya','Driver · phone approval'],['CR','Car','Shared · layouts locked']].map(([i,n,d],k)=>({i,n,d,bg:S.prof===k?'#1a2439':'#0e1526',ring:S.prof===k?'inset 0 0 0 2px #22a6e0':'none',pick:()=>this.setState({prof:k})}));
+  const pinDots=[0,1,2,3,4,5].map(i=>i<S.pin?'#22a6e0':'#243049');
+  const pinKeys=['1','2','3','4','5','6','7','8','9','','0','⌫'].map(d=>({d:d==='⌫'?'':d,icon:d==='⌫'?'backspace':'',bg:d?'#1a2439':'transparent',tap:()=>d&&this.setState(s=>({pin:d==='⌫'?Math.max(0,s.pin-1):Math.min(6,s.pin+1)}))}));
+  return {name:S.name,nameShown:S.name||'Trips',icon:S.icon,cnt:String(S.name.length),cntC:S.name.length>=12?'#bf8a1a':'#8e9ab0',setName:e=>this.setState({name:e.target.value.slice(0,12)}),defName:()=>this.setState({name:'Trips'}),q:S.q,setQ:e=>this.setState({q:e.target.value}),iconCount:S.q?pool.length+' matches':'300 icons',icons,groups,sizes,itemActs,editBar,railRows,pages,wTabs,wGroups,editBarHU,shelf,safetyRows,gStyles,styleName:S.gs,thr,val,addTile:()=>this.setState(s=>({tiles:s.tiles>6?6:7})),scopes,checks,savedFor,lk:{track:S.lock?'#22a6e0':'#243049',knob:S.lock?26:4,kc:S.lock?'#0a1020':'#8e9ab0'},toggleLock:()=>this.setState(s=>({lock:!s.lock})),profiles,pinDots,pinKeys,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

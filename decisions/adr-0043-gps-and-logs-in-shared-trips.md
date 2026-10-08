@@ -2,14 +2,16 @@
 title: "ADR-0043 — GPS and logs in shared trips: routes only after trimming, with preview; full logs and diagnostics only as verified hand-overs"
 area: decisions
 status: locked
-version: 1.0
+version: 1.1
 updated: 2026-10-07
 depends_on: [CONSTITUTION.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-06-accounts-sharing-design.md, references/research/trip_and_log_sharing.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md]
 summary: >
-  Accepted: approved by the owner on 2026-10-07 ("approve all", DMD round). The ADR that ADR-0009 asks for before any community upload carries GPS. A shared or published trip may carry a route only at level L1 (or L2 with L1 ticked), only after the ends trim (500 m default, never under 200 m), privacy zones (at least 500 m, fixed random offset), simplification and the removal of point timestamps, with stats from the visible trace only, and only after the owner has seen a preview of exactly what leaves. A route reaches the `public` audience only by an explicit publish act at least 24 h after the trip. Full logs (L3) and diagnostics bundles (L4) are hand-overs, never registry grants: a scrubbed `ostler.share/1` bundle that passes `ostler share verify`, delivered by file, relay link with the key in the URL fragment, or an end-to-end encrypted hub help thread to named helpers; to any public destination they carry no location and relative time only. Bundles are not signed with the Brain key. The `captures` class was the alternative, not chosen.
+  Accepted: approved by the owner on 2026-10-07 ("approve all", DMD round). The ADR that ADR-0009 asks for before any community upload carries GPS. A shared or published trip may carry a route only at level L1 (or L2 with L1 ticked), only after the ends trim (500 m default, never under 200 m), privacy zones (at least 500 m, fixed random offset), simplification and the removal of point timestamps, with stats from the visible trace only, and only after the owner has seen a preview of exactly what leaves. A route reaches the `public` audience only by an explicit publish act at least 24 h after the trip. Full logs (L3) and diagnostics bundles (L4) are hand-overs, never registry grants: a scrubbed `ostler.share/1` bundle that passes `ostler share verify`, delivered by file, relay link with the key in the URL fragment, or an end-to-end encrypted hub help thread to named helpers; to any public destination they carry no location and relative time only. Bundles are not signed with the Brain key. The `captures` class was the alternative, not chosen. Amended 2026-10-07 (openness round, ADR-0047): the ends trim, zone radius, public delay and short-trip limits become defaults the owner may change after a warning, a scrubbed L3 log may be published for an open decoding project, and L2 may go by link with an expiry.
 ---
 
 # ADR-0043 — GPS and logs in shared trips
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):** the floors on the owner's own trips become defaults with a warning. See [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 - **Date:** 2026-10-07
 - **Status:** accepted. Approved by the owner on 2026-10-07 ("approve all", DMD round;
@@ -122,9 +124,34 @@ summary: >
 - **ADR-0041:** the Brain key is not used for shares.
 - **ADR-0012, ADR-0033:** derived data under CC BY-SA 4.0; helpers get no actions.
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md) (loosening 8). The decision
+stands as the default; each floor becomes an owner choice after a plain-language warning
+([trip-sharing spec](../specs/2026-10-07-trip-sharing-design.md) v0.4):
+
+- **Ends trim:** default 500 m; the owner may set 0 to 1.5 km (below 200 m warns "this reveals
+  where you start and stop").
+- **Privacy zones:** default radii from 500 m; a smaller custom radius is allowed with a
+  warning. The fixed random offset is unchanged.
+- **Public delay:** default 24 h after the trip; the owner may set 0–24 h. The explicit publish
+  act and the preview stay required.
+- **Short trips** under 1 km may go above L0 after a warning.
+- **L3 Full log** may be published for an open decoding project by the owner's explicit act,
+  with no location and relative time only, after `ostler share verify`. L4 stays a hand-over;
+  the owner may include the VIN in an L4 bundle to one named person (ADR-0036 amendment).
+- **L2 Telemetry** may go to `link` with an expiry (accounts spec §15.2); never `public`.
+
+Unchanged: the verifier, the identity scrub, no Brain-key signatures on bundles and the
+registry refusing raw captures as a class.
+
 ## Changelog
 
 - 2026-10-07 — v0.1, proposed (DMD round), drafted with the per-trip sharing spec.
 - 2026-10-07 — v1.0, accepted: approved by the owner on 2026-10-07 ("approve all", DMD
   round); the recommendations are the decision, the `captures` class and the other
   alternatives were not chosen.
+- 2026-10-07 — v1.1, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): ends trim, zone radius, public delay, short trips, public L3 for
+  decoding projects and L2 by link become owner choices with warnings.

@@ -2,7 +2,7 @@
 title: "Designer brief 80-a — head-unit apps: the feature map and the shared rules"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-phone-comms-addon-design.md, specs/2026-10-06-platform-direction-design.md, references/research/driver_distraction_rules.md, references/research/canbus_headunit.md, references/research/hardware.md]
 summary: >
@@ -14,7 +14,7 @@ summary: >
   sounds. It sets the rules every head-unit
   app shares: the `media` Moving template, Parked-only long lists and video, the audio path
   from the Brain, who owns what (app or OS), and which screens the approved head-unit apps
-  spec covers (New) and which stay Proposed. It lists the files that follow.
+  spec covers (New) and which stay Proposed. It lists the files that follow. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 80-a — Head-unit apps: feature map and shared rules
@@ -128,8 +128,9 @@ Every app also has an **App info** page in system Settings (the app framework br
 7. **Audio priority (OS mixer):** reverse-camera chime and red alarms > calls > navigation
    voice > traffic announcement > message read-out > media and radio > key beeps. The Audio
    app sets levels; the OS order cannot be changed by an app.
-8. **Calm visuals:** tokens only, Material Symbols only, no glow on head units at night, no
-   gradients or blur on head units, motion only for sheets and tab changes
+8. **Calm visuals (the default look):** tokens, Material Symbols, no glow on head units at
+   night, no gradients or blur on head units, motion only for sheets and tab changes; themes
+   may change these within visual §13
    ([visual §1][vds-1], [visual §5][vds-5], [visual §6][vds-6]). Spectrum analysers and
    animated VU meters are Parked only and never glow.
 9. **Honest hardware.** Each app shows only what the fitted hardware can do. The D2 has no
@@ -172,4 +173,4 @@ power board, with a DAC ([hardware research][hw]).
 [hw]: ../../../research/hardware.md#development-kit-recommended-parts-250-plus-the-pi
 [ui-6]: ../../../../specs/2026-10-06-ui-architecture-design.md#6-add-on-devices
 [hu-2]: ../../../../specs/2026-10-07-head-unit-apps-design.md#2-every-standard-page-mapped
-[hu-11]: ../../../../specs/2026-10-07-head-unit-apps-design.md#11-projection-android-auto-carplay-open
+[hu-11]: ../../../../specs/2026-10-07-head-unit-apps-design.md#11-projection-android-auto-carplay-not-built

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@500;600;700;800&amp;family=Bitter:wght@400;500;600;700;800&amp;family=Figtree:wght@400;500;600;700;800&amp;family=Manrope:wght@200;300;400;500;600;700&amp;family=DM+Serif+Display&amp;family=Instrument+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Outfit:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Barlow+Condensed:ital,wght@0,300;1,600;1,700;1,800&amp;family=Archivo:wght@500;700;800;900&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Share+Tech+Mono&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Lexend:wght@400;500;600;700&amp;family=Albert+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="ostler-themes.js"></script>
+</helmet>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+<div style="padding:{{ bzP }}px;background:#000;border-radius:{{ bzR }}px;box-shadow:0 30px 60px rgba(10,16,32,.35);width:max-content">
+<div data-screen-label="{{ label }}" style="width:{{ W }}px;height:{{ H }}px;background-color:{{ c.bg }};background-image:{{ c.bgImg }};background-size:cover;color:{{ c.tx }};font-family:{{ c.ff }};position:relative;overflow:hidden;border-radius:{{ sR }}px;display:flex;flex-direction:column">
+<sc-if value="{{ hu }}" hint-placeholder-val="{{ true }}"><dc-import name="TH Strip" theme="{{ theme }}" size="hu7" hint-size="100%,56px"></dc-import></sc-if>
+<sc-if value="{{ ph }}" hint-placeholder-val="{{ false }}"><div style="height:50px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:16px;font-weight:600"><span style="font-variant-numeric:tabular-nums">14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></sc-if>
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ dir }}">
+<div style="flex:1;min-width:0;min-height:0;overflow:{{ ov }};scrollbar-width:none;padding:{{ pad }};display:flex;flex-direction:{{ dir2 }};gap:12px">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;flex-direction:column"><span style="font-size:{{ fsS }}px;color:{{ c.t2 }}">More › Preferences</span><span style="font-size:{{ fsT }}px;font-weight:700;font-family:{{ c.fh }}">Theme</span></div>
+<div style="display:grid;grid-template-columns:{{ gcols }};gap:{{ gg }}px">
+<sc-for list="{{ cards }}" as="k" hint-placeholder-count="8"><div onClick="{{ k.pick }}" style="cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0">
+<div style="height:{{ cH }}px;border-radius:{{ k.r }}px;background-color:{{ k.bg }};box-shadow:{{ k.ring }};padding:8px;box-sizing:border-box;display:flex;gap:6px;overflow:hidden">
+<div style="flex:1;border-radius:{{ k.r2 }}px;background-color:{{ k.s1 }};box-shadow:{{ k.bd }};display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-family:{{ k.fn }};font-size:{{ kfs }}px;font-weight:{{ k.wN }};color:{{ k.spd }};line-height:1">72</span><span style="width:50%;height:4px;border-radius:2px;background-color:{{ k.acc }};margin-top:4px"></span></div>
+<div style="width:30%;display:flex;flex-direction:column;gap:5px"><div style="flex:1;border-radius:{{ k.r2 }}px;background-color:{{ k.s1 }};box-shadow:{{ k.bd }}"></div><div style="flex:1;border-radius:{{ k.r2 }}px;background-color:{{ k.s2 }};box-shadow:{{ k.bd }}"></div></div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:4px;min-height:22px"><sc-if value="{{ k.sel }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:{{ fsS }}px;color:{{ c.acc }};font-variation-settings:'FILL' 1">check_circle</span></sc-if><span style="font-size:{{ fsS }}px;font-weight:700;line-height:1.1;font-family:Figtree,system-ui,sans-serif">{{ k.name }}</span></div>
+</div></sc-for>
+</div>
+</div>
+<div style="width:{{ eW }};flex:none;background-color:{{ c.s1 }};background-image:{{ c.tex }};border-radius:{{ c.rCard }};box-shadow:{{ c.bd }};padding:{{ ep }};display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:{{ fsH }}px;font-weight:700;font-family:{{ c.fh }}">Edit theme</span><span style="height:{{ bH }}px;padding:0 14px;border-radius:{{ c.rc }}px;background-color:{{ c.acc }};color:{{ c.on }};display:flex;align-items:center;gap:4px;font-size:{{ fsS }}px;font-weight:800"><span class="material-symbols-rounded" style="font-size:{{ fsH }}px">content_copy</span>Duplicate</span></div>
+<sc-for list="{{ tokens }}" as="t" hint-placeholder-count="7"><div style="min-height:{{ rH }}px;border-radius:{{ c.r2 }}px;background-color:{{ c.s2 }};box-shadow:{{ c.bd }};display:flex;align-items:center;gap:10px;padding:0 12px;opacity:{{ t.op }}"><span class="material-symbols-rounded" style="font-size:{{ fsH }}px;color:{{ c.t2 }}">{{ t.icon }}</span><span style="flex:1;font-size:{{ fsS }}px;font-weight:700;white-space:nowrap">{{ t.l }}</span><div style="display:flex;gap:3px"><sc-for list="{{ t.sw }}" as="s" hint-placeholder-count="0"><span style="width:16px;height:16px;border-radius:5px;background:{{ s }};box-shadow:inset 0 0 0 1px rgba(128,128,128,.4)"></span></sc-for></div><span style="font-size:{{ fsS }}px;color:{{ c.t2 }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.v }}</span></div></sc-for>
+<span style="font-size:{{ fsXs }}px;color:{{ c.t2 }};line-height:1.35">Status colours and Moving limits stay locked.</span>
+</div>
+</div>
+<sc-if value="{{ hu }}" hint-placeholder-val="{{ true }}"><dc-import name="TH Rail" theme="{{ theme }}" size="hu7" active="More" hint-size="96px,100%"></dc-import></sc-if>
+<sc-if value="{{ ph }}" hint-placeholder-val="{{ false }}"><dc-import name="TH Rail" theme="{{ theme }}" size="phone" active="More" hint-size="100%,84px"></dc-import></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+ state={sel:null};
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerThemes||!window.OstlerThemes.resolve)return setTimeout(go,100);this.forceUpdate()};go()}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const T=window.OstlerThemes;if(!T||!T.resolve)return {ready:false};
+  const p=this.props,id=p.theme||'night',c=T.resolve(id),ph=p.size==='phone',sel=this.state.sel||id,t=T.byId[id];
+  const cards=T.list.map(x=>{const k=T.resolve(x.id);const on=x.id===sel;return {name:x.name,bg:k.bg,s1:k.s1,s2:k.s2,acc:k.acc,spd:k.spd,fn:k.fn,wN:k.wN,bd:k.bd,r:Math.min(18,k.r),r2:Math.max(3,Math.min(12,k.r-6)),sel:on,ring:on?'0 0 0 2px '+c.bg+',0 0 0 5px '+c.acc:(x.id==='night'||x.id==='deep'||x.id==='race'?'inset 0 0 0 1px rgba(128,128,128,.35)':'none'),pick:()=>this.setState({sel:x.id})}});
+  const tokens=[{icon:'palette',l:'Palette',sw:[t.bg,t.s1.startsWith('rgba')?(t.s1Safe||t.bg):t.s1,t.s3.startsWith('rgba')?(t.s3Safe||t.bg):t.s3,t.tx],v:'',op:1},{icon:'colors',l:'Accent',sw:[t.acc],v:t.acc,op:1},{icon:'rounded_corner',l:'Radius',sw:[],v:t.r+' px',op:1},{icon:'flare',l:'Glow',sw:[],v:t.glow?'Soft · parked':'Off',op:1},{icon:'opacity',l:'Transparency',sw:[],v:t.alpha.split(',')[0].replace(' cards',''),op:1},{icon:'speed',l:'Gauge style',sw:[],v:{arc:'Arc',needle:'Needle',bar:'Bar',thin:'Thin',race:'Sweep'}[t.gauge]||'Arc',op:1},{icon:'lock',l:'Status colours',sw:['#2f9e63','#bf8a1a','#ef6a7d'],v:'Locked',op:.7}];
+  return {ready:true,c,theme:id,hu:!ph,ph,W:ph?393:1024,H:ph?852:600,bzP:ph?0:14,bzR:ph?48:24,sR:ph?48:6,label:c.name+' · Theme picker · '+(ph?'phone':'HU-7'),cards,tokens,
+   dir:ph?'column':'row',dir2:ph?'column':'row',ov:ph?'auto':'hidden',pad:ph?'4px 16px 16px':'8px 14px 14px',gcols:ph?'repeat(4,1fr)':'repeat(5,1fr)',gg:8,cH:ph?60:46,kfs:ph?18:20,
+   eW:ph?'auto':'330px',ep:ph?'14px':'14px 16px',fsS:ph?13:18,fsT:ph?28:28,fsH:ph?18:22,fsXs:ph?12:18,bH:ph?40:48,rH:ph?44:46};
+ }
+}
+</script>
+</body>
+</html>

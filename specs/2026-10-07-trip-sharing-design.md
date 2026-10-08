@@ -2,14 +2,27 @@
 title: "Per-trip sharing — five share levels, redaction, the ostler.share/1 bundle, the verifier and help me decode or diagnose — design"
 area: specs
 status: stable
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [references/research/trip_and_log_sharing.md, references/research/dmd_hub_features.md, references/research/community_hub_architecture.md, decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0036-vin-and-identity-data-in-recordings.md, decisions/adr-0041-brain-ed25519-signing.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-05-session-logbook-design.md, specs/2026-10-06-node-source-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3, answering the owner's ask that a single trip can be shared at a chosen data level, up to a full log for decoding help or a diagnostics bundle. Five levels per trip: L0 Card (stats only, no map; max speed hidden on public cards), L1 Route (ends trimmed 500 m by default and never under 200 m, privacy zones of at least 500 m with a fixed random offset, simplified, no point timestamps, stats from the visible trace only), L2 Telemetry (chosen VSS signals on relative time), L3 Full log (the complete recording with the raw tap, scrubbed) and L4 Diagnostics bundle (faults, freeze frames, module info, scrubbed). L0–L2 are grants in the core registry; L3 and L4 are hand-overs, never grants (file, relay link with the key in the URL fragment, or a hub help thread), each passing `ostler share verify` first. Specifies a level × rule redaction table (R1–R16), privacy-zone maths, time handling (day, relative, real only to one person), id re-minting, a widened identity scrub with ISO-TP reassembly and a VIN-pattern block tested on recorded fixtures, the `ostler.share/1` zip and its `share.json` schema (hashes and a redaction record, not signed with the Brain key), DMD-style link controls, preview, expiry, revoke and audit, the seven-step help-me-decode or diagnose flow with CC BY-SA 4.0 contribution consent, where each piece lives (core platform, Trips, Diagnose, Decode lab, `ostler-app-hub`), phases, tests and the decisions for the owner, all answered as recommended (the `captures` class alternative not chosen).
+  Approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3, answering the owner's ask that a single trip can be shared at a chosen data level, up to a full log for decoding help or a diagnostics bundle. Five levels per trip: L0 Card (stats only, no map; max speed hidden on public cards), L1 Route (ends trimmed 500 m by default and never under 200 m, privacy zones of at least 500 m with a fixed random offset, simplified, no point timestamps, stats from the visible trace only), L2 Telemetry (chosen VSS signals on relative time), L3 Full log (the complete recording with the raw tap, scrubbed) and L4 Diagnostics bundle (faults, freeze frames, module info, scrubbed). L0–L2 are grants in the core registry; L3 and L4 are hand-overs, never grants (file, relay link with the key in the URL fragment, or a hub help thread), each passing `ostler share verify` first. Specifies a level × rule redaction table (R1–R16), privacy-zone maths, time handling (day, relative, real only to one person), id re-minting, a widened identity scrub with ISO-TP reassembly and a VIN-pattern block tested on recorded fixtures, the `ostler.share/1` zip and its `share.json` schema (hashes and a redaction record, not signed with the Brain key), DMD-style link controls, preview, expiry, revoke and audit, the seven-step help-me-decode or diagnose flow with CC BY-SA 4.0 contribution consent, where each piece lives (core platform, Trips, Diagnose, Decode lab, `ostler-app-hub`), phases, tests and the decisions for the owner, all answered as recommended (the `captures` class alternative not chosen). Amended 2026-10-07 (openness round, ADR-0047): the floors on the owner's own trips (ends trim, zone radius, short trips, real time, public delay, L2 by link, public L3 for decoding projects, VIN in a named L4 bundle) become defaults with warnings; the verifier and identity scrub are unchanged.
 ---
 
 # Per-trip sharing — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** the privacy floors on the owner's
+> own trips become defaults with a warning: the ends trim may go below 200 m, to 0 ("this
+> reveals where you start and stop", §5.1); a privacy zone may be smaller than 500 m (§5.2);
+> a trip under 1 km may be shared above L0 after a warning (§3); "Keep real date and time" is
+> allowed for any recipient after a warning (§6); a scrubbed L3 bundle may be published for
+> an open decoding project, still through the verifier (§3); L2 telemetry may go to `link`
+> with an expiry (accounts §15.2); the public route delay is the owner's (0–24 h); the VIN
+> may go in an L4 bundle to one named person (§2). No public feed, score or points stays this
+> core feature's scope, not a platform rule (§1). The verifier, identity scrub of everyone
+> else's data and the hand-over model are unchanged.
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v0.3.** Every item
 in [Decisions for the owner](#decisions-for-the-owner) is answered as recommended. It
@@ -39,8 +52,9 @@ Two jobs that look alike and are not:
    A sealed, scrubbed, verified **bundle** sent once to a named helper, a pack's maintainers or
    a hub help thread. Raw captures stay outside the registry (accounts §14.1).
 
-**Non-goals.** No public feed for strangers, no score, no points (Ostler Community positions,
-[ecosystem](../docs/ecosystem.md)). No second recorder: a share is a view of the ADR-0009
+**Non-goals.** No public feed for strangers, no score, no points in per-trip sharing (Ostler
+Community positions, [ecosystem](../docs/ecosystem.md)); an add-on may offer them, opt-in
+(*amended 2026-10-07, openness round*). No second recorder: a share is a view of the ADR-0009
 session (DMD Avoid 7). No upload by default and no silent upload targets. No remote actions
 for helpers: remote paths stay read-only ([ADR-0033](../decisions/adr-0033-action-categories-and-approvals.md)
 §6). Live location sharing during a drive stays with the Vehicles & Map add-on; this spec only
@@ -53,8 +67,10 @@ Binding on every path; the research's §2 has the detail.
 - **ADR-0009:** real sessions stay on the device; community uploads carry no GPS unless an ADR
   adds a per-upload opt-in with trimmed ends and a preview. ADR-0043 (accepted) is that ADR.
 - **ADR-0036 §3 and §5:** every export, share, contribution and support bundle scrubs
-  identity data to the fixed placeholder whatever the install option; the VIN never leaves
-  (not even masked or hashed); raw car captures are never committed.
+  identity data to the fixed placeholder whatever the install option; the VIN does not leave
+  by default (not even masked or hashed); *amended 2026-10-07 (openness round):* the owner may
+  include it in an L4 bundle to one named person, with a cloning-risk warning; raw car
+  captures are never committed.
 - **Accounts §14:** default audience `me`; ghost by default; precise and live location
   ≤ 24 h; every grant has an expiry, a revoke and an audit; raw captures and Decode evidence
   are never a class.
@@ -73,9 +89,9 @@ destination, ADR-0043).
 | Level | Name | Contains | Never contains | Kind | Audiences |
 |---|---|---|---|---|---|
 | **L0** | **Card** | vehicle card basic (make, model, year, engine; nickname if ticked; photo re-encoded, EXIF stripped); trip **day**; a **region label** (GeoNames admin-2, e.g. "Derbyshire"); visible distance (1 km), visible duration (5 min), moving time (5 min); average speed (5 km/h); max speed **only if shown** (hidden by default on `link` and `public`, R15); faults-seen count if ticked; `card.png` | any map, trace, place names finer than admin-2, start time, altitude or elevation, plate (unless ticked), signals | grant | me, person, group, household, link, public (explicit publish) |
-| **L1** | **Route** | L0 plus the **trimmed, simplified trace** with no point timestamps (§5), elevation profile and gain (10 m) of the visible trace, start and end **region** labels, stats recomputed from the visible trace (distance 0.1 km, duration 1 min) | trimmed ends, anything inside a privacy zone, point times, start and end places, the hidden part's length | grant (`location` `route`) | as L0; `public` only by explicit publish ≥ 24 h after the trip ends |
-| **L2** | **Telemetry** | the chosen decoded **VSS signals** (picker; default speed, rpm, coolant) as time series on **relative time** (t = 0 at the first visible sample), faults seen with freeze frames, replay of those channels; route only if L1 is also ticked | GPS channels, `Utc`, heading and altitude (unless L1), unpicked signals, raw bytes, events, notes (unless ticked) | grant (`trips` `full` with a signal subset + `faults`) | me, person, group (a hub club is a group), household; **never `link` or `public`** |
-| **L3** | **Full log** | every decoded channel, the **raw tap** per bus (`pcapng`, plus `candump` for CAN buses), state events (typed, free text dropped), notes marked shareable if ticked, `meta.json` re-minted; relative time | VIN or any identity reply, `unframed` records, audio, private notes, device ids, network identity; location unless ticked to one named person | **hand-over** | one named person, a pack's maintainers, named helpers on a hub help thread |
+| **L1** | **Route** | L0 plus the **trimmed, simplified trace** with no point timestamps (§5), elevation profile and gain (10 m) of the visible trace, start and end **region** labels, stats recomputed from the visible trace (distance 0.1 km, duration 1 min) | trimmed ends, anything inside a privacy zone, point times, start and end places, the hidden part's length | grant (`location` `route`) | as L0; `public` only by explicit publish, by default ≥ 24 h after the trip ends (owner-set 0–24 h) |
+| **L2** | **Telemetry** | the chosen decoded **VSS signals** (picker; default speed, rpm, coolant) as time series on **relative time** (t = 0 at the first visible sample), faults seen with freeze frames, replay of those channels; route only if L1 is also ticked | GPS channels, `Utc`, heading and altitude (unless L1), unpicked signals, raw bytes, events, notes (unless ticked) | grant (`trips` `full` with a signal subset + `faults`) | me, person, group (a hub club is a group), household; `link` with an expiry and a warning (owner opt-in, amended 2026-10-07); **never `public`** |
+| **L3** | **Full log** | every decoded channel, the **raw tap** per bus (`pcapng`, plus `candump` for CAN buses), state events (typed, free text dropped), notes marked shareable if ticked, `meta.json` re-minted; relative time | VIN or any identity reply, `unframed` records, audio, private notes, device ids, network identity; location unless ticked to one named person | **hand-over** | one named person, a pack's maintainers, named helpers on a hub help thread; or, by the owner's explicit publish with a warning, **public** for an open decoding project (location never included; the verifier still runs; amended 2026-10-07) |
 | **L4** | **Diagnostics bundle** | faults, freeze frames, readiness, the scan report, **module info** (module names, part and software numbers that are not serials, protocol and link stats), pack, platform and firmware versions, device manifests (re-minted), link and gap stats, the redacted platform log tail and config; plus L2 or L3 channels if ticked | as L3; serials, EKA codes, seed/key pairs | **hand-over** | one named person (a mechanic), a pack's maintainers, named helpers on a hub help thread |
 
 **L0–L2 are grants** in the registry: pulled over `/peer/v1`, LAN, Tailscale or the relay,
@@ -85,8 +101,9 @@ Every level, grant or not, is built through the same pipeline (§4) and passes t
 (§9) before its first byte leaves; for a grant the pipeline runs on every pull, on the
 serving device, the way `/peer/v1` filters today.
 
-**A short trip** whose visible trace (after §5) is under 1 km cannot be shared above L0; the
-card reads "under 1 km" and no duration.
+**A short trip** whose visible trace (after §5) is under 1 km is shared at L0 by default; the
+card reads "under 1 km" and no duration. *Amended 2026-10-07 (openness round):* the owner may
+share it at a higher level after a warning that a short trace points to its ends.
 
 ## 4. Redaction pipeline: level × rule
 
@@ -129,14 +146,16 @@ ADR-0043 §3).
 Let the trip's fixes be p₀ … pₙ with along-track distance s(i) = Σ haversine(p_{k−1}, p_k)
 over k ≤ i, after dropping fixes with HDOP > 5 or a jump implying > 300 km/h, and S = s(n).
 Hide every fix with **s(i) < T_start** or **s(i) > S − T_end**. Defaults **T_start = T_end =
-500 m**; the owner may set 200 m to 1,500 m in More → Places; the floor of **200 m** cannot be
-lowered. The cut point is interpolated on the segment so the visible trace starts exactly at
+500 m**; the owner may set 0 to 1,500 m in More → Places. Below 200 m the sheet warns "this
+reveals where you start and stop" (*amended 2026-10-07, openness round*; 200 m was a fixed
+floor). The cut point is interpolated on the segment so the visible trace starts exactly at
 s = T_start (no partial-segment leak).
 
 ### 5.2 Privacy zones (saved places, R5)
 
-- A **privacy zone** is a saved place (home, work, a friend's house) with a radius **r ≥ 500 m**
-  (choices 500 m, 1 km, 1.5 km, 2 km; default 1 km for "Home"). It lives in core (More →
+- A **privacy zone** is a saved place (home, work, a friend's house) with a radius **r**
+  (choices 500 m, 1 km, 1.5 km, 2 km; default 1 km for "Home"; a smaller custom radius is
+  allowed after a warning, *amended 2026-10-07, openness round*). It lives in core (More →
   Places) and every class with location reads it (Trips, Social, Vehicles & Map, hub
   publishing).
 - **Fixed random offset.** When the zone is saved, a centre offset **o** is drawn once from a
@@ -187,7 +206,7 @@ since speed plus a known start can recover a route, research §3 rule 4).
 |---|---|---|
 | **day** | L0, L1 | Only the local calendar date of the first visible sample. No start time, no weekday-time pairs, no point times. A `public` route is publishable only ≥ 24 h after the trip ended and still shows the day only |
 | **relative** | L2, L3, L4 | t = 0 at the first visible sample. `Utc` dropped; `Interval` rebased; tap `t_us` rebased; tap `time` events rewritten to the same base with `utc_ns` removed; pcapng timestamps written as 1970-01-01T00:00:00Z + t; candump `(sec.usec)` from 0; `meta.json` start and end become `0` and the duration; zip entry times fixed at 1980-01-01 00:00 |
-| **real** | L3, L4, one named person only | The owner ticks "Keep real date and time" in the sheet, which shows the recipient's name; refused for a link to several people, a hub thread, a pack issue or a file (a file has no known recipient) |
+| **real** | L3, L4, one named person only | The owner ticks "Keep real date and time" in the sheet, which shows the recipient's name; for a link to several people, a hub thread, a pack issue or a file (no known recipient) it needs a second confirm with a warning (*amended 2026-10-07, openness round*; was refused) |
 
 The day itself is identifying when combined with an event (a club ride); the sheet says so
 for `link` and `public`.
@@ -476,12 +495,13 @@ owner may then share the finished trip at L0–L1 as usual (no auto-conversion).
   multi-frame, broadcast declared and undeclared); seed/key exchanges scrubbed; `unframed`
   dropped.
 - **Verifier:** one failing fixture per check in §9.3, each failing with its rule; the writer
-  refuses to emit a bundle that fails; the hub path refuses an unverified bundle.
+  refuses to emit a bundle that fails; the hub path refuses an unverified bundle; a public L3
+  bundle carries no location whatever the ticks.
 - **Not signed:** no bundle carries the Brain key id or a signature by it.
-- **Grants:** L3 or L4 offered as a grant is refused by the registry; an L2 grant to `link` or
-  `public` is refused; a `link` grant for live
+- **Grants:** L3 or L4 offered as a grant is refused by the registry; an L2 grant to `public`
+  is refused, and to `link` it needs the owner's opt-in and an expiry; a `link` grant for live
   location beyond a ride, audio, video or a raw log is refused; a `public` route grant before
-  trip end + 24 h, or without the publish act, is refused.
+  trip end + the owner's delay (default 24 h), or without the publish act, is refused.
 - **Help flow:** a helper's recipe cannot carry an action or a lab request (schema refuses it);
   the contribution consent defaults off and its absence sets `licence.derived_data` to null.
 
@@ -502,6 +522,11 @@ owner may then share the finished trip at L0–L1 as usual (no auto-conversion).
 - 2026-10-07 — v0.3: approved by the owner on 2026-10-07 ("approve all", DMD round): every
   decision answered as recommended (alternatives not chosen, the `captures` class included);
   ADR-0043 accepted; the TS1 bundle and verifier are built first, before any share screen.
+- 2026-10-07 — v0.4: amended (openness round, approved by the owner on 2026-10-07, "apply
+  the loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): ends trim to 0 and
+  smaller privacy zones with warnings, short trips above L0, real time with a second confirm,
+  public scrubbed L3 for open decoding projects, L2 by `link` with an expiry, the owner's
+  public delay, the VIN in a named L4 bundle; no feed or score stays this feature's scope.
 
 ## Decisions for the owner
 

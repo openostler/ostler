@@ -2,14 +2,19 @@
 title: "Logs at scale — place names, paging/search/scrubber, editable records, live-only recording, no demo mode — design"
 area: specs
 status: stable
-version: 1.1
+version: 1.2
 updated: 2026-10-07
 depends_on: [specs/2026-10-05-session-logbook-design.md, specs/2026-10-05-replay-notes-capture-design.md, decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md]
 summary: >
-  Sessions get human place names (offline GeoNames nearest town within a size-scaled radius, else region; enriched by OSM Nominatim when online, cached, attributed); a SQLite session index serves keyset-paged, searchable, filterable lists and a month histogram for a Google-Photos-style scrubber; name/description are editable in place; recording happens only while connected (paused otherwise); demo/mock mode is removed from the product (two committed Demo logs replace it); delete confirms by typing "Delete".
+  Sessions get human place names (offline GeoNames nearest town within a size-scaled radius, else region; enriched by OSM Nominatim when online, cached, attributed); a SQLite session index serves keyset-paged, searchable, filterable lists and a month histogram for a Google-Photos-style scrubber; name/description are editable in place; recording happens only while connected (paused otherwise); demo/mock mode is removed from the product (two committed Demo logs replace it); delete confirms by typing "Delete". Amended 2026-10-07 (openness round, ADR-0047): a badged developer demo mode is allowed and GPS-only trips are an owner opt-in.
 ---
 
 # Logs at scale — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../decisions/adr-0047-openness-round.md)):** a developer demo mode,
+> off by default and badged "Demo" on every screen, is allowed (§4; ADR-0011 amendment), and
+> GPS-only trips are an owner opt-in.
 
 ## Context
 
@@ -110,6 +115,10 @@ The owner approved this on 2026-10-06. Research sources:
 
 ## 4. No demo mode
 
+*Amended 2026-10-07 (openness round):* the product ships with no demo mode on by default and
+no Mock/Live switch for users; a developer demo mode, badged "Demo", may be added behind a
+developer flag or service mode (ADR-0011 amendment).
+
 **Removed from the product:**
 - the `--mock` flag;
 - server modes (`modes`, `set_mode`, snapshot `mode`/`modes`);
@@ -171,3 +180,5 @@ The owner approved this on 2026-10-06. Research sources:
 ## Changelog
 
 - 2026-10-06: v1.0, approved.
+- 2026-10-07: v1.2, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): a badged developer demo mode and opt-in GPS-only trips.

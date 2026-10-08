@@ -2,14 +2,20 @@
 title: "DMD2 and DMD Hub feature map — every feature, its Ostler home, phase and spec status"
 area: docs
 status: stable
-version: 1.0
+version: 1.1
 updated: 2026-10-07
 depends_on: [references/research/dmd2_features.md, references/research/dmd2_ui_teardown.md, references/research/dmd_hub_features.md, references/research/dmd_hub_ui_teardown.md, references/research/trip_and_log_sharing.md, references/research/community_hub_architecture.md, docs/ecosystem.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0043-gps-and-logs-in-shared-trips.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
-  Approved by the owner on 2026-10-07 ("approve all", DMD round) as the DMD checklist: a "Needs spec" row closes only when an approved spec covers it. One table per area mapping every DMD2 app feature and every DMD Hub feature onto Ostler: what DMD does in one line, the Ostler home (core app, approved add-on, new add-on repo, hardware add-on or not needed), the phase or dependency, and the spec status (specced, with a link to the section; needs spec; or out of scope with the reason). New homes: `ostler-app-navigation` (routing, guidance, GPX, planner, roadbook), `ostler-app-hub` with the closed `ostler-hub` server (Ostler Community), `ostler-app-phone` (Phone & Comms), later `ostler-app-alerts`; `ShellInput`, per-trip sharing, adapters and Crash SOS stay core. Lists the deliberate leave-outs (Android-only, no CarPlay/Android Auto projection, speed cameras, gamification, social-network buttons, licence gating), the approved build order and Decisions for the owner, all answered as recommended.
+  Approved by the owner on 2026-10-07 ("approve all", DMD round) as the DMD checklist: a "Needs spec" row closes only when an approved spec covers it. One table per area mapping every DMD2 app feature and every DMD Hub feature onto Ostler: what DMD does in one line, the Ostler home (core app, approved add-on, new add-on repo, hardware add-on or not needed), the phase or dependency, and the spec status (specced, with a link to the section; needs spec; or out of scope with the reason). New homes: `ostler-app-navigation` (routing, guidance, GPX, planner, roadbook), `ostler-app-hub` with the closed `ostler-hub` server (Ostler Community), `ostler-app-phone` (Phone & Comms), later `ostler-app-alerts`; `ShellInput`, per-trip sharing, adapters and Crash SOS stay core. Lists the deliberate leave-outs (Android-only, no CarPlay/Android Auto projection, speed cameras, gamification, social-network buttons, licence gating), the approved build order and Decisions for the owner, all answered as recommended. Amended 2026-10-07 (openness round, ADR-0047): recording gains Pause and Off, and the hub API is a published contract with a user-settable hub URL while ostler-hub stays closed.
 ---
 
 # DMD2 and DMD Hub feature map
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../decisions/adr-0047-openness-round.md)):** recording gains Pause
+> and Off (ADR-0009 amendment); the hub API is a published contract that clubs may implement,
+> with a user-settable hub URL, while `ostler-hub` itself stays closed (community hub spec
+> v0.4).
 
 **Status: approved by the owner on 2026-10-07 ("approve all", DMD round), v1.0, as the DMD
 checklist.** The owner asked to "pull all
@@ -199,7 +205,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Feature | DMD behaviour | Ostler home | Phase / dependency | Spec status |
 |---|---|---|---|---|
 | GPX recorder with live stats | Idle/recording/paused, distance, times, climb | Trips: always-on recording, "Recording now" card | done / U2 | Specced: [UI §12.2](../specs/2026-10-06-ui-architecture-design.md), [ADR-0011](../decisions/adr-0011-no-demo-mode-live-only-recording-place-names.md) |
-| Pause | Stop points and clocks | — | — | Out: no pause (ADR-0011); End trip now and Exclude cover it |
+| Pause | Stop points and clocks | — | — | Pause and Off for recording (ADR-0009 amendment, openness round); End trip now and Exclude remain |
 | Under 5 km/h is not travel | No distance or climb when slow | Trips | U2 | Needs spec: a UI §12.2 line |
 | Auto-record and minimum distance | Starts on movement, drops drift | Trips: trigger exists; add a minimum-distance rule | U2 | Needs spec: a UI §12.2 line |
 | New track, add waypoint | Split days, quick waypoint types | Trips: End trip now, Mark | done | Specced: [ADR-0010](../decisions/adr-0010-replay-notes-audio-motion.md), [UI §12.2](../specs/2026-10-06-ui-architecture-design.md) |
@@ -306,7 +312,7 @@ Short links used below: [UI](../specs/2026-10-06-ui-architecture-design.md),
 | Moderation: report, block, review, code of conduct | Staff review, bans | Hub moderation, appeals, audit | H1 | Specced: [community hub §14](../specs/2026-10-07-community-hub-design.md#14-moderation-and-abuse) |
 | Licence gates sync and sharing | Paid tier | — | — | Out: never charge for safety, sharing or decode help; only hosted storage or relay |
 | No public API, anti-scraping | Internal endpoints | Hub documented OpenAPI with scoped tokens, published in the open `ostler-app-hub` | H1 | Specced: [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack) |
-| Self-hosting | Not offered | Not offered either: `ostler-hub` is closed and run only by Ostler (one instance, private repo, separate from `ostler-cloud`); the exit guarantee is export everything, a public CC BY-SA dump and nothing in core depending on it | H0 | Specced: [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack) |
+| Self-hosting | Not offered | `ostler-hub` stays closed and run only by Ostler (one instance, private repo, separate from `ostler-cloud`), but its API is a published contract a club may implement and the add-on's hub URL is user-settable (openness round); the exit guarantee is export everything, a public CC BY-SA dump and nothing in core depending on it | H0 | Specced: [community hub §3](../specs/2026-10-07-community-hub-design.md#3-repos-licences-and-stack) |
 | Federation | None | None either; RSS/Atom, ICS and embeds as open read paths | — | Specced: [community hub §16](../specs/2026-10-07-community-hub-design.md#16-storage-costs-and-phases); revised decision B 18 |
 | Vehicle data on the Hub | Labels only; OBD data never shared | Ostler's edge: garage cards, telemetry and faults at chosen levels | H1–H2 | Specced: [community hub §6](../specs/2026-10-07-community-hub-design.md#6-what-can-be-published) |
 | Forum | (none; a feed of posts) | Hub forum: categories per make and model, Q&A with "solved", search with exact fault-code and hex matching, watch levels and notifications; no direct messages | H1 | Specced: [community hub §9](../specs/2026-10-07-community-hub-design.md#9-the-forum) |
@@ -375,7 +381,7 @@ DMD shares GPX files and live trips; it never shares vehicle data. Ostler's five
 | Social-network share buttons | Yes | Web Share, copy link, QR and embed only; no third-party scripts |
 | Licence gating sync, sharing, groups, remotes | Yes | Never charge for safety, sharing or decode help; only hosted storage or relay |
 | Viewer chat on live pages (v1) | Yes | Needs moderation tools first; members use the Social ride channel |
-| Pause recording, separate share recorder | Yes | One always-on logbook (ADR-0009, ADR-0011) |
+| Pause recording, separate share recorder | Yes | One logbook, on by default with Pause and Off (ADR-0009 as amended); no separate share recorder |
 | Notification and message mirroring while Moving | Yes | No message content on driver displays while Moving ([UI §12.1](../specs/2026-10-06-ui-architecture-design.md)); Phone shows only the `call` template, the message `alert_card` and the favourites `short_list` while Moving, keypad and lists Parked only ([Phone & Comms §10](../specs/2026-10-07-phone-comms-addon-design.md#10-ui-per-layout-class-and-driving-state)) |
 | Free pixel drag of overlays | Yes | Per-class grids travel between screens; drag does not |
 | Images on the hub before H4 | Yes | Online Safety Act hash-matching duty; photos only with on-device blur |
@@ -431,6 +437,9 @@ live checklist is the platform `TODO.md`. NodeSource P4 keeps its place.
   checklist: every decision answered as recommended (alternatives not chosen); the "(draft)"
   markers dropped since every spec of the round is approved; §16 follows the approved build
   order (decision list item 70).
+- 2026-10-07: v1.1, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): the Pause rows and the self-hosting row follow the amended ADR-0009
+  and community hub spec.
 
 ## Decisions for the owner
 

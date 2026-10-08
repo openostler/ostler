@@ -2,7 +2,7 @@
 title: "Designer brief 40-b — driving states: locked view, Passenger view, phone Moving banner, Park to edit, the driving page, service mode and Brain wake"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, references/research/driver_distraction_rules.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   once-per-trip "I'm a passenger" question, the new "Park to edit" toast and the "Finish
   editing when parked" prompt, the "Using Ostler while driving" page, the service-mode frame
   and badge, and the Brain wake sheet with queued buttons and the "Needs the Brain" card. Each
-  block gives labels, states and the UK regulation 109 limits that shape them.
+  block gives labels, states and the UK regulation 109 limits that shape them. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-b — Driving states, service mode and Brain wake
@@ -38,7 +38,7 @@ Back to [40-a](40-drive-a.md) for the conventions and the file list.
   "Pair a phone in Settings → Network" and is disabled. Offline phone: "Phone not reachable".
 - **Safety and driving rules:** unknown speed counts as Moving on HU; a view with no `moving`
   rule is fully locked (fail closed); at most 3 screens deep ([UI §12.1][ui-12.1]).
-- **Components:** Card, Button. Tokens `type-body` (≥ 24 px), no glow.
+- **Components:** Card, Button. Tokens `type-body` (≥ 24 px), no glow (default look).
 - **Spec refs:** [UI §3.5][ui-3.5] · [UI §12.1][ui-12.1].
 - **Open questions:** none.
 

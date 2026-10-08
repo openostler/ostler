@@ -2,17 +2,22 @@
 title: "ADR-0011 — No demo mode; record only while connected; offline place names with OSM enrichment"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-10-06
+version: 1.1
+updated: 2026-10-07
 depends_on: [decisions/adr-0009-session-logbook-and-location.md, decisions/adr-0010-replay-notes-audio-motion.md]
 summary: >
-  The product has no mock/demo mode — replaying committed demo logs is the demo, and simulated sources exist only in tests; sessions record only while the car is connected (paused otherwise); places are named offline from GeoNames and refined online via OSM Nominatim within its usage policy.
+  The product has no mock/demo mode — replaying committed demo logs is the demo, and simulated sources exist only in tests; sessions record only while the car is connected (paused otherwise); places are named offline from GeoNames and refined online via OSM Nominatim within its usage policy. Amended 2026-10-07 (openness round, ADR-0047): a developer demo mode badged "Demo" is allowed and GPS-only trips are an owner opt-in.
 ---
 
 # ADR-0011 — No demo mode; record only while connected; place names
 
 - **Date:** 2026-10-06
 - **Status:** accepted (amends ADR-0009's start rule)
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](adr-0047-openness-round.md)):** a developer **demo mode**, clearly
+> badged "Demo", is allowed, and **GPS-only trips** are an owner opt-in. See
+> [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 ## Context
 
@@ -53,3 +58,24 @@ summary: >
 - **Keep mock mode behind a flag.** Rejected by the owner: replay is the demo.
 - **Nominatim only.** Rejected: the Pi is often offline in the car.
 - **GPS-start recording.** Rejected: it records without the car.
+
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("the repo has too many rules that limit freedom and
+flexibility, this should be an open system", then "apply the loosenings"); recorded in
+[ADR-0047](adr-0047-openness-round.md) (loosening 7). The decision above stands except:
+
+- **Demo mode.** A developer demo mode is allowed: off by default, turned on by a developer
+  flag or in service mode, and **badged "Demo" on every screen** (strip badge and frame, as
+  replay is), so it can never pass for a live car. It serves recorded or labelled synthetic
+  data, never sends anything to a car and is not a release-build default. Replay of the demo
+  logs stays the default demo.
+- **GPS-only trips.** "GPS movement alone never records" is the default. The owner may opt in
+  to GPS-only trips (bikes, cars with no node connected); such a trip is labelled "GPS only"
+  and holds no vehicle channels.
+
+## Changelog
+
+- 2026-10-06: v1.0, accepted.
+- 2026-10-07: v1.1, Amendment (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): a badged developer demo mode and opt-in GPS-only trips.

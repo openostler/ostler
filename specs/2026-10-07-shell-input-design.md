@@ -2,7 +2,7 @@
 title: "ShellInput — a D-pad input model for the shell: intents, focus zones, spatial navigation, Drive menu, bindings and key test — design"
 area: specs
 status: stable
-version: 0.4
+version: 0.5
 updated: 2026-10-07
 depends_on: [references/research/dmd2_ui_teardown.md, references/research/dmd2_features.md, references/research/driver_distraction_rules.md, references/research/addons_catalogue.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-module-bus-messages-design.md, specs/2026-10-06-vehicle-packs-generic-obd2-bmw-e-design.md, decisions/adr-0018-ui-architecture-decisions.md, decisions/adr-0024-body-bus-links-passive-by-default.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0040-power-states-and-wake.md, specs/2026-10-07-navigation-addon-design.md]
 summary: >
@@ -19,10 +19,17 @@ summary: >
   visual spec, app-model and module-bus sections it amends. v0.2 (amendment §14, DMD round, approved): a long
   `ok` (600 ms) on a focused strip chip, rail item or widget enters edit mode when Parked ("Park to edit" while
   Moving); while Moving in Drive mode, `back` with nothing open moves focus to the Drive-mode chip wherever it sits;
-  the switcher is found by id (drive-modes spec v0.2 decision 15). Amended 2026-10-07 (OS round): voice control is no longer a non-goal; a local-first assistant comes later.
+  the switcher is found by id (drive-modes spec v0.2 decision 15). Amended 2026-10-07 (OS round): voice control is no longer a non-goal; a local-first assistant comes later. Amended 2026-10-07 (openness round, ADR-0047): the focus-ring values are defaults a theme may restyle while focus stays visible and nothing reflows in Moving templates.
 ---
 
 # ShellInput — design
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
+> be an open system", then "apply the loosenings";
+> [ADR-0047](../decisions/adr-0047-openness-round.md)):** the focus-ring token values are the
+> default look; a theme may restyle the ring (colour, width, glow) as long as focus stays
+> clearly visible (WCAG 2.4.13) and the focused item does not resize or reflow in Moving
+> templates (§9). Cancel focused on confirm sheets and no auto-confirm are unchanged.
 
 > **Amended 2026-10-07 (OS round), approved by the owner on 2026-10-07 ("approve all", OS
 > round; decision list item 54):** voice control is no longer a non-goal (§1); a local-first
@@ -202,11 +209,13 @@ sheet while Moving is not offered.
 
 ## 9. Focus visuals
 
-A new token group for the [visual spec](2026-10-07-visual-design-system-design.md) §5:
-`focus-ring-width` **3 px**, `focus-ring-color` `accent`, `focus-ring-gap` **2 px** of `bg`
-(so it reads on any surface and the map), drawn as an outline outside the element. **No glow,
-no shadow, no size change, no animation**: the focused item never enlarges or reflows (teardown
-Avoid 5), so the ring is legal in Drive mode and Moving templates. The kit's "focus-visible ring
+A new token group for the [visual spec](2026-10-07-visual-design-system-design.md) §5, with
+these **defaults**: `focus-ring-width` **3 px**, `focus-ring-color` `accent`, `focus-ring-gap`
+**2 px** of `bg` (so it reads on any surface and the map), drawn as an outline outside the
+element, with no glow, shadow, size change or animation. *Amended 2026-10-07 (openness round):*
+a theme may restyle the ring (visual §13) provided focus stays clearly visible (WCAG 2.4.13);
+in Drive mode and Moving templates the focused item still never enlarges or reflows (teardown
+Avoid 5). The kit's "focus-visible ring
 2 px `accent`" (visual spec §8, Button) becomes this token for every kit component. Focus is
 never colour alone: the ring is a shape change, and a focused ListRow also takes `accent-soft`.
 
@@ -327,6 +336,10 @@ switcher only by `data-chip="drive_mode"`.
   chosen); §14 renamed "Amendment (2026-10-07, DMD round), approved"; ships with U2 (I1–I2).
 - 2026-10-07: v0.4, amended (OS round, approved by the owner on 2026-10-07, "approve all";
   decision list item 54): voice control is no longer a non-goal.
+- 2026-10-07: v0.5, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", [ADR-0047](../decisions/adr-0047-openness-round.md)): the focus-ring values
+  are defaults a theme may restyle while focus stays visible and nothing reflows in Moving
+  templates.
 
 ## Decisions for the owner
 

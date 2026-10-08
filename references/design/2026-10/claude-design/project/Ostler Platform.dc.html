@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="drive-maps.js"></script>
+<style>body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#0070b8}a:hover{color:#005a94}</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:80px;color:#0e1626">
+<div style="max-width:1040px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · PLATFORM UPDATE · BATCH 1</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">Remote, messages, phone, sharing, navigation, adapters</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">The shared status strip now runs Back · Drive-mode chip (with face dots) · faults · TD5 · REC · 12 V · visibility · ride/call · touch lock · clock · Mark. Because every screen uses the same strip, all Drive-mode screens in <a href="Ostler Drive Modes.dc.html">Ostler Drive Modes</a> updated with it.</div>
+<div style="font-size:13px;line-height:1.5;color:#3b4556"><b style="color:#0e1626">Next batch:</b> Community (web + in-app), and refreshing Home, Trips, playback, statistics, Diagnose, Vehicles &amp; Map, Social and Maintenance with edit mode, focus ring, visibility chips and share entry points.</div>
+</div>
+<dc-import name="OS Remote" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,1400px"></dc-import>
+<dc-import name="OS Messages" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,1400px"></dc-import>
+<dc-import name="OS Phone" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,2400px"></dc-import>
+<dc-import name="OS Sharing" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,1800px"></dc-import>
+<dc-import name="OS Navigation" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,1800px"></dc-import>
+<dc-import name="OS Adapters" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,1600px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;faults&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vehicle state&quot;},&quot;visibility&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Ghost&quot;,&quot;Visible&quot;],&quot;default&quot;:&quot;Ghost&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Vehicle state&quot;}}">
+class Component extends DCLogic {
+ renderVals(){return {faults:this.props.faults!==false,visibility:this.props.visibility||'Ghost'};}
+}
+</script>
+</body>
+</html>

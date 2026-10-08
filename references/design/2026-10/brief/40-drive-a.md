@@ -2,7 +2,7 @@
 title: "Designer brief 40-a — shell chrome: status strip, dock, focus states, telltale sheet, connection sheet, vehicle switcher"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   component kit, the worst-telltale fault sheet (full list Parked, `telltale_list` while
   Moving), the connection sheet (connection ladder, Brain power, queued actions, adapter
   verdicts and the always-present Reset layout row) and the active-vehicle switcher. Examples
-  use the Discovery 2 Td5 pack: Td5 and SLABS signals and real fault codes.
+  use the Discovery 2 Td5 pack: Td5 and SLABS signals and real fault codes. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-a — Shell chrome
@@ -77,16 +77,17 @@ Conventions for every block: the D2 is right-hand drive, so the dock is drawn on
   Drive mode. Passenger: a "Passenger view" badge joins (`shell-passenger-view`). Locked: n/a.
   Attention: only an `alarm` chip pulses (the one motion allowed while Moving); reduced motion
   shows a static ring.
-- **Safety and driving rules:** telltale and Security can move but never hide, and their icon
-  and word are fixed; Back and Drive mode are always in the Drive strip; no app chips
-  ([Drive modes §8.1][dm-8.1] R3, R4, R9). No glow on head units.
+- **Safety and driving rules:** telltale and Security can move and be restyled but never hide;
+  Back and Drive mode are in the Drive strip by default; apps may add status-only chips
+  ([Drive modes §8.1][dm-8.1] R3, R4, R9; openness round). No glow on head units in the
+  default look.
 - **Components:** Chip (status), Button (Back). Tokens `type-label`, `ok`/`warn`/`alarm`,
   `accent-soft` only on a selected chip, focus-ring tokens.
 - **Spec refs:** [UI §3.2][ui-3.2] · [UI §15.1][ui-15.1] · [UI §15.2][ui-15.2] ·
   [Drive modes §6][dm-6] · [Drive modes §7.5][dm-7.5] · [visual §8][vds-8] ·
   [Maintenance §8][mg-8].
 - **Open questions:** **Decided (item 58):** no Maintenance strip chip; apps add no strip
-  chips. Service due shows as a Home card or the Service due widget only.
+  chips (*amended, openness round: status-only app chips are allowed*). Service due shows as a Home card or the Service due widget only.
 
 ### shell-rail — Dock (was the rail and the phone bottom bar)  [Existing]
 - **Purpose:** the pinned slots (phone 5, HU-5 and HU-7 5, HU-9/10 6, HU-wide 7, tablet and
@@ -128,9 +129,9 @@ Conventions for every block: the D2 is right-hand drive, so the dock is drawn on
 - **Layout classes:** phone · tablet · hu5 · hu7 · hu9 · huwide. **Draw first:** hu7 Night
   and Night-dim; phone Day; one Moving Drive frame on hu7 Night-dim.
 - **Content:**
-  1. **The ring:** 3 px `focus-ring-color` (accent) outside the element with a 2 px `bg`
-     gap; no glow, shadow, size change or animation; the element's box is identical focused
-     and unfocused.
+  1. **The ring:** by default 3 px `focus-ring-color` (accent) outside the element with a
+     2 px `bg` gap, no glow or shadow (a theme may restyle it, keeping it clearly visible);
+     no size change or animation; the element's box is identical focused and unfocused.
   2. **Per component:** Button (primary, secondary, ghost, danger), Segmented option, Chip,
      ListRow (ring plus `accent-soft` fill), dock item, strip chip, StatTile that acts, map
      control, Scrubber thumb, Sheet buttons.
@@ -145,7 +146,7 @@ Conventions for every block: the D2 is right-hand drive, so the dock is drawn on
   7. **Edit mode:** a widget picked up by `ok` shows a doubled ring.
 - **States:** Parked: every component. Moving: only the Drive strip chip, Drive menu rows and
   alert buttons take focus. Focus shows only after a non-pointer intent; a tap clears it.
-- **Safety and driving rules:** no glow on focus in Drive mode or on head units at night;
+- **Safety and driving rules:** focus stays clearly visible in Drive mode (no glow in the default look);
   `ok` presses within 500 ms of a sheet opening are ignored ([shell input §5][si-5]).
 - **Components:** Button, ListRow, Chip, Segmented, StatTile, Scrubber, map control. Tokens
   `focus-ring-width`, `focus-ring-color`, `focus-ring-gap`, `accent-soft`.

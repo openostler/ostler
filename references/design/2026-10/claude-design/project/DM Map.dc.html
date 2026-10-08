@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="drive-maps.js"></script>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">D</span><span style="font-size:22px;font-weight:800;color:#0e1626">Map</span><span style="font-size:14px;color:#3b4556">Map template + passenger-side tiles · cyan = route ahead, violet = trail by speed · buddies plain while Moving</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Moving · 1024×600</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Map HU-7 moving" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="map" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ m7.url }}" hint-placeholder-val="{{ false }}"><img src="{{ m7.url }}" alt="" style="position:absolute;left:0;top:0;width:1024px;height:544px;display:block"></sc-if>
+<div style="position:absolute;left:{{ m7.disc.x }}px;top:{{ m7.disc.y }}px;width:{{ m7.disc.d }}px;height:{{ m7.disc.d }}px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(223,230,242,.26) 0%,rgba(223,230,242,.12) 50%,rgba(223,230,242,0) 71%)"></div>
+<sc-for list="{{ m7.bud }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:{{ b.x }}px;top:{{ b.y }}px;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:20px;background:#dfe6f2;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:26px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ b.rot }}deg)">navigation</span></div></sc-for>
+<div style="position:absolute;left:{{ m7.car.x }}px;top:{{ m7.car.y }}px;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:28px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:34px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ m7.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:12px;top:12px;width:372px;display:flex;flex-direction:column;gap:10px">
+<div style="background:#121a2c;border-radius:24px;padding:14px 18px 16px 22px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:.06em;color:#b0bacb">SPEED</span><div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:112px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums">72</span><span style="font-size:28px;color:#b0bacb">km/h</span></div></div><div style="width:96px;height:96px;border-radius:48px;background:#ffffff;box-shadow:inset 0 0 0 10px #d0263b;display:flex;align-items:center;justify-content:center;color:#0e1626;font-size:40px;font-weight:800;font-variant-numeric:tabular-nums">80</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb">COOLANT</span><div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:56px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums">88</span><span style="font-size:24px;color:#b0bacb">°C</span></div></div>
+<div style="background:#121a2c;border-radius:20px;padding:12px 16px;display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:.04em;color:#b0bacb">RANGE</span><div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:56px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums">410</span><span style="font-size:24px;color:#b0bacb">km</span></div></div>
+</div>
+</div>
+<div style="position:absolute;left:12px;bottom:12px;height:60px;border-radius:30px;background:#121a2c;display:flex;align-items:center;gap:4px;padding:0 16px 0 10px">
+<span class="material-symbols-rounded" style="font-size:28px;color:#5d6879;width:40px;text-align:center">public</span><span class="material-symbols-rounded" style="font-size:28px;color:#5d6879;width:40px;text-align:center">hub</span><span class="material-symbols-rounded" style="font-size:28px;color:#5d6879;width:40px;text-align:center">settings_input_antenna</span><span style="display:flex;align-items:center;gap:6px;color:#22a6e0;font-size:24px;font-weight:700;margin-left:4px"><span class="material-symbols-rounded" style="font-size:28px">cell_tower</span>LoRa</span>
+</div>
+<div title="© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors" style="position:absolute;right:12px;bottom:12px;width:32px;height:32px;border-radius:16px;background:rgba(18,26,44,.9);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-7 · Parked · buddies with names, age rings and ride sheet</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Map HU-7 parked" style="width:1024px;height:600px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu7" mode="map" moving="{{ false }}" ride="4/5" clock="14:32" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,56px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ m7.url }}" hint-placeholder-val="{{ false }}"><img src="{{ m7.url }}" alt="" style="position:absolute;left:0;top:0;width:1024px;height:544px;display:block"></sc-if>
+<div style="position:absolute;left:{{ m7.disc.x }}px;top:{{ m7.disc.y }}px;width:{{ m7.disc.d }}px;height:{{ m7.disc.d }}px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(223,230,242,.26) 0%,rgba(223,230,242,.12) 50%,rgba(223,230,242,0) 71%)"></div>
+<div style="position:absolute;left:{{ m7.disc.x }}px;top:{{ m7.disc.y }}px;transform:translate(-50%,-50%);background:#121a2c;border-radius:12px;padding:6px 12px;display:flex;flex-direction:column;align-items:center;white-space:nowrap"><span style="font-size:18px;font-weight:700">Alex · ±3 km</span><span style="font-size:18px;color:#b0bacb">updated 2 min ago (via LoRa)</span></div>
+<sc-for list="{{ m7.bud }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:{{ b.x }}px;top:{{ b.y }}px;width:0;height:0">
+<div style="position:absolute;left:-30px;top:-30px;width:60px;height:60px;transform:rotate({{ b.rot }}deg)"><div style="position:absolute;left:21px;top:-14px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:14px solid #dfe6f2"></div></div>
+<div style="position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:26px;background:#1a2439;box-shadow:0 0 0 4px rgba(223,230,242,{{ b.age }}),0 0 0 7px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:30px;color:#eef2f9">airport_shuttle</span></div>
+<div style="position:absolute;left:0;top:34px;transform:translateX(-50%);background:#121a2c;border-radius:10px;padding:4px 10px;font-size:18px;white-space:nowrap"><b>{{ b.name }}</b><span style="color:#b0bacb"> · {{ b.ago }}</span></div>
+</div></sc-for>
+<div style="position:absolute;left:{{ m7.car.x }}px;top:{{ m7.car.y }}px;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:26px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:32px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ m7.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:12px;top:12px;bottom:12px;width:384px;background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 4px"><div style="display:flex;flex-direction:column"><span style="font-size:22px;font-weight:700">Peak loop ride</span><span style="font-size:18px;color:#b0bacb">4 of 5 online · you lead from Buxton</span></div></div>
+<sc-for list="{{ ride }}" as="r" hint-placeholder-count="5"><div style="min-height:76px;border-radius:18px;background:#1a2439;display:flex;align-items:center;gap:12px;padding:0 14px;opacity:{{ r.op }}"><div style="width:48px;height:48px;border-radius:24px;background:#243049;box-shadow:0 0 0 3px rgba(223,230,242,{{ r.age }});display:flex;align-items:center;justify-content:center;flex:none"><span class="material-symbols-rounded" style="font-size:28px;color:#eef2f9">airport_shuttle</span></div><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:20px;font-weight:700;white-space:nowrap">{{ r.name }} <span style="font-weight:500;color:#b0bacb">· {{ r.car }}</span></span><span style="font-size:18px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.status }}</span></div><span class="material-symbols-rounded" style="font-size:24px;color:#8e9ab0" title="{{ r.link }}">{{ r.linkIcon }}</span></div></sc-for>
+</div>
+<div style="position:absolute;right:12px;top:12px;height:52px;border-radius:26px;background:#121a2c;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;font-size:18px">
+<span class="material-symbols-rounded" style="font-size:24px;color:#5d6879">public</span><span class="material-symbols-rounded" style="font-size:24px;color:#5d6879">hub</span><span class="material-symbols-rounded" style="font-size:24px;color:#5d6879">settings_input_antenna</span><span style="display:flex;align-items:center;gap:4px;color:#22a6e0;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">cell_tower</span>LoRa</span>
+</div>
+<div title="© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors" style="position:absolute;right:12px;bottom:12px;width:32px;height:32px;border-radius:16px;background:rgba(18,26,44,.9);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">HU-5 · Moving · 800×480</div>
+<div style="padding:14px;background:#000;border-radius:24px;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div data-screen-label="Map HU-5" style="width:800px;height:480px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;border-radius:6px">
+<dc-import name="Drive Strip" size="hu5" mode="map" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,48px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ m5.url }}" hint-placeholder-val="{{ false }}"><img src="{{ m5.url }}" alt="" style="position:absolute;left:0;top:0;width:800px;height:432px;display:block"></sc-if>
+<div style="position:absolute;left:{{ m5.disc.x }}px;top:{{ m5.disc.y }}px;width:{{ m5.disc.d }}px;height:{{ m5.disc.d }}px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(223,230,242,.26) 0%,rgba(223,230,242,.12) 50%,rgba(223,230,242,0) 71%)"></div>
+<sc-for list="{{ m5.bud }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:{{ b.x }}px;top:{{ b.y }}px;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:18px;background:#dfe6f2;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ b.rot }}deg)">navigation</span></div></sc-for>
+<div style="position:absolute;left:{{ m5.car.x }}px;top:{{ m5.car.y }}px;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:26px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:32px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ m5.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:10px;top:10px;width:292px;display:flex;flex-direction:column;gap:8px">
+<div style="background:#121a2c;border-radius:22px;padding:10px 14px 12px 18px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;color:#b0bacb">SPEED</span><div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:84px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums">72</span><span style="font-size:24px;color:#b0bacb">km/h</span></div></div><div style="width:76px;height:76px;border-radius:38px;background:#ffffff;box-shadow:inset 0 0 0 8px #d0263b;display:flex;align-items:center;justify-content:center;color:#0e1626;font-size:32px;font-weight:800">80</div></div>
+<div style="background:#121a2c;border-radius:20px;height:76px;padding:0 16px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">COOLANT</span><span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">88</span><span style="font-size:24px;color:#b0bacb">°C</span></span></div>
+<div style="background:#121a2c;border-radius:20px;height:76px;padding:0 16px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:24px;font-weight:700;color:#b0bacb">RANGE</span><span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">410</span><span style="font-size:24px;color:#b0bacb">km</span></span></div>
+</div>
+<div style="position:absolute;left:10px;bottom:10px;height:52px;border-radius:26px;background:#121a2c;display:flex;align-items:center;gap:6px;padding:0 16px 0 12px;color:#22a6e0;font-size:24px;font-weight:700"><span class="material-symbols-rounded" style="font-size:26px">cell_tower</span>LoRa</div>
+<div title="© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors" style="position:absolute;right:10px;bottom:10px;width:32px;height:32px;border-radius:16px;background:rgba(18,26,44,.9);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Moving · 393×852</div>
+<div data-screen-label="Map phone" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span style="font-variant-numeric:tabular-nums">08:58</span><div style="display:flex;gap:6px;align-items:center"><span class="material-symbols-rounded" style="font-size:18px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div></div>
+<dc-import name="Drive Strip" size="phone" mode="map" faults="{{ faults }}" visibility="{{ visibility }}" hint-size="100%,112px"></dc-import>
+<div style="flex:1;min-height:0;position:relative;background:#0e1422;overflow:hidden">
+<sc-if value="{{ mP.url }}" hint-placeholder-val="{{ false }}"><img src="{{ mP.url }}" alt="" style="position:absolute;left:0;top:0;width:393px;height:686px;display:block"></sc-if>
+<div style="position:absolute;left:{{ mP.disc.x }}px;top:{{ mP.disc.y }}px;width:{{ mP.disc.d }}px;height:{{ mP.disc.d }}px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(223,230,242,.26) 0%,rgba(223,230,242,.12) 50%,rgba(223,230,242,0) 71%)"></div>
+<sc-for list="{{ mP.bud }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:{{ b.x }}px;top:{{ b.y }}px;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:16px;background:#dfe6f2;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ b.rot }}deg)">navigation</span></div></sc-for>
+<div style="position:absolute;left:{{ mP.car.x }}px;top:{{ mP.car.y }}px;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:24px;background:#22a6e0;box-shadow:0 0 0 4px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:30px;color:#0a1020;font-variation-settings:'FILL' 1;transform:rotate({{ mP.car.rot }}deg)">navigation</span></div>
+<div style="position:absolute;left:12px;top:10px;height:48px;border-radius:24px;background:#121a2c;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;color:#22a6e0;font-size:24px;font-weight:700"><span class="material-symbols-rounded" style="font-size:24px">cell_tower</span>LoRa</div>
+<div title="© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors" style="position:absolute;right:12px;top:18px;width:32px;height:32px;border-radius:16px;background:rgba(18,26,44,.9);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:20px;color:#b0bacb">info</span></div>
+<div style="position:absolute;left:12px;right:12px;bottom:44px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px">
+<div style="background:#121a2c;border-radius:24px;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:24px;font-weight:700;color:#b0bacb">SPEED</span><div style="width:52px;height:52px;border-radius:26px;background:#fff;box-shadow:inset 0 0 0 6px #d0263b;display:flex;align-items:center;justify-content:center;color:#0e1626;font-size:24px;font-weight:800">80</div></div><div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:88px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums">72</span><span style="font-size:24px;color:#b0bacb">km/h</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#121a2c;border-radius:20px;padding:10px 14px;display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;color:#b0bacb">COOLANT</span><span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">88</span><span style="font-size:24px;color:#b0bacb">°C</span></span></div>
+<div style="background:#121a2c;border-radius:20px;padding:10px 14px;display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;color:#b0bacb">RANGE</span><span style="display:flex;align-items:baseline;gap:4px"><span style="font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">410</span><span style="font-size:24px;color:#b0bacb">km</span></span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const META={sam:{name:'Sam',ago:'30 s ago',age:1},priya:{name:'Priya',ago:'10 s ago',age:1},tom:{name:'Tom',ago:'1 min ago',age:.55}};
+const EMPTY={url:'',car:{x:-200,y:-200,rot:0},bud:[],disc:{x:-999,y:-999,d:0}};
+class Component extends DCLogic {
+ state={mp:{}};
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerMaps)return setTimeout(go,150);['hu7','hu5','phone'].forEach(k=>window.OstlerMaps.get(k).then(r=>{if(r&&!this.dead)this.setState(s=>({mp:{...s.mp,[k]:r}}))}))};go();}
+ componentWillUnmount(){this.dead=true}
+ mk(k){const r=this.state.mp[k];if(!r)return EMPTY;const P=r.pts;return {url:r.url,car:P.car,bud:['sam','priya','tom'].map(id=>({...P[id],...META[id]})),disc:{x:P.alex.x,y:P.alex.y,d:P.r3*2}}}
+ renderVals(){
+  const ride=[
+   {name:'Sam',car:'Defender 110',status:'1.4 km ahead · 30 s ago',linkIcon:'public',link:'Internet',age:1,op:1},
+   {name:'Priya',car:'Discovery 3',status:'0.6 km behind · 10 s ago',linkIcon:'hub',link:'Wi-Fi mesh',age:1,op:1},
+   {name:'Tom',car:'Series IIA',status:'1.1 km behind · 1 min ago',linkIcon:'settings_input_antenna',link:'HaLow',age:.55,op:1},
+   {name:'Alex',car:'Freelander',status:'±3 km · updated 2 min ago (via LoRa)',linkIcon:'cell_tower',link:'LoRa',age:.25,op:1},
+   {name:'Jo',car:'Range Rover P38',status:'Offline since 08:40',linkIcon:'cloud_off',link:'Offline',age:0,op:.55}];
+  return {m7:this.mk('hu7'),m5:this.mk('hu5'),mP:this.mk('phone'),ride,faults:this.props.faults,visibility:this.props.visibility};
+ }
+}
+</script>
+</body>
+</html>

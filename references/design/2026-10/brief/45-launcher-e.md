@@ -2,7 +2,7 @@
 title: "Designer brief 45-e — widget setup pages (1 of 3): gauges, graph, multi-value tile, warning lights, ride height and G-meter"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   This file covers the analogue, digital, bar and sweep gauges, the graph (sparkline and
   history), the multi-value tile, the warning lights (the fault telltale widget, a safety
   item), the SLABS ride height and the G-meter, all with real Discovery 2 Td5 and SLABS
-  signals, ranges and confidence words.
+  signals, ranges and confidence words. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 45-e — Widget setup pages: gauges and vehicle data
@@ -41,7 +41,7 @@ names the app that ships the widget.
   5. **Sizes:** small, medium, hero.
 - **States:** "Not in this session" (SLABS holds the K-line); "—" when missing; stale grey with
   age. Moving: one tile; digits ≥ 56 px; arc steps, never glides.
-- **Safety and driving rules:** no glow, no accent on the value; peak hold hidden while Moving
+- **Safety and driving rules:** no glow and no accent on the value in the default look; peak hold hidden while Moving
   ([visual §8][vds-8], [Drive modes §4.3][dm-4.3]).
 - **Components:** Gauge, Segmented, stepper (new).
 - **Spec refs:** [Drive modes §4.2][dm-4.2] · [visual §8][vds-8].
@@ -151,8 +151,8 @@ names the app that ships the widget.
   No Label, Icon or Colours rows.
 - **States:** "No faults" with `ok`; "SLABS not in this session; last read 14:02". Moving:
   not in a layout: the strip chip and `telltale_list` carry faults while driving.
-- **Safety and driving rules:** cannot be removed, hidden, renamed, re-iconed or recoloured;
-  may move and resize ([Drive modes §8.1][dm-8.1] R3).
+- **Safety and driving rules:** cannot be removed, hidden or covered; may move, resize and be
+  restyled under the render check ([Drive modes §8.1][dm-8.1] R3).
 - **Components:** Card (tone), ListRow, Chip (status).
 - **Spec refs:** [Drive modes §7.2][dm-7.2] · [Drive modes §8.1][dm-8.1].
 - **Open questions:** none.

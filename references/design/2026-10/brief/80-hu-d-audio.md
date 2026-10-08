@@ -2,7 +2,7 @@
 title: "Designer brief 80-d — Audio app: sources, sound, graphic and parametric EQ, presets, balance and fade"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-phone-comms-addon-design.md]
 summary: >
@@ -12,7 +12,7 @@ summary: >
   31 bands; the parametric EQ has bands with frequency, gain and Q on a curve; EQ presets save,
   load and share curves. Balance and fade use a top-down seat diagram of the right-hand-drive
   Discovery 2. While Moving, only source switch and volume are allowed; every tuning page is
-  Park to edit.
+  Park to edit. Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 80-d — Audio app: sources, sound, EQ, balance
@@ -89,7 +89,7 @@ Discovery 2, so the driver's seat is drawn on the **right**.
   2. **Channel** Segmented: All · Front · Rear · Sub (per-channel EQ where the output allows).
   3. **EqBands** (new component): vertical faders at ISO centres (31 Hz to 16 kHz for 10
      bands), range ±12 dB, labels "31", "63" … "16k", the value above each fader on drag;
-     a thin response line behind them in `text-2`, no glow.
+     a thin response line behind them in `text-2`, no glow (default look).
   4. Row: **Preset** chip (name, "edited" mark), **Save as…**, **Reset to flat**, **Undo**.
   5. Note: "Cuts sound cleaner than boosts".
 - **States:** clipping risk: a `warn` chip "Lower the boosts or the volume limit drops by

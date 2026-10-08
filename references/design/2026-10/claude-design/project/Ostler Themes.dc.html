@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="ostler-themes.js"></script>
+<style>body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#0070b8}a:hover{color:#005a94}</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:72px;color:#0e1626">
+<div style="max-width:1100px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · THEME ENGINE · EXPLORATION</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">Eight design languages, five core screens</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">Every theme is a token file: palette, accent, radius, type, glow, transparency, texture, gauge style and map filter. Status colours, the fault telltale, the Moving limits and minimum sizes stay locked. Each theme gets an automatic Moving-safe variant that drops blur, glow and texture and makes cards opaque. HU-7 Drive frames show that variant, and a Parked frame follows wherever the two differ.</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:1100px">
+<div style="background:#fbfbfc;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:18px">dark_mode</span>BEST ON HEAD UNITS AT NIGHT</span><span style="font-size:14px;line-height:1.5"><b>Deep night</b> (least light), <b>Night</b>, <b>Heritage</b> and <b>Race</b>. Heritage loses its texture and Race its glow when Moving. <b>Expedition</b> works day and night.</span></div>
+<div style="background:#fbfbfc;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:18px">light_mode</span>DAYTIME / SUNLIGHT</span><span style="font-size:14px;line-height:1.5"><b>High contrast</b> is the sunlight and accessibility theme. It is too bright for night cabins, so Auto should hand over to Night after dusk.</span></div>
+<div style="background:#fbfbfc;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568;display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:18px">phone_iphone</span>PARKED / PHONE FIRST</span><span style="font-size:14px;line-height:1.5"><b>Glass</b> only shows its full look parked or on phone and tablet; head units get the opaque variant. <b>Minimal</b> is fine on head units, but its thin type needs the 500-weight Moving lift.</span></div>
+</div>
+</div>
+
+<section id="round4" style="display:flex;flex-direction:column;gap:12px;max-width:1100px">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0070b8;color:#fff;border-radius:4px">R4</span><span style="font-size:22px;font-weight:800;white-space:nowrap">Round 4 · originals rebuilt</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Night</b>: kept as the baseline, now with a floating strip, pill chips and 20 px cards.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Heritage</b>: oxblood leather, walnut grain, brass hairline inlay, DM Serif headings, engraved small-caps labels, needle dials and a folder-tab rail.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Expedition</b>: olive frames, topo-contour background, stencilled sand tags, condensed uppercase, 2–4 px corners, thick bars and a map-first layout.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Glass</b>: aqua bokeh, leaf-cornered cards (24/24/24/6), floating dock and capsule strip.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Minimal</b>: no card shapes, only hairline underlines, Manrope 200 at 40 px, 24 px gaps and bare digits.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Race</b>: carbon weave, a yellow leading edge on every card, asymmetric corners, italic condensed numbers, a chamfered hero and the shift-light bar.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Deep night</b>: true black, dimmed text and accent, near-invisible hairlines, bare digits, and a violet ramp held to its darkest steps.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>High contrast</b>: white, a 3 px black stroke on everything, heavy full-ink labels, thick segmented gauges and a squared hero.</div>
+</div>
+</section>
+<section id="round3" style="display:flex;flex-direction:column;gap:12px;max-width:1100px">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0070b8;color:#fff;border-radius:4px">R3</span><span style="font-size:22px;font-weight:800;white-space:nowrap">Round 3 · design-language packs</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Slab</b> · neo-brutalism: 3 px black outlines, hard 5 px offset shadows, pastel lilac/cyan on cream, dot grid.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Prism</b> · glassmorphism: vivid bokeh behind 12 % frosted panels with bright glass rims.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Paper</b> · flat minimalism: white, black type, no decoration, greyscale ramp.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Soft</b> · neumorphism: every surface extruded from one grey with paired light and dark shadows.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Bakelite</b> · skeuomorphism: moulded brown plastic, chrome-bezel keys, VFD digits, needle dials.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Clay</b> · claymorphism: 32 px puffy pastel shapes with inner highlights and inflated shadows.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Tonal</b> · in the spirit of Material: tonal surfaces and containers derived from one seed colour.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Clarity</b> · in the spirit of the HIG: grouped white cards, crisp type, translucent bars only.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Blueprint</b> · wildcard: the car as a technical drawing, with white linework on a drafting grid.</div>
+</div>
+<div style="font-size:13px;color:#3b4556;line-height:1.5;max-width:1100px">Light packs (Slab, Paper, Soft, Clay, Clarity) automatically use darker status-text tones (#1f7a4b / #8a6110 / #c0283f); filled telltales are unchanged. Soft is the weakest for driving because neumorphic edges fade in sunlight, so treat it as phone and passenger first.</div>
+</section>
+<section id="round2" style="display:flex;flex-direction:column;gap:12px;max-width:1100px">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0070b8;color:#fff;border-radius:4px">R2</span><span style="font-size:22px;font-weight:800;white-space:nowrap">Round 2 · new languages</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Glass</b>, made more transparent: cards drop from 62 % to 30 % opacity with a 22 px blur.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Air</b>: floating frosted cards (10 %, 30 px blur), a light rim and float shadow, and tall thin condensed numerals. Based on your reference.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Ledger</b>: fintech principles (monochrome surfaces, pill-everything, no shadows, one scarce cobalt). It is an original theme, not a brand copy, and avoids proprietary fonts and brand hexes.</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Tide</b>: chart-grade precision and nautical teal. Inspired by the 2026 Apple Design Award winner for Visuals &amp; Graphics (a tide-charts app).</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Lunar</b>: an ink-violet night sky with silver numerals. Inspired by the 2026 Interaction winner (a moon-phase tracker).</div>
+<div style="background:#fbfbfc;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5"><b>Tactile</b>: physical bevelled keys and segmented dials. Inspired by the 2026 Visuals finalists' skeuomorphic, tactile camera UI.</div>
+</div>
+</section>
+<section id="compare" style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">0</span><span style="font-size:22px;font-weight:800;white-space:nowrap">Comparison · Home on phone</span><span style="font-size:14px;color:#3b4556">Same data, same layout, eight token files</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:28px">
+<sc-for list="{{ all }}" as="t" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:800">{{ t.n }}<span style="font-weight:500;color:#4b5568"> · {{ t.id }}</span></span><dc-import name="TH Home" theme="{{ t.id }}" size="phone" hint-size="393px,852px"></dc-import></div></sc-for>
+</div>
+</section>
+
+<sc-for list="{{ shown }}" as="t" hint-placeholder-count="1">
+<section id="{{ t.id }}" style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">{{ t.k }}</span><span style="font-size:22px;font-weight:800;white-space:nowrap">{{ t.n }}</span><span style="font-size:14px;color:#3b4556">themes/{{ t.id }}/</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">Theme sheet</span><dc-import name="TH Sheet" theme="{{ t.id }}" hint-size="760px,720px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">home/hu7</span><dc-import name="TH Home" theme="{{ t.id }}" size="hu7" hint-size="1052px,628px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">drive/hu7-moving</span><dc-import name="TH Drive" theme="{{ t.id }}" size="hu7" hint-size="1052px,628px"></dc-import></div>
+<sc-if value="{{ t.differs }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">drive/hu7 (Parked · full style)</span><dc-import name="TH Drive" theme="{{ t.id }}" size="hu7" moving="{{ false }}" hint-size="1052px,628px"></dc-import></div></sc-if>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">drive/hu5-moving</span><dc-import name="TH Drive" theme="{{ t.id }}" size="hu5" hint-size="828px,508px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">trip/hu7</span><dc-import name="TH Trip" theme="{{ t.id }}" size="hu7" hint-size="1052px,628px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">diagnose/hu7</span><dc-import name="TH Diagnose" theme="{{ t.id }}" size="hu7" hint-size="1052px,628px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">theme-picker/hu7</span><dc-import name="TH Picker" theme="{{ t.id }}" size="hu7" hint-size="1052px,628px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">drive/phone</span><dc-import name="TH Drive" theme="{{ t.id }}" size="phone" hint-size="393px,852px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">trip/phone</span><dc-import name="TH Trip" theme="{{ t.id }}" size="phone" hint-size="393px,852px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">diagnose/phone</span><dc-import name="TH Diagnose" theme="{{ t.id }}" size="phone" hint-size="393px,852px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#3b4556">theme-picker/phone</span><dc-import name="TH Picker" theme="{{ t.id }}" size="phone" hint-size="393px,852px"></dc-import></div>
+</div>
+</section>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;focus&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Originals&quot;,&quot;Round 3&quot;,&quot;New + Glass&quot;,&quot;All&quot;,&quot;Night&quot;,&quot;Heritage&quot;,&quot;Expedition&quot;,&quot;Glass&quot;,&quot;Minimal&quot;,&quot;Race&quot;,&quot;Deep night&quot;,&quot;High contrast&quot;,&quot;Air&quot;,&quot;Ledger&quot;,&quot;Tide&quot;,&quot;Lunar&quot;,&quot;Tactile&quot;,&quot;Slab&quot;,&quot;Prism&quot;,&quot;Paper&quot;,&quot;Soft&quot;,&quot;Bakelite&quot;,&quot;Clay&quot;,&quot;Tonal&quot;,&quot;Clarity&quot;,&quot;Blueprint&quot;],&quot;default&quot;:&quot;Originals&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;}}">
+const TL=[['night','Night'],['heritage','Heritage'],['expedition','Expedition'],['glass','Glass'],['minimal','Minimal'],['race','Race'],['deep','Deep night'],['contrast','High contrast'],['air','Air'],['ledger','Ledger'],['tide','Tide'],['lunar','Lunar'],['tactile','Tactile'],['slab','Slab'],['prism','Prism'],['paper','Paper'],['soft','Soft'],['bakelite','Bakelite'],['clay','Clay'],['tonal','Tonal'],['clarity','Clarity'],['blueprint','Blueprint']];
+const DIFF={heritage:1,glass:1,minimal:1,race:1,air:1,lunar:1,prism:1,bakelite:1,clay:1,clarity:1};const R3={slab:1,prism:1,paper:1,soft:1,bakelite:1,clay:1,tonal:1,clarity:1,blueprint:1};const NEWT={glass:1,air:1,ledger:1,tide:1,lunar:1,tactile:1};
+class Component extends DCLogic {
+ renderVals(){
+  const f=this.props.focus||'Originals';const OR={night:1,heritage:1,expedition:1,glass:1,minimal:1,race:1,deep:1,contrast:1};
+  const all=TL.map(([id,n],i)=>({id,n,k:String(i+1),differs:!!DIFF[id]}));
+  return {all,shown:f==='All'?all:f==='Originals'?all.filter(t=>OR[t.id]):f==='Round 3'?all.filter(t=>R3[t.id]):f==='New + Glass'?all.filter(t=>NEWT[t.id]):all.filter(t=>t.n===f)};
+ }
+}
+</script>
+</body>
+</html>

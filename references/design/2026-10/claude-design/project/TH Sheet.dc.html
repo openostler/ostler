@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&amp;family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@500;600;700;800&amp;family=Bitter:wght@400;500;600;700;800&amp;family=Figtree:wght@400;500;600;700;800&amp;family=Manrope:wght@200;300;400;500;600;700&amp;family=DM+Serif+Display&amp;family=Instrument+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Outfit:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Barlow+Condensed:ital,wght@0,300;1,600;1,700;1,800&amp;family=Archivo:wght@500;700;800;900&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Share+Tech+Mono&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Lexend:wght@400;500;600;700&amp;family=Albert+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="ostler-themes.js"></script>
+</helmet>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="{{ label }}" style="width:760px;background:#fbfbfc;color:#0e1626;border-radius:16px;padding:28px;box-sizing:border-box;font-family:Figtree,system-ui,sans-serif;display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 40px rgba(10,16,32,.15)">
+<div style="display:flex;gap:18px;align-items:flex-start">
+<div style="width:120px;height:120px;border-radius:{{ cardR }}px;background-color:{{ t.bg }};box-shadow:{{ swRing }};display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:{{ c.fn }};font-weight:{{ c.wN }};font-size:52px;color:{{ t.spd }}">72</span></div>
+<div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+<span style="font:600 12px ui-monospace,Menlo,monospace;color:#4b5568">themes/{{ t.id }}</span>
+<span style="font-size:32px;font-weight:800;letter-spacing:-.01em;font-family:{{ c.fh }}">{{ t.name }}</span>
+<span style="font-size:15px;line-height:1.45;color:#3b4556;text-wrap:pretty">{{ t.who }}</span>
+<span style="align-self:flex-start;font-size:13px;font-weight:700;padding:4px 10px;border-radius:8px;background:{{ huBg }};color:{{ huC }};display:flex;align-items:center;gap:6px"><span class="material-symbols-rounded" style="font-size:16px">{{ huIcon }}</span>{{ t.huNote }}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568">PALETTE</span>
+<div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px"><sc-for list="{{ pal }}" as="s" hint-placeholder-count="8"><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="height:52px;border-radius:8px;background:{{ s.v }};box-shadow:inset 0 0 0 1px rgba(14,22,38,.12)"></div><span style="font-size:12px;font-weight:700">{{ s.n }}</span><span style="font:500 11px ui-monospace,Menlo,monospace;color:#4b5568;word-break:break-all">{{ s.h }}</span></div></sc-for></div>
+<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;color:#4b5568">Speed / data ramp</span><div style="display:flex;border-radius:6px;overflow:hidden"><sc-for list="{{ ramp }}" as="r" hint-placeholder-count="5"><span style="width:28px;height:20px;background:{{ r }}"></span></sc-for></div></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;color:#4b5568">Status · locked</span><span style="height:24px;padding:0 10px;border-radius:12px;background:#2f9e63;color:#06140c;font-size:12px;font-weight:800;display:flex;align-items:center">OK #2f9e63</span><span style="height:24px;padding:0 10px;border-radius:12px;background:#bf8a1a;color:#1a1204;font-size:12px;font-weight:800;display:flex;align-items:center">LOW #bf8a1a</span><span style="height:24px;padding:0 10px;border-radius:12px;background:#ef6a7d;color:#1a0a0e;font-size:12px;font-weight:800;display:flex;align-items:center">FAULT #ef6a7d</span></div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568">SETTINGS</span>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="8"><div style="display:flex;justify-content:space-between;gap:10px;min-height:26px;align-items:baseline;font-size:13px"><span style="color:#4b5568">{{ r.l }}</span><span style="font-weight:700;text-align:right">{{ r.v }}</span></div></sc-for>
+<div style="margin-top:6px;padding:12px;border-radius:10px;background:#eef1f5;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568">TYPE</span><span style="font-family:{{ c.fh }};font-size:22px;font-weight:700">Discovery 2 Td5</span><span style="font-family:{{ c.fn }};font-weight:{{ c.wN }};font-size:28px;font-variant-numeric:tabular-nums">0123456789 · 14.1 V</span><span style="font-size:12px;color:#4b5568">{{ t.lic }}</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568">CONTRAST CHECKED · WCAG</span>
+<sc-for list="{{ cr }}" as="r" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:10px;min-height:30px;font-size:13px"><span class="material-symbols-rounded" style="font-size:18px;color:{{ r.c }};font-variation-settings:'FILL' 1">{{ r.icon }}</span><span style="flex:1;color:#3b4556">{{ r.n }}</span><span style="font-weight:800;font-variant-numeric:tabular-nums">{{ r.v }}</span><span style="font-size:12px;font-weight:800;color:{{ r.c }};width:38px;text-align:right">{{ r.w }}</span></div></sc-for>
+<span style="font-size:12px;color:#4b5568;line-height:1.45;margin-top:4px">Minimum 4.5:1 for text and 3:1 for the accent as a non-text colour. Glass cards are measured composited over the darkest map tile.</span>
+<div style="margin-top:6px;padding:12px;border-radius:10px;background:#eef1f5;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#4b5568">MOVING-SAFE VARIANT</span><span style="font-size:13px;line-height:1.45;color:#0e1626">{{ safe }}</span></div>
+</div>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerThemes||!window.OstlerThemes.contrast)return setTimeout(go,100);this.forceUpdate()};go()}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const T=window.OstlerThemes;if(!T||!T.contrast)return {ready:false};
+  const id=this.props.theme||'night',t=T.byId[id],c=T.resolve(id);
+  const sw=(n,v)=>({n,v,h:v.startsWith('rgba')?v.replace(/\s/g,''):v});
+  const pal=[sw('Background',t.bg),sw('Surface 1',t.s1),sw('Surface 2',t.s2),sw('Surface 3',t.s3),sw('Text',t.tx),sw('Text 2',t.t2),sw('Accent',t.acc),sw('Speed',t.spd)];
+  const rows=[['Corners',c.rCard+' cards · '+(c.rc>=999?'pill':c.rc+' px')+' chips'],['Home layout',c.layoutName],['Rail',c.railName],['Strip',c.stripName],['Labels',c.lblName],['Speed hero',c.heroName],['Glow',t.glow?'Soft · 1 element · parked only':'Off'],['Transparency',t.alpha],['Borders',t.bdName],['Texture',t.texName],['Gauge style',{arc:'Arc range bar',needle:'Analogue needle',bar:t.thick?'Thick bar':'Segmented bar',thin:'Thin line',race:'Coloured sweep + shift light'}[t.gauge]],['RPM sweep',{arc:'Neutral arc',needle:'Needle dial',seg:'Segmented arc',thin:'Hairline arc',race:'Ramp sweep'}[t.sweep]],['Map style',t.map]].map(([l,v])=>({l,v}));
+  const cr=T.contrast(id).map(r=>({...r,icon:r.ok?'check_circle':'error',c:r.ok?'#1f7a4b':'#c0283f',w:r.ok?'PASS':'FAIL'}));
+  const S={night:'Already safe — identical when Moving.',heritage:'Walnut grain and brass glow removed; brass hairlines and needle dials stay. Labels grow to 24 px.',expedition:'Already safe — no texture or glow; topo lines stay on the map only.',glass:'Opaque cards (#16263f), no blur, glow removed. Map stays full-bleed behind.',minimal:'Numerals lift from 300 to 500 weight so 56 px digits stay legible at a glance.',race:'Sweep glow removed; shift-light bar is static (lit to current RPM, no flashing).',deep:'Already safe — accent is dimmed; nothing glows.',air:'Cards become opaque (#232a39), blur and sheen removed, float shadow kept; numerals lift from 300 to 500.',ledger:'Already safe — flat and opaque.',tide:'Already safe — no texture or glow.',lunar:'Moonlit glow removed; thin numerals lift to 500 weight.',tactile:'Already safe — bevels are static shading, not glow.',slab:'Already safe — outlines and hard shadows are static.',prism:'Panels turn opaque violet, bokeh dims under them, blur, sheen and glow removed.',paper:'Already safe.',soft:'Extrusion shadows deepen 30 % so edges stay readable at a glance.',bakelite:'VFD glow and moulded sheen removed; chrome bezels stay.',clay:'Puff gradient removed; inflated shadows stay.',tonal:'Already safe — tonal, flat.',clarity:'Bars become opaque; no blur.',blueprint:'Already safe — linework only.',contrast:'Already safe. Status text uses darker tones (#1f7a4b, #8a6110, #c0283f) on white; filled telltales are unchanged.'}[id];
+  const day=t.hu==='day';
+  return {ready:true,t,c,label:t.name+' · theme sheet',pal,ramp:t.ramp,rows,cr,safe:S,cardR:Math.min(24,t.r),swRing:t.border!=='none'?t.border:'inset 0 0 0 1px rgba(14,22,38,.12)',huIcon:day?'light_mode':t.hu==='safe'?'phone_iphone':'dark_mode',huBg:day?'#fff4d6':t.hu==='safe'?'#e8ecf2':'#e3e9f7',huC:day?'#6b4a00':'#0e1626'};
+ }
+}
+</script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 # specs/
 
-Design docs (`YYYY-MM-DD-<topic>-design.md`) and living specs. A design must be approved
-here before implementation starts.
+Design docs (`YYYY-MM-DD-<topic>-design.md`) and living specs. For core and safety paths a
+design is approved here before implementation starts; experiments may land behind an
+off-by-default flag, and community authors are not bound by this (CONTRIBUTING.md, ADR-0047).
 
 ## Files
 

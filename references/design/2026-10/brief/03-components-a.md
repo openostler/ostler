@@ -2,7 +2,7 @@
 title: "Designer brief — components (a): the OS frame and launcher components"
 area: references
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-06-app-model-design.md]
 summary: >
@@ -12,17 +12,23 @@ summary: >
   the home-page grid, page indicator dots, the widget frame with resize handles, the widget
   picker gallery card, the wallpaper layer, the edit bar, the item sheet and the frames for
   service mode and Passenger view. Each has purpose, variants, sizes per class, states and
-  tokens, and what exists in ui/src today.
+  tokens, and what exists in ui/src today. Amended 2026-10-07 (openness round, ADR-0047): style values are the default look under visual §13 and the theme engine; safety rules unchanged.
 ---
 
 # Components (a): the OS frame and launcher
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the
+> loosenings"; [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** OS components may be restyled by themes, apps style their own pages freely, and dock size, anchors and name lengths are defaults. Style values here are the default look;
+> themes, add-ons and users may change them within [visual §13](../../../../specs/2026-10-07-visual-design-system-design.md#13-design-language-themes-amendment-2026-10-07) and the
+> [theme engine](../../../../specs/2026-10-07-theme-engine-design.md#11-decisions-for-the-owner). Safety rules are unchanged.
 
 ## How to read the inventory
 
 - **Names** are the visual spec's kit names ([visual §8][vds-8]) where they exist; new names
   are marked **new**. Use these names in every screen block's Components line.
-- **Owner** for every component here is **os**: apps use them through the OS kit and cannot
-  restyle them. Values come from tokens only ([visual §3–§5][vds-3]).
+- **Owner** for every component here is **os**: the OS draws them and the user's theme
+  restyles them; an app cannot restyle OS chrome, but styles its own pages freely. Default
+  values come from tokens ([visual §3–§5][vds-3]); themes may use any values.
 - **Size steps.** Four columns are enough for every component:
 
 | Step | Classes | Target | Body text | Label | Icon | Card padding |
@@ -53,15 +59,15 @@ summary: >
 |---|---|---|---|---|---|---|
 | **Home page grid** (new) | the cell grid a home page holds | Home page 1, dashboard page; Parked grid and Moving section | cells: P 4×6, H7 HU-5 6×4 and HU-7 6×4, H9 8×4, HU-wide 12×4 ([Drive modes §4.4][dm-4.4]) | viewing; editing (cell outlines in `line`, empty cells show **+**); drop target highlighted `accent-soft` | `--gap`, `bg` over wallpaper | `drive/DriveFace.tsx`, `destinations/Home.tsx` |
 | **Page indicator dots** (new) | where you are in the carousel | dots; edit mode adds a "+" dot for a new page | dot 8 (P) / 12 (H), gap 8 / 12, hit 48 / 76 for the row | current dot `text-1`, others `text-3`; hidden in Drive mode (the page chip says it) | `text-1`, `text-3` | — |
-| **Dock** (was the rail and bottom bar) | 5 to 7 slots one tap away (phone, HU-5, HU-7 5; HU-9/10 6; HU-wide, tablet, desktop 7; item 17) | bottom (phone, tablet), driver side (head units, desktop optional); with labels on desktop | P 72 + safe area; T 88; H7 80 / 96; H9 112 | active slot `accent-soft` pill; edit mode drag handles; hidden in Drive mode | `surface-2`, `accent`, `accent-soft` | `shell/Nav.tsx` |
-| **Dock item** | one app, shortcut or the App drawer button | app, shortcut, Home and App drawer (anchors, never removed; the Drive button is retired, item 16) | icon P 24 / H 40, word ≤ 12 characters below | default, active, focused, badge dot | `type-label`, `text-2`, `accent` | `Nav.tsx` items |
+| **Dock** (was the rail and bottom bar) | by default 5 to 7 slots one tap away (phone, HU-5, HU-7 5; HU-9/10 6; HU-wide, tablet, desktop 7; item 17); the user may add slots, overflow scrolls | bottom (phone, tablet), driver side (head units, desktop optional); with labels on desktop | P 72 + safe area; T 88; H7 80 / 96; H9 112 | active slot `accent-soft` pill; edit mode drag handles; hidden in Drive mode | `surface-2`, `accent`, `accent-soft` | `shell/Nav.tsx` |
+| **Dock item** | one app, shortcut or the App drawer button | app, shortcut, widget, Home and App drawer (default anchors, hideable while the recovery path stays; the Drive button is retired, item 16) | icon P 24 / H 40, word below (long words ellipsised) | default, active, focused, badge dot | `type-label`, `text-2`, `accent` | `Nav.tsx` items |
 | **App drawer grid** (new; was More) | every installed app | grid, search on top, Settings and Store first, Hidden apps last | columns: P 4, T 6, H7 5, H9 7; rows scroll Parked | locked apps show a lock badge; search empty "No apps match" | `surface-1`, `text-1` | `destinations/More.tsx` |
-| **App icon** (new) | one app in the drawer, dock or a page | plain, with badge dot (update or unread count), disabled | P 56 tile with 24 icon; H 96 tile with 40 icon; name below ≤ 12 characters | long press opens App info, Add to home, Add to dock, Hide | `surface-3` tile, `radius-md`, icon in `text-1` | — |
-| **Folder** (new) | a group of shortcuts on a home page or in the dock | closed (2×2 mini icons), open (sheet with a grid and an editable name) | one cell; open sheet as Sheet | empty folder disappears; name ≤ 30 characters | `surface-3`, `radius-md` | — |
+| **App icon** (new) | one app in the drawer, dock or a page | plain, with badge dot (update or unread count), disabled | P 56 tile with 24 icon; H 96 tile with 40 icon; name below (ellipsised when long) | long press opens App info, Add to home, Add to dock, Hide | `surface-3` tile, `radius-md`, icon in `text-1` | — |
+| **Folder** (new) | a group of shortcuts on a home page or in the dock | closed (2×2 mini icons), open (sheet with a grid and an editable name) | one cell; open sheet as Sheet | empty folder disappears; long names ellipsised | `surface-3`, `radius-md` | — |
 | **Shortcut** (new) | a home-page link to one app page or action route | app page, saved filter, Drive menu row | one cell | shows the target app's icon with a small corner mark | as App icon | — |
 | **Widget frame** (new) | the box every widget sits in, with edit controls | sizes small, medium, wide, hero; viewing and editing | frame = the widget's cells; resize handles 24 drawn / 48 hit (P), 40 / 76 (H) on each edge in edit mode; remove (×) top corner | viewing (no chrome), editing (outline `line-strong`, handles), picked up (ring doubles), safety (no ×, a lock note "Can move, can't be removed"), "Widget stopped" | `surface-1`, `radius-md`, `focus-ring-*` | `drive/widgets.tsx` |
 | **Widget picker gallery card** (new) | one widget to add, in the picker | per app group; sizes shown as chips | P full width × 120; H 2 columns × 200 | default, focused, "Needs the Maps app · Get" (not installed), disabled for Moving ("Parked only") | `surface-1`, `type-label`, `text-2` | `shell-widget-picker` design only |
-| **Wallpaper layer** (new) | the background behind home pages | solid `bg` (default), theme image, Night top glow (phone only) | full bleed under the grid | dimmed to `bg` in Night dim and Drive mode; never animated; no image on head units in Drive mode | `bg`, `bg-glow` (off on HU) | — |
+| **Wallpaper layer** (new) | the background behind home pages | solid `bg` (default), theme image, Night top glow (phone only) | full bleed under the grid | default: dimmed in Night dim; never animated while Moving; the theme decides how it shows in Drive mode | `bg`, `bg-glow` (default off on HU) | — |
 | **Edit bar** | the top bar in edit mode | tabs Dock · Strip · Home · Dashboards · Apps; Done, Cancel, Undo, Redo, Preview, Reset; "Editing for: this screen ▾" (P, T) | height as the strip | Undo disabled at the start of the stack | `surface-2`, Button | — |
 | **Item sheet** | options for one selected item | Move, Size, Icon, Name, Hide or Remove, Replace with…, Use defaults; safety variant | Sheet | absent rows, not greyed | Sheet | — |
 

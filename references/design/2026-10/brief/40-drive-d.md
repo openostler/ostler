@@ -2,7 +2,7 @@
 title: "Designer brief 40-d — edit-mode safety for the widget picker, icon picker, name editor, dock editor and strip editor, and the Reset confirm"
 area: references
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-07
 depends_on: [specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-ui-architecture-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-visual-design-system-design.md, references/research/ha_integrations_dashboards.md]
 summary: >
@@ -13,7 +13,7 @@ summary: >
   anchor, text-entry limits and the per-class chip budget. It covers the widget picker and a
   approved "By signal" tab, the icon picker, the name editor, the dock editor (was the rail
   editor), the strip editor in full (the strip stays in this area) and the Reset to default
-  and Discard changes confirms with the 7-day "Undo reset".
+  and Discard changes confirms with the 7-day "Undo reset". Amended 2026-10-07 (openness round, ADR-0047): style notes are the default look and stale rules (fixed safety looks, unremovable anchors, no app chips, no emoji icons, calls never recorded) follow the amended specs; safety rules unchanged.
 ---
 
 # 40-d — Edit-mode safety, strip editor and Reset
@@ -61,21 +61,24 @@ displays may edit at any time.
 - **Open questions:** **Decided (item 47):** the "By signal" tab is approved, beside By app.
 
 ### shell-icon-picker — Icon picker (OS rules)  [New]
-- **Purpose:** re-icon an ordinary item or anchor from the one icon set.
+- **Purpose:** re-icon an item from Material Symbols, an icon pack, emoji or the user's SVG.
 - **Owner:** os
 - **Opens from → goes to:** **Icon** in the item sheet; the icon-pack choice of the theme
   wizard is in 45-launcher.
 - **Layout classes:** phone · tablet · desktop · hu5 · hu7 · hu9 · huwide. **Draw first:**
   hu7 Night (76 px grid), phone Day (48 px grid).
 - **Content:** search; **Current** and **Default** pinned; theme groups of the curated
-  Material Symbols catalogue (about 300); **Use default**.
+  Material Symbols catalogue (about 300), then **All symbols**, **Icon packs**, **Emoji** and
+  **Upload SVG**; **Use default**.
 - **States:** Parked: full. Moving: never on a head unit.
-- **Safety and driving rules:** no emoji, uploads, URLs or colours; safety items never open
-  it ([Drive modes §7.6][dm-7.6]).
+- **Safety and driving rules:** an uploaded SVG is sanitised (no scripts or URLs); a safety
+  item's icon may be changed only under the Drive-mode render check ([Drive modes §7.6][dm-7.6];
+  openness round).
 - **Components:** Sheet, icon grid (new component), Button.
 - **Spec refs:** [Drive modes §7.6][dm-7.6] · [visual §6][vds-6].
 - **Open questions:** **Decided (item 49):** an icon pack is a glyph set mapped to Material
-  Symbols names; safety icons never change ([launcher §11][lw-11]).
+  Symbols names; safety icons never change ([launcher §11][lw-11]). *Amended (openness
+  round): safety icons may be restyled under the render check.*
 
 ### shell-name-edit — Name editor (OS rules)  [New]
 - **Purpose:** rename an item, safely for every screen size it shows on.
@@ -130,10 +133,11 @@ displays may edit at any time.
   5. Tags on chips: "Safety" (telltale, Security), "Always in Drive" (Back, Drive page chip).
   6. Device slot choice (climate or camera) links to Settings.
 - **D-pad:** `ok` picks a chip, `left`/`right` move it, `ok` drops.
-- **States:** budget full: "The strip is full: hide one first". Parked: full. Moving: "Park
+- **States:** budget full: extra chips fold into the overflow chip. Parked: full. Moving: "Park
   to edit". Error: "The fault telltale can move but can't be removed".
-- **Safety and driving rules:** the strip never scrolls; safety and anchor chips count first
-  and cannot be hidden; apps add no chips ([Drive modes §7.5][dm-7.5]).
+- **Safety and driving rules:** the strip stays one row with an overflow chip; safety chips
+  count first and cannot be hidden; anchors may be hidden while the recovery path stays; apps
+  may add status-only chips ([Drive modes §7.5][dm-7.5]; openness round).
 - **Components:** Chip (with handle), Segmented, ListRow (Hidden shelf).
 - **Spec refs:** [Drive modes §7.5][dm-7.5] · [Drive modes §4.5][dm-4.5] ·
   [shell input §14][si-14].

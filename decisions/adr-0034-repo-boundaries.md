@@ -2,14 +2,16 @@
 title: "ADR-0034 — Repo boundaries: one platform repo, first-class firmware, packs as data, later hardware and contract repos"
 area: decisions
 status: locked
-version: 1.8
+version: 1.9
 updated: 2026-10-07
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, docs/feature_map_dmd.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-navigation-addon-design.md, decisions/adr-0012-licence-agplv3-dual-and-cc-by-sa-data.md, decisions/adr-0013-repo-split-and-vehicle-pack-contract.md, decisions/adr-0015-repo-split-executed.md, decisions/adr-0031-generic-obd2-pack-in-platform.md, decisions/adr-0027-ip-everywhere-ecosystem-architecture.md, specs/2026-10-06-app-model-design.md, SCOPE.md]
 summary: >
-  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build. Amended 2026-10-07 (ADR-0042, approved by the owner, "approve all"): the add-on repos `ostler-app-social`, `ostler-app-vehicles` and `ostler-app-maintenance`, and later `ostler-app-lubelogger` (none created yet); Trips replaces Logs among the core apps, and Decode lab is a developer add-on whose code stays in `ostler`. Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): five more repos, none created yet: `ostler-hub` (the Ostler Community service: server, web, forum, vehicle-development workspace and wiki; private and closed, run only by Ostler, separate from the closed `ostler-cloud`), `ostler-app-hub` (its open AGPL shell add-on, holding the public API contract), `ostler-app-navigation` (at N0), `ostler-app-phone` (at PH0) and later `ostler-app-alerts`; `ostler-hub` is created now, empty, once the owner is asked; adapter support stays in `ostler`. Amended 2026-10-07 (OS round): the repo list is amended by ADR-0046 §7 (one repo per app, ostler-integration-<x>, ostler-app-map, packs and the catalogue repo).
+  Amends ADR-0013 and ADR-0015 (the precedent is ADR-0031). One platform repo `ostler` keeps the server, the Python lab, high-level features, the whole UI, the contracts and generic_obd2; the UI is not split out. `ostler-firmware` is first-class now: the portable C decoder, the link layer, every node variant and the per-pack C keygen plugins; the D2 pack's `esp32/kline_node` moves there when the repo is created. Each pack lives in `ostler-pack-<x>` and holds JSON data for the C decoder, optional lab-only Python and optional C keygen plugin source. `ostler-cloud` stays private; `ostler-hardware` (CERN-OHL-S) starts at PCB time; the module contract and conformance kit get their own repo at contract v1. A repo is split off only when toolchain, licence, release cadence or contributors differ. Licences follow ADR-0012. Amended 2026-10-06: optional UI apps (Cameras, Social, add-on module apps, community apps) may live in their own `ostler-app-<x>` repos now, on release cadence and contributors; the shell and core apps stay in `ostler`. Amended again 2026-10-06 (ADR-0038): a marked GPL-3 repo, `ostler-bridge-meshtastic` (GPL-3.0-or-later), holds the Meshtastic VSS bridge, outside the commercial build. Amended 2026-10-07 (ADR-0042, approved by the owner, "approve all"): the add-on repos `ostler-app-social`, `ostler-app-vehicles` and `ostler-app-maintenance`, and later `ostler-app-lubelogger` (none created yet); Trips replaces Logs among the core apps, and Decode lab is a developer add-on whose code stays in `ostler`. Amended 2026-10-07 (DMD round), approved by the owner on 2026-10-07 ("approve all", DMD round): five more repos, none created yet: `ostler-hub` (the Ostler Community service: server, web, forum, vehicle-development workspace and wiki; private and closed, run only by Ostler, separate from the closed `ostler-cloud`), `ostler-app-hub` (its open AGPL shell add-on, holding the public API contract), `ostler-app-navigation` (at N0), `ostler-app-phone` (at PH0) and later `ostler-app-alerts`; `ostler-hub` is created now, empty, once the owner is asked; adapter support stays in `ostler`. Amended 2026-10-07 (OS round): the repo list is amended by ADR-0046 §7 (one repo per app, ostler-integration-<x>, ostler-app-map, packs and the catalogue repo). Amended 2026-10-07 (openness round, ADR-0047): the repo rules bind the openostler organisation only, community authors create repos freely, and the closed ostler-hub's API is a published contract others may implement.
 ---
 
 # ADR-0034 — Repo boundaries
+
+> **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("apply the loosenings"; [ADR-0047](adr-0047-openness-round.md)):** the repo rules bind the `openostler` organisation only; community authors create their own repos freely. `ostler-hub` stays private and closed, but its API is a published contract others may implement. See [Amendment (2026-10-07, openness round)](#amendment-2026-10-07-openness-round).
 
 > **Amended 2026-10-06:** optional UI apps may live in their own `ostler-app-<x>` repos;
 > the shell and core apps stay in `ostler`; the Meshtastic bridge lives in a marked GPL-3
@@ -238,6 +240,23 @@ recommendation below is the decision; each alternative was not chosen.
    under the same cloud boundary (owner's direction). Alternative: put the hub inside the closed
    `ostler-cloud` repo (one closed codebase, one deployment, mixed data-protection footprint).
 
+## Amendment (2026-10-07, openness round)
+
+Approved by the owner on 2026-10-07 ("this should be an open system", then "apply the
+loosenings"); recorded in [ADR-0047](adr-0047-openness-round.md). The decisions above stand
+except:
+
+- **Who the rules bind.** "A repo only when toolchain, licence, cadence or contributors
+  differ" and "created only when its work starts, with the owner asked first" apply to repos
+  under the `openostler` organisation. Community and third-party authors create app, pack,
+  theme and widget repos wherever and whenever they like; the Store and the hub list them by
+  their manifest, not their repo name.
+- **`ostler-hub`** stays private, closed and run by Ostler. "Not self-hostable" now means its
+  code is not offered for self-hosting: the hub API contract in `ostler-app-hub` is a
+  published, stable API that a club may implement under another name, and the add-on's hub
+  URL is user-settable ([community hub spec](../specs/2026-10-07-community-hub-design.md)
+  v0.4).
+
 ## Changelog
 
 - 2026-10-06: v1.0–v1.2, accepted and amended (optional app repos; the Meshtastic bridge repo).
@@ -264,3 +283,6 @@ recommendation below is the decision; each alternative was not chosen.
   support stays in `ostler` (ADR-0044).
 - 2026-10-07: v1.8, amended (OS round, approved by the owner on 2026-10-07, "approve all"):
   the repo list follows ADR-0046 §7.
+- 2026-10-07: v1.9, amended (openness round, approved by the owner on 2026-10-07, "apply the
+  loosenings", ADR-0047): repo rules bind the `openostler` organisation only; the hub API is a
+  published contract that others may implement.

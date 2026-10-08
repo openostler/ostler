@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="drive-maps.js"></script>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:20px;font-family:Figtree,system-ui,sans-serif">
+<div style="display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap"><span style="font:600 11px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0e1626;color:#fff;border-radius:4px">6</span><span style="font-size:22px;font-weight:800;color:#0e1626;flex:none;white-space:nowrap">Trip sharing</span><span style="font-size:14px;color:#3b4556">Pick who it's for first, then a level · levels that audience can't get are greyed with the reason · try changing the audience</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Share sheet (interactive)</div>
+<div data-screen-label="Share sheet" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#060a14;color:#eef2f9;display:flex;flex-direction:column;position:relative;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600;opacity:.5"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:96px;background:#121a2c;border-radius:32px 32px 0 0;display:flex;flex-direction:column">
+<div style="padding:8px 20px 4px;display:flex;flex-direction:column;gap:6px;flex:none"><div style="width:40px;height:5px;border-radius:3px;background:#3b4a6a;margin:0 auto"></div><span style="font-size:22px;font-weight:700">Share trip</span><span style="font-size:13px;color:#b0bacb">Buxton → Castleton · Today · 37.2 km</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:0 4px">1 · WHO IS IT FOR</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ auds }}" as="a" hint-placeholder-count="5"><div onClick="{{ a.pick }}" style="cursor:pointer;height:44px;padding:0 14px 0 10px;border-radius:22px;background:{{ a.bg }};color:{{ a.c }};display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">{{ a.icon }}</span>{{ a.l }}</div></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">2 · HOW MUCH</span>
+<sc-for list="{{ ladder }}" as="l" hint-placeholder-count="5"><div onClick="{{ l.pick }}" style="cursor:pointer;min-height:64px;border-radius:18px;background:{{ l.bg }};box-shadow:{{ l.ring }};display:flex;align-items:center;gap:12px;padding:10px 14px;opacity:{{ l.op }}"><span style="width:28px;height:28px;border-radius:14px;background:#243049;color:#b0bacb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none">{{ l.n }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ l.t }}</span><span style="font-size:13px;color:{{ l.dc }}">{{ l.d }}</span></div><span class="material-symbols-rounded" style="font-size:22px;color:{{ l.ic }}">{{ l.icon }}</span></div></sc-for>
+</div>
+<div style="padding:10px 16px 30px;display:grid;grid-template-columns:1fr 1.4fr;gap:8px;flex:none;background:#121a2c"><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">visibility</span>Preview</div><div style="height:52px;border-radius:26px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:800">{{ cta }}</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Preview: exactly what the recipient sees</div>
+<div data-screen-label="Share preview" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px;min-height:56px"><div style="width:48px;height:48px;border-radius:24px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">arrow_back</span></div><div style="display:flex;flex-direction:column"><span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0">PREVIEW · AS PRIYA SEES IT</span><span style="font-size:18px;font-weight:700">Route · Peak District</span></div></div>
+<div style="height:280px;border-radius:24px;overflow:hidden;position:relative;background:#0e1422;flex:none"><sc-if value="{{ sh.url }}" hint-placeholder-val="{{ false }}"><img src="{{ sh.url }}" alt="" style="position:absolute;left:0;top:0;width:361px;height:280px;display:block"></sc-if><div style="position:absolute;left:10px;bottom:10px;display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;background:rgba(18,26,44,.92);padding:5px 10px;border-radius:10px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:15px">blur_on</span>Start and end hidden</span></div><div title="© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors" style="position:absolute;right:10px;top:10px;width:28px;height:28px;border-radius:14px;background:rgba(18,26,44,.9);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:18px;color:#b0bacb">info</span></div></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;background:#1a2439;padding:6px 10px;border-radius:10px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:16px">badge</span>VIN removed</span><span style="font-size:12px;font-weight:700;background:#1a2439;padding:6px 10px;border-radius:10px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:16px">schedule</span>Times relative</span><span style="font-size:12px;font-weight:700;background:#1a2439;padding:6px 10px;border-radius:10px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:16px">pin_drop</span>Plate hidden</span></div>
+<div style="background:#121a2c;border-radius:22px;padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px"><sc-for list="{{ shStats }}" as="s" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0">{{ s.l }}</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ s.v }}<span style="font-size:12px;color:#b0bacb"> {{ s.u }}</span></span></div></sc-for></div>
+<div style="background:#121a2c;border-radius:22px;padding:14px 16px;display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:20px;background:#243049;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px">airport_shuttle</span></div><div style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Discovery 2 Td5 · 2002</span><span style="font-size:13px;color:#b0bacb">Shared by Jamie · Day 1, +0:00 to +0:48</span></div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Link controls + my links</div>
+<div data-screen-label="Link controls" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Link</span>
+<div style="height:48px;border-radius:24px;background:#121a2c;padding:4px;display:grid;grid-template-columns:1fr 1fr"><sc-for list="{{ lockSeg }}" as="o" hint-placeholder-count="2"><div onClick="{{ o.pick }}" style="cursor:pointer;border-radius:20px;background:{{ o.bg }};color:{{ o.c }};display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:18px">{{ o.icon }}</span>{{ o.l }}</div></sc-for></div>
+<span style="font-size:13px;color:#b0bacb;padding:0 4px">{{ lockNote }}</span>
+<div style="background:#121a2c;border-radius:22px;padding:4px 16px">
+<sc-for list="{{ linkRows }}" as="r" hint-placeholder-count="4"><div style="min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:15px;color:#b0bacb">{{ r.l }}</span><span style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:4px">{{ r.v }}<span class="material-symbols-rounded" style="font-size:20px;color:#8e9ab0">chevron_right</span></span></div></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><sc-for list="{{ shareOut }}" as="o" hint-placeholder-count="3"><div style="height:64px;border-radius:18px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;font-weight:700"><span class="material-symbols-rounded" style="font-size:22px;color:#22a6e0">{{ o.icon }}</span>{{ o.l }}</div></sc-for></div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:10px 4px 0">MY SHARES</span>
+<sc-for list="{{ myShares }}" as="m" hint-placeholder-count="5"><div style="min-height:60px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:10px;padding:8px 14px"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.t }}</span><span style="font-size:13px;color:#b0bacb">{{ m.d }}</span></div><span style="font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;background:{{ m.bg }};color:{{ m.c }}">{{ m.s }}</span></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Diagnose fault + Decode lab entry points</div>
+<div data-screen-label="Get help" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">DIAGNOSE · TD5 ENGINE</span>
+<div style="background:rgba(239,106,125,.10);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:24px;font-weight:800;font-variant-numeric:tabular-nums">P0380</span><span style="font-size:12px;font-weight:800;color:#ef6a7d;background:rgba(239,106,125,.16);padding:4px 10px;border-radius:10px">ACTIVE</span></div>
+<span style="font-size:15px;font-weight:700">Glow plug circuit malfunction</span>
+<span style="font-size:13px;color:#b0bacb">Freeze-frame: coolant 14 °C · 12.1 V · cranking</span>
+<div style="height:52px;border-radius:26px;background:#22a6e0;color:#0a1020;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:800;margin-top:4px"><span class="material-symbols-rounded" style="font-size:22px">support</span>Get help with this fault</div>
+<span style="font-size:12px;color:#b0bacb;text-align:center">Shares Diagnostics level with people you name</span>
+</div>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:10px 4px 0">DEVELOPER · DECODE LAB</span>
+<div style="background:#121a2c;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:700">Unknown frame 0x2C4</span><span style="font-size:12px;font-weight:700;color:#b0bacb;background:#243049;padding:3px 8px;border-radius:8px">SLABS · K-line</span></div>
+<div style="font:500 13px ui-monospace,Menlo,monospace;color:#b0bacb;background:#0a1020;border-radius:12px;padding:10px 12px;line-height:1.6">81 2C 4F 01 · 3E 00 12 A0<br>81 2C 4F 01 · 3E 00 13 9F</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="height:52px;border-radius:26px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">forum</span>Ask for help</div><div style="height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700"><span class="material-symbols-rounded" style="font-size:20px">play_arrow</span>Run a recipe</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · More › Places · privacy zones + end trim</div>
+<div data-screen-label="Places" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:4px 16px 24px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Places</span>
+<div style="height:340px;border-radius:24px;overflow:hidden;position:relative;background:#0e1422;flex:none"><sc-if value="{{ pl.url }}" hint-placeholder-val="{{ false }}"><img src="{{ pl.url }}" alt="" style="position:absolute;left:0;top:0;width:361px;height:340px;display:block"></sc-if>
+<sc-for list="{{ zones }}" as="z" hint-placeholder-count="0"><div style="position:absolute;left:{{ z.x }}px;top:{{ z.y }}px;width:{{ z.d }}px;height:{{ z.d }}px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(34,166,224,.16);box-shadow:inset 0 0 0 2px rgba(34,166,224,.7)"></div><div style="position:absolute;left:{{ z.x }}px;top:{{ z.y }}px;transform:translate(-50%,-50%);font-size:12px;font-weight:800;background:#121a2c;padding:4px 8px;border-radius:8px;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:14px">{{ z.icon }}</span>{{ z.n }}</div></sc-for>
+</div>
+<div style="background:#121a2c;border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:15px;font-weight:700">Trim trip ends</span><span style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums">{{ trimTxt }}</span></div>
+<input type="range" min="200" max="1500" step="50" value="{{ trim }}" onChange="{{ setTrim }}" style="width:100%;accent-color:#22a6e0;height:28px">
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#8e9ab0"><span>200 m</span><span>1.5 km</span></div>
+<span style="font-size:13px;color:#b0bacb">Every shared route hides this much at each end, plus all privacy zones.</span>
+</div>
+<sc-for list="{{ zoneList }}" as="z" hint-placeholder-count="2"><div style="min-height:60px;border-radius:18px;background:#121a2c;display:flex;align-items:center;gap:12px;padding:0 14px"><span class="material-symbols-rounded" style="font-size:24px;color:#b0bacb">{{ z.icon }}</span><span style="flex:1;font-size:15px;font-weight:700">{{ z.n }}</span><span style="font-size:13px;color:#b0bacb">{{ z.r }}</span></div></sc-for>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:12px;color:#3b4556;font-weight:600">Phone · Preferences › Map theme</div>
+<div data-screen-label="Map theme" style="width:393px;height:852px;border-radius:48px;overflow:hidden;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(10,16,32,.35)">
+<div style="height:54px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 36px;font-size:17px;font-weight:600"><span>14:32</span><span class="material-symbols-rounded" style="font-size:20px">battery_full</span></div>
+<div style="flex:1;padding:4px 16px 24px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:28px;font-weight:700;padding:8px 4px 0">Preferences</span>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:8px 4px 0">MAP THEME</span>
+<sc-for list="{{ themes }}" as="t" hint-placeholder-count="4"><div onClick="{{ t.pick }}" style="cursor:pointer;min-height:64px;border-radius:18px;background:{{ t.bg }};display:flex;align-items:center;gap:12px;padding:0 14px"><div style="width:44px;height:32px;border-radius:8px;background:{{ t.sw }};box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)"></div><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">{{ t.l }}</span><span style="font-size:13px;color:#b0bacb">{{ t.d }}</span></div><span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0;opacity:{{ t.op }}">check</span></div></sc-for>
+<span style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;padding:12px 4px 0">MAP</span>
+<div style="min-height:64px;border-radius:18px;background:#121a2c;display:flex;align-items:center;justify-content:space-between;padding:0 14px"><div style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:700">Speed-limit sign</span><span style="font-size:13px;color:#b0bacb">Off by default · limits can be wrong</span></div><div style="width:52px;height:30px;border-radius:15px;background:#243049;position:relative"><div style="position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:11px;background:#8e9ab0"></div></div></div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const AUD=[['person','Person'],['group','Group'],['link','Link'],['public','Community public'],['support','Help']];
+const LV=[['Card','Stats only'],['Route','Start and end hidden'],['Telemetry','Chosen signals'],['Full log','For decoding help'],['Diagnostics','Faults and module info']];
+const ALLOW={Person:[1,1,1,1,1],Group:[1,1,1,0,0],Link:[1,1,1,0,0],'Community public':[1,1,0,0,0],Help:[1,1,1,1,1]};
+const WHY={Group:'Full logs and diagnostics go to named people only',Link:'Links can’t carry full logs or diagnostics','Community public':'Public posts are limited to card and route'};
+class Component extends DCLogic {
+ state={aud:'Person',lvl:1,lock:'locked',trim:500,theme:'Follow app',mp:{}};
+ componentDidMount(){const go=()=>{if(this.dead)return;if(!window.OstlerMaps)return setTimeout(go,150);['shareP','placesP'].forEach(k=>window.OstlerMaps.get(k).then(r=>{if(r&&!this.dead)this.setState(s=>({mp:{...s.mp,[k]:r}}))}))};go();}
+ componentWillUnmount(){this.dead=true}
+ renderVals(){
+  const S=this.state,al=ALLOW[S.aud];
+  const auds=AUD.map(([icon,l])=>({icon,l,bg:S.aud===l?'rgba(34,166,224,.18)':'#1a2439',c:S.aud===l?'#22a6e0':'#eef2f9',pick:()=>this.setState(s=>({aud:l,lvl:ALLOW[l][s.lvl]?s.lvl:1}))}));
+  const ladder=LV.map(([t,d],i)=>{const ok=!!al[i],sel=S.lvl===i;return {n:String(i+1),t,d:ok?d:(WHY[S.aud]||d),dc:ok?'#b0bacb':'#bf8a1a',op:ok?1:.5,bg:sel?'rgba(34,166,224,.12)':'#1a2439',ring:sel?'inset 0 0 0 2px #22a6e0':'none',icon:ok?(sel?'radio_button_checked':'radio_button_unchecked'):'block',ic:sel?'#22a6e0':'#8e9ab0',pick:()=>ok&&this.setState({lvl:i})}});
+  const sh=S.mp.shareP,pl=S.mp.placesP;
+  const shStats=[{l:'DISTANCE',v:'33.8',u:'km'},{l:'DURATION',v:'0:44',u:'h'},{l:'MAX SPEED',v:'96',u:'km/h'},{l:'AVG',v:'46',u:'km/h'},{l:'CLIMB',v:'412',u:'m'},{l:'STOPS',v:'3',u:''}];
+  const lockSeg=[['locked','Locked','lock'],['download','Download','download']].map(([k,l,icon])=>({l,icon,bg:S.lock===k?'#243049':'transparent',c:S.lock===k?'#eef2f9':'#b0bacb',pick:()=>this.setState({lock:k})}));
+  const linkRows=[{l:'Available from',v:'Now'},{l:'Expires',v:'In 7 days'},{l:'Access until',v:'Sun 14 Oct, 23:59'},{l:'Download limit',v:S.lock==='download'?'3 downloads':'—'}];
+  const shareOut=[{icon:'content_copy',l:'Copy link'},{icon:'qr_code_2',l:'QR code'},{icon:'code',l:'Embed'}];
+  const st=(s,bg,c)=>({s,bg,c});
+  const myShares=[{t:'Buxton → Castleton · Route',d:'Link · opens in 2 h',...st('Pending','#243049','#b0bacb')},{t:'Peak loop · Telemetry',d:'Group · Peak Rovers',...st('Active','rgba(47,158,99,.16)','#2f9e63')},{t:'Green lane day · Card',d:'Link · 3 of 3 downloads',...st('Full','rgba(191,138,26,.18)','#bf8a1a')},{t:'Leek → Buxton · Route',d:'Link · ended 1 Oct',...st('Expired','#243049','#b0bacb')},{t:'P0380 · Diagnostics',d:'Help · removed by you',...st('Revoked','rgba(239,106,125,.14)','#ef6a7d')}];
+  let zones=[];if(pl){const P=pl.pts,d=Math.max(30,Math.round(P.r3/3000*S.trim*2));zones=[{x:P.start.x,y:P.start.y,d,n:'Home',icon:'home'},{x:P.end.x,y:P.end.y,d,n:'Work',icon:'work'}]}
+  const zoneList=[{icon:'home',n:'Home',r:S.trim+' m'},{icon:'work',n:'Work',r:S.trim+' m'}];
+  const themes=[['Follow app','Night after sunset','linear-gradient(90deg,#0e1422 50%,#e9edf3 50%)'],['Day','Positron light','#e9edf3'],['Night','Dark vector','#0e1422'],['High contrast','Bolder roads and labels','#000']].map(([l,d,sw])=>({l,d,sw,bg:S.theme===l?'rgba(34,166,224,.12)':'#121a2c',op:S.theme===l?1:0,pick:()=>this.setState({theme:l})}));
+  return {auds,ladder,cta:'Share '+LV[S.lvl][0].toLowerCase(),sh:sh?{url:sh.url}:{url:''},pl:pl?{url:pl.url}:{url:''},shStats,lockSeg,lockNote:S.lock==='locked'?'Opens in Ostler only — nothing to download.':'Recipient can download a GPX + CSV.',linkRows,shareOut,myShares,zones,zoneList,trim:S.trim,trimTxt:S.trim>=1000?(S.trim/1000).toFixed(S.trim%1000?2:1)+' km':S.trim+' m',setTrim:e=>this.setState({trim:+e.target.value}),themes};
+ }
+}
+</script>
+</body>
+</html>
