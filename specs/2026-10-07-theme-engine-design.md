@@ -201,7 +201,7 @@ heritage.ostskin
 
 ### 2.6 Running as an Android launcher
 
-> The platform decision is [ADR-0047](../decisions/adr-0047-ostler-as-an-android-launcher.md)
+> The platform decision is [ADR-0048](../decisions/adr-0048-ostler-as-an-android-launcher.md)
 > (proposed); this section is its theming detail.
 
 Ostler can also be the **home app (launcher) of an Android phone, tablet or Android head
@@ -754,5 +754,5 @@ Each is a starting point for Duplicate.
   - the Moving rules applied to hosted widgets.
 - 0.6 (2026-10-08): owner review of the branch: the theme path is Settings → Display →
   Wallpaper & style (launcher spec §11); §2.6 points to the proposed
-  [ADR-0047](../decisions/adr-0047-ostler-as-an-android-launcher.md); §7 and TE1 add the
+  [ADR-0048](../decisions/adr-0048-ostler-as-an-android-launcher.md); §7 and TE1 add the
   head-unit browser-engine check and the Night-dim glare check.

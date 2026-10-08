@@ -1,5 +1,5 @@
 ---
-title: "ADR-0047 — Ostler as an Android launcher: the same single Android app can be the home app of a phone, tablet or Android head unit"
+title: "ADR-0048 — Ostler as an Android launcher: the same single Android app can be the home app of a phone, tablet or Android head unit"
 area: decisions
 status: draft
 version: 0.1
@@ -9,7 +9,7 @@ summary: >
   Proposed (draft for the owner). The owner said Ostler "can also be a launcher for Android"; the theme engine spec §2.6 describes it. This ADR makes it a platform decision: the one Ostler Android app (ADR-0042) may also declare the Android home-screen role, so an owner can set it as the launcher of a phone, tablet or Android head unit. As a launcher it hosts native Android widgets through AppWidgetHost next to Ostler widgets, lists installed Android apps in the drawer and dock, reads Android icon packs (appfilter.xml), can use or set the system wallpaper and can seed colours from Material You. It never downloads code, and phone add-ons stay bundled or declarative. The Moving rules apply to hosted Android widgets: those without a Moving template are hidden while Moving. It changes nothing in ADR-0046's OS boundary. Risks: store policy for launchers, old WebViews on cheap head units, and the privacy of hosting other apps' widgets. Five owner decisions.
 ---
 
-# ADR-0047 — Ostler as an Android launcher
+# ADR-0048 — Ostler as an Android launcher
 
 - **Date:** 2026-10-08
 - **Status:** proposed (draft). Basis: the owner's "this can also be a launcher for Android"
