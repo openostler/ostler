@@ -2,8 +2,8 @@
 title: "Design hand-off, October 2026 — how designs come in, how they are reviewed, and every screen to design"
 area: references
 status: stable
-version: 0.6
-updated: 2026-10-07
+version: 0.7
+updated: 2026-10-11
 depends_on: [specs/2026-10-06-ui-architecture-design.md, specs/2026-10-06-app-model-design.md, specs/2026-10-06-accounts-sharing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-social-addon-design.md, specs/2026-10-07-trip-sharing-design.md, specs/2026-10-07-navigation-addon-design.md, specs/2026-10-07-community-hub-design.md, specs/2026-10-07-source-adapters-design.md, specs/2026-10-07-maintenance-garage-addon-design.md, specs/2026-10-07-vehicles-and-map-addon-design.md, specs/2026-10-07-phone-comms-addon-design.md, references/research/driver_distraction_rules.md, references/research/message_alerts_android_auto.md, references/research/visual_design_direction.md]
 summary: >
   The hand-off folder for the owner's one combined designer prompt (DMD round, October 2026). It says how designs arrive (claude.ai design artifact links read by the manager, plus exported PNG and HTML saved here as `<screen-id>/<layout-class>-<theme>.png` and `.html`, with optional state and variant suffixes), what is recorded per screen (link, date, designer prompt version, status awaiting · received · reviewed · matches-spec · differs, and each difference), and how each screen is reviewed against its spec section before the V2 component kit and V3 page work. It holds a designer prompt checklist of the hard constraints (Moving templates and their limits, minimum sizes, tokens only, one icon set, no glow on head units at night or in Drive mode, Park to edit, non-removable safety items, no message text while Moving, no video on driver-facing screens) with citations, and the full screen index: 127 screens and sheets across the shell, Home, Drive modes and their faces, alerts and calls, Trips and sharing, Places, Diagnose and the help flow, Decode lab, Vehicles & Map, Social, Phone & Comms (linked to its spec), Navigation, Ostler Community (the closed, Ostler-run hub: web P1–P14 including Forum, Thread, Vehicle project, Decode card and Wiki page, and More → Community), adapters, Maintenance & Garage, Network, More, Preferences, accounts S1–S10 and the Add-ons catalogue, each with layout classes, themes, driving states, spec sections and tokens. The machine-readable copy is `screens.json` in this folder. Approved by the owner on 2026-10-07 ("approve all", DMD round; decision list items 92–96): key frames first, design files under the CLA annotated like the docs, PNG plus HTML per frame (≤ 2 MB each), the approved message card (sender and app with Play / Reply), and every spec of the round now approved, so no screen is provisional. Amended 2026-10-07 (openness round, ADR-0047): the checklist's style items are the default look, pointing to visual §13 and the theme engine, review fails a design on safety rules only, and the safety items are unchanged.
@@ -11,6 +11,10 @@ summary: >
 
 # Design hand-off, October 2026
 
+> **Read first (2026-10-11): [brief/00-structure.md](brief/00-structure.md),** the structure of
+> separate apps (PWAs) on one gateway, with the site map. It supersedes the launcher, Store and
+> app-frame screens below.
+>
 > **Designer brief (v0.5, draft): start at [brief/00-start-here.md](brief/00-start-here.md).**
 > The `brief/` folder holds page-by-page content for every screen of the Android-style Ostler
 > OS and its apps: 551 screens (127 Existing, 354 New, 70 Proposed), each tagged with its
@@ -427,6 +431,9 @@ section numbers change, regenerate both `screens.json` and this table.
   theme engine; item 9 lets anchors and ordinary chips hide while safety items move and
   restyle but never go; item 19 allows scores in add-ons; review fails a design on safety
   rules only. The safety items are unchanged.
+- **0.7 (2026-10-11, structure):** [brief/00-structure.md](brief/00-structure.md) added: separate
+  apps as PWAs on one gateway, with the site map (ADR-0049 v1.3). It supersedes the launcher,
+  Store and app-frame screens.
 
 ## Decisions for the owner
 

@@ -2,16 +2,40 @@
 title: "ADR-0049 — Ostler is an open diagnostic and logging platform with an open vehicle-data feed (VISS), not an operating system: a gateway app and separate apps"
 area: decisions
 status: locked
-version: 1.2
-updated: 2026-10-08
+version: 1.3
+updated: 2026-10-11
 depends_on: [references/research/direction_standard_not_os.md, references/research/direction_feed_standards.md, references/research/direction_host_platforms.md, references/research/direction_headunit_ecosystem.md, references/research/direction_repo_audit.md, references/research/direction_positioning.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0048-ostler-as-an-android-launcher.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0038-mesh-car-to-car-and-off-grid.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md]
 summary: >
-  Accepted: approved by the owner on 2026-10-08 ("I agree with everything", with changes; direction decisions 1–37). Ostler is an open diagnostic and logging platform with an open vehicle-data feed, not an operating system; this returns to the original build. Full COVESA VISS v3 over VSS is the core protocol on every signal hop (ADR-0051), and MQTT is an external output only. The node stays the only path to the car. On each Android phone or head unit a required gateway app configures connections (node, Brain, adapters, pairing), holds the gate client, driving state and alerts, runs the permissions controller (per-app toggles, a scoped VISS access token, writes only as requests, cautious defaults, revoke with an access log), serves the feed and carries a normal ~1 Hz feed widget. The other apps are separate: Diagnostics with Decode lab merged, Trips, Security, Maintenance, and add-ons (friends' live map, Social, the Meshtastic/MeshCore mesh). No widget apps; live views stay in the apps. One shared app template (ADR-0050). Cameras sit in the feed's metadata; meshes are transports. Read-only output bridges: RealDash, ELM327 emulation, CAN-box emulation, Home Assistant and OVMS. The launcher is parked (ADR-0048). The Brain is optional. Supersedes ADR-0046's OS boundary (its safety list and hard lines stay) and ADR-0042's one-app rule. Amended v1.2 (owner, 2026-10-08): one Ostler app (Home, Diagnose, Logs, Map, More, Drive mode) with the gateway inside it; the screen line "Ostler arranges, Android runs" (split screen, picture-in-picture, floating gauge, later a home-screen mode; never own media, navigation, phone, audio focus, hosted apps or app store); Android Automotive as reference and a parked track.
+  Accepted: approved by the owner on 2026-10-08 ("I agree with everything", with changes; direction decisions 1–37). Ostler is an open diagnostic and logging platform with an open vehicle-data feed, not an operating system; this returns to the original build. Full COVESA VISS v3 over VSS is the core protocol on every signal hop (ADR-0051), and MQTT is an external output only. The node stays the only path to the car. On each Android phone or head unit a required gateway app configures connections (node, Brain, adapters, pairing), holds the gate client, driving state and alerts, runs the permissions controller (per-app toggles, a scoped VISS access token, writes only as requests, cautious defaults, revoke with an access log), serves the feed and carries a normal ~1 Hz feed widget. The other apps are separate: Diagnostics with Decode lab merged, Trips, Security, Maintenance, and add-ons (friends' live map, Social, the Meshtastic/MeshCore mesh). No widget apps; live views stay in the apps. One shared app template (ADR-0050). Cameras sit in the feed's metadata; meshes are transports. Read-only output bridges: RealDash, ELM327 emulation, CAN-box emulation, Home Assistant and OVMS. The launcher is parked (ADR-0048). The Brain is optional. Supersedes ADR-0046's OS boundary (its safety list and hard lines stay) and ADR-0042's one-app rule. Amended v1.3 (owner, 2026-10-11): every screen a separate PWA in its own repo (front door, Logs, Diagnostics, Drive, add-ons), served by ostler.app and the Brain; the gateway on the most permanent device (Brain, else the Ostler Gateway Android app, else a node, else the browser); history in the gateway; prompts towards a gateway. Amended v1.2 (owner, 2026-10-08; its one app reversed by v1.3): one Ostler app (Home, Diagnose, Logs, Map, More, Drive mode) with the gateway inside it; the screen line "Ostler arranges, Android runs" (split screen, picture-in-picture, floating gauge, later a home-screen mode; never own media, navigation, phone, audio focus, hosted apps or app store); Android Automotive as reference and a parked track.
 ---
 
 # ADR-0049 — A diagnostic and logging platform with an open vehicle-data feed
 
-> **Amended 2026-10-08 (v1.2, owner): one Ostler app, and the screen line.**
+> **Amended 2026-10-11 (v1.3, owner): separate apps as PWAs, on one gateway. This reverses
+> v1.2's "one app".**
+>
+> - **Every screen is a PWA,** each its own repo: the **Ostler front door**
+>   (`ostler-app-hub`: welcome, connect, Home, apps gallery, garage, devices, permissions,
+>   settings), **Logs** (`ostler-app-trips`), **Diagnostics** (`ostler-app-diagnostics`),
+>   **Drive** (`ostler-app-drive`, new) and add-ons (Security, Maintenance, friends' map,
+>   Social, mesh). Served from `ostler.app` and by the Brain, which can host and install them;
+>   installable from Chrome; separate so two can run side by side on a head unit; linked to
+>   each other; one template and theme.
+> - **The gateway runs on the most permanent device the owner has:** the Brain; otherwise the
+>   native **Ostler Gateway** Android app (needed only when there is no gateway device; it
+>   also passes a phone-attached dongle to a Brain); otherwise a node (live data only);
+>   otherwise the browser itself (WebUSB or Web Bluetooth while the page is open, nothing
+>   recorded). History lives in the gateway, so Diagnostics asks it for the drives around a
+>   fault.
+> - **Prompts:** the web version offers a connect chooser, a gateway comparison and gentle,
+>   dismissible banners towards the gateway app or a permanent gateway, never while driving.
+> - **Why:** a PWA cannot log in the background, reach classic-Bluetooth or Wi-Fi dongles, or
+>   touch hardware on iPhone, so the native code shrinks to the gateway; small separate apps
+>   are easier to build and keep right, and give least privilege (Logs is read-only).
+> - The screen line of v1.2 stands. Detail: direction note §3.4, decisions 44–48; the
+>   designer's view: [brief 00-structure](../references/design/2026-10/brief/00-structure.md).
+
+> **Amended 2026-10-08 (v1.2, owner; its "one app" is reversed by v1.3): one Ostler app, and the screen line.**
 >
 > - **One app.** The owner wants one app to diagnose the car and to drive with, on a phone
 >   or on an Android head unit. Item 6 changes: Home, Diagnose (with Decode lab), Logs (was
@@ -191,3 +215,6 @@ own apps (a short brief per app before building).
   it; the screen line ("Ostler arranges, Android runs") and its never list; launcher still
   parked, as a home-screen mode of the app if it returns; Android Automotive as the
   reference and a parked track.
+- 2026-10-11 — v1.3, amended by the owner: every screen a separate PWA in its own repo; the
+  gateway on the most permanent device (Brain, Gateway app, node, browser); history in the
+  gateway; prompts towards a gateway; v1.2's one app reversed.

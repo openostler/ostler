@@ -2,8 +2,8 @@
 title: "Direction — Ostler as an open diagnostic and logging platform with an open vehicle-data feed (VISS), not an OS: synthesis of the October 2026 direction round, with the owner's approved decision list"
 area: references
 status: stable
-version: 1.2
-updated: 2026-10-08
+version: 1.3
+updated: 2026-10-11
 depends_on: [references/research/direction_feed_standards.md, references/research/direction_host_platforms.md, references/research/direction_headunit_ecosystem.md, references/research/direction_repo_audit.md, references/research/direction_positioning.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0016-covesa-vss-canonical-signal-namespace.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0039-product-family-diagnostics-guardian-hub.md]
 summary: >
   Approved by the owner on 2026-10-08 ("I agree with everything", with changes). Ostler is an open diagnostic and logging platform with an open vehicle-data feed, not an operating system; this returns to the original build. Full COVESA VISS v3 over our VSS tree is the core protocol on every hop that carries vehicle signals (node to gateway, Brain to apps, gateway to apps), over VISS's own transports (WebSocket first); the internal MQTT module bus and the SSE /events snapshot become legacy, and MQTT is only an external output through the gateway app's External MQTT menu. The node stays the only write path. Apps: a required gateway app (connections, gate client, driving state, alerts, the permissions controller, the feed and a normal ~1 Hz feed widget); Diagnostics with Decode lab merged; Trips; Security; Maintenance; and separate add-on apps (friends' live map, Social, the Meshtastic/MeshCore mesh). No widget apps; live views stay inside the apps; the launcher is parked. One shared app template (Kotlin shell, VISS client, theme-pack loader). Output bridges (RealDash, ELM327 emulation, CAN-box emulation, Home Assistant, OVMS) are read-only views. 37 approved decisions; ADR-0049, ADR-0050 and ADR-0051 record them.
@@ -214,6 +214,37 @@ Added 2026-10-08 after the owner looked at the Dudu7 and asked where Ostler sits
   and optionally microG. Flashing phone GApps is an unsupported hack: the device is not
   Play-certified and integrity checks fail.
 
+### 3.4 Providers, broker, clients: PWAs on one gateway
+
+Settled with the owner on 2026-10-11. It follows the open reference pattern (Eclipse KUKSA on
+COVESA VSS): providers feed one broker, clients read it.
+
+| Role | Does | Runs on |
+|---|---|---|
+| **Provider** | talks to the car or a sensor, emits VSS, carries out writes | our node's firmware; a driver for a third-party dongle on whatever host it is plugged into; phone sensors |
+| **Broker (the gateway)** | one per car at a time: live state, tokens, history, outputs | the Brain; else the Ostler Gateway app; else a node (live only); else the browser page |
+| **Client** | screens | PWAs anywhere: phone, head unit, laptop, iPhone (viewer) |
+
+- **The gate sits at the last programmable hop before the bus:** in the node's firmware for our
+  node; in the dongle driver on the host for a third-party dongle. One implementation and one
+  set of test vectors everywhere.
+- **Trust levels for writes:** node-gated paths allow actuator tests and coding (confirmed,
+  Parked); host-gated paths allow reads and reading or clearing codes, with actuator tests off
+  unless the owner turns them on per adapter.
+- **Step-up writes:** each write asks the broker for a short-lived, single-action permission the
+  owner approves on screen; the gate then decides.
+- **PWAs for every screen,** each its own repo (designer view:
+  [brief 00-structure](../design/2026-10/brief/00-structure.md)). What a PWA cannot do, and so
+  why a native gateway stays: run in the background, reach classic-Bluetooth or Wi-Fi (TCP)
+  dongles, or touch hardware on iPhone. WebUSB and Web Bluetooth work in Chrome while the page
+  is open.
+- **A per-car HTTPS name** (one certificate per car, pointing at its local address, as Plex
+  does) so PWAs install, work offline and reach the local gateway without mixed-content or
+  local-network blocks.
+- **Bench test additions:** PWA install and split screen on the Dudu7; WebUSB through the head
+  unit's USB port; the gateway app coming back after ignition-off; the state of Web Serial in
+  Chrome for Android.
+
 ## 4. Theming, kept and re-targeted
 
 The owner likes the theming. Without a web OS it lives in three places:
@@ -394,7 +425,7 @@ as history.
 40. **Everything is synced:** one permission set, held and enforced by the server and
     shown and edited the same from the Android gateway apps, the Brain console and the
     cloud view. Failover when the Brain drops out mid-drive is open, for Feed spec v0.1.
-41. **One Ostler app:** Home, Diagnose (with Decode lab), Logs, Map, More and Drive mode,
+41. **One Ostler app** (*reversed by 44 on 2026-10-11*): Home, Diagnose (with Decode lab), Logs, Map, More and Drive mode,
     the same on phone and head unit, with the gateway job running inside it (amends 12,
     16, 17 and ADR-0049 item 6).
 42. **The screen line:** "Ostler arranges, Android runs": own screens, split screen,
@@ -402,6 +433,18 @@ as history.
     radio, navigation or phone, audio focus, hosted apps or app store.
 43. **Android Automotive** is the reference architecture; a VISS→VHAL bridge and a Pi
     reference build are a parked track after the bench test (§3.3).
+
+44. **Separate apps as PWAs:** the Ostler front door, Logs, Diagnostics, Drive and the add-ons,
+    each its own PWA and repo, served from `ostler.app` and by the Brain, installable, side by
+    side on a head unit, linked to each other (reverses 41).
+45. **The gateway on the most permanent device:** Brain, else the Ostler Gateway app (only
+    needed without a gateway device), else a node (live only), else the browser page; history
+    lives in the gateway (§3.4).
+46. **The gate at the last programmable hop,** with trust levels for host-gated writes and
+    step-up approval for every write (§3.4).
+47. **Prompts towards a gateway** in the web version: connect chooser, comparison, dismissible
+    banners, never while driving.
+48. **A per-car HTTPS name** for the gateway, so PWAs install and reach it locally (§3.4).
 
 ## Changelog
 
@@ -416,3 +459,5 @@ as history.
   synced permission set; decisions 38–40; Brain failover open.
 - 2026-10-08 — v1.2: §3.3 Android Auto, Tesla and Android Automotive added; decisions
   41–43 (one Ostler app, the screen line, Android Automotive parked track).
+- 2026-10-11 — v1.3: §3.4 providers, broker, clients (PWAs on one gateway); decisions 44–48;
+  41 reversed.
