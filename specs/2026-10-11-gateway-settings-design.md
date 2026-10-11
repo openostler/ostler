@@ -2,11 +2,11 @@
 title: "Gateway settings — the gateway owns all hardware and connections; car profiles, this-gateway settings and account sync; automatic car selection — design"
 area: specs
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-11
-depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, references/design/2026-10/brief/00-structure.md]
+depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, references/design/2026-10/brief/00-structure.md, references/design/2026-10/mfd/README.md, references/design/2026-10/mfd/REVIEW.md]
 summary: >
-  Draft for the owner (agreed in discussion on 2026-10-11). The gateway owns all hardware and connections; apps only ever talk to the gateway, and any gateway-capable device runs it (Brain, the Android gateway app, a node for live data, or a temporary gateway in the browser built from the same code). Settings sit at three levels: account (garage, sharing, backups; synced and optional), car profile (one per car: identity, devices and buses, recording, alerts, app permissions, outputs, layouts, sharing; held by the car's gateway and synced) and this gateway (role, network, storage, power, updates; one device). A Brain is in practice one car's gateway; a phone gateway carries several car profiles. The car is selected automatically from detection (VIN or pack fingerprint), with "New car found" for an unknown car and a manual switch. One server per car at a time: a phone that sees a car whose Brain is running becomes its client. Lists the gateway's settings sections and the open questions. v0.2: everything lives in the gateway and PWAs are viewers and controls that only connect to it; web permissions are Ostler-wide (one address per gateway), car-data permissions are the gateway's; the gateway supplies location and what the web cannot do; a PWA keeps only UI state, layout and a stale-marked offline cache.
+  Draft for the owner (agreed in discussion on 2026-10-11). The gateway owns all hardware and connections; apps only ever talk to the gateway, and any gateway-capable device runs it (Brain, the Android gateway app, a node for live data, or a temporary gateway in the browser built from the same code). Settings sit at three levels: account (garage, sharing, backups; synced and optional), car profile (one per car: identity, devices and buses, recording, alerts, app permissions, outputs, layouts, sharing; held by the car's gateway and synced) and this gateway (role, network, storage, power, updates; one device). A Brain is in practice one car's gateway; a phone gateway carries several car profiles. The car is selected automatically from detection (VIN or pack fingerprint), with "New car found" for an unknown car and a manual switch. One server per car at a time: a phone that sees a car whose Brain is running becomes its client. Lists the gateway's settings sections and the open questions. v0.2: everything lives in the gateway and PWAs are viewers and controls that only connect to it; web permissions are Ostler-wide (one address per gateway), car-data permissions are the gateway's; the gateway supplies location and what the web cannot do; a PWA keeps only UI state, layout and a stale-marked offline cache. v0.4: a dated note maps the designer's Gateway design (connect, status, cars, permissions, this device, this gateway, offline) onto these sections; the design adds a Status home and lacks Display and About in its profile sidebar.
 ---
 
 # Gateway settings — design
@@ -111,6 +111,32 @@ detection.
 
 While moving, settings can be browsed but not changed ("Park to change").
 
+## 5a. The designer's Gateway design (note, 2026-10-11)
+
+The designer's `Ostler Gateway.dc.html` (in
+[references/design/2026-10/mfd/](../references/design/2026-10/mfd/README.md), renders
+`png/gateway-*.png`) maps onto this spec as follows. Drift is in the
+[hand-off review](../references/design/2026-10/mfd/REVIEW.md) §5.
+
+| Design screen | This spec |
+|---|---|
+| g1 Connect · first run (car → gateway → apps; Brain, this phone, this browser) | §1 any gateway-capable device; first run |
+| g2 Status (health, this gateway's role, sources, apps using this car) | **Not in the spec:** a Status home for the gateway |
+| g3 New car found (masked VIN, set up, just look, pick myself) | §4 unknown car, manual switch |
+| g4 Apps · car permissions (see; change as a request; access log) | §2 car data, §5.1 apps and permissions |
+| g6 Gateway settings · car profile (identity, devices and buses, recording, alerts, apps and permissions, outputs, layouts, sharing; all cars, this gateway, account) | §5.1 Cars, §5.2 This gateway, §5.4 Account |
+| g5 This device (Ostler-wide web permissions; role, power, updates) | §2 web permissions, §5.2 |
+| g7 This gateway (client of the car's Brain or standalone; network, storage, power, updates) | §4 one server per car, §5.2 |
+| g8 Any app · gateway unreachable (last data with its time, nothing live, no actions, Fix, Open Gateway) | §2 offline cache marked stale |
+| Connection chip states and action states | ADR-0052 §2 (v0.5) connection chip; ADR-0033 |
+
+- **The design adds:** the Status home; a bottom navigation Status · Cars · Apps · This
+  device; "Just look, don't save" for an unknown car; the "Another scan tool plugged in?"
+  notice under the buses.
+- **The design lacks:** Display (§5.3, shared by every app) and About (§5.5) in its sidebar.
+- **To confirm:** a Guardian, a Brain and a K-line dongle bound to one car together (review
+  decision 15, ADR-0044).
+
 ## 6. Open questions
 
 1. **Permissions per car or per app?** Recommend per car, with "same as my other cars" as the
@@ -128,3 +154,5 @@ While moving, settings can be browsed but not changed ("Park to change").
   are Ostler-wide; the gateway supplies location and what the web cannot do.
 - 0.3 (2026-10-11): the floating gauge moves to the optional Ostler Controls app; the gateway
   routes its commands (ADR-0052 §4a).
+- 0.4 (2026-10-11): §5a maps the designer's Gateway design onto the sections; it adds a
+  Status home and lacks Display and About.

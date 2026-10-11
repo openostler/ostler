@@ -2,9 +2,9 @@
 title: "Designer brief — the structure: separate apps (PWAs) on one gateway"
 area: references
 status: draft
-version: 1.1
+version: 1.2
 updated: 2026-10-11
-depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, references/research/direction_standard_not_os.md, references/design/2026-10/brief/00-start-here.md]
+depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, references/research/direction_standard_not_os.md, references/design/2026-10/brief/00-start-here.md, references/design/2026-10/mfd/README.md]
 summary: >
   Read this first (owner, 2026-10-11). Since v1.1 (MFD, proposed ADR-0052/0053): every app has its own home and settings and bundles the ostler-shell library, so any app's pages tile side by side; the gateway is an app (welcome, connect, Car page, instrument pages, garage, devices, permissions, outputs) and ostler.app is its web form; there is no Drive app and no separate front door. Ostler is a family of small apps, each its own PWA and its own repo: the gateway app, Logs, Diagnostics and add-ons (Security, Maintenance, friends' map, Social, mesh). They install from Chrome on a phone, head unit or laptop, run side by side on a head unit, link to each other and share one look. All of them read one gateway: the Brain (which also hosts and installs the apps), otherwise the Ostler Gateway Android app, otherwise a node for live data, otherwise the browser itself. The brief gives the diagram, what the designer needs to know, prompts for what we need (not how to lay it out) and the site map in XML. It supersedes the brief's launcher, Store and app-frame screens.
 ---
@@ -33,6 +33,8 @@ corrections, changes this structure (proposed:
   outputs and the shared preferences. `ostler.app` is its web form; there is no separate
   front door.
 - **No Drive app, no drive modes:** "Off-road" is a saved layout; moving rules limit actions.
+- **The designer's MFD hand-off** (designs, renders, docs and a review of the drift) is in
+  [../mfd/](../mfd/README.md); start with its [REVIEW.md](../mfd/REVIEW.md).
 
 ## The structure
 
@@ -207,6 +209,7 @@ holds the gateway app's web form (repo name open, ADR-0052 §9).
 
 ## Changelog
 
+- 1.2 (2026-10-11): pointer to the designer's MFD hand-off in `../mfd/`.
 - 1.1 (2026-10-11): MFD section (proposed ADR-0052/0053); the site map drops the Drive app,
   gives each app home and settings, moves connect, pair, choose-gateway, devices, garage,
   permissions and outputs into the gateway app (whose web form is `ostler.app`) with the Car

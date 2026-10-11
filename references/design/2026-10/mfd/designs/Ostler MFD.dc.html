@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga'}
+</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:28px;color:#0e1626">
+<div style="max-width:980px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · MFD DEMO · INTERACTIVE</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">One page, any shape</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">Drag the divider between the tiles, or use the controls. Each page is made of parts ranked by priority, and the tile's shape picks the layout: wide puts parts side by side, tall stacks them, small keeps only the top part, a strip becomes a chip. Soft-keys run along the tile edges: pages on one side, actions on the other. Turn on Android split screen to see Ostler share the head unit with any other app.</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">SCREEN</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px"><sc-for list="{{ screens }}" as="s" hint-placeholder-count="3"><div onClick="{{ s.pick }}" style="height:40px;padding:0 14px;border-radius:9px;display:flex;align-items:center;white-space:nowrap;flex:none;font-size:14px;font-weight:700;cursor:pointer;background:{{ s.bg }};color:{{ s.ink }}">{{ s.l }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">SPLIT</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px"><sc-for list="{{ dirs }}" as="s" hint-placeholder-count="2"><div onClick="{{ s.pick }}" style="height:40px;padding:0 14px;border-radius:9px;display:flex;align-items:center;white-space:nowrap;flex:none;gap:6px;font-size:14px;font-weight:700;cursor:pointer;background:{{ s.bg }};color:{{ s.ink }}"><span class="material-symbols-rounded" style="font-size:18px">{{ s.i }}</span>{{ s.l }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">DIAGNOSE SHARE</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px"><sc-for list="{{ ratios }}" as="s" hint-placeholder-count="4"><div onClick="{{ s.pick }}" style="height:40px;padding:0 12px;border-radius:9px;display:flex;align-items:center;white-space:nowrap;flex:none;font-size:14px;font-weight:700;cursor:pointer;background:{{ s.bg }};color:{{ s.ink }}">{{ s.l }}</div></sc-for></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3"><div onClick="{{ t.flip }}" style="height:48px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;flex:none;background:{{ t.bg }};color:{{ t.ink }}"><span class="material-symbols-rounded" style="font-size:20px">{{ t.i }}</span>{{ t.l }}</div></sc-for></div>
+</div>
+
+<div data-screen-label="MFD demo" style="width:{{ W }}px;height:{{ H }}px;border-radius:20px;overflow:hidden;background:#000;display:flex;box-shadow:0 30px 60px rgba(10,16,32,.35);flex:none">
+
+<sc-if value="{{ android }}" hint-placeholder-val="{{ false }}">
+<div style="width:{{ andW }}px;flex:none;position:relative;background:#1b1f24;color:#e8eaed;overflow:hidden">
+<div style="position:absolute;left:-20%;right:-20%;top:42%;height:10px;background:#2b3138;transform:rotate(-12deg)"></div>
+<div style="position:absolute;top:-10%;bottom:-10%;left:55%;width:8px;background:#2b3138;transform:rotate(9deg)"></div>
+<div style="position:absolute;left:-10%;right:-10%;top:70%;height:6px;background:#262b31;transform:rotate(4deg)"></div>
+<div style="position:absolute;left:12%;top:28%;right:30%;bottom:40%;border-top:5px solid #4c8bf5;border-right:5px solid #4c8bf5;border-radius:0 40px 0 0"></div>
+<div style="position:absolute;left:16px;right:16px;top:16px;height:48px;border-radius:24px;background:#2b3138;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:15px;color:#bdc1c6"><span class="material-symbols-rounded" style="font-size:22px">search</span>Search here</div>
+<div style="position:absolute;left:16px;right:16px;bottom:16px;min-height:64px;border-radius:16px;background:#2b3138;display:flex;flex-direction:column;justify-content:center;padding:10px 16px;gap:2px"><span style="font-size:18px;font-weight:700">14 min · 9.2 km</span><span style="font-size:13px;color:#bdc1c6">Any Android app runs here, e.g. your maps</span></div>
+</div>
+<div style="width:12px;flex:none;background:#000;display:flex;align-items:center;justify-content:center"><span style="width:4px;height:48px;border-radius:2px;background:#9aa0a6"></span></div>
+</sc-if>
+
+<div style="flex:1;min-width:0;background:#0a1020;color:#eef2f9;display:flex">
+<div style="width:80px;flex:none;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:8px;border-right:1px solid #1f2a40">
+<span style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#8e9ab0;height:20px;display:flex;align-items:center">LAYOUT</span>
+<sc-for list="{{ presets }}" as="p" hint-placeholder-count="3"><div style="width:68px;height:60px;border-radius:16px;background:{{ p.bg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:{{ p.ink }}"><span class="material-symbols-rounded" style="font-size:22px">{{ p.i }}</span><span style="font-size:11px;font-weight:700">{{ p.l }}</span></div></sc-for>
+<span style="flex:1"></span>
+<div style="width:52px;height:52px;border-radius:26px;background:#1a2439;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:24px">{{ railIcon }}</span></div>
+</div>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<div style="height:48px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px 0 12px;overflow:hidden">
+<span style="font-size:15px;font-weight:700;display:flex;align-items:center;white-space:nowrap;flex:none">Discovery 2 Td5<span class="material-symbols-rounded" style="font-size:20px;color:#8e9ab0">expand_more</span></span>
+<span style="height:28px;border-radius:14px;background:#121a2c;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;font-weight:600;color:#b0bacb;white-space:nowrap;flex:none"><span style="width:8px;height:8px;border-radius:4px;background:#4cc38a"></span>Brain · live</span>
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><span style="height:28px;border-radius:14px;background:rgba(224,176,74,.14);color:#e0b04a;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;font-weight:700;white-space:nowrap;flex:none"><span class="material-symbols-rounded" style="font-size:18px">directions_car</span>Moving · locked</span></sc-if>
+<sc-if value="{{ caution }}" hint-placeholder-val="{{ false }}"><span style="height:28px;border-radius:14px;background:#ef6a7d;color:#0a1020;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;font-weight:800;letter-spacing:.06em;white-space:nowrap;flex:none"><span class="material-symbols-rounded" style="font-size:18px;font-variation-settings:'FILL' 1">warning</span>WARNING</span></sc-if>
+<span style="flex:1"></span><span style="font-size:15px;font-weight:600;flex:none">14:32</span></div>
+
+<div ref="{{ areaRef }}" style="flex:1;min-height:0;display:flex;flex-direction:{{ flexDir }};padding:0 12px 12px">
+
+<div style="width:{{ aW }}px;height:{{ aH }}px;flex:none;background:#121a2c;border-radius:18px;display:flex;flex-direction:column;overflow:hidden">
+<div style="height:44px;flex:none;display:{{ d.headDisp }};align-items:center;gap:8px;padding:0 8px 0 14px;border-bottom:1px solid #1f2a40;overflow:hidden">
+<span class="material-symbols-rounded" style="font-size:20px;color:#22a6e0">stethoscope</span><span style="font-size:14px;font-weight:700;white-space:nowrap">Diagnose</span><span style="font-size:14px;color:#8e9ab0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">· {{ d.name }}</span><span style="flex:1"></span>
+<span style="height:24px;border-radius:12px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;align-items:center;gap:4px;padding:0 8px;font-size:12px;font-weight:700;flex:none"><span class="material-symbols-rounded" style="font-size:16px">link</span>Linked</span>
+</div>
+<div style="flex:1;min-height:0;display:{{ d.mainDisp }};flex-direction:{{ d.bodyDir }};gap:8px;padding:8px">
+<div style="flex:none;display:{{ d.keysDisp }};flex-direction:{{ d.keysDir }};gap:6px;width:{{ d.keysW }};height:{{ d.keysH }}">
+<sc-for list="{{ pageKeys }}" as="k" hint-placeholder-count="4"><div style="flex:1;min-width:0;min-height:44px;border-radius:12px;background:#1a2439;box-shadow:inset 0 0 0 2px {{ k.ring }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span style="width:8px;height:8px;border-radius:4px;background:{{ k.dot }}"></span><span style="font-size:12px;font-weight:800;letter-spacing:.08em;color:{{ k.ink }}">{{ k.l }}</span></div></sc-for>
+</div>
+<div style="flex:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size">
+<div style="position:relative;width:min(100cqw, calc(100cqh * .56));height:min(100cqh, calc(100cqw / .56))">
+<div style="position:absolute;left:4%;top:13%;width:13%;height:15%;border-radius:6px;background:#1a2439;box-shadow:inset 0 0 0 2px #e0b04a"></div>
+<div style="position:absolute;right:4%;top:13%;width:13%;height:15%;border-radius:6px;background:#1a2439;box-shadow:inset 0 0 0 2px #e0b04a"></div>
+<div style="position:absolute;left:4%;bottom:13%;width:13%;height:15%;border-radius:6px;background:#1a2439;box-shadow:inset 0 0 0 2px #e0b04a"></div>
+<div style="position:absolute;right:4%;bottom:13%;width:13%;height:15%;border-radius:6px;background:#1a2439;box-shadow:inset 0 0 0 2px #e0b04a"></div>
+<div style="position:absolute;left:12%;right:12%;top:4%;bottom:4%;border-radius:22% / 10%;background:#0e1628;box-shadow:inset 0 0 0 2px #2f3b56"></div>
+<div style="position:absolute;left:21%;right:21%;top:9%;height:24%;border-radius:12px;background:rgba(239,106,125,.2);box-shadow:inset 0 0 0 3px #ef6a7d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="material-symbols-rounded" style="font-size:20px;color:#ef6a7d;font-variation-settings:'FILL' 1">error</span><span style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#ef6a7d">ENGINE</span></div>
+<div style="position:absolute;left:21%;right:21%;top:37%;height:22%;border-radius:12px;background:rgba(76,195,138,.1);box-shadow:inset 0 0 0 2px rgba(76,195,138,.55);display:flex;align-items:center;justify-content:center"><span style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#4cc38a">AIRBAG</span></div>
+<div style="position:absolute;left:21%;right:21%;top:63%;height:28%;border-radius:12px;background:rgba(76,195,138,.1);box-shadow:inset 0 0 0 2px rgba(76,195,138,.55);display:flex;align-items:center;justify-content:center"><span style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#4cc38a">BODY</span></div>
+</div>
+</div>
+<div style="flex:{{ d.panelFlex }};min-width:0;min-height:0;display:{{ d.panelDisp }};flex-direction:column;gap:8px;overflow:hidden">
+<div style="background:#1a2439;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;box-shadow:inset 4px 0 0 #ef6a7d;flex:none"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#ef6a7d;white-space:nowrap">ACTIVE · P0110</span><span style="font-size:16px;font-weight:700;line-height:1.25">Intake air temp circuit</span><span style="font-size:13px;color:#b0bacb">Stuck at 120 °C since 08:41</span></div>
+<div style="background:#1a2439;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;box-shadow:inset 4px 0 0 #e0b04a;flex:none"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#e0b04a;white-space:nowrap">STORED · ABS</span><span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rear right wheel speed</span></div>
+<div style="display:{{ d.liveDisp }};flex-direction:column;flex:none"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#8e9ab0;padding:4px 2px">LIVE NOW</span>
+<sc-for list="{{ live }}" as="v" hint-placeholder-count="3"><div style="height:36px;display:flex;align-items:center;border-top:1px solid #1f2a40;padding:0 2px"><span style="flex:1;font-size:13px;color:#b0bacb;white-space:nowrap">{{ v.l }}</span><span style="font-size:15px;font-weight:700;color:{{ v.c }};white-space:nowrap">{{ v.v }}</span></div></sc-for>
+</div>
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#e0b04a;display:flex;align-items:center;gap:6px;flex:none"><span class="material-symbols-rounded" style="font-size:16px">lock</span>Clear: not while moving</span></sc-if>
+</div>
+<div style="display:{{ d.capDisp }};flex:none;flex-direction:column;gap:2px;padding:0 4px"><span style="font-size:14px;font-weight:700;color:#ef6a7d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">P0110 · intake air stuck</span><span style="font-size:13px;color:#e0b04a;white-space:nowrap">+1 stored in ABS</span></div>
+<div style="flex:none;display:flex;flex-direction:{{ d.keysDir }};gap:6px;width:{{ d.keysW }};height:{{ d.keysH }}">
+<sc-for list="{{ d.actions }}" as="k" hint-placeholder-count="4"><div style="flex:1;min-width:0;min-height:44px;border-radius:12px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:{{ k.ink }}"><span class="material-symbols-rounded" style="font-size:20px">{{ k.i }}</span><span style="font-size:11px;font-weight:800;letter-spacing:.08em">{{ k.l }}</span></div></sc-for>
+</div>
+</div>
+<div style="flex:1;display:{{ d.stripDisp }};flex-direction:{{ d.stripDir }};align-items:center;justify-content:center;gap:10px;padding:8px;text-align:center">
+<span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0">stethoscope</span>
+<span style="font-size:15px;font-weight:700;white-space:nowrap">Diagnose</span>
+<span style="font-size:15px;font-weight:800;color:#ef6a7d;white-space:nowrap;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:18px;font-variation-settings:'FILL' 1">error</span>1</span>
+<span style="font-size:15px;font-weight:800;color:#e0b04a;white-space:nowrap;display:flex;align-items:center;gap:4px"><span class="material-symbols-rounded" style="font-size:18px;font-variation-settings:'FILL' 1">warning</span>1</span>
+</div>
+</div>
+
+<div onPointerDown="{{ onDown }}" style="flex:none;width:{{ divW }};height:{{ divH }};display:flex;align-items:center;justify-content:center;cursor:{{ divCursor }};touch-action:none">
+<span style="width:{{ gripW }};height:{{ gripH }};border-radius:3px;background:{{ gripC }}"></span>
+</div>
+
+<div style="width:{{ bW }}px;height:{{ bH }}px;flex:none;background:#121a2c;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:{{ bRing }}">
+<sc-if value="{{ caution }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:18px;background:#2a1420;min-height:0;overflow:hidden">
+<span style="font-size:13px;font-weight:800;letter-spacing:.12em;color:#ef6a7d;display:flex;align-items:center;gap:6px;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px;font-variation-settings:'FILL' 1">warning</span>MASTER WARNING</span>
+<span style="font-size:{{ cauSize }}px;font-weight:700;letter-spacing:-.01em;line-height:1.1;white-space:nowrap">Coolant 112 °C</span>
+<span style="font-size:15px;color:#d6dbe4;line-height:1.4;text-wrap:pretty">Pull over when it's safe and let the engine idle. This tile goes back to Logs once you acknowledge.</span>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><div onClick="{{ ack }}" style="height:52px;flex:1;min-width:110px;border-radius:26px;background:#eef2f9;color:#0a1020;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer">ACK</div><div style="height:52px;flex:1;min-width:110px;border-radius:26px;background:#1a2439;color:#22a6e0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;white-space:nowrap">Open in Diagnose</div></div>
+</div>
+</sc-if>
+<sc-if value="{{ noCaution }}" hint-placeholder-val="{{ true }}">
+<div style="height:44px;flex:none;display:{{ l.headDisp }};align-items:center;gap:8px;padding:0 8px 0 14px;border-bottom:1px solid #1f2a40;overflow:hidden">
+<span class="material-symbols-rounded" style="font-size:20px;color:#22a6e0">history</span><span style="font-size:14px;font-weight:700;white-space:nowrap">Logs</span><span style="font-size:14px;color:#8e9ab0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">· {{ l.name }}</span><span style="flex:1"></span>
+<span style="height:24px;border-radius:12px;background:rgba(34,166,224,.16);color:#22a6e0;display:flex;align-items:center;gap:4px;padding:0 8px;font-size:12px;font-weight:700;flex:none"><span class="material-symbols-rounded" style="font-size:16px">link</span>Linked</span>
+</div>
+<div style="flex:1;min-height:0;display:{{ l.mainDisp }};flex-direction:{{ l.bodyDir }};gap:8px;padding:8px">
+<div style="flex:1;min-width:0;min-height:0;position:relative;background:#1a2439;border-radius:14px;overflow:hidden">
+<svg viewBox="0 0 300 100" preserveAspectRatio="none" style="position:absolute;left:0;top:14px;width:100%;height:calc(100% - 40px)"><path d="M0 70 L40 66 L80 60 L120 58 L150 30 L156 6 L300 6" fill="none" stroke="#ef6a7d" stroke-width="2.5" vector-effect="non-scaling-stroke"></path><path d="M0 80 L60 76 L120 70 L180 52 L210 40 L240 46 L300 58" fill="none" stroke="#e0b04a" stroke-width="2.5" vector-effect="non-scaling-stroke"></path></svg>
+<span style="position:absolute;left:52%;top:0;bottom:0;width:2px;background:#22a6e0"></span>
+<span style="position:absolute;left:52%;top:8px;margin-left:6px;font-size:12px;font-weight:700;color:#22a6e0">08:41</span>
+<span style="position:absolute;left:10px;bottom:8px;font-size:12px;color:#8e9ab0;display:flex;gap:12px;white-space:nowrap"><span style="color:#ef6a7d">● Intake air</span><span style="color:#e0b04a">● Coolant</span></span>
+</div>
+<div style="flex:{{ l.panelFlex }};min-width:0;display:{{ l.panelDisp }};flex-direction:column">
+<sc-for list="{{ events }}" as="e" hint-placeholder-count="3"><div style="height:44px;flex:none;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1f2a40;padding:0 2px"><span style="font-size:13px;color:#8e9ab0;width:38px;flex:none">{{ e.t }}</span><span class="material-symbols-rounded" style="font-size:18px;color:{{ e.c }};font-variation-settings:'FILL' 1">{{ e.i }}</span><span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ e.x }}</span></div></sc-for>
+</div>
+</div>
+<div style="flex:1;display:{{ l.stripDisp }};flex-direction:{{ l.stripDir }};align-items:center;justify-content:center;gap:10px;padding:8px;text-align:center">
+<span class="material-symbols-rounded" style="font-size:24px;color:#22a6e0">history</span>
+<span style="font-size:15px;font-weight:700;white-space:nowrap">Logs</span>
+<span style="font-size:15px;font-weight:800;color:#22a6e0;white-space:nowrap">08:41</span>
+</div>
+</sc-if>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px">
+<div style="height:40px;border-radius:20px;background:#0e1626;color:#fff;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:14px;font-weight:600"><span class="material-symbols-rounded" style="font-size:18px">stethoscope</span>Diagnose {{ aWr }} × {{ aHr }} → <b>{{ d.label }}</b></div>
+<div style="height:40px;border-radius:20px;background:#0e1626;color:#fff;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:14px;font-weight:600"><span class="material-symbols-rounded" style="font-size:18px">history</span>Logs {{ bWr }} × {{ bHr }} → <b>{{ l.label }}</b></div>
+</div>
+
+<div style="max-width:980px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;font-size:14px;line-height:1.5;color:#3b4556">
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Parts, by priority</b><span>Diagnose: car diagram, then faults, then live values. Logs: chart, then events. Lower parts drop out first.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Shape rules</b><span>Wide: side by side, keys down the edges. Tall: stacked, keys along top and bottom. Small: diagram plus one line. Strip: a chip. Layouts snap; they never stretch.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Android split screen</b><span>Ostler is an ordinary Android app. Android gives it a narrower window and the same rules apply, so Ostler tiles still work beside maps or music.</span></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { scr: '7', dir: 'side', r: 0.62, android: false, moving: false, caution: false };
+  areaRef = React.createRef();
+  mode(w, h) {
+    if (w < 170 || h < 170) return 'strip';
+    if (w < 320 || h < 250) return 'small';
+    return w / h >= 1.15 ? 'wide' : 'tall';
+  }
+  onDown = (e) => {
+    if (this.state.moving) return;
+    e.preventDefault();
+    const move = (ev) => {
+      const el = this.areaRef.current; if (!el) return;
+      const rc = el.getBoundingClientRect();
+      let r = this.state.dir === 'side' ? (ev.clientX - rc.left) / rc.width : (ev.clientY - rc.top) / rc.height;
+      this.setState({ r: Math.max(0.12, Math.min(0.88, r)) });
+    };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
+  layout(m, w, h, isDiag) {
+    const hide = 'none', show = 'flex';
+    const name = isDiag ? 'Systems' : '08:30 drive';
+    const label = { wide: 'Wide', tall: 'Tall', small: 'Small', strip: 'Strip' }[m];
+    if (m === 'strip') return { label, name, headDisp: hide, mainDisp: hide, stripDisp: show, stripDir: w > h * 1.4 ? 'row' : 'column', actions: [] };
+    const o = { label, name, headDisp: show, mainDisp: show, stripDisp: hide, stripDir: 'row' };
+    const mv = this.state.moving;
+    const clear = { l: 'CLEAR', i: mv ? 'lock' : 'delete_sweep', ink: mv ? '#5d6880' : '#eef2f9' };
+    const all = [{ l: 'READ', i: 'refresh', ink: '#eef2f9' }, { l: 'LIVE', i: 'monitoring', ink: '#eef2f9' }, { l: 'HELP', i: 'support', ink: '#22a6e0' }, clear];
+    if (m === 'wide') Object.assign(o, { bodyDir: 'row', keysDisp: show, keysDir: 'column', keysW: '76px', keysH: 'auto', panelDisp: w >= 560 ? show : hide, capDisp: w >= 560 ? hide : show, panelFlex: '1.3', liveDisp: w >= 760 && h >= 360 ? show : hide, actions: all });
+    if (m === 'tall') Object.assign(o, { bodyDir: 'column', keysDisp: show, keysDir: 'row', keysW: 'auto', keysH: '56px', panelDisp: h >= 420 ? show : hide, capDisp: h >= 420 ? hide : show, panelFlex: '0 0 auto', liveDisp: h >= 640 ? show : hide, actions: all });
+    if (m === 'small') Object.assign(o, { bodyDir: 'column', keysDisp: hide, keysDir: 'row', keysW: 'auto', keysH: '52px', panelDisp: hide, capDisp: show, panelFlex: '1', liveDisp: hide, actions: [all[2], { l: 'MORE', i: 'more_horiz', ink: '#eef2f9' }] });
+    if (!isDiag) { o.panelFlex = m === 'wide' ? '0.8' : '0 0 auto'; o.panelDisp = (m === 'wide' && w >= 520) || (m === 'tall' && h >= 380) ? show : hide; }
+    return o;
+  }
+  renderVals() {
+    const s = this.state;
+    const SZ = { '5': [800, 480], '7': [1024, 600], '10': [1280, 720] };
+    const [W, H] = SZ[s.scr];
+    const andW = s.android ? Math.round(W * 0.42) : 0;
+    const winW = W - (s.android ? andW + 12 : 0);
+    const areaW = winW - 80 - 24, areaH = H - 48 - 12, gap = 12;
+    let aW, aH, bW, bH;
+    if (s.dir === 'side') { aW = Math.round((areaW - gap) * s.r); bW = areaW - gap - aW; aH = bH = areaH; }
+    else { aH = Math.round((areaH - gap) * s.r); bH = areaH - gap - aH; aW = bW = areaW; }
+    const dm = this.mode(aW, aH), lm = this.mode(bW, bH);
+    const seg = (on) => ({ bg: on ? '#0e1626' : 'transparent', ink: on ? '#fff' : '#3b4556' });
+    const side = s.dir === 'side';
+    return {
+      W, H, andW, android: s.android, moving: s.moving, caution: s.caution, noCaution: !s.caution,
+      areaRef: this.areaRef, onDown: this.onDown, ack: () => this.setState({ caution: false }),
+      flexDir: side ? 'row' : 'column', aW, aH, bW, bH, aWr: aW, aHr: aH, bWr: bW, bHr: bH,
+      divW: side ? gap + 'px' : '100%', divH: side ? '100%' : gap + 'px',
+      gripW: side ? '4px' : '48px', gripH: side ? '48px' : '4px',
+      gripC: s.moving ? '#1f2a40' : '#3a4866', divCursor: s.moving ? 'not-allowed' : (side ? 'col-resize' : 'row-resize'),
+      cauSize: bW < 260 ? 22 : 30,
+      bRing: s.caution ? 'inset 0 0 0 3px #ef6a7d' : 'none',
+      railIcon: s.moving ? 'lock' : 'add',
+      d: this.layout(dm, aW, aH, true), l: this.layout(lm, bW, bH, false),
+      screens: [['5', '5″ 800×480'], ['7', '7″ 1024×600'], ['10', '10″ 1280×720']].map(([k, l]) => ({ l, ...seg(s.scr === k), pick: () => this.setState({ scr: k }) })),
+      dirs: [['side', 'Side by side', 'view_column_2'], ['stack', 'Stacked', 'view_agenda']].map(([k, l, i]) => ({ l, i, ...seg(s.dir === k), pick: () => !s.moving && this.setState({ dir: k }) })),
+      ratios: [[0.8, '80%'], [0.62, '62%'], [0.5, '50%'], [0.3, '30%'], [0.15, '15%']].map(([v, l]) => ({ l, ...seg(Math.abs(s.r - v) < 0.02), pick: () => !s.moving && this.setState({ r: v }) })),
+      toggles: [['android', 'Android split screen', 'splitscreen'], ['moving', 'Car moving', 'directions_car'], ['caution', 'Master warning', 'warning']].map(([k, l, i]) => ({ l, i, bg: s[k] ? '#0e1626' : '#e4e7ec', ink: s[k] ? '#fff' : '#3b4556', flip: () => this.setState({ [k]: !s[k] }) })),
+      presets: [['commute', 'Commute'], ['build', 'Workshop'], ['local_parking', 'Parked']].map(([i, l]) => ({ i, l, bg: l === 'Workshop' ? 'rgba(34,166,224,.16)' : 'transparent', ink: l === 'Workshop' ? '#22a6e0' : '#b0bacb' })),
+      pageKeys: [['ENGINE', '#ef6a7d', 1], ['ABS', '#e0b04a', 0], ['BODY', '#4cc38a', 0], ['AIRBAG', '#4cc38a', 0]].map(([l, dot, on]) => ({ l, dot, ring: on ? '#22a6e0' : 'transparent', ink: on ? '#eef2f9' : '#b0bacb' })),
+      live: [{ l: 'Intake air', v: '120 °C', c: '#ef6a7d' }, { l: 'Coolant', v: '92 °C', c: '#eef2f9' }, { l: 'Battery', v: '14.1 V', c: '#eef2f9' }],
+      events: [{ t: '08:41', i: 'error', c: '#ef6a7d', x: 'P0110 raised' }, { t: '08:52', i: 'warning', c: '#e0b04a', x: 'Coolant passed 105 °C' }, { t: '08:55', i: 'check_circle', c: '#4cc38a', x: 'Coolant back under 100 °C' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

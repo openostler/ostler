@@ -2,11 +2,11 @@
 title: "ADR-0052 — The MFD: pages at five size classes from their own tile, and the ostler-shell library every app bundles"
 area: decisions
 status: draft
-version: 0.4
+version: 0.5
 updated: 2026-10-11
-depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md]
+depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md, references/design/2026-10/mfd/README.md, references/design/2026-10/mfd/REVIEW.md]
 summary: >
-  Proposed (draft for the owner, 2026-10-11), from the owner and designer's MFD brief and the owner's corrections. The screen is an aircraft-style multi-function display: a layout of tiles, each showing one page from any installed app. Each app has its own home and settings; the gateway is an app of its own (connections, devices, hardware, permissions, garage). Every app bundles a separate library repo, ostler-shell (tiling engine, window rules, size classes and snapping, page contract, moving rules, theme resolver, apps menu, layout format, vehicle chip); there is no launcher and no shell app, whichever app is open hosts the tiles. Own apps' pages are same-origin page modules; iframes only for third-party pages; tiles talk over BroadcastChannel; layouts are versioned and synced through the gateway; an unrenderable page shows as a chip. Five size classes (Badge, Chip, Compact, Standard, Expanded) picked from the tile's own box with enter and exit thresholds; JS writes data-size; layoutClass becomes deviceClass. A page contract (sizes, summary value, ranked parts, per-action moving safety, VSS data requirements, links). No drive modes: moving is a set of shell rules on actions, with a 24 px text floor kept. Shared preferences and the vehicle switcher live in the gateway. Save to phone per app, layout or screen. Warnings, theme import safety and performance in brief. Amends ADR-0049 v1.3: the MFD and the gateway's Car page replace the front-door Home and the Drive PWA.
+  Proposed (draft for the owner, 2026-10-11), from the owner and designer's MFD brief and the owner's corrections. The screen is an aircraft-style multi-function display: a layout of tiles, each showing one page from any installed app. Each app has its own home and settings; the gateway is an app of its own (connections, devices, hardware, permissions, garage). Every app bundles a separate library repo, ostler-shell (tiling engine, window rules, size classes and snapping, page contract, moving rules, theme resolver, apps menu, layout format, vehicle chip); there is no launcher and no shell app, whichever app is open hosts the tiles. Own apps' pages are same-origin page modules; iframes only for third-party pages; tiles talk over BroadcastChannel; layouts are versioned and synced through the gateway; an unrenderable page shows as a chip. Five size classes (Badge, Chip, Compact, Standard, Expanded) picked from the tile's own box with enter and exit thresholds; JS writes data-size; layoutClass becomes deviceClass. A page contract (sizes, summary value, ranked parts, per-action moving safety, VSS data requirements, links). No drive modes: moving is a set of shell rules on actions, with a 24 px text floor kept. Shared preferences and the vehicle switcher live in the gateway. Save to phone per app, layout or screen. Warnings, theme import safety and performance in brief. Amends ADR-0049 v1.3: the MFD and the gateway's Car page replace the front-door Home and the Drive PWA. v0.5 adds, from the designer's hand-off (references/design/2026-10/mfd/): the top strip order (layout switcher, connection chip, warning strip, shared-settings button; no clock), the connection chip from the gateway, the tile label menu, each app's navigation only at Standard and Expanded, the shared cursor, warning takeover details and the theme rules; the designer's 22 px floor and four classes stay open.
 ---
 
 # ADR-0052 — The MFD: pages at five size classes, and the ostler-shell library
@@ -14,7 +14,9 @@ summary: >
 - **Date:** 2026-10-11
 - **Status:** **proposed** (draft for the owner). Written from the owner and designer's
   brief ([direction brief](../references/design/2026-10/brief/00-direction-mfd.md)) and the
-  owner's corrections of 2026-10-11, which this text follows where they differ.
+  owner's corrections of 2026-10-11, which this text follows where they differ. The
+  designer's hand-off of the same day (designs, renders and a review of the drift) is in
+  [references/design/2026-10/mfd/](../references/design/2026-10/mfd/README.md).
 - **Would amend:** [ADR-0049](adr-0049-open-vehicle-data-standard-and-app-suite.md) v1.3
   (the front-door Home and the Drive PWA are replaced by the MFD and the gateway's Car page;
   the front door merges into the gateway app), the
@@ -83,6 +85,21 @@ summary: >
   - tiles coordinate over **BroadcastChannel** (shared cursor, linked selection);
   - a page the host cannot render (not installed, version mismatch, blocked) shows as a
     **chip** that opens its own app.
+- **Shell elements** (designer's hand-off, `Ostler MFD v2` and `Ostler Core`):
+  - **Top strip, no clock** (Android shows the time), from the driver's side outward:
+    (1) layout switcher (saved layouts, "Save this layout", "Manage layouts"); (2) the
+    **connection chip**; (3) the warning strip, one item at a time; (4) the shared-settings
+    button, which opens the shared preferences (§6). The vehicle chip sits with the
+    connection chip. Right-hand drive mirrors the strip.
+  - **Connection chip:** in every app; its value comes from the gateway ("Connected",
+    "Connected · via Brain", "Connecting…", "Last seen 10:42", "No gateway"); it never says
+    "gateway"; tapping it opens the gateway app.
+  - **Tile label menu:** Swap page · Page settings (owned by that page's app) · Open beside ·
+    Close. The label names the page and, while designing, its app and size class.
+  - **Each app keeps its own navigation and settings inside its tile.** Its navigation row
+    shows at Standard and Expanded and hides at Compact, Chip and Badge.
+  - **Linked tiles share a cursor:** picking a fault in Diagnose moves Logs to that moment.
+    A link passes a vehicle, a time window and a signal.
 - **Layout format:** versioned (successor to `ostler.layout/1` in the drive-modes spec §4),
   stored in the gateway and synced. Saved layouts switch in one tap and may switch
   automatically (car started, low range, parked).
@@ -187,11 +204,26 @@ Each page declares to the shell:
 
 ### 8. Warnings, themes and performance (in brief)
 
-- **Warnings:** a caution rings its tile, lights the strip and chimes. A warning takes the
-  passenger-side tile that is not an instrument page until ACK, and never covers a Drive or
-  instrument page (as a band if that tile is a chip); the strip label stays until the
-  problem clears.
-- **Themes:** custom CSS imports pass a sanitiser (variables and allowed properties only; no
+- **Warnings:** colour is used only for state, in plain words.
+  - **Caution (amber):** rings the tile the problem is about (if it is on screen), lights the
+    strip and chimes; it never takes over a tile.
+  - **Warning (red):** takes over one tile until ACK, with big type, one instruction and one
+    ACK button. It takes the passenger-side tile that is not an instrument page and never
+    covers an instrument page; if that tile is only a chip, it opens as a band across the
+    bottom or side. The WARNING label stays in the strip until the problem clears, even after
+    ACK. Which tile wins when none fits cleanly is open (hand-off review, decision 9).
+- **Themes** (rules from the designer's `Ostler Themes v2`; the set itself is open, hand-off
+  review decision 11):
+  - a theme changes structure as well as colour: frame, labels, numbers, gauges, controls,
+    strip and divider;
+  - each theme ships a **day and a night version**; the choice is Auto, Day or Night, and Auto
+    follows the headlights signal when the gateway has it, then the light sensor, then sunset
+    at the car's position;
+  - themes never change layout and tile sizes, touch targets, the drag handles between tiles,
+    warning and caution colours or safety icons, and never the protected surfaces, required
+    parts or the render check of the theme engine (decisions 5–7);
+  - steering-wheel controls and soft keys are not part of a theme (§4a).
+- **Theme import:** custom CSS imports pass a sanitiser (variables and allowed properties only; no
   remote `url()` or `@import`); the user's photo stays on the device; contrast is verified
   by the existing render check, not by reading the CSS; warning and caution colours and
   safety icons are locked.
@@ -216,6 +248,11 @@ Each page declares to the shell:
    holds the front door; a rename is cosmetic.
 5. **Automatic layout switching triggers.** Recommend car started, low range and parked
    only at first.
+6. **The designer's hand-off drift.** The designer's docs say 22 px and four size classes
+   (Chip, Compact, Standard, Expanded) and limit tiles by screen inches; this ADR keeps 24 px,
+   five classes and pixel limits until the owner decides. The full list, with the theme set,
+   theme wording and state colours, is the
+   [hand-off review](../references/design/2026-10/mfd/REVIEW.md) "Decisions for the owner".
 
 ## Confirmation
 
@@ -269,3 +306,9 @@ Each page declares to the shell:
   steering-wheel buttons on `ShellInput`, Select as acknowledge only while a warning shows, and
   the optional Ostler Controls app (steering-wheel capture, overlays, floating gauge) sending
   commands through the gateway.
+- 2026-10-11 — v0.5, proposed: from the designer's MFD hand-off
+  (`references/design/2026-10/mfd/`): §2 shell elements (top strip order with no clock,
+  connection chip from the gateway, tile label menu, app navigation only at Standard and
+  Expanded, shared cursor); §8 warning takeover details and the theme rules (structure,
+  day and night with Auto, the never-change list); §9 item 6 points to the hand-off review.
+  Five classes, 24 px and pixel tile limits unchanged.

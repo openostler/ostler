@@ -2,7 +2,7 @@
 title: "Designer brief — Ostler: new direction and design language (the MFD)"
 area: references
 status: draft
-version: 1.0
+version: 1.1
 updated: 2026-10-11
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, references/research/responsive_tile_sizes.md, references/design/2026-10/brief/00-structure.md]
 summary: >
@@ -15,7 +15,8 @@ summary: >
 > decisions are proposed in [ADR-0052](../../../../decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md)
 > (which replaces the brief's reference to `docs/ADR-proposed-adaptive-page-sizes.md`) and
 > [ADR-0053](../../../../decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md).
-> The reference designs (`.dc.html`) are not in this repo.
+> The reference designs (`.dc.html`), with renders and a review of the drift, are in
+> [../mfd/](../mfd/README.md) (added 2026-10-11).
 >
 > - **Each app has its own home screen and settings.** Connections do not live in a shell:
 >   the **gateway is an app** (connections, devices, hardware detection, permissions,
