@@ -16,7 +16,7 @@ summary: >
 >
 > - **Every screen is a PWA,** each its own repo: the **Ostler front door**
 >   (`ostler-app-hub`: welcome, connect, Home, apps gallery, garage, devices, permissions,
->   settings), **Logs** (`ostler-app-trips`), **Diagnostics** (`ostler-app-diagnostics`),
+>   settings), **Logs** (`ostler-app-logs`), **Diagnostics** (`ostler-app-diagnostics`),
 >   **Drive** (`ostler-app-drive`, new) and add-ons (Security, Maintenance, friends' map,
 >   Social, mesh). Served from `ostler.app` and by the Brain, which can host and install them;
 >   installable from Chrome; separate so two can run side by side on a head unit; linked to

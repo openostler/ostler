@@ -2,7 +2,7 @@
 title: "ADR-0052 — The MFD: pages at five size classes from their own tile, and the ostler-shell library every app bundles"
 area: decisions
 status: draft
-version: 0.3
+version: 0.4
 updated: 2026-10-11
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md]
 summary: >
@@ -120,7 +120,35 @@ Each page declares to the shell:
 - **data requirements:** the VSS paths it uses and those it requires. The gateway uses them
   for "apps grow when data appears", "Get more apps that work with this car" and the Car
   page's suggestions;
-- **links** to other pages (open beside, shared cursor).
+- **links** to other pages (open beside, shared cursor);
+- **soft keys:** up to five labelled actions for when the page has focus (for example "Next
+  layout", "Swap page", "Back", "Mark moment"), each with its moving safety. Positions stay
+  stable so they can be used without looking.
+
+### 4a. Input: soft keys, steering-wheel buttons and Ostler Controls
+
+- **No cockpit of buttons.** Input is the steering-wheel controls the car already has, plus an
+  optional **soft-key row** along the bottom, with no labelled hardware.
+- **The shell draws the soft-key row** from the focused page's declared soft keys. Focus moves
+  between tiles with a visible focus ring and a predictable order; every action reachable by
+  touch is reachable by focus too.
+- **Everything maps onto `ShellInput`** ([shell-input spec](../specs/2026-10-07-shell-input-design.md)):
+  steering-wheel buttons and soft keys arrive as its intents (up, down, ok, back, menu, mark)
+  plus `softkey-1`…`softkey-5`, `next-layout` and `ack`.
+- **Select acknowledges a warning only while one is showing** (or on a long press). Otherwise
+  it is left to the media app or the head unit. Steering-wheel controls never change the car
+  beyond acknowledging a warning; clearing faults and tests still need confirmation on screen.
+- **Ostler Controls** is a separate, optional native Android app (Kotlin, ADR-0050). It:
+  - catches steering-wheel buttons, including when Ostler is not in front;
+  - draws the overlays that need "draw over other apps": the soft-key strip over other apps and
+    the **floating gauge** (moved here from the gateway app, which then has no overlay);
+  - sends commands (`ack`, `next-layout`, `focus-next`, `softkey-n`) to the **gateway**, which
+    passes them to whichever Ostler app is showing. A native app cannot push input into a PWA.
+- **Fully customisable:** key mapping per head unit with a learn mode; the number and position
+  of soft keys (bottom by default, driver's side in portrait); actions per saved layout.
+- **Bench-test items:** how FYT units deliver steering-wheel keys (key events or broadcasts);
+  whether catching them outside Ostler needs an accessibility service; Play Store policy on
+  accessibility services (F-Droid or direct download as the fallback).
 
 ### 5. No drive modes: moving is a set of shell rules
 
@@ -237,3 +265,7 @@ Each page declares to the shell:
   (gateway settings spec).
 - 2026-10-11 — v0.3, proposed: §6 adds "everything lives in the gateway" and Ostler-wide web
   permissions.
+- 2026-10-11 — v0.4, proposed: soft keys in the page contract; §4a input: the soft-key row,
+  steering-wheel buttons on `ShellInput`, Select as acknowledge only while a warning shows, and
+  the optional Ostler Controls app (steering-wheel capture, overlays, floating gauge) sending
+  commands through the gateway.

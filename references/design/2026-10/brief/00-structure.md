@@ -156,7 +156,7 @@ corrections, changes this structure (proposed:
     </page>
   </app>
 
-  <app id="logs" repo="ostler-app-trips">
+  <app id="logs" repo="ostler-app-logs">
     <page id="home"/>
     <page id="logs-list"/>
     <page id="statistics"/>
@@ -202,7 +202,7 @@ corrections, changes this structure (proposed:
 </ostler>
 ```
 
-`ostler-app-trips` holds Logs. Since v1.1 `ostler-app-drive` is not created; `ostler-app-hub`
+`ostler-app-logs` holds Logs. Since v1.1 `ostler-app-drive` is not created; `ostler-app-hub`
 holds the gateway app's web form (repo name open, ADR-0052 §9).
 
 ## Changelog

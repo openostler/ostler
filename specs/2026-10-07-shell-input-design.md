@@ -24,6 +24,12 @@ summary: >
 
 # ShellInput — design
 
+> **Amended 2026-10-11 (ADR-0052 §4a, proposed):** soft keys and steering-wheel buttons map onto
+> these intents, plus `softkey-1`…`softkey-5`, `next-layout` and `ack`. Pages declare their soft
+> keys in the page contract; the optional Ostler Controls app catches steering-wheel buttons and
+> sends them through the gateway. Select acknowledges a warning only while one is showing. Drive
+> modes in this spec are replaced by the MFD and saved layouts (ADR-0052).
+
 > **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
 > be an open system", then "apply the loosenings";
 > [ADR-0047](../decisions/adr-0047-openness-round.md)):** the focus-ring token values are the
