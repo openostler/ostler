@@ -195,3 +195,11 @@ SPDX-License-Identifier = "CC-BY-SA-4.0"
 path = "references/design/2026-10/claude-design/**"
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# MFD design hand-off (references/design/2026-10/mfd/README.md): the owner and designer's
+# .dc.html designs, the designer's docs and PNG renders of the designs. The design tool's
+# runtime (support.js) is not in the repo; ostler-themes.js is not duplicated.
+[[annotations]]
+path = "references/design/2026-10/mfd/**"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

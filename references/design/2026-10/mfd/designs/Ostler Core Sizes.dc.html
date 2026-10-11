@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga'}
+</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:64px;color:#0e1626">
+<div style="max-width:1000px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER CORE · EVERY SCREEN SIZE</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">The bare shell on phone, head units and tablet</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">One shell, four states, five sizes. All screens are live. Tall windows split top and bottom; wide ones split side by side. Pages pick Compact, Standard or Expanded from their tile. Settings is a two-pane sheet on head units and tablets, and a list, then detail, on the phone.</div>
+</div>
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:24px;font-weight:800;white-space:nowrap">Phone</span><span style="font-size:15px;color:#3b4556">393×852</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+<div id="pa" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">pa</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Not connected</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="A" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" label="pa Phone Not connected" hint-size="413px,872px"></dc-import></div>
+<div id="pb" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">pb</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Connected, no apps</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="B" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" label="pb Phone Connected, no apps" hint-size="413px,872px"></dc-import></div>
+<div id="pc" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">pc</span><span style="font-size:15px;font-weight:700;white-space:nowrap">First app beside Car</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" label="pc Phone First app beside Car" hint-size="413px,872px"></dc-import></div>
+<div id="ps" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">ps</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Settings</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" settings="{{ true }}" sec="" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" label="ps Phone Settings" hint-size="413px,872px"></dc-import></div>
+</div></section>
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:24px;font-weight:800;white-space:nowrap">5″ head unit</span><span style="font-size:15px;color:#3b4556">800×480</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+<div id="5a" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">5a</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Not connected</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="A" screen-w="{{ 800 }}" screen-h="{{ 480 }}" label="5a 5″ head unit Not connected" hint-size="828px,508px"></dc-import></div>
+<div id="5b" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">5b</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Connected, no apps</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="B" screen-w="{{ 800 }}" screen-h="{{ 480 }}" label="5b 5″ head unit Connected, no apps" hint-size="828px,508px"></dc-import></div>
+<div id="5c" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">5c</span><span style="font-size:15px;font-weight:700;white-space:nowrap">First app beside Car</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" screen-w="{{ 800 }}" screen-h="{{ 480 }}" label="5c 5″ head unit First app beside Car" hint-size="828px,508px"></dc-import></div>
+<div id="5s" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">5s</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Settings</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" settings="{{ true }}" sec="themes" screen-w="{{ 800 }}" screen-h="{{ 480 }}" label="5s 5″ head unit Settings" hint-size="828px,508px"></dc-import></div>
+</div></section>
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:24px;font-weight:800;white-space:nowrap">7″ head unit</span><span style="font-size:15px;color:#3b4556">1024×600</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+<div id="7a" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">7a</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Not connected</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="A" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" label="7a 7″ head unit Not connected" hint-size="1052px,628px"></dc-import></div>
+<div id="7b" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">7b</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Connected, no apps</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="B" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" label="7b 7″ head unit Connected, no apps" hint-size="1052px,628px"></dc-import></div>
+<div id="7c" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">7c</span><span style="font-size:15px;font-weight:700;white-space:nowrap">First app beside Car</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" label="7c 7″ head unit First app beside Car" hint-size="1052px,628px"></dc-import></div>
+<div id="7s" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">7s</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Settings</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" settings="{{ true }}" sec="themes" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" label="7s 7″ head unit Settings" hint-size="1052px,628px"></dc-import></div>
+</div></section>
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:24px;font-weight:800;white-space:nowrap">10″ head unit</span><span style="font-size:15px;color:#3b4556">1280×720</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+<div id="10a" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">10a</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Not connected</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="A" screen-w="{{ 1280 }}" screen-h="{{ 720 }}" label="10a 10″ head unit Not connected" hint-size="1308px,748px"></dc-import></div>
+<div id="10b" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">10b</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Connected, no apps</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="B" screen-w="{{ 1280 }}" screen-h="{{ 720 }}" label="10b 10″ head unit Connected, no apps" hint-size="1308px,748px"></dc-import></div>
+<div id="10c" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">10c</span><span style="font-size:15px;font-weight:700;white-space:nowrap">First app beside Car</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" screen-w="{{ 1280 }}" screen-h="{{ 720 }}" label="10c 10″ head unit First app beside Car" hint-size="1308px,748px"></dc-import></div>
+<div id="10s" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">10s</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Settings</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" settings="{{ true }}" sec="themes" screen-w="{{ 1280 }}" screen-h="{{ 720 }}" label="10s 10″ head unit Settings" hint-size="1308px,748px"></dc-import></div>
+</div></section>
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:24px;font-weight:800;white-space:nowrap">Tablet</span><span style="font-size:15px;color:#3b4556">1180×820</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start">
+<div id="ta" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">ta</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Not connected</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="A" screen-w="{{ 1180 }}" screen-h="{{ 820 }}" label="ta Tablet Not connected" hint-size="1208px,848px"></dc-import></div>
+<div id="tb" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">tb</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Connected, no apps</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="B" screen-w="{{ 1180 }}" screen-h="{{ 820 }}" label="tb Tablet Connected, no apps" hint-size="1208px,848px"></dc-import></div>
+<div id="tc" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">tc</span><span style="font-size:15px;font-weight:700;white-space:nowrap">First app beside Car</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" screen-w="{{ 1180 }}" screen-h="{{ 820 }}" label="tc Tablet First app beside Car" hint-size="1208px,848px"></dc-import></div>
+<div id="ts" style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">ts</span><span style="font-size:15px;font-weight:700;white-space:nowrap">Settings</span></div>
+<dc-import name="Ostler Core" bare="{{ true }}" stage="C" settings="{{ true }}" sec="themes" screen-w="{{ 1180 }}" screen-h="{{ 820 }}" label="ts Tablet Settings" hint-size="1208px,848px"></dc-import></div>
+</div></section>
+</div>
+</x-dc>
+</body>
+</html>

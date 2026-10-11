@@ -2,11 +2,11 @@
 title: "Theme engine — skins that change everything: free-form CSS, XML layouts and component templates, SVG gauges, textures, backgrounds, fonts, sounds and theme options — design"
 area: specs
 status: stable
-version: 0.7
-updated: 2026-10-08
-depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/research/deep_theming_mechanics.md, references/design/2026-10/claude-design/README.md]
+version: 0.8
+updated: 2026-10-11
+depends_on: [specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-app-ui-model-design.md, specs/2026-10-07-store-design.md, references/research/deep_theming.md, references/research/deep_theming_mechanics.md, references/design/2026-10/claude-design/README.md, references/design/2026-10/mfd/README.md, references/design/2026-10/mfd/REVIEW.md]
 summary: >
-  Approved by the owner on 2026-10-07 (decisions 1–8 as recommended). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Theming is split into separate packs (OS skin, widget pack with per-widget gauge options, icon pack, wallpaper pack, sound pack) mixed freely or applied as bundles; the background belongs to the user. Works the same when Ostler is an Android launcher (hosted Android widgets, appfilter icon packs, system wallpaper, Material You). Compile on import, automatic migration, protected surfaces, required parts and a Drive-mode render check. Phases TE1–TE6. Amended 2026-10-08 (direction round, ADR-0049): re-scoped to token packs, gauge styles and app skins via the shared template; the skin engine parked.
+  Approved by the owner on 2026-10-07 (decisions 1–8 as recommended). Written for the owner's "come up with a good theme plan: custom CSS, free-form stylesheets, textures, backgrounds, layouts, XMLs; an extremely powerful way to theme", after token-only themes came out samey. A theme is a skin pack (`ostler.skin/1`, a zip) with six layers, each optional: tokens (DTCG JSON, per mode), free-form CSS in cascade layers, XML screen layouts (OSML) that replace each screen's structure per layout class and driving state, XML component templates that redefine how kit components are built, SVG gauge and widget definitions bound to live signals, and assets (textures, backgrounds, fonts, icon packs, map styles, sounds). Skins inherit from a parent (child themes), ship style variations, and declare theme options (gauge faces, backgrounds, needles, dial layouts, anything the designer offers) that swap tokens, CSS, assets, layouts or templates, shown in a Theme options menu; every skin also gets user-changeable background, accent, scale, density, icons and sounds. Live vehicle signals reach CSS as variables and XML as bindings and conditions. No JavaScript: OSML is a declarative allowlist rendered by the shell's React, with a small pure expression language. A versioned hook API (data-part, states, variables, slots) keeps skins working across updates; broken files fall back to the parent, and a safe-mode reset always works. Theme Studio gives live editing, an inspector, hot reload from a folder and a screenshot matrix. Distribution through the Store, Ostler Community, file, link or git. Theming is split into separate packs (OS skin, widget pack with per-widget gauge options, icon pack, wallpaper pack, sound pack) mixed freely or applied as bundles; the background belongs to the user. Works the same when Ostler is an Android launcher (hosted Android widgets, appfilter icon packs, system wallpaper, Material You). Compile on import, automatic migration, protected surfaces, required parts and a Drive-mode render check. Phases TE1–TE6. Amended 2026-10-08 (direction round, ADR-0049): re-scoped to token packs, gauge styles and app skins via the shared template; the skin engine parked. Note 2026-10-11 (MFD hand-off): the designer's Themes v2 (twelve themes, each with a day and a night version, Auto by headlights, light sensor, then sunset) is the current design reference for the default look; what themes may and may not change is listed; the built-in list and the moving variant are open for the owner.
 ---
 
 # Theme engine — design
@@ -19,6 +19,34 @@ summary: >
 > engine is parked. The token schema, theme options, safety render check, protected surfaces
 > and required parts carry over; §2.6's launcher follows the parked
 > [ADR-0048](../decisions/adr-0048-ostler-as-an-android-launcher.md).
+
+> **Note 2026-10-11 (designer's MFD hand-off; not an owner decision):** the designer's
+> **Themes v2** (`references/design/2026-10/mfd/designs/Ostler Themes v2.dc.html`, renders in
+> [mfd/png/](../references/design/2026-10/mfd/README.md)) is the current design reference for
+> the default pack's look. It has **twelve** themes: Night, Heritage, Expedition, Blueprint,
+> Race, Adventure, Knight Rider, Paper, Military, Naval, Jet fighter and Spy.
+>
+> - **Source of values.** Themes v2 is drawn as HTML only. `ostler-themes.js` (the same file
+>   in the hand-off and in `claude-design/project/`) still holds the **22** themes of §9 and
+>   stays the token source for them. Token values for the six new themes are to be written.
+>   Which set ships built in (§9) is open:
+>   [hand-off review](../references/design/2026-10/mfd/REVIEW.md), decision 11.
+> - **Day and night.** Each theme ships a day and a night version, drawn separately (night
+>   lowers brightness and avoids pure white; day raises contrast for sunlight). The choice is
+>   Auto, Day or Night; Auto follows the headlights signal when the gateway has it, then the
+>   light sensor, then sunset at the car's position. One theme file holds a day and a night
+>   block, and both are checked.
+> - **Themes may change:** frame, labels, numbers (fonts, weights, italics), gauge style,
+>   controls' look, the strip's style and the divider's look; background, surfaces, corners,
+>   edges, glow, blur and texture; accent within the validated set.
+> - **Themes may not change:** layout and tile sizes; touch targets and minimum text sizes;
+>   the drag handles between tiles; warning and caution colours; safety icons; the protected
+>   surfaces, required parts and render check of decisions 5–7. Steering-wheel controls and
+>   soft keys are not part of a theme.
+> - **Open** (review decisions 10, 12, 13, 16): a safe version while moving (Themes v2 and
+>   ADR-0052 §5) against visual §13.3's "same while moving"; whether themes may change words
+>   (Themes v2 relabels status, for example "LINK" and "ANOMALY"); red or green for normal
+>   values; and un-parking the free-CSS layer that structural themes need.
 
 **Status:** approved by the owner on 2026-10-07 ("yes agreed"), v0.2; decisions 5–8 answered the same day (v0.5). It answers the owner's direction:
 "the themes before were rubbish … basically custom CSS, free-form CSS files, stylesheets,
@@ -767,3 +795,7 @@ Each is a starting point for Duplicate.
   head-unit browser-engine check and the Night-dim glare check.
 - 0.7 (2026-10-08): amended (direction round, approved by the owner on 2026-10-08,
   ADR-0049): re-scoped to token packs, gauge styles and app skins.
+- 0.8 (2026-10-11): dated note from the designer's MFD hand-off: Themes v2 (twelve themes,
+  day and night versions, Auto by headlights, light sensor, then sunset) as the current design
+  reference; what themes may and may not change; open points for the owner. No decision
+  changed.
