@@ -2,7 +2,7 @@
 title: "ADR-0050 — Kotlin for the Android app tier: one shared hybrid shell around our React pages, Jetpack, Glance for the feed widget, minimum SDK 29"
 area: decisions
 status: locked
-version: 1.1
+version: 1.2
 updated: 2026-10-11
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0045-ux-first.md, references/research/direction_standard_not_os.md, references/research/direction_host_platforms.md, references/research/direction_repo_audit.md]
 summary: >
@@ -16,6 +16,10 @@ summary: >
 > recording, alarm alerts, the apps gallery, the floating gauge and the feed widget). Items 2
 > and 3 below apply to that one app; if a head unit cannot run PWAs side by side, a thin
 > shell per app is the fallback. Items 1, 4, 5 and 6 stand.
+>
+> **Amended 2026-10-11 (v1.2):** Kotlin is also used for the optional **Ostler Controls** app
+> (steering-wheel buttons, the soft-key overlay and the floating gauge, which moves out of the
+> gateway app; ADR-0052 §4a).
 
 - **Date:** 2026-10-08
 - **Status:** accepted. Approved by the owner on 2026-10-08 ("I agree with everything";
@@ -115,3 +119,5 @@ summary: >
   10, 13, 14, 35 and 37).
 - 2026-10-11 — v1.1, amended: Kotlin for the gateway app only; the screens are PWAs
   (ADR-0049 v1.3).
+- 2026-10-11 — v1.2: Kotlin also for the optional Ostler Controls app; the floating gauge moves
+  there (ADR-0052 §4a).

@@ -2,7 +2,7 @@
 title: "Gateway settings — the gateway owns all hardware and connections; car profiles, this-gateway settings and account sync; automatic car selection — design"
 area: specs
 status: draft
-version: 0.2
+version: 0.3
 updated: 2026-10-11
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, references/design/2026-10/brief/00-structure.md]
 summary: >
@@ -48,8 +48,9 @@ detection.
     app asks only when it first needs one.
 - **The gateway supplies what the web cannot:** background running and start at boot; classic
   Bluetooth, Wi-Fi dongles and USB in the background; location from the phone's GPS in the
-  background or the Brain's or a node's GPS (it stamps the logs); the floating gauge; reading
-  now-playing and home-screen mode, if either ever arrives. An installed PWA gets web
+  background or the Brain's or a node's GPS (it stamps the logs); routing commands from the optional
+  Ostler Controls app (steering-wheel buttons, soft keys) to whichever Ostler app is showing;
+  reading now-playing and home-screen mode, if either ever arrives. An installed PWA gets web
   permissions only, never Android app permissions.
 - **What a PWA keeps itself:** its UI state and layout, and an offline cache of recent data
   that is marked stale when the gateway is unreachable. Anything it captures with the person
@@ -125,3 +126,5 @@ While moving, settings can be browsed but not changed ("Park to change").
 - 0.2 (2026-10-11): §2 added (owner and designer, side discussion): everything lives in the
   gateway and PWAs only connect to it; car-data permissions are the gateway's, web permissions
   are Ostler-wide; the gateway supplies location and what the web cannot do.
+- 0.3 (2026-10-11): the floating gauge moves to the optional Ostler Controls app; the gateway
+  routes its commands (ADR-0052 §4a).
