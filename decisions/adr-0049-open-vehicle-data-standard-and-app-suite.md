@@ -34,6 +34,10 @@ summary: >
 >   are easier to build and keep right, and give least privilege (Logs is read-only).
 > - The screen line of v1.2 stands. Detail: direction note §3.4, decisions 44–48; the
 >   designer's view: [brief 00-structure](../references/design/2026-10/brief/00-structure.md).
+> - See proposed [ADR-0052](adr-0052-mfd-pages-sizes-and-the-shell-library.md) (the MFD and
+>   the `ostler-shell` library; would replace the front-door Home and the Drive PWA) and
+>   [ADR-0053](adr-0053-automatic-hardware-detection-in-the-gateway.md) (hardware detection
+>   in the gateway).
 
 > **Amended 2026-10-08 (v1.2, owner; its "one app" is reversed by v1.3): one Ostler app, and the screen line.**
 >
