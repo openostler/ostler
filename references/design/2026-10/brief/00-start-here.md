@@ -19,6 +19,10 @@ summary: >
 
 # Designer brief, October 2026 — start here
 
+> **Superseded in part (2026-10-11):** read [00-structure](00-structure.md) first. Ostler is no
+> longer an operating system: it is separate apps (PWAs) on one gateway. The launcher, Store and
+> app-frame screens are superseded; screens inside each app still apply.
+
 > **Amended 2026-10-07 (openness round), approved by the owner on 2026-10-07 ("this should
 > be an open system", then "apply the loosenings";
 > [ADR-0047](../../../../decisions/adr-0047-openness-round.md)):** the style items of the hard

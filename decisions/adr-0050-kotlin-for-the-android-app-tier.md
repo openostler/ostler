@@ -2,14 +2,20 @@
 title: "ADR-0050 — Kotlin for the Android app tier: one shared hybrid shell around our React pages, Jetpack, Glance for the feed widget, minimum SDK 29"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-10-08
+version: 1.1
+updated: 2026-10-11
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0045-ux-first.md, references/research/direction_standard_not_os.md, references/research/direction_host_platforms.md, references/research/direction_repo_audit.md]
 summary: >
   Accepted: approved by the owner on 2026-10-08 (direction decisions 10, 13, 14, 35 and 37). Kotlin is the language of the Android app tier, amending ADR-0035, whose UI row put the phone app in a Capacitor wrapper. Every Ostler Android app (the gateway app, Diagnostics, Trips, Security, Maintenance and the add-ons) is built from one shared app template: a native Kotlin shell (its own process, services, notifications, settings, the VISS client and the theme-pack loader) around our existing React pages in a WebView, with screens moved to native Jetpack Compose only where it pays. Jetpack libraries throughout; the gateway app's feed widget uses Jetpack Glance at about 1 Hz; minimum SDK 29 (Android 10). The React UI stays TypeScript and stays the Brain's web console. Python, C and the rest of ADR-0035 are unchanged.
 ---
 
 # ADR-0050 — Kotlin for the Android app tier
+
+> **Amended 2026-10-11 (v1.1, owner; ADR-0049 v1.3):** the screens are PWAs, not WebView
+> shells, so **Kotlin is for the Ostler Gateway app only** (services, Bluetooth, USB,
+> recording, alarm alerts, the apps gallery, the floating gauge and the feed widget). Items 2
+> and 3 below apply to that one app; if a head unit cannot run PWAs side by side, a thin
+> shell per app is the fallback. Items 1, 4, 5 and 6 stand.
 
 - **Date:** 2026-10-08
 - **Status:** accepted. Approved by the owner on 2026-10-08 ("I agree with everything";
@@ -107,3 +113,5 @@ summary: >
 
 - 2026-10-08 — v1.0, accepted: approved by the owner on 2026-10-08 (direction decisions
   10, 13, 14, 35 and 37).
+- 2026-10-11 — v1.1, amended: Kotlin for the gateway app only; the screens are PWAs
+  (ADR-0049 v1.3).
