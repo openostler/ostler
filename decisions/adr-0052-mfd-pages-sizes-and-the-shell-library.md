@@ -2,7 +2,7 @@
 title: "ADR-0052 — The MFD: pages at five size classes from their own tile, and the ostler-shell library every app bundles"
 area: decisions
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-11
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md]
 summary: >
@@ -141,6 +141,10 @@ Each page declares to the shell:
 - History apps (Logs, Maintenance) may **view** another garage car, clearly labelled
   ("Viewing: … · not connected"). Live data and any car-changing action always follow the
   connected car.
+- **The gateway owns all hardware and connections** and keeps settings at three levels:
+  account (garage, sharing), **car profile** (one per car, selected automatically from
+  detection) and this gateway (role, network, storage, power). Detail:
+  [gateway settings spec](../specs/2026-10-11-gateway-settings-design.md).
 
 ### 7. Save to phone
 
@@ -226,3 +230,5 @@ Each page declares to the shell:
 
 - 2026-10-11 — v0.1, proposed: from the owner and designer's MFD brief with the owner's
   corrections of 2026-10-11.
+- 2026-10-11 — v0.2, proposed: §6 adds the gateway's three levels of settings and car profiles
+  (gateway settings spec).
