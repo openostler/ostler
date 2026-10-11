@@ -2,11 +2,11 @@
 title: "Gateway settings — the gateway owns all hardware and connections; car profiles, this-gateway settings and account sync; automatic car selection — design"
 area: specs
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-11
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, references/design/2026-10/brief/00-structure.md]
 summary: >
-  Draft for the owner (agreed in discussion on 2026-10-11). The gateway owns all hardware and connections; apps only ever talk to the gateway, and any gateway-capable device runs it (Brain, the Android gateway app, a node for live data, or a temporary gateway in the browser built from the same code). Settings sit at three levels: account (garage, sharing, backups; synced and optional), car profile (one per car: identity, devices and buses, recording, alerts, app permissions, outputs, layouts, sharing; held by the car's gateway and synced) and this gateway (role, network, storage, power, updates; one device). A Brain is in practice one car's gateway; a phone gateway carries several car profiles. The car is selected automatically from detection (VIN or pack fingerprint), with "New car found" for an unknown car and a manual switch. One server per car at a time: a phone that sees a car whose Brain is running becomes its client. Lists the gateway's settings sections and the open questions.
+  Draft for the owner (agreed in discussion on 2026-10-11). The gateway owns all hardware and connections; apps only ever talk to the gateway, and any gateway-capable device runs it (Brain, the Android gateway app, a node for live data, or a temporary gateway in the browser built from the same code). Settings sit at three levels: account (garage, sharing, backups; synced and optional), car profile (one per car: identity, devices and buses, recording, alerts, app permissions, outputs, layouts, sharing; held by the car's gateway and synced) and this gateway (role, network, storage, power, updates; one device). A Brain is in practice one car's gateway; a phone gateway carries several car profiles. The car is selected automatically from detection (VIN or pack fingerprint), with "New car found" for an unknown car and a manual switch. One server per car at a time: a phone that sees a car whose Brain is running becomes its client. Lists the gateway's settings sections and the open questions. v0.2: everything lives in the gateway and PWAs are viewers and controls that only connect to it; web permissions are Ostler-wide (one address per gateway), car-data permissions are the gateway's; the gateway supplies location and what the web cannot do; a PWA keeps only UI state, layout and a stale-marked offline cache.
 ---
 
 # Gateway settings — design
@@ -29,7 +29,36 @@ detection.
 - **All hardware setup lives in the gateway's settings.** Each app keeps its own settings plus
   the small Shared section (ADR-0052 §6).
 
-## 2. Three levels of settings
+## 2. Everything lives in the gateway; PWAs are viewers
+
+- **The rule:** everything lives in the gateway; PWAs are viewers and controls that only
+  connect to it. The gateway holds the hardware and connections, the car's permissions,
+  recording and logs, history and stats, car profiles and shared preferences, background work
+  (recording, the alarm path), the alerts it pushes out, and location.
+- **Writes are requests, never direct:** a PWA asks, the gateway checks the request, and the
+  node gate (or the host gate for a dongle) decides.
+- **If a PWA is closed, crashes or is uninstalled, nothing is lost,** because nothing lived
+  there.
+- **Two kinds of permission:**
+  - **Car data** (what each app may see or change on a car): always the gateway's toggles,
+    tokens and access log, per app and per car. Android has no such concept.
+  - **Web permissions** (notifications, camera, microphone, location): Chrome grants these per
+    address, and every Ostler app is served from one address per gateway, so they are
+    **Ostler-wide**: granting the camera to Maintenance grants it to every Ostler app. Each
+    app asks only when it first needs one.
+- **The gateway supplies what the web cannot:** background running and start at boot; classic
+  Bluetooth, Wi-Fi dongles and USB in the background; location from the phone's GPS in the
+  background or the Brain's or a node's GPS (it stamps the logs); the floating gauge; reading
+  now-playing and home-screen mode, if either ever arrives. An installed PWA gets web
+  permissions only, never Android app permissions.
+- **What a PWA keeps itself:** its UI state and layout, and an offline cache of recent data
+  that is marked stale when the gateway is unreachable. Anything it captures with the person
+  in front of the screen (a Maintenance photo, a voice note) is stored in the gateway. A PWA
+  uses its own location only for something live on screen when the gateway has none.
+- **Bench-test items:** how Chrome handles notification permission for installed PWAs, and
+  Web Serial on Android, both of which change between Chrome versions.
+
+## 3. Three levels of settings
 
 | Level | Lives | Holds |
 |---|---|---|
@@ -43,7 +72,7 @@ detection.
   profile (more only if the owner moves it).
 - **A phone gateway** travels between cars and holds a profile for each.
 
-## 3. Choosing the car
+## 4. Choosing the car
 
 - **Automatic:** when the gateway connects, detection (ADR-0053) reads the VIN or matches a pack
   fingerprint (for example the Td5 engine computer's ID) and selects that car's profile.
@@ -57,7 +86,7 @@ detection.
   item 9): if a phone gateway sees a car whose Brain is running, the phone becomes the Brain's
   client and the car's settings stay on the Brain.
 
-## 4. The gateway's settings sections
+## 5. The gateway's settings sections
 
 1. **Cars** — the garage, then the selected car:
    - **Identity:** name, VIN, pack, photo, driver side.
@@ -81,7 +110,7 @@ detection.
 
 While moving, settings can be browsed but not changed ("Park to change").
 
-## 5. Open questions
+## 6. Open questions
 
 1. **Permissions per car or per app?** Recommend per car, with "same as my other cars" as the
    default when a new car is added.
@@ -93,3 +122,6 @@ While moving, settings can be browsed but not changed ("Park to change").
 ## Changelog
 
 - 0.1 (2026-10-11): first draft from the owner's discussion of the gateway's role and settings.
+- 0.2 (2026-10-11): §2 added (owner and designer, side discussion): everything lives in the
+  gateway and PWAs only connect to it; car-data permissions are the gateway's, web permissions
+  are Ostler-wide; the gateway supplies location and what the web cannot do.
