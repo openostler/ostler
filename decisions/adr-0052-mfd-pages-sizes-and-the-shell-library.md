@@ -2,11 +2,11 @@
 title: "ADR-0052 — The MFD: pages at five size classes from their own tile, and the ostler-shell library every app bundles"
 area: decisions
 status: draft
-version: 0.5
-updated: 2026-10-11
-depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md, references/design/2026-10/mfd/README.md, references/design/2026-10/mfd/REVIEW.md]
+version: 0.7
+updated: 2026-10-12
+depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0053-automatic-hardware-detection-in-the-gateway.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0047-openness-round.md, decisions/adr-0048-ostler-as-an-android-launcher.md, references/research/responsive_tile_sizes.md, references/research/driver_distraction_rules.md, references/research/ui/head_unit_ui.md, references/design/2026-10/brief/00-direction-mfd.md, references/design/2026-10/brief/00-structure.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-visual-design-system-design.md, specs/2026-10-07-theme-engine-design.md, references/design/2026-10/mfd/README.md, references/design/2026-10/mfd/REVIEW.md, references/research/touch_tiling_edit_mode.md]
 summary: >
-  Proposed (draft for the owner, 2026-10-11), from the owner and designer's MFD brief and the owner's corrections. The screen is an aircraft-style multi-function display: a layout of tiles, each showing one page from any installed app. Each app has its own home and settings; the gateway is an app of its own (connections, devices, hardware, permissions, garage). Every app bundles a separate library repo, ostler-shell (tiling engine, window rules, size classes and snapping, page contract, moving rules, theme resolver, apps menu, layout format, vehicle chip); there is no launcher and no shell app, whichever app is open hosts the tiles. Own apps' pages are same-origin page modules; iframes only for third-party pages; tiles talk over BroadcastChannel; layouts are versioned and synced through the gateway; an unrenderable page shows as a chip. Five size classes (Badge, Chip, Compact, Standard, Expanded) picked from the tile's own box with enter and exit thresholds; JS writes data-size; layoutClass becomes deviceClass. A page contract (sizes, summary value, ranked parts, per-action moving safety, VSS data requirements, links). No drive modes: moving is a set of shell rules on actions, with a 24 px text floor kept. Shared preferences and the vehicle switcher live in the gateway. Save to phone per app, layout or screen. Warnings, theme import safety and performance in brief. Amends ADR-0049 v1.3: the MFD and the gateway's Car page replace the front-door Home and the Drive PWA. v0.5 adds, from the designer's hand-off (references/design/2026-10/mfd/): the top strip order (layout switcher, connection chip, warning strip, shared-settings button; no clock), the connection chip from the gateway, the tile label menu, each app's navigation only at Standard and Expanded, the shared cursor, warning takeover details and the theme rules; the designer's 22 px floor and four classes stay open.
+  Proposed (draft for the owner, 2026-10-11), from the owner and designer's MFD brief and the owner's corrections. The screen is an aircraft-style multi-function display: a layout of tiles, each showing one page from any installed app. Each app has its own home and settings; the gateway is an app of its own (connections, devices, hardware, permissions, garage). Every app bundles a separate library repo, ostler-shell (tiling engine, window rules, size classes and snapping, page contract, moving rules, theme resolver, apps menu, layout format, vehicle chip); there is no launcher and no shell app, whichever app is open hosts the tiles. Own apps' pages are same-origin page modules; iframes only for third-party pages; tiles talk over BroadcastChannel; layouts are versioned and synced through the gateway; an unrenderable page shows as a chip. Five size classes (Badge, Chip, Compact, Standard, Expanded) picked from the tile's own box with enter and exit thresholds; JS writes data-size; layoutClass becomes deviceClass. A page contract (sizes, summary value, ranked parts, per-action moving safety, VSS data requirements, links). No drive modes: moving is a set of shell rules on actions, with a 24 px text floor kept. Shared preferences and the vehicle switcher live in the gateway. Save to phone per app, layout or screen. Warnings, theme import safety and performance in brief. Amends ADR-0049 v1.3: the MFD and the gateway's Car page replace the front-door Home and the Drive PWA. v0.5 adds, from the designer's hand-off (references/design/2026-10/mfd/): the top strip order (layout switcher, connection chip, warning strip, shared-settings button; no clock), the connection chip from the gateway, the tile label menu, each app's navigation only at Standard and Expanded, the shared cursor, warning takeover details and the theme rules; the designer's 22 px floor and four classes stay open. v0.6 (owner and designer, 2026-10-12, with the touch tiling research): no permanent divider bars; a parked-only, press-and-hold edit mode like the Android home-screen editor (grabbable edges, a page tray like a widget picker, a live snap preview with size labels and haptics, a non-drag path for the wheel and keyboard, Done); a page dropped on a tile splits it along its longer side; a frameless Chip or Compact page is a widget; a carousel of saved layouts with page dots replaces the strip's layout dropdown, and while moving layouts change only by the wheel and triggers; native Android extras (other apps' widgets as tiles, open beside) only where the Gateway Android app hosts the shell; no native tiler, overlays only for Ostler Controls. Four new owner decisions. v0.7: the owner decided 7 to 10 as recommended (Gateway app may host the shell full screen; while moving, layouts change only by the wheel and triggers; Show frame is a tile setting; no locked primary tile), so §2a is approved; the steering wheel is a D-pad moving a cursor spatially between tiles, and moving it off the screen edge pages to the adjacent layout; the soft-key row is optional (a shared setting).
 ---
 
 # ADR-0052 — The MFD: pages at five size classes, and the ostler-shell library
@@ -87,10 +87,11 @@ summary: >
     **chip** that opens its own app.
 - **Shell elements** (designer's hand-off, `Ostler MFD v2` and `Ostler Core`):
   - **Top strip, no clock** (Android shows the time), from the driver's side outward:
-    (1) layout switcher (saved layouts, "Save this layout", "Manage layouts"); (2) the
-    **connection chip**; (3) the warning strip, one item at a time; (4) the shared-settings
-    button, which opens the shared preferences (§6). The vehicle chip sits with the
-    connection chip. Right-hand drive mirrors the strip.
+    (1) the **layout dots** and, briefly after each change, the layout's name (v0.6: the
+    layout dropdown moved into edit mode, §2a); (2) the **connection chip**; (3) the warning
+    strip, one item at a time; (4) the shared-settings button, which opens the shared
+    preferences (§6). The vehicle chip sits with the connection chip. Right-hand drive
+    mirrors the strip.
   - **Connection chip:** in every app; its value comes from the gateway ("Connected",
     "Connected · via Brain", "Connecting…", "Last seen 10:42", "No gateway"); it never says
     "gateway"; tapping it opens the gateway app.
@@ -103,6 +104,51 @@ summary: >
 - **Layout format:** versioned (successor to `ostler.layout/1` in the drive-modes spec §4),
   stored in the gateway and synced. Saved layouts switch in one tap and may switch
   automatically (car started, low range, parked).
+
+### 2a. Editing the layout and switching layouts (v0.6; approved by the owner in v0.7)
+
+From the owner and designer's review of the playground (2026-10-12), with the
+[touch tiling research](../references/research/touch_tiling_edit_mode.md):
+
+- **No permanent divider bars.** Outside edit mode tiles are separated only by the gap and stay
+  fully interactive.
+- **Edit mode, like the Android home-screen editor:**
+  - **Enter** by pressing and holding a tile or empty space (about 0.5 s, with a haptic), or
+    from the wheel. **Parked only:** while moving it cannot open.
+  - **In edit mode** the layout scales down slightly; tile edges become grabbable; each tile
+    shows a remove button; a **page tray** at the bottom works like a widget picker (search,
+    live previews at the class each page would land in); a large **Done** leaves.
+  - **Resize** by dragging an edge. **Snap** to ⅓, ½, ⅔ and each size-class boundary, shown as
+    the result itself: tiles reflow to the snapped size and show the class they will land in,
+    with a light haptic per snap. No guide lines.
+  - **Each page declares a size range** (smallest and largest class); edges stop there rather
+    than cropping. Dragging a tile below its smallest class removes it, with Undo.
+  - **Add and split:** a page dropped on a tile splits that tile along its longer side
+    (Hyprland's dwindle rule); dropped on a screen edge it splits there. Presets (Full, Halves,
+    2+1, Quad) stay as quick starting points.
+  - **Move and swap** by dragging a tile onto another.
+  - **Non-drag path** for the wheel, keyboard and switch access: the D-pad cursor (§4a) selects
+    a tile, and Move before or after, Wider or Narrower, Taller or Shorter, Remove and Add beside
+    apply to it, each announcing the new size (as Android's Launcher3 does).
+  - **Layouts are managed here:** name, save, save as new, order, delete, automatic triggers and
+    Save to phone (formerly the strip's dropdown and the Manage layouts sheet).
+- **Widgets:** a page at Chip or Compact with its frame turned off is a widget; there is no
+  separate widget system. "Show frame" is a tile setting in edit mode, allowed at Chip and
+  Compact only (decision 9).
+- **Layout carousel:** saved layouts sit side by side like home-screen pages, with dots in the
+  strip. Switch by swiping on the strip or from the screen edge (never on a tile, where maps and
+  charts take the swipe), by moving the D-pad cursor off the screen edge (§4a), or by an
+  automatic trigger. The layout's name shows briefly after each change; the carousel stops at
+  the first and last layouts (no wrap-round). **While moving,** layouts change only by the wheel
+  and triggers; swiping works only when parked (decision 8).
+- **Native Android apps:** there is no public Android API to place, resize or embed another
+  app's window, and none of this reaches a PWA (research §4). So: **no native tiler**, and
+  drawing over other apps is used only by Ostler Controls (§4a). Where the **Gateway Android app
+  hosts the shell** (decision 7: an option inside the Gateway app, not a home-screen launcher),
+  it may add, as extras: other apps' home-screen widgets as
+  tiles (native views laid out on the tile rectangles, with the user's consent), and **Open
+  beside** for a native app (best effort; freeform launch bounds only where the head unit
+  supports them, recorded per unit). The browser and PWA shell tile Ostler pages everywhere.
 
 ### 3. Five size classes, from the tile's own box
 
@@ -146,8 +192,18 @@ Each page declares to the shell:
 
 - **No cockpit of buttons.** Input is the steering-wheel controls the car already has, plus an
   optional **soft-key row** along the bottom, with no labelled hardware.
-- **The shell draws the soft-key row** from the focused page's declared soft keys. Focus moves
-  between tiles with a visible focus ring and a predictable order; every action reachable by
+- **The soft-key row is optional (v0.7, owner):** a shared setting in the gateway ("Soft-key
+  row: On / Off", overridable per screen; on by default on head units, off on phones and
+  desktops). When it is off the tiles take the space, and the focused page's soft keys are
+  reached from its label menu and with the D-pad.
+- **The steering wheel is a D-pad with a cursor (v0.7, owner):** up, down, left and right move
+  the cursor (the focus ring) to the nearest tile in that direction; up from the top row reaches
+  the strip. Moving the cursor off the left or right screen edge pages to the previous or next
+  saved layout, like a home screen, showing its name briefly; it stops at the first and last
+  layouts. This works while moving. In edit mode the same cursor selects the tile the edit
+  actions apply to.
+- **The shell draws the soft-key row** (when on) from the focused page's declared soft keys.
+  Focus moves between tiles spatially with a visible focus ring; every action reachable by
   touch is reachable by focus too.
 - **Everything maps onto `ShellInput`** ([shell-input spec](../specs/2026-10-07-shell-input-design.md)):
   steering-wheel buttons and soft keys arrive as its intents (up, down, ok, back, menu, mark)
@@ -254,6 +310,22 @@ Each page declares to the shell:
    theme wording and state colours, is the
    [hand-off review](../references/design/2026-10/mfd/REVIEW.md) "Decisions for the owner".
 
+7. **Should the Gateway Android app host the shell full screen?** It is the only way to get
+   native widgets as tiles and Open beside for native apps, and it brings back part of the
+   parked launcher idea (ADR-0048) as an app, not a home screen. **Recommend yes, as an option
+   inside the Gateway app**, not as the default launcher.
+   **Decided 2026-10-12 (owner): yes, as an option inside the Gateway app.**
+8. **The layout carousel while moving.** **Recommend the wheel and automatic triggers only**;
+   swiping only when parked. Alternative: allow swiping on the strip while moving.
+   **Decided 2026-10-12 (owner): the wheel and triggers only.** The wheel is a D-pad; moving
+   the cursor off the screen edge pages to the next layout (§4a).
+9. **Frameless widgets: a page option or a tile setting?** **Recommend a tile setting** in edit
+   mode ("Show frame"), allowed at Chip and Compact only; pages need not opt in.
+   **Decided 2026-10-12 (owner): a tile setting.**
+10. **A locked primary region?** Cockpits always keep the primary flight display. **Recommend
+    no fixed tile,** but warnings always have a place (takeover or band) whatever the layout.
+    **Decided 2026-10-12 (owner): no fixed tile.**
+
 ## Confirmation
 
 - A size-class test: the pure function gives the research §8 checks (800 × 480 full tile is
@@ -264,6 +336,9 @@ Each page declares to the shell:
 - A moving test: with speed above zero, every `not-while-moving` action is refused and
   layout editing is locked, while saved-layout switching still works.
 - Bench: four live tiles with one map on the Dudu7; several installs from one origin.
+- Edit mode (v0.6): press and hold enters it only when parked; every edit has a non-drag path;
+  a snap shows the result and its class; the carousel switches layouts by the wheel while
+  moving and never by a swipe on a tile.
 
 ## Consequences
 
@@ -291,7 +366,8 @@ Each page declares to the shell:
 - **ADR-0033, ADR-0044:** per-action moving safety maps to their categories and rules.
 - **ADR-0029:** the garage and connected car.
 - **ADR-0047:** style stays a default; the locked items are the safety ones.
-- **ADR-0048:** stays parked; no launcher.
+- **ADR-0048:** stays parked as a launcher; v0.6 decision 7 asks whether the Gateway app may
+  host the shell full screen, which is not a home-screen role.
 - **ADR-0050:** the Android template wraps the same pages and bundles `ostler-shell`.
 
 ## Changelog
@@ -312,3 +388,14 @@ Each page declares to the shell:
   Expanded, shared cursor); §8 warning takeover details and the theme rules (structure,
   day and night with Auto, the never-change list); §9 item 6 points to the hand-off review.
   Five classes, 24 px and pixel tile limits unchanged.
+- 2026-10-12 — v0.6, proposed: §2a editing and switching layouts, from the owner and
+  designer's review of the playground and the
+  [touch tiling research](../references/research/touch_tiling_edit_mode.md): no permanent
+  divider bars; a parked-only, press-and-hold edit mode (grabbable edges, page tray, live snap
+  preview with class labels and haptics, non-drag path, Done) that also holds layout
+  management; the dwindle split; frameless Chip and Compact pages as widgets; a layout carousel
+  with dots replacing the strip's dropdown; native Android extras only where the Gateway app
+  hosts the shell. §9 adds decisions 7 to 10.
+- 2026-10-12 — v0.7: the owner decided §9 items 7 to 10 as recommended, so §2a is approved;
+  §4a adds the D-pad cursor (spatial focus; moving off the screen edge pages to the adjacent
+  layout, no wrap-round) and makes the soft-key row optional (a shared setting).

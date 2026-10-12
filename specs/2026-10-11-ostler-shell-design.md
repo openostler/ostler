@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.0
+version: 1.2
 updated: 2026-10-12
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -421,7 +421,34 @@ label row 42 px parked and 52 px moving; tile gap 10 px, radius 20 px (Badge 14 
 per-page Expanded minimum (Diagnose and Logs 760 px wide); fonts Figtree and Material Symbols
 Rounded, self-hosted.
 
+## 19. Decided: edit mode, the layout carousel and the D-pad (ADR-0052 v0.7)
+
+Approved by the owner on 2026-10-12. Where this section conflicts with §5, §11, §12 or §18, this
+section wins:
+
+- **§5 dividers and §18 A.1, A.5:** no permanent divider bars. Resizing, moving, adding,
+  splitting (along the longer side) and removing happen in a parked-only, press-and-hold edit
+  mode with grabbable edges, a page tray, a live snap preview with class labels and haptics, a
+  non-drag path driven by the D-pad cursor, and Done. The foundation's layout operations
+  (`moveDivider`, `releaseDivider`, `splitToEdge`, `swapPages`) are reused; a `splitTile` along
+  the longer side is added.
+- **§11 top strip and §18 B.2, B.6:** the layout dropdown and the Manage layouts sheet move into
+  edit mode; the strip shows layout dots and, briefly, the layout's name. Layouts switch by a
+  carousel: swipe on the strip or screen edge (parked only), the D-pad cursor crossing the
+  screen edge, or a trigger; no wrap-round.
+- **§11 soft-key row:** optional, a gateway shared setting (on by default on head units, off on
+  phones and desktops). When off, the focused page's soft keys are in its label menu and on the
+  D-pad.
+- **§12 and §18 C.2 focus:** the wheel is a D-pad. Arrows move focus spatially to the nearest
+  tile in that direction (replacing "driver-side column first"); up from the top row reaches the
+  strip; left or right off the screen edge pages to the adjacent layout. `focus-next` stays for
+  keyboards and a single "next" key. In edit mode arrows move the selection.
+- **Widgets:** a Chip or Compact tile with "Show frame" off.
+- **Native Android extras:** only where the Gateway Android app hosts the shell, as an option.
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
 - 2026-10-12 — v1.0, approved by the owner ("let's go ahead and build the front end"); §18 adopts the designer's answers from the shell UI kit.
+- 2026-10-12 — v1.1: §19 records the proposed edit mode and layout carousel (ADR-0052 v0.6), pending the owner; §1 to §18 unchanged.
+- 2026-10-12 — v1.2: §19 decided by the owner (ADR-0052 v0.7), adding the D-pad cursor that pages to the adjacent layout off the screen edge, and the optional soft-key row.
