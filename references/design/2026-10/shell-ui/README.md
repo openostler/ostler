@@ -16,6 +16,11 @@ The `.dc.html` files need the design tool's `support.js` beside them to open; it
 the repo. The designer's proposals for the open questions are adopted in the
 [shell spec](../../../../specs/2026-10-11-ostler-shell-design.md) §18.
 
+**Proposed changes (ADR-0052 v0.6, pending the owner):** the divider bars and snap guides
+(A-section frames on dividers and snapping) and the strip's layout dropdown and Manage layouts
+sheet (B-section switcher frames) would be replaced by edit mode and a layout carousel; a
+designer brief addendum will cover the new frames.
+
 The designer's README follows, as delivered.
 
 ## Ostler shell UI kit
