@@ -24,6 +24,7 @@ decisions for the owner.
 | `designs/shell-E-drop-zones.dc.html` | Drop-zone research |
 | `designs/shell-kit.js`, `shell-edit-kit.js`, `build/*.js` | The designer's frame generators (static HTML, exact values) |
 | `png/` | Renders of every design, in 1800 px slices (the in-repo view) |
+| `IMPLEMENTATION.md` | The designer's implementation guide: **the build spec** (adopted by the owner) |
 | `HANDOFF.txt` | The designer's builder brief, as delivered |
 
 The `.dc.html` files need the design tool's `support.js` beside them to open; it is not kept in

@@ -2,8 +2,8 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.2
-updated: 2026-10-12
+version: 1.3
+updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
   Approved by the owner on 2026-10-12 ("let's go ahead and build the front end", on receiving the designer's shell UI kit); §18 adopts the designer's 31 answers to the brief's open questions. First drafted 2026-10-11, following the owner's "we'll try and build out the shell". The design of the `ostler-shell` library (repo `openostler/ostler-shell`, package `@openostler/shell`, Apache-2.0) that ADR-0052 (proposed) asks every app to bundle. Scope: no settings screens, no car logic, no connection code; the shell talks to the gateway only through an injected client interface. Public TypeScript API and package layout. Modules: five size classes as a pure function with hysteresis plus a React hook observing the tile frame; the layout model (six presets, a tree one level deep, dividers snapping to a third, a half and two thirds, collapse-to-close with Undo, swap, open beside on the passenger side, right-hand-drive mirroring); the window rules in order (shape, size, overflow to chips); page contract types and validation; the page registry and hosting (same-origin page modules, iframes with postMessage for third parties); moving rules (state from the gateway, locked dividers and editing, a 24 px text floor, effects off, a per-action gate); warnings (caution ring, strip, chime hook, warning takeover of a passenger-side non-instrument tile or a band, ACK, label until clear); the top strip; the soft-key row; ShellInput intent mapping; the theme resolver contract with locked safety tokens; the versioned layout format `ostler.layout/3`; BroadcastChannel messages; performance rules. Testing with Vitest first, Playwright component tests later; build order; open questions referencing ADR-0052 §9.
@@ -446,9 +446,20 @@ section wins:
 - **Widgets:** a Chip or Compact tile with "Show frame" off.
 - **Native Android extras:** only where the Gateway Android app hosts the shell, as an option.
 
+## 20. Build spec: the shell session implementation guide (ADR-0052 v0.8)
+
+Decided by the owner on 2026-10-13. The designer's
+[implementation guide](../references/design/2026-10/shell-session/IMPLEMENTATION.md) is the
+build spec for the shell; where it differs from §1 to §19 it wins. The foundation's layout model
+moves to the guide's (fractional rects in a guillotine tree per page, pages, Wide and Single
+versions, stacks, spans, styles); size classes use dp with 16 dp hysteresis; the top strip and
+the soft-key row are removed; focus, alerts, carousel and edit mode follow the guide's sections
+5 to 10.
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
 - 2026-10-12 — v1.0, approved by the owner ("let's go ahead and build the front end"); §18 adopts the designer's answers from the shell UI kit.
 - 2026-10-12 — v1.1: §19 records the proposed edit mode and layout carousel (ADR-0052 v0.6), pending the owner; §1 to §18 unchanged.
 - 2026-10-12 — v1.2: §19 decided by the owner (ADR-0052 v0.7), adding the D-pad cursor that pages to the adjacent layout off the screen edge, and the optional soft-key row.
+- 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).

@@ -2,7 +2,7 @@
 title: "Review of the 12–13 October shell session — what it changes, conflicts with decided docs, and decisions for the owner"
 area: references
 status: draft
-version: 0.1
+version: 0.2
 updated: 2026-10-13
 depends_on: [references/design/2026-10/shell-session/README.md, decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, specs/2026-10-11-ostler-shell-design.md, references/design/2026-10/brief/11-edit-mode-brief.md]
 summary: >
@@ -10,6 +10,16 @@ summary: >
 ---
 
 # Review: shell session of 12–13 October 2026
+
+> **Update (v0.2): the owner adopted the designer's [implementation guide](IMPLEMENTATION.md)
+> as the build spec.** It settles conflicts 2 to 7 below: at tile level the wheel pages the
+> carousel off the outermost tile and never leaves a page from inside it (§5.2, §8); pages claim
+> gestures first and the carousel swipes only when parked (§5.1); warnings take a passenger-side
+> non-instrument tile or show on the source tile (§9.2); `fitPages` always shows at least one page
+> filling a smaller window (§1.3); the alert layer is the shell's top layer, with system
+> notifications from the Gateway app (§9). The top strip is removed (§11) and the soft-key row is
+> dropped (not in the guide; bezel keys map to stack badges, §7). Decisions 1 to 8 below are
+> settled as the guide says; 9 and 10 as recommended.
 
 Against [ADR-0052](../../../../decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md) v0.7
 and the [shell spec](../../../../specs/2026-10-11-ostler-shell-design.md) v1.2 §19. The designer's
