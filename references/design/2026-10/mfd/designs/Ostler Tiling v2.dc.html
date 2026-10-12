@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga'}
+</style>
+</helmet>
+<div style="padding:56px;display:flex;flex-direction:column;gap:56px;color:#0e1626">
+<div style="max-width:1000px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · TILING · V2</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">When the whole window gets squeezed</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">The same live MFD shell, given different windows by Android split screen, a smaller head unit or a phone. Two rules on top of the page sizes: a tall window turns splits vertical and a short one lays tiles in a row; if tiles would still be too small, the main page keeps the space and the rest become chips. Each tile label shows its size. All screens are live: tap a label to swap a page.</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;font-size:14px;line-height:1.5;color:#3b4556;margin-top:8px">
+<div style="display:flex;flex-direction:column;gap:2px"><b style="color:#0e1626">1 · Shape</b><span>Window taller than wide: splits turn vertical. Shorter than 320 px of tile space: one row.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><b style="color:#0e1626">2 · Size</b><span>Each tile picks Chip, Compact, Standard or Expanded from its own space.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><b style="color:#0e1626">3 · Overflow</b><span>Still too small: main page plus chips. Nothing is ever squeezed below the minimum type size.</span></div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+<div id="9a" style="display:flex;flex-direction:column;gap:10px;max-width:1052px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9a</span><span style="font-size:17px;font-weight:800;white-space:nowrap">7″ head unit · whole screen</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">Trail layout as designed: four tiles, each Standard.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Trail" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" label="9a 7″ head unit · whole screen" hint-size="1052px,628px"></dc-import>
+</div>
+<div id="9b" style="display:flex;flex-direction:column;gap:10px;max-width:1052px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9b</span><span style="font-size:17px;font-weight:800;white-space:nowrap">7″ · Android split screen, half each</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">Android gives Ostler a 506 px window. Same four tiles; each drops to Compact (one big number) instead of squeezing.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Trail" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" android="left" android-frac="{{ 0.5 }}" label="9b 7″ · Android split screen, half each" hint-size="1052px,628px"></dc-import>
+</div>
+<div id="9c" style="display:flex;flex-direction:column;gap:10px;max-width:1052px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9c</span><span style="font-size:17px;font-weight:800;white-space:nowrap">7″ · Ostler squeezed to a third</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">A tall, narrow window. Four tiles won’t fit, so the main page keeps the space and the rest become chips along the bottom. Tap a chip to swap it in.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Trail" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" android="left" android-frac="{{ 0.67 }}" label="9c 7″ · Ostler squeezed to a third" hint-size="1052px,628px"></dc-import>
+</div>
+<div id="9d" style="display:flex;flex-direction:column;gap:10px;max-width:1308px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9d</span><span style="font-size:17px;font-weight:800;white-space:nowrap">10″ · Android split top and bottom</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">A short, wide window. Main + two becomes one row of columns, the main page slightly wider.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Commute" screen-w="{{ 1280 }}" screen-h="{{ 720 }}" android="top" android-frac="{{ 0.5 }}" label="9d 10″ · Android split top and bottom" hint-size="1308px,748px"></dc-import>
+</div>
+<div id="9e" style="display:flex;flex-direction:column;gap:10px;max-width:1052px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9e</span><span style="font-size:17px;font-weight:800;white-space:nowrap">7″ · half split, moving, master warning</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">Convoy was only a chip here, so for the warning it opens as a band across the bottom. Speed stays visible above it; a Drive page is never covered. Annunciator text shortens to fit.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Commute" screen-w="{{ 1024 }}" screen-h="{{ 600 }}" android="left" android-frac="{{ 0.5 }}" warning="{{ true }}" label="9e 7″ · half split, moving, master warning" hint-size="1052px,628px"></dc-import>
+</div>
+<div id="9f" style="display:flex;flex-direction:column;gap:10px;max-width:828px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9f</span><span style="font-size:17px;font-weight:800;white-space:nowrap">5″ head unit 800×480</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">Main + two on the small screen: speed Expanded, side tiles Compact.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Commute" screen-w="{{ 800 }}" screen-h="{{ 480 }}" label="9f 5″ head unit 800×480" hint-size="828px,508px"></dc-import>
+</div>
+<div id="9g" style="display:flex;flex-direction:column;gap:10px;max-width:413px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9g</span><span style="font-size:17px;font-weight:800;white-space:nowrap">Phone · Workshop</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">A portrait window turns the side-by-side split vertical: Diagnose above Logs.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Workshop" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" moving="{{ false }}" label="9g Phone · Workshop" hint-size="413px,872px"></dc-import>
+</div>
+<div id="9h" style="display:flex;flex-direction:column;gap:10px;max-width:413px">
+<div style="display:flex;align-items:center;gap:10px"><span style="font:700 12px ui-monospace,Menlo,monospace;padding:4px 8px;background:#0e1626;color:#fff;border-radius:5px">9h</span><span style="font-size:17px;font-weight:800;white-space:nowrap">Phone · Convoy, moving</span></div>
+<span style="font-size:14px;color:#3b4556;line-height:1.5;text-wrap:pretty">Two thirds over one third: attitude on top, the convoy map below.</span>
+<dc-import name="Ostler MFD v2" bare="{{ true }}" preset="Convoy" screen-w="{{ 393 }}" screen-h="{{ 852 }}" phone="{{ true }}" label="9h Phone · Convoy, moving" hint-size="413px,872px"></dc-import>
+</div>
+</div>
+</div>
+</x-dc>
+</body>
+</html>

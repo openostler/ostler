@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga'}
+</style>
+</helmet>
+<div style="padding:{{ pagePad }}px;display:flex;flex-direction:column;gap:28px;color:#0e1626">
+<sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1000px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER · MFD · NO DRIVE MODES</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">Any page, any tile</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">There are no drive modes. The screen is a layout of tiles, and every tile shows one page from any installed app: attitude, heading, transfer, speed and engine from the car; trail and convoy maps; Diagnose; Logs. "Off-road" is just a saved layout. Tap a tile's label to swap its page. Each page re-flows to the tile's shape.</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;max-width:1052px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">SAVED LAYOUTS</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px;flex-wrap:wrap"><sc-for list="{{ presets }}" as="p" hint-placeholder-count="4"><div onClick="{{ p.pick }}" style="height:40px;padding:0 14px;border-radius:9px;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;background:{{ p.bg }};color:{{ p.ink }}"><span class="material-symbols-rounded" style="font-size:18px">{{ p.i }}</span>{{ p.l }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">{{ layoutLabel }}</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px;opacity:{{ layoutOp }}"><sc-for list="{{ layouts }}" as="o" hint-placeholder-count="6"><div onClick="{{ o.pick }}" title="{{ o.l }}" style="width:48px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:{{ o.bg }};color:{{ o.ink }}"><span class="material-symbols-rounded" style="font-size:22px">{{ o.i }}</span></div></sc-for></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ toggles }}" as="t" hint-placeholder-count="4"><div onClick="{{ t.flip }}" style="height:48px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;background:{{ t.bg }};color:{{ t.ink }}"><span class="material-symbols-rounded" style="font-size:20px">{{ t.i }}</span>{{ t.l }}</div></sc-for></div>
+</div>
+
+</sc-if>
+<div style="padding:{{ bezel }}px;background:#000;border-radius:{{ bezelR }}px;box-shadow:0 30px 60px rgba(10,16,32,.35);align-self:flex-start">
+<div data-screen-label="{{ screenLabel }}" style="width:{{ W }}px;height:{{ H }}px;background:#000;display:flex;flex-direction:{{ devDir }};overflow:hidden;border-radius:{{ devR }}px">
+<sc-if value="{{ android }}" hint-placeholder-val="{{ false }}">
+<div style="width:{{ andW }}px;height:{{ andH }}px;flex:none;position:relative;background:#1b1f24;color:#e8eaed;overflow:hidden">
+<div style="position:absolute;left:-20%;right:-20%;top:46%;height:12px;background:#2b3138;transform:rotate(-12deg)"></div>
+<div style="position:absolute;top:-10%;bottom:-10%;left:58%;width:10px;background:#2b3138;transform:rotate(9deg)"></div>
+<div style="position:absolute;left:-10%;right:-10%;top:74%;height:7px;background:#262b31;transform:rotate(4deg)"></div>
+<div style="position:absolute;left:14%;top:34%;right:34%;bottom:34%;border-top:6px solid #4c8bf5;border-right:6px solid #4c8bf5;border-radius:0 48px 0 0"></div>
+<div style="position:absolute;left:12px;right:12px;top:12px;min-height:76px;border-radius:16px;background:#0f5c3a;display:flex;align-items:center;gap:12px;padding:10px 14px;box-sizing:border-box"><span class="material-symbols-rounded" style="font-size:40px">turn_right</span><span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:26px;font-weight:700">300 m</span><span style="font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Onto Castleton Rd</span></span></div>
+<div style="position:absolute;left:12px;right:12px;bottom:12px;min-height:56px;border-radius:14px;background:#2b3138;display:flex;align-items:center;padding:0 14px;font-size:20px;font-weight:700;white-space:nowrap">14 min · 9.2 km</div>
+<span style="position:absolute;left:12px;top:98px;font-size:13px;color:#9aa0a6;background:#1b1f24;padding:2px 6px;border-radius:4px;white-space:nowrap">Any Android app</span>
+</div>
+<div style="flex:none;width:{{ divW }};height:{{ divH }};background:#000;display:flex;align-items:center;justify-content:center"><span style="width:{{ gripW }};height:{{ gripH }};border-radius:3px;background:#9aa0a6"></span></div>
+</sc-if>
+<div style="width:{{ winW }}px;height:{{ winH }}px;flex:none;box-sizing:border-box;padding-top:{{ insetT }}px;background:#0a1020;color:#eef2f9;display:flex;flex-direction:column;overflow:hidden;position:relative">
+
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;flex-direction:{{ stripDir }}">
+<span style="height:40px;border-radius:20px;background:#121a2c;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:20px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:22px;color:#22a6e0">dashboard</span>{{ presetName }}</span>
+<span style="height:40px;border-radius:20px;background:#121a2c;display:{{ brainDisp }};align-items:center;gap:8px;padding:0 14px;font-size:18px;font-weight:600;color:#b0bacb;white-space:nowrap"><span style="width:10px;height:10px;border-radius:5px;background:#4cc38a"></span>Brain · live</span>
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><span style="height:40px;border-radius:20px;background:#121a2c;display:flex;align-items:center;gap:6px;padding:0 14px;font-size:18px;font-weight:600;color:#b0bacb;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px">lock</span>{{ lockText }}</span></sc-if>
+<span style="flex:1"></span>
+<sc-if value="{{ showCaution }}" hint-placeholder-val="{{ false }}"><span style="height:40px;border-radius:20px;background:rgba(224,176,74,.16);color:#e0b04a;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:20px;font-weight:800;letter-spacing:.06em;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' 1">warning</span>{{ cauText }}</span></sc-if>
+<sc-if value="{{ warning }}" hint-placeholder-val="{{ false }}"><span style="height:40px;border-radius:20px;background:#ef6a7d;color:#0a1020;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:20px;font-weight:800;letter-spacing:.08em;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:22px;font-variation-settings:'FILL' 1">warning</span>{{ warnText }}</span></sc-if>
+<span style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:{{ timeDisp }}">10:14</span>
+</div>
+
+<div style="flex:1;position:relative;margin:0 12px {{ areaMb }}px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="4">
+<div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:{{ t.w }}px;height:{{ t.h }}px;background:{{ t.bg }};box-shadow:{{ t.ring }};border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:left .25s,top .25s,width .25s,height .25s">
+
+<sc-if value="{{ t.isWarn }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;padding:18px 20px;min-height:0">
+<span style="font-size:20px;font-weight:800;letter-spacing:.1em;color:#ef6a7d;display:flex;align-items:center;gap:8px;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:24px;font-variation-settings:'FILL' 1">warning</span>MASTER WARNING</span>
+<span style="flex:1"></span>
+<span style="font-size:{{ t.warnFs }}px;font-weight:700;line-height:1.05;white-space:nowrap">Coolant 112 °C</span>
+<span style="font-size:20px;color:#d6dbe4;line-height:1.4;text-wrap:pretty;display:{{ t.secDisp }}">Stop when it's safe. Keep the engine idling, don't switch off.</span>
+<span style="flex:1"></span>
+<div onClick="{{ ack }}" style="height:60px;flex:none;border-radius:30px;background:#eef2f9;color:#0a1020;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;letter-spacing:.08em;cursor:pointer">ACK</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.notWarn }}" hint-placeholder-val="{{ true }}">
+<div onClick="{{ t.openMenu }}" style="height:44px;flex:none;display:{{ t.headDisp }};align-items:center;gap:8px;padding:0 14px 0 18px;cursor:pointer">
+<span style="font-size:{{ t.labFs }}px;font-weight:700;letter-spacing:.04em;color:#b0bacb;white-space:nowrap">{{ t.label }}</span>
+<span class="material-symbols-rounded" style="font-size:22px;color:#8e9ab0">{{ t.menuIcon }}</span>
+<span style="flex:1"></span>
+<sc-if value="{{ t.flag }}" hint-placeholder-val="{{ false }}"><span style="font-size:{{ t.labFs }}px;font-weight:800;letter-spacing:.04em;color:{{ t.flagC }};white-space:nowrap">{{ t.flag }}</span></sc-if>
+<span style="font-size:13px;font-weight:700;color:#8e9ab0;white-space:nowrap;display:{{ t.appDisp }}">{{ t.app }}</span>
+</div>
+
+<sc-if value="{{ t.isMenu }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;padding:4px 12px 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));grid-auto-rows:56px;gap:8px;overflow:hidden">
+<sc-for list="{{ t.menu }}" as="m" hint-placeholder-count="9"><div onClick="{{ m.pick }}" style="border-radius:14px;background:{{ m.bg }};box-shadow:{{ m.ring }};display:flex;align-items:center;gap:10px;padding:0 12px;cursor:pointer;min-width:0"><span class="material-symbols-rounded" style="font-size:22px;color:{{ m.ic }}">{{ m.i }}</span><span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.l }}</span><span style="font-size:12px;color:#8e9ab0;white-space:nowrap">{{ m.app }}</span></span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.isStrip }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ t.openMenu }}" style="flex:1;display:flex;flex-direction:{{ t.stripDir }};align-items:center;justify-content:center;gap:10px;padding:8px;cursor:pointer;text-align:center">
+<span class="material-symbols-rounded" style="font-size:26px;color:{{ t.sumC }}">{{ t.icon }}</span>
+<span style="font-size:18px;font-weight:700;letter-spacing:.04em;color:#b0bacb;white-space:nowrap;display:{{ t.chipLab }}">{{ t.label }}</span>
+<span style="font-size:{{ t.chipFs }}px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ t.sumC }};white-space:nowrap">{{ t.sumV }}</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.isSmall }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:0 18px 16px">
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:{{ t.valFs }}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ t.sumC }};white-space:nowrap">{{ t.sumV }}</span><span style="font-size:22px;color:#b0bacb">{{ t.sumU }}</span></div>
+<span style="font-size:20px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.sumS }}</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_attitude }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 18px 16px">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.dir }};gap:10px">
+<sc-for list="{{ t.att }}" as="a" hint-placeholder-count="2"><div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column">
+<span style="font-size:20px;font-weight:700;letter-spacing:.06em;color:#8e9ab0">{{ a.l }}</span>
+<div style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center"><div style="position:absolute;left:0;right:0;top:50%;height:2px;background:#3b4a6a;margin-top:{{ t.horizon }}px"></div><span class="material-symbols-rounded" style="font-size:{{ t.iconFs }}px;line-height:1;color:{{ a.c }};font-variation-settings:'FILL' 1;transform:rotate({{ a.rot }}deg);transform-origin:50% 80%;transition:transform 1s">{{ a.icon }}</span></div>
+<span style="font-size:{{ t.valFs }}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ a.c }}">{{ a.v }}°</span>
+</div></sc-for>
+</div>
+<div style="display:{{ t.expDisp }};gap:10px;flex:none;"><sc-for list="{{ t.stats }}" as="x" hint-placeholder-count="3"><div style="flex:1;min-width:0;border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ x.l }}</span><span style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ x.v }}</span></div></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_heading }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 18px 16px">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.dir }};align-items:center;justify-content:center;gap:18px">
+<svg viewBox="0 0 150 150" style="width:{{ t.compass }}px;height:{{ t.compass }}px;flex:none"><circle cx="75" cy="75" r="66" fill="#1a2439" stroke="#3b4a6a" stroke-width="2"></circle><text x="75" y="26" fill="#eef2f9" font-size="22" font-weight="800" text-anchor="middle" dominant-baseline="central" font-family="Figtree">N</text><text x="126" y="75" fill="#8e9ab0" font-size="20" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">E</text><text x="75" y="124" fill="#8e9ab0" font-size="20" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">S</text><text x="24" y="75" fill="#8e9ab0" font-size="20" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Figtree">W</text><g transform="rotate({{ hdg }} 75 75)"><path d="M75 34 L85 75 L75 70 L65 75 Z" fill="#eef2f9"></path><path d="M75 116 L85 75 L75 80 L65 75 Z" fill="#5d6879"></path></g></svg>
+<div style="display:flex;flex-direction:column;align-items:{{ t.align }}"><span style="font-size:{{ t.valFs }}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">{{ hdg }}°</span><span style="font-size:26px;font-weight:700;color:#b0bacb">WNW</span></div>
+</div>
+<div style="display:{{ t.expDisp }};gap:10px;flex:none;"><sc-for list="{{ t.stats }}" as="x" hint-placeholder-count="3"><div style="flex:1;min-width:0;border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ x.l }}</span><span style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ x.v }}</span></div></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_transfer }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.trDir }};gap:10px;padding:0 14px 14px">
+<sc-for list="{{ t.trRows }}" as="r" hint-placeholder-count="2"><div style="flex:1;border-radius:16px;background:#1a2439;display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:8px;min-width:0"><span style="font-size:22px;font-weight:700;white-space:nowrap">{{ r.l }}</span><span style="font-size:20px;font-weight:800;letter-spacing:.06em;background:#eef2f9;color:#0a1020;padding:6px 12px;border-radius:12px;white-space:nowrap">{{ r.v }}</span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_speed }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:0 18px 16px">
+<span style="font-size:{{ t.speedFs }}px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums">{{ speed }}</span>
+<span style="font-size:24px;color:#b0bacb">km/h · limit 30</span>
+<div style="display:{{ t.expDisp }};gap:10px;flex:none;margin-top:16px"><sc-for list="{{ t.stats }}" as="x" hint-placeholder-count="3"><div style="flex:1;min-width:0;border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ x.l }}</span><span style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ x.v }}</span></div></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_engine }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.enDir }};flex-wrap:{{ t.enWrap }};gap:10px;padding:0 14px 14px">
+<sc-for list="{{ t.engRows }}" as="e" hint-placeholder-count="3"><div style="flex:{{ t.cellFlex }};min-width:0;min-height:0;border-radius:16px;background:#1a2439;box-shadow:{{ e.ring }};display:flex;flex-direction:{{ t.cellDir }};justify-content:space-between;align-items:{{ t.cellAlign }};padding:10px 14px;gap:4px">
+<span style="font-size:18px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ e.l }}</span>
+<span style="font-size:{{ t.cellFs }}px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ e.c }};white-space:nowrap">{{ e.v }}<span style="font-size:18px;color:#b0bacb;font-weight:500"> {{ e.u }}</span></span>
+</div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_map }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.dir }};gap:10px;padding:0 14px 14px">
+<div style="flex:1.4;min-height:0;min-width:0;border-radius:16px;overflow:hidden;position:relative;background:#0e1422">
+<div style="position:absolute;left:-30%;top:-20%;width:150%;height:120%;border-radius:50%;border:1.5px solid rgba(176,186,203,.10)"></div><div style="position:absolute;left:-22%;top:-6%;width:132%;height:104%;border-radius:50%;border:1.5px solid rgba(176,186,203,.13)"></div><div style="position:absolute;left:-14%;top:8%;width:114%;height:88%;border-radius:50%;border:1.5px solid rgba(176,186,203,.16)"></div><div style="position:absolute;left:-6%;top:22%;width:96%;height:72%;border-radius:50%;border:1.5px solid rgba(176,186,203,.19)"></div>
+<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><path d="M8 92 C 22 80, 30 70, 38 62 S 52 44, 60 40 S 80 22, 92 10" fill="none" stroke="#eef2f9" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path><path d="M8 92 C 22 80, 30 70, 38 62" fill="none" stroke="#22a6e0" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg>
+<span style="position:absolute;left:38%;top:62%;width:36px;height:36px;margin:-18px;border-radius:18px;background:#22a6e0;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="font-size:22px;color:#0a1020;font-variation-settings:'FILL' 1">navigation</span></span>
+<sc-if value="{{ t.friendsOnMap }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:56%;top:42%;width:36px;height:36px;margin:-18px;border-radius:18px;background:#7c6ff0;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800">SM</span><span style="position:absolute;left:20%;top:84%;width:36px;height:36px;margin:-18px;border-radius:18px;background:#2f9e63;box-shadow:0 0 0 3px #0a1020;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;opacity:.5">TR</span></sc-if>
+</div>
+<div style="flex:1;min-width:0;min-height:0;display:{{ t.secDisp }};flex-direction:column;justify-content:{{ t.secJustify }}">
+<sc-for list="{{ t.mapRows }}" as="r" hint-placeholder-count="2"><div style="min-height:56px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1f2a40"><span style="width:40px;height:40px;border-radius:20px;background:{{ r.bg }};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex:none">{{ r.ini }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:22px;font-weight:700;white-space:nowrap">{{ r.n }}</span><span style="font-size:18px;color:#b0bacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.d }}</span></span><span style="font-size:18px;font-weight:700;color:{{ r.sc }};white-space:nowrap">{{ r.s }}</span></div></sc-for>
+<div style="display:{{ t.expDisp }};gap:10px;flex:none;margin-top:auto"><sc-for list="{{ t.stats }}" as="x" hint-placeholder-count="3"><div style="flex:1;min-width:0;border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ x.l }}</span><span style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ x.v }}</span></div></sc-for></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_diagnose }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.dir }};gap:12px;padding:0 14px 14px">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+<div style="border-radius:16px;background:#1a2439;padding:14px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 4px 0 0 {{ diagC }}"><span style="font-size:18px;font-weight:800;letter-spacing:.06em;color:{{ diagC }};white-space:nowrap">{{ diagTag }}</span><span style="font-size:24px;font-weight:700;line-height:1.2">{{ diagTitle }}</span><span style="font-size:18px;color:#b0bacb;line-height:1.35">{{ diagSub }}</span></div>
+<span style="flex:1"></span>
+<div style="height:52px;flex:none;border-radius:26px;background:#1a2439;color:{{ diagBtnC }};display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px">{{ diagBtnI }}</span>{{ diagBtn }}</div>
+</div>
+<div style="flex:1;min-width:0;display:{{ t.secDisp }};flex-direction:column">
+<sc-for list="{{ sysRows }}" as="s" hint-placeholder-count="4"><div style="height:52px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1f2a40"><span style="width:12px;height:12px;border-radius:6px;background:{{ s.c }};flex:none"></span><span style="flex:1;font-size:20px;font-weight:800;letter-spacing:.06em">{{ s.n }}</span><span style="font-size:18px;font-weight:700;color:{{ s.tc }};white-space:nowrap">{{ s.s }}</span></div></sc-for>
+</div>
+<div style="flex:1;min-width:0;display:{{ t.expDisp }};flex-direction:column">
+<span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;height:28px;display:flex;align-items:center">FREEZE FRAME · 08:41</span>
+<sc-for list="{{ ffRows }}" as="v" hint-placeholder-count="5"><div style="height:40px;display:flex;align-items:center;border-top:1px solid #1f2a40;gap:8px"><span style="flex:1;font-size:18px;color:#b0bacb;white-space:nowrap">{{ v.l }}</span><span style="font-size:20px;font-weight:700;color:{{ v.c }};white-space:nowrap;font-variant-numeric:tabular-nums">{{ v.v }}</span></div></sc-for>
+<span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;height:36px;display:flex;align-items:flex-end;padding-bottom:4px">LIVE NOW</span>
+<sc-for list="{{ liveRows }}" as="v" hint-placeholder-count="3"><div style="height:40px;display:flex;align-items:center;border-top:1px solid #1f2a40;gap:8px"><span style="flex:1;font-size:18px;color:#b0bacb;white-space:nowrap">{{ v.l }}</span><span style="font-size:20px;font-weight:700;color:{{ v.c }};white-space:nowrap;font-variant-numeric:tabular-nums">{{ v.v }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.p_logs }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:{{ t.dir }};gap:12px;padding:0 14px 14px">
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><div style="flex:1;border-radius:16px;background:#1a2439;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center"><span class="material-symbols-rounded" style="font-size:32px;color:#4cc38a">radio_button_checked</span><span style="font-size:22px;font-weight:700;line-height:1.2;text-wrap:balance">Recording this drive</span><span style="font-size:18px;color:#b0bacb;line-height:1.3;text-wrap:balance">Charts open when you park</span></div></sc-if>
+<sc-if value="{{ parked }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1.3;min-height:0;min-width:0;position:relative;background:#1a2439;border-radius:16px;overflow:hidden">
+<svg viewBox="0 0 300 100" preserveAspectRatio="none" style="position:absolute;left:0;top:16px;width:100%;height:calc(100% - 46px)"><path d="M0 70 L40 66 L80 60 L120 58 L150 30 L156 6 L300 6" fill="none" stroke="#ef6a7d" stroke-width="2.5" vector-effect="non-scaling-stroke"></path><path d="M0 80 L60 76 L120 70 L180 52 L210 40 L240 46 L300 58" fill="none" stroke="#e0b04a" stroke-width="2.5" vector-effect="non-scaling-stroke"></path></svg>
+<span style="position:absolute;left:52%;top:0;bottom:0;width:2px;background:#22a6e0"></span><span style="position:absolute;left:52%;top:8px;margin-left:6px;font-size:16px;font-weight:700;color:#22a6e0">08:41</span>
+<span style="position:absolute;left:12px;bottom:8px;font-size:16px;color:#8e9ab0;display:flex;gap:12px;white-space:nowrap"><span style="color:#ef6a7d">● Intake air</span><span style="color:#e0b04a">● Coolant</span></span>
+</div>
+<div style="flex:1;min-width:0;display:{{ t.secDisp }};flex-direction:column">
+<sc-for list="{{ events }}" as="e" hint-placeholder-count="3"><div style="height:52px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1f2a40"><span style="font-size:16px;color:#8e9ab0;width:48px;flex:none;font-variant-numeric:tabular-nums">{{ e.t }}</span><span class="material-symbols-rounded" style="font-size:20px;color:{{ e.c }};font-variation-settings:'FILL' 1">{{ e.i }}</span><span style="font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ e.x }}</span></div></sc-for>
+</div>
+<div style="width:220px;flex:none;display:{{ t.expDisp }};flex-direction:column;gap:10px"><sc-for list="{{ t.stats }}" as="x" hint-placeholder-count="3"><div style="flex:1;border-radius:16px;background:#1a2439;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px"><span style="font-size:16px;font-weight:700;letter-spacing:.06em;color:#8e9ab0;white-space:nowrap">{{ x.l }}</span><span style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ x.v }}</span></div></sc-for></div>
+</sc-if>
+</div>
+</sc-if>
+
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1052px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;font-size:14px;line-height:1.5;color:#3b4556">
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Pages, not modes</b><span>Every gauge and view is a page that can sit in any tile. Saved layouts (Trail, Convoy, Commute, Workshop) replace drive modes and sync per car and screen.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Shape, not device</b><span>Wide tiles put parts side by side, tall tiles stack them, small tiles show one number, strips show a chip. Try the layout buttons.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">While moving</b><span>Saved layouts and page swaps still work (one tap, like a bezel key). Changing the layout is locked. Logs records but holds charts until parked.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Caution and warning</b><span>Amber caution rings the source tile and lights the strip. Red warning takes the passenger-most tile that isn't a car instrument, until ACK.</span></div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PAGES = {
+  attitude: { l: 'ATTITUDE', app: 'Car', i: 'airport_shuttle', drive: 1 },
+  heading: { l: 'HEADING', app: 'Car', i: 'explore', drive: 1 },
+  transfer: { l: 'TRANSFER', app: 'Car', i: 'settings_input_component', drive: 1 },
+  speed: { l: 'SPEED', app: 'Car', i: 'speed', drive: 1 },
+  engine: { l: 'ENGINE', app: 'Car', i: 'thermostat', drive: 1 },
+  trail: { l: 'TRAIL', app: 'Maps', i: 'route', drive: 0 },
+  convoy: { l: 'CONVOY', app: 'Convoy', i: 'groups', drive: 0 },
+  diagnose: { l: 'DIAGNOSE', app: 'Diagnose', i: 'stethoscope', drive: 0 },
+  logs: { l: 'LOGS', app: 'Logs', i: 'history', drive: 0 }
+};
+const LAYOUTS = {
+  single: { l: 'Full', i: 'crop_square', t: [[0, 0, 1, 1]] },
+  half: { l: 'Halves', i: 'view_column_2', t: [[0, 0, .5, 1], [.5, 0, .5, 1]] },
+  split: { l: 'Two thirds', i: 'splitscreen_left', t: [[0, 0, 2 / 3, 1], [2 / 3, 0, 1 / 3, 1]] },
+  main3: { l: 'Main + two', i: 'space_dashboard', t: [[0, 0, 2 / 3, 1], [2 / 3, 0, 1 / 3, .5], [2 / 3, .5, 1 / 3, .5]] },
+  cols3: { l: 'Three columns', i: 'view_week', t: [[0, 0, 1 / 3, 1], [1 / 3, 0, 1 / 3, 1], [2 / 3, 0, 1 / 3, 1]] },
+  quad: { l: 'Quad', i: 'grid_view', t: [[0, 0, .5, .5], [.5, 0, .5, .5], [0, .5, .5, .5], [.5, .5, .5, .5]] }
+};
+const PRESETS = [
+  { l: 'Trail', i: 'landslide', lay: 'quad', p: ['attitude', 'heading', 'trail', 'transfer'] },
+  { l: 'Convoy', i: 'groups', lay: 'split', p: ['attitude', 'convoy'] },
+  { l: 'Commute', i: 'commute', lay: 'main3', p: ['speed', 'convoy', 'engine'] },
+  { l: 'Workshop', i: 'build', lay: 'half', p: ['diagnose', 'logs'] },
+  { l: 'Bench', i: 'biotech', lay: 'single', p: ['diagnose'] }
+];
+class Component extends DCLogic {
+  state = { lay: 'quad', pages: ['attitude', 'heading', 'trail', 'transfer'], menu: -1, moving: true, caution: false, warning: false, rhd: false, ph: 0 };
+  componentDidMount() { const pr = this.props.preset && PRESETS.find(p => p.l === this.props.preset); if (pr) this.setState({ lay: pr.lay, pages: pr.p.concat(['speed', 'engine', 'logs']).slice(0, 4) }); this.iv = setInterval(() => this.setState(s => ({ ph: s.ph + 1 })), 1400); }
+  componentWillUnmount() { clearInterval(this.iv); }
+  cls(w, h) { if (w < 200 || h < 130) return 'strip'; if (w < 300 || h < 230) return 'small'; return w / h >= 1.25 ? 'wide' : 'tall'; }
+  renderVals() {
+    const P0 = this.props, ov = {}; ['moving', 'caution', 'warning', 'rhd'].forEach(k => { if (P0[k] !== undefined) ov[k] = !!P0[k]; });
+    const s = Object.assign({}, this.state, ov), AMB = '#e0b04a', RED = '#ef6a7d', GRN = '#4cc38a', DIM = '#8e9ab0';
+    const ph = s.ph, pitch = Math.round(12 + 4 * Math.sin(ph * .7)), roll = Math.round(6 + 3 * Math.cos(ph * .9));
+    const hdg = Math.round(284 + 5 * Math.sin(ph * .4)), speed = Math.round(11 + 3 * Math.sin(ph * .6));
+    const coolant = s.warning ? 112 : s.caution ? 104 : 92, coolC = s.warning ? RED : s.caution ? AMB : '#eef2f9';
+    const L = LAYOUTS[s.lay], G = 10, phone = !!P0.phone;
+    const W = P0.screenW || 1024, H = P0.screenH || 600, andSide = P0.android || '', frac = P0.androidFrac || .5;
+    let andW = 0, andH = 0, winW = W, winH = H;
+    if (andSide === 'left') { andW = Math.round((W - 12) * frac); andH = H; winW = W - 12 - andW; }
+    if (andSide === 'top') { andH = Math.round((H - 12) * frac); andW = W; winH = H - 12 - andH; }
+    const insetT = phone && !andSide ? 44 : 0, insetB = phone ? 22 : 0;
+    const AW = winW - 24, AH = winH - insetT - 56 - 12 - insetB, narrow = winW < 560;
+    const preset = PRESETS.find(p => p.lay === s.lay && p.p.every((x, k) => s.pages[k] === x));
+    let fr = L.t.map(a => a.slice()); const n = fr.length; let rule = 'As designed';
+    if (n > 1 && AH > AW * 1.15) { fr = fr.map(([x, y, w, h]) => [y, x, h, w]); rule = 'Tall window: split turned vertical'; }
+    else if (n > 1 && AH < 320) { const wt = fr.map((_, k) => k ? 1 : 1.5), sm = wt.reduce((a, b) => a + b, 0); let acc = 0; fr = wt.map(v => { const q = [acc / sm, 0, v / sm, 1]; acc += v; return q; }); rule = 'Short window: tiles laid in one row'; }
+    const px = ([fx, fy, fw, fh]) => ({ x: Math.round(fx * (AW + G)), w: Math.round(fw * (AW + G)) - G, y: Math.round(fy * (AH + G)), h: Math.round(fh * (AH + G)) - G });
+    let rects = fr.map(px);
+    if (n > 2 && rects.some(r => r.w < 200 || r.h < 150)) {
+      const m = n - 1;
+      if (AH >= AW) { const ch = 96, cw = Math.round((AW - G * (m - 1)) / m); rects = [{ x: 0, y: 0, w: AW, h: AH - ch - G }].concat(Array.from({ length: m }, (_, k) => ({ x: k * (cw + G), y: AH - ch, w: cw, h: ch }))); }
+      else { const cw = 180, chh = Math.round((AH - G * (m - 1)) / m); rects = [{ x: 0, y: 0, w: AW - cw - G, h: AH }].concat(Array.from({ length: m }, (_, k) => ({ x: AW - cw, y: k * (chh + G), w: cw, h: chh }))); }
+      rule = 'Too small for ' + n + ' tiles: main page plus chips';
+    }
+    if (s.rhd) rects = rects.map(r => ({ ...r, x: AW - r.x - r.w }));
+    let warnIdx = -1;
+    if (s.warning) {
+      const order = rects.map((r, k) => k).sort((a, b) => s.rhd ? rects[a].x - rects[b].x : rects[b].x - rects[a].x);
+      warnIdx = order.find(k => !PAGES[s.pages[k]].drive && rects[k].w >= 200 && rects[k].h >= 150);
+      if (warnIdx === undefined) warnIdx = order.find(k => !PAGES[s.pages[k]].drive);
+      if (warnIdx === undefined) warnIdx = -1;
+      else if (rects[warnIdx].w < 200 || rects[warnIdx].h < 150) {
+        if (AH >= AW) { const bh = 210; rects = rects.map((r, k) => k === 0 ? { ...r, h: AH - bh - G } : k === warnIdx ? { x: 0, y: AH - bh, w: AW, h: bh } : { ...r, hide: true }); }
+        else { const bw = 300; rects = rects.map((r, k) => k === 0 ? { ...r, w: AW - bw - G, x: s.rhd ? bw + G : 0 } : k === warnIdx ? { x: s.rhd ? 0 : AW - bw, y: 0, w: bw, h: AH } : { ...r, hide: true }); }
+      }
+    }
+    const sum = {
+      attitude: [`${pitch}° · ${roll}°`, '', 'Pitch · roll', '#eef2f9'],
+      heading: [`${hdg}°`, '', 'WNW', '#eef2f9'],
+      transfer: ['LOW', '', 'Centre diff locked', '#eef2f9'],
+      speed: [`${speed}`, 'km/h', 'Limit 30', '#eef2f9'],
+      engine: [`${coolant}`, '°C', 'Coolant', coolC],
+      trail: ['1.8', 'km', '42 min · avg 9 km/h', '#eef2f9'],
+      convoy: ['2', 'friends', 'Sam live · Tom stale', '#eef2f9'],
+      diagnose: s.caution || s.warning ? ['1', 'caution', 'Coolant rising', AMB] : ['1', 'fault', 'P0110 intake air', RED],
+      logs: [s.moving ? 'REC' : '08:30', '', s.moving ? 'Recording this drive' : 'Today’s drive', s.moving ? GRN : '#eef2f9']
+    };
+    const diagWarn0 = s.caution || s.warning;
+    const engineRows = [{ l: 'COOLANT', v: coolant, u: '°C', c: coolC, ring: diagWarn0 ? 'inset 0 0 0 2px ' + coolC : 'none' }, { l: 'BOOST', v: '0.9', u: 'bar', c: '#eef2f9', ring: 'none' }, { l: 'BATTERY', v: '14.1', u: 'V', c: '#eef2f9', ring: 'none' }];
+    const ENG_X = [{ l: 'INTAKE AIR', v: '—', u: 'sensor fault', c: DIM, ring: 'none' }, { l: 'FUEL TEMP', v: '38', u: '°C', c: '#eef2f9', ring: 'none' }, { l: 'ENGINE', v: '1,450', u: 'rpm', c: '#eef2f9', ring: 'none' }];
+    const TR4 = [{ l: 'Low range', v: 'ON' }, { l: 'Centre diff', v: 'LOCKED' }, { l: 'Hill descent', v: 'ON' }, { l: 'ACE', v: 'ACTIVE' }];
+    const st = (a) => a.map(([l, v]) => ({ l, v }));
+    const STATS = { attitude: st([['MAX PITCH', '24°'], ['MAX ROLL', '17°'], ['SIDE-SLOPE LIMIT', '35°']]), heading: st([['ALTITUDE', '412 m'], ['CLIMBED', '+186 m'], ['GRADE', '9%']]), speed: st([['TRIP', '18.4 km'], ['AVERAGE', '9 km/h'], ['MOVING', '42 min']]), trail: st([['ALTITUDE', '412 m'], ['AVERAGE', '9 km/h'], ['TIME', '42 min']]), convoy: st([['GROUP', '3 cars'], ['SPREAD', '1.2 km'], ['LAST REGROUP', '12 min']]), logs: st([['DISTANCE', '37.2 km'], ['COOLANT MAX', '108 °C'], ['FAULTS', '1 new']]) };
+    const tiles = rects.map((r, k) => {
+      const id = s.pages[k] || 'speed', P = PAGES[id], rich = ['diagnose', 'logs', 'trail', 'convoy'].includes(id);
+      let c = this.cls(r.w, r.h);
+      if (rich && c !== 'strip' && (c === 'small' || r.w < 420)) c = 'cmp';
+      const wide = c === 'wide', full = c === 'wide' || c === 'tall' || c === 'cmp';
+      const exp = (c === 'wide' || c === 'tall') && r.h >= 440 && r.w >= (['diagnose', 'logs'].includes(id) ? 760 : 640);
+      const sizeName = c === 'strip' ? 'Chip' : (c === 'small' || c === 'cmp') ? 'Compact' : exp ? 'Expanded' : 'Standard';
+      const menuOpen = s.menu === k, isWarn = k === warnIdx;
+      const ringC = s.caution && !s.warning && (id === 'engine' || id === 'diagnose') ? AMB : (id === 'attitude' && pitch >= 15 ? AMB : null);
+      const [sv, su, ss, sc] = sum[id];
+      const pv = (x) => full && !menuOpen && !isWarn && id === x;
+      const iconFs = Math.max(56, Math.min(110, Math.round(Math.min(wide ? r.w / 2.6 : r.w / 2.2, wide ? r.h / 2.8 : r.h / 5))));
+      return {
+        ...r, isWarn, notWarn: !isWarn, isMenu: menuOpen, isStrip: c === 'strip' && !menuOpen, isSmall: c === 'small' && !menuOpen,
+        bg: isWarn ? '#2a1420' : '#121a2c', ring: isWarn ? 'inset 0 0 0 4px ' + RED : ringC ? 'inset 0 0 0 3px ' + ringC : 'none',
+        headDisp: c === 'strip' && !menuOpen ? 'none' : 'flex', label: menuOpen ? 'CHOOSE PAGE' : P.l, app: P.app + ' · ' + sizeName, appDisp: r.w >= 300 && !menuOpen ? 'block' : 'none',
+        menuIcon: menuOpen ? 'close' : 'expand_more', labFs: r.w >= 300 ? 22 : 18, icon: P.i,
+        flag: menuOpen ? '' : id === 'attitude' && pitch >= 15 ? 'STEEP' : id === 'engine' && (s.caution || s.warning) ? (s.warning ? 'HOT' : 'RISING') : '',
+        flagC: id === 'attitude' ? AMB : coolC,
+        openMenu: () => this.setState({ menu: menuOpen ? -1 : k }),
+        menu: Object.entries(PAGES).map(([pid, q]) => ({ l: q.l.charAt(0) + q.l.slice(1).toLowerCase(), app: q.app, i: q.i, ic: pid === id ? '#22a6e0' : '#b0bacb', bg: pid === id ? 'rgba(34,166,224,.16)' : '#1a2439', ring: pid === id ? 'inset 0 0 0 2px #22a6e0' : 'none', pick: () => { const pages = s.pages.slice(); pages[k] = pid; this.setState({ pages, menu: -1 }); } })),
+        stripDir: r.w > r.h * 1.4 ? 'row' : 'column', chipLab: r.h < 110 && r.w < 200 && !(r.w > r.h * 1.4) ? 'none' : (r.w < 120 ? 'none' : 'block'), chipFs: r.w < 110 ? 22 : 28, sumV: sv, sumU: su, sumS: ss, sumC: sc,
+        valFs: Math.max(40, Math.min(64, Math.round(Math.min(r.w / 4.2, r.h / 4)))),
+        warnFs: r.w < 300 ? 30 : 44, secDisp: isWarn ? (r.h >= 300 ? 'flex' : 'none') : c === 'cmp' ? 'none' : exp || (wide && r.w >= 560) || (c === 'tall' && r.h >= 420) ? 'flex' : 'none', secJustify: 'flex-start',
+        expDisp: exp ? 'flex' : 'none', stats: STATS[id] || [],
+        trRows: exp ? TR4 : TR4.slice(0, 2),
+        engRows: exp ? engineRows.concat(ENG_X) : engineRows, enWrap: exp ? 'wrap' : 'nowrap', cellFlex: exp ? '1 1 30%' : '1',
+        dir: wide && c !== 'cmp' ? 'row' : 'column', align: wide ? 'flex-start' : 'center',
+        p_attitude: pv('attitude'), p_heading: pv('heading'), p_transfer: pv('transfer'), p_speed: pv('speed'), p_engine: pv('engine'), p_map: pv('trail') || pv('convoy'), p_diagnose: pv('diagnose'), p_logs: pv('logs'),
+        iconFs, horizon: Math.round(iconFs * .36),
+        att: [{ l: 'PITCH', v: pitch, rot: -pitch, icon: 'airport_shuttle', c: pitch >= 15 ? AMB : '#eef2f9' }, { l: 'ROLL', v: roll, rot: roll, icon: 'airport_shuttle', c: '#eef2f9' }],
+        compass: Math.max(96, Math.min(200, Math.round(Math.min(wide ? r.h - 90 : r.w - 60, wide ? r.w / 2.4 : r.h - 170)))),
+        speedFs: Math.max(80, Math.min(220, Math.round(Math.min(r.w / 2.4, (r.h - 90) * .8)))),
+        trDir: !exp && r.w >= 600 ? 'row' : 'column', enDir: exp || r.w / 3 >= 170 ? 'row' : 'column',
+        cellDir: r.w / 3 >= 170 ? 'column' : 'row', cellAlign: r.w / 3 >= 170 ? 'flex-start' : 'center',
+        cellFs: r.w / 3 >= 170 ? Math.max(36, Math.min(56, Math.round(r.w / 9))) : Math.max(28, Math.min(44, Math.round((r.h - 80) / 6))),
+        friendsOnMap: id === 'convoy',
+        mapRows: id === 'convoy' ? [{ ini: 'SM', bg: '#7c6ff0', n: 'Sam', d: '300 m ahead', s: 'Live', sc: GRN }, { ini: 'TR', bg: '#2f9e63', n: 'Tom', d: 'Last seen 6 min ago', s: 'Stale', sc: DIM }]
+          : [{ ini: '1.8', bg: '#1a2439', n: '1.8 km', d: 'Trail so far', s: '', sc: DIM }, { ini: '↑', bg: '#1a2439', n: '+186 m', d: 'Climbed', s: '', sc: DIM }]
+      };
+    });
+    const seg = (on) => ({ bg: on ? '#0e1626' : 'transparent', ink: on ? '#fff' : '#3b4556' });
+    const diagWarn = s.caution || s.warning;
+    return {
+      tiles: tiles.filter((t, k) => !rects[k].hide), hdg, speed, rule, chrome: !P0.bare, pagePad: P0.bare ? 0 : 56,
+      W, H, winW, winH, andW, andH, android: !!andSide, devDir: andSide === 'top' ? 'column' : 'row',
+      divW: andSide === 'top' ? '100%' : '12px', divH: andSide === 'top' ? '12px' : '100%', gripW: andSide === 'top' ? '48px' : '4px', gripH: andSide === 'top' ? '4px' : '48px',
+      insetT, areaMb: 12 + insetB, bezel: phone ? 10 : 14, bezelR: phone ? 56 : 24, devR: phone ? 46 : 6, screenLabel: P0.label || 'MFD 7in',
+      brainDisp: narrow ? 'none' : 'flex', timeDisp: winW < 420 ? 'none' : 'block', lockText: narrow ? '' : 'Layout locked',
+      cauText: narrow ? 'CAUTION' : 'CAUTION · ENGINE', warnText: narrow ? 'WARNING' : 'WARNING · COOLANT', moving: s.moving, parked: !s.moving, warning: s.warning, showCaution: s.caution && !s.warning,
+      stripDir: s.rhd ? 'row-reverse' : 'row', presetName: preset ? preset.l : 'Custom',
+      ack: () => this.setState({ warning: false }),
+      layoutLabel: s.moving ? 'LAYOUT · LOCKED WHILE MOVING' : 'LAYOUT', layoutOp: s.moving ? .45 : 1,
+      presets: PRESETS.map(p => ({ l: p.l, i: p.i, ...seg(preset === p), pick: () => this.setState({ lay: p.lay, pages: p.p.concat(['speed', 'engine', 'logs']).slice(0, 4), menu: -1 }) })),
+      layouts: Object.entries(LAYOUTS).map(([k, o]) => ({ l: o.l, i: o.i, ...seg(s.lay === k), pick: () => { if (s.moving) return; const fill = ['speed', 'engine', 'convoy', 'diagnose']; const pages = s.pages.slice(); while (pages.length < 4) pages.push(fill.find(f => !pages.includes(f))); this.setState({ lay: k, pages, menu: -1 }); } })),
+      toggles: [['moving', 'Car moving', 'directions_car'], ['caution', 'Caution', 'warning'], ['warning', 'Master warning', 'report'], ['rhd', 'Right-hand drive', 'swap_horiz']].map(([k, l, i]) => ({ l, i, bg: s[k] ? '#0e1626' : '#e4e7ec', ink: s[k] ? '#fff' : '#3b4556', flip: () => this.setState({ [k]: !s[k] }) })),
+      transferRows: [{ l: 'Low range', v: 'ON' }, { l: 'Centre diff', v: 'LOCKED' }],
+      ffRows: [{ l: 'Intake air', v: '120 °C', c: RED }, { l: 'Coolant', v: '88 °C', c: '#eef2f9' }, { l: 'Engine speed', v: '2,140 rpm', c: '#eef2f9' }, { l: 'Boost', v: '0.88 bar', c: '#eef2f9' }, { l: 'Road speed', v: '46 km/h', c: '#eef2f9' }],
+      liveRows: [{ l: 'Intake air', v: '120 °C', c: RED }, { l: 'Coolant', v: coolant + ' °C', c: coolC }, { l: 'Battery', v: '14.1 V', c: '#eef2f9' }],
+      diagC: diagWarn ? AMB : RED, diagTag: diagWarn ? 'CAUTION · ENGINE' : 'ACTIVE · P0110',
+      diagTitle: diagWarn ? 'Coolant rising on the climb' : 'Intake air temp circuit', diagSub: diagWarn ? 'Fan is running. Ease off in low range.' : 'Stuck at 120 °C since 08:41',
+      diagBtn: s.moving ? 'More when parked' : 'Get help', diagBtnI: s.moving ? 'lock' : 'support', diagBtnC: s.moving ? '#b0bacb' : '#22a6e0',
+      sysRows: [{ n: 'ENGINE', c: diagWarn ? AMB : RED, s: diagWarn ? '1 caution' : '1 active', tc: diagWarn ? AMB : RED }, { n: 'ABS', c: DIM, s: '1 stored', tc: '#b0bacb' }, { n: 'BODY', c: GRN, s: 'OK', tc: GRN }, { n: 'AIRBAG', c: GRN, s: 'OK', tc: GRN }],
+      events: [{ t: '08:41', i: 'error', c: RED, x: 'P0110 raised' }, { t: '08:52', i: 'warning', c: AMB, x: 'Coolant passed 105 °C' }, { t: '08:55', i: 'check_circle', c: GRN, x: 'Coolant back under 100 °C' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

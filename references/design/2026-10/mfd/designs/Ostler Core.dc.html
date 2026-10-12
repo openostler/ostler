@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;600;700&amp;family=DM+Serif+Display&amp;family=Barlow:wght@400;600;700;800&amp;family=Barlow+Condensed:ital,wght@0,500;0,700;0,800;1,700;1,800&amp;family=Manrope:wght@200;300;500;700&amp;family=Atkinson+Hyperlegible:wght@400;700&amp;family=Instrument+Sans:wght@400;600;700&amp;family=IBM+Plex+Sans:wght@300;400;600&amp;family=IBM+Plex+Mono:wght@400;600&amp;family=Outfit:wght@300;500;700&amp;family=Space+Grotesk:wght@400;600;700&amp;family=Archivo:wght@500;800;900&amp;family=Plus+Jakarta+Sans:wght@400;600;800&amp;family=DM+Sans:wght@400;500;700&amp;family=Share+Tech+Mono&amp;family=Nunito:wght@600;800;900&amp;family=Lexend:wght@300;500;700&amp;family=Albert+Sans:wght@400;600;800&amp;display=swap">
+<script src="ostler-themes.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&amp;display=block">
+<style>
+body{margin:0;background:#c9ced8;font-family:Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0070b8}a:hover{color:#005a94}
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-feature-settings:'liga';font-feature-settings:'liga'}
+</style>
+</helmet>
+<div style="padding:{{ pagePad }}px;display:flex;flex-direction:column;gap:28px;color:#0e1626">
+<sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1000px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#4b5568">OSTLER CORE · BEFORE ANY APPS · INTERACTIVE</div>
+<div style="font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.05">The bare shell, Settings and themes</div>
+<div style="font-size:15px;line-height:1.55;color:#3b4556;text-wrap:pretty">What a fresh install looks like: the shell, Settings and one built-in page, Car. Step through the three states, or just use the screen: Connect, then Get Diagnose. Drag the divider between tiles (it snaps to thirds and halves, double-click to swap sides, drag a tile under its minimum to close it). The gear opens Settings; pick a theme to restyle the whole shell.</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;max-width:1052px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4b5568">STATE</span><div style="display:flex;gap:4px;background:#e4e7ec;border-radius:12px;padding:4px;flex-wrap:wrap"><sc-for list="{{ stages }}" as="p" hint-placeholder-count="3"><div onClick="{{ p.pick }}" style="height:40px;padding:0 14px;border-radius:9px;display:flex;align-items:center;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;background:{{ p.bg }};color:{{ p.ink }}">{{ p.l }}</div></sc-for></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ toggles }}" as="t" hint-placeholder-count="2"><div onClick="{{ t.flip }}" style="height:48px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;background:{{ t.bg }};color:{{ t.ink }}"><span class="material-symbols-rounded" style="font-size:20px">{{ t.i }}</span>{{ t.l }}</div></sc-for></div>
+</div>
+
+</sc-if>
+<div style="padding:{{ bezel }}px;background:#000;border-radius:{{ bezelR }}px;box-shadow:0 30px 60px rgba(10,16,32,.35);align-self:flex-start">
+<div data-screen-label="{{ screenLabel }}" style="width:{{ W }}px;height:{{ H }}px;box-sizing:border-box;padding-top:{{ insetT }}px;background:{{ th.bgAll }};color:{{ th.tx }};font-family:{{ th.ff }};display:flex;flex-direction:column;overflow:hidden;border-radius:{{ devR }}px;position:relative">
+
+<div style="height:60px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:{{ th.stripBg }};border-bottom:{{ th.stripLine }};box-sizing:border-box;margin-bottom:{{ th.stripMb }}px">
+<div onClick="{{ toggleLayouts }}" style="height:44px;border-radius:{{ th.rcPx }};background:{{ th.chipBg }};display:flex;align-items:center;gap:8px;padding:0 10px 0 14px;font-size:19px;font-weight:{{ th.hdW }};font-family:{{ th.fh }};white-space:nowrap;cursor:pointer;box-shadow:{{ th.chipEdge }}"><span class="material-symbols-rounded" style="font-size:22px;color:{{ th.acc }}">dashboard</span>{{ layoutName }}<span class="material-symbols-rounded" style="font-size:22px;color:{{ th.t2 }}">expand_more</span></div>
+<div onClick="{{ openConn }}" style="height:44px;border-radius:{{ th.rcPx }};background:{{ th.chipBg }};display:flex;align-items:center;gap:8px;padding:0 14px;font-size:17px;font-weight:600;color:{{ th.t2 }};white-space:nowrap;cursor:pointer;box-shadow:{{ th.chipEdge }}"><span style="width:10px;height:10px;border-radius:5px;background:{{ connDot }}"></span>{{ connText }}</div>
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><span style="height:44px;border-radius:22px;background:{{ th.s1 }};display:flex;align-items:center;gap:6px;padding:0 14px;font-size:17px;font-weight:600;color:{{ th.t2 }};white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px">lock</span>{{ lockedText }}</span></sc-if>
+<span style="flex:1"></span>
+<div onClick="{{ openSettings }}" style="width:48px;height:48px;border-radius:24px;background:{{ gearBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:{{ th.edge }}"><span class="material-symbols-rounded" style="font-size:26px;color:{{ gearInk }}">settings</span></div>
+</div>
+
+<div ref="{{ areaRef }}" style="flex:1;min-height:0;margin:0 12px {{ areaMb }}px;position:relative">
+
+<sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;background:{{ th.tileBg }};border-radius:{{ th.rCard }};box-shadow:{{ th.edge }};backdrop-filter:{{ th.bf }};-webkit-backdrop-filter:{{ th.bf }};display:flex;align-items:center;justify-content:center;padding:24px">
+<div style="width:100%;max-width:560px;display:flex;flex-direction:column;gap:16px">
+<span style="font-size:15px;font-weight:700;letter-spacing:.1em;color:{{ th.t2 }}">WELCOME TO OSTLER</span>
+<span style="font-size:36px;line-height:1.1;font-family:{{ th.fh }};font-weight:{{ th.hdW }};text-transform:{{ th.hdTT }};letter-spacing:{{ th.hdLs }}">Connect your car</span>
+<span style="font-size:19px;color:{{ th.t2 }};line-height:1.45;text-wrap:pretty">Ostler reads what your car shares and shows only what it can. Nothing is installed yet; you'll add apps once we know what your car supports.</span>
+<div style="border-radius:20px;background:{{ th.s2 }};padding:16px 16px 16px 18px;display:flex;align-items:center;gap:14px">
+<span class="material-symbols-rounded" style="font-size:32px;color:{{ th.acc }}">sensors</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:20px;font-weight:700">Gateway found nearby</span><span style="font-size:16px;color:{{ th.t2 }}">Ostler Brain · Discovery 2 Td5</span></span>
+<div onClick="{{ connect }}" style="height:52px;padding:0 24px;border-radius:{{ th.rcBtn }};background:{{ th.acc }};color:{{ th.on }};display:flex;align-items:center;font-size:18px;font-weight:800;cursor:pointer;white-space:nowrap">Connect</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700;color:{{ th.acc }};height:44px"><span class="material-symbols-rounded" style="font-size:22px">expand_more</span>Other ways to connect</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ notA }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="2">
+<div style="position:absolute;top:{{ t.y }}px;height:{{ t.h }}px;left:{{ t.x }}px;width:{{ t.w }}px;background:{{ th.tileBg }};border-radius:{{ th.rCard }};box-shadow:{{ th.edge }};backdrop-filter:{{ th.bf }};-webkit-backdrop-filter:{{ th.bf }};display:flex;flex-direction:column;overflow:hidden;transition:{{ tileTrans }}">
+<div onClick="{{ t.openMenu }}" style="height:48px;flex:none;display:flex;align-items:center;gap:6px;padding:0 14px 0 18px;cursor:pointer">
+<span style="font-size:17px;font-weight:{{ th.lblW }};letter-spacing:{{ th.lblLs }};text-transform:{{ th.lblTT }};font-variant-caps:{{ th.lblFV }};background:{{ th.lblBg }};color:{{ th.lblC }};padding:{{ th.lblP }};border-radius:{{ th.lblR }}px;white-space:nowrap">{{ t.label }}</span><span class="material-symbols-rounded" style="font-size:22px;color:{{ th.t2 }}">expand_more</span>
+<span style="flex:1"></span><span style="font-size:13px;font-weight:700;color:{{ th.t2 }};white-space:nowrap;opacity:.8">{{ t.size }}</span>
+</div>
+
+<sc-if value="{{ t.menuOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:12px;top:52px;width:260px;z-index:3;background:{{ th.s2 }};border-radius:18px;padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.45);display:flex;flex-direction:column">
+<sc-for list="{{ t.menu }}" as="m" hint-placeholder-count="4"><div onClick="{{ m.act }}" style="height:52px;border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 12px;cursor:pointer;opacity:{{ m.op }}"><span class="material-symbols-rounded" style="font-size:22px;color:{{ th.tx }}">{{ m.i }}</span><span style="font-size:17px;font-weight:700;white-space:nowrap">{{ m.l }}</span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.isCar }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 16px 16px">
+<div style="border-radius:18px;background:{{ th.s2 }};padding:14px 16px;display:flex;align-items:center;gap:14px">
+<span class="material-symbols-rounded" style="font-size:30px;color:#4cc38a;font-variation-settings:'FILL' 1">check_circle</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:22px;line-height:1.2;font-family:{{ th.fh }};font-weight:{{ th.hdW }};text-transform:{{ th.hdTT }};letter-spacing:{{ th.hdLs }}">Fine to drive</span><span style="font-size:16px;color:{{ th.t2 }};line-height:1.35">{{ healthSub }}</span></span>
+</div>
+<div style="display:grid;grid-template-columns:{{ t.gCols }};gap:10px;flex:none">
+<sc-for list="{{ t.gauges }}" as="g" hint-placeholder-count="3"><div style="border-radius:18px;background:{{ th.s2 }};padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:15px;font-weight:700;letter-spacing:.06em;color:{{ th.t2 }};white-space:nowrap">{{ g.l }}</span><span style="font-size:44px;font-family:{{ th.fn }};font-weight:{{ th.wN }};font-style:{{ th.numIt }};letter-spacing:{{ th.numLs }};color:{{ th.spd }};line-height:1.05;font-variant-numeric:tabular-nums;white-space:nowrap">{{ g.v }}<span style="font-size:18px;color:{{ th.t2 }};font-weight:500"> {{ g.u }}</span></span></div></sc-for>
+<div style="display:{{ t.pinDisp }};border-radius:18px;box-shadow:inset 0 0 0 2px {{ th.s2 }};align-items:center;justify-content:center;gap:6px;color:{{ th.acc }};font-size:16px;font-weight:700;min-height:88px"><span class="material-symbols-rounded" style="font-size:22px">add</span>Pin a signal</div>
+</div>
+<sc-if value="{{ t.showSuggest }}" hint-placeholder-val="{{ false }}">
+<span style="font-size:15px;font-weight:{{ th.lblW }};letter-spacing:{{ th.lblLs }};text-transform:{{ th.lblTT }};font-variant-caps:{{ th.lblFV }};background:{{ th.lblBg }};color:{{ th.lblC }};padding:{{ th.lblP }};border-radius:{{ th.lblR }}px;margin-top:4px;align-self:flex-start">Your car can do more</span>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;min-height:0">
+<sc-for list="{{ t.suggest }}" as="s" hint-placeholder-count="3"><div style="border-radius:18px;background:{{ th.s2 }};padding:14px 14px 14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:26px;color:{{ th.acc }}">{{ s.i }}</span><span style="flex:1;font-size:20px;font-weight:700">{{ s.n }}</span><span onClick="{{ s.dismiss }}" class="material-symbols-rounded" style="font-size:22px;color:{{ th.t2 }};cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center">close</span></div>
+<span style="font-size:16px;color:{{ th.t2 }};line-height:1.35;text-wrap:pretty">{{ s.why }}</span>
+<div onClick="{{ s.get }}" style="height:44px;border-radius:{{ th.rcPx }};background:{{ s.btnBg }};color:{{ s.btnInk }};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;cursor:pointer;margin-top:auto;white-space:nowrap;padding:0 12px"><span>{{ s.btn }}</span></div>
+</div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ t.showCaps }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ caps }}" as="c" hint-placeholder-count="4"><span style="height:36px;border-radius:18px;background:{{ th.s2 }};display:flex;align-items:center;gap:6px;padding:0 12px;font-size:15px;font-weight:600;color:{{ th.t2 }};white-space:nowrap"><span class="material-symbols-rounded" style="font-size:18px">{{ c.i }}</span>{{ c.l }}</span></sc-for></div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ t.isDiag }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:0 16px 16px">
+<div style="border-radius:18px;background:{{ th.s2 }};padding:14px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 4px 0 0 #e0b04a"><span style="font-size:15px;font-weight:800;letter-spacing:.06em;color:#e0b04a;white-space:nowrap">STORED · P0110</span><span style="font-size:22px;font-weight:700;line-height:1.2">Intake air temp circuit</span><span style="font-size:16px;color:{{ th.t2 }};line-height:1.35">Seen once on 2 Oct. Not active now; the engine is reading normally.</span></div>
+<sc-if value="{{ t.diagRows }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column"><sc-for list="{{ sysRows }}" as="s" hint-placeholder-count="4"><div style="height:52px;display:flex;align-items:center;gap:12px;border-bottom:1px solid {{ th.s2 }}"><span style="width:12px;height:12px;border-radius:6px;background:{{ s.c }};flex:none"></span><span style="flex:1;font-size:18px;font-weight:800;letter-spacing:.06em">{{ s.n }}</span><span style="font-size:16px;font-weight:700;color:{{ th.t2 }};white-space:nowrap">{{ s.s }}</span></div></sc-for></div>
+</sc-if>
+<span style="flex:1"></span>
+<div style="height:52px;flex:none;border-radius:26px;background:{{ th.s2 }};color:{{ th.acc }};display:flex;align-items:center;justify-content:center;gap:8px;font-size:17px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px">support</span>What does this mean?</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+
+<sc-if value="{{ hasSplit }}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{ onDown }}" onDoubleClick="{{ swap }}" style="position:absolute;left:{{ divL }}px;top:{{ divT }}px;width:{{ divW }}px;height:{{ divH }}px;display:flex;align-items:center;justify-content:center;cursor:{{ divCursor }};touch-action:none;z-index:2">
+<span style="width:{{ gripW }}px;height:{{ gripH }}px;border-radius:3px;background:{{ gripC }}"></span>
+</div>
+<sc-if value="{{ dragging }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ snaps }}" as="p" hint-placeholder-count="3"><span style="position:absolute;left:{{ p.x }}px;top:{{ p.y }}px;width:{{ p.w }}px;height:{{ p.h }}px;background:{{ th.acc }};opacity:{{ p.op }};z-index:1;border-radius:1px"></span></sc-for></sc-if>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%);height:52px;border-radius:26px;background:{{ th.tx }};color:{{ th.bg }};display:flex;align-items:center;gap:16px;padding:0 10px 0 20px;font-size:17px;font-weight:700;white-space:nowrap;z-index:4;box-shadow:0 14px 30px rgba(0,0,0,.4)">{{ toast }}<div onClick="{{ undo }}" style="height:40px;padding:0 16px;border-radius:20px;display:flex;align-items:center;color:{{ th.acc2 }};cursor:pointer;font-weight:800">Undo</div></div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ layoutsOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;top:0;width:340px;z-index:5;background:{{ th.s2 }};border-radius:20px;padding:8px;box-shadow:0 20px 44px rgba(0,0,0,.5);display:flex;flex-direction:column">
+<span style="font-size:14px;font-weight:700;letter-spacing:.08em;color:{{ th.t2 }};padding:10px 12px 6px">SAVED LAYOUTS · THIS CAR, THIS SCREEN</span>
+<sc-for list="{{ savedLayouts }}" as="l" hint-placeholder-count="2"><div style="height:56px;border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 12px;background:{{ l.bg }}"><span class="material-symbols-rounded" style="font-size:22px;color:{{ l.ic }}">{{ l.i }}</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:17px;font-weight:700">{{ l.n }}</span><span style="font-size:14px;color:{{ th.t2 }}">{{ l.d }}</span></span></div></sc-for>
+<div style="height:1px;background:{{ th.s1 }};margin:6px 8px"></div>
+<div style="height:52px;border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 12px;color:{{ th.acc }};opacity:{{ saveOp }}"><span class="material-symbols-rounded" style="font-size:22px">{{ saveIcon }}</span><span style="font-size:17px;font-weight:700">{{ saveText }}</span></div>
+<div onClick="{{ openLayoutsSettings }}" style="height:52px;border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 12px;cursor:pointer"><span class="material-symbols-rounded" style="font-size:22px;color:{{ th.t2 }}">tune</span><span style="font-size:17px;font-weight:700">Manage layouts</span></div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;top:{{ insetT }}px;bottom:{{ insetB }}px;z-index:10;background:{{ th.bgAll }};display:flex;flex-direction:column">
+<div style="height:60px;flex:none;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px">
+<sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}"><div onClick="{{ back }}" style="width:48px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:-12px;flex:none"><span class="material-symbols-rounded" style="font-size:26px">arrow_back</span></div></sc-if><span style="font-size:26px;white-space:nowrap;font-family:{{ th.fh }};font-weight:{{ th.hdW }};text-transform:{{ th.hdTT }};letter-spacing:{{ th.hdLs }}">{{ setTitle }}</span>
+<sc-if value="{{ moving }}" hint-placeholder-val="{{ false }}"><span style="height:36px;border-radius:18px;background:rgba(224,176,74,.16);color:#e0b04a;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:15px;font-weight:700;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:18px">lock</span>{{ lockPill }}</span></sc-if>
+<span style="flex:1"></span>
+<div onClick="{{ closeSettings }}" style="width:48px;height:48px;border-radius:24px;background:{{ th.s1 }};display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:{{ th.edge }}"><span class="material-symbols-rounded" style="font-size:26px">close</span></div>
+</div>
+<div style="flex:1;min-height:0;display:flex;gap:12px;padding:0 12px 12px">
+<div style="width:{{ navW }};flex:{{ navFlex }};display:{{ navDisp }};flex-direction:column;gap:2px;overflow-y:auto;scrollbar-width:none">
+<sc-for list="{{ sections }}" as="s" hint-placeholder-count="10"><div onClick="{{ s.pick }}" style="min-height:48px;flex:none;border-radius:14px;display:flex;align-items:center;gap:12px;padding:0 12px;cursor:pointer;background:{{ s.bg }};color:{{ s.ink }}"><span class="material-symbols-rounded" style="font-size:22px">{{ s.i }}</span><span style="font-size:17px;font-weight:700;white-space:nowrap">{{ s.l }}</span></div></sc-for>
+</div>
+<div style="flex:1;min-width:0;background:{{ th.s1 }};border-radius:{{ th.rCard }};box-shadow:{{ th.edge }};padding:18px 20px;display:{{ detDisp }};flex-direction:column;gap:14px;overflow-y:auto;scrollbar-width:none">
+<span style="font-size:24px;display:{{ secTitleDisp }};font-family:{{ th.fh }};font-weight:{{ th.hdW }};text-transform:{{ th.hdTT }};letter-spacing:{{ th.hdLs }}">{{ secTitle }}</span>
+<sc-if value="{{ isThemes }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">
+<sc-for list="{{ themeCards }}" as="c" hint-placeholder-count="22"><div onClick="{{ c.pick }}" style="border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:{{ c.ring }};background:{{ c.bgAll }};display:flex;flex-direction:column;padding:10px;gap:8px;min-height:150px;box-sizing:border-box;font-family:{{ c.ff }}">
+<div style="flex:1;border-radius:{{ c.rCard }};background:{{ c.tileBg }};box-shadow:{{ c.edge }};backdrop-filter:{{ c.bf }};-webkit-backdrop-filter:{{ c.bf }};padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+<span style="align-self:flex-start;font-size:11px;font-weight:{{ c.lblW }};letter-spacing:{{ c.lblLs }};text-transform:{{ c.lblTT }};font-variant-caps:{{ c.lblFV }};background:{{ c.lblBg }};color:{{ c.lblC }};padding:{{ c.lblP }};border-radius:{{ c.lblR }}px">Coolant</span>
+<span style="font-family:{{ c.fn }};font-size:34px;font-weight:{{ c.wN }};font-style:{{ c.numIt }};letter-spacing:{{ c.numLs }};line-height:1;color:{{ c.spd }}">88°</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0;font-family:{{ c.fh }};font-size:15px;font-weight:{{ c.hdW }};color:{{ c.tx }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span><span style="width:22px;height:22px;border-radius:11px;background:{{ c.acc }};flex:none"></span></div>
+</div></sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span style="flex:1;min-width:0;font-size:21px;font-family:{{ th.fh }};font-weight:{{ th.hdW }};text-transform:{{ th.hdTT }};letter-spacing:{{ th.hdLs }}">Customise {{ th.name }}</span><div onClick="{{ resetCust }}" style="height:40px;padding:0 14px;border-radius:{{ th.rcPx }};background:{{ th.s2 }};color:{{ th.acc }};display:flex;align-items:center;font-size:15px;font-weight:800;cursor:pointer;white-space:nowrap">Reset</div></div>
+<sc-for list="{{ custGroups }}" as="g" hint-placeholder-count="6"><div style="display:flex;flex-direction:column;gap:8px;padding:10px 0;border-top:1px solid {{ th.s2 }}">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:17px;font-weight:700">{{ g.t }}</span><span style="font-size:14px;color:{{ th.t2 }};line-height:1.35">{{ g.note }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="4"><div onClick="{{ o.pick }}" title="{{ o.tip }}" style="height:44px;min-width:44px;box-sizing:border-box;padding:0 {{ o.padX }}px;border-radius:{{ th.rcPx }};background:{{ th.s2 }};box-shadow:{{ o.ring }};display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;opacity:{{ o.op }};font-size:15px;font-weight:700;color:{{ o.ink }};white-space:nowrap"><sc-if value="{{ o.sw }}" hint-placeholder-val="{{ false }}"><span style="width:24px;height:24px;border-radius:12px;background:{{ o.sw }};box-shadow:inset 0 0 0 1px rgba(127,127,127,.45);flex:none"></span></sc-if><sc-if value="{{ o.ic }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:20px">{{ o.ic }}</span></sc-if>{{ o.l }}</div></sc-for></div>
+</div></sc-for>
+<div style="display:flex;flex-direction:column;gap:8px;padding:10px 0;border-top:1px solid {{ th.s2 }}">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:17px;font-weight:700">Theme file · custom CSS</span><span style="font-size:14px;color:{{ th.t2 }};line-height:1.35">Anything can be restyled. On import Ostler checks contrast and minimum text and target sizes; warning colours and safety icons are locked.</span></div>
+<pre style="margin:0;padding:12px 14px;border-radius:12px;background:#05080f;color:#b0bacb;font:500 13px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all">{{ cssText }}</pre>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ fileBtns }}" as="b" hint-placeholder-count="3"><div style="height:44px;padding:0 16px;border-radius:{{ th.rcPx }};background:{{ th.s2 }};color:{{ th.acc }};display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:20px">{{ b.i }}</span>{{ b.l }}</div></sc-for></div>
+</div>
+</sc-if>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column">
+<span style="font-size:14px;font-weight:{{ th.lblW }};letter-spacing:{{ th.lblLs }};text-transform:{{ th.lblTT }};font-variant-caps:{{ th.lblFV }};background:{{ th.lblBg }};color:{{ th.lblC }};padding:{{ th.lblP }};border-radius:{{ th.lblR }}px;align-self:flex-start;margin:6px 2px">{{ g.t }}</span>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3"><div style="min-height:60px;display:flex;align-items:center;gap:14px;border-top:1px solid {{ th.s2 }};padding:6px 2px;opacity:{{ r.op }}">
+<span class="material-symbols-rounded" style="font-size:24px;color:{{ r.ic }}">{{ r.i }}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:700">{{ r.t }}</span><span style="font-size:15px;color:{{ th.t2 }};line-height:1.35">{{ r.d }}</span></span>
+<sc-if value="{{ r.val }}" hint-placeholder-val="{{ false }}"><span style="font-size:16px;font-weight:700;color:{{ th.t2 }};white-space:nowrap">{{ r.val }}</span></sc-if>
+<sc-if value="{{ r.btn }}" hint-placeholder-val="{{ false }}"><span style="height:40px;padding:0 16px;border-radius:20px;background:{{ th.s2 }};color:{{ th.acc }};display:flex;align-items:center;font-size:16px;font-weight:800;white-space:nowrap">{{ r.btn }}</span></sc-if>
+<sc-if value="{{ r.isTog }}" hint-placeholder-val="{{ false }}"><span style="width:52px;height:32px;border-radius:16px;background:{{ r.togBg }};position:relative;flex:none"><span style="position:absolute;top:4px;left:{{ r.togX }}px;width:24px;height:24px;border-radius:12px;background:{{ r.knob }}"></span></span></sc-if>
+<sc-if value="{{ r.chev }}" hint-placeholder-val="{{ false }}"><span class="material-symbols-rounded" style="font-size:22px;color:{{ th.t2 }}">chevron_right</span></sc-if>
+</div></sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+<sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1052px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;font-size:14px;line-height:1.5;color:#3b4556">
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Top strip</b><span>No clock (Android has one). Layout switcher, connection, warnings, Settings. Driver side first; mirrors for right-hand drive.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Car is built in</b><span>Health, pinned gauges from any signal the gateway sees, and up to three suggestions based on what the car can do. Never an empty grid.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">First tiling moment</b><span>Getting an app opens it beside Car straight away, with Undo. No tutorial needed.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><b style="color:#0e1626">Settings</b><span>Full-screen sheet. Browse while moving, change only when parked. Phones: same sections as a list, then detail.</span></div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const THEMES = [
+  ['night', 'Night', 'Default · any time', '#0a1020', '#121a2c', '#1a2439', '#eef2f9', '#b0bacb', '#22a6e0', '#0a1020', 24, 'none'],
+  ['deep', 'Deep night', 'OLED · after dark', '#000000', '#07090d', '#0e1219', '#c6cedb', '#939db0', '#2a8fbf', '#000000', 24, 'none'],
+  ['heritage', 'Heritage', 'Brass and leather', '#1a130d', '#291e15', '#35281c', '#f4e9d6', '#d2bf9f', '#d8975a', '#1a130d', 14, 'inset 0 0 0 1px rgba(184,154,90,.38)'],
+  ['expedition', 'Expedition', 'Rugged, gloved hands', '#1b1d12', '#272a1b', '#333725', '#f3eed9', '#d2cdac', '#8fd0e0', '#10140a', 10, 'inset 0 0 0 2px rgba(243,238,217,.10)'],
+  ['minimal', 'Minimal', 'Flat and quiet', '#151719', '#1d2023', '#272a2e', '#eceef0', '#aeb4bb', '#9cc4ff', '#0f1114', 8, 'none'],
+  ['ledger', 'Ledger', 'Monochrome, cobalt', '#0e1013', '#1a1d21', '#25292e', '#f4f4f5', '#a9abb0', '#7b82ff', '#0b0d12', 28, 'none'],
+  ['tide', 'Tide', 'Chart-grade teal', '#05212a', '#0a2e39', '#103b48', '#e6f5f6', '#a4cdd2', '#5fe0d2', '#03191f', 12, 'none'],
+  ['lunar', 'Lunar', 'Ink violet, silver', '#0a0918', '#14122b', '#1e1b3d', '#eceaff', '#b8b4e0', '#b7aeff', '#0a0918', 26, 'none'],
+  ['tonal', 'Tonal', 'Android-native', '#141218', '#211f26', '#2b2930', '#e6e0e9', '#cac4d0', '#d0bcff', '#381e72', 20, 'none'],
+  ['race', 'Race', 'Black, magenta', '#000000', '#0d0d10', '#18181c', '#ffffff', '#c2c2cc', '#e14bff', '#000000', 4, 'none'],
+  ['contrast', 'High contrast', 'Bright sun', '#ffffff', '#ffffff', '#eceef1', '#000000', '#1f2733', '#0047a0', '#ffffff', 8, 'inset 0 0 0 3px #000000'],
+  ['paper', 'Paper', 'Daytime, nothing extra', '#ffffff', '#f4f4f2', '#e9e9e6', '#111111', '#55555a', '#111111', '#ffffff', 4, 'none'],
+  ['clarity', 'Clarity', 'Platform polish', '#f2f2f7', '#ffffff', '#e8e8ed', '#000000', '#3c3c43', '#0062cc', '#ffffff', 14, 'none'],
+  ['blueprint', 'Blueprint', 'Technical linework', '#0b3a75', '#0e4383', '#16508f', '#ffffff', '#d2e2f7', '#ffffff', '#0b3a75', 2, 'inset 0 0 0 1.5px rgba(255,255,255,.75)']
+].map(([id, n, note, bg, s1, s2, tx, t2, acc, on, r, edge]) => ({ id, n, note, bg, s1, s2, tx, t2, acc, on, r, edge }));
+const SECTIONS = [['vehicles', 'Vehicles', 'directions_car'], ['connections', 'Connections', 'cable'], ['apps', 'Apps', 'apps'], ['layouts', 'Layouts', 'dashboard'], ['themes', 'Themes', 'palette'], ['alerts', 'Alerts', 'notifications'], ['display', 'Display', 'text_fields'], ['brain', 'Brain', 'memory'], ['account', 'Account and sync', 'account_circle'], ['about', 'About Ostler', 'info']];
+class Component extends DCLogic {
+  state = { cust: {}, stage: 'A', moving: false, settings: false, sec: 'themes', theme: 'night', r: 0.5, swapped: false, menu: -1, layouts: false, dragging: false, toast: '', dismissed: [], solo: '' };
+  areaRef = React.createRef();
+  custVals(s, th) {
+    const T = window.OstlerThemes; if (!T) return { custGroups: [], cssText: '', fileBtns: [], resetCust: () => {} };
+    const u = s.cust || {}, base = this.mk(s.theme, false, null), r0 = this.raw(s.theme) || {}, ok = x => x && x !== 'none';
+    const set = (p) => { if (!s.moving) this.setState({ cust: { ...u, ...p } }); };
+    const surf = T.over(base.s1, T.hex(base.bg));
+    const C = base.lt ? ['#0062cc', '#1f7a4b', '#8a5a00', '#b4232f', '#5a3cf0', '#00756f', '#c2185b', '#111111'] : ['#22a6e0', '#4cc38a', '#e8b84a', '#ff8a5c', '#b49be6', '#5fe0d2', '#ff7ab6', '#ffffff'];
+    const opt = (l, on, pick, o = {}) => ({ l, sw: o.sw || '', ic: o.ic || '', tip: o.tip || l, padX: l ? 14 : 10, op: o.dis ? .35 : 1, ring: on ? '0 0 0 2px ' + th.acc : 'none', ink: on ? th.tx : th.t2, pick: o.dis ? () => {} : pick });
+    const acc = [opt('Theme', !u.acc, () => set({ acc: null }), { sw: base.acc })].concat(C.filter(c => c.toLowerCase() !== String(base.acc).toLowerCase()).map(c => { const rt = T.ratio(T.hex(c), surf), bad = rt < 3; return opt('', u.acc === c, () => set({ acc: c }), { sw: c, dis: bad, tip: bad ? 'Too little contrast on this theme (' + rt.toFixed(1) + ':1)' : rt.toFixed(1) + ':1 on cards' }); }));
+    const eff = (k, l, has) => opt(l, has && u[k] !== false, () => set({ [k]: u[k] === false }), { dis: !has, tip: has ? l : 'This theme has no ' + l.toLowerCase() });
+    const groups = [
+      { t: 'Accent colour', note: 'Only colours with enough contrast on this theme can be picked.', opts: acc },
+      { t: 'Wallpaper', note: 'Plain behind driver-facing tiles while moving. Photos stay on this device.', opts: [opt('Theme pattern', u.wall !== 'plain' && u.wall !== 'photo', () => set({ wall: null }), { ic: 'texture' }), opt('Plain', u.wall === 'plain', () => set({ wall: 'plain' }), { ic: 'square' }), opt('Your photo', u.wall === 'photo', () => set({ wall: 'photo' }), { ic: 'image' })] },
+      { t: 'Card shape', note: '', opts: [opt('Theme', !u.shape, () => set({ shape: null })), opt('Rounder', u.shape === 'round', () => set({ shape: 'round' }), { ic: 'rounded_corner' }), opt('Squarer', u.shape === 'square', () => set({ shape: 'square' }), { ic: 'crop_square' })] },
+      { t: 'Effects', note: 'Always off while moving.', opts: [eff('glow', 'Glow', ok(r0.glow)), eff('blur', 'Frosted blur', !!r0.blur), eff('tex', 'Texture', ok(r0.tex))] },
+      { t: 'Type', note: 'Text is never below 22 px while moving.', opts: [opt('Theme fonts', u.font !== 'legible', () => set({ font: null })), opt('Hyperlegible', u.font === 'legible', () => set({ font: 'legible' }), { ic: 'visibility' })] },
+      { t: 'Icons', note: 'Safety icons never change.', opts: [opt('Rounded', !u.icons || u.icons === 'rounded', () => set({ icons: null }), { ic: 'directions_car' }), opt('Outlined', u.icons === 'outlined', () => set({ icons: 'outlined' }), { ic: 'directions_car' }), opt('Sharp', u.icons === 'sharp', () => set({ icons: 'sharp' }), { ic: 'directions_car' })] }
+    ];
+    const cut = x => { x = String(x); return x.length > 64 ? x.slice(0, 64) + '…' : x; };
+    const cssText = '.ostler-theme[data-theme="' + s.theme + '"] {\n  --bg: ' + th.bg + ';\n  --wallpaper: ' + cut(th.bgAll === th.bg ? 'none' : (r0.bgImg || 'none')) + ';\n  --surface: ' + th.s1 + ';\n  --text: ' + th.tx + ';\n  --text-2: ' + th.t2 + ';\n  --accent: ' + th.acc + ';\n  --on-accent: ' + th.on + ';\n  --radius-card: ' + th.rCard + ';\n  --font-body: ' + th.ff + ';\n  --font-numbers: ' + th.fn + ';\n  --card-edge: ' + cut(th.edge) + ';\n}\n/* locked: --warning #ef6a7d · --caution #e0b04a · safety icons */';
+    return { custGroups: groups, cssText, fileBtns: [{ i: 'upload_file', l: 'Import theme file' }, { i: 'download', l: 'Export' }, { i: 'storefront', l: 'Get more themes' }], resetCust: () => !s.moving && this.setState({ cust: {} }) };
+  }
+  list() { const T = window.OstlerThemes; return T ? T.list.map(x => x.id) : THEMES.map(t => t.id); }
+  raw(id) { const T = window.OstlerThemes; return T && T.byId[id]; }
+  mk(id, moving, u) {
+    const T = window.OstlerThemes;
+    if (!T) { const t = THEMES.find(x => x.id === id) || THEMES[0]; const fam = "'Figtree',system-ui,sans-serif"; return { ...t, name: t.n, s3: t.s2, spd: t.tx, bgAll: t.bg, tileBg: t.s1, bf: 'none', rCard: t.r + 'px', rcPx: '22px', rcBtn: '26px', ff: fam, fh: fam, fn: fam, wN: 700, numIt: 'normal', numLs: '0', hdW: 700, hdTT: 'none', hdLs: '0', lblTT: 'uppercase', lblLs: '.06em', lblW: 700, lblFV: 'normal', lblBg: 'transparent', lblC: t.t2, lblP: '0', lblR: 0, stripBg: 'transparent', stripLine: 'none', stripMb: 0, chipBg: t.s1, chipEdge: 'none', acc2: '#0a6fb0' }; }
+    const c = T.resolve(id, { moving }), r0 = T.byId[id] || {}, ok = x => x && x !== 'none';
+    const edge = [c.bd, c.glow].filter(ok).join(',') || 'none', st = c.strip, stripColor = (moving && r0.stripSafe) || r0.strip || c.bg;
+    const o = { ...c, bgAll: ok(c.bgImg) ? c.bgImg + ',' + c.bg : c.bg, tileBg: ok(c.tex) ? c.tex + ',' + c.s1 : c.s1, edge,
+      rcPx: c.rc >= 20 ? '22px' : c.rc + 'px', rcBtn: c.rc >= 20 ? '26px' : c.rc + 'px',
+      stripBg: st === 'bar' ? stripColor : 'transparent', stripLine: st === 'line' ? '1px solid ' + c.s3 : 'none', stripMb: st === 'line' ? 8 : 0,
+      chipBg: st === 'line' ? 'transparent' : c.s1, chipEdge: st === 'line' ? 'none' : (ok(c.bd) ? c.bd : 'none'), acc2: c.lt ? '#7fd0ff' : '#0a6fb0' };
+    if (!u) return o;
+    if (u.acc) { o.acc = u.acc; o.on = T.ratio(T.hex(u.acc), [255, 255, 255]) >= T.ratio(T.hex(u.acc), [0, 0, 0]) ? '#ffffff' : '#000000'; }
+    if (u.wall === 'plain') o.bgAll = c.bg;
+    if (u.shape === 'round') Object.assign(o, { rCard: '30px', rcPx: '22px', rcBtn: '26px' });
+    if (u.shape === 'square') Object.assign(o, { rCard: '4px', rcPx: '4px', rcBtn: '4px' });
+    if (u.glow === false) o.edge = ok(c.bd) ? c.bd : 'none';
+    if (u.blur === false) o.bf = 'none';
+    if (u.tex === false) o.tileBg = c.s1;
+    if (u.font === 'legible') { const q = "'Atkinson Hyperlegible',system-ui,sans-serif"; Object.assign(o, { ff: q, fh: q, fn: q }); }
+    return o;
+  }
+  componentDidMount() { const P = this.props, o = {}; ['stage', 'settings', 'sec', 'theme', 'moving'].forEach(k => { if (P[k] !== undefined) o[k] = P[k]; }); if (Object.keys(o).length) this.setState(o); if (!window.OstlerThemes) this.tp = setInterval(() => { if (window.OstlerThemes) { clearInterval(this.tp); this.forceUpdate(); } }, 200); }
+  setStage(st) { this.setState({ stage: st, r: 0.5, swapped: false, menu: -1, toast: '', solo: '', dismissed: [] }); }
+  onDown = (e) => {
+    if (this.state.moving) return; e.preventDefault(); this.setState({ dragging: true });
+    const el = this.areaRef.current;
+    const vert = this.vert;
+    const move = (ev) => { const rc = el.getBoundingClientRect(); const v = vert ? (ev.clientY - rc.top) / rc.height : (ev.clientX - rc.left) / rc.width; this.setState({ r: Math.max(0.08, Math.min(0.92, v)) }); };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
+      const r = this.state.r, AW = vert ? this.AH : this.AW;
+      if (r * AW < 190) return this.closeTile(0);
+      if ((1 - r) * AW < 190) return this.closeTile(1);
+      const snaps = [1 / 3, 1 / 2, 2 / 3]; const nr = snaps.reduce((a, b) => Math.abs(b - r) < Math.abs(a - r) ? b : a);
+      this.setState({ r: nr, dragging: false });
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
+  order() { return this.state.swapped ? ['diag', 'car'] : ['car', 'diag']; }
+  closeTile(k) { const keep = this.order()[1 - k]; this.setState({ solo: keep, dragging: false, r: 0.5, menu: -1, toast: (keep === 'car' ? 'Diagnose' : 'Car') + ' closed' }); }
+  renderVals() {
+    const s = this.state, th = this.mk(s.theme, s.moving, s.cust), th0 = { n: th.name }, raw = this.raw(s.theme) || {};
+    const P = this.props, phone = !!P.phone, W = P.screenW || 1024, H = P.screenH || 600, narrow = W < 600;
+    const insetT = phone ? 44 : 0, insetB = phone ? 22 : 0, AW = W - 24, AH = H - insetT - 60 - 12 - insetB, G = 12;
+    const vert = AH > AW * 1.15; this.vert = vert; this.AW = AW; this.AH = AH;
+    const split = s.stage === 'C' && !s.solo;
+    let ids = s.stage === 'A' ? [] : s.stage === 'B' ? ['car'] : (s.solo ? [s.solo] : this.order());
+    let rects;
+    if (ids.length === 2 && vert) { const h0 = Math.round(s.r * AH - G / 2); rects = [{ x: 0, y: 0, w: AW, h: h0 }, { x: 0, y: h0 + G, w: AW, h: AH - h0 - G }]; }
+    else if (ids.length === 2) { const w0 = Math.round(s.r * AW - G / 2); rects = [{ x: 0, y: 0, w: w0, h: AH }, { x: w0 + G, y: 0, w: AW - w0 - G, h: AH }]; }
+    else rects = [{ x: 0, y: 0, w: AW, h: AH }];
+    const live = s.stage !== 'A';
+    const sizeOf = (w, h) => w < 300 || h < 260 ? 'Compact' : w >= 640 && h >= 440 ? 'Expanded' : 'Standard';
+    const SUG = [
+      { id: 'diag', i: 'stethoscope', n: 'Diagnose', why: 'Fault codes are readable on this car. 1 is stored; Diagnose explains it.', get: () => this.setState({ stage: 'C', r: 0.5, swapped: false, solo: '', toast: 'Diagnose installed · opened beside Car' }) },
+      { id: 'maps', i: 'map', n: 'Maps', why: 'GPS found. See your trail, friends and where the car was parked.' },
+      { id: 'logs', i: 'history', n: 'Logs', why: 'Record every drive and replay it later, signal by signal.' }
+    ].filter(x => !s.dismissed.includes(x.id)).map((x, k) => ({ ...x, btn: 'Get ' + x.n, btnBg: k === 0 ? th.acc : th.s1, btnInk: k === 0 ? th.on : th.acc, get: x.get || (() => this.setState({ toast: x.n + ' would install here' })), dismiss: () => this.setState({ dismissed: s.dismissed.concat(x.id) }) }));
+    const tiles = ids.map((id, k) => {
+      const w = rects[k].w, h = rects[k].h, sz = sizeOf(w, h), isCar = id === 'car';
+      const nG = w < 340 ? 1 : w < 640 ? 2 : 3;
+      const perRow = Math.max(1, Math.floor((w - 32 + 10) / 230)), rowsFit = Math.floor((h - 48 - 16 - 92 - 12 - 108 - 12 - 30) / 168);
+      const nSug = Math.min(3, perRow * Math.max(0, rowsFit));
+      const menuOpen = s.menu === k;
+      const can = !s.moving;
+      return {
+        x: rects[k].x, y: rects[k].y, w, h, size: sz, label: isCar ? 'Car' : 'Diagnose', isCar, isDiag: !isCar, menuOpen,
+        openMenu: () => this.setState({ menu: menuOpen ? -1 : k, layouts: false }),
+        menu: [
+          { l: 'Swap page', i: 'swap_horiz', op: 1, act: () => this.setState({ menu: -1 }) },
+          { l: isCar ? 'Car settings' : 'Diagnose settings', i: 'tune', op: 1, act: () => this.setState({ menu: -1, settings: true, sec: 'apps' }) },
+          { l: 'Open beside', i: 'vertical_split', op: can && ids.length < 2 && s.stage === 'C' ? 1 : .4, act: () => { if (can && ids.length < 2 && s.stage === 'C') this.setState({ solo: '', menu: -1 }); } },
+          { l: 'Close', i: 'close', op: can && ids.length > 1 ? 1 : .4, act: () => { if (can && ids.length > 1) this.closeTile(k); } }
+        ],
+        gCols: `repeat(${nG + (w >= 640 ? 1 : 0)},minmax(0,1fr))`, gauges: [{ l: 'COOLANT', v: '88', u: '°C' }, { l: 'BATTERY', v: '14.1', u: 'V' }, { l: 'BOOST', v: '0.9', u: 'bar' }].slice(0, nG), pinDisp: w >= 640 ? 'flex' : 'none',
+        showSuggest: isCar && s.stage === 'B' && w >= 300 && h >= 300 && nSug > 0, suggest: SUG.slice(0, nSug), showCaps: isCar && s.stage === 'C' && w >= 300 && h >= 300, diagRows: w >= 300 && h >= 490
+      };
+    });
+    const snapsX = [1 / 3, 1 / 2, 2 / 3].map(f => vert ? { x: 8, y: Math.round(f * AH) - 1, w: AW - 16, h: 2, op: Math.abs(f - s.r) < 0.06 ? 1 : .35 } : { x: Math.round(f * AW) - 1, y: 8, w: 2, h: AH - 16, op: Math.abs(f - s.r) < 0.06 ? 1 : .35 });
+    const sec = SECTIONS.find(x => x[0] === s.sec) || SECTIONS[4];
+    const mv = s.moving, op = mv ? .55 : 1;
+    const row = (i, t, d, o = {}) => ({ i, t, d, ic: o.ic || th.t2, val: o.val || '', btn: o.btn || '', isTog: o.tog !== undefined, togBg: o.tog ? th.acc : th.s2, togX: o.tog ? 24 : 4, knob: o.tog ? th.on : th.t2, chev: !!o.chev, op: o.static ? 1 : op });
+    const appsInstalled = s.stage === 'C';
+    const G2 = {
+      vehicles: [{ t: 'GARAGE', rows: [row('directions_car', 'Discovery 2 Td5', 'Default · left-hand drive · Brain', { ic: th.acc, chev: 1 }), row('directions_car', 'Defender 110', 'Phone gateway · K-line', { chev: 1 }), row('add', 'Add a car', 'Connect a gateway or enter details', { ic: th.acc })] }, { t: 'THIS CAR', rows: [row('swap_horiz', 'Driver side', 'Puts the warnings and the main tile on your side', { val: 'Left' }), row('star', 'Open this car by default', 'On this screen', { tog: true })] }],
+      connections: [{ t: 'GATEWAY', rows: [row('memory', 'Ostler Brain', s.stage === 'A' ? 'Found nearby · not connected' : 'In the car · live', { ic: s.stage === 'A' ? th.t2 : '#4cc38a', btn: s.stage === 'A' ? 'Connect' : '' , chev: s.stage !== 'A' }), row('swap_horiz', 'Other ways to connect', 'Gateway app on this head unit, a node, or the browser', { chev: 1 })] }, { t: 'DATA SOURCES', rows: [row('settings_input_component', 'Engine · Td5 ECU', 'K-line · 47 signals · fault codes readable', { val: live ? 'OK' : '—' }), row('location_on', 'GPS', 'From the Brain', { val: live ? 'OK' : '—' }), row('sensors', 'Node', 'Not set up', { btn: 'Set up' })] }, { t: 'SAFETY', rows: [row('science', 'Allow actuator tests', 'Lets apps run tests that move parts of the car. Always asks first.', { tog: false }), row('info', 'One tester per bus', 'If another scan tool is plugged in, Ostler waits and tells you.', { static: 1 })] }],
+      apps: [{ t: 'INSTALLED', rows: [row('directions_car', 'Car', 'Built in · health, gauges, suggestions', { val: 'Core', chev: 1 })].concat(appsInstalled ? [row('stethoscope', 'Diagnose', 'Can see engine data · can clear faults when parked', { chev: 1, ic: th.acc })] : []) }, { t: 'GET MORE APPS · WORKS WITH THIS CAR', rows: [appsInstalled ? null : row('stethoscope', 'Diagnose', 'Read and explain fault codes', { btn: 'Get', ic: th.acc }), row('history', 'Logs', 'Record every drive, replay and compare', { btn: 'Get', ic: th.acc }), row('map', 'Maps', 'Trail, convoy and last-seen position · GPS found', { btn: 'Get', ic: th.acc }), row('shield', 'Security', 'Alarm, tracking, lock and unlock · needs a node', { btn: 'Get' }), row('build', 'Maintenance', 'Service schedule and reminders', { btn: 'Get' })].filter(Boolean) }, { t: 'PERMISSIONS', rows: [row('lock_person', 'What each app can see and change', 'Access log, revoke, shared links', { chev: 1 })] }],
+      layouts: [{ t: 'SAVED · DISCOVERY 2 TD5 · 7″ SCREEN', rows: [row('dashboard', appsInstalled ? 'Workshop' : 'Car', appsInstalled ? 'Car + Diagnose · current' : 'Car only · current', { ic: th.acc, chev: 1 }), row('save', 'Save the current layout', 'Keeps tiles, sizes and where each page was', { btn: 'Save' })] }, { t: 'SWITCH AUTOMATICALLY', rows: [row('key', 'When the car starts', 'Open a driving layout', { val: 'Off', chev: 1 }), row('local_parking', 'When parked', 'Go back to the last layout', { tog: true })] }],
+      themes: [{ t: 'SELECTED', rows: [row('palette', th.name, raw.who || '', { ic: th.acc, static: 1 }), row('directions_car', 'While moving', raw.huNote || 'Same theme', { static: 1 })] }, { t: 'DAY AND NIGHT', rows: [row('brightness_auto', 'Switch with the light', 'Paper by day, ' + th0.n + ' after dusk', { tog: true }), row('storefront', 'Get more themes', 'From the Ostler store and Brain add-ons', { chev: 1 })] }],
+      alerts: [{ t: 'LEVELS', rows: [row('warning', 'Warning', 'Red · takes one passenger-side tile until you acknowledge', { ic: '#ef6a7d', chev: 1 }), row('error', 'Caution', 'Amber · rings the tile and lights the strip', { ic: '#e0b04a', chev: 1 }), row('info', 'Notice', 'Quiet · shown in the strip only', { chev: 1 })] }, { t: 'WHERE ALERTS GO', rows: [row('tv', 'This head unit', 'All levels', { tog: true }), row('smartphone', 'Your phone', 'Warnings and cautions', { tog: true }), row('watch', 'Watch', 'Warnings only', { tog: false })] }],
+      display: [{ t: 'DISPLAY', rows: [row('straighten', 'Units', 'km/h, °C, bar', { val: 'Metric', chev: 1 }), row('format_size', 'Text size', 'Never below 22 px while moving', { val: 'Standard', chev: 1 }), row('dark_mode', 'Light and dark', 'Follows the theme setting', { val: 'Auto', chev: 1 })] }],
+      brain: [{ t: 'OSTLER BRAIN · IN THE CAR', rows: [row('storage', 'Storage', '14.2 GB of 64 GB · logs kept 12 months', { chev: 1 }), row('extension', 'Add-ons', 'Decode lab installed', { chev: 1 }), row('public', 'Remote access', 'Reach the Brain from home', { tog: true }), row('system_update', 'Updates', 'Up to date', { val: 'v0.9.4' })] }],
+      account: [{ t: 'ACCOUNT', rows: [row('account_circle', 'Signed in', 'sam@example.com', { chev: 1 }), row('sync', 'Sync layouts and settings', 'Across your screens and cars', { tog: true }), row('devices', 'Your screens', 'This head unit, Pixel 8, laptop', { chev: 1 }), row('backup', 'Back up', 'Last backup 2 h ago', { btn: 'Back up now' })] }],
+      about: [{ t: 'ABOUT', rows: [row('info', 'Ostler', 'Core v0.9.4', { static: 1 }), row('health_and_safety', 'Ostler health', 'Shell, gateway and apps all OK', { val: 'OK', static: 1 }), row('bug_report', 'Send diagnostic logs', 'Helps us fix problems', { btn: 'Send', static: 1 })] }]
+    };
+    const seg = (on) => ({ bg: on ? '#0e1626' : 'transparent', ink: on ? '#fff' : '#3b4556' });
+    return {
+      th, moving: s.moving, isA: s.stage === 'A', notA: s.stage !== 'A', tiles, areaRef: this.areaRef, onDown: this.onDown,
+      swap: () => !s.moving && this.setState({ swapped: !s.swapped }),
+      hasSplit: ids.length === 2, divL: vert ? 0 : rects[0].w, divT: vert ? rects[0].h : 0, divW: vert ? AW : 12, divH: vert ? 12 : AH, gripW: vert ? 64 : 6, gripH: vert ? 6 : 64,
+      chrome: !P.bare, pagePad: P.bare ? 0 : 56, W, H, insetT, insetB, areaMb: 12 + insetB, bezel: phone ? 10 : 14, bezelR: phone ? 56 : 24, devR: phone ? 46 : 6, screenLabel: P.label || 'Core 7in',
+      lockedText: narrow ? '' : 'Layout locked', lockPill: narrow ? 'Park to change' : 'Look only while moving · park to change',
+      showBack: narrow && !!s.sec, back: () => this.setState({ sec: '' }), setTitle: narrow && s.sec ? sec[1] : 'Settings',
+      navW: narrow ? '100%' : '250px', navFlex: narrow ? '1' : 'none', navDisp: narrow && s.sec ? 'none' : 'flex', detDisp: narrow && !s.sec ? 'none' : 'flex', secTitleDisp: narrow ? 'none' : 'block', dragging: s.dragging, snaps: snapsX,
+      divCursor: s.moving ? 'not-allowed' : (vert ? 'row-resize' : 'col-resize'), gripC: s.moving ? th.s2 : th.t2, tileTrans: s.dragging ? 'none' : 'left .2s,width .2s',
+      toast: s.toast, undo: () => { if (s.toast.startsWith('Diagnose installed')) this.setState({ stage: 'B', toast: '' }); else if (s.toast.endsWith('closed')) this.setState({ solo: '', toast: '' }); else this.setState({ toast: '' }); },
+      layoutName: s.stage === 'A' ? 'Welcome' : s.stage === 'B' || s.solo ? 'Car' : 'Workshop',
+      connText: narrow ? '' : s.stage === 'A' ? 'Not connected' : 'Brain · live', connDot: s.stage === 'A' ? '#8e9ab0' : '#4cc38a',
+      connect: () => this.setStage('B'), openConn: () => this.setState({ settings: true, sec: 'connections', layouts: false, menu: -1 }),
+      openSettings: () => this.setState({ settings: true, layouts: false, menu: -1, sec: narrow ? '' : (s.sec || 'themes') }), closeSettings: () => this.setState({ settings: false }),
+      settingsOpen: s.settings, gearBg: s.settings ? th.acc : th.s1, gearInk: s.settings ? th.on : th.tx,
+      layoutsOpen: s.layouts && s.stage !== 'A', toggleLayouts: () => this.setState({ layouts: !s.layouts, menu: -1 }),
+      savedLayouts: (s.stage === 'C' ? [['dashboard', 'Workshop', 'Car + Diagnose', 1], ['directions_car', 'Car', 'Car only', 0]] : [['directions_car', 'Car', 'Car only', 1]]).map(([i, n, d, on]) => ({ i, n, d, bg: on ? th.s1 : 'transparent', ic: on ? th.acc : th.t2 })),
+      saveText: s.moving ? 'Save when parked' : 'Save this layout', saveIcon: s.moving ? 'lock' : 'save', saveOp: s.moving ? .5 : 1,
+      openLayoutsSettings: () => this.setState({ settings: true, sec: 'layouts', layouts: false }),
+      healthSub: 'Brain · live · 1 old fault code stored',
+      suggest: SUG,
+      caps: [{ i: 'sensors', l: '47 signals' }, { i: 'location_on', l: 'GPS' }, { i: 'stethoscope', l: 'Fault codes' }, { i: 'settings_input_component', l: 'Low range' }],
+      sysRows: [{ n: 'ENGINE', c: '#e0b04a', s: '1 stored' }, { n: 'ABS', c: '#4cc38a', s: 'OK' }, { n: 'BODY', c: '#4cc38a', s: 'OK' }, { n: 'AIRBAG', c: '#4cc38a', s: 'OK' }],
+      sections: SECTIONS.map(([id, l, i]) => ({ l, i, bg: s.sec === id ? th.s1 : 'transparent', ink: s.sec === id ? th.acc : th.tx, pick: () => this.setState({ sec: id }) })),
+      secTitle: sec[1], isThemes: s.sec === 'themes', groups: G2[s.sec] || [],
+      themeCards: this.list().map(id => { const c = this.mk(id, false, id === s.theme ? s.cust : null); return { ...c, ring: id === s.theme ? '0 0 0 3px ' + th.acc : 'inset 0 0 0 1px rgba(127,127,127,.3)', pick: () => !s.moving && this.setState({ theme: id, cust: {} }) }; }),
+      ...this.custVals(s, th),
+      stages: [['A', '1 · Not connected'], ['B', '2 · Connected, no apps'], ['C', '3 · First app beside Car']].map(([k, l]) => ({ l, ...seg(s.stage === k), pick: () => this.setStage(k) })),
+      toggles: [['moving', 'Car moving', 'directions_car'], ['settings', 'Settings open', 'settings']].map(([k, l, i]) => ({ l, i, bg: s[k] ? '#0e1626' : '#e4e7ec', ink: s[k] ? '#fff' : '#3b4556', flip: () => this.setState({ [k]: !s[k], layouts: false, menu: -1 }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
