@@ -381,3 +381,5 @@ below is the decision; each alternative was not chosen.
 12. **Find the switcher by id (§14.3)?** Recommend: yes, `drive_mode` by id for focus rules and
     tests, the strip's focus order following its rendered order. Alternative: pin the chip to a
     fixed strip position (contradicts the movable strip of drive-modes v0.2).
+
+> **2026-10-12 (owner, ADR-0052 v0.7):** in the MFD shell the wheel is a D-pad moving a cursor spatially between tiles; up from the top row reaches the strip; moving off the left or right screen edge pages to the adjacent saved layout (no wrap-round). The soft-key row is optional. See the [shell spec](2026-10-11-ostler-shell-design.md) §19.

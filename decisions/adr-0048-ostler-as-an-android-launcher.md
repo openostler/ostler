@@ -18,6 +18,10 @@ summary: >
 > is superseded by ADR-0049; if the launcher returns, this ADR is rewritten against
 > ADR-0049.
 >
+> **Update 2026-10-12 (ADR-0052 v0.7, decision 7):** the Gateway Android app may host the
+> MFD shell full screen as an option (native widgets as tiles, Open beside). That is an app, not
+> the home-screen role; the launcher stays parked.
+>
 > **Update 2026-10-08 (ADR-0049 v1.2):** one Ostler app is back (ADR-0049 amendment), so if
 > the launcher returns it is a **home-screen mode inside the Ostler app**, never a separate
 > launcher app, inside the screen line ("Ostler arranges, Android runs"). Still parked until
