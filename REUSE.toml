@@ -203,3 +203,11 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = "references/design/2026-10/mfd/**"
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Shell UI kit (references/design/2026-10/shell-ui/README.md): the designer's tokens,
+# component renderers, catalogue and the 114 shell frames. The design tool's runtime
+# (support.js) is not in the repo.
+[[annotations]]
+path = "references/design/2026-10/shell-ui/**"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

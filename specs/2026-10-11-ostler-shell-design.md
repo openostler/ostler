@@ -1,17 +1,17 @@
 ---
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
-status: draft
-version: 0.1
-updated: 2026-10-11
+status: stable
+version: 1.0
+updated: 2026-10-12
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
-  Draft for the owner (2026-10-11), following the owner's "we'll try and build out the shell". The design of the `ostler-shell` library (repo `openostler/ostler-shell`, package `@openostler/shell`, Apache-2.0) that ADR-0052 (proposed) asks every app to bundle. Scope: no settings screens, no car logic, no connection code; the shell talks to the gateway only through an injected client interface. Public TypeScript API and package layout. Modules: five size classes as a pure function with hysteresis plus a React hook observing the tile frame; the layout model (six presets, a tree one level deep, dividers snapping to a third, a half and two thirds, collapse-to-close with Undo, swap, open beside on the passenger side, right-hand-drive mirroring); the window rules in order (shape, size, overflow to chips); page contract types and validation; the page registry and hosting (same-origin page modules, iframes with postMessage for third parties); moving rules (state from the gateway, locked dividers and editing, a 24 px text floor, effects off, a per-action gate); warnings (caution ring, strip, chime hook, warning takeover of a passenger-side non-instrument tile or a band, ACK, label until clear); the top strip; the soft-key row; ShellInput intent mapping; the theme resolver contract with locked safety tokens; the versioned layout format `ostler.layout/3`; BroadcastChannel messages; performance rules. Testing with Vitest first, Playwright component tests later; build order; open questions referencing ADR-0052 §9.
+  Approved by the owner on 2026-10-12 ("let's go ahead and build the front end", on receiving the designer's shell UI kit); §18 adopts the designer's 31 answers to the brief's open questions. First drafted 2026-10-11, following the owner's "we'll try and build out the shell". The design of the `ostler-shell` library (repo `openostler/ostler-shell`, package `@openostler/shell`, Apache-2.0) that ADR-0052 (proposed) asks every app to bundle. Scope: no settings screens, no car logic, no connection code; the shell talks to the gateway only through an injected client interface. Public TypeScript API and package layout. Modules: five size classes as a pure function with hysteresis plus a React hook observing the tile frame; the layout model (six presets, a tree one level deep, dividers snapping to a third, a half and two thirds, collapse-to-close with Undo, swap, open beside on the passenger side, right-hand-drive mirroring); the window rules in order (shape, size, overflow to chips); page contract types and validation; the page registry and hosting (same-origin page modules, iframes with postMessage for third parties); moving rules (state from the gateway, locked dividers and editing, a 24 px text floor, effects off, a per-action gate); warnings (caution ring, strip, chime hook, warning takeover of a passenger-side non-instrument tile or a band, ACK, label until clear); the top strip; the soft-key row; ShellInput intent mapping; the theme resolver contract with locked safety tokens; the versioned layout format `ostler.layout/3`; BroadcastChannel messages; performance rules. Testing with Vitest first, Playwright component tests later; build order; open questions referencing ADR-0052 §9.
 ---
 
 # ostler-shell — design
 
-**Status: draft, v0.1, for the owner's approval.** It designs the library that
+**Status: approved, v1.0** (the owner, 2026-10-12: "let's go ahead and build the front end"). The visual design is the [shell UI kit](../references/design/2026-10/shell-ui/README.md); §18 records the designer's answers to the brief's open questions, adopted as decided behaviour. It designs the library that
 [ADR-0052](../decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md) (proposed) asks
 every Ostler app to bundle. Where this spec and ADR-0052 differ, the ADR wins; open points are
 in §17. Evidence: [responsive tiles research](../references/research/responsive_tile_sizes.md),
@@ -342,6 +342,86 @@ the warning takeover; a bench run on the Dudu7 (four tiles, one map). CI: `npm r
    placement, Undo's 10 s window, the one-row reading of the 320 px rule (§6), and whether
    Badge and Chip are always shell-drawn.
 
+## 18. Decided by the UI kit (2026-10-12)
+
+The designer's answers to the [shell brief](../references/design/2026-10/brief/10-shell-brief.md)
+open questions, adopted as decided behaviour. Tokens, thresholds and colours come from the
+kit's `tokens.json`.
+
+**A. Frame and layout**
+
+1. **Open beside while moving:** one tap when it adds no tile (it replaces the passenger tile,
+   with Undo). Close stays parked only.
+2. **Soft keys on 5″:** the row overlays the bottom 48 px of the focused tile for 4 s after a
+   wheel key or a tap; the tile keeps its class. On 7″ and larger it counts against the tile
+   area.
+3. **Compact label while moving:** the page icon and chevron; the name stays in the menu and
+   for screen readers.
+4. **Portrait:** the main tile at the top; the driver side still sets soft-key order and chip
+   side in landscape.
+5. **Too many chips:** the last chip becomes "+n" and opens a list sheet; nothing is dropped.
+6. **"Show sizes":** a designer and debug aid, off by default, under About in the gateway's
+   shared settings, never shown while moving.
+7. **Links:** a visible link mark; tapping it offers Unlink. Links also end when either tile
+   is swapped or closed.
+
+**B. Top strip and menus**
+
+1. **No gateway or no car:** the vehicle chip is hidden; the connection chip says "No
+   gateway".
+2. **Open beside:** a page action, allowed while moving when it replaces a tile; adding a tile
+   waits until parked.
+3. **Two layouts on one trigger:** blocked; picking a taken trigger asks "Move it from
+   Commute?".
+4. **Automatic switch while moving:** the strip name changes and a text-only toast with Undo
+   shows for 4 s; no sound.
+5. **Merged chip:** the status word whenever not connected; the car name only when connected.
+6. **Layout switcher while moving:** six rows, in the user's order from Manage layouts.
+7. **Saved icons:** a tiles badge for layouts and a square badge for single pages, bottom
+   right.
+
+**C. Driving, warnings and input**
+
+1. **Motion unknown:** the moving rules apply; the strip shows an outlined "Motion unknown"
+   with a help icon instead of the lock.
+2. **Focus order:** the driver-side column first, top to bottom, then the passenger side, then
+   the strip.
+3. **No soft keys on the page:** on 5″ the row is hidden (overlay only); on 7″ and up the row
+   stays with the owner tag and empty slots, so tiles never jump.
+4. **Soft-key owner:** a tag at the driver end of the row with the page icon and name in the
+   focus-ring colour.
+5. **Warning band on a portrait phone:** across the bottom.
+6. **Tapping a caution pill:** opens the alerts list; each row opens its page beside, or in
+   place if already on screen.
+7. **Several alerts:** "+n" in the strip; the alerts list is one tap from the pill and on a
+   long Select.
+8. **Long Select with no warning:** opens the active alerts list, or shows "No alerts" in the
+   strip for 2 s.
+9. **Warnings while another app is in front:** Ostler Controls shows the band over that app;
+   cautions only chime and light its strip.
+10. **Refusal for a wheel action off screen:** a text-only toast at the top for 4 s, for
+    example "Clear faults: not while moving".
+
+**D. States and hand-offs**
+
+1. **Dismissed banner:** stays away until its condition changes; it returns if the condition
+   comes back.
+2. **Banner on 480 px-high screens:** overlays the top of the tiles, so no tile drops a class.
+3. **Banner when moving starts:** hidden at once; the chip carries the state.
+4. **"Last seen":** the time today, "Yesterday 18:10", then a date, "2 Oct 18:10"; never
+   relative times.
+5. **"Get more apps":** in the apps menu when only the gateway is installed, not in the layout
+   switcher.
+6. **Third-party mark at Badge:** a 14 px puzzle icon in the corner; the full text is in the
+   label menu.
+7. **Stale tile:** "Last seen" in the label; the page dims its values.
+
+**Kit values the build uses:** strip 48 px at 480 px high, 56 px by default, 52 px on a phone;
+label row 42 px parked and 52 px moving; tile gap 10 px, radius 20 px (Badge 14 px); a
+per-page Expanded minimum (Diagnose and Logs 760 px wide); fonts Figtree and Material Symbols
+Rounded, self-hosted.
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
+- 2026-10-12 — v1.0, approved by the owner ("let's go ahead and build the front end"); §18 adopts the designer's answers from the shell UI kit.
