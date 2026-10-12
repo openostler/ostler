@@ -1,0 +1,127 @@
+# Ostler shell: edit mode, pages, stacks, alerts. Builder brief
+
+Session: 12–13 Oct 2026. Replaces the edit-mode parts of `11-edit-mode-brief.md` where they conflict. All sizes in **dp**.
+
+**Start here:** `Ostler Shell System.dc.html` (34 frames) is the current reference. The other files are detailed explorations; where they differ, the System file wins.
+
+| File | What it shows |
+|---|---|
+| `Ostler Shell System.dc.html` | The whole system in one place: pages, edit mode, stacks, focus, alerts |
+| `shell-E-edit-mode-v3.dc.html` | Edit mode detail: resize frame, drop zones, delete circle, slot picker, stacks, focus |
+| `shell-W-zoom-out-edit.dc.html` | Android-style zoom-out edit mode, page panels and selector, window style |
+| `shell-L-large-screens.dc.html` | 15″ landscape and portrait, pinned column, spanning, split screen |
+| `shell-E-drop-zones.dc.html` | Drop-zone research frames: triangles, half rule, suggested layouts |
+| `shell-kit.js`, `shell-edit-kit.js`, `build/*.js` | The generators that produced the frames, if you want exact values |
+
+Open the `.dc.html` files in a browser, with `support.js` in the same folder.
+
+---
+
+## 1. Principles
+- **Copy the Android home-screen editor almost exactly, then add tiling.** Users already know it.
+- **Sizes in dp, not pixels.** Size classes, the 24 dp minimum text size while moving, and touch targets are all density-independent.
+- **The shell routes; apps draw.** The shell never draws inside an app's page.
+- **No editing while moving.** Changing pages, stacks, full screen and the wheel all still work.
+
+## 2. Pages
+- A page is a column at least **720 dp wide** and the full height of the window.
+- A window shows as many whole pages as fit, never a sliver; any spare width makes the pages wider.
+  - 5″, 7″, phone and split screen: 1 page.
+  - 15″ landscape: 2 pages, plus a pinned column.
+  - Ultra-wide: 3 pages.
+  - Portrait 15″: 2 pages stacked.
+- When the window shrinks, pages spill back into the carousel. Tiles may change size class, but a layout never changes shape.
+- **Pinned driver column** (12″ and up): one tile, or a stack, that stays put while pages turn.
+- **Spanning:** on a wide window, dragging a tile's edge across the page line makes it span both pages.
+- **Two saved versions per layout: Wide and Single page.**
+  - The single-page version is generated the first time it's needed, and is edited separately.
+  - Neither version ever overwrites the other.
+  - Example: in split screen, 4+2 becomes 2+1, with the rest spilling to the next page.
+- **Keep the driver-side instrument in place:** when a layout shrinks to one page, the driver-side instrument stays where it is.
+
+## 3. Carousel and page dots
+- **Swiping between pages:** swipe anywhere a page isn't using for itself, Android-style. Maps, sliders and lists get first claim on the touch. Swiping works only when parked.
+- **Page dots:** they sit at the bottom and show **only in edit mode or while the carousel is moving**, then fade after about 1.5 s. The layout name shows briefly next to them.
+
+## 4. No top strip
+- It's removed entirely. There is no global "connected" indicator.
+- **Each app shows its own stale data**, per module. On a Discovery 2 the Td5 can be live while the SLABS ABS module is asleep.
+- **Settings** lives in the edit-mode bar and in the Gateway app.
+- **Things that do appear, only while they apply:**
+  - A "Viewing Defender 110" pill, at the bottom centre.
+  - A gateway-lost banner, shown once.
+
+## 5. Edit mode, the Android way
+- **Entering:** hold for about 0.5 s.
+  - All pages zoom out to about 84% **without reflowing**, each on its own translucent panel.
+  - The **selector** outlines the page you're working on, and the neighbouring pages peek in at the same scale.
+  - On 15″, both visible pages are editable at once.
+- **The edit bar:** settings (gear), Undo, Layout and Done. There are no − buttons on tiles and no dropdowns on tile labels.
+- **Resizing:** tap a tile for its resize frame, with handles on every edge. Neighbouring tiles give way, and edges snap at ⅓, ½, ⅔ and at size-class boundaries.
+- **Window style:** hold a tile that's already selected to choose Normal, Transparent or None (widget), plus the corner shape. A link goes to the app's own Page settings.
+- **Moving between pages:** drag a tile to the screen edge and the next page slides in, with the selector following. Past the last page, a new empty page appears.
+
+### Picking up a tile: three destinations
+1. **Up:** a row of shapes (2+1, 1+2, Halves, Quad) plus **More**, which opens a sheet of all shapes and lets you save your own. Only shapes that fit the current page size are offered.
+2. **Onto another tile:**
+   - **Hover** and the tiles slide aside to swap, Android-style.
+   - **Hold on the centre** to make a stack.
+   - **Use the edge zones** to split that tile. Zones that would break a page's size range don't appear. On 5″ screens and phones there are no zones; the finger's half of the target tile picks the side.
+3. **Down:** the **delete circle**. It fills in when a tile is over it; let go to remove, with Undo.
+
+### Adding pages: layout first
+- Choose a shape with **Layout**, and leftover slots show a **+**.
+- Tapping + opens a picker of pages that fit that slot, with suggestions first and **All pages** (search, Android widgets) at the end.
+- Snap Assist: after you fill a slot, the next empty one asks straight away.
+- Tapping a tile in edit mode opens the same picker, to change its page.
+
+## 6. Stacks and full screen
+- **Making a stack:** hold one page on the centre of another tile. The result is one tile with **badges** along its edge, and one tap on a badge switches the page.
+- **No limit on pages in a stack.** Badges come in **pages**, with their own small dots that show only while turning or in edit mode.
+- **Which edge the badges go on:**
+  - **Auto:** next to the bezel keys if the head unit has them, otherwise the passenger side; along the bottom in portrait.
+  - The edge can be changed in Display settings, or per stack by dragging the badges in edit mode.
+  - Badges can be **linked to physical keys**, so key 1 is always the top badge on screen.
+- **Full screen for a while:** double-tap a tile, or press OK twice on the wheel. The other tiles shrink to badges; the last badge restores the layout. Nothing is saved, so this works while moving.
+
+## 7. Focus (wheel and D-pad)
+- **Tile level:** the arrows move between tiles.
+- **Inside a page:** OK enters the page, and the arrows then move through that app's own controls. Back leaves.
+- The arrows never leave a page at its edge; only Back does.
+
+## 8. Alerts
+**Who does what:** the app writes the message text and styles its own content, for example colouring its coolant value amber. The shell only knows which app raised the alert, its level, the message, and a deep link to the right page.
+
+| Situation | Caution | Warning |
+|---|---|---|
+| Cause on screen | No card. Ring around the source tile, plus a tag on the ring carrying the app's message | The warning shows **on that tile itself**, with ACK |
+| Cause off screen | **Card centred** over the page for about 4 s (may cover anything, never modal), with the message plus **Diagnose** and **ACK** | **Takeover** of the passenger-side tile that isn't an instrument, with ACK. Never covers an instrument |
+| Afterwards | A readable **tab** (44 dp, text ≥24 dp) in the passenger-side top corner, which stays until the alert clears | An outlined red tab, which stays until the problem clears |
+
+- **Drawn above everything:** tiles, sheets, edit mode and the Gateway app.
+- **Which tab shows:** the most serious alert, with "+n" for the rest. When a badge rail runs along the passenger edge, the tab sits just inside it.
+- **Where the cause is:**
+  - The page dot for the page holding the cause gets an **amber (or red) border**.
+  - Inside a stack, the affected badge gets a **thin amber border**.
+- **There is no master caution or master warning button.**
+- **Sound:**
+  - Cautions: a chime, plus one spoken line from Android text-to-speech, using the app's message.
+  - Warnings: a distinct tone, which repeats quietly until ACK.
+  - ACK is Select on the wheel.
+- **Diagnose:** follows the app's deep link to its page for that alert. If that page isn't in a layout, it opens full screen; Back returns.
+- **Alerts list:** pull the tab down, or long-press Select, for the full list, Android notification-shade style.
+- **Android notifications:**
+  - The Gateway also posts system notifications, on separate warning and caution channels, for the phone, watch and lock screen.
+  - When Ostler is on screen, these are silent, so nothing is duplicated.
+  - Ostler's own alerts **don't depend on Android notifications**.
+
+## 9. Superseded
+These parts of the earlier files are replaced by this brief:
+- the permanent top strip and the dots shown in it;
+- the master caution and master warning buttons;
+- permanent divider handles between tiles;
+- the − buttons on tiles;
+- the Add page button in the bar;
+- the dropdown on each tile label;
+- the "Move to page 2" prompt and the edge glow;
+- the "fixed 1000 dp page" definition.

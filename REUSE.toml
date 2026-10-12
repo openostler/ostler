@@ -211,3 +211,10 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = "references/design/2026-10/shell-ui/**"
 SPDX-FileCopyrightText = "2026 OpenOstler contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Shell design session (references/design/2026-10/shell-session/README.md): the designer's
+# .dc.html designs, frame generators and PNG renders. The design tool's runtime is not kept.
+[[annotations]]
+path = "references/design/2026-10/shell-session/**"
+SPDX-FileCopyrightText = "2026 OpenOstler contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
