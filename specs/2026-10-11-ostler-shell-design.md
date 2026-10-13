@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.7
+version: 1.8
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -530,6 +530,10 @@ guide's §4 and §6:
 - **Pages claim only where they mark it:** a page can mark the elements that claim its gestures
   (`data-claims-area`, such as a map's canvas); then the rest of the page swipes the carousel. The
   tile's label row never claims.
+- **Phones page sideways:** a phone (portrait, one page, no pinned column) pages its carousel
+  left and right, so a sideways swipe pages while vertical drags stay the page's, for lists and
+  maps (L-13's vertical stacking is for portrait screens that show two pages).
+- **In edit mode a stack's preview is its slot's size,** not shrunk to a Chip.
 - **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
   so it never moves (the guide's §7 said last).
 
@@ -544,3 +548,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp. The designer's tokens add `alerts.instrumentWarning`; the 56 dp moving ACK buttons are lifted to 60 dp by ruling 2.
 - 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, page-border edges making space that saved layouts keep, and full screen's restore badge first.
 - 2026-10-13 — v1.7: §21 adds the owner's later edit-mode rulings: the shapes row stays once reached, space dragged back goes, the delete circle on every screen as a ghost at the bottom centre, and pages claiming only where they mark it.
+- 2026-10-13 — v1.8: §21 adds that phones page sideways, and that a stack's edit-mode preview is its slot's size.
