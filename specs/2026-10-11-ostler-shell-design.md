@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.4
+version: 1.5
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -463,11 +463,13 @@ against the guide's moving and alert rules found 29 gaps (5 critical). Where the
 the [implementation guide](../references/design/2026-10/shell-session/IMPLEMENTATION.md), they
 win.
 
-1. **A warning on its own instrument tile.** The guide's §9.2 sends a warning to the tile of the
-   page that raised it, while its §16 checks A-04 and A-06 say an instrument's values are never
-   covered. Until the designer rules, the takeover keeps winning: a warning covers its own
-   instrument tile. The question is in the
-   [designer questions](../references/design/2026-10/shell-session/QUESTIONS.md).
+1. **A warning on its own instrument tile** (the designer's ruling, which replaces the owner's
+   interim ruling that the takeover covers the tile). The instrument shows the warning in place
+   and its main value always stays visible: a red warning ring around the tile, a red ACK bar
+   inside the bottom of the tile holding the message, and the app turns its own value red. If the
+   tile is too small for the bar (Compact height under 200 dp, Chip or Badge), the instrument
+   gets the ring and tag, and the takeover or band goes to a passenger-side non-instrument tile.
+   An instrument's values are never covered.
 2. **The alert tab is 60 dp tall while moving.** The guide's 44 dp tab stays when parked. While
    moving, every touch target, the tab included, is at least 60 dp.
 3. **Alert colours pass contrast in every theme.** A contrast check for the locked warning and
@@ -480,6 +482,20 @@ unreachable Gateway, a new host, or a value such as `idling` that the shell does
 as moving; every warning shows; a stale value never looks fresh; and alerts stay above edit
 mode.
 
+The designer's other rulings on the same day, from the visual check of the built shell
+([designer questions](../references/design/2026-10/shell-session/QUESTIONS.md) 2 to 6), settle
+frames that disagreed with the guide:
+
+- **Right-hand drive mirrors the whole layout, tiles included,** so the main tile is on the
+  driver's side (X-18 was wrong).
+- **The pinned column repeats on every page,** in split screen too (L-10 was wrong).
+- **In portrait the pinned row is 360 dp,** the same token along the long axis (L-13 was wrong;
+  the strip is gone).
+- **The delete circle sits at the bottom centre of the driver's half,** as the token says (C-09
+  was wrong).
+- **All text is at least 24 dp while moving, labels included.** The tokens' 18 dp moving label
+  was an error; `ostler-shell-tokens.json` now gives 24.
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
@@ -488,3 +504,4 @@ mode.
 - 2026-10-12 — v1.2: §19 decided by the owner (ADR-0052 v0.7), adding the D-pad cursor that pages to the adjacent layout off the screen edge, and the optional soft-key row.
 - 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).
 - 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
+- 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp.

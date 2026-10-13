@@ -22,7 +22,7 @@
   },
   "type": {
     "family": "Figtree", "numbers": "tabular-nums", "icons": "Material Symbols Rounded (FILL 0; FILL 1 only for state)",
-    "label": { "size": 12, "weight": 700, "tracking": 0.08, "case": "upper", "moving": 18 },
+    "label": { "size": 12, "weight": 700, "tracking": 0.08, "case": "upper", "moving": 24 },
     "body": { "size": 15, "weight": 500, "moving": 24 },
     "bodyStrong": { "size": 17, "weight": 700, "moving": 24 },
     "tileTitle": { "size": 17, "weight": 700, "moving": 24 },
