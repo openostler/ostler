@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.6
+version: 1.7
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -496,7 +496,7 @@ frames that disagreed with the guide:
 - **In portrait the pinned row is 360 dp,** the same token along the long axis (L-13 was wrong;
   the strip is gone).
 - **The delete circle sits at the bottom centre of the driver's half,** as the token says (C-09
-  was wrong).
+  was wrong). Later replaced by the owner: the bottom centre of the screen (below).
 - **All text is at least 24 dp while moving, labels included.** The tokens' 18 dp moving label
   was an error; `ostler-shell-tokens.json` now gives 24.
 
@@ -520,6 +520,16 @@ guide's §4 and §6:
   offering + (a space smaller than a Chip snaps back). **Space you make stays:** saved layouts
   keep a page's empty slots as its `space` (fractional rects in `ostler.layout/3`, optional),
   and the normal screen leaves them blank.
+- **The shapes row stays once reached:** after the lifted tile has been over it, the row stays for
+  the rest of the drag.
+- **Space dragged back goes:** an empty slot dragged smaller than a Chip loses its + and closes on
+  release, its neighbour taking the room (in the drag that made it or a later one).
+- **The delete circle is on every screen, a ghost, at the bottom centre:** 5″ and phones have it
+  too; it sits at the bottom centre of the screen whatever the drive side (replacing the
+  designer's ruling 5, the driver's half), at half opacity until a tile is over it.
+- **Pages claim only where they mark it:** a page can mark the elements that claim its gestures
+  (`data-claims-area`, such as a map's canvas); then the rest of the page swipes the carousel. The
+  tile's label row never claims.
 - **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
   so it never moves (the guide's §7 said last).
 
@@ -533,3 +543,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
 - 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp. The designer's tokens add `alerts.instrumentWarning`; the 56 dp moving ACK buttons are lifted to 60 dp by ruling 2.
 - 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, page-border edges making space that saved layouts keep, and full screen's restore badge first.
+- 2026-10-13 — v1.7: §21 adds the owner's later edit-mode rulings: the shapes row stays once reached, space dragged back goes, the delete circle on every screen as a ghost at the bottom centre, and pages claiming only where they mark it.
