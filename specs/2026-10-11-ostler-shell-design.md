@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.9
+version: 1.10
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -538,6 +538,9 @@ guide's §4 and §6:
   replacing the drag-onto-a-tile swap). Over a tile's outer band the layout previews the move
   after a short settle: the lifted tile's old slot closes, it goes in beside that tile on the
   finger's side, and the other tiles slide aside; letting go commits what the preview showed.
+- **No split drop zones** (owner, 2026-10-13): moving a tile out of the way replaces dropping onto
+  a tile's edge to split it, so the edge zones and their arrows (C-09) and the lit half on 5″
+  screens and phones (X-01, X-02) go. Every screen shows the same reflow preview.
 - **Stacking is Android's folder gesture:** holding the lifted tile over another tile's centre
   arms a stack (the target shrinks a little with a ring behind it); letting go stacks them, and
   a quick pass over a tile does nothing. In edit mode an app's badge can be dragged out of a
@@ -564,3 +567,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.7: §21 adds the owner's later edit-mode rulings: the shapes row stays once reached, space dragged back goes, the delete circle on every screen as a ghost at the bottom centre, and pages claiming only where they mark it.
 - 2026-10-13 — v1.8: §21 adds that phones page sideways, and that a stack's edit-mode preview is its slot's size.
 - 2026-10-13 — v1.9: §21 replaces swapping with Android-style move-aside and folder-style stacking, takes the darker amber for caution strokes on light themes, and requires every settings row to open its page.
+- 2026-10-13 — v1.10: §21 drops the split drop zones (C-09) and the lit half (X-01, X-02); the move-aside preview replaces them.
