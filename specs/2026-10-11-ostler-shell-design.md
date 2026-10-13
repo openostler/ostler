@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.5
+version: 1.6
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -500,6 +500,24 @@ frames that disagreed with the guide:
 - **All text is at least 24 dp while moving, labels included.** The tokens' 18 dp moving label
   was an error; `ostler-shell-tokens.json` now gives 24.
 
+The owner's rulings on edit mode after trying the built shell (2026-10-13), which win over the
+guide's §4 and §6:
+
+- **Lift after 250 ms.** In edit mode a tile lifts when the finger moves after a 250 ms hold (half
+  the 500 ms hold). A quicker press and move is a swipe; a tap selects; holding still 500 ms and
+  letting go opens window style.
+- **The long press carries its tile.** The long press that opens edit mode lifts the tile under the
+  finger at once, its ghost under the finger with no further movement; moving drags it, and
+  letting go where it was drops it back with nothing changed.
+- **The lifted tile is a ghost:** half opacity with an outline, fainter still over a shape, More
+  or the delete circle, so they show through it.
+- **A stack keeps its slot.** Stacking onto a tile leaves the stack in that tile's slot; the slot
+  the lifted tile left stays, empty with its +. In edit mode a stack shows its badge rail.
+- **Resizing never removes a tile.** The edge stops at the smaller tile's minimum; removing is the
+  delete circle's (and Remove's) alone.
+- **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
+  so it never moves (the guide's §7 said last).
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
@@ -509,3 +527,4 @@ frames that disagreed with the guide:
 - 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).
 - 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
 - 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp. The designer's tokens add `alerts.instrumentWarning`; the 56 dp moving ACK buttons are lifted to 60 dp by ruling 2.
+- 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, and full screen's restore badge first.
