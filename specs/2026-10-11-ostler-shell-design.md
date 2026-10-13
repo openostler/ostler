@@ -469,9 +469,13 @@ win.
    inside the bottom of the tile holding the message, and the app turns its own value red. If the
    tile is too small for the bar (Compact height under 200 dp, Chip or Badge), the instrument
    gets the ring and tag, and the takeover or band goes to a passenger-side non-instrument tile.
-   An instrument's values are never covered.
+   An instrument's values are never covered. The tokens are in `alerts.instrumentWarning` of
+   `ostler-shell-tokens.json`: the bar is 68 dp tall (78 while moving) and takes space from the
+   page, which is inset by the bar's height and reflows; the bar never overlays page content.
 2. **The alert tab is 60 dp tall while moving.** The guide's 44 dp tab stays when parked. While
-   moving, every touch target, the tab included, is at least 60 dp.
+   moving, every touch target, the tab included, is at least 60 dp (`space.touchMinMoving`). This
+   also lifts the tokens' ACK buttons that are 56 dp while moving (`alerts.takeover.ack.height`
+   and `alerts.instrumentWarning.bar.ack.heightMoving`) to 60 dp.
 3. **Alert colours pass contrast in every theme.** A contrast check for the locked warning and
    caution colours (ring, tag, tab, takeover text) against each theme's surfaces runs in CI,
    in both the Night and Day versions. Themes that fail are tuned until they pass, even where
@@ -504,4 +508,4 @@ frames that disagreed with the guide:
 - 2026-10-12 — v1.2: §19 decided by the owner (ADR-0052 v0.7), adding the D-pad cursor that pages to the adjacent layout off the screen edge, and the optional soft-key row.
 - 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).
 - 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
-- 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp.
+- 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp. The designer's tokens add `alerts.instrumentWarning`; the 56 dp moving ACK buttons are lifted to 60 dp by ruling 2.

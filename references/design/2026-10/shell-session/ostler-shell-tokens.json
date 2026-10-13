@@ -107,6 +107,7 @@
       "outlined": { "fill": "bg", "stroke": "2 warningFill", "color": "warningText" },
       "plusN": { "size": 30, "fill": "rgba(0,0,0,.25)", "type": "17/800" },
       "large": "top centre, next to the page seam" },
+    "instrumentWarning": { "ring": { "gap": 3, "width": 4, "color": "warningFill" }, "bar": { "height": 68, "heightMoving": 78, "fill": "warningFill", "color": "#ffffff", "type": "24/800", "ack": { "height": 48, "heightMoving": 56 } }, "minTileHeight": 200, "layout": "The bar takes space from the page: the page is inset by the bar height and reflows; the bar never overlays page content.", "fallback": "ring + tag on the instrument; takeover or band elsewhere" },
     "takeover": { "fill": "warningFill", "color": "#ffffff", "padding": { "default": "20 28", "narrow": "16 20", "small": "10 14" },
       "label": "22/800 tracking .1em (18 small)", "title": { "default": 40, "narrow": 32, "small": 26 }, "body": 24,
       "ack": { "height": 56, "radius": 28, "fill": "#ffffff", "color": "#c8283c", "type": "24/800", "suffix": "· Select" } },
