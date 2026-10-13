@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.8
+version: 1.9
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -534,6 +534,20 @@ guide's §4 and §6:
   left and right, so a sideways swipe pages while vertical drags stay the page's, for lists and
   maps (L-13's vertical stacking is for portrait screens that show two pages).
 - **In edit mode a stack's preview is its slot's size,** not shrunk to a Chip.
+- **No swapping in edit mode; tiles move out of the way, as on Android** (owner, 2026-10-13,
+  replacing the drag-onto-a-tile swap). Over a tile's outer band the layout previews the move
+  after a short settle: the lifted tile's old slot closes, it goes in beside that tile on the
+  finger's side, and the other tiles slide aside; letting go commits what the preview showed.
+- **Stacking is Android's folder gesture:** holding the lifted tile over another tile's centre
+  arms a stack (the target shrinks a little with a ring behind it); letting go stacks them, and
+  a quick pass over a tile does nothing. In edit mode an app's badge can be dragged out of a
+  stack to unstack it.
+- **Caution strokes on light themes are the darker amber** (owner and designer, 2026-10-13): on
+  themes with a light background, and contrast themes, rings, tile borders, the outlined tab,
+  bordered page dots and stack badges use `cautionText` (#8a5a00 on Day; 6.2:1 on white), and
+  fills keep `caution`. The token is `ring.caution.colorOnLight`.
+- **Every settings row opens its page,** the theme page re-theming the shell live; a page
+  not yet designed says so rather than leaving a dead tap.
 - **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
   so it never moves (the guide's §7 said last).
 
@@ -549,3 +563,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, page-border edges making space that saved layouts keep, and full screen's restore badge first.
 - 2026-10-13 — v1.7: §21 adds the owner's later edit-mode rulings: the shapes row stays once reached, space dragged back goes, the delete circle on every screen as a ghost at the bottom centre, and pages claiming only where they mark it.
 - 2026-10-13 — v1.8: §21 adds that phones page sideways, and that a stack's edit-mode preview is its slot's size.
+- 2026-10-13 — v1.9: §21 replaces swapping with Android-style move-aside and folder-style stacking, takes the darker amber for caution strokes on light themes, and requires every settings row to open its page.
