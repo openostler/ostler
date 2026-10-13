@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.3
+version: 1.4
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -456,6 +456,30 @@ versions, stacks, spans, styles); size classes use dp with 16 dp hysteresis; the
 the soft-key row are removed; focus, alerts, carousel and edit mode follow the guide's sections
 5 to 10.
 
+## 21. Owner rulings on the build guide after the safety review
+
+Decided by the owner on 2026-10-13 ("yes to all"), after an adversarial review of the v2 shell
+against the guide's moving and alert rules found 29 gaps (5 critical). Where these differ from
+the [implementation guide](../references/design/2026-10/shell-session/IMPLEMENTATION.md), they
+win.
+
+1. **A warning on its own instrument tile.** The guide's §9.2 sends a warning to the tile of the
+   page that raised it, while its §16 checks A-04 and A-06 say an instrument's values are never
+   covered. Until the designer rules, the takeover keeps winning: a warning covers its own
+   instrument tile. The question is in the
+   [designer questions](../references/design/2026-10/shell-session/QUESTIONS.md).
+2. **The alert tab is 60 dp tall while moving.** The guide's 44 dp tab stays when parked. While
+   moving, every touch target, the tab included, is at least 60 dp.
+3. **Alert colours pass contrast in every theme.** A contrast check for the locked warning and
+   caution colours (ring, tag, tab, takeover text) against each theme's surfaces runs in CI,
+   in both the Night and Day versions. Themes that fail are tuned until they pass, even where
+   that changes the designer's palette. The locked alert colours themselves don't change.
+
+The review's fixes follow the guide's rules as written: unknown motion (missing, stale, an
+unreachable Gateway, a new host, or a value such as `idling` that the shell doesn't know) counts
+as moving; every warning shows; a stale value never looks fresh; and alerts stay above edit
+mode.
+
 ## Changelog
 
 - 2026-10-11 — v0.1, draft: first design of the library, from ADR-0052 v0.4.
@@ -463,3 +487,4 @@ the soft-key row are removed; focus, alerts, carousel and edit mode follow the g
 - 2026-10-12 — v1.1: §19 records the proposed edit mode and layout carousel (ADR-0052 v0.6), pending the owner; §1 to §18 unchanged.
 - 2026-10-12 — v1.2: §19 decided by the owner (ADR-0052 v0.7), adding the D-pad cursor that pages to the adjacent layout off the screen edge, and the optional soft-key row.
 - 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).
+- 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
