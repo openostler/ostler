@@ -515,6 +515,11 @@ guide's §4 and §6:
   the lifted tile left stays, empty with its +. In edit mode a stack shows its badge rail.
 - **Resizing never removes a tile.** The edge stops at the smaller tile's minimum; removing is the
   delete circle's (and Remove's) alone.
+- **A page-border edge drags in to make space.** Any tile's edge on the page's border, a lone
+  tile's included, can be dragged in: the tile shrinks and an empty slot opens on that side,
+  offering + (a space smaller than a Chip snaps back). **Space you make stays:** saved layouts
+  keep a page's empty slots as its `space` (fractional rects in `ostler.layout/3`, optional),
+  and the normal screen leaves them blank.
 - **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
   so it never moves (the guide's §7 said last).
 
@@ -527,4 +532,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.3: §20 makes the designer's implementation guide the build spec (ADR-0052 v0.8).
 - 2026-10-13 — v1.4: §21 records the owner's rulings after the safety review: a warning covers its own instrument tile until the designer rules, the tab is 60 dp while moving, and a CI contrast check tunes themes for the alert colours.
 - 2026-10-13 — v1.5: §21 takes the designer's rulings: an instrument shows its own warning in place (ring, an ACK bar inside the tile, the value turned red), falling back to the ring and tag with the takeover elsewhere on small tiles; RHD mirrors the tiles; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits in the driver's half; moving labels are 24 dp. The designer's tokens add `alerts.instrumentWarning`; the 56 dp moving ACK buttons are lifted to 60 dp by ruling 2.
-- 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, and full screen's restore badge first.
+- 2026-10-13 — v1.6: §21 records the owner's edit-mode rulings: a 250 ms lift, the long press carrying its tile, the ghost, stacks keeping their slot, no removal by resize, page-border edges making space that saved layouts keep, and full screen's restore badge first.
