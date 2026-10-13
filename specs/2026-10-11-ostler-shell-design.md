@@ -2,7 +2,7 @@
 title: "ostler-shell — the library every app bundles: size classes, layouts, window rules, page contract, hosting, moving rules, warnings, soft keys, theme resolver and layout format — design"
 area: specs
 status: stable
-version: 1.10
+version: 1.11
 updated: 2026-10-13
 depends_on: [decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, references/research/responsive_tile_sizes.md, specs/2026-10-07-shell-input-design.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-11-gateway-settings-design.md, references/design/2026-10/brief/00-direction-mfd.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, specs/2026-10-07-drive-modes-and-editing-design.md]
 summary: >
@@ -541,6 +541,11 @@ guide's §4 and §6:
 - **No split drop zones** (owner, 2026-10-13): moving a tile out of the way replaces dropping onto
   a tile's edge to split it, so the edge zones and their arrows (C-09) and the lit half on 5″
   screens and phones (X-01, X-02) go. Every screen shows the same reflow preview.
+- **The picker closes after one pick** (owner, 2026-10-13, replacing the guide's Snap Assist):
+  filling a slot doesn't open the picker for the next empty slot; other empty slots keep their +.
+- **Badges have a minimum size:** a badge never shrinks below its token size (the touch minimum
+  while moving); a rail that can't fit them pages them instead, and a resize stops where the
+  tile could no longer hold its rail.
 - **Stacking is Android's folder gesture:** holding the lifted tile over another tile's centre
   arms a stack (the target shrinks a little with a ring behind it); letting go stacks them, and
   a quick pass over a tile does nothing. In edit mode an app's badge can be dragged out of a
@@ -568,3 +573,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.8: §21 adds that phones page sideways, and that a stack's edit-mode preview is its slot's size.
 - 2026-10-13 — v1.9: §21 replaces swapping with Android-style move-aside and folder-style stacking, takes the darker amber for caution strokes on light themes, and requires every settings row to open its page.
 - 2026-10-13 — v1.10: §21 drops the split drop zones (C-09) and the lit half (X-01, X-02); the move-aside preview replaces them.
+- 2026-10-13 — v1.11: §21 drops Snap Assist (the picker closes after one pick) and gives badges a minimum size.
