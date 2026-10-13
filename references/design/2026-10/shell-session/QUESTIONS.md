@@ -1,15 +1,37 @@
 ---
-title: "Questions for the designer after building the shell session's guide"
+title: "Questions for the designer after building the shell session's guide, and the rulings"
 area: references
-status: draft
-version: 0.2
+status: stable
+version: 1.0
 updated: 2026-10-13
 depends_on: [references/design/2026-10/shell-session/IMPLEMENTATION.md, specs/2026-10-11-ostler-shell-design.md]
 summary: >
-  Open questions for the designer that came out of building and safety-reviewing the v2 shell. First question: the guide's §9.2 sends a warning to the tile of the page that raised it, but its §16 checks A-04 and A-06 say an instrument's values are never covered, so a warning raised by an instrument page has nowhere to go. Until the designer rules, the takeover covers its own instrument tile (shell spec §21). Questions 2 to 6 come from the visual check of the built shell against the frames: whether right-hand drive mirrors the tiles or only the edit bar (X-18); whether the pinned column repeats on the spilled split-screen page (L-10); the pinned row's height in 15-inch portrait (L-13); where the delete circle sits (C-09 against X-18); and the 18 dp moving label token against the 24 dp moving text floor.
+  Six questions for the designer from building and checking the v2 shell, all answered on 2026-10-13 and recorded in the shell spec §21. An instrument shows its own warning in place (red ring, a red ACK bar inside the tile, the app's value turned red, the main value always visible), falling back to the ring and tag with the takeover on a passenger-side non-instrument tile when the tile is too small. RHD mirrors the whole layout; the pinned column repeats on every page and is 360 dp in portrait; the delete circle sits at the bottom centre of the driver's half; all text is at least 24 dp while moving, labels included.
 ---
 
 # Questions for the designer
+
+## Rulings (2026-10-13)
+
+The designer answered every question; the shell spec §21 records them.
+
+1. **(c), falling back to (b).** An instrument that raises a warning shows it in place without
+   hiding its value: a red warning ring around the tile, a red ACK bar inside the bottom of the
+   tile holding the message, and the app turns its own value red. The main value always stays
+   visible. If the tile is too small for the bar (Compact height under 200 dp, Chip or Badge):
+   ring and tag on the instrument, and the takeover or band on a passenger-side non-instrument
+   tile. An instrument's values are never covered.
+2. **Mirror the whole layout, tiles included.** The main tile belongs on the driver's side; X-18
+   was wrong.
+3. **The pinned column repeats on every page;** that is what pinned means. L-10 was wrong.
+4. **The pinned row is 360 dp,** the same token along the long axis. L-13 was wrong, and the
+   strip is gone.
+5. **The delete circle sits at the bottom centre of the driver's half,** as the token says. C-09
+   was wrong.
+6. **24 dp, no exception.** The 18 dp moving label was an error in the tokens and frames.
+
+The designer will redraw the affected frames.
+
 
 ## 1. A warning raised by an instrument page
 
