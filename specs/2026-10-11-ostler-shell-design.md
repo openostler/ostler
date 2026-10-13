@@ -556,8 +556,10 @@ guide's §4 and §6:
   fills keep `caution`. The token is `ring.caution.colorOnLight`.
 - **Every settings row opens its page,** the theme page re-theming the shell live; a page
   not yet designed says so rather than leaving a dead tap.
-- **Full screen's restore badge comes first:** the top of a side rail, the left of a bottom rail,
-  so it never moves (the guide's §7 said last).
+- **Full screen has no shell chrome** (owner, 2026-10-13, choosing the designer's token pack and
+  replacing the earlier ruling that its restore badge comes first): no rail and no tabs; phones
+  exit by the system back gesture; head units get a 44 dp exit in the driver-side top corner
+  (inset 10, 60% opacity) that fades after 3 s and returns on any touch; alerts stay above.
 - **Tile navigation** (owner, 2026-10-13: "Spec it, then build"): app instances in tiles, cross-app links, the Back order and app tabs from Standard are in the [tile navigation spec](2026-10-13-tile-navigation-design.md).
 
 ## Changelog
@@ -575,4 +577,4 @@ guide's §4 and §6:
 - 2026-10-13 — v1.9: §21 replaces swapping with Android-style move-aside and folder-style stacking, takes the darker amber for caution strokes on light themes, and requires every settings row to open its page.
 - 2026-10-13 — v1.10: §21 drops the split drop zones (C-09) and the lit half (X-01, X-02); the move-aside preview replaces them.
 - 2026-10-13 — v1.11: §21 drops Snap Assist (the picker closes after one pick) and gives badges a minimum size.
-- 2026-10-13 — v1.12: §21 points to the tile navigation spec (app instances, cross-app links, the Back order, app tabs from Standard).
+- 2026-10-13 — v1.12: §21 points to the tile navigation spec (app instances, cross-app links, the Back order, app tabs from Standard). Full screen has no shell chrome (the designer's token pack).
