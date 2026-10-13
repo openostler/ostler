@@ -1,0 +1,123 @@
+{
+  "$schema": "ostler-shell-tokens/1",
+  "unit": "dp",
+  "notes": "Values are taken from shell-kit.js, shell-edit-kit.js and build/build-SYS.js, which drew the frames. Colours are token names; the palettes are in color.night and color.day. Any token marked moving applies while moving or when motion is unknown.",
+  "color": {
+    "night": {
+      "bg": "#0a1020", "surface1": "#121a2c", "surface2": "#1a2439", "surface3": "#24304a",
+      "text": "#eef2f9", "text2": "#b0bacb", "accent": "#22a6e0", "onAccent": "#0a1020",
+      "ok": "#4cc38a", "caution": "#e0b04a", "cautionText": "#e0b04a", "cautionBg": "rgba(224,176,74,.16)",
+      "warningText": "#ef6a7d", "warningFill": "#c8283c", "focus": "#22a6e0",
+      "scrim": "rgba(5,8,16,.55)", "shadow": "0 20 44 rgba(0,0,0,.50)"
+    },
+    "day": {
+      "bg": "#e6eaf1", "surface1": "#ffffff", "surface2": "#eef1f6", "surface3": "#d6dce6",
+      "text": "#0e1626", "text2": "#4b5568", "accent": "#0070b8", "onAccent": "#ffffff",
+      "ok": "#1e7f3e", "caution": "#e0b04a", "cautionText": "#8a5a00", "cautionBg": "#fff1d6",
+      "warningText": "#b4232f", "warningFill": "#c8283c", "focus": "#0e1626",
+      "scrim": "rgba(5,8,16,.55)", "shadow": "0 20 44 rgba(14,22,38,.22)"
+    },
+    "locked": ["caution", "cautionText", "warningText", "warningFill"],
+    "lockedNote": "Themes cannot change the locked colours."
+  },
+  "type": {
+    "family": "Figtree", "numbers": "tabular-nums", "icons": "Material Symbols Rounded (FILL 0; FILL 1 only for state)",
+    "label": { "size": 12, "weight": 700, "tracking": 0.08, "case": "upper", "moving": 18 },
+    "body": { "size": 15, "weight": 500, "moving": 24 },
+    "bodyStrong": { "size": 17, "weight": 700, "moving": 24 },
+    "tileTitle": { "size": 17, "weight": 700, "moving": 24 },
+    "sheetTitle": { "size": 24, "weight": 700, "moving": 28 },
+    "valueCompact": { "size": 40, "weight": 700 },
+    "valueStandard": { "size": 48, "weight": 700 },
+    "valueExpanded": { "size": 56, "weight": 700 },
+    "valueHero": { "size": 96, "weight": 700, "max": 150 },
+    "unit": { "ratio": 0.32, "color": "text2", "weight": 500 },
+    "movingMinimum": 24
+  },
+  "space": {
+    "tileGap": 10, "windowMargin": 10, "windowTop": 10, "pageSeam": 24,
+    "pinnedColumn": 360, "pageMinWidth": 720, "singlePinnedColumn": 300,
+    "tilePadding": { "compact": "0 14 12", "standard": "2 16 14" },
+    "labelRow": { "height": 42, "moving": 52, "padding": "0 10 0 16" },
+    "touchMin": 48, "touchMinMoving": 60
+  },
+  "shape": {
+    "tile": { "theme": 20, "rounder": 28, "square": 8 },
+    "badge": 14, "sheet": 22, "bottomSheet": "28 28 0 0", "card": 22, "chip": "pill", "button": "pill",
+    "panel": 28
+  },
+  "elevation": {
+    "sheet": "shadow", "lifted": "0 24 48 rgba(0,0,0,.55)", "card": "0 18 40 rgba(0,0,0,.55)", "tab": "0 12 28 rgba(0,0,0,.45)"
+  },
+  "sizeClass": {
+    "expanded": { "minW": 640, "minH": 420 },
+    "standard": { "minW": 360, "minH": 260 },
+    "compact": { "minW": 220, "minH": 140 },
+    "chip": { "minW": 120, "minH": 64 },
+    "badge": { "else": true },
+    "hysteresis": 16
+  },
+  "focusRing": { "width": 3, "gap": 3, "color": "focus", "radiusOffset": 6, "glow": false, "showOn": "keyOnly",
+    "insidePageOutline": { "width": 2, "color": "focus", "opacity": 0.5 } },
+  "edit": {
+    "zoomScale": 0.84,
+    "panel": { "padding": 10, "radius": 28, "fill": "rgba(255,255,255,.05)", "stroke": "1.5 rgba(255,255,255,.16)", "blur": 0, "dayFill": "rgba(14,22,38,.04)", "dayStroke": "1.5 rgba(14,22,38,.14)" },
+    "selector": { "width": 3, "color": "accent", "offset": 10 },
+    "bar": { "height": 60, "buttonHeight": 44, "doneHPadding": 22, "gap": 8, "order": ["layoutName", "spacer", "settings", "undo", "layout", "done"] },
+    "resizeFrame": { "outline": 3, "outlineColor": "text", "offset": 4,
+      "handle": { "w": 12, "h": 44, "radius": 6, "color": "text", "activeColor": "accent", "halo": "3 bg" },
+      "handleHit": { "w": 48, "h": 64 }, "positions": "edge midpoints" },
+    "deleteCircle": { "size": 80, "hotSize": 96, "position": "bottom centre of the driver half", "bottomOffset": 30,
+      "empty": { "fill": "surface2", "stroke": "2 text2", "icon": "delete", "iconSize": 34, "iconColor": "text" },
+      "hot": { "fill": "text", "icon": "delete", "iconFill": 1, "iconSize": 40, "iconColor": "bg" } },
+    "shapesRow": { "top": 66, "panelRadius": 22, "panelPadding": "10 16", "gap": 12,
+      "card": { "w": 120, "h": 72, "radius": 12, "slotRadius": 6, "slotStroke": "1.5 accent@70%", "slotFill": "accent@8%", "hotSlotFill": "accent" },
+      "maxShown": { "default": 4, "large": 6 }, "trailing": "More" },
+    "zones": { "minSize": 64,
+      "sideFill": "accent@16%", "topBottomFill": "accent@10%", "hotFill": "accent@42%",
+      "centre": { "inset": "32%", "size": "36%", "radius": 14, "fill": "surface1", "stroke": "2 accent@60%", "icon": "layers" },
+      "arrowBadge": { "size": 36, "fill": "rgba(10,16,32,.55)", "hotFill": "accent" } },
+    "slotPlus": { "radius": 16, "stroke": "2.5 dashed accent", "fill": "accent@10%", "button": 52, "icon": "add", "iconSize": 30 },
+    "lifted": { "scale": 0.5, "rotate": -2, "shadow": "lifted" },
+    "edgeHold": { "glowWidthMax": 80, "glow": "accent@15%→55%", "line": 4 }
+  },
+  "pageDots": { "size": 8, "activeW": 20, "gap": 8, "inactive": "text2@55%", "active": "text", "bottomOffset": 14,
+    "alert": { "size": 14, "fill": "transparent", "stroke": 2.5, "caution": "caution", "warning": "warningFill" },
+    "name": { "height": 28, "padding": "0 12", "fill": "text", "color": "bg", "type": "15/800", "bottomOffset": 50 },
+    "visibility": "edit mode, or while paging; fade out 1.5 s after idle" },
+  "stack": {
+    "rail": { "width": 96, "gap": 8, "edge": "auto" },
+    "badge": { "w": 96, "h": 64, "hMoving": 72, "radius": 14, "active": "focusRing" },
+    "alertBorder": { "width": 1.5, "inset": 0, "color": "caution|warningFill" },
+    "railDots": { "size": 7, "activeW": 16, "gap": 6, "bottomOffset": 22 }
+  },
+  "alerts": {
+    "zLayer": "top",
+    "ring": { "caution": { "gap": 3, "width": 4, "color": "caution" }, "warning": { "gap": 3, "width": 4, "color": "warningFill" } },
+    "tag": { "height": 34, "padding": "0 12", "radius": 17, "type": "18/800", "position": "inside tile, top 8, right 14",
+      "caution": { "fill": "caution", "color": "#1a1200" }, "warning": { "fill": "warningFill", "color": "#ffffff" } },
+    "card": { "width": 480, "padding": "14 16", "radius": 22, "stroke": 2, "elevation": "card", "position": "centred over the page", "holdMs": 4000,
+      "header": "18/800 cautionText|warningText", "title": "30/800 text", "speech": { "type": "14/700 text2", "icon": "volume_up" },
+      "buttons": { "height": 60, "radius": 30, "type": "24/800", "gap": 10,
+        "diagnose": { "fill": "surface1", "color": "text", "icon": "stethoscope" },
+        "ack": { "fill": "text", "color": "bg", "icon": "check", "label": "ACK · Select" } } },
+    "tab": { "height": 44, "radius": 22, "padding": "0 18", "type": "24/800", "icon": 28, "top": 6, "right": 14, "rightWithRail": 120, "maxWidth": 520, "elevation": "tab",
+      "caution": { "fill": "cautionBg", "stroke": "2 caution", "color": "cautionText" },
+      "warning": { "fill": "warningFill", "stroke": "2 warningFill", "color": "#ffffff" },
+      "outlined": { "fill": "bg", "stroke": "2 warningFill", "color": "warningText" },
+      "plusN": { "size": 30, "fill": "rgba(0,0,0,.25)", "type": "17/800" },
+      "large": "top centre, next to the page seam" },
+    "takeover": { "fill": "warningFill", "color": "#ffffff", "padding": { "default": "20 28", "narrow": "16 20", "small": "10 14" },
+      "label": "22/800 tracking .1em (18 small)", "title": { "default": 40, "narrow": 32, "small": 26 }, "body": 24,
+      "ack": { "height": 56, "radius": 28, "fill": "#ffffff", "color": "#c8283c", "type": "24/800", "suffix": "· Select" } },
+    "band": { "radius": 20, "height": "130–170", "padding": "0 20", "icon": 34, "title": 26, "ack": "takeover.ack" }
+  },
+  "surfaces": {
+    "viewingPill": { "height": 44, "radius": 22, "padding": "0 16", "stroke": "2 accent", "fill": "bg", "type": "16/800", "icon": "visibility", "position": "bottom centre, 30 above dots" },
+    "gatewayBanner": { "height": 52, "radius": 18, "fill": "surface2", "width": 640, "type": "16/700", "action": "16/800 accent", "icon": "cloud_off", "position": "bottom centre; tiles make room" },
+    "toast": { "parked": { "minHeight": 52, "radius": 26, "fill": "text", "color": "bg", "type": "17/700", "action": "800 accentInverse" },
+      "moving": { "minHeight": 60, "radius": 30, "type": "24/700", "textOnly": true } },
+    "sheet": { "radius": 22, "padding": "16 18", "fill": "surface2", "scrim": "scrim" }
+  },
+  "moving": { "minText": 24, "minTouch": 60, "effects": "off (no blur, glow, texture)", "transparentInstrument": "solid" }
+}
