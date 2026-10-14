@@ -6,7 +6,7 @@ version: 0.1
 updated: 2026-10-14
 depends_on: [references/research/aaos_x86_head_unit.md, decisions/adr-0040-power-states-and-wake.md, decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, references/research/hardware.md]
 summary: >
-  Experiment log for the owner's own Discovery 2 head unit (not an Ostler product; GOALS.md keeps an OS and launcher as non-goals, ADR-0049). Goal set by the owner on 2026-10-14: Google's car Maps (Maps for Android Automotive) plus Waze on an Android we control, fed by Ostler over VISS. Result on 2026-10-14: car Maps runs with live map data and turn-by-turn on LineageOS 20 GAPPS in Waydroid on the x86 N95, after a first-run flag flip; Waze installs through Aurora Store and runs under libhoudini (UI not yet confirmed). Records every setup tried (Google AAOS emulator image, Cuttlefish AOSP 17 with transplanted car or phone Google apps, Waydroid LineageOS, SnappMaps), the dead ends with their causes (the self-built AAOS image fails at Play Services' device key, not because of x86; forcing an x86-only ABI list breaks ARM apps; Play keeps a stale device profile), the working recipes and scripts, the hardware findings (VIM3 4 GB too small, Pi 5 has no suspend, N95 supports S3, aosp_rpi5_car exists as source only, Snapp's public layer is AOSP plus SnappMaps) and open questions.
+  Experiment log for the owner's own Discovery 2 head unit (not an Ostler product; GOALS.md keeps an OS and launcher as non-goals, ADR-0049). Goal set by the owner on 2026-10-14: Google's car Maps (Maps for Android Automotive) plus Waze on an Android we control, fed by Ostler over VISS. Result on 2026-10-14: car Maps runs with live map data and turn-by-turn on LineageOS 20 GAPPS in Waydroid on the x86 N95, after a first-run flag flip; Waze installs through Aurora Store and runs under libhoudini (owner checked). Records every setup tried (Google AAOS emulator image, Cuttlefish AOSP 17 with transplanted car or phone Google apps, Waydroid LineageOS, SnappMaps), the dead ends with their causes (the self-built AAOS image fails at Play Services' device key, not because of x86; forcing an x86-only ABI list breaks ARM apps; Play keeps a stale device profile), the working recipes and scripts, the hardware findings (VIM3 4 GB too small, Pi 5 has no suspend, N95 supports S3, aosp_rpi5_car exists as source only, Snapp's public layer is AOSP plus SnappMaps) and open questions.
 ---
 
 # Head-unit experiments log (disco-n95, October 2026)
@@ -35,7 +35,7 @@ Owner's preferences recorded along the way:
   stays **guidance and warnings**; steering assistance would need its own ADR and safety case.
 - Architecture (ARM vs x86, VM vs container vs phone Android) is **undecided** (section 6).
 
-**Status (2026-10-14):** car Maps works on LineageOS 20 in Waydroid on x86 (section 3).
+**Status (2026-10-14):** both work on LineageOS 20 in Waydroid on x86: car Maps (section 3) and Waze under libhoudini ARM translation (section 5).
 
 ## 2. Setups tried
 
@@ -46,7 +46,7 @@ Owner's preferences recorded along the way:
 | 3 | Cuttlefish + **phone** Play Services (Android 17 APEX) + car flavours of the rest (`gmix-setup.sh`) | Same device-key failure | Dead end |
 | 4 | Waydroid LineageOS 20 GAPPS (Android 13, `20.0-20260927-GAPPS-waydroid_x86_64`) | **Works**: phone Play Services, Play Store, native Intel GPU, ~19 s boot | **Yes** |
 | 5 | #4 + car Maps APK from #1 | **Works**: map data, search, routing, turn-by-turn (section 3) | **Yes** |
-| 6 | #4 + libhoudini ARM translation + Aurora Store → Waze 5.25.0.1 (arm64) | Installs; process starts **(U)** whether the UI is fully usable | Testing |
+| 6 | #4 + libhoudini ARM translation + Aurora Store → Waze 5.25.0.1 (arm64) | **Runs** (owner checked, 2026-10-14) | **Yes** |
 | 7 | SnappMaps (Snapp Automotive's open OSM app) on Cuttlefish | Works (OSM map, opens on Munich) | Curiosity |
 | 8 | sway + Waydroid multi-window tiling (Maps / Spotify / Clock) | Works; freeform windows were rejected by the owner as poor | Option |
 
@@ -122,8 +122,8 @@ platform-signed permissions (disable it); start `cvd` detached with `setsid`.
 
 - **Architecture.** x86 Linux host + Android (Waydroid now; an AAOS-for-Waydroid build later)
   vs an ARM board running Android natively. ARM avoids translation and sleeps better on
-  phone-class SoCs; x86 keeps the Linux host, mainline drivers and S3. Decide after the Waze
-  test and an S3 power measurement.
+  phone-class SoCs; x86 keeps the Linux host, mainline drivers and S3. Waze runs under translation on
+  x86, so the remaining input is an S3 power measurement.
 - **AAOS for Waydroid.** LineageOS's Waydroid target plus the AAOS car layer and an
   Ostler-fed VHAL. Nobody publishes one **(U)**; needs the big build machine.
 - **Cluster.** Its own screen drawn from VISS, with a small Android app passing the nav turn

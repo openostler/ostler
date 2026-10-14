@@ -406,7 +406,7 @@ Android we control, fed by Ostler over VISS. Log and recipes:
 [head_unit_experiments.md](references/research/head_unit_experiments.md).
 
 - [x] Car Maps with live data and turn-by-turn on LineageOS 20 (Waydroid, x86).
-- [ ] Confirm Waze is usable under libhoudini.
+- [x] Waze runs under libhoudini on LineageOS (owner checked, 2026-10-14).
 - [ ] Measure the N95 box's draw in S3 suspend.
 - [ ] Decide the architecture (x86 + Waydroid/AAOS container vs ARM native).
 - [ ] Cluster on its own screen from VISS, with a nav turn-card bridge.
