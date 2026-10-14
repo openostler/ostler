@@ -45,8 +45,8 @@ can = ["python-can>=4.0"]
 # (ADR-0041, module-bus spec §10), imported lazily by openostler.signing only. [passkeys]
 # (accounts spec §2.2) names the same pinned requirement: one library serves both. The
 # floor is what Debian stable packages (python3-cryptography 43.0), so a Pi can use it.
-signing = ["cryptography>=43.0,<50"]
-passkeys = ["cryptography>=43.0,<50"]
+signing = ["cryptography>=43.0,<51"]
+passkeys = ["cryptography>=43.0,<51"]
 
 # No vehicle entry point here: the platform ships no pack (ADR-0013, ADR-0015). Packs
 # register under [project.entry-points."openostler.vehicle"], e.g. the Discovery 2 pack
