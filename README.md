@@ -13,7 +13,7 @@
 > ghost; Export all, and nothing needs an Ostler-run server. Map:
 > [docs/ecosystem.md](docs/ecosystem.md).
 
-**Ostler™** is an open, local-first automotive ecosystem: a smart-home-like platform for
+**Ostler** is an open, local-first automotive ecosystem: a smart-home-like platform for
 your car. A diagnostic **node** interfaces with the vehicle you already have and turns its
 existing systems into a connected IoT platform, with diagnostics and telemetry at the
 core. **Ostler Diagnostics** is the node at the OBD port, working alone and offline with
