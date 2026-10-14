@@ -2,10 +2,10 @@
 title: "TODO — Ostler platform"
 area: root
 status: draft
-version: 2.10
+version: 2.11
 updated: 2026-10-14
 summary: >
-  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the DMD-round build order approved on 2026-10-07 (approvals and the private `ostler-hub` repo, U2 core with DM1–DM3, ShellInput I1–I2 and the lockouts with Passenger view behind a flag, Trips and V2–V3 after the design review, TS1 then the share sheet, approved add-on phases, Navigation N0–N2 and Phone PH0–PH1, hub H0–H1; NodeSource P4 keeps its place) with its legal gate (reg 109, product liability, hub duties) and bench items (D2 STN session, HaLow, batman-adv, LiveKit, handover, MeshCore, Phone PH0 HFP), data-hub ideas. Vehicle work lives in each pack. Adds the openness-round code follow-ups (ADR-0047): layout validator warnings, user-sized dock and strip, core-only visual lint, recording Pause and Off, driving settings, own-data privacy overrides, hub URL, Store openness and process tooling. Adds the owner's head-unit bench goal of 2026-10-14 (car Maps and Waze on an Android we control; not a product).
+  Platform code and infrastructure to-do list: repo-split follow-ups (org move, PyPI, PACK_REF to main, UI composition root), comms-glitch tagging, packaging, retiring the legacy dashboard pages, NodeSource P4, the Network page UI after U1 and follow-ups, the module-bus build follow-ups from the owner's answers of 2026-10-06 (firmware, platform, pack, bench), the DMD-round build order approved on 2026-10-07 (approvals and the private `ostler-hub` repo, U2 core with DM1–DM3, ShellInput I1–I2 and the lockouts with Passenger view behind a flag, Trips and V2–V3 after the design review, TS1 then the share sheet, approved add-on phases, Navigation N0–N2 and Phone PH0–PH1, hub H0–H1; NodeSource P4 keeps its place) with its legal gate (reg 109, product liability, hub duties) and bench items (D2 STN session, HaLow, batman-adv, LiveKit, handover, MeshCore, Phone PH0 HFP), data-hub ideas. Vehicle work lives in each pack. Adds the openness-round code follow-ups (ADR-0047): layout validator warnings, user-sized dock and strip, core-only visual lint, recording Pause and Off, driving settings, own-data privacy overrides, hub URL, Store openness and process tooling. Adds the owner's head-unit bench goal of 2026-10-14 (car Maps and Waze on an Android we control; not a product) and the owner's map-provider direction (MapLibre base and fallback; Mapbox, Google and Apple selectable, bring your own key).
 ---
 
 # TODO — Ostler platform
@@ -410,6 +410,27 @@ Android we control, fed by Ostler over VISS. Log and recipes:
 - [ ] Measure the N95 box's draw in S3 suspend.
 - [ ] Decide the architecture (x86 + Waydroid/AAOS container vs ARM native).
 - [ ] Cluster on its own screen from VISS, with a nav turn-card bridge.
+
+## Map providers (owner direction, 2026-10-14)
+
+The owner wants selectable map providers, with Mapbox's polish (3D buildings, landmarks,
+lighting) as the D2 dashboard's showpiece: "we have base as maplibre and mapbox instead, so a
+fall back, they'd be map providers as selectable. google and apple too." Not yet in a spec;
+it amends the [visual spec](specs/2026-10-07-visual-design-system-design.md) §7 maps and the
+[navigation spec](specs/2026-10-07-navigation-addon-design.md).
+
+- [ ] Spec the map-provider choice: **MapLibre** with Brain-served PMTiles stays the base and
+  the offline fallback; **Mapbox**, **Google** and **Apple** are selectable providers, each an
+  optional add-on where the user brings their own account and key and pays the provider
+  directly (nothing runs through Ostler).
+- [ ] Per provider, check: licence (Mapbox GL JS v2+ and the Google and Apple SDKs are
+  proprietary, so load them at runtime from a separate add-on, never bundled in AGPL core),
+  terms on caching and offline use, free tier, and what it offers (Mapbox Standard style and
+  3D landmarks; Google Photorealistic 3D Tiles; Apple MapKit JS needs an Apple developer account).
+- [ ] Fallback rule: no signal, no key or a provider error switches to MapLibre offline without
+  losing the route (Valhalla routing stays local).
+- [ ] MapLibre polish so the base looks good too: 3D building extrusions, tilted drive camera,
+  terrain from open UK elevation data (OS Terrain 50, Environment Agency LiDAR).
 
 ## Roadmap — data-hub direction (not scheduled)
 
