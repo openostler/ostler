@@ -44,6 +44,10 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- Research note [AAOS on an x86 head unit](references/research/aaos_x86_head_unit.md)
+  (draft, 2026-10-14): the parked AAOS track (ADR-0049) benched on an Intel N95 with Cuttlefish
+  1.57 and the prebuilt Android 17 `aosp_cf_x86_64_auto` image; gfxstream on the iGPU, ~50 s cold
+  boot, and the WebRTC view's cost, with what a leaner crosvm/Wayland runtime needs.
 - ShellInput, I1 (shell input spec v0.3 §2–§7, §9, §13, §14; approved 2026-10-07): the
   shell is driven without touch. A keyboard intent layer (`ui/src/shell/input.ts`): arrows
   move, Enter is `ok`, Escape is `back`; the arrows alone repeat (400 ms, then every 100 ms)
