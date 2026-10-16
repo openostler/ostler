@@ -3,7 +3,7 @@ title: "Changelog"
 area: root
 status: stable
 version: 1.0
-updated: 2026-10-08
+updated: 2026-10-16
 summary: >
   Notable changes to the Ostler platform in Keep a Changelog 1.1.0 form: the Unreleased U0 repo-hygiene work (REUSE, PEP 639, SECURITY.md, supply-chain CI, ruff/mypy/pre-commit) plus a brief history reconstructed from git, and the versioning policy (SemVer 0.y.z, integer PACK_API_VERSION, VSS pin in vss/VERSION).
 ---
@@ -419,6 +419,14 @@ their own changelogs.
     their local time and are read as unknown).
 
 ### Changed
+- **Native shell and the map as home, approved by the owner on 2026-10-16 (docs only, no
+  code).** [ADR-0054](decisions/adr-0054-native-shell-cards-and-the-map-home.md) is accepted:
+  one Kotlin Multiplatform / Compose Multiplatform shell and card library (head unit, Android,
+  iPhone, desktop, a small web build) replaces the web shell and PWA screens; one app with a
+  saved layout per device; on head units the map is home with card pages over it; cards from
+  built-in, declarative, Android widget and sandboxed web sources; no APK store; ADR-0048
+  unparked as Ostler Lite. Amendment notes on ADR-0035, ADR-0048, ADR-0049, ADR-0050 and
+  ADR-0052.
 - **The direction round, approved by the owner on 2026-10-08 ("I agree with everything", with
   changes; docs only, no code).** Ostler is an open diagnostic and logging platform with an
   open vehicle-data feed (VISS), not an OS

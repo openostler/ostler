@@ -2,14 +2,19 @@
 title: "ADR-0048 — Ostler as an Android launcher: the same single Android app can be the home app of a phone, tablet or Android head unit"
 area: decisions
 status: draft
-version: 0.3
-updated: 2026-10-08
+version: 0.4
+updated: 2026-10-16
 depends_on: [decisions/adr-0042-ecosystem-small-core-addons-are-the-product.md, decisions/adr-0046-empty-os-every-app-an-add-on.md, specs/2026-10-07-theme-engine-design.md, specs/2026-10-07-launcher-and-widgets-design.md, specs/2026-10-07-drive-modes-and-editing-design.md, specs/2026-10-07-store-design.md, specs/2026-10-06-ui-architecture-design.md]
 summary: >
-  Proposed (draft for the owner). The owner said Ostler "can also be a launcher for Android"; the theme engine spec §2.6 describes it. This ADR makes it a platform decision: the one Ostler Android app (ADR-0042) may also declare the Android home-screen role, so an owner can set it as the launcher of a phone, tablet or Android head unit. As a launcher it hosts native Android widgets through AppWidgetHost next to Ostler widgets, lists installed Android apps in the drawer and dock, reads Android icon packs (appfilter.xml), can use or set the system wallpaper and can seed colours from Material You. It never downloads code, and phone add-ons stay bundled or declarative. The Moving rules apply to hosted Android widgets: those without a Moving template are hidden while Moving. It changes nothing in ADR-0046's OS boundary. Risks: store policy for launchers, old WebViews on cheap head units, and the privacy of hosting other apps' widgets. Five owner decisions. Parked 2026-10-08 (direction round, ADR-0049) until the two-head-unit bench test.
+  Proposed (draft for the owner). The owner said Ostler "can also be a launcher for Android"; the theme engine spec §2.6 describes it. This ADR makes it a platform decision: the one Ostler Android app (ADR-0042) may also declare the Android home-screen role, so an owner can set it as the launcher of a phone, tablet or Android head unit. As a launcher it hosts native Android widgets through AppWidgetHost next to Ostler widgets, lists installed Android apps in the drawer and dock, reads Android icon packs (appfilter.xml), can use or set the system wallpaper and can seed colours from Material You. It never downloads code, and phone add-ons stay bundled or declarative. The Moving rules apply to hosted Android widgets: those without a Moving template are hidden while Moving. It changes nothing in ADR-0046's OS boundary. Risks: store policy for launchers, old WebViews on cheap head units, and the privacy of hosting other apps' widgets. Five owner decisions. Parked 2026-10-08 (direction round, ADR-0049) until the two-head-unit bench test. Unparked 2026-10-16 by ADR-0054 (owner) as Ostler Lite: an ordinary Android launcher with the map as its background that mimics the full Android Automotive flavour; rewritten against ADR-0054 when Lite starts.
 ---
 
 # ADR-0048 — Ostler as an Android launcher
+
+> **Unparked 2026-10-16 (owner, [ADR-0054](adr-0054-native-shell-cards-and-the-map-home.md) §6):** the launcher
+> returns as **Ostler Lite**, an ordinary Android launcher with the map as its background that
+> mimics the full Android Automotive flavour and reuses its UIs and apps. The full flavour comes
+> first. This ADR is rewritten against ADR-0054 when Lite starts.
 
 > **Parked 2026-10-08 (direction round,
 > [ADR-0049](adr-0049-open-vehicle-data-standard-and-app-suite.md)), approved by the owner
@@ -136,3 +141,4 @@ summary: >
   until the bench test.
 - 2026-10-08 — v0.3: still parked; if it returns, a home-screen mode inside the one Ostler
   app (ADR-0049 v1.2), within the screen line.
+- 2026-10-16 — v0.4, unparked by ADR-0054 (owner) as Ostler Lite.
