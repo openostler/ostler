@@ -2,11 +2,11 @@
 title: "ADR-0054 — One native cross-platform shell: Compose Multiplatform cards, per-device layouts, the map as home on head units, and how cards and apps are delivered"
 area: decisions
 status: locked
-version: 1.0
-updated: 2026-10-16
+version: 1.1
+updated: 2026-10-17
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0050-kotlin-for-the-android-app-tier.md, decisions/adr-0052-mfd-pages-sizes-and-the-shell-library.md, decisions/adr-0048-ostler-as-an-android-launcher.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0033-action-categories-and-approvals.md, decisions/adr-0029-accounts-multi-vehicle-sharing-and-social.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0047-openness-round.md, references/research/touch_tiling_edit_mode.md, references/research/responsive_tile_sizes.md]
 summary: >
-  Accepted: approved by the owner on 2026-10-16 ("Agreed"; "I agree, fold it into the ADRs"). The shell and every card are one Kotlin Multiplatform codebase drawn with Compose Multiplatform, native on Android Automotive head units, Android phones and tablets, iPhone and desktop, plus a small web build for viewing in a browser. ADR-0052's ideas stay (page contract, size classes, layout format, cursor, Android-style edit mode) but become shared data and a Kotlin library, not web code; this reverses ADR-0049 v1.3's every-screen-a-PWA and ADR-0050 v1.1's Kotlin-for-the-gateway-only. One app with a saved layout per device: on a head unit the live map is home and the card area is a carousel of card pages over it (swipe only on card dead space, no swiping while moving, steering-wheel or D-pad paging, a fixed driver column); on a phone the map shows where the car is and the cards are security, lock, remote start and trips. Cards come from four sources: built-in Compose cards, declarative cards (data templates bound to VISS paths and actions, no downloaded code), Android app widgets (Android only, with the user's consent) and sandboxed web cards as an escape hatch. No APK store: our own apps update through an F-Droid-format repo only on our own head-unit image; elsewhere the normal stores. ADR-0048 is unparked as Ostler Lite, an ordinary Android launcher with the map as its background that mimics the full Android Automotive build, which comes first and sets the direction.
+  Accepted: approved by the owner on 2026-10-16 ("Agreed"; "I agree, fold it into the ADRs"). The shell and every card are one Kotlin Multiplatform codebase drawn with Compose Multiplatform, native on Android Automotive head units, Android phones and tablets, iPhone and desktop, plus a small web build for viewing in a browser. ADR-0052's ideas stay (page contract, size classes, layout format, cursor, Android-style edit mode) but become shared data and a Kotlin library, not web code; this reverses ADR-0049 v1.3's every-screen-a-PWA and ADR-0050 v1.1's Kotlin-for-the-gateway-only. One app with a saved layout per device: on a head unit the live map is the desktop with app windows tiled over it, an Android-style taskbar, guidance cards and a music widget (v1.1: the designer's approved shell of 2026-10-17 replaces the card-page carousel of v1.0); on a phone the map shows where the car is and the cards are security, lock, remote start and trips. Cards come from four sources: built-in Compose cards, declarative cards (data templates bound to VISS paths and actions, no downloaded code), Android app widgets (Android only, with the user's consent) and sandboxed web cards as an escape hatch. No APK store: our own apps update through an F-Droid-format repo only on our own head-unit image; elsewhere the normal stores. ADR-0048 is unparked as Ostler Lite, an ordinary Android launcher with the map as its background that mimics the full Android Automotive build, which comes first and sets the direction.
 ---
 
 # ADR-0054 — One native cross-platform shell, cards, and the map as home
@@ -89,22 +89,32 @@ default layout, owned by the designer:
   approvals of ADR-0033, and they respect local law (for example rules on leaving an engine
   running unattended).
 
-### 3. On a head unit, the map is home
+### 3. On a head unit, the map is the desktop (v1.1: the approved shell)
 
-- **The live map is the home screen** and is never covered full screen. Page 1 is today's home
-  (map, route, media card, vehicle glance); a map-only page sits at the start.
-- **The card area is a carousel of card pages** over the map, each a layout of cards, with page
-  dots. The map shows through wherever there is no card.
-- **The driver column never moves:** turn banner, speed and alerts are fixed on every page.
-- **Swiping between pages works only on card dead space** (areas with no controls). Elsewhere
-  the map pans as normal.
-- **No swiping while moving.** Pages change only with the steering-wheel keys or a D-pad; the
-  cursor moves between cards and pages over at the edge (ADR-0052 v0.7).
-- **Editing follows the Android home-screen editor,** parked only: long-press, a card tray with
-  real-size previews, snap resizing, remove with undo, Done.
-- In the full Android Automotive flavour the map is the navigation app's window in its own
-  panel and the cards are our panel over it. In Ostler Lite and on phones the map and cards
-  share one app, so **the map must be embeddable as a library** as well as a standalone app.
+> **v1.1 (owner, 2026-10-17, "This is the approved design"):** the designer's builder pack
+> `ostler-aaos-2026-10-17` (taskbar demo, `SPEC.md`, `DECISIONS.md`) is the approved head-unit
+> shell. It replaces v1.0's carousel of card pages. The pack lives with the head-unit flavour
+> (`openostler/ostler-android-automotive`, builder summary in its Android Automotive skill,
+> `references/ostler-shell-approved.md`); designer files stay out of this repo.
+
+- **The live map is the desktop** and is never covered full screen. It centres the vehicle on
+  the largest free area.
+- **Apps open as windows on the passenger side,** 2/3 wide by default, leaving the driver third
+  for the map. Users tile freely with Windows-style snap zones (quarters, halves, thirds, full
+  screen, minimise), auto-tiling, dividers and push-aside; windows never overlap.
+- **An Android-style taskbar** holds the apps button, pinned and running apps, app pairs and
+  pinned layouts (any layout, even one app, can be pinned), the music chip and the turn chip; the
+  driver end holds the temperature pill and one tray pill (status, clock, bell).
+- **System panels** (tray drawer with quick controls and notifications, climate card, app
+  drawer) rise from the bar on the driver side, dim the screen and never move the guidance cards.
+- **Guidance cards** (turn and trip) move to free space when covered, fold when tight and
+  minimise to the taskbar's turn chip; the turn card is never covered by panels.
+- **Gestures:** swipe up on the bar for home, swipe up and hold for recents, edge swipes for
+  back; no caption bars.
+- **Cards in this ADR's sense** (§4) are the home widgets and tiles: the music widget (chip,
+  card, tiled window) and vehicle cards, built from the same Compose card library as the phone.
+- **Ostler Lite and phones** reuse the cards and as much of the shell as an ordinary app can
+  host; the map must still be embeddable as a library.
 
 ### 4. Where cards come from
 
@@ -150,12 +160,13 @@ default layout, owned by the designer:
 
 ## Confirmation
 
-- A head-unit bench test: map and two card pages over it on the reference integrated GPU, with
-  the map holding its frame rate while cards update.
+- A head-unit bench test: the map with two tiled app windows, guidance cards and the music card
+  on the reference integrated GPU, with the map holding its frame rate.
 - A cross-platform test: the same declarative card renders on the head unit, an Android phone
   and an iPhone from one definition.
 - A store-rules check: the Play and App Store builds contain no code download path.
-- A moving test: no swipe paging while moving; the wheel or D-pad still pages.
+- A moving test: the moving rules of the approved shell (parked-only actions such as theatre
+  mode) hold.
 - A glance-time test of the default head-unit layout with real drivers before it freezes.
 
 ## Consequences
@@ -165,8 +176,8 @@ default layout, owned by the designer:
 - The app template of ADR-0050 becomes the Compose Multiplatform template for every Ostler app.
 - A declarative card format and renderer join the page contract spec.
 - The navigation app ships as an embeddable library as well as an app.
-- The head-unit flavour's design brief (`docs/design-brief/` in `ostler-android-automotive`)
-  carries the pages-over-the-map frames.
+- The head-unit flavour builds the approved shell from the designer's pack; its page list
+  (`docs/design-brief/` in `ostler-android-automotive`) tracks the frames.
 
 ## Alternatives considered
 
@@ -197,3 +208,5 @@ default layout, owned by the designer:
 ## Changelog
 
 - 2026-10-16 — v1.0, accepted by the owner in the head-unit design session.
+- 2026-10-17 — v1.1, amended by the owner: the designer's approved shell (map as desktop, tiled
+  app windows, taskbar, panels, guidance cards, music widget) replaces the card-page carousel in §3.

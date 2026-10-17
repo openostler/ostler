@@ -423,7 +423,8 @@ their own changelogs.
   code).** [ADR-0054](decisions/adr-0054-native-shell-cards-and-the-map-home.md) is accepted:
   one Kotlin Multiplatform / Compose Multiplatform shell and card library (head unit, Android,
   iPhone, desktop, a small web build) replaces the web shell and PWA screens; one app with a
-  saved layout per device; on head units the map is home with card pages over it; cards from
+  saved layout per device; on head units the map is the desktop with tiled app windows and a
+  taskbar (v1.1, 2026-10-17: the designer's approved shell replaced the card-page carousel); cards from
   built-in, declarative, Android widget and sandboxed web sources; no APK store; ADR-0048
   unparked as Ostler Lite. Amendment notes on ADR-0035, ADR-0048, ADR-0049, ADR-0050 and
   ADR-0052.
