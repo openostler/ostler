@@ -2,14 +2,19 @@
 title: "ADR-0050 — Kotlin for the Android app tier: one shared hybrid shell around our React pages, Jetpack, Glance for the feed widget, minimum SDK 29"
 area: decisions
 status: locked
-version: 1.2
-updated: 2026-10-11
+version: 1.3
+updated: 2026-10-16
 depends_on: [decisions/adr-0049-open-vehicle-data-standard-and-app-suite.md, decisions/adr-0051-viss-v3-is-the-core-vehicle-data-protocol.md, decisions/adr-0035-languages-by-tier.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0045-ux-first.md, references/research/direction_standard_not_os.md, references/research/direction_host_platforms.md, references/research/direction_repo_audit.md]
 summary: >
-  Accepted: approved by the owner on 2026-10-08 (direction decisions 10, 13, 14, 35 and 37). Kotlin is the language of the Android app tier, amending ADR-0035, whose UI row put the phone app in a Capacitor wrapper. Every Ostler Android app (the gateway app, Diagnostics, Trips, Security, Maintenance and the add-ons) is built from one shared app template: a native Kotlin shell (its own process, services, notifications, settings, the VISS client and the theme-pack loader) around our existing React pages in a WebView, with screens moved to native Jetpack Compose only where it pays. Jetpack libraries throughout; the gateway app's feed widget uses Jetpack Glance at about 1 Hz; minimum SDK 29 (Android 10). The React UI stays TypeScript and stays the Brain's web console. Python, C and the rest of ADR-0035 are unchanged.
+  Accepted: approved by the owner on 2026-10-08 (direction decisions 10, 13, 14, 35 and 37). Kotlin is the language of the Android app tier, amending ADR-0035, whose UI row put the phone app in a Capacitor wrapper. Every Ostler Android app (the gateway app, Diagnostics, Trips, Security, Maintenance and the add-ons) is built from one shared app template: a native Kotlin shell (its own process, services, notifications, settings, the VISS client and the theme-pack loader) around our existing React pages in a WebView, with screens moved to native Jetpack Compose only where it pays. Jetpack libraries throughout; the gateway app's feed widget uses Jetpack Glance at about 1 Hz; minimum SDK 29 (Android 10). The React UI stays TypeScript and stays the Brain's web console. Python, C and the rest of ADR-0035 are unchanged. Amended 2026-10-16 by ADR-0054 (owner): Kotlin covers every Ostler app again, as Kotlin Multiplatform with Compose Multiplatform (Android, Android Automotive, iPhone, desktop, a small web build).
 ---
 
 # ADR-0050 — Kotlin for the Android app tier
+
+> **Amended 2026-10-16 (v1.3, owner, [ADR-0054](adr-0054-native-shell-cards-and-the-map-home.md)):** reverses v1.1's
+> Kotlin-for-the-gateway-only. Every Ostler app and the shell are **Kotlin Multiplatform with
+> Compose Multiplatform** (Android, Android Automotive, iPhone native, desktop, plus a small web
+> build). The shared app template becomes that template; Glance stays for the feed widget.
 
 > **Amended 2026-10-11 (v1.1, owner; ADR-0049 v1.3):** the screens are PWAs, not WebView
 > shells, so **Kotlin is for the Ostler Gateway app only** (services, Bluetooth, USB,
@@ -121,3 +126,4 @@ summary: >
   (ADR-0049 v1.3).
 - 2026-10-11 — v1.2: Kotlin also for the optional Ostler Controls app; the floating gauge moves
   there (ADR-0052 §4a).
+- 2026-10-16 — v1.3, amended by ADR-0054 (owner): Kotlin Multiplatform with Compose Multiplatform for every Ostler app and the shell.

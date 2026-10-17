@@ -2,14 +2,18 @@
 title: "ADR-0035 — Languages by tier: C/C++ on the node, Python on the brain and lab, TypeScript for the UI"
 area: decisions
 status: locked
-version: 1.1
-updated: 2026-10-08
+version: 1.2
+updated: 2026-10-16
 depends_on: [decisions/adr-0002-layered-stdlib-core.md, decisions/adr-0004-react-typescript-ui.md, decisions/adr-0034-repo-boundaries.md, decisions/adr-0017-open-standards-first.md, SCOPE.md]
 summary: >
-  Supersedes in part ADR-0002 ("the production core stays Python") and amends ADR-0004. C/C++ on ESP-IDF for node firmware and the one shared decoder; Python for the lab, tools, brain services and MCP, with a core that stays stdlib + pyserial plus optional extras [passkeys], [mcp] and [can], and the native decoder loaded through stdlib ctypes with the Python reference decoder as the fallback when the library is missing; TypeScript for the UI, with types generated from OpenAPI/AsyncAPI and the phone app packaged with Capacitor. Rust only later, for a measured hot path. Revisit only when a measurement forces it. Amended 2026-10-08 (direction round, ADR-0050): Kotlin for the Android app tier, replacing the Capacitor wrapper.
+  Supersedes in part ADR-0002 ("the production core stays Python") and amends ADR-0004. C/C++ on ESP-IDF for node firmware and the one shared decoder; Python for the lab, tools, brain services and MCP, with a core that stays stdlib + pyserial plus optional extras [passkeys], [mcp] and [can], and the native decoder loaded through stdlib ctypes with the Python reference decoder as the fallback when the library is missing; TypeScript for the UI, with types generated from OpenAPI/AsyncAPI and the phone app packaged with Capacitor. Rust only later, for a measured hot path. Revisit only when a measurement forces it. Amended 2026-10-08 (direction round, ADR-0050): Kotlin for the Android app tier, replacing the Capacitor wrapper. Amended 2026-10-16 by ADR-0054: the UI tier adds Kotlin Multiplatform with Compose Multiplatform for every Ostler app and the shell; TypeScript stays for the Brain's web console.
 ---
 
 # ADR-0035 — Languages by tier
+
+> **Amended 2026-10-16 ([ADR-0054](adr-0054-native-shell-cards-and-the-map-home.md)):** the UI tier adds **Kotlin
+> Multiplatform with Compose Multiplatform** for every Ostler app and the shell (Android, iPhone,
+> desktop, a small web build). TypeScript stays for the Brain's web console.
 
 > **Amended 2026-10-08 (direction round,
 > [ADR-0050](adr-0050-kotlin-for-the-android-app-tier.md)), approved by the owner on
@@ -108,3 +112,4 @@ memory limit hit, a profile showing a hot path.
 
 - 2026-10-08 — v1.1, amended (direction round, approved by the owner on 2026-10-08,
   ADR-0050): Kotlin for Android apps.
+- 2026-10-16 — v1.2, amended by ADR-0054: Kotlin Multiplatform with Compose Multiplatform in the UI tier.
