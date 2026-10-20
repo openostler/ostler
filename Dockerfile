@@ -11,11 +11,11 @@
 
 # Meta stage: stamp the platform commit and build time (Settings → Version) from .git,
 # then drop .git so it never reaches the final image.
-FROM python:3.12-slim AS meta
+FROM python:3.14-slim AS meta
 COPY . /src
 RUN python /src/tools/build_meta.py /src && rm -rf /src/.git
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # The D2 pack's git ref (a branch, tag or commit), e.g. --build-arg PACK_REF=v0.1.0.
 ARG PACK_REF=main
