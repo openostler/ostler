@@ -44,6 +44,8 @@ their own changelogs.
   `/community/contribute` (sent from the admin Coverage Map) now needs admin auth.
 
 ### Added
+- ADR-0054 (proposed): Android Automotive as a read-only vehicle-data source beside the
+  node, with the research note `references/research/aaos_vehicle_data.md`.
 - Research note [AAOS on an x86 head unit](references/research/aaos_x86_head_unit.md)
   (draft, 2026-10-14): the parked AAOS track (ADR-0049) benched on an Intel N95 with Cuttlefish
   1.57 and the prebuilt Android 17 `aosp_cf_x86_64_auto` image; gfxstream on the iGPU, ~50 s cold
